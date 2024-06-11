@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2883, "ViewCell IsEnabled set to false does not disable a cell in a TableView")]
@@ -114,8 +115,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void Issue2883TestDisabled ()
 		{
@@ -128,8 +128,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.Screenshot ("I dont see the disable cell");
 		}
 
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void Issue2883TestEnabled ()
 		{

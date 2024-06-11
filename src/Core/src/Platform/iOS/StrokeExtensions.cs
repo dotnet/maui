@@ -161,9 +161,10 @@ namespace Microsoft.Maui.Platform
 
 		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
 		{
-			if (layer != null && layer.Sublayers != null)
+			var sublayers = layer?.Sublayers;
+			if (sublayers is not null)
 			{
-				foreach (var sublayer in layer.Sublayers)
+				foreach (var sublayer in sublayers)
 				{
 					UpdateBackgroundLayer(sublayer, bounds);
 

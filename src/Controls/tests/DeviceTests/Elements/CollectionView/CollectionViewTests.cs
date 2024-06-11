@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -41,7 +42,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
-
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 #if IOS && !MACCATALYST
 					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
 #endif
@@ -102,40 +107,64 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			IList logicalChildren = null;
-			WeakReference weakReference = null;
-			var collectionView = new CollectionView
-			{
-				Header = new Label { Text = "Header" },
-				Footer = new Label { Text = "Footer" },
-				ItemTemplate = new DataTemplate(() => new Label())
-			};
+			var weakReferences = new List<WeakReference>();
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-				var data = new ObservableCollection<string>()
+				var labels = new List<Label>();
+				IList logicalChildren = null;
+				var collectionView = new CollectionView
 				{
-					"Item 1",
-					"Item 2",
-					"Item 3"
+					Header = new Label { Text = "Header" },
+					Footer = new Label { Text = "Footer" },
+					ItemTemplate = new DataTemplate(() => 
+					{
+						var label = new Label();
+						labels.Add(label);
+						return label;
+					}),
 				};
-				weakReference = new WeakReference(data);
-				collectionView.ItemsSource = data;
-				await Task.Delay(100);
 
-				// Get ItemsView._logicalChildren
-				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-				logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
+				var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+				{
+					await navPage.PushAsync(new ContentPage { Content = collectionView });
+
+					var data = new ObservableCollection<string>()
+					{
+						"Item 1",
+						"Item 2",
+						"Item 3"
+					};
+					weakReferences.Add(new(data));
+					collectionView.ItemsSource = data;
+					await Task.Delay(100);
+
+					Assert.NotEmpty(labels);
+					foreach (var label in labels)
+					{
+						weakReferences.Add(new(label));
+						weakReferences.Add(new(label.Handler));
+						weakReferences.Add(new(label.Handler.PlatformView));
+					}
+
+					// Get ItemsView._logicalChildren
+					var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+					logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
+					Assert.NotNull(logicalChildren);
+
+					// Replace with cloned collection
+					collectionView.ItemsSource = new ObservableCollection<string>(data);
+					await Task.Delay(100);
+					await navPage.PopAsync();
+				});
+
+				
 				Assert.NotNull(logicalChildren);
+				Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
+			}
 
-				// Replace with cloned collection
-				collectionView.ItemsSource = new ObservableCollection<string>(data);
-				await Task.Delay(100);
-			});
-
-			await AssertionExtensions.WaitForGC(weakReference);
-			Assert.NotNull(logicalChildren);
-			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
+			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
 
 		[Theory]
@@ -460,5 +489,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		record MyRecord(string Name);
+
+
+		[Fact]
+		public async Task SettingSelectedItemAfterModifyingCollectionDoesntCrash()
+		{
+			SetupBuilder();
+
+			var Items = new ObservableCollection<string>();
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label()
+					{
+						Text = "Margin Test",
+						Margin = new Thickness(10, 10, 10, 10),
+						HeightRequest = 50,
+					};
+
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = Items,
+				SelectionMode = SelectionMode.Single
+			};
+
+			var vsl = new VerticalStackLayout()
+			{
+				collectionView				
+			};
+
+			vsl.HeightRequest = 500;
+			vsl.WidthRequest = 500;
+
+			var frame = collectionView.Frame;
+
+			await vsl.AttachAndRun<LayoutHandler>(async (handler) =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				frame = collectionView.Frame;
+				await Task.Yield();
+				Items.Add("Item 1");
+				Items.Add("Item 2");
+				Items.Add("Item 3");
+				collectionView.SelectedItem = Items.FirstOrDefault(x => x == "Item 3");
+				await WaitForUIUpdate(frame, collectionView);
+			}, MauiContext, (view) => CreateHandlerAsync<LayoutHandler>(view));
+		}
 	}
 }

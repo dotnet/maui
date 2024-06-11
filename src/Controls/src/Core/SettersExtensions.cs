@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		public static void AddBinding(this IList<Setter> setters, BindableProperty property, Binding binding)
 		{
 			if (binding == null)
-				throw new ArgumentNullException("binding");
+				throw new ArgumentNullException(nameof(binding));
 
 			setters.Add(new Setter { Property = property, Value = binding });
 		}
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 		public static void AddDynamicResource(this IList<Setter> setters, BindableProperty property, string key)
 		{
 			if (string.IsNullOrEmpty(key))
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 			setters.Add(new Setter { Property = property, Value = new DynamicResource(key) });
 		}
 	}

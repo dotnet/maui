@@ -21,6 +21,10 @@ namespace Microsoft.Maui.Controls.Platform
 		public bool OnHover(AView control, MotionEvent e)
 		{
 			var view = GetView();
+
+			if (view == null)
+				return false;
+			
 			var platformPointerArgs = new PlatformPointerEventArgs(control, e);
 
 			foreach (var gesture in view.GetCompositeGestureRecognizers())

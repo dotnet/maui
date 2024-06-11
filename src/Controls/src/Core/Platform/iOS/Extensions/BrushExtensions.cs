@@ -164,10 +164,11 @@ namespace Microsoft.Maui.Controls.Platform
 				if (layer.Name == BackgroundLayer)
 					layer?.RemoveFromSuperLayer();
 
-				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
+				var sublayers = layer.Sublayers;
+				if (sublayers is null || sublayers.Length == 0)
 					return;
 
-				foreach (var subLayer in layer.Sublayers)
+				foreach (var subLayer in sublayers)
 				{
 					if (subLayer.Name == BackgroundLayer)
 						subLayer?.RemoveFromSuperLayer();
@@ -187,9 +188,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
 		{
-			if (layer != null && layer.Sublayers != null)
+			var sublayers = layer?.Sublayers;
+			if (sublayers is not null)
 			{
-				foreach (var sublayer in layer.Sublayers)
+				foreach (var sublayer in sublayers)
 				{
 					UpdateBackgroundLayer(sublayer, bounds);
 

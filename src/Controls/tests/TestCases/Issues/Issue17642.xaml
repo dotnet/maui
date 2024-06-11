@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue17642"
+    Title="Issue 17642">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="12" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout
+            Padding="12">
+            <Button
+                Text="No Background"/>
+            <Button
+                BorderColor="Red"
+                BorderWidth="4"
+                Text="No Background with Border"/>
+            <Button
+                Text="BackgroundColor"
+                TextColor="White"
+                BackgroundColor="Red"/>
+            <Button
+                Text="Background"
+                TextColor="White"
+                Background="Red"/>
+            <Button
+                Text="Gradient Background"
+                TextColor="White">
+                <Button.Background>
+                    <LinearGradientBrush
+                        StartPoint="0, 0"
+                        EndPoint="1, 0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="GreenYellow" Offset="0" />
+                            <GradientStop Color="LawnGreen" Offset="0.25" />
+                            <GradientStop Color="Green" Offset="0.5" />
+                            <GradientStop Color="DarkGreen" Offset="0.75" />
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+            <Button
+                CornerRadius="{Binding Value, Source={x:Reference CornerSlider}}"
+                Text="Corner Radius Background"
+                TextColor="White">
+                <Button.Background>
+                    <LinearGradientBrush
+                        StartPoint="0, 0"
+                        EndPoint="1, 0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="GreenYellow" Offset="0" />
+                            <GradientStop Color="LawnGreen" Offset="0.25" />
+                            <GradientStop Color="Green" Offset="0.5" />
+                            <GradientStop Color="DarkGreen" Offset="0.75" />
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+            <Label 
+                FontSize="9"
+                Text="Corner Radius:"/>
+            <Slider 
+                x:Name="CornerSlider"
+                Minimum="0"               
+                Maximum="60"
+                Value="24"/>
+            <Button
+                BorderColor="Red"
+                BorderWidth="{Binding Value, Source={x:Reference BorderWidthSlider}}"
+                Text="BorderColor"
+                TextColor="White">
+                <Button.Background>
+                    <LinearGradientBrush
+                        StartPoint="0, 0"
+                        EndPoint="1, 0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="GreenYellow" Offset="0" />
+                            <GradientStop Color="LawnGreen" Offset="0.25" />
+                            <GradientStop Color="Green" Offset="0.5" />
+                            <GradientStop Color="DarkGreen" Offset="0.75" />
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+            <Label 
+                FontSize="9"
+                Text="BorderWidth:"/>
+            <Slider 
+                x:Name="BorderWidthSlider"
+                Minimum="0"               
+                Maximum="12"
+                Value="4"/>
+            <Button
+                x:Name="DynamicBackground"
+                BorderColor="Red"
+                BorderWidth="4"
+                CornerRadius="12"
+                Text="BorderColor"
+                TextColor="White">
+                <Button.Background>
+                    <LinearGradientBrush
+                        StartPoint="0, 0"
+                        EndPoint="1, 0">
+                        <LinearGradientBrush.GradientStops>
+                            <GradientStop Color="GreenYellow" Offset="0" />
+                            <GradientStop Color="LawnGreen" Offset="0.25" />
+                            <GradientStop Color="Green" Offset="0.5" />
+                            <GradientStop Color="DarkGreen" Offset="0.75" />
+                        </LinearGradientBrush.GradientStops>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+            <StackLayout
+                HorizontalOptions="Center"
+                Orientation="Horizontal">
+                <Button 
+                    Text="Add"
+                    Clicked="OnAddClicked" />
+                <Button 
+                    Text="Remove"
+                    Clicked="OnRemoveClicked" />
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

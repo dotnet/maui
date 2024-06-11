@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
+using CoreImage;
 using Foundation;
 using ImageIO;
 using Microsoft.Maui.Graphics;
@@ -20,10 +21,20 @@ namespace Microsoft.Maui
 			var font = fontManager.GetFont(imageSource.Font);
 			var color = (imageSource.Color ?? Colors.White).ToPlatform();
 			var glyph = (NSString)imageSource.Glyph;
-#pragma warning disable CS8604
+
+			if(string.IsNullOrWhiteSpace(imageSource.Glyph))
+			{
+				return null;
+			}
+
 			var attString = new NSAttributedString(glyph, font, color);
 			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _)!);
-#pragma warning restore CS8604
+
+			if (imagesize.Width <= 0 || imagesize.Height <= 0)
+			{
+				return null;
+			}
+
 			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
 			var ctx = new NSStringDrawingContext();
 
@@ -146,10 +157,31 @@ namespace Microsoft.Maui
 				if (cgimage is null)
 					throw new InvalidOperationException("Unable to create CGImage from CGImageSource.");
 
-				image = new UIImage(cgimage, scale, UIImageOrientation.Up);
+				image = new UIImage(cgimage, scale, ToUIImageOrientation(cgImageSource));
 			}
 
 			return image;
 		}
+
+		static UIImageOrientation ToUIImageOrientation(CGImageSource cgImageSource)
+		{
+			var props = cgImageSource.GetProperties(0);
+			if (props is null || props.Orientation is null)
+				return UIImageOrientation.Up;
+			
+			return ToUIImageOrientation(props.Orientation.Value);
+		}
+
+		static UIImageOrientation ToUIImageOrientation(CIImageOrientation cgOrient) => cgOrient switch {
+			CIImageOrientation.TopLeft => UIImageOrientation.Up,
+			CIImageOrientation.TopRight => UIImageOrientation.UpMirrored,
+			CIImageOrientation.BottomRight => UIImageOrientation.Down,
+			CIImageOrientation.BottomLeft => UIImageOrientation.DownMirrored,
+			CIImageOrientation.LeftTop => UIImageOrientation.LeftMirrored,
+			CIImageOrientation.RightTop => UIImageOrientation.Right,
+			CIImageOrientation.RightBottom => UIImageOrientation.RightMirrored,
+			CIImageOrientation.LeftBottom => UIImageOrientation.Left,
+			_ => throw new ArgumentOutOfRangeException(nameof (cgOrient)),
+		};
 	}
 }

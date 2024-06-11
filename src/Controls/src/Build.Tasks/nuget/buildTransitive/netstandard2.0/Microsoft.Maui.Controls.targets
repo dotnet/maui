@@ -146,11 +146,15 @@
 		Inputs="$(IntermediateOutputPath)$(TargetFileName)"
 		Outputs="$(IntermediateOutputPath)XamlC.stamp"
 		Condition=" '$(DesignTimeBuild)' != 'True' AND '@(MauiXaml)' != ''">
-	    <PropertyGroup>
-		<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
-		<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
-		<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
-	    </PropertyGroup>
+		<PropertyGroup>
+			<_MauiXamlCValidateOnly>$(MauiXamlCValidateOnly)</_MauiXamlCValidateOnly>
+			<_MauiXamlCValidateOnly Condition="'$(Configuration)' == 'Debug' AND '$(_MauiForceXamlCForDebug)' != 'True'">True</_MauiXamlCValidateOnly>
+			<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
+
+			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and '$(PublishAot)' == 'true'">true</MauiStrictXamlCompilation>
+			<_MauiXamlCNoWarn>$(NoWarn)</_MauiXamlCNoWarn>
+			<_MauiXamlCNoWarn Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCNoWarn);XC0022;XC0023</_MauiXamlCNoWarn>
+		</PropertyGroup>
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
@@ -164,7 +168,7 @@
 
       WarningLevel = "$(WarningLevel)"
       TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
-      NoWarn = "$(NoWarn)"
+      NoWarn = "$(_MauiXamlCNoWarn)"
       WarningsAsErrors = "$(WarningsAsErrors)"
       WarningsNotAsErrors = "$(WarningsNotAsErrors)" />
       

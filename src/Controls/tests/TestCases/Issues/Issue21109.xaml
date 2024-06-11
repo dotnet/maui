@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21109"
+             xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues">
+  <VerticalStackLayout
+     Padding="30,0"
+     Spacing="25">
+    <Label
+      AutomationId="WaitForStubControl"
+      Text="ReturnType (Search)" />
+    <Entry
+      AutomationId="SearchEntry"
+      ReturnType="Search" />
+    <Label
+      Text="Update the ReturnType just typing" />
+    <Entry 
+      x:Name="ReturnTypeEntry"
+      AutomationId="ReturnTypeEntry"
+      TextChanged="OnReturnTypeEntryTextChanged"/>
+    <Label
+      x:Name="ReturnTypeResult"
+      AutomationId="ReturnTypeResult"/>
+    <Label    
+      Text="Custom DecimalEntry" />
+    <controls:Issue21109DecimalEntry 
+      AutomationId="CustomDecimalEntry"/>
+  </VerticalStackLayout>
+</ContentPage>

@@ -187,6 +187,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					resources.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
 					resources.Accept(new CreateValuesVisitor(visitorContext), null);
 					resources.Accept(new RegisterXNamesVisitor(visitorContext), null);
+					resources.Accept(new SimplifyTypeExtensionVisitor(), null);
 					resources.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
 					resources.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
 
@@ -206,6 +207,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
 			rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
 			rootnode.Accept(new RegisterXNamesVisitor(visitorContext), null);
+			rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
 			rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
 			rootnode.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
 		}

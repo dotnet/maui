@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal void Realize()
 		{
 			var dataContext = FormsDataContext;
-			var formsTemplate = FormsDataTemplate;
+			var dataTemplate = FormsDataTemplate;
 			var container = FormsContainer;
 			var mauiContext = MauiContext;
 
@@ -158,17 +158,21 @@ namespace Microsoft.Maui.Controls.Platform
 				itemsView.RemoveLogicalChild(e);
 			}
 
-			if (dataContext is null || formsTemplate is null || container is null || mauiContext is null)
+			if (dataContext is null || dataTemplate is null || container is null || mauiContext is null)
 			{
 				return;
 			}
 
-			if (Content is null || _currentTemplate != formsTemplate)
+			// If the template is a DataTemplateSelector, we need to get the actual DataTemplate to use
+			// for our recycle check below
+			dataTemplate = dataTemplate.SelectDataTemplate(dataContext, container);
+
+			if (Content is null || _currentTemplate != dataTemplate)
 			{
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
-				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
+				_visualElement = dataTemplate.CreateContent() as VisualElement;
 				_visualElement.BindingContext = dataContext;
 				_handler = _visualElement.ToHandler(mauiContext);
 
@@ -181,7 +185,7 @@ namespace Microsoft.Maui.Controls.Platform
 				SetNativeStateConsistent(_visualElement);
 
 				// Keep track of the template in case this instance gets reused later
-				_currentTemplate = formsTemplate;
+				_currentTemplate = dataTemplate;
 			}
 			else
 			{

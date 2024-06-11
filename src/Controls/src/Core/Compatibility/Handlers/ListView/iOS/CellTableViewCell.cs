@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class CellTableViewCell : UITableViewCell, INativeElementView
 	{
-		Cell _cell;
+		WeakReference<Cell> _cell;
 
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
 
@@ -21,23 +21,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public Cell Cell
 		{
-			get { return _cell; }
+			get => _cell?.GetTargetOrDefault();
 			set
 			{
-				if (_cell == value)
-					return;
-
-				if (_cell != null)
+				if (_cell is not null)
 				{
-					_cell.PropertyChanged -= HandlePropertyChanged;
-					BeginInvokeOnMainThread(_cell.SendDisappearing);
+					if (_cell.TryGetTarget(out var cell) && cell == value)
+						return;
+
+					if (cell is not null)
+					{
+						BeginInvokeOnMainThread(cell.SendDisappearing);
+					}
 				}
-				_cell = value;
 
-				if (_cell != null)
+				if (value is not null)
 				{
-					_cell.PropertyChanged += HandlePropertyChanged;
-					BeginInvokeOnMainThread(_cell.SendAppearing);
+					_cell = new(value);
+					BeginInvokeOnMainThread(value.SendAppearing);
+				}
+				else
+				{
+					_cell = null;
 				}
 			}
 		}
@@ -109,12 +114,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
-				PropertyChanged = null;
-
-				if (_cell != null)
+				if (Cell is Cell cell)
 				{
-					_cell.PropertyChanged -= HandlePropertyChanged;
-					CellRenderer.SetRealCell(_cell, null);
+					CellRenderer.SetRealCell(cell, null);
 				}
 				_cell = null;
 			}

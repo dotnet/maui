@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21394"
+             Title="Issue21394">
+    <VerticalStackLayout>
+        <Button Background="Lightgray" ContentLayout="Right, 20" ImageSource="dotnet_bot_resized.png" Text="Button Title" AutomationId="WaitForStubControl"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Left, 20" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Bottom, 20" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="20" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Right, 0" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Top, 20" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Left, 30" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Bottom, 0" ImageSource="dotnet_bot_resized.png" Text="Button Title"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Right, 10" ImageSource="dotnet_bot_resized.png" Text="Button Title" HeightRequest="60"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Top, 10" ImageSource="dotnet_bot_resized.png" Text="Button Title" HeightRequest="60"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Left, 10" ImageSource="dotnet_bot_resized.png" Text="Button Title" HeightRequest="60"/>
+        <BoxView HeightRequest="5" />
+
+        <Button Background="Lightgray" ContentLayout="Bottom, 10" ImageSource="dotnet_bot_resized.png" Text="Button Title" HeightRequest="60"/>
+        <BoxView HeightRequest="5" />
+    </VerticalStackLayout>
+</ContentPage>

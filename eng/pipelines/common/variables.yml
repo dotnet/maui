@@ -6,7 +6,7 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 8.0.101
+  value: 8.0.300
 - name: REQUIRED_XCODE
   value: 15.2.0
 - name: DEVICETESTS_REQUIRED_XCODE
@@ -24,11 +24,11 @@ variables:
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isLocHandoffBranch
-  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/net8.0', 'refs/heads/main')]
+  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main')]
 - name: signingCondition
   value: $[or(
             eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/net8.0', 'refs/heads/main'),
+            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main'),
             startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]

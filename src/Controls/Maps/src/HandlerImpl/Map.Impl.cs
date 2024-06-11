@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Controls.Maps
 
 		}
 
+		/// <summary>
+		/// Raised when the handler for this map control changed.
+		/// </summary>
 		protected override void OnHandlerChanged()
 		{
 			base.OnHandlerChanged();

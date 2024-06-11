@@ -49,46 +49,16 @@ steps:
     inputs:
       version: "20.3.1"
     displayName: "Install node"
-    
-  - bash: |
-      echo "##[group]Running ls -al $(npm root -g)"
-      ls -al $(npm root -g)
-      echo "##[endgroup]"
 
-      echo "##[group]Running ls -al $(npm root -g)/appium"
-      ls -al $(npm root -g)/appium
-      echo "##[endgroup]"
-
-      echo "##[group]Running ls -al $(npm root -g)/.appium-????????"
-      ls -al $(npm root -g)/.appium-????????
-      echo "##[endgroup]"
-
-      echo "##[group]Running ls -al $(npm root -g)/appium-doctor"
-      ls -al $(npm root -g)/appium-doctor
-      echo "##[endgroup]"
-
-      echo "##[group]Running ls -al $(npm root -g)/.appium-doctor-????????"
-      ls -al $(npm root -g)/.appium-doctor-????????
-      echo "##[endgroup]"
-
-      echo "##[group]Running ps aux"
-      ps aux
-      echo "##[endgroup]"
-    displayName: "Debugging output"
-    continueOnError: true
-    condition: startsWith(variables['Agent.Name'], 'XAMBOT')
-
-  # Clean up any leftover cached folders of appium and appium-doctor node modules
-  - bash: |
-      rm -rf $(npm root -g)/.appium-????????
-      rm -rf $(npm root -g)/.appium-doctor-????????
-    displayName: "Delete temp .appium-???????? and .appium-doctor-???????? folders"
-    continueOnError: true
-
-  - pwsh: ./eng/scripts/appium-install.ps1
+  - pwsh: |
+      $fullLogsDir = Join-Path "$(LogDirectory)" "npm"
+      ./eng/scripts/appium-install.ps1 -logsDir "$fullLogsDir"
+      Dir -Recurse $(APPIUM_HOME) | Get-Childitem | Select Fullname
     displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
@@ -115,7 +85,10 @@ steps:
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
-    retryCountOnTaskFailure: 1
+    ${{ if ne(parameters.platform, 'android')}}:
+      retryCountOnTaskFailure: 1
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
 
   - bash: |
       suffix=$(date +%Y%m%d%H%M%S)

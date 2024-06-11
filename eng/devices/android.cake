@@ -4,151 +4,467 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-#tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
+const int DefaultApiLevel = 30;
 
-const int defaultVersion = 30;
-const string dotnetVersion = "net8.0";
+string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
+var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
+var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
+var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-android");
+var binlogArg = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
+var testApp = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
+var testAppProjectPath = Argument("appproject", EnvironmentVariable("ANDROID_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
+var testAppPackageName = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
+var testAppInstrumentation = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
+var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? GetTestResultsDirectory()?.FullPath);
+var deviceCleanupEnabled = Argument("cleanup", true);
 
-// required
-FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);
-string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
-string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
+// Test where clause
+string testWhere = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? "");
 
-// optional
-var USE_DOTNET = Argument("dotnet", true);
-var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-android" : ""));
-var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
-DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
-var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("ANDROID_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
-var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
-var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
-var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
+// Device details
+var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
+var androidAvd = "DEVICE_TESTS_EMULATOR";
+var androidAvdImage = "";
+var deviceArch = "";
+bool deviceBoot = Argument("boot", true);
+bool deviceBootWait = Argument("wait", true);
 
-string TEST_WHERE = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? $"");
+var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
+
+// Directory setup
+var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
 
 string DEVICE_UDID = "";
 string DEVICE_VERSION = "";
 string DEVICE_NAME = "";
 string DEVICE_OS = "";
 
-// other
-string CONFIGURATION = Argument("configuration", "Debug");
-string TEST_FRAMEWORK = "net472";
-string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
-string ANDROID_AVD_IMAGE = "";
-string DEVICE_ARCH = "";
-bool DEVICE_BOOT = Argument("boot", true);
-bool DEVICE_BOOT_WAIT = Argument("wait", true);
+// Android SDK setup
+var androidSdkRoot = GetAndroidSDKPath();
 
-// set up env
-var ANDROID_SDK_ROOT = GetAndroidSDKPath();
+SetAndroidEnvironmentVariables(androidSdkRoot);
 
-SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/tools/bin", prepend: true);
-SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/cmdline-tools/5.0/bin", prepend: true);
-SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/cmdline-tools/7.0/bin", prepend: true);
-SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/cmdline-tools/latest/bin", prepend: true);
+Information("Android SDK Root: {0}", androidSdkRoot);
+Information("Project File: {0}", projectPath);
+Information("Build Binary Log (binlog): {0}", binlogDirectory);
+Information("Build Configuration: {0}", configuration);
 
-SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/platform-tools", prepend: true);
-SetEnvironmentVariable("PATH", $"{ANDROID_SDK_ROOT}/emulator", prepend: true);
-
-Information("Android SDK Root: {0}", ANDROID_SDK_ROOT);
-Information("Project File: {0}", PROJECT);
-Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
-Information("Build Configuration: {0}", CONFIGURATION);
-
-var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = ANDROID_SDK_ROOT };
-var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT };
-var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT };
-
-if (IsCIBuild())
-	emuSettings.ArgumentCustomization = args => args.Append("-no-window");
+var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
+var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
+var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = androidSdkRoot };
+emuSettings = AdjustEmulatorSettingsForCI(emuSettings);
 
 AndroidEmulatorProcess emulatorProcess = null;
 
+var dotnetToolPath = GetDotnetToolPath();
+
 Setup(context =>
 {
-	Information("Test Device: {0}", TEST_DEVICE);
+	LogSetupInfo(dotnetToolPath);
+	PerformCleanupIfNeeded(deviceCleanupEnabled);
 
-	// determine the device characteristics
-	{
-		var working = TEST_DEVICE.Trim().ToLower();
-		var emulator = true;
-		var api = defaultVersion;
-		// version
-		if (working.IndexOf("_") is int idx && idx > 0) {
-			api = int.Parse(working.Substring(idx + 1));
-			working = working.Substring(0, idx);
-		}
-		var parts = working.Split('-');
-		// os
-		if (parts[0] != "android")
-			throw new Exception("Unexpected platform (expected: android) in device: " + TEST_DEVICE);
-		// device/emulator
-		Information("Create for: {0}", parts[1]);
-		if (parts[1] == "device")
-			emulator = false;
-		else if (parts[1] != "emulator" && parts[1] != "simulator")
-			throw new Exception("Unexpected device type (expected: device|emulator) in device: " + TEST_DEVICE);
-		// arch/bits
-		Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
-		Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
-		if (parts[2] == "32") {
-			if (emulator)
-				DEVICE_ARCH = "x86";
-			else
-				DEVICE_ARCH = "armeabi-v7a";
-		} else if (parts[2] == "64") {
-			if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
-				DEVICE_ARCH = "arm64-v8a";
-			else if (emulator)
-				DEVICE_ARCH = "x86_64";
-			else
-				DEVICE_ARCH = "arm64-v8a";
-		}
-		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
-		if (api == 27 && DEVICE_ARCH == "x86_64")
-			sdk = "default";
-		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
+	DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
-		Information("Going to run image: {0}", ANDROID_AVD_IMAGE);
-		// we are not using a virtual device, so quit
-		if (!emulator)
-		{
-			Information("Not using a virtual device, skipping... and getting devices ");
-			
-			GetDevices(api.ToString());
-
-			return;
-		}
-	}
-
-	Information("Test Device ID: {0}", ANDROID_AVD_IMAGE);
-
-	if (DEVICE_BOOT) {
-		Information("Trying to boot the emulator...");
-
-		// delete the AVD first, if it exists
-		Information("Deleting AVD if exists: {0}...", ANDROID_AVD);	
-		try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
-		catch { }
-
-		// create the new AVD
-		Information("Creating AVD: {0}...", ANDROID_AVD);
-		AndroidAvdCreate(ANDROID_AVD, ANDROID_AVD_IMAGE, DEVICE_SKIN, force: true, settings: avdSettings);
-
-		// start the emulator
-		Information("Starting Emulator: {0}...", ANDROID_AVD);
-		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
-	}
+	HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
 });
 
 Teardown(context =>
 {
+	CleanUpVirtualDevice(emulatorProcess, avdSettings);
+});
+
+Task("boot");
+
+Task("build")
+	.WithCriteria(!string.IsNullOrEmpty(projectPath))
+	.Does(() =>
+	{
+		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, targetFramework, dotnetToolPath);
+	});
+
+Task("test")
+	.IsDependentOn("Build")
+	.Does(() =>
+	{
+		ExecuteTests(projectPath, testDevice, testApp, testAppPackageName, testResultsPath, configuration, targetFramework, adbSettings, dotnetToolPath, deviceBootWait, testAppInstrumentation);
+	});
+
+Task("uitest-build")
+	.Does(() =>
+	{
+		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
+
+	});
+Task("uitest")
+	.IsDependentOn("uitest-build")
+	.Does(() =>
+	{
+		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
+	});
+
+Task("cg-uitest")
+	.Does(() =>
+	{
+		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
+	});
+
+Task("logcat")
+	.Does(() =>
+{
+	WriteLogCat();
+});
+
+RunTarget(TARGET);
+
+void ExecuteCGLegacyUITests(string project, string appProject, string appPackageName, string device, string resultsDir, string config, string tfm, string toolPath, string instrumentation)
+{
+	CleanDirectories(resultsDir);
+
+	Information("Starting Compatibility Gallery UI Tests...");
+
+	var testApp = GetTestApplications(appProject, device, config, tfm, "").FirstOrDefault();
+
+	if (string.IsNullOrEmpty(appPackageName))
+	{
+		var appFile = new FilePath(testApp);
+		appFile = appFile.GetFilenameWithoutExtension();
+		appPackageName = appFile.FullPath.Replace("-Signed", "");
+	}
+
+	Information($"Testing Device: {device}");
+	Information($"Testing App Project: {appProject}");
+	Information($"Testing App: {testApp}");
+	Information($"Testing App Package Name: {appPackageName}");
+	Information($"Results Directory: {resultsDir}");
+
+	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+
+	//set env var for the app path for Xamarin.UITest setup
+	SetEnvironmentVariable("ANDROID_APP", $"{testApp}");
+
+	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
+	Information("Run UITests project {0}", resultName);
+	RunTestWithLocalDotNet(
+		project,
+		config: config,
+		pathDotnet: toolPath,
+		noBuild: false,
+		resultsFileNameWithoutExtension: resultName,
+		filter: Argument("filter", ""));
+}
+
+void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
+{
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
+	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+
+	DotNetBuild(project, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		MSBuildSettings = new DotNetMSBuildSettings
+		{
+			MaxCpuCount = 0
+		},
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args
+			.Append("/p:EmbedAssembliesIntoApk=true")
+			.Append("/bl:" + binlog)
+	});
+}
+
+void ExecuteTests(string project, string device, string appPath, string appPackageName, string resultsDir, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
+{
+	CleanResults(resultsDir);
+
+	var testApp = GetTestApplications(project, device, config, tfm, "").FirstOrDefault();
+
+	if (string.IsNullOrEmpty(appPackageName))
+	{
+		var appFile = new FilePath(testApp);
+		appFile = appFile.GetFilenameWithoutExtension();
+		appPackageName = appFile.FullPath.Replace("-Signed", "");
+	}
+	if (string.IsNullOrEmpty(instrumentation))
+	{
+		instrumentation = appPackageName + ".TestInstrumentation";
+	}
+
+	Information("Test App: {0}", testApp);
+	Information("Test App Package Name: {0}", appPackageName);
+	Information("Test Results Directory: {0}", resultsDir);
+
+	if (waitDevice)
+	{
+		Information("Waiting for the emulator to finish booting...");
+
+		// wait for it to finish booting (10 mins)
+		var waited = 0;
+		var total = 60 * 10;
+		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1")
+		{
+			System.Threading.Thread.Sleep(1000);
+			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+			if (waited++ > total)
+				break;
+		}
+		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
+
+	Information("Setting the ADB properties...");
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+	lines = AdbShell("getprop debug.mono.log", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+
+	var settings = new DotNetToolSettings
+	{
+		DiagnosticOutput = true,
+		ArgumentCustomization = args => args.Append("run xharness android test " +
+			$"--app=\"{testApp}\" " +
+			$"--package-name=\"{appPackageName}\" " +
+			$"--instrumentation=\"{instrumentation}\" " +
+			$"--device-arch=\"{deviceArch}\" " +
+			$"--output-directory=\"{resultsDir}\" " +
+			$"--verbosity=\"Debug\" ")
+	};
+
+	bool testsFailed = true;
+	try
+	{
+		DotNetTool("tool", settings);
+		testsFailed = false;
+	}
+	finally
+	{
+
+		HandleTestResults(resultsDir, testsFailed, false);
+	}
+	
+	Information("Testing completed.");
+}
+
+void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
+{
+	Information($"Building UI Test app: {appProject}");
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
+	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+
+	DotNetBuild(appProject, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		ToolPath = toolPath,
+		ArgumentCustomization = args =>
+		{
+			args
+			.Append("/p:EmbedAssembliesIntoApk=true")
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+
+			return args;
+		}
+	});
+
+	Information("UI Test app build completed.");
+}
+
+void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+{
+	string platform = "android";
+	Information("Starting UI Tests...");
+	var testApp = GetTestApplications(app, device, config, tfm, "").FirstOrDefault();
+
+	if (string.IsNullOrEmpty(testApp))
+	{
+		throw new Exception("UI Test application path not specified.");
+	}
+	if (string.IsNullOrEmpty(appPackageName))
+	{
+		var appFile = new FilePath(testApp);
+		appFile = appFile.GetFilenameWithoutExtension();
+		appPackageName = appFile.FullPath.Replace("-Signed", "");
+	}
+	if (string.IsNullOrEmpty(instrumentation))
+	{
+		instrumentation = appPackageName + ".TestInstrumentation";
+	}
+
+	Information("Test App: {0}", testApp);
+	Information("Test App Package Name: {0}", appPackageName);
+	Information("Test Results Directory: {0}", resultsDir);
+	Information($"Testing Device: {device}");
+	Information($"Testing App Project: {app}");
+	Information($"Testing App: {testApp}");
+	Information($"Results Directory: {resultsDir}");
+
+	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+
+	Information("Build UITests project {0}", project);
+
+	var name = System.IO.Path.GetFileNameWithoutExtension(project);
+	var binlog = $"{binDir}/{name}-{config}-{platform}.binlog";
+	var appiumLog = $"{binDir}/appium_{platform}.log";
+	var resultsFileName = $"{name}-{config}-{platform}";
+
+	DotNetBuild(project, new DotNetBuildSettings
+	{
+		Configuration = config,
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args
+			.Append("/p:ExtraDefineConstants=ANDROID")
+			.Append("/bl:" + binlog)
+	});
+
+	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
+
+	int numOfRetries = 0;
+
+	if (IsCIBuild())
+		numOfRetries = 1;
+
+	Information("Run UITests  project {0}", project);
+	for(int retryCount = 0; retryCount <= numOfRetries; retryCount++)
+	{
+		try
+		{
+			Information("Retry UITests run Count: {0}", retryCount);
+			RunTestWithLocalDotNet(project, config, pathDotnet: toolPath, noBuild: true, resultsFileNameWithoutExtension: resultsFileName);
+			break;
+		}
+		catch(Exception)
+		{
+			if (retryCount == numOfRetries)
+			{
+				WriteLogCat();
+				throw;
+			}
+		}
+	}
+	Information("UI Tests completed.");
+}
+
+// Helper methods
+
+void PerformCleanupIfNeeded(bool cleanupEnabled)
+{
+	if (cleanupEnabled)
+	{
+
+
+	}
+}
+
+void SetAndroidEnvironmentVariables(string sdkRoot)
+{
+	// Set up Android SDK environment variables and paths
+	string[] paths = { $"{sdkRoot}/tools/bin", $"{sdkRoot}/cmdline-tools/latest/bin", $"{sdkRoot}/cmdline-tools/5.0/bin", $"{sdkRoot}/cmdline-tools/7.0/bin", $"{sdkRoot}/platform-tools", $"{sdkRoot}/emulator" };
+	foreach (var path in paths)
+	{
+		SetEnvironmentVariable("PATH", path, prepend: true);
+	}
+}
+
+AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSettings settings)
+{
+	if (IsCIBuild())
+	{
+		settings.ArgumentCustomization = args => args.Append("-no-window");
+	}
+	return settings;
+}
+
+void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel)
+{
+	var working = deviceDescriptor.Trim().ToLower();
+	var emulator = true;
+	var api = defaultApiLevel;
+	// version
+	if (working.IndexOf("_") is int idx && idx > 0)
+	{
+		api = int.Parse(working.Substring(idx + 1));
+		working = working.Substring(0, idx);
+	}
+	var parts = working.Split('-');
+	// os
+	if (parts[0] != "android")
+		throw new Exception("Unexpected platform (expected: android) in device: " + deviceDescriptor);
+	// device/emulator
+	Information("Create for: {0}", parts[1]);
+	if (parts[1] == "device")
+		emulator = false;
+	else if (parts[1] != "emulator" && parts[1] != "simulator")
+		throw new Exception("Unexpected device type (expected: device|emulator) in device: " + deviceDescriptor);
+	// arch/bits
+	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+	if (parts[2] == "32")
+	{
+		if (emulator)
+			deviceArch = "x86";
+		else
+			deviceArch = "armeabi-v7a";
+	}
+	else if (parts[2] == "64")
+	{
+		if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+			deviceArch = "arm64-v8a";
+		else if (emulator)
+			deviceArch = "x86_64";
+		else
+			deviceArch = "arm64-v8a";
+	}
+	var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
+	if (api == 27 && deviceArch == "x86_64")
+		sdk = "default";
+
+	androidAvdImage = $"system-images;android-{api};{sdk};{deviceArch}";
+
+	Information("Going to run image: {0}", androidAvdImage);
+	// we are not using a virtual device, so quit
+	if (!emulator)
+	{
+		Information("Not using a virtual device, skipping... and getting devices ");
+
+		GetDevices(api.ToString(), dotnetToolPath);
+
+		return;
+	}
+}
+
+void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdManagerToolSettings avdSettings, string avdName, string avdImage, string avdSkin, bool boot)
+{
+	Information("Test Device ID: {0}", avdImage);
+
+	if (boot)
+	{
+		Information("Trying to boot the emulator...");
+
+		// delete the AVD first, if it exists
+		Information("Deleting AVD if exists: {0}...", avdName);
+		try { AndroidAvdDelete(avdName, avdSettings); }
+		catch { }
+
+		// create the new AVD
+		Information("Creating AVD: {0}...", avdName);
+		AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+
+		// start the emulator
+		Information("Starting Emulator: {0}...", avdName);
+		emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
+	}
+
+	if (IsCIBuild())
+	{
+		AdbLogcat(new AdbLogcatOptions() { Clear = true });
+		AdbShell("logcat -G 16M");
+	}
+}
+
+void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdManagerToolSettings avdSettings)
+{
 	// no virtual device was used
-	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
+	if (emulatorProcess == null || !deviceBoot || TARGET.ToLower() == "boot")
 		return;
 
 	//stop and cleanup the emulator
@@ -164,300 +480,62 @@ Teardown(context =>
 
 	Information("AndroidAvdDelete");
 	// delete the AVD
-	try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
+	try { AndroidAvdDelete(androidAvd, avdSettings); }
 	catch { }
-});
-
-Task("Boot");
-
-Task("Build")
-	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
-	.Does(() =>
-{
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android--{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-
-	if (USE_DOTNET)
-	{
-		Information($"Build target dotnet root: {DOTNET_ROOT}");
-		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
-		
-		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-		Information("new dotnet root: {0}", localDotnetRoot);
-
-		DOTNET_ROOT = localDotnetRoot.ToString();
-
-		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			Framework = TARGET_FRAMEWORK,
-			MSBuildSettings = new DotNetMSBuildSettings {
-				MaxCpuCount = 0
-			},
-			ToolPath = DOTNET_PATH,
-			ArgumentCustomization = args => args
-				.Append("/p:EmbedAssembliesIntoApk=true")
-				.Append("/bl:" + binlog)
-				//.Append("/tl")
-		});
-	}
-	else
-	{
-		MSBuild(PROJECT.FullPath, c => {
-			c.Configuration = CONFIGURATION;
-			c.MaxCpuCount = 0;
-			c.Restore = true;
-			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
-				c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
-			c.Targets.Clear();
-			c.Targets.Add("Build");
-			c.Targets.Add("SignAndroidPackage");
-			c.BinaryLogger = new MSBuildBinaryLogSettings {
-				Enabled = true,
-				FileName = binlog,
-			};
-		});
-	}
-});
-
-Task("Test")
-	.IsDependentOn("Build")
-	.Does(() =>
-{
-	if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
-		Information("BinDir: {0}", binDir);
-		var apps = GetFiles(binDir + "/*-Signed.apk");
-		if (apps.Any()) {
-			TEST_APP = apps.FirstOrDefault().FullPath;
-		} else {
-			apps = GetFiles(binDir + "/*.apk");
-			TEST_APP = apps.First().FullPath;
-		}
-	}
-	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
-		var appFile = (FilePath)TEST_APP;
-		appFile = appFile.GetFilenameWithoutExtension();
-		TEST_APP_PACKAGE_NAME = appFile.FullPath.Replace("-Signed", "");
-	}
-	if (string.IsNullOrEmpty(TEST_APP_INSTRUMENTATION)) {
-		TEST_APP_INSTRUMENTATION = TEST_APP_PACKAGE_NAME + ".TestInstrumentation";
-	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
-
-	Information("Test App: {0}", TEST_APP);
-	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
-	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
-	
-	if (!IsCIBuild())
-		CleanDirectories(TEST_RESULTS);
-	else
-	{
-		// Because we retry on CI we don't want to delete the previous failures
-		// We want to publish those files for reference
-		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
-	}
-
-	if (DEVICE_BOOT_WAIT) {
-		Information("Waiting for the emulator to finish booting...");
-
-		// wait for it to finish booting (10 mins)
-		var waited = 0;
-		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
-			System.Threading.Thread.Sleep(1000);
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-				break;
-		}
-		Information("Waited {0} seconds for the emulator to boot up.", waited);
-	}
-
-	Information("Setting the ADB properties...");
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
-	Information("{0}", string.Join("\n", lines));
-	lines = AdbShell("getprop debug.mono.log", adbSettings);
-	Information("{0}", string.Join("\n", lines));
-
-	var settings = new DotNetToolSettings {
-		DiagnosticOutput = true,
-		ArgumentCustomization = args=>args.Append("run xharness android test " +
-			$"--app=\"{TEST_APP}\" " +
-			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
-			$"--instrumentation=\"{TEST_APP_INSTRUMENTATION}\" " +
-			$"--device-arch=\"{DEVICE_ARCH}\" " +
-			$"--output-directory=\"{TEST_RESULTS}\" " +
-			$"--verbosity=\"Debug\" ")
-	};
-
-	bool testsFailed = true;
-	try {
-		DotNetTool("tool", settings);
-		testsFailed = false;
-	} finally {
-
-		if (testsFailed && IsCIBuild())
-		{
-			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
-			EnsureDirectoryExists(failurePath);
-			// The tasks will retry the tests and overwrite the failed results each retry
-			// we want to retain the failed results for diagnostic purposes
-			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
-
-			// We don't want these to upload
-			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
-		}
-	}
-
-	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	if (!string.IsNullOrEmpty(failed)) {
-		throw new Exception($"At least {failed} test(s) failed.");
-	}
-});
-
-Task("uitest")
-	.Does(() =>
-{
-	SetupAppPackageNameAndResult();
-	
-	CleanDirectories(TEST_RESULTS);
-
-	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
-	
-	//we need to build tests first to pass ExtraDefineConstants
-	Information("Build UITests project {0}", PROJECT.FullPath);
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			ArgumentCustomization = args => args
-				.Append("/p:ExtraDefineConstants=ANDROID")
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
-	});
-	
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
-
-	Information("Run UITests project {0}", PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
-});
-
-Task("cg-uitest")
-	.Does(() =>
-{
-	SetupAppPackageNameAndResult();
-	
-	CleanDirectories(TEST_RESULTS);
-
-	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
-
-	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
-
-	// build the test library
-	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
-	Information("BinDir: {0}", binDir);
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-	Information("Build UITests project {0}", PROJECT.FullPath);
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			ArgumentCustomization = args => args
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
-	});
-	
-	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.Android.UITests.dll";
-	Information("Run UITests lib {0}", testLibDllPath);
-	var nunitSettings = new NUnit3Settings { 
-		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/android/run_uitests_output-{DateTime.UtcNow.ToFileTimeUtc()}.log",
-		Work = $"{TEST_RESULTS}/android/"
-	};
-
-	if(!string.IsNullOrEmpty(TEST_WHERE))
-	{
-		Information("Add Where filter to NUnit {0}", TEST_WHERE);
-		nunitSettings.Where = TEST_WHERE;
-	}
-
-	RunTestsNunit(testLibDllPath, nunitSettings);
-
-	// When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified
-	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
-});
-
-RunTarget(TARGET);
-
-void SetupAppPackageNameAndResult()
-{
-   if (string.IsNullOrEmpty(TEST_APP)) {
-   		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		
-		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
-		Information("Test app bin folder {0}", binFolder);
-		var binDir = binFolder.Combine($"{CONFIGURATION}/{TARGET_FRAMEWORK}").FullPath;
-		var apps = GetFiles(binDir + "/*-Signed.apk");
-		if (apps.Any()) {
-			TEST_APP = apps.FirstOrDefault().FullPath;
-		} else {
-			apps = GetFiles(binDir + "/*.apk");
-			if (apps.Any()) {
-				TEST_APP = apps.First().FullPath;
-			}
-			else {
-				Error("Error: Couldn't find .apk file");
-				throw new Exception("Error: Couldn't find .apk file");
-			}
-		}
-	}
-	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
-		var appFile = (FilePath)TEST_APP;
-		appFile = appFile.GetFilenameWithoutExtension();
-		TEST_APP_PACKAGE_NAME = appFile.FullPath.Replace("-Signed", "");
-	}
-	if (string.IsNullOrEmpty(TEST_APP_INSTRUMENTATION)) {
-		TEST_APP_INSTRUMENTATION = TEST_APP_PACKAGE_NAME + ".TestInstrumentation";
-	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
-
-	Information($"Build target dotnet root: {DOTNET_ROOT}");
-	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
-		
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	Information("Test App: {0}", TEST_APP);
-	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
-	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
-	Information("Test project: {0}", PROJECT);
 }
 
-void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory)
+void WriteLogCat(string filename = null)
 {
-	var installadbSettings = new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT };
-	if(!string.IsNullOrEmpty(DEVICE_UDID))
+	if (string.IsNullOrWhiteSpace(filename))
+	{
+		var timeStamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+		filename = $"logcat_{TARGET}_{timeStamp}.log";
+	}
+
+	EnsureDirectoryExists(GetLogDirectory());
+	// I tried AdbLogcat here but the pipeline kept reporting "cannot create file"
+	var location = $"{GetLogDirectory()}/{filename}";
+	Information("Writing logcat to {0}", location);
+
+	var processSettings = new ProcessSettings();
+	processSettings.RedirectStandardOutput = true;
+	processSettings.RedirectStandardError = true;
+	var adb = $"{androidSdkRoot}/platform-tools/adb";
+
+	Information("Running: {0} logcat -d", adb);
+	processSettings.Arguments = $"logcat -d";
+	using (var fs = new System.IO.FileStream(location, System.IO.FileMode.Create))
+	using (var sw = new StreamWriter(fs))
+	{
+		processSettings.RedirectedStandardOutputHandler = (output) =>
+		{
+			sw.WriteLine(output);
+			return output;
+		};
+
+		var process = StartProcess($"{adb}", processSettings);
+		Information("exit code {0}", process);
+	}
+
+	Information("Logcat written to {0}", location);
+}
+
+void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin)
+{
+	var installadbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
+	if (!string.IsNullOrEmpty(DEVICE_UDID))
 	{
 		installadbSettings.Serial = DEVICE_UDID;
 	}
-	if (DEVICE_BOOT_WAIT) {
+	if (deviceBootWait)
+	{
 		Information("Waiting for the emulator to finish booting...");
 
 		// wait for it to finish booting (10 mins)
 		var waited = 0;
 		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", installadbSettings).FirstOrDefault() != "1") {
+		while (AdbShell("getprop sys.boot_completed", installadbSettings).FirstOrDefault() != "1")
+		{
 			System.Threading.Thread.Sleep(1000);
 			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
 			if (waited++ > total)
@@ -474,18 +552,19 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 
 	//install apk on the emulator or device
 	Information("Install with xharness: {0}", testApp);
-	var settings = new DotNetToolSettings {
+	var settings = new DotNetToolSettings
+	{
 		DiagnosticOutput = true,
-		ArgumentCustomization =  args =>
+		ArgumentCustomization = args =>
 						{
 							args.Append("run xharness android install " +
 										$"--app=\"{testApp}\" " +
 										$"--package-name=\"{testAppPackageName}\" " +
 										$"--output-directory=\"{testResultsDirectory}\" " +
 										$"--verbosity=\"Debug\" ");
-							
+
 							//if we specify a device we need to pass it to xharness
-							if(!string.IsNullOrEmpty(DEVICE_UDID))
+							if (!string.IsNullOrEmpty(DEVICE_UDID))
 							{
 								args.Append($"--device-id=\"{DEVICE_UDID}\" ");
 							}
@@ -493,24 +572,28 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 							return args;
 						}
 	};
-	
-	Information("The platform version to run tests:");
-	SetEnvironmentVariable("DEVICE_SKIN", DEVICE_SKIN);
 
-	if(!string.IsNullOrEmpty(DEVICE_UDID))
+	Information("The platform version to run tests:");
+	SetEnvironmentVariable("DEVICE_SKIN", skin);
+
+	if (!string.IsNullOrEmpty(DEVICE_UDID))
 	{
 		SetEnvironmentVariable("DEVICE_UDID", DEVICE_UDID);
 		//this needs to be translated to android 10/11 for appium
-		var realApi ="";
-		if(DEVICE_VERSION == "33")
+		var realApi = "";
+		if (DEVICE_VERSION == "34ß")
+		{
+			realApi = "14";
+		}
+		if (DEVICE_VERSION == "33")
 		{
 			realApi = "13";
 		}
-		if(DEVICE_VERSION == "32" || DEVICE_VERSION == "31")
+		if (DEVICE_VERSION == "32" || DEVICE_VERSION == "31")
 		{
 			realApi = "12";
 		}
-		else if(DEVICE_VERSION == "30")
+		else if (DEVICE_VERSION == "30")
 		{
 			realApi = "11";
 		}
@@ -520,7 +603,7 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	DotNetTool("tool", settings);
 }
 
-void GetDevices(string version)
+void GetDevices(string version, string toolPath)
 {
 	var deviceUdid = "";
 	var deviceName = "";
@@ -528,16 +611,16 @@ void GetDevices(string version)
 	var deviceOS = "";
 
 	var devices = AdbDevices(adbSettings);
-	foreach	(var device in devices)
+	foreach (var device in devices)
 	{
 		deviceUdid = device.Serial;
 		deviceName = device.Model;
 		deviceOS = device.Product;
 
-		deviceVersion = AdbShell($"getprop ro.build.version.sdk ", new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT, Serial = deviceUdid }).FirstOrDefault();
+		deviceVersion = AdbShell($"getprop ro.build.version.sdk ", new AdbToolSettings { SdkRoot = androidSdkRoot, Serial = deviceUdid }).FirstOrDefault();
 		Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
 
-		if(version.Contains(deviceVersion.Split(".")[0]))
+		if (version.Contains(deviceVersion.Split(".")[0]))
 		{
 			Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
 			DEVICE_UDID = deviceUdid;
@@ -549,10 +632,12 @@ void GetDevices(string version)
 	}
 
 	//this will fail if there are no devices with this api attached
-	var settings = new DotNetToolSettings {
-			DiagnosticOutput = true,
-			ArgumentCustomization = args=>args.Append("run xharness android device " +
-			$"--api-version=\"{version}\" " )
+	var settings = new DotNetToolSettings
+	{
+		DiagnosticOutput = true,
+		ToolPath = toolPath,
+		ArgumentCustomization = args => args.Append("run xharness android device " +
+		$"--api-version=\"{version}\" ")
 	};
 	DotNetTool("tool", settings);
 }

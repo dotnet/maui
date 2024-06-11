@@ -81,6 +81,9 @@ override Microsoft.Maui.Platform.MauiView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.MauiView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Platform.NoCaretField.MovedToWindow() -> void
+override Microsoft.Maui.Platform.PageViewController.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Platform.PageViewController.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Platform.PageViewController.PrefersStatusBarHidden() -> bool
 override Microsoft.Maui.Platform.WrapperView.MovedToWindow() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
@@ -158,3 +161,4 @@ Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double h
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void

@@ -9,7 +9,8 @@ const string defaultVersion = "10.0.19041.0";
 const string dotnetVersion = "net8.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_WINDOWS_PROJECT);
 // Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
@@ -229,22 +230,63 @@ Task("Test")
 
 	if (isPackagedTestRun)
 	{
+		Information("isPackagedTestRuns");
 		// Try to uninstall the app if it exists from before
 		uninstallPS();
 
 		Information("Uninstalled previously deployed app");
 
 		var projectDir = PROJECT.GetDirectory();
-		var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
-		var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
+		Information($"Get Cert {projectDir}");
 
+		var cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+		var msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
+		if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
+			}	
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+		    msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
+			if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
+			{
+				Error("Error: Couldn't find .cer or .msix file");
+				throw new Exception("Error: Couldn't find .cer or .msix file");
+			}
+		}
+
+		var msixPath = msixPaths.First();
+		var cerPath = cerPaths.First();
 		Information($"Found MSIX, installing: {msixPath}");
 
 		// Install dependencies
 		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
 		foreach (var dep in dependencies) {
 			Information("Installing Dependency MSIX: {0}", dep);
-			StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+			try {
+				StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+			} catch { 
+				Warning($"Failed to install dependency: {dep}");
+			}
 		}
 
 		// Install the DeviceTests app
@@ -389,16 +431,48 @@ Task("SetupTestPaths")
 			throw new Exception("If no app was specified, an app must be provided.");
 		}
 
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+		var winVersion = $"{dotnetVersion}-windows{windowsVersion}";
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		if (apps.Any()) {
-			TEST_APP = apps.First().FullPath;
+		if (apps.Count() == 0) 
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.App"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.App/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+
+			Information("Looking for .app in arcade binDir {0}", binDir);
+			apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
+			if(apps.Count() == 0 )
+			{
+				Error("Error: Couldn't find .exe file");
+				throw new Exception("Error: Couldn't find .exe file");
+			}
 		}
-		else {
-			Error("Error: Couldn't find .exe file");
-			throw new Exception("Error: Couldn't find .exe file");
-		}
+		TEST_APP = apps.First().FullPath;
 	}
 
 	if (string.IsNullOrEmpty(TEST_RESULTS))

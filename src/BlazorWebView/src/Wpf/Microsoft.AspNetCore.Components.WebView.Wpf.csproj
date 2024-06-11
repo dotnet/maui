@@ -16,7 +16,7 @@
     <!-- NuGet package information -->
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.AspNetCore.Components.WebView.Wpf</PackageId>
-    <PackageIconFile>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFile>
+    <PackageIconFullPath>$(MauiRootDirectory)Assets\aspnet-icon.png</PackageIconFullPath>
     <PackageTags>blazor;webview;aspnet;wpf</PackageTags>
     <Description>Build WPF apps with Blazor and WebView2.</Description>
   </PropertyGroup>

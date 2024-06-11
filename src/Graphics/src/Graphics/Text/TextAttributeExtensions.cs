@@ -23,14 +23,14 @@ namespace Microsoft.Maui.Graphics.Text
 			this ITextAttributes attributes,
 			float? fontSize = null)
 		{
-			return attributes.GetFloatAttribute(TextAttribute.FontName, fontSize ?? DefaultFontSize);
+			return attributes.GetFloatAttribute(TextAttribute.FontSize, fontSize ?? DefaultFontSize);
 		}
 
 		public static void SetFontSize(
 			this Dictionary<TextAttribute, string> attributes,
 			float value)
 		{
-			attributes.SetFloatAttribute(TextAttribute.FontName, value, DefaultFontSize);
+			attributes.SetFloatAttribute(TextAttribute.FontSize, value, DefaultFontSize);
 		}
 
 		public static bool GetUnderline(this ITextAttributes attributes)

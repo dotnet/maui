@@ -70,5 +70,71 @@ namespace Microsoft.Maui.Platform
 
 			return context.IsDestroyed();
 		}
+
+		public static IDisposable? RunOrWaitForResume(this FragmentManager obj, Context context, Action<FragmentManager> onResume)
+		{
+			if (obj.IsDestroyed(context))
+				return null;
+
+			if (obj.IsStateSaved)
+			{
+				var callback = new CallBacks(context, onResume, obj);
+				obj.RegisterFragmentLifecycleCallbacks(callback, false);
+				return new ActionDisposable(() =>
+				{
+					callback?.Disconnect();
+					callback = null;
+				});
+			}
+
+			onResume.Invoke(obj);
+			return null;
+		}
+
+		class CallBacks : FragmentManager.FragmentLifecycleCallbacks
+		{
+			FragmentManager? _fragmentManager;
+			Action<FragmentManager>? _onResume;
+			Context? _context;
+
+			public CallBacks(
+				Context context,
+				Action<FragmentManager> onResume,
+				FragmentManager fragmentManager)
+			{
+				_fragmentManager = fragmentManager;
+				_fragmentManager.RegisterFragmentLifecycleCallbacks(this, false);
+				_onResume = onResume;
+				_context = context;
+			}
+
+			public override void OnFragmentDestroyed(FragmentManager fm, Fragment f)
+			{
+				base.OnFragmentDestroyed(fm, f);
+				Disconnect();
+			}
+
+			public override void OnFragmentResumed(FragmentManager fm, Fragment f)
+			{
+				base.OnFragmentResumed(fm, f);
+				var resume = _onResume;
+				Disconnect();
+				resume?.Invoke(fm);
+			}
+
+			public void Disconnect()
+			{
+				if (_fragmentManager is not null &&
+					!_fragmentManager.IsDestroyed(_context))
+				{
+					_fragmentManager.UnregisterFragmentLifecycleCallbacks(this);
+				}
+
+				_fragmentManager = null;
+				_onResume = null;
+				_context = null;
+			}
+		}
+
 	}
 }
