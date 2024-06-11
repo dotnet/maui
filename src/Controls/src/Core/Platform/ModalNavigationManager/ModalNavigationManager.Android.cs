@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
@@ -7,10 +8,9 @@ using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Fragment.App;
-using AView = Android.Views.View;
-using AColor = Android.Graphics.Color;
-using System.Collections.Generic;
 using AAnimation = Android.Views.Animations.Animation;
+using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -141,7 +141,8 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
-			dialogFragment.ShowNow(fragmentManager, null);
+
+			dialogFragment.Show(fragmentManager, null);
 
 			modals.Add(modal, dialogFragment);
 			NavAnimationInProgress = false;
