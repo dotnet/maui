@@ -1,9 +1,10 @@
-﻿using System.Drawing;
+﻿#if IOS
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue19366 : _IssuesUITest
 	{
@@ -14,14 +15,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void ListCellsItemsShouldNotBeEnabledWhenListViewIsNotEnabled()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("button1");
 
 			// 1. Click the button of the first cell and observe the label's text change
 			App.Click("button1");
 			var listItemOneText = App.FindElement("label1").GetText();
-			Assert.True(listItemOneText == "Clicked");
+			ClassicAssert.True(listItemOneText == "Clicked");
 
 			// 2. Set IsEnabled property of the list to false
 			App.Click("disableListButton");
@@ -29,7 +28,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 3. Click the button of the second cell and observe the label's text do not change
 			App.Click("button2");
 			var listItemTwoText = App.FindElement("label2").GetText();
-			Assert.True(listItemTwoText == "Not clicked");
+			ClassicAssert.True(listItemTwoText == "Not clicked");
 		}
 	}
 }
+#endif
