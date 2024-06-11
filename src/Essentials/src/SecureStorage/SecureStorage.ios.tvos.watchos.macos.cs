@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage, IPlatformSecureStorage
 	{
-		public SecAccessible DefaultAccessible { get; set; }
+		public SecAccessible DefaultAccessible { get; set; } =
+			SecAccessible.AfterFirstUnlock;
 
 		public Task SetAsync(string key, string value, SecAccessible accessible)
 		{

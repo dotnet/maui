@@ -189,8 +189,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		// Skipping this for Android because there is a bug with the footer. Fix coming in a separate PR.
-#if IOS
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
@@ -263,14 +261,13 @@ namespace Microsoft.Maui.DeviceTests
 				// validate footer position
 				var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
 				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-				AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
 				AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
-#endif
 #endif
 
 #if ANDROID || IOS

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Category(UITestCategories.Bugzilla)]
 	[Category(UITestCategories.Cells)]
 	[Category(UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
 #endif
 
 	[Preserve(AllMembers = true)]

@@ -27,6 +27,7 @@ namespace Microsoft.Maui
 
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
 			_passthroughView = new PassthroughView(this, platformWindow.RootViewController.View.Frame);
+			_passthroughView.AutoresizingMask = UIViewAutoresizing.All;
 
 			_graphicsView = new PlatformGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
 			_graphicsView.AutoresizingMask = UIViewAutoresizing.All;

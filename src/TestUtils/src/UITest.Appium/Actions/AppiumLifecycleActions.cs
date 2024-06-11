@@ -1,4 +1,6 @@
-﻿using UITest.Core;
+﻿using OpenQA.Selenium.Appium.Android;
+using OpenQA.Selenium.Appium.Windows;
+using UITest.Core;
 
 namespace UITest.Appium
 {
@@ -6,6 +8,7 @@ namespace UITest.Appium
 	{
 		const string LaunchAppCommand = "launchApp";
 		const string BackgroundAppCommand = "backgroundApp";
+		const string ForegroundAppCommand = "foregroundApp";
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string BackCommand = "back";
@@ -15,6 +18,7 @@ namespace UITest.Appium
 		readonly List<string> _commands = new()
 		{
 			LaunchAppCommand,
+			ForegroundAppCommand,
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
@@ -36,6 +40,7 @@ namespace UITest.Appium
 			return commandName switch
 			{
 				LaunchAppCommand => LaunchApp(parameters),
+				ForegroundAppCommand => ForegroundApp(parameters),
 				BackgroundAppCommand => BackgroundApp(parameters),
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
@@ -49,7 +54,40 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.LaunchApp();
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{	
+				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+				});
+			}
+			else if (_app.GetTestDevice() == TestDevice.Windows)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				_app.Driver.LaunchApp();
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+			else 
+			{
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse ForegroundApp(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			if (_app.Driver is WindowsDriver wd)
+			{
+				wd.SwitchTo().Window(wd.WindowHandles.First());
+			}
+			else
+			{
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -60,6 +98,8 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			_app.Driver.BackgroundApp();
+			if (_app.GetTestDevice() == TestDevice.Android)
+				Thread.Sleep(500);
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -69,7 +109,8 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.ResetApp();
+			CloseApp(parameters);
+			LaunchApp(parameters);
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -79,7 +120,48 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.CloseApp();
+			try
+			{
+				if (_app.AppState == ApplicationState.NotRunning)
+					return CommandResponse.SuccessEmptyResponse;
+			}
+			catch (Exception)
+			{
+				// TODO Pass in logger so we can log these exceptions
+				
+				// Occasionally the app seems to get so locked up it can't 
+				// even report back the appstate. In that case, we'll just
+				// try to trigger a reset.
+			}
+
+			try
+			{
+				if (_app.GetTestDevice() == TestDevice.Mac)
+				{
+					_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+					{
+						{ "bundleId", _app.GetAppId() },
+					});
+				}
+				else if (_app.GetTestDevice() == TestDevice.Windows)
+				{
+	#pragma warning disable CS0618 // Type or member is obsolete
+					_app.Driver.CloseApp();
+	#pragma warning restore CS0618 // Type or member is obsolete
+				}
+				else
+				{
+					_app.Driver.TerminateApp(_app.GetAppId());
+				}
+			}
+			catch (Exception)
+			{
+				// TODO Pass in logger so we can log these exceptions
+
+				// Occasionally the app seems like it's already closed before we get here
+				// and then this throws an exception.
+				return CommandResponse.FailedEmptyResponse;
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

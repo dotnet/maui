@@ -13,20 +13,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
-			if (item?.Parent is TableView && item.Handler?.PlatformView is EntryCellView entryCellView)
-			{
-				// TableView doesn't use convertView
-				_view = entryCellView;
-				return _view;
-			}
-
+			Disconnect();
 			if ((_view = convertView as EntryCellView) == null)
-				_view = new EntryCellView(context, item);
-			else
 			{
-				_view.TextChanged = null;
-				_view.FocusChanged = null;
-				_view.EditingCompleted = null;
+				_view = new EntryCellView(context, item);
 			}
 
 			UpdateLabel();
@@ -165,6 +155,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_view.EditText.Text = entryCell.Text;
+		}
+
+		void Disconnect()
+		{
+			if (_view is null)
+				return;
+
+			_view.TextChanged = null;
+			_view.FocusChanged = null;
+			_view.EditingCompleted = null;
 		}
 	}
 }

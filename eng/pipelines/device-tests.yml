@@ -74,7 +74,6 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-        - Agent.OSVersion -equals 13.5
 
   - name: catalystPool
     type: object
@@ -107,13 +106,13 @@ stages:
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-        iosVersions: [ 'simulator-16.4','simulator-15.5' ]
+        iosVersions: [ 'simulator-17.2']
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
-        androidApiLevels: [ 30, 23 ]
-        iosVersions: [ 'simulator-16.4' ]
+        androidApiLevels: [ 33, 23 ]
+        iosVersions: [ 'simulator-17.2' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}

@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_options = sheetOptions;
 
 			TitleBlock.Text = _options.Title ?? string.Empty;
+			TitleBlock.SetAutomationPropertiesAutomationId("ActionSheetTitle");
+
 			OptionsList.ItemsSource = _options.Buttons.ToList();
 
 			if (_options.FlowDirection == Maui.FlowDirection.RightToLeft)

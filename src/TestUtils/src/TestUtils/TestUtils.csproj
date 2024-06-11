@@ -6,10 +6,12 @@
     <AssemblyName>Microsoft.Maui.TestUtils</AssemblyName>
 
     <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
   </ItemGroup>
 
 </Project>

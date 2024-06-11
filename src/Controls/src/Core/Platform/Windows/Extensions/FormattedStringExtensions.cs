@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 
@@ -9,6 +11,15 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
+		static double GetMeasuredLineHeight(DependencyObject obj) =>
+			(double)obj.GetValue(MeasuredLineHeightProperty);
+
+		static void SetMeasuredLineHeight(DependencyObject obj, double value) =>
+			obj.SetValue(MeasuredLineHeightProperty, value);
+
+		static readonly DependencyProperty MeasuredLineHeightProperty = DependencyProperty.RegisterAttached(
+			"MeasuredLineHeight", typeof(double), typeof(FormattedStringExtensions), new PropertyMetadata(0));
+
 		public static void UpdateInlines(this TextBlock textBlock, Label label)
 			=> UpdateInlines(
 				textBlock,
@@ -31,44 +42,47 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default)
 		{
 			textBlock.Inlines.Clear();
+
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
 
-			var runAndColorTuples = formattedString.ToRunAndColorsTuples(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
+			var runs = formattedString.ToRunAndColorsTuples(
+				fontManager,
+				defaultLineHeight,
+				defaultHorizontalAlignment,
+				defaultFont,
+				defaultColor,
+				defaultTextTransform).ToArray();
 
-			var heights = new List<double>();
-			int currentTextIndex = 0;
-			foreach (var runAndColorTuple in runAndColorTuples)
+			var lineHeights = new List<double>(runs.Length);
+			foreach (var (run, _, _) in runs)
 			{
-				Run run = runAndColorTuple.Item1;
-				Color textColor = runAndColorTuple.Item2;
-				Color background = runAndColorTuple.Item3;
-				heights.Add(textBlock.FindDefaultLineHeight(run));
+				lineHeights.Add(textBlock.FindDefaultLineHeight(run));
+			}
+
+			var currentTextIndex = 0;
+			for (var i = 0; i < runs.Length; i++)
+			{
+				var (run, textColor, background) = runs[i];
+				var runTextLength = run.Text.Length;
+
+				SetMeasuredLineHeight(run, lineHeights[i]);
+
 				textBlock.Inlines.Add(run);
-				int length = run.Text.Length;
 
-				if (background != null || textColor != null)
+				if (background is not null || textColor is not null)
 				{
-					TextHighlighter textHighlighter = new TextHighlighter { Ranges = { new TextRange(currentTextIndex, length) } };
-
-					if (background != null)
+					var textHighlighter = new TextHighlighter
 					{
-						textHighlighter.Background = background.ToPlatform();
-					}
-					else
-					{
-						textHighlighter.Background = Colors.Transparent.ToPlatform();
-					}
-
-					if (textColor != null)
-					{
-						textHighlighter.Foreground = textColor.ToPlatform();
-					}
+						Ranges = { new TextRange(currentTextIndex, runTextLength) },
+						Background = (background ?? Colors.Transparent).ToPlatform(),
+						Foreground = textColor?.ToPlatform(),
+					};
 
 					textBlock.TextHighlighters.Add(textHighlighter);
 				}
 
-				currentTextIndex += length;
+				currentTextIndex += runTextLength;
 			}
 		}
 
@@ -126,6 +140,62 @@ namespace Microsoft.Maui.Controls.Platform
 			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
 			return Tuple.Create(run, span.TextColor, span.BackgroundColor);
+		}
+
+		internal static void RecalculateSpanPositions(this TextBlock control, FormattedString formatted)
+		{
+			var spans = formatted.Spans;
+			var labelWidth = control.ActualWidth;
+			if (spans is null || spans.Count == 0 || labelWidth <= 0 || control.Height <= 0)
+			{
+				return;
+			}
+
+			for (int i = 0; i < spans.Count; i++)
+			{
+				var span = spans[i];
+
+				var inline = control.Inlines.ElementAt(i);
+
+				var startRect = inline.ContentStart.GetCharacterRect(LogicalDirection.Forward);
+				var endRect = inline.ContentEnd.GetCharacterRect(LogicalDirection.Forward);
+
+				var defaultLineHeight = GetMeasuredLineHeight(inline);
+				var yaxis = startRect.Top;
+
+				var lineHeights = new List<double>();
+
+				while (yaxis < endRect.Bottom)
+				{
+					double lineHeight;
+					if (yaxis == startRect.Top)
+					{
+						// First Line
+						lineHeight = startRect.Bottom - startRect.Top;
+					}
+					else if (yaxis != endRect.Top)
+					{
+						// Middle Line(s)
+						lineHeight = defaultLineHeight;
+					}
+					else
+					{
+						// Bottom Line
+						lineHeight = endRect.Bottom - endRect.Top;
+					}
+
+					lineHeights.Add(lineHeight);
+					yaxis += lineHeight;
+				}
+
+				var region = Region.FromLines(
+					lineHeights.ToArray(),
+					labelWidth,
+					startRect.X,
+					endRect.X + endRect.Width,
+					startRect.Top);
+				((ISpatialElement)span).Region = region.Inflate(10);
+			}
 		}
 	}
 }

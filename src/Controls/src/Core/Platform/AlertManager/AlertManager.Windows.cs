@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					var current = sender.ToPlatform(VirtualView.RequireMauiContext());
+					var current = sender.ToPlatform();
 					var pageParent = current?.Parent as FrameworkElement;
 
 					if (pageParent != null)

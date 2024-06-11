@@ -243,25 +243,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlyoutBehavior(this MauiNavigationView navigationView, IFlyoutView flyoutView)
 		{
-			switch (flyoutView.FlyoutBehavior)
-			{
-				case FlyoutBehavior.Flyout:
-					navigationView.IsPaneToggleButtonVisible = true;
-					// Workaround for
-					// https://github.com/microsoft/microsoft-ui-xaml/issues/6493
-					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
-					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-					break;
-				case FlyoutBehavior.Locked:
-					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-					navigationView.IsPaneToggleButtonVisible = false;
-					break;
-				case FlyoutBehavior.Disabled:
-					navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-					navigationView.IsPaneToggleButtonVisible = false;
-					navigationView.IsPaneOpen = false;
-					break;
-			}
+			navigationView.UpdatePaneDisplayModeFromFlyoutBehavior(flyoutView.FlyoutBehavior);
 		}
 
 		public static void UpdateFlyoutWidth(this MauiNavigationView navigationView, IFlyoutView flyoutView)

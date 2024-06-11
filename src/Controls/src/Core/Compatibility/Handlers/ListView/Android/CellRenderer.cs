@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		static readonly PropertyChangedEventHandler PropertyChangedHandler = OnGlobalCellPropertyChanged;
 
-		EventHandler _onForceUpdateSizeRequested;
-
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
 
@@ -48,10 +46,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Performance.Start(out string reference);
 
+			if (Cell is ICellController cellController)
+				cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
+
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
 
-			if (convertView != null)
+			if (convertView is not null)
 			{
 				Object tag = convertView.Tag;
 				CellRenderer renderer = (tag as RendererHolder)?.Renderer;
@@ -112,20 +113,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected void WireUpForceUpdateSizeRequested(Cell cell, AView platformCell)
 		{
 			ICellController cellController = cell;
-			cellController.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
+			cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
+			cellController.ForceUpdateSizeRequested += OnForceUpdateSizeRequested;
+		}
 
-			_onForceUpdateSizeRequested = (sender, e) =>
+		protected override void DisconnectHandler(AView platformView)
+		{
+			if (Cell is ICellController cellController)
+				cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
+
+			base.DisconnectHandler(platformView);
+		}
+
+		static void OnForceUpdateSizeRequested(object sender, EventArgs e)
+		{
+			if (sender is not Cell cellInner)
+				return;
+
+			if (cellInner.Handler is not IElementHandler elementHandler ||
+				elementHandler.PlatformView is not AView pCell ||
+				!pCell.IsAlive())
 			{
-				if (platformCell.Handle == IntPtr.Zero)
-					return;
-				// RenderHeight may not be changed, but that's okay, since we
-				// don't actually use the height argument in the OnMeasure override.
-				platformCell.Measure(platformCell.Width, (int)cell.RenderHeight);
-				platformCell.SetMinimumHeight(platformCell.MeasuredHeight);
-				platformCell.SetMinimumWidth(platformCell.MeasuredWidth);
-			};
+				return;
+			}
 
-			cellController.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
+			// RenderHeight may not be changed, but that's okay, since we
+			// don't actually use the height argument in the OnMeasure override.
+			pCell.Measure(pCell.Width, (int)cellInner.RenderHeight);
+			pCell.SetMinimumHeight(pCell.MeasuredHeight);
+			pCell.SetMinimumWidth(pCell.MeasuredWidth);
 		}
 
 		internal static CellRenderer GetRenderer(Cell cell)

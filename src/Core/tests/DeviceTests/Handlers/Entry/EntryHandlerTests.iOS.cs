@@ -449,6 +449,100 @@ namespace Microsoft.Maui.DeviceTests
 			}, entry1, editor, entry2, entry3);
 		}
 
+		[Fact]
+		public async Task NextMovesSkipsHiddenSibling()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+			};
+
+			var entry2 = new EntryStub
+			{
+				Visibility = Visibility.Hidden,
+				ReturnType = ReturnType.Next,
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry3.IsFocused);
+			}, entry1, entry2, entry3);
+		}
+
+		[Fact]
+		public async Task NextMovesSkipsHiddenParent()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var vsl1 = new VerticalStackLayoutStub();
+			vsl1.Add(entry1);
+			var vsl2 = new VerticalStackLayoutStub { Visibility = Visibility.Hidden };
+			vsl2.Add(entry2);
+			var vsl3 = new VerticalStackLayoutStub();
+			vsl3.Add(entry3);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: vsl1.ToPlatform().Superview);
+				Assert.True(entry3.IsFocused);
+			}, vsl1, vsl2, vsl3);
+		}
+
+		[Fact]
+		public async Task NextMovesSkipsHiddenAncestor()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var vsl1 = new VerticalStackLayoutStub();
+			vsl1.Add(entry1);
+			var vsl2 = new VerticalStackLayoutStub { Visibility = Visibility.Hidden };
+			var vsl2_1 = new VerticalStackLayoutStub();
+			var vsl2_2 = new VerticalStackLayoutStub();
+			vsl2.Add(vsl2_1);
+			vsl2_1.Add(vsl2_2);
+			vsl2_2.Add(entry2);
+			var vsl3 = new VerticalStackLayoutStub();
+			vsl3.Add(entry3);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: vsl1.ToPlatform().Superview);
+				Assert.True(entry3.IsFocused);
+			}, vsl1, vsl2, vsl3);
+		}
+
 		async Task NextMovesHelper(Action action = null, params StubBase[] views)
 		{
 			EnsureHandlerCreated(builder =>

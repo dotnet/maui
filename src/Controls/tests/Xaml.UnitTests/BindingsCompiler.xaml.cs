@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(BindingsCompiler));
+
 				var vm = new MockViewModel
 				{
 					Text = "Text0",
@@ -53,8 +54,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 				vm.Model[3] = "TextIndex";
 
-				var layout = new BindingsCompiler(useCompiledXaml);
-				layout.BindingContext = vm;
+				var layout = new BindingsCompiler(useCompiledXaml)
+				{
+					BindingContext = vm
+				};
 				layout.label6.BindingContext = new MockStructViewModel
 				{
 					Model = new MockViewModel
@@ -90,6 +93,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				GC.Collect();
 				vm.Text = "Text2";
 				Assert.AreEqual("Text2", layout.label0.Text);
+				
+				//https://github.com/dotnet/maui/issues/21181
+				vm.Model[3] = "TextIndex2";
+				Assert.AreEqual("TextIndex2", layout.label3.Text);
 
 				//testing 2way
 				Assert.AreEqual("Text2", layout.entry0.Text);

@@ -105,14 +105,12 @@ namespace Microsoft.Maui.Controls
 			{
 				var region = Regions[i];
 
-				if (i == 0) // this is the first line
-					region.Top -= top;
+				region.Top -= top;
 
 				region.Left -= left;
 				region.Width += right + left;
 
-				if (i == Regions.Count - 1) // This is the last line
-					region.Height += bottom + top;
+				region.Height += bottom + top;
 
 				rectangles[i] = region;
 			}

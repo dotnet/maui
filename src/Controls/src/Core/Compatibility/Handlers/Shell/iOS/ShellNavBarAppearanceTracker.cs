@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -42,8 +43,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_defaultTitleAttributes = navBar.TitleTextAttributes;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
-				UpdateiOS15NavigationBarAppearance(controller, appearance);
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+				UpdateiOS13NavigationBarAppearance(controller, appearance);
 			else
 				UpdateNavigationBarAppearance(controller, appearance);
 		}
@@ -86,16 +87,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion
 
-		[SupportedOSPlatform("ios15.0")]
-		[SupportedOSPlatform("tvos15.0")]
-		void UpdateiOS15NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
+		void UpdateiOS13NavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
 		{
 			var navBar = controller.NavigationBar;
 
 			var navigationBarAppearance = new UINavigationBarAppearance();
-			navigationBarAppearance.ConfigureWithOpaqueBackground();
 
-			navBar.Translucent = false;
+			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
+			if (appearance.BackgroundColor?.Alpha < 1.0f)
+			{
+				navigationBarAppearance.ConfigureWithTransparentBackground();
+				navBar.Translucent = true;
+			}
+			else
+			{
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navBar.Translucent = false;
+			}
 
 			// Set ForegroundColor
 			var foreground = appearance.ForegroundColor;
@@ -126,10 +136,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var navBar = controller.NavigationBar;
 
-			if (background != null)
+			if (appearance.BackgroundColor?.Alpha == 0f)
+			{
+				navBar.SetTransparentNavigationBar();
+			}
+			else
+			{
+				if (background != null)
 				navBar.BarTintColor = background.ToPlatform();
-			if (foreground != null)
-				navBar.TintColor = foreground.ToPlatform();
+				if (foreground != null)
+					navBar.TintColor = foreground.ToPlatform();
+			}
+
 			if (titleColor != null)
 			{
 				navBar.TitleTextAttributes = new UIStringAttributes
@@ -137,6 +155,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ForegroundColor = titleColor.ToPlatform()
 				};
 			}
+
+			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
+			navBar.Translucent = appearance.BackgroundColor?.Alpha < 1.0f;
 		}
 	}
 }

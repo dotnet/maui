@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				// Invoke the function and alert the context when it's complete
 				var task = asyncMethod() ?? throw new InvalidOperationException("No task provided.");
 
-				task.ContinueWith(async (t, o) => await context.Complete(), TaskScheduler.Default);
+				_ = task.ContinueWith(async (t, o) => await context.Complete(), TaskScheduler.Default);
 
-				// Start working through the queue				
+				// Start working through the queue
 				context.RunOnCurrentThread();
 
 				await task;

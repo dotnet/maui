@@ -108,7 +108,28 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
 			var currentView = FindContentView();
-			currentView.AddSubview(view);
+
+			// MauiView has optimization code that won't fire a remeasure of the child view
+			// Check LayoutSubviews inside Mauiveiw.cs for more details. 
+			// If the parent is a MauiView, the expectation is that the parent will call
+			// measure on all the children. But this view that we're "attaching" is unknown to MauiView
+			// so the optimization code causes the attached view to not remeasure when it actually should. 
+			// So we add a UIView in the middle to force our attached view to not optimize itself and actually
+			// remeasure when requested
+			// This middle view is also helpful so we can make sure the attached view isn't inside the safe area
+			// which can have some unexpected results
+			var safeAreaInsets = currentView.SafeAreaInsets;
+			var attachedView = new UIView()
+			{
+				Frame = new CGRect(
+					safeAreaInsets.Right,
+					safeAreaInsets.Top,
+					currentView.Frame.Width - safeAreaInsets.Right,
+					currentView.Frame.Height - safeAreaInsets.Top)
+			};
+
+			attachedView.AddSubview(view);	
+			currentView.AddSubview(attachedView);
 
 			// Give the UI time to refresh
 			await Task.Delay(100);
@@ -122,6 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 			finally
 			{
 				view.RemoveFromSuperview();
+				attachedView.RemoveFromSuperview();
 
 				// Give the UI time to refresh
 				await Task.Delay(100);

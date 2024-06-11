@@ -1,8 +1,10 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls
 {
@@ -86,6 +88,10 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler Completed;
 		double _previousWidthConstraint;
 		double _previousHeightConstraint;
+		double _previousWidthRequest;
+		double _previousHeightRequest;
+		Thickness _previousMargin;
+
 		Rect _previousBounds;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -123,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IEditorController).SendCompleted();
 		}
-
+		
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			_previousBounds = bounds;
@@ -132,24 +138,49 @@ namespace Microsoft.Maui.Controls
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			if (AutoSize == EditorAutoSizeOption.Disabled &&
-				Width > 0 &&
-				Height > 0)
+			if (AutoSize == EditorAutoSizeOption.TextChanges)
 			{
-				if (TheSame(_previousHeightConstraint, heightConstraint) &&
-					TheSame(_previousWidthConstraint, widthConstraint))
+				return base.MeasureOverride(widthConstraint, heightConstraint);
+			}
+
+			IView view = this;
+			if (Width > 0 &&
+				Height > 0 &&
+				// If the user hasn't changed any of the WxH constraints then we don't want to remeasure
+				// We want the Editor to remain the same size
+				_previousWidthRequest == WidthRequest &&
+				_previousHeightRequest == HeightRequest &&
+				_previousMargin == Margin &&
+				// If the user has explicitly set the width and height we don't need to special case around AutoSize
+				// The explicitly set values will already stop any resizing from happening
+				(!IsExplicitSet(view.Width) || !IsExplicitSet(view.Height))
+				)
+			{
+				// check if the min/max constraints have changed and are no longer valid
+				if (IsExplicitSet(view.MinimumWidth) && Width < view.MinimumWidth ||
+					IsExplicitSet(view.MaximumWidth) && Width > view.MaximumWidth ||
+					IsExplicitSet(view.MinimumHeight) && Height < view.MinimumHeight ||
+					IsExplicitSet(view.MaximumHeight) && Height > view.MaximumHeight)
 				{
-					return new Size(Width, Height);
+					_previousWidthConstraint = -1;
+					_previousHeightConstraint = -1;
 				}
-				else if (TheSame(_previousHeightConstraint, _previousBounds.Height) &&
-					TheSame(_previousWidthConstraint, _previousBounds.Width))
+				else if ((TheSame(_previousHeightConstraint, heightConstraint) &&
+					TheSame(_previousWidthConstraint, widthConstraint)) ||
+					(TheSame(_previousHeightConstraint, _previousBounds.Height) &&
+					TheSame(_previousWidthConstraint, _previousBounds.Width)))
 				{
-					return new Size(Width, Height);
+					// Just return previously established desired size
+					return DesiredSize;
 				}
 			}
 
+			_previousWidthRequest = WidthRequest;
+			_previousHeightRequest = HeightRequest;
+			_previousMargin = Margin;
 			_previousWidthConstraint = widthConstraint;
 			_previousHeightConstraint = heightConstraint;
+
 			return base.MeasureOverride(widthConstraint, heightConstraint);
 
 			bool TheSame(double width, double otherWidth)

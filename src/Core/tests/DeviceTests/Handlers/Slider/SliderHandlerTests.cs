@@ -51,19 +51,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedPercent, nativePercent, 5);
 		}
 
-#if !WINDOWS
-		[Fact(DisplayName = "Thumb Color Initializes Correctly", Skip = "There seems to be an issue, so disable for now: https://github.com/dotnet/maui/issues/1275")]
-		public async Task ThumbColorInitializesCorrectly()
-		{
-			var slider = new SliderStub()
-			{
-				ThumbColor = Colors.Purple
-			};
-
-			await ValidateNativeThumbColor(slider, Colors.Purple);
-		}
-#endif
-
 		[Fact(DisplayName = "Null Thumb Color Doesn't Crash")]
 		public async Task NullThumbColorDoesntCrash()
 		{

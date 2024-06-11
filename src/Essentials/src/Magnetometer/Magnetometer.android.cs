@@ -10,11 +10,10 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class MagnetometerImplementation : IMagnetometer
 	{
-		static SensorManager? _sensorManager;
 		static Sensor? magnetometer;
 
 		static SensorManager? SensorManager =>
-			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+			Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor? Sensor =>
 			magnetometer ??= SensorManager?.GetDefaultSensor(SensorType.MagneticField);

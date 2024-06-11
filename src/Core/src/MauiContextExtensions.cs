@@ -41,13 +41,13 @@ namespace Microsoft.Maui
 
 			scopedContext.AddSpecific(platformApplication);
 
-			scopedContext.InitializeScopedServices();
-
 			return scopedContext;
 		}
 
 		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow platformWindow, out IServiceScope scope)
 		{
+			// Create the window-level scopes that will only be used for the lifetime of the window
+			// TODO: We need to dispose of these services once the window closes
 			scope = mauiContext.Services.CreateScope();
 
 #if ANDROID
@@ -65,12 +65,27 @@ namespace Microsoft.Maui
 			scopedContext.AddSpecific(new NavigationRootManager(platformWindow));
 #endif
 
+			// Initialize any window-scoped services, for example the window dispatchers and animation tickers
+			scopedContext.InitializeScopedServices();
+
 			return scopedContext;
+		}
+
+		public static void InitializeAppServices(this MauiApp mauiApp)
+		{
+			var initServices = mauiApp.Services.GetServices<IMauiInitializeService>();
+			if (initServices is null)
+				return;
+			
+			foreach (var instance in initServices)
+				instance.Initialize(mauiApp.Services);
 		}
 
 		public static void InitializeScopedServices(this IMauiContext scopedContext)
 		{
 			var scopedServices = scopedContext.Services.GetServices<IMauiInitializeScopedService>();
+			if (scopedServices is null)
+				return;
 
 			foreach (var service in scopedServices)
 				service.Initialize(scopedContext.Services);

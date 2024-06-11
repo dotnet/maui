@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Maui.Controls.Sample.Issues.Issue22035Page2"
+  xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+  <Grid RowDefinitions="Auto,*">
+    <Button
+      Grid.Row="0"
+      AutomationId="TestLoadButton"
+      Text="Load Items"     
+      Pressed="OnLoadButtonPressed" />
+    <CarouselView 
+      Grid.Row="1"
+      ItemsSource="{Binding Images}" 
+      MaximumHeightRequest="150">
+      <CarouselView.ItemTemplate>
+        <DataTemplate x:DataType="local:Issue22035Model">
+          <Grid
+            RowDefinitions="*, Auto">
+            <Image 
+              Source="{Binding ImagePath}"
+              AutomationId="{Binding AutomationId}" />
+            <Label 
+              Grid.Row="1"
+              HorizontalOptions="Center"
+              AutomationId="{Binding AutomationId}"
+              Text="{Binding Text}"/>
+          </Grid>
+        </DataTemplate>
+      </CarouselView.ItemTemplate>
+    </CarouselView>
+  </Grid>
+</ContentPage>

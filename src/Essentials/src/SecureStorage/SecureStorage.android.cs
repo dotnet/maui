@@ -15,9 +15,11 @@ namespace Microsoft.Maui.Storage
 			{
 				try
 				{
-					ISharedPreferences sharedPreferences = GetEncryptedSharedPreferences();
-					if (sharedPreferences != null)
-						return sharedPreferences.GetString(key, null);
+					var prefs = GetEncryptedSharedPreferences();
+					if (prefs != null)
+					{
+						return prefs.GetString(key, null);
+					}
 
 					// TODO: Use Logger here?
 					System.Diagnostics.Debug.WriteLine(
@@ -48,11 +50,16 @@ namespace Microsoft.Maui.Storage
 		{
 			return Task.Run(() =>
 			{
-				using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
+				using var prefs = GetEncryptedSharedPreferences();
+				using var editor = prefs?.Edit();
 				if (data is null)
+				{
 					editor?.Remove(key);
+				}
 				else
+				{
 					editor?.PutString(key, data);
+				}
 
 				editor?.Apply();
 			});
@@ -60,41 +67,35 @@ namespace Microsoft.Maui.Storage
 
 		bool PlatformRemove(string key)
 		{
-			using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
+			using var prefs = GetEncryptedSharedPreferences();
+			using var editor = prefs?.Edit();
 			editor?.Remove(key)?.Apply();
 			return true;
 		}
 
 		void PlatformRemoveAll()
 		{
-			using var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit();
+			using var prefs = GetEncryptedSharedPreferences();
+			using var editor = prefs?.Edit();
 			editor?.Clear()?.Apply();
 		}
 
-		ISharedPreferences _prefs;
 		ISharedPreferences GetEncryptedSharedPreferences()
 		{
-			if (_prefs is not null)
-			{
-				return _prefs;
-			}
-
 			try
 			{
 				var context = Application.Context;
 
-				MasterKey prefsMainKey = new MasterKey.Builder(context, Alias)
+				var prefsMainKey = new MasterKey.Builder(context, Alias)
 					.SetKeyScheme(MasterKey.KeyScheme.Aes256Gcm)
 					.Build();
 
-				var sharedPreferences = EncryptedSharedPreferences.Create(
+				return EncryptedSharedPreferences.Create(
 					context,
 					Alias,
 					prefsMainKey,
 					EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
 					EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
-
-				return _prefs = sharedPreferences;
 			}
 			catch (InvalidProtocolBufferException)
 			{

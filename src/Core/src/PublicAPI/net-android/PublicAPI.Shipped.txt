@@ -2253,7 +2253,6 @@ override Microsoft.Maui.Platform.MauiSwipeView.DispatchTouchEvent(Android.Views.
 override Microsoft.Maui.Platform.MauiSwipeView.OnAttachedToWindow() -> void
 override Microsoft.Maui.Platform.MauiSwipeView.OnInterceptTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiSwipeView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
-override Microsoft.Maui.Platform.MauiTextView.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.Platform.MauiWebChromeClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiWebViewClient.OnPageFinished(Android.Webkit.WebView? view, string? url) -> void

@@ -28,7 +28,37 @@
 
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
+    This replaces the error check target entirely as it is not needed.
   -->
-  <Import Project="WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' " />
+  <Target Name="WindowsAppSDKSelfContainedVerifyConfiguration">
+  </Target>
+
+  <!--
+    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
+    This adjusts the items if we are still resolving to AnyCPU.
+  -->
+  <Target Name="_MAUIAfter_GetExtractMicrosoftWindowsAppSDKMsixFilesInputs"
+          AfterTargets="GetExtractMicrosoftWindowsAppSDKMsixFilesInputs"
+          Condition="'$(NativePlatform)' == 'AnyCPU'">
+    <PropertyGroup>
+      <NativePlatform>Invalid</NativePlatform>
+      <NativePlatform Condition="'$(Platform)' == 'x86'">x86</NativePlatform>
+      <NativePlatform Condition="'$(Platform)' == 'Win32'">x86</NativePlatform>
+      <NativePlatform Condition="'$(Platform)' == 'x64'">x64</NativePlatform>
+      <NativePlatform Condition="'$(Platform)' == 'arm'">arm</NativePlatform>
+      <NativePlatform Condition="'$(Platform)' == 'arm64'">arm64</NativePlatform>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Platform)' == 'AnyCPU'">
+      <NativePlatform>neutral</NativePlatform>
+      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-x86'">x86</NativePlatform>
+      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-x64'">x64</NativePlatform>
+      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-arm'">arm</NativePlatform>
+      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-arm64'">arm64</NativePlatform>
+    </PropertyGroup>
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win10-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?.Msix"/>
+      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win10-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?-*.Msix"/>
+    </ItemGroup>
+  </Target>
 
 </Project>

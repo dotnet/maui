@@ -199,23 +199,6 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		Type Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, out XamlParseException exception)
 		{
-			exception = null;
-			var split = qualifiedTypeName.Split(':');
-			if (split.Length > 2)
-				return null;
-
-			string prefix, name;
-			if (split.Length == 2)
-			{
-				prefix = split[0];
-				name = split[1];
-			}
-			else
-			{
-				prefix = "";
-				name = split[0];
-			}
-
 			IXmlLineInfo xmlLineInfo = null;
 			if (serviceProvider != null)
 			{
@@ -223,14 +206,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 					xmlLineInfo = lineInfoProvider.XmlLineInfo;
 			}
 
-			var namespaceuri = namespaceResolver.LookupNamespace(prefix);
-			if (namespaceuri == null)
-			{
-				exception = new XamlParseException($"No xmlns declaration for prefix \"{prefix}\"", xmlLineInfo);
-				return null;
-			}
-
-			return getTypeFromXmlName(new XmlType(namespaceuri, name, null), xmlLineInfo, currentAssembly, out exception);
+			var xmlType = TypeArgumentsParser.ParseSingle(qualifiedTypeName, namespaceResolver, xmlLineInfo);
+			return getTypeFromXmlName(xmlType, xmlLineInfo, currentAssembly, out exception);
 		}
 
 		internal delegate Type GetTypeFromXmlName(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);

@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Platform
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
+		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
 		internal NavHostFragment NavHost =>
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Platform
 		 * */
 		void ApplyNavigationRequest(NavigationRequest args)
 		{
-			if (IsNavigating)
+			if (IsNavigating && OnResumeRequestedArgs is null)
 			{
 				// This should really never fire for the developer. Our xplat code should be handling waiting for navigation to
 				// complete before requesting another navigation from Core
@@ -93,6 +94,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			ActiveRequestedArgs = args;
+
+			if (_fragmentManager?.IsStateSaved == true)
+			{
+				OnResumeRequestedArgs = args;
+				return;
+			}
+
+			OnResumeRequestedArgs = null;
+
 			IReadOnlyList<IView> newPageStack = args.NavigationStack;
 			bool animated = args.Animated;
 			var navController = NavController;
@@ -529,6 +539,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_stackNavigationManager?.VirtualView == null)
 					return;
+
+				if (_stackNavigationManager.OnResumeRequestedArgs is not null)
+				{
+					_stackNavigationManager.ApplyNavigationRequest(_stackNavigationManager.OnResumeRequestedArgs);
+					return;
+				}
 
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);

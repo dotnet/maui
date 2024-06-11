@@ -69,6 +69,12 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			appBuilder.UseVisualRunner();
 
+			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+			{
+				ValidateOnBuild = true,
+				ValidateScopes = true,
+			}));
+
 			var mauiApp = appBuilder.Build();
 
 			DefaultTestApp = mauiApp.Services.GetRequiredService<IApplication>();

@@ -203,6 +203,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				_fillChanged ??= (sender, e) => OnPropertyChanged(nameof(Fill));
 				_fillProxy ??= new();
 				_fillProxy.Subscribe(fill, _fillChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(fill.OnParentResourcesChanged);
 			}
 		}
 
@@ -215,6 +218,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (fill is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(fill.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(fill, null);
 				_fillProxy?.Unsubscribe();
 			}
@@ -233,6 +238,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
 				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(stroke.OnParentResourcesChanged);
 			}
 		}
 
@@ -245,6 +253,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (stroke is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(stroke, null);
 				_strokeProxy?.Unsubscribe();
 			}
@@ -300,8 +310,8 @@ namespace Microsoft.Maui.Controls.Shapes
 				float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
 				float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
 
-				float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
-				float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
+				float widthScale = float.IsNaN(calculatedWidth) || float.IsInfinity(calculatedWidth) ? 0 : calculatedWidth;
+				float heightScale = float.IsNaN(calculatedHeight) || float.IsInfinity(calculatedHeight) ? 0 : calculatedHeight;
 
 				switch (Aspect)
 				{
@@ -383,8 +393,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
-			scaleX = double.IsNaN(scaleX) ? 0 : scaleX;
-			scaleY = double.IsNaN(scaleY) ? 0 : scaleY;
+			scaleX = double.IsNaN(scaleX) || double.IsInfinity(scaleX) ? 0 : scaleX;
+			scaleY = double.IsNaN(scaleY) || double.IsInfinity(scaleY) ? 0 : scaleY;
 
 			switch (Aspect)
 			{

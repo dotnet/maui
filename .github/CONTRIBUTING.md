@@ -35,6 +35,24 @@ Please refer to our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
 
 Please check the "Allow edits from maintainers" checkbox on your pull request. This allows us to quickly make minor fixes and resolve conflicts for you.
 
+### Performance-related Changes
+
+Performance improvements can be tricky to get right, and can sometimes have unexpected consequences and impact code readability. If you're considering a performance-related change, here are a few things to keep in mind:
+
+1. **Profile a real-world application**: Before making any performance-related changes, profile a real-world application (or at least a sample project) to understand where the bottlenecks are. This will help you understand if your change is actually improving performance, and if it's improving the right thing. We want to avoid micro-optimizations that don't actually improve real-world .NET MAUI applications.
+
+See [our profiling wiki](https://aka.ms/profile-maui) for instructions on how to profile a .NET MAUI application.
+
+2. **Benchmark your change**: If you're making a performance-related change, please include benchmarks in your pull request. This will help us understand the impact of your change, and will help us avoid performance regressions in the future.
+
+Provide before & after numbers using BenchmarkDotNet where possible. See our existing [BenchmarkDotNet project](../src/Core/tests/Benchmarks/) for examples.
+
+If a BenchmarkDotNet test case is not possible, share before & after profiling information from Visual Studio, `dotnet-trace`, etc. Keep in mind that sampling profilers can be inaccurate, so someone from the .NET MAUI team may need to reproduce your results before merging your change.
+
+3. **Preserve existing behavior**: If you're making a performance-related change, please make sure that you're not changing the behavior of the code. For example, if you're changing the implementation of a method, make sure that the new implementation returns the same results as the old implementation. In some cases, you may need to add new unit tests to ensure that the behavior of the code hasn't changed.
+
+4. **Avoid impacting readability**: Performance-related changes can sometimes make code harder to read and understand. In many cases, it will be worth it if the payoff is significant, but please be mindful of the trade-offs. Write code comments and unit tests to help others understand the code in the future.
+
 ## Proposals/Enhancements/Suggestions
 
 To propose a change or new feature, open an issue using the [Feature request template](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+➕&template=feature_request.md&title=[Enhancement]+YOUR+IDEA!). You may also use the [Spec template](https://github.com/dotnet/maui/issues/new?assignees=&labels=proposal-open%2C+t%2Fenhancement+➕&template=spec.md&title=[Spec]++) if you have an idea of what the API should look like. Be sure to also browse current issues and [discussions](https://github.com/dotnet/maui/discussions) that may be related to what you have in mind.

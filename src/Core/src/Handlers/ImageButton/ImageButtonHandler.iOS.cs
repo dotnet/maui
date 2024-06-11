@@ -60,6 +60,9 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not UIButton button)
 					return;
 
+				if (platformImage?.Images is not null && platformImage.Images.Length > 0)
+					platformImage = platformImage.Images[0];
+
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				button.SetImage(platformImage, UIControlState.Normal);

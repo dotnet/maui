@@ -58,6 +58,10 @@ namespace Microsoft.Maui.Platform
 					.CurrentPage
 					.ToPlatform(NavigationManager.MauiContext, RequireContext(), inflater, ChildFragmentManager);
 
+			// This shouldn't typically happen, but if a previous animation hasn't finished from a navigation that was interrupted
+			// the opacity of the view will be set to 0. This will reset it to 1.
+			NavigationManager.CurrentPage?.Handler?.UpdateValue(nameof(IView.Opacity));
+
 			_currentView.RemoveFromParent();
 
 			return _currentView;

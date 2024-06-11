@@ -9,7 +9,9 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="Type[@FullName='Microsoft.Maui.Controls.Layout']/Docs/*" />
+	/// <summary>
+	/// Base class for layouts that allow you to arrange and group UI controls in your application.
+	/// </summary>
 	[ContentProperty(nameof(Children))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
 	{
@@ -32,14 +34,21 @@ namespace Microsoft.Maui.Controls
 		// The actual backing store for the IViews in the ILayout
 		readonly List<IView> _children = new();
 
-		// This provides a Children property for XAML 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Children']/Docs/*" />
+		/// <summary>
+		/// Gets the child objects contained in this layout.
+		/// </summary>
 		public IList<IView> Children => this;
 
 		IList IBindableLayout.Children => _children;
 
+		/// <summary>
+		/// Gets the child object count in this layout.
+		/// </summary>
 		public int Count => _children.Count;
 
+		/// <summary>
+		/// Gets whether this layout is readonly.
+		/// </summary>
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
 
 		public IView this[int index]
@@ -76,7 +85,10 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
 				propertyChanged: IsClippedToBoundsPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IsClippedToBounds']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value which determines if the layout should clip its children to its bounds.
+		/// The default value is <see langword="false"/>.
+		/// </summary>
 		public bool IsClippedToBounds
 		{
 			get => (bool)GetValue(IsClippedToBoundsProperty);
@@ -96,17 +108,30 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Padding']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the inner padding of the layout.
+		/// The default value is a <see cref="Thickness"/> with all values set to 0.
+		/// </summary>
+		/// <remarks>The padding is the space between the bounds of a layout and the bounding region into which its children should be arranged into.</remarks>
 		public Thickness Padding
 		{
 			get => (Thickness)GetValue(PaddingElement.PaddingProperty);
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
+		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
 		public bool IgnoreSafeArea { get; set; }
 
+		/// <summary>
+		/// Creates a manager object that can measure this layout and arrange its children.
+		/// </summary>
+		/// <returns>An object that implements <see cref="ILayoutManager"/> that manages this layout.</returns>
 		protected abstract ILayoutManager CreateLayoutManager();
 
+		/// <summary>
+		/// Returns an enumerator that lists all of the children in this layout.
+		/// </summary>
+		/// <returns>A <see cref="IEnumerator{T}"/> of type <see cref="IView"/> with all the children in this layout.</returns>
 		public IEnumerator<IView> GetEnumerator() => _children.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
@@ -122,10 +147,16 @@ namespace Microsoft.Maui.Controls
 			base.InvalidateMeasureOverride();
 		}
 
+		/// <summary>
+		/// Adds a child view to the end of this layout.
+		/// </summary>
+		/// <param name="child">The child view to add.</param>
 		public void Add(IView child)
 		{
 			if (child == null)
+			{
 				return;
+			}
 
 			var index = _children.Count;
 			_children.Add(child);
@@ -138,6 +169,9 @@ namespace Microsoft.Maui.Controls
 			OnAdd(index, child);
 		}
 
+		/// <summary>
+		/// Clears all child views from this layout.
+		/// </summary>
 		public void Clear()
 		{
 			for (int i = _children.Count - 1; i >= 0; i--)
@@ -152,38 +186,69 @@ namespace Microsoft.Maui.Controls
 			OnClear();
 		}
 
+		/// <summary>
+		/// Determines if the specified child view is contained in this layout.
+		/// </summary>
+		/// <param name="item">The child view for which to determine if it is contained in this layout.</param>
+		/// <returns><see langword="true"/> if <paramref name="item"/> exists in this layout, otherwise <see langword="false"/>.</returns>
 		public bool Contains(IView item)
 		{
 			return _children.Contains(item);
 		}
 
+		/// <summary>
+		/// Copies the child views to the specified array.
+		/// </summary>
+		/// <param name="array">The target array to copy the child views to.</param>
+		/// <param name="arrayIndex">The index at which the copying needs to start.</param>
 		public void CopyTo(IView[] array, int arrayIndex)
 		{
 			_children.CopyTo(array, arrayIndex);
 		}
 
+		/// <summary>
+		/// Gets the index of a specified child view.
+		/// </summary>
+		/// <param name="item">The child view of which to determine the index.</param>
+		/// <returns>The index of the specified view, if the view was not found this will return <c>-1</c>.</returns>
 		public int IndexOf(IView item)
 		{
 			return _children.IndexOf(item);
 		}
 
+		/// <summary>
+		/// Inserts a child view at the specified index.
+		/// </summary>
+		/// <param name="index">The index at which to specify the child view.</param>
+		/// <param name="child">The child view to insert.</param>
 		public void Insert(int index, IView child)
 		{
 			if (child == null)
+			{
 				return;
+			}
 
 			_children.Insert(index, child);
 
 			if (child is Element element)
+			{
 				InsertLogicalChild(index, element);
+			}
 
 			OnInsert(index, child);
 		}
 
+		/// <summary>
+		/// Removes a child view.
+		/// </summary>
+		/// <param name="child">The child view to remove.</param>
+		/// <returns><see langword="true"/> if the view was removed successfully, otherwise <see langword="false"/>.</returns>
 		public bool Remove(IView child)
 		{
 			if (child == null)
+			{
 				return false;
+			}
 
 			var index = _children.IndexOf(child);
 
@@ -197,6 +262,10 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		/// Removes a child view at the specified index.
+		/// </summary>
+		/// <param name="index">The index at which to remove the child view.</param>
 		public void RemoveAt(int index)
 		{
 			if (index >= Count)
@@ -216,26 +285,50 @@ namespace Microsoft.Maui.Controls
 			OnRemove(index, child);
 		}
 
+		/// <summary>
+		/// Invoked when <see cref="Add(IView)"/> is called and notifies the handler associated to this layout.
+		/// </summary>
+		/// <param name="index">The index at which the child view was inserted.</param>
+		/// <param name="view">The child view which was inserted.</param>
 		protected virtual void OnAdd(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
 		}
 
+		/// <summary>
+		/// Invoked when <see cref="Clear"/> is called and notifies the handler associated to this layout.
+		/// </summary>
 		protected virtual void OnClear()
 		{
 			Handler?.Invoke(nameof(ILayoutHandler.Clear));
 		}
 
+		/// <summary>
+		/// Invoked when <see cref="Insert(int, IView)"/> is called and notifies the handler associated to this layout.
+		/// </summary>
+		/// <param name="index">The index at which the child view was inserted.</param>
+		/// <param name="view">The child view which was inserted.</param>
 		protected virtual void OnRemove(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
 		}
 
+		/// <summary>
+		/// Invoked when <see cref="RemoveAt(int)"/> is called and notifies the handler associated to this layout.
+		/// </summary>
+		/// <param name="index">The index at which the child view was removed.</param>
+		/// <param name="view">The child view which was removed.</param>
 		protected virtual void OnInsert(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
 		}
 
+		/// <summary>
+		/// Invoked when <see cref="this[int]"/> is called and notifies the handler associated to this layout.
+		/// </summary>
+		/// <param name="index">The index at which the child view was updated.</param>
+		/// <param name="view">The new child view which was added at <paramref name="index"/>.</param>
+		/// <param name="oldView">The previous child view which was at <paramref name="index"/>.</param>
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
@@ -266,10 +359,20 @@ namespace Microsoft.Maui.Controls
 			return LayoutManager.ArrangeChildren(bounds);
 		}
 
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
 			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
 				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
+		/// <summary>
+		/// Gets or sets a value that controls whether child elements
+		/// inherit the input transparency of this layout when the tranparency is <see langword="true"/>.
+		/// </summary>
+		/// <value>
+		/// <see langword="true" /> to cause child elements to inherit the input transparency of this layout,
+		/// when this layout's <see cref="VisualElement.InputTransparent" /> property is <see langword="true" />.
+		/// <see langword="false" /> to cause child elements to ignore the input tranparency of this layout.
+		/// </value>
 		public bool CascadeInputTransparent
 		{
 			get => (bool)GetValue(CascadeInputTransparentProperty);

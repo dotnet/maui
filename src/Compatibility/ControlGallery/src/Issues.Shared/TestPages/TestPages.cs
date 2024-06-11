@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var envApkPath = Environment.GetEnvironmentVariable("APP_APK");
+			var envApkPath = Environment.GetEnvironmentVariable("ANDROID_APP");
 
 
 			var fullApkPath = string.IsNullOrEmpty(envApkPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath)
@@ -204,8 +204,8 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			string cellName = "";
 			if (typeIssueAttribute.IssueTracker.ToString() != "None" &&
-				typeIssueAttribute.IssueNumber != 1461 &&
-				typeIssueAttribute.IssueNumber != 342)
+				typeIssueAttribute.IssueNumber != "1461" &&
+				typeIssueAttribute.IssueNumber != "342")
 			{
 				cellName = typeIssueAttribute.DisplayName;
 			}
@@ -957,6 +957,9 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			{
 				if (serviceType == typeof(IDispatcher))
 					return _dispatcher;
+
+				if (serviceType == typeof(ApplicationDispatcher))
+					return new ApplicationDispatcher(_dispatcher);
 
 				throw new NotImplementedException();
 			}

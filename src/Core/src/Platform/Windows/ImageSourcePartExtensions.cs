@@ -42,8 +42,6 @@ namespace Microsoft.Maui.Platform
 				if (applied)
 				{
 					setImage(uiImage);
-					if (destinationContext is WImage imageView)
-						imageView.UpdateIsAnimationPlaying(image);
 				}
 
 				events?.LoadingCompleted(applied);
