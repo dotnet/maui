@@ -1,8 +1,9 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue20273 : _IssuesUITest
 {
@@ -22,6 +23,6 @@ public class Issue20273 : _IssuesUITest
 		await Task.Delay(250);
 		var numberOfNavigations = App.WaitForElement("numberOfNavigations").GetText();
 
-		Assert.AreEqual(int.Parse(numberOfNavigations!), 2);
+		ClassicAssert.AreEqual(int.Parse(numberOfNavigations!), 2);
 	}
 }
