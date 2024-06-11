@@ -1,5 +1,4 @@
-﻿using Maui.Controls.Sample;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -22,11 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnAndroid("PointerGestureRecognizer doesn't work with mouse in Android")]
+		[FailsOnIOS("PointerGestureRecognizer doesn't work with mouse in iOS")]
 		public void PointerGestureTest()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
-				"PointerGestureRecognizer doesn't work with mouse in Android or iOS");
-
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
 			App.Tap("GoButton");

@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 #endif
 				default:
-					throw new ArgumentOutOfRangeException("size");
+					throw new ArgumentOutOfRangeException(nameof(size));
 			}
 		}
 	}

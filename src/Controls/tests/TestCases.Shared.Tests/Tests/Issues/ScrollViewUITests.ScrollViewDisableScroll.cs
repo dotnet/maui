@@ -21,19 +21,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Issue2680Test_ScrollDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Ignore("Currently fails")]
+		[FailsOnAndroid("Currently fails on Android; see https://github.com/dotnet/maui/issues/19213")]
+		[FailsOnIOS("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnMac("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnWindows("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		public void ScrollDisabled()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Android,
-			}, "Currently fails on Android; see https://github.com/dotnet/maui/issues/19213");
-
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.iOS, TestDevice.Mac, TestDevice.Windows
-			}, "https://github.com/dotnet/maui/pull/19181");
-
 			App.WaitForElement(FirstItemMark);
 
 			// Waiting until merge https://github.com/dotnet/maui/pull/19181
@@ -46,14 +39,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Issue2680Test_ScrollEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Ignore("Currently fails")]
+		[FailsOnAllPlatforms("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		public void ScrollEnabled()
-		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows
-			}, "https://github.com/dotnet/maui/pull/19181");
-			
+		{			
 			App.WaitForElement(FirstItemMark);
 
 			App.Tap(ToggleButtonMark);
