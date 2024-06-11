@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Actions")]
 	public sealed class EventTrigger : TriggerBase
 	{
-		readonly List<BindableObject> _associatedObjects = new List<BindableObject>();
+		static readonly MethodInfo s_handlerinfo = typeof(EventTrigger).GetRuntimeMethods().Single(mi => mi.Name == "OnEventTriggered" && mi.IsPublic == false);
+		readonly List<WeakReference<BindableObject>> _associatedObjects = new List<WeakReference<BindableObject>>();
 
 		EventInfo _eventinfo;
 
@@ -49,13 +50,20 @@ namespace Microsoft.Maui.Controls
 			base.OnAttachedTo(bindable);
 			if (!string.IsNullOrEmpty(Event))
 				AttachHandlerTo(bindable);
-			_associatedObjects.Add(bindable);
+			_associatedObjects.Add(new WeakReference<BindableObject>(bindable));
 		}
 
 		internal override void OnDetachingFrom(BindableObject bindable)
 		{
-			_associatedObjects.Remove(bindable);
-			DetachHandlerFrom(bindable);
+			_associatedObjects.RemoveAll(wr =>
+			{
+				if (wr.TryGetTarget(out var target) && target == bindable)
+				{
+					DetachHandlerFrom(bindable);
+					return true;
+				}
+				return false;
+			});
 			base.OnDetachingFrom(bindable);
 		}
 

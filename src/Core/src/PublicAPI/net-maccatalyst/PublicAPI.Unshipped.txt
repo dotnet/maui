@@ -194,3 +194,4 @@ static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIE
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! request) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void

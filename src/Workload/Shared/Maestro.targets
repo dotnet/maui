@@ -5,11 +5,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Arcade.Sdk" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <!-- https://github.com/dotnet/arcade/blob/efc3da96e5ac110513e92ebd9ef87c73f44d8540/Documentation/DependencyFlowOnboardingWithoutArcade.md -->
-  <Target Name="PushManifestToBuildAssetRegistry" >
+  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToBuildStorage" AssemblyFile="$(PkgMicrosoft_DotNet_Build_Tasks_Feed)\tools\net9.0\Microsoft.DotNet.Build.Tasks.Feed.dll" />
+
+  <!-- https://github.com/dotnet/arcade/blob/main/Documentation/DependencyFlowOnboardingWithoutArcade.md -->
+  <Target Name="PushManifestToBuildAssetRegistry" DependsOnTargets="SetVersions">
     <PropertyGroup>
       <ArtifactsLogDir>$(RootManifestOutputPath)</ArtifactsLogDir>
       <AssetManifestFileName>Assets.xml</AssetManifestFileName>
@@ -36,7 +38,7 @@
       <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
     </ItemGroup>
 
-    <PushToAzureDevOpsArtifacts
+    <PushToBuildStorage
         ItemsToPush="@(ItemsToPush)"
         ManifestBuildData="@(ManifestBuildData)"
         ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
@@ -49,12 +51,12 @@
     <MSBuild
         Targets="Restore"
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion)"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(Version)"
     />
 
     <MSBuild
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(_MauiDotNetVersion);ManifestsPath=$(ArtifactsLogDir)AssetManifest;MaestroApiEndpoint=https://maestro.dot.net"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(Version);ManifestsPath=$(ArtifactsLogDir)AssetManifest;MaestroApiEndpoint=https://maestro.dot.net"
     />
   </Target>
 
