@@ -390,6 +390,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
 			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
 		}
+		
+		[Fact]
+		public async Task ItemViewBindingContextIsSetToNullOnClear()
+		{
+			var list = new ObservableCollection<string> { "Foo" };
+
+			var layout = new StackLayout { IsPlatformEnabled = true };
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			// Verify that the item view is bound to collection item
+			var itemView = layout.Children.FirstOrDefault() as Label;
+			Assert.NotNull(itemView);
+			Assert.Equal(list[0], itemView.BindingContext);
+
+			// Clear collection by setting it to null
+			BindableLayout.SetItemsSource(layout, null);
+
+			// Verify item view binding context is null
+			Assert.Null(itemView.BindingContext);
+		}
+		
+		[Fact]
+		public async Task ItemViewBindingContextIsSetToNullOnRemove()
+		{
+			var list = new ObservableCollection<string> { "Foo" };
+
+			var layout = new StackLayout { IsPlatformEnabled = true };
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			// Verify that the item view is bound to collection item
+			var itemView = layout.Children.FirstOrDefault() as Label;
+			Assert.NotNull(itemView);
+			Assert.Equal(list[0], itemView.BindingContext);
+
+			// Remove the item
+			list.RemoveAt(0);
+
+			// Verify item view binding context is null
+			Assert.Null(itemView.BindingContext);
+		}
+		
+		[Fact]
+		public async Task EmptyViewTemplateContentInheritsLayoutBindingContext()
+		{
+			var list = new ObservableCollection<string>();
+
+			var bindingContext = "Foo";
+
+			var layout = new StackLayout { IsPlatformEnabled = true, BindingContext = bindingContext };
+			BindableLayout.SetEmptyViewTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			// Verify that the empty view is bound to layout's binding context
+			var emptyView = layout.Children.FirstOrDefault() as Label;
+			Assert.NotNull(emptyView);
+			Assert.Equal(bindingContext, emptyView.BindingContext);
+
+			// Change binding context on layout
+			layout.BindingContext = bindingContext = "Bar";
+
+			// Verify empty view inherited the binding context
+			Assert.Equal(bindingContext, emptyView.BindingContext);
+		}
 
 		[Fact]
 		public async Task DoesNotLeak()
