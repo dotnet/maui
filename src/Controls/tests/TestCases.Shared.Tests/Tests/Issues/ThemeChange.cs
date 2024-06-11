@@ -20,11 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.SetDarkTheme();
 			_ = App.WaitForElement("labelVisibleOnlyInDarkMode");
-			VerifyScreenshot();
+			VerifyScreenshot("AppThemeShouldChangeDarkTheme");
 
 			App.SetLightTheme();
 			_ = App.WaitForElement("labelVisibleOnlyInLightMode");
-			VerifyScreenshot();
+			VerifyScreenshot("AppThemeShouldChangeLightTheme");
 		}
 	}
 }
