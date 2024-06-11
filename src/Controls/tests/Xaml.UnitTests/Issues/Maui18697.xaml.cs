@@ -30,7 +30,7 @@ public class Maui18697ExtExtension : IMarkupExtension<BindingBase>
 	object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
 }
 
-//  [XamlCompilation(XamlCompilationOptions.Skip)]
+//   [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui18697
 {
     public string Foo { get; set; } = "Success";
@@ -74,6 +74,8 @@ public partial class Maui18697
 			var page = new Maui18697(useCompiledXaml) { BindingContext = new { Foo = "Success" } };
 			Assert.That(page.label0.Text, Is.EqualTo("Success"));
 			Assert.That(page.label1.Text, Is.EqualTo("Success"));
+            Assert.That(page.label2.Text, Is.EqualTo("Phone"));
+            Assert.That(page.label2.AnchorX, Is.EqualTo(4.5));
         }
     }
 }

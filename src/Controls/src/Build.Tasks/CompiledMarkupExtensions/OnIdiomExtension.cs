@@ -35,11 +35,19 @@ class OnIdiomExtension : ICompiledMarkupExtension
 		var idioms = new[] { "Phone", "Tablet", "Desktop", "TV", "Watch", "Default" };
 		var idiomProperties = node.Properties.Where(p => idioms.Contains(p.Key.LocalName)).ToList();
 
+		TypeReference getNodeTypeRef(INode node)  {
+			if (node is IElementNode enode)
+				return enode.XmlType.GetTypeReference(context.Cache, module, node as IXmlLineInfo);
+			if (node is ValueNode vnode)
+				return module.TypeSystem.String;
+			return module.TypeSystem.Object;
+		};
+
 		//assign memberRef to the type of the first idiom value, then compare with the other ones
-		memberRef = (idiomProperties.FirstOrDefault().Value as IElementNode).XmlType.GetTypeReference(context.Cache, module, node as IXmlLineInfo);
+		memberRef = getNodeTypeRef(idiomProperties.FirstOrDefault().Value);
 		foreach (var idiom in idiomProperties.Skip(1))
 		{
-			var idiomTypeRef = (idiom.Value as IElementNode).XmlType.GetTypeReference(context.Cache, module, node as IXmlLineInfo);
+			var idiomTypeRef =  getNodeTypeRef(idiom.Value);
 			if (!TypeRefComparer.Default.Equals(memberRef, idiomTypeRef))
 			{
 				//should this issue a warning?
@@ -90,7 +98,10 @@ class OnIdiomExtension : ICompiledMarkupExtension
 						parameterTypes: new[] { ("Microsoft.Maui.Essentials", "Microsoft.Maui.Devices", "DeviceIdiom"), ("Microsoft.Maui.Essentials", "Microsoft.Maui.Devices", "DeviceIdiom") },
 						isStatic: true)));
 				instructions.Add(Create(Brfalse, instr_getDefault));
-				instructions.Add(Create(Ldloc, context.Variables[node.Properties[new XmlName("", idiom)] as IElementNode]));			
+				if (node.Properties[new XmlName("", idiom)] is ValueNode idiomValueNode)
+					instructions.Add(Create(Ldstr, idiomValueNode.Value as string));
+				else
+					instructions.Add(Create(Ldloc, context.Variables[node.Properties[new XmlName("", idiom)] as IElementNode]));
 				instructions.Add(Create(Stloc, ret_varDef));
 				instructions.Add(Create(Br, ldRetValue));
 			}
@@ -98,7 +109,10 @@ class OnIdiomExtension : ICompiledMarkupExtension
 	
 		instructions.Add(instr_getDefault);
 		if (node.Properties.ContainsKey(new XmlName("","Default"))){
-			instructions.Add(Create(Ldloc, context.Variables[node.Properties[new XmlName("", "Default")] as IElementNode]));
+			if (node.Properties[new XmlName("", "Default")] is ValueNode idiomValueNode)
+				instructions.Add(Create(Ldstr, idiomValueNode.Value as string));
+			else
+				instructions.Add(Create(Ldloc, context.Variables[node.Properties[new XmlName("", "Default")] as IElementNode]));
 			instructions.Add(Create(Stloc, ret_varDef));
 		}
 		else{

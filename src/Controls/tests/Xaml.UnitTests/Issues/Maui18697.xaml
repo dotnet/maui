@@ -6,5 +6,8 @@
     <StackLayout>
         <Label x:Name="label0" Text="{local:Maui18697Ext Foo}" />
 	    <Label x:Name="label1" Text="{OnIdiom Phone={local:Maui18697Ext Foo}, Tablet={local:Maui18697Ext Bar}}" />
+        <Label x:Name="label2"
+            Text="{OnIdiom Default='Default Idiom', Tablet='Tablet', Desktop='Desktop', Phone='Phone', TV='TV', Watch='Watch'}"
+            AnchorX="{OnIdiom Tablet=12, Phone='4.5', Default=0}"/>
     </StackLayout>
 </ContentPage>
