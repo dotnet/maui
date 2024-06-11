@@ -27,7 +27,7 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
-    default: false
+    default: true
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
@@ -110,7 +110,7 @@ extends:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)/nuget'
+                  targetPath: '$(Build.ArtifactStagingDirectory)/nuget'
                 
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
@@ -125,18 +125,20 @@ extends:
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)/metadata'
+                  targetPath: '$(Build.ArtifactStagingDirectory)/metadata'
 
                 - output: pipelineArtifact
                   displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
                   artifactName: ${{ parameters.PackPlatform.logsArtifact }}
-                  targetPath: '(Build.ArtifactStagingDirectory)/logs'
+                  targetPath: '$(Build.ArtifactStagingDirectory)/logs'
             
             variables:
               - name: _buildScript
                 value: $(Build.SourcesDirectory)/build.cmd -ci
               - name: _BuildConfig
                 value: Release
+              - name: _BuildOfficalId
+                value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
             
             steps:
               - template: /eng/pipelines/common/pack.yml@self
@@ -146,13 +148,14 @@ extends:
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
-                  artifactsPath: '(Build.ArtifactStagingDirectory)'
+                  artifactsPath: '$(Build.ArtifactStagingDirectory)'
                   buildConfiguration: $(_BuildConfig)
                   dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
                   repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
                   repoLogPath: $(Build.Arcade.LogsPath)
                   repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                  officialBuildId: $(_BuildOfficalId)
                   prepareSteps:
                     - template: /eng/pipelines/common/provision.yml@self
                       parameters:

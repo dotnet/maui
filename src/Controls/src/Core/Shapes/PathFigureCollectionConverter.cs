@@ -2,6 +2,8 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
+using System.Text;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -14,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			=> sourceType == typeof(string);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> false;
+			=> destinationType == typeof(string);
 
 		const bool AllowSign = true;
 		const bool AllowComma = true;
@@ -581,8 +583,105 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
+		private static string ParsePathFigureCollectionToString(PathFigureCollection pathFigureCollection)
+		{
+			var sb = new StringBuilder();
+
+			foreach (var pathFigure in pathFigureCollection)
+			{
+				sb.Append('M')
+				.Append(pathFigure.StartPoint.X.ToString("R"))
+				.Append(',')
+				.Append(pathFigure.StartPoint.Y.ToString("R"))
+				.Append(' ');
+
+				foreach (var pathSegment in pathFigure.Segments)
+				{
+					if (pathSegment is LineSegment lineSegment)
+					{
+						sb.Append('L')
+						.Append(lineSegment.Point.X.ToString("R"))
+						.Append(',')
+						.Append(lineSegment.Point.Y.ToString("R"))
+						.Append(' ');
+					}
+					else if (pathSegment is BezierSegment bezierSegment)
+					{
+						sb.Append('C')
+						.Append(bezierSegment.Point1.X.ToString("R"))
+						.Append(',')
+						.Append(bezierSegment.Point1.Y.ToString("R"))
+						.Append(' ')
+						.Append(bezierSegment.Point2.X.ToString("R"))
+						.Append(',')
+						.Append(bezierSegment.Point2.Y.ToString("R"))
+						.Append(' ')
+						.Append(bezierSegment.Point3.X.ToString("R"))
+						.Append(',')
+						.Append(bezierSegment.Point3.Y.ToString("R"))
+						.Append(' ');
+					}
+					else if (pathSegment is QuadraticBezierSegment quadraticBezierSegment)
+					{
+						sb.Append('Q')
+						.Append(quadraticBezierSegment.Point1.X.ToString("R"))
+						.Append(',')
+						.Append(quadraticBezierSegment.Point1.Y.ToString("R"))
+						.Append(' ')
+						.Append(quadraticBezierSegment.Point2.X.ToString("R"))
+						.Append(',')
+						.Append(quadraticBezierSegment.Point2.Y.ToString("R"))
+						.Append(' ');
+					}
+					else if (pathSegment is ArcSegment arcSegment)
+					{
+						sb.Append('A')
+						.Append(arcSegment.Size.Width)
+						.Append(',')
+						.Append(arcSegment.Size.Height)
+						.Append(' ')
+						.Append(arcSegment.RotationAngle)
+						.Append(' ')
+						.Append(arcSegment.IsLargeArc ? "1" : "0")
+						.Append(',')
+						.Append(arcSegment.SweepDirection == SweepDirection.Clockwise ? "1" : "0")
+						.Append(' ')
+						.Append(arcSegment.Point.X.ToString("R"))
+						.Append(',')
+						.Append(arcSegment.Point.Y.ToString("R"))
+						.Append(' ');
+					}
+				}
+
+				if (pathFigure.IsClosed)
+				{
+					sb.Append('Z');
+				}
+
+				sb.Append(' ');
+			}
+
+			if (sb.Length > 0)
+			{
+				sb.Length--;
+
+				if (sb[sb.Length - 1] == ' ')
+				{
+					sb.Length--;
+				}
+			}
+
+			return sb.ToString();
+		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-			=> throw new NotSupportedException();
+		{
+			if (value is PathFigureCollection pathFigureCollection)
+			{
+				return ParsePathFigureCollectionToString(pathFigureCollection);
+			}
+
+			throw new InvalidDataException($"Value is not of type {nameof(PathFigureCollection)}");
+		}
 	}
 }
