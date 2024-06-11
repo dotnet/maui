@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 namespace Maui.Controls.Sample
 {
 	public partial class MainPage : ContentPage
@@ -19,7 +20,7 @@ namespace Maui.Controls.Sample
 		{
 			base.OnAppearing();
 
-			_titleBar = new TitleBar();
+			_titleBar = new TitleBar(Window);
 			Window.TitleBar = _titleBar;
 		}
 
@@ -62,6 +63,7 @@ namespace Maui.Controls.Sample
 			if (Microsoft.Maui.Graphics.Color.TryParse(ColorTextBox.Text, out var color))
 			{
 				_titleBar.BackgroundColor = color;
+				_titleBar.InactiveBackgroundColor = Colors.Pink;
 			}
 		}
 
@@ -134,6 +136,21 @@ namespace Maui.Controls.Sample
 			else
 			{
 				_titleBar.HeightRequest = 32;
+			}
+		}
+
+		private void VisibilityCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (_titleBar == null)
+				return;
+
+			if (e.Value)
+			{
+				_titleBar.IsVisible = false;
+			}
+			else
+			{
+				_titleBar.IsVisible = true;
 			}
 		}
 	}

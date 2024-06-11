@@ -197,7 +197,8 @@ namespace Microsoft.Maui.Platform
 			if (AppTitleBarContentControl == null)
 				return;
 
-			if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight)
+			if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight &&
+				AppTitleBarContentControl.Visibility == UI.Xaml.Visibility.Visible)
 			{
 				UpdateRootNavigationViewMargins(AppTitleBarContentControl.ActualHeight);
 

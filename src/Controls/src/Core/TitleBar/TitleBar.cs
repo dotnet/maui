@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using Microsoft.Maui.Graphics;
+
+namespace Microsoft.Maui.Controls
 {
 	public partial class TitleBar : ContentView, ITitleBar
 	{
@@ -19,6 +21,15 @@
 
 		public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(nameof(Subtitle), typeof(string),
 			typeof(TitleBar), null, propertyChanged: OnSubtitleChanged);
+
+		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
+			typeof(Color), typeof(TitleBar), null);
+
+		public static readonly BindableProperty InactiveBackgroundColorProperty = BindableProperty.Create(nameof(InactiveBackgroundColor),
+			typeof(Color), typeof(TitleBar), null);
+
+		public static readonly BindableProperty InactiveForegroundColorProperty = BindableProperty.Create(nameof(InactiveForegroundColor),
+			typeof(Color), typeof(TitleBar), null);
 
 		public ImageSource Icon
 		{
@@ -52,8 +63,26 @@
 
 		public IView? TrailingContent
 		{
-			get { return (View?)GetValue(TitleBar.TrailingContentProperty); }
-			set { SetValue(TitleBar.TrailingContentProperty, value); }
+			get { return (View?)GetValue(TrailingContentProperty); }
+			set { SetValue(TrailingContentProperty, value); }
+		}
+
+		public Color ForegroundColor
+		{
+			get { return (Color)GetValue(ForegroundColorProperty); }
+			set { SetValue(ForegroundColorProperty, value); }
+		}
+
+		public Color InactiveBackgroundColor
+		{
+			get { return (Color)GetValue(InactiveBackgroundColorProperty); }
+			set { SetValue(InactiveBackgroundColorProperty, value); }
+		}
+
+		public Color InactiveForegroundColor
+		{
+			get { return (Color)GetValue(InactiveForegroundColorProperty); }
+			set { SetValue(InactiveForegroundColorProperty, value); }
 		}
 
 		static void OnLeadingContentChanged(BindableObject bindable, object oldValue, object newValue)
@@ -140,8 +169,15 @@
 		readonly Image _iconImage;
 		readonly Label _titleLabel;
 		readonly Label _subtitleLabel;
+		Color? _backgroundColor;
 
-		public TitleBar()
+		static Color TextFillColorPrimaryLight = new(0, 0, 0, 228);
+		static Color TextFillInactiveColorPrimaryLight = new(0, 0, 0, 135);
+
+		static Color TextFillColorPrimaryDark = new(255, 255, 255, 255);
+		static Color TextFillInactiveColorPrimaryDark = new(255, 255, 255, 114);
+
+		public TitleBar(Window window)
 		{
 			base.Content = new Grid
 			{
@@ -157,7 +193,7 @@
 					new ColumnDefinition(150),			   // Min drag region + padding for system buttons
 				}
 			};
-			 
+
 			_iconImage = new Image()
 			{
 				WidthRequest = 20,
@@ -194,6 +230,62 @@
 			};
 			ContentGrid.Add(_subtitleLabel);
 			ContentGrid.SetColumn(_subtitleLabel, 3);
+
+			window.Activated += Window_Activated;
+			window.Deactivated += Window_Deactivated;
+		}
+
+		private void Window_Activated(object? sender, System.EventArgs e)
+		{
+			if (ForegroundColor != null)
+			{
+				_titleLabel.TextColor = ForegroundColor;
+				_subtitleLabel.TextColor = ForegroundColor;
+			}
+			else
+			{
+				_titleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillColorPrimaryLight, TextFillColorPrimaryDark);
+				_subtitleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillColorPrimaryLight, TextFillColorPrimaryDark);
+			}
+
+			if (_backgroundColor != null)
+			{
+				BackgroundColor = _backgroundColor;
+			}
+		}
+
+		private void Window_Deactivated(object? sender, System.EventArgs e)
+		{
+			if (InactiveForegroundColor != null)
+			{
+				_titleLabel.TextColor = InactiveForegroundColor;
+				_subtitleLabel.TextColor = InactiveForegroundColor;
+			}
+			else
+			{
+				_titleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillInactiveColorPrimaryLight, TextFillInactiveColorPrimaryDark);
+				_subtitleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillInactiveColorPrimaryLight, TextFillInactiveColorPrimaryDark);
+			}
+
+			if (BackgroundColor != null)
+			{
+				_backgroundColor = BackgroundColor;
+			}
+
+			if (InactiveBackgroundColor != null)
+			{
+				BackgroundColor = InactiveBackgroundColor;
+			}
+		}
+
+		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
+		{
+			base.OnIsVisibleChanged(oldValue, newValue);
+
+#if WINDOWS
+			var navRootManager = Handler?.MauiContext?.GetNavigationRootManager();
+			navRootManager?.SetTitleBarVisibility(newValue);
+#endif
 		}
 	}
 }

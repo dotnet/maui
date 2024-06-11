@@ -92,5 +92,14 @@
                 Text="Tall TitleBar"
                 VerticalOptions="Center"/>
         </HorizontalStackLayout>
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="VisibilityCheckBox"
+                IsChecked="False"
+                CheckedChanged="VisibilityCheckBox_CheckedChanged"/>
+            <Label
+                Text="Hide TitleBar"
+                VerticalOptions="Center"/>
+        </HorizontalStackLayout>
   </VerticalStackLayout>
 </ContentPage>
