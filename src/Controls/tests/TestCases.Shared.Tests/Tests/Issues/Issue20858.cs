@@ -1,3 +1,4 @@
+#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,3 +25,4 @@ public class Issue20858 : _IssuesUITest
 		//The test passes if no exception is thrown
 	}
 }
+#endif
