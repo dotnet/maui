@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls
 			{
 				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 			}
-			else if (indicatorView.IndicatorLayout == null)
+			else if (indicatorView.IndicatorLayout is not null)
 			{
 				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
 				indicatorView.IndicatorLayout = null;
