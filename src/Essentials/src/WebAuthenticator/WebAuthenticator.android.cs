@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Authentication
 			var success = false;
 			var parentActivity = ActivityStateManager.Default.GetCurrentActivity(true);
 
-			var customTabsActivityManager = CustomTabsActivityManager.From(parentActivity);
+			var customTabsActivityManager = new CustomTabsActivityManager(parentActivity);
 			try
 			{
 				if (await BindServiceAsync(customTabsActivityManager))

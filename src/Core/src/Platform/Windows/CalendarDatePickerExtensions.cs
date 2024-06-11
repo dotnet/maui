@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Platform
 				var day = format.Count(x => x == 'd');
 
 				if (day == 3)
-					return "{day.integer} {dayofweek.abbreviated}";
+					return "{dayofweek.abbreviated}";
 				else if (day == 4)
 					return "{dayofweek.full}";
 				else

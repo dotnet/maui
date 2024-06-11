@@ -8,7 +8,7 @@ usage()
     echo "BuildArch can be: arm(default), arm64, armel, armv6, ppc64le, riscv64, s390x, x64, x86"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine"
     echo "                               for alpine can be specified with version: alpineX.YY or alpineedge"
-    echo "                               for FreeBSD can be: freebsd13, freebsd14"
+    echo "                               for FreeBSD can be: freebsd12, freebsd13"
     echo "                               for illumos can be: illumos"
     echo "                               for Haiku can be: haiku."
     echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FreeBSD"
@@ -71,9 +71,9 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="13.2-RELEASE"
+__FreeBSDBase="12.4-RELEASE"
 __FreeBSDPkg="1.17.0"
-__FreeBSDABI="13"
+__FreeBSDABI="12"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
 __FreeBSDPackages+=" libinotify"
@@ -142,6 +142,7 @@ while :; do
     case $lowerI in
         -\?|-h|--help)
             usage
+            exit 1
             ;;
         arm)
             __BuildArch=arm
@@ -181,12 +182,12 @@ while :; do
             __AlpinePackages="${__AlpinePackages// lldb-dev/}"
             __QEMUArch=riscv64
             __UbuntuArch=riscv64
-            __UbuntuRepo="http://deb.debian.org/debian"
+            __UbuntuRepo="http://deb.debian.org/debian-ports"
             __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             unset __LLDB_Package
 
-            if [[ -e "/usr/share/keyrings/debian-archive-keyring.gpg" ]]; then
-                __Keyring="--keyring /usr/share/keyrings/debian-archive-keyring.gpg --include=debian-archive-keyring"
+            if [[ -e "/usr/share/keyrings/debian-ports-archive-keyring.gpg" ]]; then
+                __Keyring="--keyring /usr/share/keyrings/debian-ports-archive-keyring.gpg --include=debian-ports-archive-keyring"
             fi
             ;;
         ppc64le)
@@ -228,19 +229,12 @@ while :; do
             __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
             ;;
         lldb*)
-            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
-            majorVersion="${version%%.*}"
-
-            [ -z "${version##*.*}" ] && minorVersion="${version#*.}"
-            if [ -z "$minorVersion" ]; then
-                minorVersion=0
-            fi
+            version="${lowerI/lldb/}"
+            parts=(${version//./ })
 
             # for versions > 6.0, lldb has dropped the minor version
-            if [ "$majorVersion" -le 6 ]; then
-                version="$majorVersion.$minorVersion"
-            else
-                version="$majorVersion"
+            if [[ "${parts[0]}" -gt 6 ]]; then
+                version="${parts[0]}"
             fi
 
             __LLDB_Package="liblldb-${version}-dev"
@@ -249,19 +243,15 @@ while :; do
             unset __LLDB_Package
             ;;
         llvm*)
-            version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
-            __LLVM_MajorVersion="${version%%.*}"
+            version="${lowerI/llvm/}"
+            parts=(${version//./ })
+            __LLVM_MajorVersion="${parts[0]}"
+            __LLVM_MinorVersion="${parts[1]}"
 
-            [ -z "${version##*.*}" ] && __LLVM_MinorVersion="${version#*.}"
-            if [ -z "$__LLVM_MinorVersion" ]; then
-                __LLVM_MinorVersion=0
+            # for versions > 6.0, llvm has dropped the minor version
+            if [[ -z "$__LLVM_MinorVersion" && "$__LLVM_MajorVersion" -le 6 ]]; then
+                __LLVM_MinorVersion=0;
             fi
-
-            # for versions > 6.0, lldb has dropped the minor version
-            if [ "$__LLVM_MajorVersion" -gt 6 ]; then
-                __LLVM_MinorVersion=
-            fi
-
             ;;
         xenial) # Ubuntu 16.04
             if [[ "$__CodeName" != "jessie" ]]; then
@@ -333,24 +323,25 @@ while :; do
         alpine*)
             __CodeName=alpine
             __UbuntuRepo=
+            version="${lowerI/alpine/}"
 
-            if [[ "$lowerI" == "alpineedge" ]]; then
+            if [[ "$version" == "edge" ]]; then
                 __AlpineVersion=edge
             else
-                version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
-                __AlpineMajorVersion="${version%%.*}"
-                __AlpineMinorVersion="${version#*.}"
-                __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinorVersion"
+                parts=(${version//./ })
+                __AlpineMajorVersion="${parts[0]}"
+                __AlpineMinoVersion="${parts[1]}"
+                __AlpineVersion="$__AlpineMajorVersion.$__AlpineMinoVersion"
             fi
             ;;
-        freebsd13)
+        freebsd12)
             __CodeName=freebsd
             __SkipUnmount=1
             ;;
-        freebsd14)
+        freebsd13)
             __CodeName=freebsd
-            __FreeBSDBase="14.0-RELEASE"
-            __FreeBSDABI="14"
+            __FreeBSDBase="13.2-RELEASE"
+            __FreeBSDABI="13"
             __SkipUnmount=1
             ;;
         illumos)
@@ -451,39 +442,13 @@ fi
 mkdir -p "$__RootfsDir"
 __RootfsDir="$( cd "$__RootfsDir" && pwd )"
 
-__hasWget=
-ensureDownloadTool()
-{
-    if command -v wget &> /dev/null; then
-        __hasWget=1
-    elif command -v curl &> /dev/null; then
-        __hasWget=0
-    else
-        >&2 echo "ERROR: either wget or curl is required by this script."
-        exit 1
-    fi
-}
-
 if [[ "$__CodeName" == "alpine" ]]; then
     __ApkToolsVersion=2.12.11
+    __ApkToolsSHA512SUM=53e57b49230da07ef44ee0765b9592580308c407a8d4da7125550957bb72cb59638e04f8892a18b584451c8d841d1c7cb0f0ab680cc323a3015776affaa3be33
     __ApkToolsDir="$(mktemp -d)"
     __ApkKeysDir="$(mktemp -d)"
-    arch="$(uname -m)"
 
-    ensureDownloadTool()
-    
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -P "$__ApkToolsDir" "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v$__ApkToolsVersion/$arch/apk.static"
-    else
-        curl -SLO --create-dirs --output-dir "$__ApkToolsDir" "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v$__ApkToolsVersion/$arch/apk.static"
-    fi
-    if [[ "$arch" == "x86_64" ]]; then
-      __ApkToolsSHA512SUM="53e57b49230da07ef44ee0765b9592580308c407a8d4da7125550957bb72cb59638e04f8892a18b584451c8d841d1c7cb0f0ab680cc323a3015776affaa3be33"
-    elif [[ "$arch" == "aarch64" ]]; then
-      __ApkToolsSHA512SUM="9e2b37ecb2b56c05dad23d379be84fd494c14bd730b620d0d576bda760588e1f2f59a7fcb2f2080577e0085f23a0ca8eadd993b4e61c2ab29549fdb71969afd0"
-    else
-      echo "WARNING: add missing hash for your host architecture. To find the value, use: 'find /tmp -name apk.static -exec sha512sum {} \;'"
-    fi
+    wget "https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic//v$__ApkToolsVersion/x86_64/apk.static" -P "$__ApkToolsDir"
     echo "$__ApkToolsSHA512SUM $__ApkToolsDir/apk.static" | sha512sum -c
     chmod +x "$__ApkToolsDir/apk.static"
 
@@ -512,23 +477,20 @@ if [[ "$__CodeName" == "alpine" ]]; then
     fi
 
     # initialize DB
-    # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" --initdb add
 
     if [[ "$__AlpineLlvmLibsLookup" == 1 ]]; then
-        # shellcheck disable=SC2086
         __AlpinePackages+=" $("$__ApkToolsDir/apk.static" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
             -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" \
-            search 'llvm*-libs' | grep -E '^llvm' | sort | tail -1 | sed 's/-[^-]*//2g')"
+            search 'llvm*-libs' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
 
     # install all packages in one go
-    # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
         -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
@@ -539,23 +501,12 @@ if [[ "$__CodeName" == "alpine" ]]; then
 elif [[ "$__CodeName" == "freebsd" ]]; then
     mkdir -p "$__RootfsDir"/usr/local/etc
     JOBS=${MAXJOBS:="$(getconf _NPROCESSORS_ONLN)"}
-
-    ensureDownloadTool()
-
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O- "https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz" | tar -C "$__RootfsDir" -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
-    else
-        curl -SL "https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz" | tar -C "$__RootfsDir" -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
-    fi
+    wget -O - "https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz" | tar -C "$__RootfsDir" -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
     echo "ABI = \"FreeBSD:${__FreeBSDABI}:${__FreeBSDMachineArch}\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > "${__RootfsDir}"/usr/local/etc/pkg.conf
     echo "FreeBSD: { url: \"pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly\", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"${__RootfsDir}/usr/share/keys/pkg\", enabled: yes }" > "${__RootfsDir}"/etc/pkg/FreeBSD.conf
     mkdir -p "$__RootfsDir"/tmp
     # get and build package manager
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O- "https://github.com/freebsd/pkg/archive/${__FreeBSDPkg}.tar.gz" | tar -C "$__RootfsDir"/tmp -zxf -
-    else
-        curl -SL "https://github.com/freebsd/pkg/archive/${__FreeBSDPkg}.tar.gz" | tar -C "$__RootfsDir"/tmp -zxf -
-    fi
+    wget -O - "https://github.com/freebsd/pkg/archive/${__FreeBSDPkg}.tar.gz" | tar -C "$__RootfsDir"/tmp -zxf -
     cd "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # needed for install to succeed
     mkdir -p "$__RootfsDir"/host/etc
@@ -563,36 +514,20 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
     rm -rf "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # install packages we need.
     INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
-    # shellcheck disable=SC2086
     INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
     pushd "$__RootfsDir/tmp"
     JOBS=${MAXJOBS:="$(getconf _NPROCESSORS_ONLN)"}
-
-    ensureDownloadTool()
-
     echo "Downloading sysroot."
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://github.com/illumos/sysroot/releases/download/20181213-de6af22ae73b-v1/illumos-sysroot-i386-20181213-de6af22ae73b-v1.tar.gz | tar -C "$__RootfsDir" -xzf -
-    else
-        curl -SL https://github.com/illumos/sysroot/releases/download/20181213-de6af22ae73b-v1/illumos-sysroot-i386-20181213-de6af22ae73b-v1.tar.gz | tar -C "$__RootfsDir" -xzf -
-    fi
+    wget -O - https://github.com/illumos/sysroot/releases/download/20181213-de6af22ae73b-v1/illumos-sysroot-i386-20181213-de6af22ae73b-v1.tar.gz | tar -C "$__RootfsDir" -xzf -
     echo "Building binutils. Please wait.."
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
-    else
-        curl -SL https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
-    fi
+    wget -O - https://ftp.gnu.org/gnu/binutils/binutils-2.33.1.tar.bz2 | tar -xjf -
     mkdir build-binutils && cd build-binutils
     ../binutils-2.33.1/configure --prefix="$__RootfsDir" --target="${__illumosArch}-sun-solaris2.10" --program-prefix="${__illumosArch}-illumos-" --with-sysroot="$__RootfsDir"
     make -j "$JOBS" && make install && cd ..
     echo "Building gcc. Please wait.."
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O- https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
-    else
-        curl -SL https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
-    fi
+    wget -O - https://ftp.gnu.org/gnu/gcc/gcc-8.4.0/gcc-8.4.0.tar.xz | tar -xJf -
     CFLAGS="-fPIC"
     CXXFLAGS="-fPIC"
     CXXFLAGS_FOR_TARGET="-fPIC"
@@ -609,11 +544,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     fi
     BaseUrl="$BaseUrl/packages/SmartOS/trunk/${__illumosArch}/All"
     echo "Downloading manifest"
-    if [[ "$__hasWget" == 1 ]]; then
-        wget "$BaseUrl"
-    else
-        curl -SLO "$BaseUrl"
-    fi
+    wget "$BaseUrl"
     echo "Downloading dependencies."
     read -ra array <<<"$__IllumosPackages"
     for package in "${array[@]}"; do
@@ -621,11 +552,7 @@ elif [[ "$__CodeName" == "illumos" ]]; then
         # find last occurrence of package in listing and extract its name
         package="$(sed -En '/.*href="('"$package"'-[0-9].*).tgz".*/h;$!d;g;s//\1/p' All)"
         echo "Resolved name '$package'"
-        if [[ "$__hasWget" == 1 ]]; then
-            wget "$BaseUrl"/"$package".tgz
-        else
-            curl -SLO "$BaseUrl"/"$package".tgz
-        fi
+        wget "$BaseUrl"/"$package".tgz
         ar -x "$package".tgz
         tar --skip-old-files -xzf "$package".tmp.tg* -C "$__RootfsDir" 2>/dev/null
     done
@@ -634,17 +561,10 @@ elif [[ "$__CodeName" == "illumos" ]]; then
     rm -rf "$__RootfsDir"/{tmp,+*}
     mkdir -p "$__RootfsDir"/usr/include/net
     mkdir -p "$__RootfsDir"/usr/include/netpacket
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -P "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/bpf.h
-        wget -P "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/dlt.h
-        wget -P "$__RootfsDir"/usr/include/netpacket https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/inet/sockmods/netpacket/packet.h
-        wget -P "$__RootfsDir"/usr/include/sys https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/sys/sdt.h
-    else
-        curl -SLO --create-dirs --output-dir "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/bpf.h
-        curl -SLO --create-dirs --output-dir "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/dlt.h
-        curl -SLO --create-dirs --output-dir "$__RootfsDir"/usr/include/netpacket https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/inet/sockmods/netpacket/packet.h
-        curl -SLO --create-dirs --output-dir "$__RootfsDir"/usr/include/sys https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/sys/sdt.h
-    fi
+    wget -P "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/bpf.h
+    wget -P "$__RootfsDir"/usr/include/net https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/io/bpf/net/dlt.h
+    wget -P "$__RootfsDir"/usr/include/netpacket https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/inet/sockmods/netpacket/packet.h
+    wget -P "$__RootfsDir"/usr/include/sys https://raw.githubusercontent.com/illumos/illumos-gate/master/usr/src/uts/common/sys/sdt.h
 elif [[ "$__CodeName" == "haiku" ]]; then
     JOBS=${MAXJOBS:="$(getconf _NPROCESSORS_ONLN)"}
 
@@ -654,16 +574,9 @@ elif [[ "$__CodeName" == "haiku" ]]; then
 
     mkdir "$__RootfsDir/tmp/download"
 
-    ensureDownloadTool()
-
     echo "Downloading Haiku package tool"
-    git clone https://github.com/haiku/haiku-toolchains-ubuntu --depth 1 "$__RootfsDir/tmp/script"
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O "$__RootfsDir/tmp/download/hosttools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --hosttools)"
-    else
-        curl -SLo "$__RootfsDir/tmp/download/hosttools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --hosttools)"
-    fi
-
+    git clone https://github.com/haiku/haiku-toolchains-ubuntu --depth 1 $__RootfsDir/tmp/script
+    wget -O "$__RootfsDir/tmp/download/hosttools.zip" $($__RootfsDir/tmp/script/fetch.sh --hosttools)
     unzip -o "$__RootfsDir/tmp/download/hosttools.zip" -d "$__RootfsDir/tmp/bin"
 
     DepotBaseUrl="https://depot.haiku-os.org/__api/v2/pkg/get-pkg"
@@ -676,25 +589,14 @@ elif [[ "$__CodeName" == "haiku" ]]; then
         echo "Downloading $package..."
         # API documented here: https://github.com/haiku/haikudepotserver/blob/master/haikudepotserver-api2/src/main/resources/api2/pkg.yaml#L60
         # The schema here: https://github.com/haiku/haikudepotserver/blob/master/haikudepotserver-api2/src/main/resources/api2/pkg.yaml#L598
-        if [[ "$__hasWget" == 1 ]]; then
-            hpkgDownloadUrl="$(wget -qO- --post-data '{"name":"'"$package"'","repositorySourceCode":"haikuports_'$__HaikuArch'","versionType":"LATEST","naturalLanguageCode":"en"}' \
-                --header 'Content-Type:application/json' "$DepotBaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
-            wget -P "$__RootfsDir/tmp/download" "$hpkgDownloadUrl"
-        else
-            hpkgDownloadUrl="$(curl -sSL -XPOST --data '{"name":"'"$package"'","repositorySourceCode":"haikuports_'$__HaikuArch'","versionType":"LATEST","naturalLanguageCode":"en"}' \
-                --header 'Content-Type:application/json' "$DepotBaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
-            curl -SLO --create-dirs --output-dir "$__RootfsDir/tmp/download" "$hpkgDownloadUrl"
-        fi
+        hpkgDownloadUrl="$(wget -qO- --post-data='{"name":"'"$package"'","repositorySourceCode":"haikuports_'$__HaikuArch'","versionType":"LATEST","naturalLanguageCode":"en"}' \
+            --header='Content-Type:application/json' "$DepotBaseUrl" | jq -r '.result.versions[].hpkgDownloadURL')"
+        wget -P "$__RootfsDir/tmp/download" "$hpkgDownloadUrl"
     done
     for package in haiku haiku_devel; do
         echo "Downloading $package..."
-        if [[ "$__hasWget" == 1 ]]; then
-            hpkgVersion="$(wget -qO- "$HpkgBaseUrl" | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
-            wget -P "$__RootfsDir/tmp/download" "$HpkgBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
-        else
-            hpkgVersion="$(curl -sSL "$HpkgBaseUrl" | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
-            curl -SLO --create-dirs --output-dir "$__RootfsDir/tmp/download" "$HpkgBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
-        fi
+        hpkgVersion="$(wget -qO- $HpkgBaseUrl | sed -n 's/^.*version: "\([^"]*\)".*$/\1/p')"
+        wget -P "$__RootfsDir/tmp/download" "$HpkgBaseUrl/packages/$package-$hpkgVersion-1-$__HaikuArch.hpkg"
     done
 
     # Set up the sysroot
@@ -707,11 +609,7 @@ elif [[ "$__CodeName" == "haiku" ]]; then
 
     # Download buildtools
     echo "Downloading Haiku buildtools"
-    if [[ "$__hasWget" == 1 ]]; then
-        wget -O "$__RootfsDir/tmp/download/buildtools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --buildtools --arch=$__HaikuArch)"
-    else
-        curl -SLo "$__RootfsDir/tmp/download/buildtools.zip" "$("$__RootfsDir/tmp/script/fetch.sh" --buildtools --arch=$__HaikuArch)"
-    fi
+    wget -O "$__RootfsDir/tmp/download/buildtools.zip" $($__RootfsDir/tmp/script/fetch.sh --buildtools --arch=$__HaikuArch)
     unzip -o "$__RootfsDir/tmp/download/buildtools.zip" -d "$__RootfsDir"
 
     # Cleaning up temporary files
@@ -724,12 +622,10 @@ elif [[ -n "$__CodeName" ]]; then
         __Keyring="$__Keyring --force-check-gpg"
     fi
 
-    # shellcheck disable=SC2086
     debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
     cp "$__CrossDir/$__BuildArch/sources.list.$__CodeName" "$__RootfsDir/etc/apt/sources.list"
     chroot "$__RootfsDir" apt-get update
     chroot "$__RootfsDir" apt-get -f -y install
-    # shellcheck disable=SC2086
     chroot "$__RootfsDir" apt-get -y install $__UbuntuPackages
     chroot "$__RootfsDir" symlinks -cr /usr
     chroot "$__RootfsDir" apt-get clean
@@ -747,5 +643,6 @@ elif [[ "$__Tizen" == "tizen" ]]; then
     ROOTFS_DIR="$__RootfsDir" "$__CrossDir/tizen-build-rootfs.sh" "$__BuildArch"
 else
     echo "Unsupported target platform."
-    usage
+    usage;
+    exit 1
 fi

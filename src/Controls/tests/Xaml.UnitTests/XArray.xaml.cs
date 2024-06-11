@@ -1,6 +1,6 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
@@ -37,6 +37,24 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(2, ((string[])layout.Content).Length);
 				Assert.AreEqual("Hello", ((string[])layout.Content)[0]);
 				Assert.AreEqual("World", ((string[])layout.Content)[1]);
+			}
+
+			[Test]
+			public void ArrayExtensionNotPresentInGeneratedCode([Values(false)] bool useCompiledXaml)
+			{
+				MockCompiler.Compile(typeof(XArray), out var methodDef);
+				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
+			}
+
+			bool InstructionIsArrayExtensionCtor(MethodDefinition methodDef, Mono.Cecil.Cil.Instruction instruction)
+			{
+				if (instruction.OpCode != OpCodes.Newobj)
+					return false;
+				if (instruction.Operand is not MethodReference methodRef)
+					return false;
+				if (!Build.Tasks.TypeRefComparer.Default.Equals(methodRef.DeclaringType, methodDef.Module.ImportReference(typeof(ArrayExtension))))
+					return false;
+				return true;
 			}
 		}
 	}
