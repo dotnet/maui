@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		/// <summary>Bindable property for <see cref="HasShadow"/>.</summary>
-		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create("HasShadow", typeof(bool), typeof(Frame), true);
+		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create(nameof(HasShadow), typeof(bool), typeof(Frame), true);
 
 		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f,

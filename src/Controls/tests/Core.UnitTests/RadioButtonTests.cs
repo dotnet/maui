@@ -5,7 +5,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	using Grid = Microsoft.Maui.Controls.Compatibility.Grid;
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
 
-
 	public class RadioButtonTests : BaseTestFixture
 	{
 		[Fact]
@@ -44,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var layout = new StackLayout();
 			var groupName = "foo";
 			var oldName = "bar";
-			var radioButton = new RadioButton() { GroupName = oldName };
+			var radioButton = new RadioButton() { GroupName = oldName, Value = 1 };
 
 			layout.SetValue(RadioButtonGroup.GroupNameProperty, groupName);
 			layout.Children.Add(radioButton);

@@ -1,5 +1,6 @@
 ﻿using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Core;
@@ -151,15 +152,7 @@ namespace UITest.Appium
 
 			int endX = (int)(position.X + (size.Width * swipePercentage));
 			int endY = startY;
-
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
-			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			driver.PerformActions([scrollSequence]);
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
 		}
 
 		static void ScrollToDown(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -172,15 +165,7 @@ namespace UITest.Appium
 
 			int endX = startX;
 			int endY = (int)(position.Y + (size.Height * 0.05));
-
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
-			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			driver.PerformActions([scrollSequence]);
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
 		}
 
 		static void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -193,15 +178,7 @@ namespace UITest.Appium
 
 			int endX = (int)(position.X + (size.Width * 0.05));
 			int endY = startY;
-
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
-			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			driver.PerformActions([scrollSequence]);
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
 		}
 
 		static void ScrollToUp(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
@@ -214,13 +191,34 @@ namespace UITest.Appium
 
 			int endX = startX;
 			int endY = (int)(position.Y + (size.Height * swipePercentage));
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
+		}
 
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+		static void PerformActions(
+			AppiumDriver driver, 
+			int startX,
+			int startY,
+			int endX,
+			int endY,
+			ScrollStrategy strategy,
+			int swipeSpeed)
+		{
+
+			var pointerKind = PointerKind.Touch;
+			if (driver is MacDriver)
+			{
+				pointerKind = PointerKind.Mouse;
+			}
+
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(pointerKind);
 			var scrollSequence = new ActionSequence(touchDevice, 0);
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.Zero));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMilliseconds(2)));
 			scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(ScrollTouchDownTime)));
-			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, TimeSpan.FromMilliseconds(strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime)));
+			scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(Math.Max(ScrollTouchDownTime, 2))));
+
+			var moveDuration = TimeSpan.FromMilliseconds(Math.Max(2, strategy != ScrollStrategy.Programmatically ? swipeSpeed : ProgrammaticallyScrollTime));
+			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, endX, endY, moveDuration));
+
 			scrollSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			driver.PerformActions([scrollSequence]);
 		}

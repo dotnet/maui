@@ -89,7 +89,6 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 │   ├── samples
 │   │   ├── Maui.Controls.Sample
 │   │   ├── Maui.Controls.Sample.Sandbox
-│   │   ├── Controls.Sample.UITests
 ├── Essentials 
 │   ├── samples
 │   │   ├── Essentials.Sample
@@ -101,10 +100,11 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 
 - *Maui.Controls.Sample*: Full gallery sample with all of the controls and features of .NET MAUI
 - *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
-- *Contols.Sample.UITests*: Sample used for the automated UI tests
 - *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
 
 ### Device Test Projects
+
+[Writing Device Tests](https://github.com/dotnet/maui/wiki/DeviceTests)
 
 These are tests that will run on an actual device
 
@@ -130,14 +130,29 @@ These are tests that will run on an actual device
 
 ### UI Test Projects
 
+[Writing UI Tests](https://github.com/dotnet/maui/wiki/UITests)
+
 These are tests used for exercising the UI through accessibility layers to simulate user interactions
 
 ```
 ├──  Controls
-│    ├── samples
-│    │   ├── Controls.Sample.UITests
 │    ├── tests
-│    │   ├── Controls.AppiumTests
+│    ├── ├── Controls.TestCases.App
+│    │   ├── Controls.TestCases.Shared.Tests
+```
+
+- *Controls.TestCases.App*: .NET MAUI Sample used for the automated UI tests
+- *Controls.TestCases.Shared.Tests*: .NET MAUI library used to define the UI tests
+
+Each platform has a specific UI tests library project where it is possible to add specific tests per platform.
+
+```
+├──  Controls
+│    ├── tests
+│    │   ├── Controls.TestCases.Android.Tests
+│    │   ├── Controls.TestCases.iOS.Tests
+│    │   ├── Controls.TestCases.Mac.Tests
+│    │   ├── Controls.TestCases.WinUI.Tests
 ```
 
 ### Unit Test Projects
