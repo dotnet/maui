@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Platform
 		WindowRootView _rootView;
 		bool _disconnected = true;
 		internal event EventHandler? OnApplyTemplateFinished;
-		ITitleBar? _titleBar;
 
 		public NavigationRootManager(Window platformWindow)
 		{
@@ -126,7 +125,9 @@ namespace Microsoft.Maui.Platform
 		{
 			_rootView.OnWindowTitleBarContentSizeChanged -= WindowRootViewOnWindowTitleBarContentSizeChanged;
 			_platformWindow.Activated -= OnWindowActivated;
+
 			SetToolbar(null);
+			SetTitleBar(null, null);
 
 			if (_rootView.Content is RootNavigationView navView)
 				navView.Content = null;
@@ -154,89 +155,10 @@ namespace Microsoft.Maui.Platform
 		internal void SetTitle(string? title) =>
 			_rootView.WindowTitle = title;
 
-		internal void SetTitleBar(ITitleBar? titlebar, IMauiContext mauiContext)
+		internal void SetTitleBar(ITitleBar? titlebar, IMauiContext? mauiContext)
 		{
-			if (_rootView.WindowTitleBarContent != null)
-			{
-				_rootView.WindowTitleBarContent.LayoutUpdated -= PlatformView_LayoutUpdated;
-			}
-
-			if (_titleBar is INotifyPropertyChanged p) 
-			{
-				p.PropertyChanged -= TitlebarPropChanged_PropertyChanged;
-			}
-
-			_titleBar = titlebar;
-
-			var handler = _titleBar?.ToHandler(mauiContext);
-			if (handler != null &&
-				handler.PlatformView != null)
-			{
-				_rootView.AppWindowId = _platformWindow.GetAppWindow()?.Id;
-				_rootView.WindowTitleBarContent = handler.PlatformView;
-
-				// This will handle all size changed events when leading/trailing/main content
-				// changes size or is added
-				_rootView.WindowTitleBarContent.LayoutUpdated += PlatformView_LayoutUpdated;
-
-				// To handle when leading/trailing/main content is added/removed
-				if (_titleBar is INotifyPropertyChanged tpc)
-				{
-					tpc.PropertyChanged += TitlebarPropChanged_PropertyChanged;
-				}
-
-				SetTitleBarInputElements(_titleBar);
-			}
-		}
-
-		private void TitlebarPropChanged_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			if (_titleBar != null && _titleBar.Handler?.MauiContext != null)
-			{
-				SetTitleBarInputElements(_titleBar);
-			}
-		}
-
-		private void PlatformView_LayoutUpdated(object? sender, object e)
-		{
-			_rootView.UpdateTitleBarContentSize();
-		}
-
-		private void SetTitleBarInputElements(ITitleBar? titlebar)
-        {
-			var mauiContext = _titleBar?.Handler?.MauiContext;
-			if (mauiContext == null)
-				return;
-
-			var passthroughElements = new List<FrameworkElement>();
-			if (titlebar?.Content != null)
-			{
-				var contentView = titlebar.Content.ToHandler(mauiContext).PlatformView;
-				if (contentView != null)
-				{
-					passthroughElements.Add(contentView);
-				}
-			}
-
-			if (titlebar?.LeadingContent != null)
-			{
-				var contentView = titlebar.LeadingContent.ToHandler(mauiContext).PlatformView;
-				if (contentView != null)
-				{
-					passthroughElements.Add(contentView);
-				}
-			}
-
-			if (titlebar?.TrailingContent != null)
-			{
-				var contentView = titlebar.TrailingContent.ToHandler(mauiContext).PlatformView;
-				if (contentView != null)
-				{
-					passthroughElements.Add(contentView);
-				}
-			}
-
-			_rootView.PassthroughTitlebarElements = passthroughElements;
+			_rootView.AppWindowId = _platformWindow.GetAppWindow()?.Id;
+			_rootView.SetTitleBar(titlebar, mauiContext);
 		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)

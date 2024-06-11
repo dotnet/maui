@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			typeof(TitleBar), null, propertyChanged: OnSubtitleChanged);
 
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
-			typeof(Color), typeof(TitleBar), null);
+			typeof(Color), typeof(TitleBar), propertyChanged: OnForegroundChanged);
 
 		public static readonly BindableProperty InactiveBackgroundColorProperty = BindableProperty.Create(nameof(InactiveBackgroundColor),
 			typeof(Color), typeof(TitleBar), null);
@@ -165,6 +165,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		static void OnForegroundChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is Color color)
+			{
+				titlebar._titleLabel.TextColor = color;
+				titlebar._subtitleLabel.TextColor = color;
+			}
+		}
+
 		Grid ContentGrid => (Grid)base.Content;
 		readonly Image _iconImage;
 		readonly Label _titleLabel;
@@ -276,16 +286,6 @@ namespace Microsoft.Maui.Controls
 			{
 				BackgroundColor = InactiveBackgroundColor;
 			}
-		}
-
-		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
-		{
-			base.OnIsVisibleChanged(oldValue, newValue);
-
-#if WINDOWS
-			var navRootManager = Handler?.MauiContext?.GetNavigationRootManager();
-			navRootManager?.SetTitleBarVisibility(newValue);
-#endif
 		}
 	}
 }
