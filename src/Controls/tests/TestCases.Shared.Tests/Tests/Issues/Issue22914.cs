@@ -25,12 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var tapAreaResult = App.WaitForElement(ButtonId, $"Timed out waiting for {ButtonId}");
 			tapAreaResult.Tap();
 
-			foreach (var elementId in _expectedNullBackgroundColorIds)
-			{
-				var element = App.WaitForElement(elementId, $"Timed out waiting for {elementId}");
-				var elementBackgroundColor = element.GetAttribute<Color?>("BackgroundColor");
-				ClassicAssert.IsTrue(elementBackgroundColor is null, $"{elementId} has unexpected BackgroundColor");
-			}
+			VerifyScreenshot("Issue22914Test.png");
 		}
 	}
 }
