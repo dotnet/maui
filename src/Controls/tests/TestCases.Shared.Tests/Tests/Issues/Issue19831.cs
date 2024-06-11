@@ -1,11 +1,9 @@
-﻿using System.Drawing;
+﻿#if ANDROID
 using NUnit.Framework;
-using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue19831 : _IssuesUITest
 {
@@ -18,8 +16,6 @@ public class Issue19831 : _IssuesUITest
     [Test]
 	public void ActionModeMenuShouldNotBeVisibleAfterSwitchingTab()
 	{
-		this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 		_ = App.WaitForElement("Item1");
 		App.LongPress("Item1");
 		App.Click("button");
@@ -28,3 +24,4 @@ public class Issue19831 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
