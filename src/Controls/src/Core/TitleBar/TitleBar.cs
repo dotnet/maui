@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls
 		static Color TextFillColorPrimaryDark = new(255, 255, 255, 255);
 		static Color TextFillInactiveColorPrimaryDark = new(255, 255, 255, 114);
 
-		public TitleBar(Window window)
+		public TitleBar()
 		{
 			base.Content = new Grid
 			{
@@ -240,9 +240,12 @@ namespace Microsoft.Maui.Controls
 			};
 			ContentGrid.Add(_subtitleLabel);
 			ContentGrid.SetColumn(_subtitleLabel, 3);
+		}
 
-			window.Activated += Window_Activated;
-			window.Deactivated += Window_Deactivated;
+		internal void NotifyWindowReady()
+		{
+			Window.Activated += Window_Activated;
+			Window.Deactivated += Window_Deactivated;
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)

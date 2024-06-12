@@ -7,6 +7,13 @@
     Title="WebView Platform-Specifics">
     <Grid
         ColumnDefinitions="*,*">
+      
+        <TitleBar
+            x:Name="CustomTitleBar"
+            Title="{Binding Title}"
+            Subtitle="{Binding Subtitle}"
+            IsVisible="{Binding ShowTitleBar}"/>
+      
         <VerticalStackLayout
             Spacing="16"
             Margin="16"
@@ -26,33 +33,21 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout 
-                Spacing="8">
-                <Entry 
-                    x:Name="TitleTextBox"
-                    Placeholder="Title Text"
-                    HorizontalOptions="Start"
-                    WidthRequest="120" />
-                <Button 
-                    x:Name="TitleButton"
-                    Text="Set Title"
-                    Clicked="TitleButton_Clicked" />
-            </HorizontalStackLayout>
-
-            <HorizontalStackLayout 
-                Spacing="8">
-                <Entry 
-                    x:Name="SubtitleTextBox"
-                    Placeholder="Subtitle Text"
-                    HorizontalOptions="Start"
-                    WidthRequest="120" />
-                <Button x:Name="SetSubtitleButton"
-                    Text="Set Subtitle"
-                    Clicked="SubtitleButton_Clicked" />
-            </HorizontalStackLayout>
-
+            <Entry 
+                x:Name="TitleTextBox"
+                Placeholder="Title Text"
+                HorizontalOptions="Start"
+                Text="{Binding Title, Mode=TwoWay}"
+                WidthRequest="120" />
+            <Entry 
+                x:Name="SubtitleTextBox"
+                Placeholder="Subtitle Text"
+                HorizontalOptions="Start"
+                Text="{Binding Subtitle, Mode=TwoWay}"
+                WidthRequest="120" />
+          
             <HorizontalStackLayout>
-                <CheckBox 
+                <CheckBox
                     x:Name="LeadingContentCheckBox"
                     IsChecked="False"
                     CheckedChanged="LeadingCheckBox_CheckedChanged"/>
@@ -82,7 +77,7 @@
             </HorizontalStackLayout>
 
             <HorizontalStackLayout>
-                <CheckBox 
+                <CheckBox
                     x:Name="TallModeCheckBox"
                     IsChecked="False"
                     CheckedChanged="TallModeCheckBox_CheckedChanged"/>
@@ -92,12 +87,10 @@
             </HorizontalStackLayout>
   
             <HorizontalStackLayout>
-                <CheckBox 
-                    x:Name="VisibilityCheckBox"
-                    IsChecked="False"
-                    CheckedChanged="VisibilityCheckBox_CheckedChanged"/>
+                <CheckBox
+                    IsChecked="{Binding ShowTitleBar, Mode=TwoWay}"/>
                 <Label
-                    Text="Hide TitleBar"
+                    Text="Show TitleBar"
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
         </VerticalStackLayout>

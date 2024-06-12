@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI;
+using Microsoft.UI.Input;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using Windows.Foundation;
+using FRect = Windows.Foundation.Rect;
+using Rect32 = Windows.Graphics.RectInt32;
 using ViewManagement = Windows.UI.ViewManagement;
 using WThickness = Microsoft.UI.Xaml.Thickness;
-using Rect32 = Windows.Graphics.RectInt32;
-using FRect = Windows.Foundation.Rect;
-using Microsoft.UI.Input;
-using Microsoft.UI;
-using System.Collections;
-using Microsoft.UI.Windowing;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Platform
 {
@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetTitleBar(ITitleBar? titlebar, IMauiContext? mauiContext)
 		{
-			if (WindowTitleBarContent != null)
+			if (WindowTitleBarContent is not null)
 			{
 				WindowTitleBarContent.LayoutUpdated -= PlatformView_LayoutUpdated;
 			}
@@ -461,14 +461,14 @@ namespace Microsoft.Maui.Platform
 
 			_titleBar = titlebar;
 
-			if (_titleBar == null || mauiContext == null)
+			if (_titleBar is null || mauiContext is null)
 			{
 				return;
 			}
 
 			var handler = _titleBar?.ToHandler(mauiContext);
-			if (handler != null &&
-				handler.PlatformView != null)
+			if (handler is not null &&
+				handler.PlatformView is not null)
 			{
 				WindowTitleBarContent = handler.PlatformView;
 
@@ -482,26 +482,38 @@ namespace Microsoft.Maui.Platform
 					tpc.PropertyChanged += TitlebarPropChanged_PropertyChanged;
 				}
 
+				UpdateBackgroundColorForButtons();
 				SetTitleBarInputElements(_titleBar);
 			}
 		}
 
 		private void TitlebarPropChanged_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (_titleBar != null && _titleBar.Handler?.MauiContext != null)
+			if (_titleBar is not null && _titleBar.Handler?.MauiContext is not null)
 			{
 				SetTitleBarInputElements(_titleBar);
+
+				if (e.PropertyName == "BackgroundColor")
+				{
+					UpdateBackgroundColorForButtons();
+				}
+			}
+		}
+
+		private void UpdateBackgroundColorForButtons()
+		{
+			if (NavigationViewControl?.ButtonHolderGrid is not null)
+			{
+				if (_titleBar?.Background is SolidPaint bg)
+				{
+					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
+				}
 			}
 		}
 
 		private void PlatformView_LayoutUpdated(object? sender, object e)
 		{
 			UpdateTitleBarContentSize();
-
-			if (NavigationViewControl?.ButtonHolderGrid is Grid buttonHolderGrid)
-			{
-				buttonHolderGrid.Background = new SolidColorBrush(UI.Colors.Red);
-			}
 		}
 
 		private void SetTitleBarInputElements(ITitleBar? titlebar)

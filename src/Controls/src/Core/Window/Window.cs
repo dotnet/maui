@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -166,11 +164,11 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MinimumHeightProperty, value);
 		}
 
-		public ITitleBar TitleBar
+		public ITitleBar? TitleBar
 		{
 			get => (ITitleBar)GetValue(TitleBarProperty);
 #pragma warning disable RS0036 // Annotate nullability of public types and members in the declared API
-			set => SetValue(TitleBarProperty, value);
+			private set => SetValue(TitleBarProperty, value);
 #pragma warning restore RS0036 // Annotate nullability of public types and members in the declared API
 		}
 
@@ -439,6 +437,32 @@ namespace Microsoft.Maui.Controls
 				Page?.SendDisappearing();
 
 			IsActivated = false;
+		}
+
+		public void SetTitleBar(TitleBar? titleBar)
+		{
+			// Detach the titlebar from everything
+			if (titleBar is not null)
+			{
+				titleBar.NotifyWindowReady();
+
+				// The following clears the binding context, so make sure it's saved
+				var bindingContext = titleBar.BindingContext;
+
+				if (titleBar.Parent is Layout parentLayout)
+				{
+					parentLayout.Children.Remove(titleBar);
+				}
+				else
+				{
+					titleBar.Parent.RemoveLogicalChild(titleBar);
+				}
+
+				titleBar.BindingContext = bindingContext;
+			}
+
+			// Attach the titlebar to the window
+			TitleBar = titleBar;
 		}
 
 		internal void OnModalPopped(Page modalPage)
