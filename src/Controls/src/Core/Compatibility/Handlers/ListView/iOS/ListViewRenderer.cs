@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
 				UpdateHorizontalScrollBarVisibility();
 			else if(e.PropertyName == Microsoft.Maui.Controls.ListView.IsEnabledProperty.PropertyName)
-				UpdateIsEnabled();
+				SetIsEnabled();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -529,10 +529,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_tableViewController.UpdateIsRefreshing(refreshing);
 		}
 
-		void UpdateIsEnabled()
+		protected override void SetIsEnabled()
 		{
+			base.SetIsEnabled();
 			UpdatePullToRefreshEnabled();
 			UpdateSelectionMode();
+			UpdateCellsEnabled();
+		}
+
+		void UpdateCellsEnabled()
+		{
 			foreach (var cell in TemplatedItemsView.TemplatedItems)
 			{
 				cell.IsEnabled = ListView.IsEnabled;
