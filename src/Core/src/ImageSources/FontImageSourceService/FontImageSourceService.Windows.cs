@@ -127,12 +127,20 @@ namespace Microsoft.Maui
 			// unpackaged apps can't load files using packaged schemes
 			if (!AppInfoUtils.IsPackagedApp)
 			{
+				// the Uri type encodes the fragment, so let's remove first
+				var fragment = "";
+				if (fontSource.IndexOf('#', StringComparison.OrdinalIgnoreCase) is int index && index >= 0)
+				{
+					fragment = fontSource.Substring(index);
+					fontSource = fontSource.Substring(0, index);
+				}
+
 				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
 			
 				var path = fontUri.AbsolutePath.TrimStart('/');
 				if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
 				{
-					fontSource = uri + fontUri.Fragment;
+					fontSource = uri + fragment;
 				}
 			}
 

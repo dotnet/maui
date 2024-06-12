@@ -117,10 +117,14 @@ namespace Microsoft.Maui.Platform
 
 			float density = _context.GetDisplayDensity();
 			float strokeThickness = (float)Clip.StrokeThickness;
-			float w = (width / density) - strokeThickness;
-			float h = (height / density) - strokeThickness;
-			float x = strokeThickness / 2;
-			float y = strokeThickness / 2;
+
+			// We need to inset the content clipping by the width of the stroke on both sides
+			// (top and bottom, left and right), so we remove it twice from the total width/height 
+			var strokeInset = 2 * strokeThickness;
+			float w = (width / density) - strokeInset;
+			float h = (height / density) - strokeInset;
+			float x = strokeThickness;
+			float y = strokeThickness;
 			IShape clipShape = Clip.Shape;
 
 			var bounds = new Graphics.RectF(x, y, w, h);

@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract class ItemsViewController<TItemsView> : UICollectionViewController
+	public abstract class ItemsViewController<TItemsView> : UICollectionViewController, MauiCollectionView.ICustomMauiCollectionViewDelegate
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
@@ -179,9 +179,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void LoadView()
 		{
-			base.LoadView(); 
-
-			CollectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+			base.LoadView();
+			var collectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+			collectionView.SetCustomDelegate(this);
+			CollectionView = collectionView;
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -196,6 +197,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
+		}
+
+
+
+		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
+		{
+			if (CollectionView?.Window != null)
+			{
+				AttachingToWindow();
+			}
+			else
+			{
+				DetachingFromWindow();
+			}
 		}
 
 		void InvalidateMeasureIfContentSizeChanged()
@@ -248,6 +263,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			_previousContentSize = contentSize.Value;
 		}
+		
 
 		internal Size? GetSize()
 		{
@@ -377,7 +393,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsSource[index];
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
 		void CellContentSizeChanged(object sender, EventArgs e)
 		{
 			if (_disposed)
@@ -400,7 +416,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
 		void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs args)
 		{
 			CacheCellAttributes(args.NewAttributes.IndexPath, args.NewAttributes.Size);
@@ -772,6 +788,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				CollectionView.Hidden = true;
+			}
+		}
+
+		private protected virtual void AttachingToWindow()
+		{
+
+		}
+
+		private protected virtual void DetachingFromWindow()
+		{
+		}
+
+		private protected virtual NSIndexPath GetAdjustedIndexPathForItemSource(NSIndexPath indexPath)
+		{
+			return indexPath;
+		}
+
+		internal virtual void CellDisplayingEndedFromDelegate(UICollectionViewCell cell, NSIndexPath indexPath)
+		{
+			if (cell is TemplatedCell templatedCell &&
+				(templatedCell.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+			{
+				// We want to unbind a cell that is no longer present in the items source. Unfortunately
+				// it's too expensive to check directly, so let's check that the current binding context
+				// matches the item at a given position.
+
+				indexPath = GetAdjustedIndexPathForItemSource(indexPath);
+
+				var itemsSource = ItemsSource;
+				if (itemsSource is null ||
+					!itemsSource.IsIndexPathValid(indexPath) ||
+					!Equals(itemsSource[indexPath], bindingContext))
+				{
+					templatedCell.Unbind();
+				}
 			}
 		}
 	}

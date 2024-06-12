@@ -339,6 +339,168 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedAppend()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				"Ringo"
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.Add(new { Name = "George" });
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedClear()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				"Paul",
+				"Ringo"
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.Clear();
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Empty(picker.Items);
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedInsert()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				"Paul",
+				"Ringo"
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.Insert(1, new { Name = "George" });
+				}
+			};
+
+			picker.SelectedIndex = 2;
+
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("George", picker.Items[1]);
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal(items[2], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedReAssign()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				"Paul",
+				"Ringo"
+			};
+			var bindingContext = new { Items = items };
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				BindingContext = bindingContext
+			};
+			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items = new ObservableCollection<object>
+					{
+						"Peach",
+						"Orange"
+					};
+					picker.BindingContext = new { Items = items };
+					picker.ItemDisplayBinding = null;
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("Peach", picker.Items[0]);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Orange", picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedItemAssignedItemsSourceCollectionChangedRemove()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo"},
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.RemoveAt(1);
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("Ringo", picker.Items[1]);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Fact]
 		public void SettingSelectedIndexUpdatesSelectedItem()
 		{
 			var source = Enum.GetNames(typeof(HorizontalAlignment));
