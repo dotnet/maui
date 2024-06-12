@@ -17,10 +17,14 @@ public class Issue19831 : _IssuesUITest
 	public void ActionModeMenuShouldNotBeVisibleAfterSwitchingTab()
 	{
 		_ = App.WaitForElement("Item1");
+
+		// 1. Open a context menu.
 		App.LongPress("Item1");
+
+		// 2. Navigate to a different tab.
 		App.Click("button");
 
-		// The test passes if the action mode menu is not visible
+		// 3. The test passes if the action mode menu is not visible.
 		VerifyScreenshot();
 	}
 }
