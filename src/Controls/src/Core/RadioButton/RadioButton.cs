@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls
 
 		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
 		{
-			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || object.Equals(Value, args.Value) || !MatchesScope(args))
+			if (!IsChecked || selected == this || string.IsNullOrEmpty(GroupName) || GroupName != selected.GroupName || (Value is not null && object.Equals(Value, args.Value)) || !MatchesScope(args))
 			{
 				return;
 			}
