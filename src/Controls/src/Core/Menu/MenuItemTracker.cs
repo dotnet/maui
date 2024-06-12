@@ -12,7 +12,8 @@ namespace Microsoft.Maui.Controls
 		where TMenuItem : BaseMenuItem
 	{
 		int _flyoutDetails;
-		Page _target;
+		WeakReference<Page> _target;
+		List<WeakReference<Page>> _additionalTargets = new();
 		public MenuItemTracker()
 		{
 		}
@@ -21,7 +22,28 @@ namespace Microsoft.Maui.Controls
 
 		protected abstract IComparer<TMenuItem> CreateComparer();
 
-		public IEnumerable<Page> AdditionalTargets { get; set; }
+		public IEnumerable<Page> AdditionalTargets
+		{
+			get
+			{
+				foreach (var target in _additionalTargets)
+				{
+					if (target.TryGetTarget(out var page))
+						yield return page;
+				}
+			}
+			set
+			{
+				_additionalTargets.Clear();
+				if (value is not null)
+				{
+					foreach	(var page in value)
+					{
+						_additionalTargets.Add(new(page));
+					}
+				}
+			}
+		}
 
 		public bool HaveFlyoutPage
 		{
@@ -32,17 +54,18 @@ namespace Microsoft.Maui.Controls
 
 		public Page Target
 		{
-			get { return _target; }
+			get =>  _target is not null && _target.TryGetTarget(out var target) ? target : null;
 			set
 			{
-				if (_target == value)
+				var target = Target;
+				if (target == value)
 					return;
 
-				UntrackTarget(_target);
-				_target = value;
+				UntrackTarget(target);
+				_target = value is null ? null : new(value);
 
-				if (_target != null)
-					TrackTarget(_target);
+				if (value != null)
+					TrackTarget(value);
 				EmitCollectionChanged();
 			}
 		}
