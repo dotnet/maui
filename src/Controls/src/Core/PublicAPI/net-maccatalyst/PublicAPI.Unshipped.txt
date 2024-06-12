@@ -1,4 +1,26 @@
 #nullable enable
+Microsoft.Maui.Controls.TitleBar
+Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.Content.set -> void
+Microsoft.Maui.Controls.TitleBar.ForegroundColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Controls.TitleBar.ForegroundColor.set -> void
+Microsoft.Maui.Controls.TitleBar.Icon.get -> Microsoft.Maui.Controls.ImageSource!
+Microsoft.Maui.Controls.TitleBar.Icon.set -> void
+Microsoft.Maui.Controls.TitleBar.InactiveBackgroundColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Controls.TitleBar.InactiveBackgroundColor.set -> void
+Microsoft.Maui.Controls.TitleBar.InactiveForegroundColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Controls.TitleBar.InactiveForegroundColor.set -> void
+Microsoft.Maui.Controls.TitleBar.LeadingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.LeadingContent.set -> void
+Microsoft.Maui.Controls.TitleBar.Subtitle.get -> string!
+Microsoft.Maui.Controls.TitleBar.Subtitle.set -> void
+Microsoft.Maui.Controls.TitleBar.Title.get -> string!
+Microsoft.Maui.Controls.TitleBar.Title.set -> void
+Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
+Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
+Microsoft.Maui.Controls.Window.SetTitleBar(Microsoft.Maui.Controls.TitleBar? titleBar) -> void
+Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
@@ -85,6 +107,16 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedC
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.ContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.ForegroundColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.IconProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.InactiveBackgroundColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.InactiveForegroundColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.LeadingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.SubtitleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

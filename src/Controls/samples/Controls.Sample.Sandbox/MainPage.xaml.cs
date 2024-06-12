@@ -1,9 +1,18 @@
-﻿namespace Maui.Controls.Sample;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
-public partial class MainPage : ContentPage
+namespace Maui.Controls.Sample
 {
-	public MainPage()
+	public partial class MainPage : ContentPage
 	{
-		InitializeComponent();
+		public MainPage()
+		{
+			InitializeComponent();
+		}
 	}
 }

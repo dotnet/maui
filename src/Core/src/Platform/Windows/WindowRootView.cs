@@ -502,12 +502,10 @@ namespace Microsoft.Maui.Platform
 
 		private void UpdateBackgroundColorForButtons()
 		{
-			if (NavigationViewControl?.ButtonHolderGrid is not null)
+			if (NavigationViewControl?.ButtonHolderGrid is not null &&
+				_titleBar?.Background is SolidPaint bg)
 			{
-				if (_titleBar?.Background is SolidPaint bg)
-				{
-					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
-				}
+				NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
 			}
 		}
 

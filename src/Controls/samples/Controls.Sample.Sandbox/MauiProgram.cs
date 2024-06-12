@@ -22,19 +22,16 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState? activationState)
 		{
 			// To test shell scenarios, change this to true
-			bool useShell = true;
+			bool useShell = false;
 
-			Window window;
 			if (!useShell)
 			{
-				window = new Window(new NavigationPage(new MainPage()));
+				return new Window(new NavigationPage(new MainPage()));
 			}
 			else
 			{
-				window = new Window(new SandboxShell());
+				return new Window(new SandboxShell());
 			}
-
-			return window;
 		}
 	}
 }
