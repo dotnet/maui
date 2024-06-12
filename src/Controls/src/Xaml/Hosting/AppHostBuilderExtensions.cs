@@ -130,7 +130,6 @@ namespace Microsoft.Maui.Controls.Hosting
 #endif
 
 #if IOS || MACCATALYST
-			handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 			handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
 			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
@@ -145,9 +144,11 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
 #endif
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || TIZEN || IOS || MACCATALYST
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
+#endif
+#if WINDOWS || ANDROID || TIZEN
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 			handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
 #endif
@@ -238,6 +239,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			RadioButton.RemapForControls();
 			FlyoutPage.RemapForControls();
 			Toolbar.RemapForControls();
+#if IOS || MACCATALYST
+			NavigationPage.RemapForControls();
+#endif
 			Window.RemapForControls();
 			Editor.RemapForControls();
 			Entry.RemapForControls();

@@ -18,5 +18,8 @@ namespace Microsoft.Maui.Platform
 			return IPlatformApplication.Current?.Services ??
 				throw new InvalidOperationException("Unable to find Application Services");
 		}
+
+		public static NavigationManager GetNavigationManager(this IMauiContext mauiContext) =>
+			mauiContext.Services.GetRequiredService<NavigationManager>();
 	}
 }
