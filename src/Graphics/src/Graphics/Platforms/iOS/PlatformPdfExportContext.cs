@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (_tempFilePath == null)
 			{
-				_tempFilePath = Path.GetTempFileName();
+				_tempFilePath = Path.GetRandomFileName();
 				UIGraphics.BeginPDFContext(_tempFilePath, CGRect.Empty, _documentInfo);
 			}
 
