@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Internals;
 using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;
 
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Controls.Platform
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			_label.SetBinding(Label.TextProperty, new Binding("Title"));
+			_label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (BaseShellItem item) => item.Title));
 
 			_bar = new BoxView
 			{

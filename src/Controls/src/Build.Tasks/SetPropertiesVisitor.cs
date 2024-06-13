@@ -291,11 +291,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
-				if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension"
-					&& bpRef != null //do not compile bindings if we're not gonna SetBinding
-					)
-					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition))
-						yield return instruction;
+				if (bpRef is not null) // do not compile bindings if we're not gonna SetBinding
+				{
+					if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension")))
+							yield return instruction;
+					}
+					else if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")
+					{
+						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension")))
+							yield return instruction;
+					}
+				}
 
 				var markExt = markupExtension.ResolveCached(context.Cache);
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
@@ -383,7 +391,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
-		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt)
+		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType)
 		{
 			//TODO support casting operators
 			var module = context.Module;
@@ -397,14 +405,26 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			INode dataTypeNode = null;
 			IElementNode n = node;
+
+			// Special handling for BindingContext={Binding ...}
+			// The order of checks is:
+			// - x:DataType on the binding itself
+			// - SKIP looking for x:DataType on the parent
+			// - continue looking for x:DataType on the parent's parent...
+			IElementNode skipNode = null;
+			if (IsBindingContextBinding(node))
+			{
+				skipNode = GetParent(node);
+			}
+
 			while (n != null)
 			{
-				if (n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
+				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
+				{
 					break;
-				if (n.Parent is ListNode listNode)
-					n = listNode.Parent as IElementNode;
-				else
-					n = n.Parent as IElementNode;
+				}
+
+				n = GetParent(n);
 			}
 
 			if (dataTypeNode is null)
@@ -468,8 +488,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				   && !md.HasCustomAttributes(module.ImportReference(context.Cache, ("mscorlib", "System", "ObsoleteAttribute")))));
 			var ctorinforef = ctorInfo.MakeGeneric(typedBindingRef, funcRef, actionRef, tupleRef);
 
-			var bindingExtensionType = ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension");
-
 			foreach (var instruction in bindingExt.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, bindingExtensionType), module))
 				yield return instruction;
 			foreach (var instruction in CompiledBindingGetGetter(tSourceRef, tPropertyRef, properties, node, context))
@@ -490,6 +508,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldnull);
 			yield return Create(Newobj, module.ImportReference(ctorinforef));
 			yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, bindingExtensionType, propertyName: "TypedBinding"));
+
+			static IElementNode GetParent(IElementNode node)
+			{
+				return node switch
+				{
+					{ Parent: ListNode { Parent: IElementNode parentNode } } => parentNode,
+					{ Parent: IElementNode parentNode } => parentNode,
+					_ => null,
+				};
+			}
+
+			static bool IsBindingContextBinding(ElementNode node)
+			{
+				// looking for BindingContext="{Binding ...}"
+				return GetParent(node) is IElementNode parentNode
+					&& node.TryGetPropertyName(parentNode, out var propertyName)
+					&& propertyName.NamespaceURI == ""
+					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
+			}
 		}
 
 		static IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> ParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module)

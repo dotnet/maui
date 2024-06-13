@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplateBinding']/Docs/*" />
 	[Obsolete("Use Binding.Source=RelativeBindingSource.TemplatedParent")]
+	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class TemplateBinding : BindingBase
 	{
 		internal const string SelfPath = ".";
@@ -24,9 +26,9 @@ namespace Microsoft.Maui.Controls
 		public TemplateBinding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			if (string.IsNullOrWhiteSpace(path))
-				throw new ArgumentException("path cannot be an empty string", "path");
+				throw new ArgumentException("path cannot be an empty string", nameof(path));
 
 			AllowChaining = true;
 			Path = path;

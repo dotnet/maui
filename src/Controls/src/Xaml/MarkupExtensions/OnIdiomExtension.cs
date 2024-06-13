@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Xml;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		 typeof(IValueConverterProvider),
 		 typeof(IXmlLineInfoProvider),
 		 typeof(IConverterOptions)])]
+	[RequiresUnreferencedCode("The OnIdiomExtension is not trim safe. Use OnIdiom<T> instead.")]
 	public class OnIdiomExtension : IMarkupExtension
 	{
 		// See Device.Idiom

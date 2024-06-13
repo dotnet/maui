@@ -293,7 +293,7 @@ public class PlatformInterop {
         }
     }
 
-    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -311,12 +311,12 @@ public class PlatformInterop {
             .into(target);
     }
 
-    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
 
-    private static void load(RequestBuilder<Drawable> builder, Context context, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback) {
         MauiCustomTarget target = new MauiCustomTarget(context, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
@@ -328,7 +328,7 @@ public class PlatformInterop {
         loadInto(builder, imageView, true, callback);
     }
 
-    public static void loadImageFromUri(ImageView imageView, String uri, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -363,7 +363,7 @@ public class PlatformInterop {
         load(builder, context, true, callback);
     }
 
-    public static void loadImageFromUri(Context context, String uri, Boolean cachingEnabled, ImageLoaderCallback callback) {
+    public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -598,7 +598,7 @@ public class PlatformInterop {
      * @param defaultFontSize
      * @return FontMetrics object or null if context or display metrics is null
      */
-    public static Paint.FontMetrics getFontMetrics(Context context, double defaultFontSize) {
+    public static Paint.FontMetrics getFontMetrics(Context context, float defaultFontSize) {
         if (context == null)
             return null;
 
@@ -608,7 +608,7 @@ public class PlatformInterop {
                 setTextSize(
                     TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_SP,
-                        (float) defaultFontSize,
+                        defaultFontSize,
                         metrics
                 ));
             }}.getFontMetrics();

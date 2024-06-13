@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,10 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 	class CreateValuesVisitor : IXamlNodeVisitor
 	{
 		public CreateValuesVisitor(HydrationContext context)
@@ -185,7 +190,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ListNode node, INode parentNode)
 		{
 			//this is a gross hack to keep ListNode alive. ListNode must go in favor of Properties
-			if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+			if (node.TryGetPropertyName(parentNode, out XmlName name))
 				node.XmlName = name;
 		}
 

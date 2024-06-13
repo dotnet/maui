@@ -9,6 +9,7 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		public string File { get; set; } = string.Empty;
 		public List<WarningsPerCode> WarningsPerCode { get; set; } = new List<WarningsPerCode>();
+		public override string ToString() => string.Join("\n", WarningsPerCode.SelectMany(warningPerCode => warningPerCode.Messages.Select(message => $"{File}: {warningPerCode.Code}: {message}")).ToList());
 	}
 
 	public class WarningsPerCode
@@ -80,6 +81,11 @@ namespace Microsoft.Maui.IntegrationTests
 					warningsPerCode.Messages.Add(message);
 				}
 			}
+		}
+
+		public static void AssertNoWarnings(this List<WarningsPerFile> actualWarnings)
+		{
+			Assert.AreEqual(0, actualWarnings.Count, $"No warnings expected, but got {actualWarnings.Count} warnings:\n{string.Join("\n", actualWarnings.Select(actualWarning => actualWarning.ToString()))}");
 		}
 
 		public static void AssertWarnings(this List<WarningsPerFile> actualWarnings, List<WarningsPerFile> expectedWarnings)

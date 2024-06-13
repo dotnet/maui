@@ -11,8 +11,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		static readonly BindableProperty RealCellProperty = BindableProperty.CreateAttached("RealCell", typeof(UITableViewCell), typeof(Cell), null);
 
-		EventHandler? _onForceUpdateSizeRequested;
-		PropertyChangedEventHandler? _onPropertyChangedEventHandler;
 		readonly UIColor _defaultCellBgColor = (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) ? UIColor.Clear : UIColor.White;
 
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
@@ -21,6 +19,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
 		UITableView? _tableView;
+
+		private protected event PropertyChangedEventHandler? CellPropertyChanged;
 
 		public CellRenderer() : base(Mapper, CommandMapper)
 		{
@@ -43,8 +43,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
 
 			tvc.Cell = item;
-
-			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
@@ -135,44 +133,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetBackgroundColor(tableViewCell, cell, uiBgColor);
 		}
 
+		[Obsolete("The ForceUpdateSizeRequested event is now managed by the command mapper, so it's not necessary to invoke this event manually.")]
 		protected void WireUpForceUpdateSizeRequested(ICellController cell, UITableViewCell platformCell, UITableView tableView)
 		{
-			var inpc = cell as INotifyPropertyChanged;
-			cell.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
-
-			if (inpc != null)
-				inpc.PropertyChanged -= _onPropertyChangedEventHandler;
-
-			_onForceUpdateSizeRequested = (sender, e) =>
-			{
-				var index = tableView?.IndexPathForCell(platformCell);
-				if (index == null && sender is Cell c)
-				{
-					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
-				}
-
-				if (index != null)
-					tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
-			};
-
-			_onPropertyChangedEventHandler = (sender, e) =>
-			{
-				if (e.PropertyName == "RealCell" && sender is BindableObject bo && GetRealCell(bo) == null)
-				{
-					if (sender is ICellController icc)
-						icc.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
-
-					if (sender is INotifyPropertyChanged notifyPropertyChanged)
-						notifyPropertyChanged.PropertyChanged -= _onPropertyChangedEventHandler;
-
-					_onForceUpdateSizeRequested = null;
-					_onPropertyChangedEventHandler = null;
-				}
-			};
-
-			cell.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
-			if (inpc != null)
-				inpc.PropertyChanged += _onPropertyChangedEventHandler;
 
 		}
 
@@ -189,6 +152,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal static void SetRealCell(BindableObject cell, UITableViewCell renderer)
 		{
 			cell.SetValue(RealCellProperty, renderer);
+		}
+
+		public override void UpdateValue(string property)
+		{
+			base.UpdateValue(property);
+			var args = new PropertyChangedEventArgs(property);
+			if (VirtualView is BindableObject bindableObject &&
+				GetRealCell(bindableObject) is CellTableViewCell ctv )
+			{
+				ctv.HandlePropertyChanged(bindableObject, args);
+			}
+
+			CellPropertyChanged?.Invoke(VirtualView, args);
+		}
+
+		public override void Invoke(string command, object? args)
+		{
+			base.Invoke(command, args);
+
+			if (command == "ForceUpdateSizeRequested" && 
+				VirtualView is BindableObject bindableObject &&
+				GetRealCell(bindableObject) is UITableViewCell ctv)
+			{
+				var index = _tableView?.IndexPathForCell(ctv);
+				if (index == null && VirtualView is Cell c)
+				{
+					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
+				}
+				if (index != null)
+					_tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+			}
 		}
 	}
 }

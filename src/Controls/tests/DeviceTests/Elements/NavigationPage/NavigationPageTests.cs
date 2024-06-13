@@ -332,6 +332,7 @@ namespace Microsoft.Maui.DeviceTests
 						new RadioButton(),
 					}
 				};
+				NavigationPage.SetTitleView(page, new Label() { Text = "Title View" });
 				pageReference = new WeakReference(page);
 				await navPage.Navigation.PushAsync(page);
 				await navPage.Navigation.PopAsync();
@@ -360,6 +361,20 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 				await navPage.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact]
+		public async Task SettingTitleIconImageSourceDoesntCrash()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new ContentPage() { Content = new Frame(), Title = "Detail" };
+				await navPage.PushAsync(new NavigationPage(page));
+				NavigationPage.SetTitleIconImageSource(page, "red.png");
 			});
 		}
 	}

@@ -120,8 +120,17 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			if (_app.AppState == ApplicationState.NotRunning)
-				return CommandResponse.SuccessEmptyResponse;
+			try
+			{
+				if (_app.AppState == ApplicationState.NotRunning)
+					return CommandResponse.SuccessEmptyResponse;
+			}
+			catch (Exception)
+			{
+				// Occasionally the app seems to get so locked up it can't 
+				// even report back the appstate. In that case, we'll just
+				// try to trigger a reset.
+			}
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
 			{

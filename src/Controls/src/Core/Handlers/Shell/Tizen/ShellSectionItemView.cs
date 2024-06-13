@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 					VerticalOptions = LayoutOptions.Center,
 				};
 
-				_icon.SetBinding(Path.DataProperty, new Binding("IconPath", converter: new IconConverter()));
+				_icon.SetBinding(Path.DataProperty, TypedBinding.ForSingleNestingLevel("IconPath", static (ShellItemView.MoreItem item) => item.IconPath, converter: new IconConverter()));
 				return _icon;
 			}
 			else
@@ -130,7 +131,7 @@ namespace Microsoft.Maui.Controls.Platform
 					VerticalOptions = LayoutOptions.Center,
 				};
 
-				_icon.SetBinding(Image.SourceProperty, new Binding("Icon"));
+				_icon.SetBinding(Image.SourceProperty, TypedBinding.ForSingleNestingLevel("Icon", static (BaseShellItem item) => item.Icon));
 				return _icon;
 			}
 		}
@@ -144,7 +145,16 @@ namespace Microsoft.Maui.Controls.Platform
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			_label.SetBinding(Label.TextProperty, new Binding("Title"));
+
+			if (_isMoreItem)
+			{
+				_label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (ShellItemView.MoreItem item) => item.Title));
+			}
+			else
+			{
+				_label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (BaseShellItem item) => item.Title));
+			}
+
 			return _label;
 		}
 

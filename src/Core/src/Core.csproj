@@ -11,7 +11,7 @@
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0' and '$(TargetFramework)' != 'netstandard2.1'">
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
@@ -64,12 +64,6 @@
 
   <ItemGroup>
     <None Include="nuget\**" Exclude="nuget\**\*.in.*" PackagePath="" Pack="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="ILLink.Substitutions.xml">
-      <LogicalName>ILLink.Substitutions.xml</LogicalName>
-    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">

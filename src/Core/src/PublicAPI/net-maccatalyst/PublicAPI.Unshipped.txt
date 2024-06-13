@@ -8,6 +8,7 @@ Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
 Microsoft.Maui.IKeyboardAccelerator
+Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.IMenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>?
@@ -83,6 +84,9 @@ override Microsoft.Maui.Platform.MauiTextView.Font.set -> void
 override Microsoft.Maui.Platform.MauiView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.MauiView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
+override Microsoft.Maui.Platform.PageViewController.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
+override Microsoft.Maui.Platform.PageViewController.PrefersHomeIndicatorAutoHidden.get -> bool
+override Microsoft.Maui.Platform.PageViewController.PrefersStatusBarHidden() -> bool
 override Microsoft.Maui.Platform.NoCaretField.MovedToWindow() -> void
 override Microsoft.Maui.Platform.WrapperView.MovedToWindow() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
@@ -141,6 +145,12 @@ Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
 static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
 static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
+static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
@@ -166,3 +176,4 @@ static Microsoft.Maui.Hosting.TypeConversionAppBuilderExtensions.ConfigureTypeCo
 Microsoft.Maui.Hosting.ITypeConversionBuilder
 Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T, TConverter>() -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
 Microsoft.Maui.Hosting.ITypeConversionBuilder.AddTypeConverter<T>(System.Func<System.ComponentModel.TypeConverter!>! createConverter) -> Microsoft.Maui.Hosting.ITypeConversionBuilder!
+*REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void

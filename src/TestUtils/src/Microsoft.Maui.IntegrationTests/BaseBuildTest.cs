@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Microsoft.Maui.IntegrationTests
 {
 	public enum RuntimeVariant
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public const string MauiVersionCurrent = "8.0.0-rc.2.9530"; // this should not be the same as the last release
 		public const string MauiVersionPrevious = "8.0.1"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
 		public string TestName
 		{
@@ -26,7 +27,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					result = result.Replace(c, '_');
 				}
-				return result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+				if (result.Length > 20)
+				{
+					// If the test name is too long, hash it to avoid path length issues
+					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+				}
+				return result;
 			}
 		}
 
@@ -67,6 +75,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"Microsoft.Maui.Essentials.*.nupkg",
 				"Microsoft.Maui.Graphics.*.nupkg",
 				"Microsoft.Maui.Maps.*.nupkg",
+				"Microsoft.Maui.Resizetizer.*.nupkg",
 				"Microsoft.AspNetCore.Components.WebView.*.nupkg",
 			};
 
@@ -87,9 +96,8 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
-			FileUtilities.ReplaceInFile(TestNuGetConfig,
-				"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-				$"<add key=\"nuget-only\" value=\"{extraPacksDir}\" />");
+			FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
+			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 		}
 
 		[SetUp]

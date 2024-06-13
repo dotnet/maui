@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
@@ -13,6 +14,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		static IValueConverterProvider defaultValueConverterProvider = new ValueConverterProvider();
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		internal XamlServiceProvider(INode node, HydrationContext context)
 		{
 			if (context != null && node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out object targetObject))
@@ -181,6 +186,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		readonly GetTypeFromXmlName getTypeFromXmlName;
 		readonly IXmlNamespaceResolver namespaceResolver;
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		public XamlTypeResolver(IXmlNamespaceResolver namespaceResolver, Assembly currentAssembly)
 			: this(namespaceResolver, XamlParser.GetElementType, currentAssembly)
 		{

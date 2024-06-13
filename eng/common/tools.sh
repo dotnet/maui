@@ -347,14 +347,14 @@ function InitializeBuildTool {
   fi
 }
 
-# Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
+# Set RestoreNoHttpCache as a workaround for https://github.com/NuGet/Home/issues/3116
 function GetNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
       export NUGET_PACKAGES="$HOME/.nuget/packages"
     else
       export NUGET_PACKAGES="$repo_root/.packages"
-      export RESTORENOCACHE=true
+      export RESTORENOHTTPCACHE=true
     fi
   fi
 
@@ -438,7 +438,7 @@ function StopProcesses {
 }
 
 function MSBuild {
-  local args=$@
+  local args=( "$@" )
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
@@ -473,7 +473,7 @@ function MSBuild {
     args+=( "-logger:$selectedPath" )
   fi
 
-  MSBuild-Core ${args[@]}
+  MSBuild-Core "${args[@]}"
 }
 
 function MSBuild-Core {
@@ -507,7 +507,7 @@ function MSBuild-Core {
 
       # When running on Azure Pipelines, override the returned exit code to avoid double logging.
       # Skip this when the build is a child of the VMR orchestrator build.
-      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$product_build" != true && $properties != *"DotNetBuildRepo=true"* ]]; then
+      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$product_build" != true && "$properties" != *"DotNetBuildRepo=true"* ]]; then
         Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
         # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
         # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
