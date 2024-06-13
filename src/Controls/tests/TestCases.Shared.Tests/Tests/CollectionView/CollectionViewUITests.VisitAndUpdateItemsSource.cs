@@ -35,11 +35,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[TestCase("DataTemplate", "VerticalGridCode", 19, 6)]
 		[TestCase("DataTemplate", "HorizontalGridCode", 19, 6)]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnWindows("This test is failing, likely due to product issue.")]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },
-				"This test is failing, likely due to product issue.");
-
 			try
 			{
 				VisitInitialGallery(collectionTestName);

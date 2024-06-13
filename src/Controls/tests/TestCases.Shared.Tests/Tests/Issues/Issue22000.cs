@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
 		public async Task ResizeCarouselViewKeepsIndex()
 		{
 			App.WaitForElement("WaitForStubControl");
