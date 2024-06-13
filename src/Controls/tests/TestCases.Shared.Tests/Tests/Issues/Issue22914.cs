@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var tapAreaResult = App.WaitForElement(ButtonId, $"Timed out waiting for {ButtonId}");
 			tapAreaResult.Tap();
 
-			VerifyScreenshot("Issue22914Test.png");
+			VerifyScreenshot("Issue22914Test");
 		}
 	}
 }

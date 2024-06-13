@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue22914">
-    <VerticalStackLayout BackgroundColor="Orange"
-                         x:Name="VerticalStackLayout1">
+<ContentPage
+    x:Class="Maui.Controls.Sample.Issues.Issue22914"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <VerticalStackLayout x:Name="VerticalStackLayout1" BackgroundColor="Orange">
 
 
-        <ContentView BackgroundColor="Gray"
-                     x:Name="ContentView1">
-            <Label Text="You should be able to read after tapping the button"
-                   TextColor="Gray"/>
+        <ContentView x:Name="ContentView1" BackgroundColor="Gray">
+            <Label Text="You should be able to read after tapping the button" TextColor="Gray" />
         </ContentView>
 
-        <Label HeightRequest="100"
-               Background="Green"
-               Text="Sample label"
-               x:Name="Label1"/>
+        <Label
+            x:Name="Label1"
+            BackgroundColor="Green"
+            HeightRequest="100"
+            Text="Sample label" />
 
-        <Button AutomationId="Tap1Button"
-                BackgroundColor="Red"
-                x:Name="Tap1Button"/>
+        <Button
+            x:Name="Tap1Button"
+            AutomationId="Tap1Button"
+            BackgroundColor="Red"
+            Text="Reset background color" />
 
     </VerticalStackLayout>
 </ContentPage>
