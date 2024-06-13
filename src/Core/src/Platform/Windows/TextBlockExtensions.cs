@@ -64,8 +64,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this TextBlock platformControl, ILabel label)
 		{
-			// We don't have a FlowDirection yet, so there's nothing to pass in here. 
-			// TODO: Update this when FlowDirection is available 
+			// We don't have a FlowDirection yet, so there's nothing to pass in here.
+			// TODO: Update this when FlowDirection is available
 			platformControl.TextAlignment = label.HorizontalTextAlignment.ToPlatform(true);
 		}
 
@@ -120,9 +120,8 @@ namespace Microsoft.Maui.Platform
 
 			XmlReaderSettings settings = new XmlReaderSettings
 			{
-				DtdProcessing = DtdProcessing.Parse,
-				ValidationType = ValidationType.DTD,
-				XmlResolver = new XmlPreloadedResolver(XmlKnownDtds.All)
+        DtdProcessing = DtdProcessing.Prohibit, // Disable DTD processing
+        XmlResolver = null // Disable external entity resolution
 			};
 
 			XmlReader reader = XmlReader.Create(stringReader, settings, xhtmlContext);
