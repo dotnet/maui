@@ -121,12 +121,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateHasHeader()
 		{
-			ItemsSource.HasHeader = ItemsView.Header != null;
+			ItemsSource.HasHeader = (ItemsView.Header ?? ItemsView.HeaderTemplate) is not null;
 		}
 
 		void UpdateHasFooter()
 		{
-			ItemsSource.HasFooter = ItemsView.Footer != null;
+			ItemsSource.HasFooter =  (ItemsView.Footer ?? ItemsView.FooterTemplate) is not null;
 		}
 
 		bool IsHeader(int position)

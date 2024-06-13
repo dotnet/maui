@@ -212,9 +212,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[SetUp]
-		public void TestSetup()
+		public override void TestSetup()
 		{
+			base.TestSetup();
 			var device = App.GetTestDevice();
 			if(device == TestDevice.Android || device == TestDevice.iOS)
 			{

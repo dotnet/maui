@@ -13,43 +13,36 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView ItemsUpdatingScrollMode";
 
-		[OneTimeTearDown]
-		public void CollectionViewItemsUpdatingScrollModeOneTimeTearDown()
-		{
-			this.Back();
-		}
+		protected override bool ResetAfterEachTest => true;
 
+#if ANDROID
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnWindows("This test is failing, likely due to product issue")]
 		public void KeepItemsInView()
 		{
-			if (Device == TestDevice.Android)
-			{
-				App.WaitForElement("ScrollToMiddle");
-				App.Click("ScrollToMiddle");
-				App.WaitForNoElement("Vegetables.jpg, 10");
+			App.WaitForElement("ScrollToMiddle");
+			App.Click("ScrollToMiddle");
+			App.WaitForNoElement("Vegetables.jpg, 10");
 
-				for (int n = 0; n < 25; n++)
-				{
-					App.Click("AddItemAbove");
-				}
-
-				App.WaitForNoElement("Vegetables.jpg, 10");
-			}
-			else
+			for (int n = 0; n < 25; n++)
 			{
-				Assert.Ignore("This test is failing, requires research.");
+				App.Click("AddItemAbove");
 			}
+
+			App.WaitForNoElement("Vegetables.jpg, 10");
 		}
+#endif
 
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		//[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnAllPlatforms("This test is failing, likely due to product issue")]
 		public void KeepScrollOffset()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("SelectScrollMode");
 			App.Click("SelectScrollMode");
 			App.Click("KeepScrollOffset");
@@ -62,12 +55,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		//[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnAllPlatforms("This test is failing, likely due to product issue")]
 		public void KeepLastItemInView()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("SelectScrollMode");
 			App.Click("SelectScrollMode");
 			App.Click("KeepLastItemInView");

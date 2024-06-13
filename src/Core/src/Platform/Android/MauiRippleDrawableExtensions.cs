@@ -50,14 +50,13 @@ static class MauiRippleDrawableExtensions
 		return true;
 	}
 
-	internal static void UpdateMauiRippleDrawableBackground<TButton>(this AView platformView, TButton button,
+	internal static void UpdateMauiRippleDrawableBackground(this AView platformView,
+		Paint? background,
+		IButtonStroke stroke,
 		Func<int?>? getEmptyBackgroundColor = null,
 		Func<ColorStateList?>? getDefaultRippleColor = null,
 		Action? beforeSet = null)
-		where TButton : IButtonStroke, IView
 	{
-		var background = button.Background;
-
 		// Get the current background
 		var recreateRipple = false;
 		if (!platformView.TryGetMauiBackground(out var rippleDrawable, out var layerDrawable, out _, out var strokeDrawable, out _))
@@ -74,7 +73,7 @@ static class MauiRippleDrawableExtensions
 			recreateRipple = true;
 		}
 
-		var (width, color, radius) = button.GetStrokeProperties(platformView.Context!, false);
+		var (width, color, radius) = stroke.GetStrokeProperties(platformView.Context!, false);
 
 		// The previous background may have had transparency or a gradient which cannot
 		// be un-set, so we need an entirely new drawable.
@@ -132,7 +131,7 @@ static class MauiRippleDrawableExtensions
 			// Create the stroke layer.
 			strokeDrawable = new GradientDrawable();
 			strokeDrawable.SetCornerRadius(radius);
-			var strokeColor = button.StrokeColor ?? Colors.Black;
+			var strokeColor = stroke.StrokeColor ?? Colors.Black;
 			var strokeColorList = ColorStateListExtensions.CreateButton(strokeColor.ToPlatform());
 			strokeDrawable.SetStroke(width, strokeColorList);
 

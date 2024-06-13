@@ -81,7 +81,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_ = new TestWindow(nav);
 
-			nav.SendAppearing();
 			await waitForFirstAppearing.Task;
 			initialPage.Appearing += (sender, _)
 				=> rootPageFiresAppearingAfterPop = (ContentPage)sender;

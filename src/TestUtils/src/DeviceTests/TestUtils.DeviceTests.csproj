@@ -8,6 +8,7 @@
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
     <Nullable>enable</Nullable>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
 
   <ItemGroup>

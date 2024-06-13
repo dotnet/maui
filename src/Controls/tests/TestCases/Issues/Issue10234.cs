@@ -9,25 +9,6 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 10234, "CarouselView disposed on iOS when navigating back in Shell", PlatformAffected.iOS)]
-	public class Issue10234Test : ContentPage
-	{
-		public Issue10234Test()
-		{
-			Content = new VerticalStackLayout()
-			{
-				Children = 
-				{
-					new Button() 
-					{ 
-						Text = "Go To Test", 
-						AutomationId = "GoToTest", 
-						Command = new Command(() => Application.Current.MainPage = new Issue10234()) 
-					}
-				}
-			};			
-		}
-	}
-
 	public class Issue10234 : Shell
 	{
 		public Issue10234()

@@ -204,15 +204,18 @@ namespace Microsoft.Maui.Controls
 		void IWindow.FrameChanged(Rect frame)
 		{
 			if (new Rect(X, Y, Width, Height) == frame)
+			{
 				return;
+			}
 
 			_batchFrameUpdate++;
-			bool shouldTriggerSizeChanged = (Width != frame.Width) || (Height != frame.Height);
 
-			X = frame.X;
-			Y = frame.Y;
-			Width = frame.Width;
-			Height = frame.Height;
+			var shouldTriggerSizeChanged = (Width != frame.Width) || (Height != frame.Height);
+
+			SetValue(XProperty, frame.X, SetterSpecificity.FromHandler);
+			SetValue(YProperty, frame.Y, SetterSpecificity.FromHandler);
+			SetValue(WidthProperty, frame.Width, SetterSpecificity.FromHandler);
+			SetValue(HeightProperty, frame.Height, SetterSpecificity.FromHandler);
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
@@ -221,25 +224,6 @@ namespace Microsoft.Maui.Controls
 			if (_batchFrameUpdate == 0 && shouldTriggerSizeChanged)
 			{
 				SizeChanged?.Invoke(this, EventArgs.Empty);
-			}
-
-
-			// If for some reason during the PropertyChanged event on X,Y,Width,Height
-			// the user has changed these values. Then we need to propagate them back to the handler
-			UpdateHandler(X != frame.X, nameof(X));
-			UpdateHandler(Y != frame.Y, nameof(Y));
-			UpdateHandler(Width != frame.Width, nameof(Width));
-			UpdateHandler(Height != frame.Height, nameof(Height));
-
-
-			void UpdateHandler(bool condition, string property)
-			{
-				if (Handler is null || !condition)
-				{
-					return;
-				}
-
-				Handler.UpdateValue(property);
 			}
 		}
 
@@ -252,7 +236,6 @@ namespace Microsoft.Maui.Controls
 
 			base.UpdateHandlerValue(property);
 		}
-
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
 		public event EventHandler<ModalPoppingEventArgs>? ModalPopping;

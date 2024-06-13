@@ -13,10 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button ImageSource not Scaling as expected";
 
 		[Test]
+		[FailsOnIOS("iOS will be fixed in https://github.com/dotnet/maui/pull/20953")]
+		[FailsOnMac("Catalyst will be fixed in https://github.com/dotnet/maui/pull/20953")]
 		public void Issue18242Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.iOS }, "iOS will be fixed in https://github.com/dotnet/maui/pull/20953");
-
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();
