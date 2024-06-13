@@ -30,6 +30,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
+				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
 				handlers.AddHandler<Frame, FrameRenderer>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
@@ -41,6 +42,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
+				handlers.AddHandler<ImageCell, ImageCellRenderer>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
@@ -49,10 +51,13 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
+				handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
 				handlers.AddHandler<TableView, TableViewRenderer>();
+				handlers.AddHandler<TextCell, TextCellRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
+				handlers.AddHandler<ViewCell, ViewCellRenderer>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 #else
@@ -60,6 +65,35 @@ public class MemoryTests : ControlsHandlerTestBase
 #endif
 			});
 		});
+	}
+
+	[Fact("Page Does Not Leak")]
+	public async Task PageDoesNotLeak()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference platformViewReference = null;
+
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var page = new ContentPage { Content = new Label() };
+			
+			await navPage.Navigation.PushModalAsync(page);
+
+			viewReference = new WeakReference(page);
+			handlerReference = new WeakReference(page.Handler);
+			platformViewReference = new WeakReference(page.Handler.PlatformView);
+
+			// Windows requires Loaded event to fire before unloading
+			await Task.Delay(500);
+			await navPage.Navigation.PopModalAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
 	[Theory("Handler Does Not Leak")]
@@ -78,6 +112,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Label))]
+	[InlineData(typeof(ListView))]
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
@@ -97,6 +132,10 @@ public class MemoryTests : ControlsHandlerTestBase
 		SetupBuilder();
 
 #if ANDROID
+		// TODO: fixing upstream at https://github.com/xamarin/xamarin-android/pull/8900
+		if (type == typeof(ListView))
+			return;
+
 		// NOTE: skip certain controls on older Android devices
 		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
@@ -122,6 +161,16 @@ public class MemoryTests : ControlsHandlerTestBase
 			if (view is ContentView content)
 			{
 				content.Content = new Label();
+			}
+			else if (view is ListView listView)
+			{
+				listView.ItemTemplate = new DataTemplate(() =>
+				{
+					var cell = new TextCell();
+					cell.SetBinding(TextCell.TextProperty, ".");
+					return cell;
+				});
+				listView.ItemsSource = observable;
 			}
 			else if (view is ItemsView items)
 			{
@@ -186,6 +235,49 @@ public class MemoryTests : ControlsHandlerTestBase
 						handlerReference = new WeakReference(view.Handler);
 
 						return view;
+					}),
+					ItemsSource = observable
+				}
+			});
+
+			await navPage.Navigation.PopAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
+	}
+
+	[Theory("Cells Do Not Leak")]
+	[InlineData(typeof(TextCell))]
+	[InlineData(typeof(EntryCell))]
+	[InlineData(typeof(ImageCell))]
+	[InlineData(typeof(SwitchCell))]
+	[InlineData(typeof(ViewCell))]
+	public async Task CellsDoNotLeak(Type type)
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+
+		var observable = new ObservableCollection<int> { 1 };
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			await navPage.Navigation.PushAsync(new ContentPage
+			{
+				Content = new ListView
+				{
+					ItemTemplate = new DataTemplate(() =>
+					{
+						var cell = (Cell)Activator.CreateInstance(type);
+						if (cell is ViewCell viewCell)
+						{
+							viewCell.View = new Label();
+						}
+						viewReference = new WeakReference(cell);
+						handlerReference = new WeakReference(cell.Handler);
+						return cell;
 					}),
 					ItemsSource = observable
 				}

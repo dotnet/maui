@@ -1,8 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using static Microsoft.Maui.Easing;
 
 #nullable disable
@@ -20,50 +18,36 @@ namespace Microsoft.Maui.Converters
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			var strValue = value?.ToString();
+			if (value is null)
+				return null;
+
+			var strValue = value as string ?? value.ToString();
 
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
 
-			strValue = strValue?.Trim() ?? "";
 			var parts = strValue.Split('.');
+			if (parts.Length == 2 && Compare(parts[0], nameof(Easing)))
+				strValue = parts[1];
 
-			if (parts.Length == 2 && parts[0] == nameof(Easing))
-				strValue = parts[parts.Length - 1];
+			return strValue switch
+			{
+				_ when Compare(strValue, nameof(Linear)) => Linear,
+				_ when Compare(strValue, nameof(SinIn)) => SinIn,
+				_ when Compare(strValue, nameof(SinOut)) => SinOut,
+				_ when Compare(strValue, nameof(SinInOut)) => SinInOut,
+				_ when Compare(strValue, nameof(CubicIn)) => CubicIn,
+				_ when Compare(strValue, nameof(CubicOut)) => CubicOut,
+				_ when Compare(strValue, nameof(CubicInOut)) => CubicInOut,
+				_ when Compare(strValue, nameof(BounceIn)) => BounceIn,
+				_ when Compare(strValue, nameof(BounceOut)) => BounceOut,
+				_ when Compare(strValue, nameof(SpringIn)) => SpringIn,
+				_ when Compare(strValue, nameof(SpringOut)) => SpringOut,
+				_ => throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}")
+			};
 
-			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
-				return Linear;
-			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
-				return SinIn;
-			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
-				return SinOut;
-			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
-				return SinInOut;
-			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
-				return CubicIn;
-			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
-				return CubicOut;
-			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
-				return CubicInOut;
-			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
-				return BounceIn;
-			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
-				return BounceOut;
-			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
-				return SpringIn;
-			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
-				return SpringOut;
-
-			var fallbackValue = typeof(Easing)
-				.GetTypeInfo()
-				.DeclaredFields
-				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
-				?.GetValue(null);
-
-			if (fallbackValue is Easing fallbackEasing)
-				return fallbackEasing;
-
-			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+			static bool Compare(string left, string right) =>
+				left.Equals(right, StringComparison.OrdinalIgnoreCase);
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
@@ -71,30 +55,21 @@ namespace Microsoft.Maui.Converters
 			if (value is not Easing easing)
 				throw new NotSupportedException();
 
-			if (easing == Linear)
-				return nameof(Linear);
-			if (easing == SinIn)
-				return nameof(SinIn);
-			if (easing == SinOut)
-				return nameof(SinOut);
-			if (easing == SinInOut)
-				return nameof(SinInOut);
-			if (easing == CubicIn)
-				return nameof(CubicIn);
-			if (easing == CubicOut)
-				return nameof(CubicOut);
-			if (easing == CubicInOut)
-				return nameof(CubicInOut);
-			if (easing == BounceIn)
-				return nameof(BounceIn);
-			if (easing == BounceOut)
-				return nameof(BounceOut);
-			if (easing == SpringIn)
-				return nameof(SpringIn);
-			if (easing == SpringOut)
-				return nameof(SpringOut);
-
-			throw new NotSupportedException();
+			return easing switch
+			{
+				_ when easing.Equals(Linear) => nameof(Linear),
+				_ when easing.Equals(SinIn) => nameof(SinIn),
+				_ when easing.Equals(SinOut) => nameof(SinOut),
+				_ when easing.Equals(SinInOut) => nameof(SinInOut),
+				_ when easing.Equals(CubicIn) => nameof(CubicIn),
+				_ when easing.Equals(CubicOut) => nameof(CubicOut),
+				_ when easing.Equals(CubicInOut) => nameof(CubicInOut),
+				_ when easing.Equals(BounceIn) => nameof(BounceIn),
+				_ when easing.Equals(BounceOut) => nameof(BounceOut),
+				_ when easing.Equals(SpringIn) => nameof(SpringIn),
+				_ when easing.Equals(SpringOut) => nameof(SpringOut),
+				_ => throw new NotSupportedException(),
+			};
 		}
 
 		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)

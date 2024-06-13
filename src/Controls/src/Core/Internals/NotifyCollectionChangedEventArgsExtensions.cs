@@ -25,13 +25,13 @@ namespace Microsoft.Maui.Controls.Internals
 		public static NotifyCollectionChangedAction Apply(this NotifyCollectionChangedEventArgs self, Action<object, int, bool> insert, Action<object, int> removeAt, Action reset)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 			if (reset == null)
-				throw new ArgumentNullException("reset");
+				throw new ArgumentNullException(nameof(reset));
 			if (insert == null)
-				throw new ArgumentNullException("insert");
+				throw new ArgumentNullException(nameof(insert));
 			if (removeAt == null)
-				throw new ArgumentNullException("removeAt");
+				throw new ArgumentNullException(nameof(removeAt));
 
 			switch (self.Action)
 			{
