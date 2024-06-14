@@ -29,5 +29,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tap.SendTapped(view);
 			Assert.Equal(result, tap.CommandParameter);
 		}
+
+		[Fact]
+		public void NoCallbackWhenViewIsDisabled()
+		{
+			var view = new View
+			{
+				IsEnabled = false
+			};
+
+			var tap = new TapGestureRecognizer();
+			object result = null;
+			tap.Command = new Command(o => result = o);
+
+			tap.SendTapped(view);
+			Assert.Null(result);
+		}
 	}
 }
