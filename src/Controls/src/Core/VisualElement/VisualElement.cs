@@ -1252,9 +1252,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnChildAdded(child);
 
-			var view = child as View;
-
-			if (view != null)
+			if (child is View view)
 			{
 				ComputeConstraintForView(view);
 			}
@@ -1377,6 +1375,35 @@ namespace Microsoft.Maui.Controls
 			}
 
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+		}
+		
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			switch (trigger)
+			{
+				case InvalidationTrigger.VerticalOptionsChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+					// When a child changes its HorizontalOptions or VerticalOptions
+					// the size of the parent won't change, so we don't have to invalidate the measure
+					return;
+				case InvalidationTrigger.RendererReady:
+				// Undefined happens in many cases, including when `IsVisible` changes
+				case InvalidationTrigger.Undefined:
+					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					return;
+				default:
+					// When visibility changes `InvalidationTrigger.Undefined` is used,
+					// so here we're sure that visibility didn't change
+					if (child.IsVisible)
+					{
+						// We need to invalidate measures only if child is actually visible
+						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
+						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+					}
+					return;
+			}
 		}
 
 		/// <inheritdoc/>
