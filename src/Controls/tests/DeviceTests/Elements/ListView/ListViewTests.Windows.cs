@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 				var actualListView = listView.ToPlatform() as ListViewRenderer;
 				var textChildren = actualListView.GetChildren<UI.Xaml.Controls.TextBlock>();
 
-				Assert.True(textChildren.Any(x => x.Text == "Item 3"));
+				Assert.Contains(textChildren, (x) => x.Text == "Item 3");
 			});
 		}
 	}
