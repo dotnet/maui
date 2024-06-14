@@ -210,6 +210,7 @@ namespace Microsoft.Maui.Controls
 				HeightRequest = 20,
 				VerticalOptions = LayoutOptions.Center,
 				IsVisible = false,
+				Margin = new Thickness(16, 0, 0, 0)
 			};
 			ContentGrid.Add(_iconImage);
 			ContentGrid.SetColumn(_iconImage, 1);
@@ -242,10 +243,16 @@ namespace Microsoft.Maui.Controls
 			ContentGrid.SetColumn(_subtitleLabel, 3);
 		}
 
-		internal void NotifyWindowReady()
+		internal void NotifyWindowReady(Window window)
 		{
-			Window.Activated += Window_Activated;
-			Window.Deactivated += Window_Deactivated;
+			window.Activated += Window_Activated;
+			window.Deactivated += Window_Deactivated;
+		}
+
+		internal void UnhookWindowEvents(Window window)
+		{
+			window.Activated -= Window_Activated;
+			window.Deactivated -= Window_Deactivated;
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)

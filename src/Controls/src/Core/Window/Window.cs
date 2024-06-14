@@ -166,10 +166,8 @@ namespace Microsoft.Maui.Controls
 
 		public ITitleBar? TitleBar
 		{
-			get => (ITitleBar)GetValue(TitleBarProperty);
-#pragma warning disable RS0036 // Annotate nullability of public types and members in the declared API
+			get => (ITitleBar?)GetValue(TitleBarProperty);
 			private set => SetValue(TitleBarProperty, value);
-#pragma warning restore RS0036 // Annotate nullability of public types and members in the declared API
 		}
 
 		double IWindow.X => GetPositionCoordinate(XProperty);
@@ -441,10 +439,20 @@ namespace Microsoft.Maui.Controls
 
 		public void SetTitleBar(TitleBar? titleBar)
 		{
+			if (TitleBar == titleBar)
+			{
+				return;
+			}
+
+			if (TitleBar is not null && TitleBar is TitleBar oldTb)
+			{
+				oldTb.UnhookWindowEvents(this);
+			}
+
 			// Detach the titlebar from everything
 			if (titleBar is not null)
 			{
-				titleBar.NotifyWindowReady();
+				titleBar.NotifyWindowReady(this);
 
 				// The following clears the binding context, so make sure it's saved
 				var bindingContext = titleBar.BindingContext;
@@ -455,7 +463,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					titleBar.Parent.RemoveLogicalChild(titleBar);
+					titleBar.Parent?.RemoveLogicalChild(titleBar);
 				}
 
 				titleBar.BindingContext = bindingContext;
