@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Controls.Platform
 					content.LayoutImageLeft(spacing);
 					break;
 			}
+
+			content.InvalidateMeasure();
 		}
 
 		public static void UpdateLineBreakMode(this Microsoft.UI.Xaml.Controls.Button platformButton, Button button)

@@ -51,6 +51,38 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var typeref = Module.ImportReference(node.XmlType.GetTypeReference(Context.Cache, Module, node));
 			TypeDefinition typedef = typeref.ResolveCached(Context.Cache);
 
+			if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension")
+			{
+				var visitor = new SetPropertiesVisitor(Context);
+				var children = node.Properties.Values.ToList();
+				children.AddRange(node.CollectionItems);
+				foreach (var cnode in children)
+				{
+					if (cnode is not IElementNode en)
+						continue;
+					foreach (var n in en.Properties.Values.ToList())
+						n.Accept(visitor, cnode);
+					foreach (var n in en.CollectionItems)
+						n.Accept(visitor, cnode);
+				}
+				
+				var il = new ArrayExtension().ProvideValue(node, Module, Context, out typeref);
+				var vardef = new VariableDefinition(typeref);
+				Context.Variables[node] = vardef;
+				Context.Body.Variables.Add(vardef);
+
+				Context.IL.Append(il);
+				Context.IL.Emit(OpCodes.Stloc, vardef);
+
+				//clean the node as it has been fully exhausted
+				foreach (var prop in node.Properties)
+					if (!node.SkipProperties.Contains(prop.Key))
+						node.SkipProperties.Add(prop.Key);
+				node.CollectionItems.Clear();
+
+				return;
+			}
+
 			if (IsXaml2009LanguagePrimitive(node))
 			{
 				var vardef = new VariableDefinition(typeref);
@@ -215,34 +247,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					//					IL_0002:  initobj Test/Foo
 					Context.IL.Emit(OpCodes.Ldloca, vardef);
 					Context.IL.Emit(OpCodes.Initobj, Module.ImportReference(typedef));
-				}
-
-				if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension")
-				{
-					var visitor = new SetPropertiesVisitor(Context);
-					foreach (var cnode in node.Properties.Values.ToList())
-						cnode.Accept(visitor, node);
-					foreach (var cnode in node.CollectionItems)
-						cnode.Accept(visitor, node);
-
-					markupProvider = new ArrayExtension();
-
-					var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
-
-					vardef = new VariableDefinition(typeref);
-					Context.Variables[node] = vardef;
-					Context.Body.Variables.Add(vardef);
-
-					Context.IL.Append(il);
-					Context.IL.Emit(OpCodes.Stloc, vardef);
-
-					//clean the node as it has been fully exhausted
-					foreach (var prop in node.Properties)
-						if (!node.SkipProperties.Contains(prop.Key))
-							node.SkipProperties.Add(prop.Key);
-					node.CollectionItems.Clear();
-
-					return;
 				}
 			}
 		}
