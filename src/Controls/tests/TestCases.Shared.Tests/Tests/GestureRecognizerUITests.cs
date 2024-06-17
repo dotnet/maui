@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("SingleTapSurface");
 			App.Tap("SingleTapSurface");
 
-			var result = App.FindElement("SingleTapResults").GetText();
+			var result = App.FindElement("SingleTapGestureResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
 		
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("DisabledTapSurface");
 			App.Tap("DisabledTapSurface");
 
-			var result = App.FindElement("DisabledTapResults").GetText();
+			var result = App.FindElement("DisabledTapGestureResults").GetText();
 			ClassicAssert.AreNotEqual("Success", result);
 		}
 	}
