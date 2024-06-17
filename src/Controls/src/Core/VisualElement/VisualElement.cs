@@ -2155,7 +2155,7 @@ namespace Microsoft.Maui.Controls
 				// invoking _loaded
 				// This is only to make sure that new subscribers get invoked when the element is already loaded
 				// and a previous subscriber has already invoked the UpdatePlatformUnloadedLoadedWiring path
-				if (loadedAlreadyFired)
+				if (loadedAlreadyFired && _isLoadedFired)
 				{
 					value?.Invoke(this, EventArgs.Empty);
 				}
