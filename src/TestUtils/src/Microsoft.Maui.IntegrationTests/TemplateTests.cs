@@ -99,10 +99,10 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
-		[TestCase("maui", "Project@Symbol", "projectsymbol")]
-		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
-		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+  		// with lots tricky characters (the '&' requires XML escaping too)
+		[TestCase("maui", "Project@Symbol & More", "projectsymbolmore")]
+		[TestCase("maui-blazor", "Project@Symbol & More", "projectsymbolmore")]
+		[TestCase("mauilib", "Project@Symbol & More", "projectsymbolmore")]
 		public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 		{
 			var projectDir = Path.Combine(TestDirectory, projectName);
@@ -117,12 +117,22 @@ namespace Microsoft.Maui.IntegrationTests
 			if (id != "mauilib")
 			{
 				var doc = XDocument.Load(projectFile);
+
+				// Check the app ID got invalid characters removed
 				var appId = doc.Root!
 					.Elements("PropertyGroup")
 					.Elements("ApplicationId")
 					.Single()
 					.Value;
 				Assert.AreEqual($"com.companyname.{expectedId}", appId);
+
+				// Check the app title matches the project name exactly (it might have been XML-encoded, but loading the document decodes that)
+				var appTitle = doc.Root!
+					.Elements("PropertyGroup")
+					.Elements("ApplicationTitle")
+					.Single()
+					.Value;
+				Assert.AreEqual($"com.companyname.{projectName}", appId);
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
