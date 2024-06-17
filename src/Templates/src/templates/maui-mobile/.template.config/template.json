@@ -106,11 +106,11 @@
           ]
         }
       },
-      "nameToApplicationTitle": {
+      "XmlEncodedAppName": {
         "type": "derived",
         "valueSource": "name",
         "valueTransform": "encode",
-        "replaces": "MauiAppApplicationTitle"
+        "replaces": "XmlEncodedAppName"
       },
       "defaultAppId":{
         "type": "generated",

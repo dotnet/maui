@@ -49,11 +49,13 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("Debug")]
-		[TestCase("Release")]
-		public void BuildMultiProject(string config)
+		[TestCase("Debug", "simplemulti")]
+		[TestCase("Release", "simplemulti")]
+		[TestCase("Debug", "MultiProject@Symbol & More")]
+		[TestCase("Release", "MultiProject@Symbol & More")]
+		public void BuildMultiProject(string config, string projectName)
 		{
-			var projectDir = TestDirectory;
+			var projectDir = Path.Combine(TestDirectory, projectName);
 			var name = Path.GetFileName(projectDir);
 			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
@@ -132,7 +134,7 @@ namespace Microsoft.Maui.IntegrationTests
 					.Elements("ApplicationTitle")
 					.Single()
 					.Value;
-				Assert.AreEqual($"com.companyname.{projectName}", appId);
+				Assert.AreEqual($"com.companyname.{projectName}", appTitle);
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
