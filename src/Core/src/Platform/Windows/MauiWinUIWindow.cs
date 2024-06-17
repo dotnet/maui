@@ -215,7 +215,8 @@ namespace Microsoft.Maui
 
 				titleBar.ButtonBackgroundColor = Colors.Transparent;
 				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-				titleBar.ButtonForegroundColor = _viewSettings.GetColorValue(ViewManagement.UIColorType.Foreground);
+				titleBar.ButtonForegroundColor = UI.Xaml.Application.Current.RequestedTheme == UI.Xaml.ApplicationTheme.Dark ?
+					Colors.White : Colors.Black;
 			}
 		}
 
