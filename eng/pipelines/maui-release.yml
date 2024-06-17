@@ -137,9 +137,7 @@ extends:
                 value: $(Build.SourcesDirectory)/build.cmd -ci
               - name: _BuildConfig
                 value: Release
-              - name: _BuildOfficalId
-                value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
-            
+
             steps:
               - template: /eng/pipelines/common/pack.yml@self
                 parameters:
