@@ -1649,5 +1649,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(ReferenceEquals(item1, item2));
 		}
+
+		[Fact]
+		public void ForceUpdateSizeCalledOnViewCellDoesntCrash()
+		{
+			var list = new ListView(){
+				HasUnevenRows = true
+			};
+
+			list.ItemTemplate = new DataTemplate(() => 
+				{
+					return  new ViewCell { View = new Label() };
+				}
+			);
+
+			list.ItemsSource = new[] { "Hi" };
+
+			var element = (ViewCell)list.TemplatedItems[0];
+
+			element.ForceUpdateSize();
+		}
 	}
 }
