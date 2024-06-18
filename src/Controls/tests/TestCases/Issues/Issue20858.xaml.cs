@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 20858, "FlyoutPage open when rotating test", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 20858, "FlyoutPage Android app crashing on orientation change when flyout is open", PlatformAffected.Android)]
 	public partial class Issue20858 : FlyoutPage
 	{
 		public Issue20858()
