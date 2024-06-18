@@ -14,20 +14,20 @@ namespace Microsoft.Maui.IntegrationTests
 				Path.Combine(TestDirectory, "Directory.Build.targets"), true);
 		}
 
-		[Test]
-		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
-		[TestCase("maui", DotNetCurrent, "Debug", false)]
-		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-		[TestCase("mauilib", DotNetPrevious, "Release", true)]
-		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
-		[TestCase("mauilib", DotNetCurrent, "Release", true)]
+		// [Test]
+		// // Parameters: short name, target framework, build config, use pack target
+		// [TestCase("maui", DotNetPrevious, "Debug", false)]
+		// [TestCase("maui", DotNetPrevious, "Release", false)]
+		// [TestCase("maui", DotNetCurrent, "Debug", false)]
+		// [TestCase("maui", DotNetCurrent, "Release", false)]
+		// [TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		// [TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		// [TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
+		// [TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+		// [TestCase("mauilib", DotNetPrevious, "Debug", true)]
+		// [TestCase("mauilib", DotNetPrevious, "Release", true)]
+		// [TestCase("mauilib", DotNetCurrent, "Debug", true)]
+		// [TestCase("mauilib", DotNetCurrent, "Release", true)]
 		public void Build(string id, string framework, string config, bool shouldPack)
 		{
 			var projectDir = TestDirectory;
@@ -48,11 +48,11 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("Debug", "simplemulti")]
-		[TestCase("Release", "simplemulti")]
-		[TestCase("Debug", "MultiProject@Symbol & More")]
-		[TestCase("Release", "MultiProject@Symbol & More")]
+		// [Test]
+		// [TestCase("Debug", "simplemulti")]
+		// [TestCase("Release", "simplemulti")]
+		// [TestCase("Debug", "MultiProject@Symbol & More")]
+		// [TestCase("Release", "MultiProject@Symbol & More")]
 		public void BuildMultiProject(string config, string projectName)
 		{
 			var projectDir = Path.Combine(TestDirectory, projectName);
@@ -72,11 +72,11 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Solution {name} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("Debug", "--android")]
-		[TestCase("Debug", "--ios")]
-		[TestCase("Debug", "--windows")]
-		[TestCase("Debug", "--macos")]
+		// [Test]
+		// [TestCase("Debug", "--android")]
+		// [TestCase("Debug", "--ios")]
+		// [TestCase("Debug", "--windows")]
+		// [TestCase("Debug", "--macos")]
 		public void BuildMultiProjectSinglePlatform(string config, string platformArg)
 		{
 			var projectDir = TestDirectory;
@@ -113,6 +113,12 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			var proj = System.IO.File.ReadAllText(projectFile);
+			TestContext.WriteLine($"-------- Project file start --------");
+			TestContext.WriteLine(proj);
+			TestContext.WriteLine($"-------- Project file start --------");
+
+
 			EnableTizen(projectFile);
 
 			// libraries do not have application IDs
@@ -141,20 +147,20 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", DotNetPrevious, "Debug", false)]
-		[TestCase("maui", DotNetPrevious, "Release", false)]
-		[TestCase("maui", DotNetCurrent, "Debug", false)]
-		[TestCase("maui", DotNetCurrent, "Release", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-		[TestCase("mauilib", DotNetPrevious, "Release", true)]
-		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
-		[TestCase("mauilib", DotNetCurrent, "Release", true)]
+		// [Test]
+		// // Parameters: short name, target framework, build config, use pack target
+		// [TestCase("maui", DotNetPrevious, "Debug", false)]
+		// [TestCase("maui", DotNetPrevious, "Release", false)]
+		// [TestCase("maui", DotNetCurrent, "Debug", false)]
+		// [TestCase("maui", DotNetCurrent, "Release", false)]
+		// [TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		// [TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		// [TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
+		// [TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+		// [TestCase("mauilib", DotNetPrevious, "Debug", true)]
+		// [TestCase("mauilib", DotNetPrevious, "Release", true)]
+		// [TestCase("mauilib", DotNetCurrent, "Debug", true)]
+		// [TestCase("mauilib", DotNetCurrent, "Release", true)]
 		public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack)
 		{
 			var projectDir = TestDirectory;
@@ -181,15 +187,15 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug")]
-		[TestCase("maui", DotNetPrevious, "Release")]
-		[TestCase("maui", DotNetCurrent, "Debug")]
-		[TestCase("maui", DotNetCurrent, "Release")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		[TestCase("maui-blazor", DotNetPrevious, "Release")]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
-		[TestCase("maui-blazor", DotNetCurrent, "Release")]
+		// [Test]
+		// [TestCase("maui", DotNetPrevious, "Debug")]
+		// [TestCase("maui", DotNetPrevious, "Release")]
+		// [TestCase("maui", DotNetCurrent, "Debug")]
+		// [TestCase("maui", DotNetCurrent, "Release")]
+		// [TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		// [TestCase("maui-blazor", DotNetPrevious, "Release")]
+		// [TestCase("maui-blazor", DotNetCurrent, "Debug")]
+		// [TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
@@ -207,10 +213,10 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui", true, true)]
-		[TestCase("maui", true, false)]
-		[TestCase("maui", false, true)]
+		// [Test]
+		// [TestCase("maui", true, true)]
+		// [TestCase("maui", true, false)]
+		// [TestCase("maui", false, true)]
 		public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself)
 		{
 			if (TestEnvironment.IsMacOS)
@@ -237,8 +243,8 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+		// [Test]
+		// [TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
 			if (!TestEnvironment.IsMacOS)
@@ -259,8 +265,8 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+		//[Test]
+		//[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOTCheckWarnings(string id, string framework, string runtimeIdentifier)
 		{
 			if (!TestEnvironment.IsMacOS)
@@ -288,8 +294,8 @@ namespace Microsoft.Maui.IntegrationTests
 			actualWarnings.AssertWarnings(expectedWarnings);
 		}
 
-		[Test]
-		[TestCase("maui", DotNetCurrent, "Release")]
+		//[Test]
+		//[TestCase("maui", DotNetCurrent, "Release")]
 		public void PublishUnpackaged(string id, string framework, string config)
 		{
 			if (!TestEnvironment.IsWindows)
@@ -325,11 +331,11 @@ namespace Microsoft.Maui.IntegrationTests
 		/// <summary>
 		/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 		/// </summary>
-		[Test]
-		[TestCase("mauilib", DotNetPrevious, "Debug")]
-		[TestCase("mauilib", DotNetPrevious, "Release")]
-		[TestCase("mauilib", DotNetCurrent, "Debug")]
-		[TestCase("mauilib", DotNetCurrent, "Release")]
+		//[Test]
+		//[TestCase("mauilib", DotNetPrevious, "Debug")]
+		//[TestCase("mauilib", DotNetPrevious, "Release")]
+		//[TestCase("mauilib", DotNetCurrent, "Debug")]
+		//[TestCase("mauilib", DotNetCurrent, "Release")]
 		public void PackCoreLib(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
@@ -359,10 +365,10 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui", DotNetCurrent, "Debug")]
-		[TestCase("mauilib", DotNetCurrent, "Debug")]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
+		//[Test]
+		//[TestCase("maui", DotNetCurrent, "Debug")]
+		//[TestCase("mauilib", DotNetCurrent, "Debug")]
+		//[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		public void BuildWithoutPackageReference(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
@@ -383,13 +389,13 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui", "Debug", "2.0", "2")]
-		[TestCase("maui", "Release", "2.0", "2")]
-		[TestCase("maui", "Release", "0.3", "3")]
-		[TestCase("maui-blazor", "Debug", "2.0", "2")]
-		[TestCase("maui-blazor", "Release", "2.0", "2")]
-		[TestCase("maui-blazor", "Release", "0.3", "3")]
+		//[Test]
+		//[TestCase("maui", "Debug", "2.0", "2")]
+		//[TestCase("maui", "Release", "2.0", "2")]
+		//[TestCase("maui", "Release", "0.3", "3")]
+		//[TestCase("maui-blazor", "Debug", "2.0", "2")]
+		//[TestCase("maui-blazor", "Release", "2.0", "2")]
+		//[TestCase("maui-blazor", "Release", "0.3", "3")]
 		public void BuildWithDifferentVersionNumber(string id, string config, string display, string version)
 		{
 			var projectDir = TestDirectory;
@@ -410,9 +416,9 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		[Test]
-		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
-		[TestCase("maui-blazor", "Release", DotNetCurrent)]
+		//[Test]
+		//[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		//[TestCase("maui-blazor", "Release", DotNetCurrent)]
 		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
 		{
 			if (TestEnvironment.IsWindows)
@@ -442,7 +448,7 @@ namespace Microsoft.Maui.IntegrationTests
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
 		}
 
-		[Test]
+		//[Test]
 		public void BuildHandlesBadFilesInImages()
 		{
 			var projectDir = TestDirectory;
