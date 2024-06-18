@@ -113,13 +113,25 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			EnableTizen(projectFile);
+
+
+
 			var proj = System.IO.File.ReadAllText(projectFile);
 			TestContext.WriteLine($"-------- Project file start --------");
 			TestContext.WriteLine(proj);
-			TestContext.WriteLine($"-------- Project file start --------");
+			TestContext.WriteLine($"-------- Project file end --------");
+			TestContext.WriteLine("");
+			TestContext.WriteLine("");
+
+			var tm = System.IO.File.ReadAllText(Path.Combine(projectDir, "Platforms", "Tizen", "tizen-manifest.xml"));
+			TestContext.WriteLine($"-------- Tizen file start --------");
+			TestContext.WriteLine(tm);
+			TestContext.WriteLine($"-------- Tizen file end --------");
+			TestContext.WriteLine("");
+			TestContext.WriteLine("");
 
 
-			EnableTizen(projectFile);
 
 			// libraries do not have application IDs
 			if (id != "mauilib")
