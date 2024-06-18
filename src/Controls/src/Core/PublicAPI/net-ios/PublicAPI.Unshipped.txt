@@ -12,6 +12,7 @@ Microsoft.Maui.Controls.TitleBar.InactiveForegroundColor.get -> Microsoft.Maui.G
 Microsoft.Maui.Controls.TitleBar.InactiveForegroundColor.set -> void
 Microsoft.Maui.Controls.TitleBar.LeadingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.LeadingContent.set -> void
+Microsoft.Maui.Controls.TitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.Controls.TitleBar.Subtitle.get -> string!
 Microsoft.Maui.Controls.TitleBar.Subtitle.set -> void
 Microsoft.Maui.Controls.TitleBar.Title.get -> string!
@@ -20,7 +21,6 @@ Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
 Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.SetTitleBar(Microsoft.Maui.Controls.TitleBar? titleBar) -> void
-Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation

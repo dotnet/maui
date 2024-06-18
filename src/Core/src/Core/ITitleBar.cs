@@ -1,14 +1,13 @@
-﻿namespace Microsoft.Maui
+﻿using System.Collections.Generic;
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Titlebar for the Window
 	/// </summary>
 	public interface ITitleBar : IView
 	{
-		IView? Content { get; }
-
-		IView? LeadingContent { get; }
-		IView? TrailingContent { get; }
+		IList<IView> PassthroughElements { get; }
 
 		string? Title { get; }
 

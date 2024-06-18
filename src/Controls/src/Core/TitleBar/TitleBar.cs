@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -85,6 +86,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(InactiveForegroundColorProperty, value); }
 		}
 
+		public IList<IView> PassthroughElements { get; private set; }
+
 		static void OnLeadingContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var titlebar = (TitleBar)bindable;
@@ -92,10 +95,16 @@ namespace Microsoft.Maui.Controls
 			if (oldValue != null)
 			{
 				titlebar.ContentGrid.Remove(oldValue);
+
+				if (oldValue is IView oldView)
+				{
+					titlebar.PassthroughElements.Remove(oldView);
+				}
 			}
 
-			if (newValue is View view)
+			if (newValue is IView view)
 			{
+				titlebar.PassthroughElements.Add(view);
 				titlebar.ContentGrid.Add(newValue);
 				titlebar.ContentGrid.SetColumn(view, 0);
 			}
@@ -138,11 +147,15 @@ namespace Microsoft.Maui.Controls
 			if (oldValue != null)
 			{
 				titlebar.ContentGrid.Remove(oldValue);
+				if (oldValue is IView oldView)
+				{
+					titlebar.PassthroughElements.Remove(oldView);
+				}
 			}
 
-			if (newValue is View view)
+			if (newValue is IView view)
 			{
-				titlebar.ContentGrid.Remove(oldValue);
+				titlebar.PassthroughElements.Add(view);
 				titlebar.ContentGrid.Add(newValue);
 				titlebar.ContentGrid.SetColumn(view, 4);
 			}
@@ -155,11 +168,15 @@ namespace Microsoft.Maui.Controls
 			if (oldValue != null)
 			{
 				titlebar.ContentGrid.Remove(oldValue);
+				if (oldValue is IView oldView)
+				{
+					titlebar.PassthroughElements.Remove(oldView);
+				}
 			}
 
 			if (newValue is View view)
 			{
-				titlebar.ContentGrid.Remove(oldValue);
+				titlebar.PassthroughElements.Add(view);
 				titlebar.ContentGrid.Add(newValue);
 				titlebar.ContentGrid.SetColumn(view, 5);
 			}
@@ -189,6 +206,8 @@ namespace Microsoft.Maui.Controls
 
 		public TitleBar()
 		{
+			PassthroughElements = new List<IView>();
+
 			base.Content = new Grid
 			{
 				HorizontalOptions = LayoutOptions.Fill,

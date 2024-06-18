@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI;
 using Microsoft.UI.Input;
@@ -196,7 +197,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateTitleBarContentSize()
 		{
-			if (AppTitleBarContentControl == null)
+			if (AppTitleBarContentControl is null)
 				return;
 
 			if (_appTitleBarHeight != AppTitleBarContentControl.ActualHeight &&
@@ -235,26 +236,6 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 					nonClientInputSrc.ClearRegionRects(NonClientRegionKind.Passthrough);
-				}
-			}
-		}
-
-		private static IEnumerable<FrameworkElement> GetAllChildren(FrameworkElement parent)
-		{
-			var queue = new Queue<FrameworkElement>();
-			queue.Enqueue(parent);
-
-			while (queue.Count > 0)
-			{
-				var current = queue.Dequeue();
-				yield return current;
-
-				foreach (var child in current.GetChildren<FrameworkElement>())
-				{
-					if (child != null)
-					{
-						queue.Enqueue(child);
-					}
 				}
 			}
 		}
@@ -483,7 +464,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				UpdateBackgroundColorForButtons();
-				SetTitleBarInputElements(_titleBar);
+				SetTitleBarInputElements();
 			}
 		}
 
@@ -491,7 +472,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_titleBar is not null && _titleBar.Handler?.MauiContext is not null)
 			{
-				SetTitleBarInputElements(_titleBar);
+				SetTitleBarInputElements();
 
 				if (e.PropertyName == "BackgroundColor")
 				{
@@ -514,40 +495,23 @@ namespace Microsoft.Maui.Platform
 			UpdateTitleBarContentSize();
 		}
 
-		private void SetTitleBarInputElements(ITitleBar? titlebar)
+		private void SetTitleBarInputElements()
 		{
 			var mauiContext = _titleBar?.Handler?.MauiContext;
-			if (mauiContext == null)
+			if (mauiContext is null || _titleBar is null)
+			{
 				return;
+			}
 
 			var passthroughElements = new List<FrameworkElement>();
-			if (titlebar?.Content != null)
+			foreach (var element in _titleBar.PassthroughElements)
 			{
-				var contentView = titlebar.Content.ToHandler(mauiContext).PlatformView;
-				if (contentView != null)
+				var platformView = element.ToHandler(mauiContext).PlatformView;
+				if (platformView is not null)
 				{
-					passthroughElements.Add(contentView);
+					passthroughElements.Add(platformView);
 				}
 			}
-
-			if (titlebar?.LeadingContent != null)
-			{
-				var contentView = titlebar.LeadingContent.ToHandler(mauiContext).PlatformView;
-				if (contentView != null)
-				{
-					passthroughElements.Add(contentView);
-				}
-			}
-
-			if (titlebar?.TrailingContent != null)
-			{
-				var contentView = titlebar.TrailingContent.ToHandler(mauiContext).PlatformView;
-				if (contentView != null)
-				{
-					passthroughElements.Add(contentView);
-				}
-			}
-
 			PassthroughTitlebarElements = passthroughElements;
 		}
 

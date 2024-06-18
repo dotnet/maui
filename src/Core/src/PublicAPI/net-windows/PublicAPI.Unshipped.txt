@@ -16,11 +16,9 @@ Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
 Microsoft.Maui.ITitleBar
-Microsoft.Maui.ITitleBar.Content.get -> Microsoft.Maui.IView?
-Microsoft.Maui.ITitleBar.LeadingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
 Microsoft.Maui.ITitleBar.Title.get -> string?
-Microsoft.Maui.ITitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.IWindow.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.IWindow.TitleBarDragRectangles.get -> Microsoft.Maui.Graphics.Rect[]?
 Microsoft.Maui.ICommandMapper
