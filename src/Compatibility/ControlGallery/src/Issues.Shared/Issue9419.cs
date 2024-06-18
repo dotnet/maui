@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			GarbageCollectionHelper.Collect();
 
-			Detail = new NavigationPage(new ContentPage { Content = new Label { Text = OkResult } });
+			Detail = new NavigationPage(new ContentPage { Content = new Label { AutomationId = OkResult, Text = OkResult } });
 		}
 
 		class ConditionalToolbarItem : ToolbarItem

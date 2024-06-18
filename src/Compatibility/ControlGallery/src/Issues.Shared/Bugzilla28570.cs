@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			};
 
 			Button makeBig = new Button();
+			makeBig.AutomationId = "Tap";
 			makeBig.Text = "Tap";
 			//
 			// Clicking button first time does not scroll event though scrollView.Height is already set.

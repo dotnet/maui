@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			};
 			var but = new Button
 			{
+				AutomationId = "ChangeTextTransformButton",
 				Text = "Change TextTransform",
 				Command = new Command(() =>
 				{

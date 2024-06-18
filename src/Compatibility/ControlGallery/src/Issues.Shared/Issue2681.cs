@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		const string NavigateToPage = "Click Me.";
 		protected override void Init()
 		{
-			PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { Text = NavigateToPage, Command = new Command(() => this.PushAsync(new FreezeMe())) } });
+			PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { AutomationId = NavigateToPage, Text = NavigateToPage, Command = new Command(() => this.PushAsync(new FreezeMe())) } });
 		}
 
 		[Preserve(AllMembers = true)]

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 
 namespace UITests
@@ -38,8 +38,7 @@ namespace UITests
 			base.FixtureTeardown();
 			try
 			{
-				this.Back();
-				RunningApp.Tap("GoBackToGalleriesButton");
+				RunningApp.ResetApp();
 			}
 			catch (Exception e)
 			{
@@ -49,15 +48,30 @@ namespace UITests
 		}
 
 		public abstract string Issue { get; }
+		public virtual bool ResetMainPage { get; private set; } = true;
 
-		private void NavigateToIssue(string issue)
+		void NavigateToIssue(string issue)
 		{
-			RunningApp.NavigateToIssues();
+			if (ResetMainPage)
+			{
+				RunningApp.Click("ResetMainPage");
 
-			RunningApp.EnterText("SearchBarGo", issue);
+				RunningApp.ClearText("SearchBar");
+				RunningApp.EnterText("SearchBar", issue);
 
-			RunningApp.WaitForElement("SearchButton");
-			RunningApp.Tap("SearchButton");
+				RunningApp.WaitForElement("GoToTestButton");
+				RunningApp.Tap("GoToTestButton");
+			}
+			else
+			{
+				RunningApp.NavigateToIssues();
+
+				RunningApp.ClearText("SearchBarGo");
+				RunningApp.EnterText("SearchBarGo", issue);
+
+				RunningApp.WaitForElement("SearchButton");
+				RunningApp.Tap("SearchButton");
+			}
 		}
 	}
 }

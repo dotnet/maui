@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				Children = {
 					new Label {
+						AutomationId ="Page1",
 						HorizontalTextAlignment = TextAlignment.Center,
 						Text = "Page 1"
 					}

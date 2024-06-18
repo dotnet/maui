@@ -21,7 +21,7 @@
 
   <local:TestContentPage.Content>
     <StackLayout HorizontalOptions="Fill" VerticalOptions="Fill">
-      <Label Text="Success"></Label>
+      <Label AutomationId="Success" Text="Success"></Label>
       <Label Text="If there is a blue box and a red box below, this test has passed. If the application crashes, the test has not passed."></Label>
       <BoxView HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Blue" WidthRequest="{StaticResource SizeMedium}">
         <BoxView.HeightRequest>

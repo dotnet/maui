@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			{
 				var btn = new Button()
 				{
+					AutomationId = GoToPage2,
 					Text = GoToPage2
 				};
 				btn.Clicked += async (sender, e) =>
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					{
 						new Label
 						{
+							AutomationId = PageOneLabel,
 							HorizontalTextAlignment = TextAlignment.Center,
 							Text = PageOneLabel
 						},
@@ -122,6 +124,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					{
 						new Label
 						{
+							AutomationId = PageTwoLabel,
 							HorizontalTextAlignment = TextAlignment.Center,
 							Text = PageTwoLabel
 						}

@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		protected override void Init()
 		{
 			// Set up the scroll viewer page
-			var scrollToButton = new Button() { Text = "Now push this button" };
+			var scrollToButton = new Button() { AutomationId = "NowPushButton", Text = "Now push this button" };
 
 			var stackLayout = new StackLayout();
 
@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			// Set up the start page
 			var goButton = new Button()
 			{
+				AutomationId = "PushButton",
 				Text = "Push this button"
 			};
 

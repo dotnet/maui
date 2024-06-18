@@ -35,7 +35,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			};
 
 			var button = new Button
-			{
+			{ 
+				AutomationId = "SELECT",
 				Text = "SELECT"
 			};
 

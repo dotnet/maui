@@ -81,9 +81,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Interlocked.Increment(ref s_count);
 			Debug.WriteLine($">>>>> Bz39489Content Bz39489Content 54: Constructor, count is {s_count}");
 
-			var button = new Button { Text = "New Page" };
+			var button = new Button { AutomationId = "NewPage", Text = "New Page" };
 
-			var gcbutton = new Button { Text = "GC" };
+			var gcbutton = new Button { AutomationId = "GC", Text = "GC" };
 
 			var map = new Bz39489Map();
 

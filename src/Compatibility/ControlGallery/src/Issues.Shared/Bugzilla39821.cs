@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var success = new Label { Text = "Success", IsVisible = false };
 
-			var button = new Button() { Text = "Animate" };
+			var button = new Button() { AutomationId = "Animate", Text = "Animate" };
 
 			Content = new StackLayout
 			{

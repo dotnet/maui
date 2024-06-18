@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var instructions = new Label { Text = "Pull the the ListView down and release. If the application crashes, the test has failed." };
 
-			var success = new Label { Text = Success };
+			var success = new Label { AutomationId = Success, Text = Success };
 
 			layout.Children.Add(instructions);
 			layout.Children.Add(success);

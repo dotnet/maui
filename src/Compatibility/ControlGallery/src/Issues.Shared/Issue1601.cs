@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				Orientation = StackOrientation.Horizontal
 			};
 			Microsoft.Maui.Controls.CompressedLayout.SetIsHeadless(stack, true);
-			var button = new Button { Text = "CRASH!" };
+			var button = new Button { AutomationId = "CrashButton", Text = "CRASH!" };
 			stack.Children.Add(button);
 			grid.Children.Add(stack, 0, 1);
 

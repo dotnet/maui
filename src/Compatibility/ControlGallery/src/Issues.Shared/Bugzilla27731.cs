@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 					Children =
 				{
 					new Label { Text = $"This is page {count}." },
-					new Button { Text = "Click", Command = new Command(() => Navigation.PushAsync(new Page2(title))) }
+					new Button { AutomationId = "Click", Text = "Click", Command = new Command(() => Navigation.PushAsync(new Page2(title))) }
 				}
 				};
 			}

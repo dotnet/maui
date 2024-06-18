@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 59896, "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty ", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Bugzilla, 59896, "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty", PlatformAffected.iOS)]
 	public class Bugzilla59896 : TestContentPage
 	{
 		const string btnAdd = "btnAdd";

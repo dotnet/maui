@@ -69,6 +69,7 @@
                 </StackLayout>
                 <Label
                     x:Name="ResultLabel"
+                    AutomationId="ResultLabel"
                     Text="Close"/>
             </StackLayout>
         </Frame>

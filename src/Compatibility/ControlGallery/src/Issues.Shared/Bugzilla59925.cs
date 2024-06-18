@@ -32,12 +32,14 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 			var buttonBigger = new Button
 			{
-				Text = "Bigger",
+				AutomationId = "Bigger",
+				Text = "Bigger"
 			};
 			buttonBigger.Clicked += (x, o) => ChangeFontSize(Delta);
 
 			var buttonSmaller = new Button
 			{
+				AutomationId = "Smaller",
 				Text = "Smaller"
 			};
 			buttonSmaller.Clicked += (x, o) => ChangeFontSize(-Delta);
