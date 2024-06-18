@@ -55,13 +55,21 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			if (_app.GetTestDevice() == TestDevice.Mac)
-			{	
+			{
 				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
 				{
 					{ "bundleId", _app.GetAppId() },
 				});
 			}
-			else 
+			else if (_app.Driver is WindowsDriver windowsDriver)
+			{
+				// Appium driver removed the LaunchApp method in 5.0.0, so we need to use the executeScript method instead
+				// Currently the appium-windows-driver reports the following commands as compatible:
+				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
+				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
+				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+			}
+			else
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
 			}
@@ -121,7 +129,7 @@ namespace UITest.Appium
 			}
 			catch (Exception)
 			{
-				// TODO Pass in logger so we can log these exceptions
+				// TODO: Pass in logger so we can log these exceptions
 				
 				// Occasionally the app seems to get so locked up it can't 
 				// even report back the appstate. In that case, we'll just
@@ -136,6 +144,13 @@ namespace UITest.Appium
 					{
 						{ "bundleId", _app.GetAppId() },
 					});
+				}
+				else if (_app.Driver is WindowsDriver windowsDriver)
+				{
+					// This is still here for now, but it looks like it will get removed just like
+					// LaunchApp was in 5.0.0, in which case we may need to use:
+					// windowsDriver.ExecuteScript("windows: closeApp", [_app.GetAppId()]);
+					windowsDriver.CloseApp();
 				}
 				else
 				{
