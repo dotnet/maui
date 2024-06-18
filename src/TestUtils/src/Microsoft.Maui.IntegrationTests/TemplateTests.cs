@@ -134,7 +134,7 @@ namespace Microsoft.Maui.IntegrationTests
 					.Elements("ApplicationTitle")
 					.Single()
 					.Value;
-				Assert.AreEqual($"com.companyname.{projectName}", appTitle);
+				Assert.AreEqual(projectName, appTitle);
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
