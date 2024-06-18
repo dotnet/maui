@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 #endif
 
 #if ANDROID
-			if (view?.InputTransparent == true && (platformView is null || platformView is not IInputTransparentManagingView))
+			if (view?.InputTransparent == true && platformView is not IInputTransparentManagingView)
 				return true;
 #endif
 
