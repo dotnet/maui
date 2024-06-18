@@ -102,7 +102,7 @@
           ]
         }
       },
-      "XmlEncodedAppName": {
+      "XmlEncodedAppNameParam": {
         "type": "derived",
         "valueSource": "name",
         "valueTransform": "encode",

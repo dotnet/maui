@@ -64,7 +64,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (!TestEnvironment.IsWindows)
 			{
-				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+				Assert.IsTrue(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
 					$"Unable to remove WinUI project from solution. Check test output for errors.");
 			}
 
