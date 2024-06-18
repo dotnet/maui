@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample
 			
 			
 			// Now add a tap surface that is disabled and a results label that should not change when the surface is tapped
-			var disabledTapResults = new Label { AutomationId = "DisabledTapGestureResults", Text = "Should not succeed" };
+			var disabledTapResults = new Label { AutomationId = "DisabledTapGestureResults", Text = "Should not change when tapped" };
 			var disabledTapSurface = new Grid()
 			{
 				IsEnabled = false, // Disabled
@@ -40,7 +40,7 @@ namespace Maui.Controls.Sample
 
 			// Wire up the tap gesture recognizer, it should never fire
 			var disabledTapRecognizer = new TapGestureRecognizer();
-			disabledTapRecognizer.Tapped += (sender, args) => { disabledTapResults.Text = "Success"; };
+			disabledTapRecognizer.Tapped += (sender, args) => { disabledTapResults.Text = "Failed"; };
 			disabledTapSurface.GestureRecognizers.Add(disabledTapRecognizer);
 
 			layout.Add(disabledTapSurface);

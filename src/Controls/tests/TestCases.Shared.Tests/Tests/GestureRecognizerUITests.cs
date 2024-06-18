@@ -80,7 +80,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("DisabledTapSurface");
 
 			var result = App.FindElement("DisabledTapGestureResults").GetText();
-			ClassicAssert.AreNotEqual("Success", result);
+			ClassicAssert.AreNotEqual("Failed", result);
 		}
 	}
 }
