@@ -743,6 +743,16 @@ public static class Test
 		CascadeTransLayoutOverlayWithButton,
 	}
 
+	public enum Alerts
+	{
+		AlertCancel,
+		AlertAcceptCancelClickAccept,
+		AlertAcceptCancelClickCancel,
+		ActionSheetClickItem,
+		ActionSheetClickCancel,
+		ActionSheetClickDestroy,
+	}
+
 	public static class InputTransparencyMatrix
 	{
 		// this is both for color diff and cols
