@@ -61,12 +61,6 @@ namespace UITest.Appium
 					{ "bundleId", _app.GetAppId() },
 				});
 			}
-			else if (_app.GetTestDevice() == TestDevice.Windows)
-			{
-#pragma warning disable CS0618 // Type or member is obsolete
-				_app.Driver.LaunchApp();
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
 			else 
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
@@ -142,12 +136,6 @@ namespace UITest.Appium
 					{
 						{ "bundleId", _app.GetAppId() },
 					});
-				}
-				else if (_app.GetTestDevice() == TestDevice.Windows)
-				{
-	#pragma warning disable CS0618 // Type or member is obsolete
-					_app.Driver.CloseApp();
-	#pragma warning restore CS0618 // Type or member is obsolete
 				}
 				else
 				{
