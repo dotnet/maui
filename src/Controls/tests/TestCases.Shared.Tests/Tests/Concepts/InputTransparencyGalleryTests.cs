@@ -49,7 +49,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			var (clickable, passthru) = Test.InputTransparencyMatrix.SimpleStates[(rootTrans, rootCascade, trans)];
 			var key = Test.InputTransparencyMatrix.GetSimpleKey("ScrollView", rootTrans, rootCascade, trans, clickable, passthru);
 
-			RunTest(key, clickable, passthru);
+			// ScrollView is not really a layout so the "broken" rules don't apply
+			RunTest(key, clickable, passthru, androidIsBroken: false);
 		}
 
 		[Test]
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			RunTest(key, clickable, passthru);
 		}
 
-		void RunTest(string test, bool? clickable = null, bool? passthru = null)
+		void RunTest(string test, bool? clickable = null, bool? passthru = null, bool androidIsBroken = true)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
 			remote.GoTo(test.ToString());
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// if the button is clickable or taps pass through to the base button
 				ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
 			}
-			else if (Device == TestDevice.Android)
+			else if (androidIsBroken && Device == TestDevice.Android)
 			{
 				// TODO: Android is broken with everything passing through so we just use that
 				// to test the bottom button was clickable
