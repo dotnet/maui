@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -6,35 +6,39 @@ using UITest.Core;
 
 namespace UITest.Appium.NUnit
 {
-	//#if ANDROID
-	//	[TestFixture(TestDevice.Android)]
-	//#elif IOSUITEST
-	//	[TestFixture(TestDevice.iOS)]
-	//#elif MACUITEST
-	//	[TestFixture(TestDevice.Mac)]
-	//#elif WINTEST
-	//	[TestFixture(TestDevice.Windows)]
-	//#else
-	//    [TestFixture(TestDevice.iOS)]
-	//    [TestFixture(TestDevice.Mac)]
-	//    [TestFixture(TestDevice.Windows)]
-	//    [TestFixture(TestDevice.Android)]
-	//#endif
 	public abstract class UITestBase : UITestContextBase
 	{
+		protected virtual bool ResetAfterEachTest => false;
+
 		public UITestBase(TestDevice testDevice)
 			: base(testDevice)
 		{
 		}
 
-		[SetUp]
 		public void RecordTestSetup()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Start");
 		}
 
+		[SetUp]
+		public virtual void TestSetup()
+		{
+			RecordTestSetup();
+		}
+
 		[TearDown]
+		public virtual void TestTearDown()
+		{
+			RecordTestTeardown();
+			UITestBaseTearDown();
+			if (ResetAfterEachTest)
+			{
+				Reset();
+				FixtureSetup();
+			}
+		}
+
 		public void RecordTestTeardown()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
@@ -47,33 +51,48 @@ namespace UITest.Appium.NUnit
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
 		}
 
-		protected virtual void FixtureTeardown()
+		protected virtual void FixtureOneTimeTearDown()
 		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");
+			try
+			{
+				if (!ResetAfterEachTest)
+					Reset();
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
 		}
 
-		[TearDown]
 		public void UITestBaseTearDown()
 		{
-			if (App.AppState == ApplicationState.NotRunning)
+			try
 			{
-				SaveDeviceDiagnosticInfo();
+				if (App.AppState != ApplicationState.Running)
+				{
+					SaveDeviceDiagnosticInfo();
 
-				Reset();
-				FixtureSetup();
+					if (!ResetAfterEachTest)
+					{
+						Reset();
+						FixtureSetup();
+					}
 
-				// Assert.Fail will immediately exit the test which is desirable as the app is not
-				// running anymore so we can't capture any UI structures or any screenshots
-				Assert.Fail("The app was expected to be running still, investigate as possible crash");
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
 			}
-
-			var testOutcome = TestContext.CurrentContext.Result.Outcome;
-			if (testOutcome == ResultState.Error ||
-				testOutcome == ResultState.Failure)
+			finally
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
+				var testOutcome = TestContext.CurrentContext.Result.Outcome;
+				if (testOutcome == ResultState.Error ||
+					testOutcome == ResultState.Failure)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
 			}
 		}
 
@@ -105,37 +124,45 @@ namespace UITest.Appium.NUnit
 			{
 				SaveDeviceDiagnosticInfo();
 
-				if (App.AppState != ApplicationState.NotRunning)
+				if (App.AppState == ApplicationState.Running)
 					SaveUIDiagnosticInfo();
 			}
 
-			FixtureTeardown();
+			FixtureOneTimeTearDown();
 		}
 
 		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
 		{
-			var types = App.GetLogTypes().ToArray();
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
-
-			foreach (var logType in new[] { "logcat" })
+			try
 			{
-				if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
-					continue;
+				var types = App.GetLogTypes().ToArray();
+				TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
 
-				var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
-				if (logsPath is not null)
+				foreach (var logType in new[] { "logcat" })
 				{
-					var entries = App.GetLogEntries(logType);
-					File.WriteAllLines(logsPath, entries);
+					if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
+						continue;
 
-					AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+					var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
+					if (logsPath is not null)
+					{
+						var entries = App.GetLogEntries(logType);
+						File.WriteAllLines(logsPath, entries);
+
+						AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+					}
 				}
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The SaveDeviceDiagnosticInfo threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
 		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
-			if (App.AppState == ApplicationState.NotRunning)
+			if (App.AppState != ApplicationState.Running)
 				return false;
 
 			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);

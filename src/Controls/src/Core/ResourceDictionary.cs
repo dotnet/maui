@@ -195,9 +195,17 @@ namespace Microsoft.Maui.Controls
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
 				if (_mergedDictionaries != null)
-					foreach (var dict in MergedDictionaries.Reverse())
-						if (dict.ContainsKey(index))
-							return dict[index];
+				{
+					var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
+					for (int i = dictionaries.Count - 1; i >= 0 ; i--)
+					{
+						if (dictionaries[i].TryGetValue(index, out var value))
+						{
+							return value;
+						}
+					}
+				}
+
 				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
@@ -286,12 +294,16 @@ namespace Microsoft.Maui.Controls
 
 		bool TryGetMergedDictionaryValue(string key, out object value, out ResourceDictionary source)
 		{
-			foreach (var dictionary in MergedDictionaries.Reverse())
+			var dictionaries = (ObservableCollection<ResourceDictionary>)MergedDictionaries;
+			for (int i = dictionaries.Count - 1; i >= 0 ; i--)
+			{
+				var dictionary = dictionaries[i];
 				if (dictionary.TryGetValue(key, out value))
 				{
 					source = dictionary;
 					return true;
 				}
+			}
 
 			value = null;
 			source = null;

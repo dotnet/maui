@@ -71,6 +71,30 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("Debug", "--android")]
+		[TestCase("Debug", "--ios")]
+		[TestCase("Debug", "--windows")]
+		[TestCase("Debug", "--macos")]
+		public void BuildMultiProjectSinglePlatform(string config, string platformArg)
+		{
+			var projectDir = TestDirectory;
+			var name = Path.GetFileName(projectDir);
+			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+			Assert.IsTrue(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+				$"Unable to create template maui-multiproject. Check test output for errors.");
+
+			if (!TestEnvironment.IsWindows)
+			{
+				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+					$"Unable to remove WinUI project from solution. Check test output for errors.");
+			}
+
+			Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Solution {name} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		// with spaces
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]

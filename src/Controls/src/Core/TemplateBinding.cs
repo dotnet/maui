@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls
 		public TemplateBinding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			if (string.IsNullOrWhiteSpace(path))
-				throw new ArgumentException("path cannot be an empty string", "path");
+				throw new ArgumentException("path cannot be an empty string", nameof(path));
 
 			AllowChaining = true;
 			Path = path;

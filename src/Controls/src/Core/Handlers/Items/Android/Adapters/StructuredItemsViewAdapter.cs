@@ -14,9 +14,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		Size? _size;
 
+		// I'm storing this here because in the children I'm using a weakreference and
+		// I don't want this action to get GC'd
+		Action<Size> _reportMeasure;
+		Func<Size?> _retrieveStaticSize;
+
 		protected internal StructuredItemsViewAdapter(TItemsView itemsView,
 			Func<View, Context, ItemContentView> createItemContentView = null) : base(itemsView, createItemContentView)
 		{
+			_reportMeasure = SetStaticSize;
+			_retrieveStaticSize = () => _size ?? null;
+
 			UpdateHasHeader();
 			UpdateHasFooter();
 		}
@@ -98,7 +106,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 			{
-				templatedItemViewHolder.Bind(context, ItemsView, SetStaticSize, _size);
+				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
+
+				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+				{
+					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
+				}
 			}
 			else
 			{
@@ -108,12 +121,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateHasHeader()
 		{
-			ItemsSource.HasHeader = ItemsView.Header != null;
+			ItemsSource.HasHeader = (ItemsView.Header ?? ItemsView.HeaderTemplate) is not null;
 		}
 
 		void UpdateHasFooter()
 		{
-			ItemsSource.HasFooter = ItemsView.Footer != null;
+			ItemsSource.HasFooter =  (ItemsView.Footer ?? ItemsView.FooterTemplate) is not null;
 		}
 
 		bool IsHeader(int position)
