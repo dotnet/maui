@@ -33,5 +33,20 @@ internal class ImageCoreGalleryPage : CoreGalleryPage<Image>
 			};
 			Add(familyContainer);
 		}
+
+		{
+			var image = new Image
+			{
+				Source = "red_is_good.gif",
+				WidthRequest = 100,
+				HeightRequest = 100,
+			};
+			var container = new StateViewContainer<Image>(Test.Image.IsAnimationPlaying, image);
+			container.StateChangeButton.Clicked += (s, a) =>
+			{
+				image.IsAnimationPlaying = !image.IsAnimationPlaying;
+			};
+			Add(container);
+		}
 	}
 }
