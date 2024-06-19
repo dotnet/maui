@@ -7,7 +7,6 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -62,7 +61,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="TitleBar"/>.</summary>
 		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
-			nameof(TitleBar), typeof(TitleBar), typeof(Window), default(ITitleBar));
+			nameof(TitleBar), typeof(TitleBar), typeof(Window), null);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
@@ -165,9 +164,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MinimumHeightProperty, value);
 		}
 
-		public TitleBar? TitleBar
+		public ITitleBar? TitleBar
 		{
-			get => (TitleBar?)GetValue(TitleBarProperty);
+			get => (ITitleBar?)GetValue(TitleBarProperty);
 			private set => SetValue(TitleBarProperty, value);
 		}
 

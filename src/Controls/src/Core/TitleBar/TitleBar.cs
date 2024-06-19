@@ -1,17 +1,47 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class TitleBar : ContentView, ITitleBar
+	public partial class TitleBar : TemplatedView, ITitleBar
 	{
+		public const string TemplateRootName = "PART_Root";
+
+		public const string TitleBarIcon = "PART_Icon";
+		public const string IconVisibleState = "IconVisible";
+		public const string IconHiddenState = "IconCollapsed";
+
+		public const string TitleBarTitle = "PART_Title";
+		public const string TitleVisibleState = "TitleVisible";
+		public const string TitleHiddenState = "TitleCollapsed";
+
+		public const string TitleBarSubtitle = "PART_Subtitle";
+		public const string SubtitleVisibleState = "SubtitleVisible";
+		public const string SubtitleHiddenState = "SubTitleCollapsed";
+
+		public const string TitleBarLeading = "PART_LeadingContent";
+		public const string LeadingVisibleState = "LeadingContentVisible";
+		public const string LeadingHiddenState = "LeadingContentCollapsed";
+
+		public const string TitleBarContent = "PART_Content";
+		public const string ContentVisibleState = "ContentVisible";
+		public const string ContentHiddenState = "ContentCollapsed";
+
+		public const string TitleBarTrailing = "PART_TrailingContent";
+		public const string TrailingVisibleState = "TrailingContentVisible";
+		public const string TrailingHiddenState = "TrailingContentCollapsed";
+
+		public const string TitleBarActiveState = "TitleBarTitleActive";
+		public const string TitleBarInactiveState = "TitleBarTitleInactive";
+
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
 
 		public static readonly BindableProperty LeadingContentProperty = BindableProperty.Create(nameof(LeadingContent), typeof(IView),
-			typeof(TitleBar), null, propertyChanged: OnLeadingContentChanged);
+			typeof(TitleBar), null, propertyChanged: OnLeadingChanged);
 
-		public static new readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
+		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
 			typeof(TitleBar), null, propertyChanged: OnContentChanged);
 
 		public static readonly BindableProperty TrailingContentProperty = BindableProperty.Create(nameof(TrailingContent), typeof(IView),
@@ -24,7 +54,7 @@ namespace Microsoft.Maui.Controls
 			typeof(TitleBar), null, propertyChanged: OnSubtitleChanged);
 
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
-			typeof(Color), typeof(TitleBar), propertyChanged: OnForegroundChanged);
+			typeof(Color), typeof(TitleBar));
 
 		public static readonly BindableProperty InactiveBackgroundColorProperty = BindableProperty.Create(nameof(InactiveBackgroundColor),
 			typeof(Color), typeof(TitleBar), null);
@@ -32,12 +62,91 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty InactiveForegroundColorProperty = BindableProperty.Create(nameof(InactiveForegroundColor),
 			typeof(Color), typeof(TitleBar), null);
 
+		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is null)
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, LeadingHiddenState);
+			}
+			else
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, LeadingVisibleState);
+			}
+		}
+
+		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			var imageSource = newValue as ImageSource;
+			if (imageSource is null || imageSource.IsEmpty)
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, IconHiddenState);
+			}
+			else
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, IconVisibleState);
+			}
+		}
+
+		static void OnTitleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is null)
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, TitleHiddenState);
+			}
+			else
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, TitleVisibleState);
+			}
+		}
+
+		static void OnSubtitleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is null)
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, SubtitleHiddenState);
+			}
+			else
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, SubtitleVisibleState);
+			}
+		}
+
+		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is null)
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, ContentHiddenState);
+			}
+			else
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, ContentVisibleState);
+			}
+		}
+
+		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titlebar = (TitleBar)bindable;
+			if (newValue is null)
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, TrailingHiddenState);
+			}
+			else
+			{
+				VisualStateManager.GoToState(titlebar._templateRoot, TrailingVisibleState);
+			}
+		}
+
 		public ImageSource Icon
 		{
 			get { return (ImageSource)GetValue(IconProperty); }
 			set { SetValue(IconProperty, value); }
 		}
-		
+
 		public IView? LeadingContent
 		{
 			get { return (View?)GetValue(LeadingContentProperty); }
@@ -56,7 +165,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SubtitleProperty, value); }
 		}
 
-		public new IView? Content
+		public IView? Content
 		{
 			get { return (View?)GetValue(TitleBar.ContentProperty); }
 			set { SetValue(TitleBar.ContentProperty, value); }
@@ -88,114 +197,13 @@ namespace Microsoft.Maui.Controls
 
 		public IList<IView> PassthroughElements { get; private set; }
 
-		static void OnLeadingContentChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
+#nullable disable
+		IView IContentView.PresentedContent => (this as IControlTemplated).TemplateRoot as IView;
+#nullable enable
 
-			if (oldValue != null)
-			{
-				titlebar.ContentGrid.Remove(oldValue);
-
-				if (oldValue is IView oldView)
-				{
-					titlebar.PassthroughElements.Remove(oldView);
-				}
-			}
-
-			if (newValue is IView view)
-			{
-				titlebar.PassthroughElements.Add(view);
-				titlebar.ContentGrid.Add(newValue);
-				titlebar.ContentGrid.SetColumn(view, 0);
-			}
-		}
-
-		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
-			if (newValue is ImageSource imageSource)
-			{
-				titlebar._iconImage.Source = imageSource;
-				titlebar._iconImage.IsVisible = !imageSource.IsEmpty;
-			}
-		}
-
-		static void OnTitleChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
-			if (newValue is string text)
-			{
-				titlebar._titleLabel.Text = text;
-				titlebar._titleLabel.IsVisible = !string.IsNullOrEmpty(text);
-			}
-		}
-
-		static void OnSubtitleChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
-			if (newValue is string text)
-			{
-				titlebar._subtitleLabel.Text = text;
-				titlebar._subtitleLabel.IsVisible = !string.IsNullOrEmpty(text);
-			}
-		}
-
-		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
-
-			if (oldValue != null)
-			{
-				titlebar.ContentGrid.Remove(oldValue);
-				if (oldValue is IView oldView)
-				{
-					titlebar.PassthroughElements.Remove(oldView);
-				}
-			}
-
-			if (newValue is IView view)
-			{
-				titlebar.PassthroughElements.Add(view);
-				titlebar.ContentGrid.Add(newValue);
-				titlebar.ContentGrid.SetColumn(view, 4);
-			}
-		}
-
-		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
-
-			if (oldValue != null)
-			{
-				titlebar.ContentGrid.Remove(oldValue);
-				if (oldValue is IView oldView)
-				{
-					titlebar.PassthroughElements.Remove(oldView);
-				}
-			}
-
-			if (newValue is View view)
-			{
-				titlebar.PassthroughElements.Add(view);
-				titlebar.ContentGrid.Add(newValue);
-				titlebar.ContentGrid.SetColumn(view, 5);
-			}
-		}
-
-		static void OnForegroundChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var titlebar = (TitleBar)bindable;
-			if (newValue is Color color)
-			{
-				titlebar._titleLabel.TextColor = color;
-				titlebar._subtitleLabel.TextColor = color;
-			}
-		}
-
-		Grid ContentGrid => (Grid)base.Content;
-		readonly Image _iconImage;
-		readonly Label _titleLabel;
-		readonly Label _subtitleLabel;
+		static ControlTemplate? _defaultTemplate;
+		View? _templateRoot;
+		View? _titleLabel;
 		Color? _backgroundColor;
 
 		static Color TextFillColorPrimaryLight = new(0, 0, 0, 228);
@@ -207,59 +215,51 @@ namespace Microsoft.Maui.Controls
 		public TitleBar()
 		{
 			PassthroughElements = new List<IView>();
+			ControlTemplate = DefaultTemplate;
+		}
 
-			base.Content = new Grid
+		public static ControlTemplate DefaultTemplate
+		{
+			get
 			{
-				HorizontalOptions = LayoutOptions.Fill,
-				ColumnDefinitions =
+				if (_defaultTemplate == null)
 				{
-					new ColumnDefinition(GridLength.Auto), // Leading content
-					new ColumnDefinition(GridLength.Auto), // Icon content
-					new ColumnDefinition(GridLength.Auto), // Title content
-					new ColumnDefinition(GridLength.Auto), // Subtitle content
-					new ColumnDefinition(GridLength.Star), // Content
-					new ColumnDefinition(GridLength.Auto), // Trailing content
-					new ColumnDefinition(150),			   // Min drag region + padding for system buttons
+					_defaultTemplate = new ControlTemplate(() => BuildDefaultTemplate());
 				}
-			};
 
-			_iconImage = new Image()
-			{
-				WidthRequest = 20,
-				HeightRequest = 20,
-				VerticalOptions = LayoutOptions.Center,
-				IsVisible = false,
-				Margin = new Thickness(16, 0, 0, 0)
-			};
-			ContentGrid.Add(_iconImage);
-			ContentGrid.SetColumn(_iconImage, 1);
+				return _defaultTemplate;
+			}
+		}
 
-			_titleLabel = new Label()
-			{
-				Margin = new Thickness(16, 0),
-				LineBreakMode = LineBreakMode.NoWrap,
-				HorizontalOptions = LayoutOptions.Start,
-				VerticalOptions = LayoutOptions.Center,
-				MinimumWidthRequest = 48,
-				FontSize = 12,
-				IsVisible = false
-			};
-			ContentGrid.Add(_titleLabel);
-			ContentGrid.SetColumn(_titleLabel, 2);
+		protected override void OnApplyTemplate()
+		{
+			base.OnApplyTemplate();
 
-			_subtitleLabel = new Label()
+			var controlTemplate = (this as IControlTemplated);
+
+			_templateRoot = controlTemplate?.TemplateRoot as View;
+
+			_titleLabel = controlTemplate?.GetTemplateChild(TitleBarTitle) as View;
+
+			var leadingContent = controlTemplate?.GetTemplateChild(TitleBarLeading) as IView;
+			if (leadingContent is not null)
 			{
-				Margin = new Thickness(0, 0, 16, 0),
-				LineBreakMode = LineBreakMode.NoWrap,
-				HorizontalOptions = LayoutOptions.Start,
-				VerticalOptions = LayoutOptions.Center,
-				MinimumWidthRequest = 48,
-				FontSize = 12,
-				Opacity = 0.8,
-				IsVisible = false
-			};
-			ContentGrid.Add(_subtitleLabel);
-			ContentGrid.SetColumn(_subtitleLabel, 3);
+				PassthroughElements.Add(leadingContent);
+			}
+
+			var content = controlTemplate?.GetTemplateChild(TitleBarContent) as IView;
+			if (content is not null)
+			{
+				PassthroughElements.Add(content);
+			}
+
+			var trailingContent = controlTemplate?.GetTemplateChild(TitleBarTrailing) as IView;
+			if (trailingContent is not null)
+			{
+				PassthroughElements.Add(trailingContent);
+			}
+
+			VisualStateManager.GoToState(_templateRoot, TitleBarActiveState);
 		}
 
 		internal void NotifyWindowReady(Window window)
@@ -276,44 +276,256 @@ namespace Microsoft.Maui.Controls
 
 		private void Window_Activated(object? sender, System.EventArgs e)
 		{
-			if (ForegroundColor != null)
-			{
-				_titleLabel.TextColor = ForegroundColor;
-				_subtitleLabel.TextColor = ForegroundColor;
-			}
-			else
-			{
-				_titleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillColorPrimaryLight, TextFillColorPrimaryDark);
-				_subtitleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillColorPrimaryLight, TextFillColorPrimaryDark);
-			}
-
-			if (_backgroundColor != null)
+			// Restore the color
+			if (_backgroundColor is not null && _templateRoot is not null)
 			{
 				BackgroundColor = _backgroundColor;
 			}
+
+			VisualStateManager.GoToState(_templateRoot, TitleBarActiveState);
 		}
 
 		private void Window_Deactivated(object? sender, System.EventArgs e)
 		{
-			if (InactiveForegroundColor != null)
-			{
-				_titleLabel.TextColor = InactiveForegroundColor;
-				_subtitleLabel.TextColor = InactiveForegroundColor;
-			}
-			else
-			{
-				_titleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillInactiveColorPrimaryLight, TextFillInactiveColorPrimaryDark);
-				_subtitleLabel.SetAppThemeColor(Label.TextColorProperty, TextFillInactiveColorPrimaryLight, TextFillInactiveColorPrimaryDark);
-			}
-
-			if (BackgroundColor != null)
+			// Save color
+			if (BackgroundColor is not null)
 			{
 				_backgroundColor = BackgroundColor;
 			}
 
-			if (InactiveBackgroundColor != null)
+			// Set to inactive color
+			if (InactiveBackgroundColor is not null && _templateRoot is not null)
 			{
 				BackgroundColor = InactiveBackgroundColor;
+			}
+
+			VisualStateManager.GoToState(_templateRoot, TitleBarInactiveState);
+		}
+
+		static View BuildDefaultTemplate()
+		{
+			VisualStateGroupList visualStateGroups = new VisualStateGroupList();
+
+			#region Root Grid
+			var contentGrid = new Grid()
+			{
+				HorizontalOptions = LayoutOptions.Fill,
+				ColumnDefinitions =
+				{
+					new ColumnDefinition(GridLength.Auto), // Leading content
+					new ColumnDefinition(GridLength.Auto), // Icon content
+					new ColumnDefinition(GridLength.Auto), // Title content
+					new ColumnDefinition(GridLength.Auto), // Subtitle content
+					new ColumnDefinition(GridLength.Star), // Content
+					new ColumnDefinition(GridLength.Auto), // Trailing content
+					new ColumnDefinition(150),			   // Min drag region + padding for system buttons
+				}
+			};
+			BindToTemplatedParent(contentGrid, BackgroundColorProperty, OpacityProperty);
+			#endregion
+
+			#region Leading content
+			var leadingContent = new ContentPresenter()
+			{
+				IsVisible = false
+			};
+
+			contentGrid.Add(leadingContent);
+			contentGrid.SetColumn(leadingContent, 0);
+
+			leadingContent.SetBinding(ContentPresenter.ContentProperty,
+				new Binding(LeadingContentProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			var leadingVisibleGroup = GetVisibleStateGroup(TitleBarLeading, LeadingVisibleState, LeadingHiddenState);
+			leadingVisibleGroup.Name = "LeadingContentGroup";
+			visualStateGroups.Add(leadingVisibleGroup);
+			#endregion
+
+			#region Icon
+			var icon = new Image()
+			{
+				WidthRequest = 20,
+				HeightRequest = 20,
+				VerticalOptions = LayoutOptions.Center,
+				Margin = new Thickness(16, 0, 0, 0),
+				IsVisible = false,
+			};
+
+			contentGrid.Add(icon);
+			contentGrid.SetColumn(icon, 1);
+
+			icon.SetBinding(Image.SourceProperty,
+				new Binding(IconProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			var iconVisibleGroup = GetVisibleStateGroup(TitleBarIcon, IconVisibleState, IconHiddenState);
+			iconVisibleGroup.Name = "IconGroup";
+			visualStateGroups.Add(iconVisibleGroup);
+			#endregion
+
+			#region Title
+			var titleLabel = new Label()
+			{
+				Margin = new Thickness(16, 0),
+				LineBreakMode = LineBreakMode.NoWrap,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Center,
+				MinimumWidthRequest = 48,
+				FontSize = 12,
+				IsVisible = false
+			};
+			
+			contentGrid.Add(titleLabel);
+			contentGrid.SetColumn(titleLabel, 2);
+
+			titleLabel.SetBinding(Label.TextProperty,
+				new Binding(TitleProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			titleLabel.SetBinding(Label.TextColorProperty,
+				new Binding(ForegroundColorProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			var activeVisualState = new VisualState() { Name = TitleBarActiveState };
+			activeVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Label.OpacityProperty,
+					TargetName = TitleBarTitle,
+					Value = 1.0
+				});
+
+			var inactiveVisualState = new VisualState() { Name = TitleBarInactiveState };
+			inactiveVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Label.OpacityProperty,
+					TargetName = TitleBarTitle,
+					Value = 0.7
+				});
+
+			var labelActiveStateGroup = new VisualStateGroup() { Name = "TitleActiveStates" };
+			labelActiveStateGroup.States.Add(activeVisualState);
+			labelActiveStateGroup.States.Add(inactiveVisualState);
+			visualStateGroups.Add(labelActiveStateGroup);
+
+			var titleVisibleGroup = GetVisibleStateGroup(TitleBarTitle, TitleVisibleState, TitleHiddenState);
+			titleVisibleGroup.Name = "TitleTextGroup";
+			visualStateGroups.Add(titleVisibleGroup);
+			#endregion
+
+			#region Subtitle
+			var subtitleLabel = new Label()
+			{
+				Margin = new Thickness(0, 0, 16, 0),
+				LineBreakMode = LineBreakMode.NoWrap,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Center,
+				MinimumWidthRequest = 48,
+				FontSize = 12,
+				Opacity = 0.7,
+				IsVisible = false
+			};
+
+			contentGrid.Add(subtitleLabel);
+			contentGrid.SetColumn(subtitleLabel, 3);
+
+			subtitleLabel.SetBinding(Label.TextProperty,
+				new Binding(SubtitleProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			subtitleLabel.SetBinding(Label.TextColorProperty,
+				new Binding(ForegroundColorProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			var subtitleVisibleGroup = GetVisibleStateGroup(TitleBarSubtitle, SubtitleVisibleState, SubtitleHiddenState);
+			subtitleVisibleGroup.Name = "SubtitleTextGroup";
+			visualStateGroups.Add(subtitleVisibleGroup);
+			#endregion
+
+			#region Content
+			var content = new ContentPresenter()
+			{
+				IsVisible = false
+			};
+
+			contentGrid.Add(content);
+			contentGrid.SetColumn(content, 4);
+
+			content.SetBinding(ContentPresenter.ContentProperty,
+				new Binding(ContentProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			var contentVisibleGroup = GetVisibleStateGroup(TitleBarContent, ContentVisibleState, ContentHiddenState);
+			contentVisibleGroup.Name = "ContentGroup";
+			visualStateGroups.Add(contentVisibleGroup);
+			#endregion
+
+			#region Trailing content
+			var trailingContent = new ContentPresenter()
+			{
+				IsVisible = false
+			};
+
+			contentGrid.Add(trailingContent);
+			contentGrid.SetColumn(trailingContent, 5);
+
+			trailingContent.SetBinding(ContentPresenter.ContentProperty,
+				new Binding(TrailingContentProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			var trailingContentVisibleGroup = GetVisibleStateGroup(TitleBarTrailing, TrailingVisibleState, TrailingHiddenState);
+			trailingContentVisibleGroup.Name = "TrailingContentGroup";
+			visualStateGroups.Add(trailingContentVisibleGroup);
+			#endregion
+
+			INameScope nameScope = new NameScope();
+			NameScope.SetNameScope(contentGrid, nameScope);
+			nameScope.RegisterName(TemplateRootName, contentGrid);
+			nameScope.RegisterName(TitleBarLeading, leadingContent);
+			nameScope.RegisterName(TitleBarIcon, icon);
+			nameScope.RegisterName(TitleBarTitle, titleLabel);
+			nameScope.RegisterName(TitleBarSubtitle, subtitleLabel);
+			nameScope.RegisterName(TitleBarContent, content);
+			nameScope.RegisterName(TitleBarTrailing, trailingContent);
+
+			VisualStateManager.SetVisualStateGroups(contentGrid, visualStateGroups);
+
+			return contentGrid;
+		}
+
+		static VisualStateGroup GetVisibleStateGroup(string targetName, string visibleState, string hiddenState)
+		{
+			var visualGroup = new VisualStateGroup();
+			var visualVisibleState = new VisualState() { Name = visibleState };
+			visualVisibleState.Setters.Add(
+				new Setter()
+				{
+					Property = IsVisibleProperty,
+					TargetName = targetName,
+					Value = true
+				});
+			visualGroup.States.Add(visualVisibleState);
+
+			var collapsedState = new VisualState() { Name = hiddenState };
+			collapsedState.Setters.Add(
+				new Setter()
+				{
+					Property = IsVisibleProperty,
+					TargetName = targetName,
+					Value = false
+				});
+			visualGroup.States.Add(collapsedState);
+			return visualGroup;
+		}
+
+		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)
+		{
+			foreach (var property in properties)
+			{
+				bindableObject.SetBinding(property, new Binding(property.PropertyName,
+					source: RelativeBindingSource.TemplatedParent));
 			}
 		}
 	}

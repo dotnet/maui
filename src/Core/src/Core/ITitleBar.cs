@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Titlebar for the Window
 	/// </summary>
-	public interface ITitleBar : IView
+	public interface ITitleBar : IView, IContentView
 	{
 		IList<IView> PassthroughElements { get; }
 
