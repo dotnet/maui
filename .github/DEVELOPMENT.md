@@ -27,7 +27,7 @@ Before opening the solution in Visual Studio / VS Code you **MUST** build the bu
     ```
 
 ## Windows
-- Microsoft.Maui-windows.slnf
+Open the `Microsoft.Maui-windows.slnf` file in Visual Studio from the root of the repo.
 
 ## Mac
 
