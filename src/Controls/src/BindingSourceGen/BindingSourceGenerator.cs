@@ -37,9 +37,9 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		context.RegisterSourceOutput(bindings, (spc, binding) =>
 		{
-
-			var fileName = $"{binding.Location.FilePath}/GeneratedBindableObjectExtensions-{binding.Location.Line}-{binding.Location.Column}.g.cs";
-			spc.AddSource(fileName, BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(binding.Location.GetHashCode())));
+			var fileName = $"{binding.Location.FilePath}-GeneratedBindableObjectExtensions-{binding.Location.Line}-{binding.Location.Column}.g.cs";
+			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
+			spc.AddSource(sanitizedFileName, BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(binding.Location.GetHashCode())));
 		});
 	}
 
