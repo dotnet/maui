@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.7" />
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
+    <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
 
 </Project>

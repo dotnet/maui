@@ -10,6 +10,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
+		public StateViewContainerRemote(IUIClientContext? testContext, string formsType)
+			: base(testContext, formsType)
+		{
+		}
+
 		public void TapStateButton()
 		{
 			App.Screenshot("Before state change");

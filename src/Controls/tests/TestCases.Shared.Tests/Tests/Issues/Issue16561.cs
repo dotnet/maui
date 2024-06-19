@@ -23,14 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnMac("https://github.com/dotnet/maui/issues/17435")]
 		public void TapTwoPlacesQuickly()
 		{
-			// https://github.com/dotnet/maui/issues/17435
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac
-			});
-
 			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
 			{
 				throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
@@ -68,58 +63,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			var driver = app.Driver ?? throw new InvalidOperationException("The Appium driver is null; cannot perform taps.");
 
-			if (driver is WindowsDriver)
-			{
-				// Windows will throw an error if we try to execute Taps with a TouchAction
-				// or if we try to use ExecuteScript, so we'll just use TapCoordinates instead
-				app.TapCoordinates(point1.X, point1.Y);
-				app.TapCoordinates(point2.X, point2.Y);
-			}
-			else if (driver is IOSDriver)
-			{
-				// iOS, on the other hand, will allow us to use ExecuteScript to run two taps quickly
-				// It will not work with an ActionSequence, though; one of the taps will simply never 
-				// happen. No errors, but no second tap.
-
-				driver.ExecuteScript("mobile: tap", new Dictionary<string, object> {
-					{ "x", point1.X },
-					{ "y", point1.Y }
-				});
-
-				driver.ExecuteScript("mobile: tap", new Dictionary<string, object> {
-					{ "x", point2.X },
-					{ "y", point2.Y }
-				});
-			}
-			else
-			{
-				// For Android, TapCoordinates won't work (it's far too slow), and ExecuteScript 
-				// throws an error. So we'll use an ActionSequence, which is what we wanted in 
-				// the first place.
-
-				PointerInputDevice touchDevice = new PointerInputDevice(PointerKind.Touch);
-				var sequence = new ActionSequence(touchDevice, 0);
-
-				// Move to the first location and tap
-				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport,
-					(int)point1.X, (int)point1.Y, TimeSpan.FromMilliseconds(250)));
-				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-
-				// If we don't put some kind of pause between the taps, Appium will throw an exception
-				// We'll use a pause that's shorter than the default time for a double-tap on Android,
-				// so we're very clearly simulating two different taps on two different locations
-				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250)));
-
-				// Move to the second location and tap
-				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport,
-					(int)point2.X, (int)point2.Y, TimeSpan.FromMilliseconds(0)));
-				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-
-				// Run the sequence we just built
-				driver.PerformActions(new List<ActionSequence> { sequence });
-			}
+			app.TapCoordinates(point1.X, point1.Y);
+			app.TapCoordinates(point2.X, point2.Y);
 		}
 
 		static void AssertCorrectTapLocation(string tapData, float expectedX, float expectedY, string which)

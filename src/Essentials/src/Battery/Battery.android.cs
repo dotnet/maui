@@ -10,10 +10,7 @@ namespace Microsoft.Maui.Devices
 {
 	partial class BatteryImplementation : IBattery
 	{
-		static PowerManager? powerManager;
-
-		static PowerManager? PowerManager =>
-			powerManager ??= Application.Context.GetSystemService(Context.PowerService) as PowerManager;
+		static PowerManager? PowerManager => Application.Context.GetSystemService(Context.PowerService) as PowerManager;
 
 		BatteryBroadcastReceiver? batteryReceiver;
 		EnergySaverBroadcastReceiver? powerReceiver;

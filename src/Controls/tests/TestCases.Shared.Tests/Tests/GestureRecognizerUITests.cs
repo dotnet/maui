@@ -1,5 +1,4 @@
-﻿using Maui.Controls.Sample;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -22,11 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
+		[FailsOnAndroid("PointerGestureRecognizer doesn't work with mouse in Android")]
+		[FailsOnIOS("PointerGestureRecognizer doesn't work with mouse in iOS")]
 		public void PointerGestureTest()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
-				"PointerGestureRecognizer doesn't work with mouse in Android or iOS");
-
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
 			App.Tap("GoButton");
@@ -53,6 +51,36 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var result = App.FindElement("DoubleTapResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
+		}
+		
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void SingleTap()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "SingleTapGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("SingleTapSurface");
+			App.Tap("SingleTapSurface");
+
+			var result = App.FindElement("SingleTapGestureResults").GetText();
+			ClassicAssert.AreEqual("Success", result);
+		}
+		
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void DisabledSingleTap()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "SingleTapGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("DisabledTapSurface");
+			App.Tap("DisabledTapSurface");
+
+			var result = App.FindElement("DisabledTapGestureResults").GetText();
+			ClassicAssert.AreNotEqual("Failed", result);
 		}
 	}
 }

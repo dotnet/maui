@@ -8,13 +8,13 @@ namespace Microsoft.Maui.Controls
 	public sealed class TapGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
-		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(TapGestureRecognizer), null);
+		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(TapGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(TapGestureRecognizer), null);
 
 		/// <summary>Bindable property for <see cref="NumberOfTapsRequired"/>.</summary>
-		public static readonly BindableProperty NumberOfTapsRequiredProperty = BindableProperty.Create("NumberOfTapsRequired", typeof(int), typeof(TapGestureRecognizer), 1);
+		public static readonly BindableProperty NumberOfTapsRequiredProperty = BindableProperty.Create(nameof(NumberOfTapsRequired), typeof(int), typeof(TapGestureRecognizer), 1);
 
 		/// <summary>Bindable property for <see cref="Buttons"/>.</summary>
 		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(TapGestureRecognizer), ButtonsMask.Primary);

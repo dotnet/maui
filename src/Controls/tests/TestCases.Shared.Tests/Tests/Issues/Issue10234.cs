@@ -14,28 +14,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.CarouselView)]
 		public void ScrollCarouselViewAfterDispose()
 		{
-			try
-			{
-				_ = App.WaitForElement("GoToTest");
-				App.Tap("GoToTest");
-				App.WaitForElement("goToShow");
-				App.Tap("goToShow");
-				App.WaitForElement("goToBack");
-				ScrollNextItem();
-				App.Tap("goToBack");
-				App.WaitForElement("goToShow");
-				App.Tap("goToShow");
-				ScrollNextItem();
-				App.WaitForElement("goToBack");
-				App.Tap("goToBack");
-				App.WaitForElement("goToShow");
-			}
-			finally
-			{
-				Reset();
-			}
+			App.WaitForElement("goToShow");
+			App.Tap("goToShow");
+			App.WaitForElement("goToBack");
+			ScrollNextItem();
+			App.Tap("goToBack");
+			App.WaitForElement("goToShow");
+			App.Tap("goToShow");
+			ScrollNextItem();
+			App.WaitForElement("goToBack");
+			App.Tap("goToBack");
+			App.WaitForElement("goToShow");
 		}
 
 		void ScrollNextItem()
