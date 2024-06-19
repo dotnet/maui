@@ -282,7 +282,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			});
 
 			Assert.NotEmpty(references);
-			foreach (var reference in references)
+			foreach (var reference in references.ToArray())
 			{
 				if (reference.Target is Cell cell)
 				{
