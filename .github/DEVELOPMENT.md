@@ -11,6 +11,7 @@ This page contains steps to build and run the .NET MAUI repository from source. 
    - Install [Open JDK 17](https://learn.microsoft.com/en-us/java/openjdk/download#openjdk-17)
 
    ### Mac
+   - Install [VSCode](https://code.visualstudio.com/download)
    - Follow the steps for installing the .NET MAUI Dev Kit for VS Code: https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui
       
 ## Building the Build Tasks
