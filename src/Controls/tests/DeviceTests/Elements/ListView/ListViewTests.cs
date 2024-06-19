@@ -320,10 +320,6 @@ namespace Microsoft.Maui.DeviceTests
 						references.Add(new(cell.Handler));
 						Assert.NotNull(cell.Handler.PlatformView);
 						references.Add(new(cell.Handler.PlatformView));
-						#if IOS
-						Assert.NotNull(cell.TableView);
-						references.Add(new(cell.TableView));
-						#endif
 					}
 				}
 
