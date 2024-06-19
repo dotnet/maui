@@ -15,10 +15,16 @@ This page contains steps to build and run the .NET MAUI repository from source. 
 ## Building the Build Tasks
 Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
 
-```dotnetcli
-dotnet tool restore
-dotnet build ./Microsoft.Maui.BuildTasks.slnf
-```
+1. Open a command prompt/terminal/shell window
+1. Navigate to the location of your cloned `dotnet/maui` repo, for example:
+     ```shell
+     cd \repos\maui
+     ```
+1. Run these commands:
+    ```dotnetcli
+    dotnet tool restore
+    dotnet build ./Microsoft.Maui.BuildTasks.slnf
+    ```
 
 ## Windows
 - Microsoft.Maui-windows.slnf
