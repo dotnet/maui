@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -256,9 +257,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	{
 		SetupBuilder();
 
-		WeakReference viewReference = null;
-		WeakReference handlerReference = null;
-
+		var references = new List<WeakReference>();
 		var observable = new ObservableCollection<int> { 1 };
 		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 
@@ -275,18 +274,29 @@ public class MemoryTests : ControlsHandlerTestBase
 						{
 							viewCell.View = new Label();
 						}
-						viewReference = new WeakReference(cell);
-						handlerReference = new WeakReference(cell.Handler);
+						references.Add(new(cell));
 						return cell;
 					}),
 					ItemsSource = observable
 				}
 			});
 
+			Assert.NotEmpty(references);
+			foreach (var reference in references)
+			{
+				if (reference.Target is Cell cell)
+				{
+					Assert.NotNull(cell.Handler);
+					references.Add(new(cell.Handler));
+					Assert.NotNull(cell.Handler.PlatformView);
+					references.Add(new(cell.Handler.PlatformView));
+				}
+			}
+
 			await navPage.Navigation.PopAsync();
 		});
 
-		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
+		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
 #if IOS

@@ -23,13 +23,11 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<EntryCell, EntryCellRenderer>();
-					handlers.AddHandler<ImageCell, ImageCellRenderer>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<ListView, ListViewRenderer>();
-					handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
-					handlers.AddHandler<TextCell, TextCellRenderer>();
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<ViewCell, ViewCellRenderer>();
+					handlers.AddHandler<TextCell, TextCellRenderer>();
+					handlers.AddHandler<ListView, ListViewRenderer>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 				});
 			});
 		}
@@ -276,17 +274,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory("Cells Do Not Leak"
-#if !WINDOWS && !IOS
+		[Fact("Cells Do Not Leak"
+#if !WINDOWS
 			, Skip = "Skip for now on other platforms, due to how cells are recycled this does not pass."
 #endif
 		)]
-		[InlineData(typeof(TextCell))]
-		[InlineData(typeof(EntryCell))]
-		[InlineData(typeof(ImageCell))]
-		[InlineData(typeof(SwitchCell))]
-		[InlineData(typeof(ViewCell))]
-		public async Task CellsDoNotLeak(Type type)
+		public async Task CellsDoNotLeak()
 		{
 			SetupBuilder();
 
@@ -295,11 +288,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
-					var cell = (Cell)Activator.CreateInstance(type);
-					if (cell is ViewCell viewCell)
-					{
-						viewCell.View = new Label();
-					}
+					var cell = new TextCell();
 					references.Add(new(cell));
 					return cell;
 				})
@@ -310,19 +299,6 @@ namespace Microsoft.Maui.DeviceTests
 				listView.ItemsSource = new[] { 1, 2, 3 };
 				await Task.Delay(100);
 				ValidatePlatformCells(listView);
-
-				Assert.NotEmpty(references);
-				foreach (var reference in references.ToArray())
-				{
-					if (reference.Target is Cell cell)
-					{
-						Assert.NotNull(cell.Handler);
-						references.Add(new(cell.Handler));
-						Assert.NotNull(cell.Handler.PlatformView);
-						references.Add(new(cell.Handler.PlatformView));
-					}
-				}
-
 				listView.ItemsSource = null;
 				await Task.Delay(100);
 				ValidatePlatformCells(listView);
