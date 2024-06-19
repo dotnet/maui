@@ -45,7 +45,7 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 
 - [net9.0](https://github.com/dotnet/maui/tree/net9.0)
 
-## Repository projects
+## Sample projects
 
 ### Samples
  ```
@@ -66,29 +66,9 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 - *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
 - *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
 
-### Device Test Projects
+### Testing
 
-[Writing Device Tests](https://github.com/dotnet/maui/wiki/DeviceTests)
-
-### UI Test Projects
-
-[Writing UI Tests](https://github.com/dotnet/maui/wiki/UITests)
-
-### Unit Test Projects
-
-These are tests that will not run on a device. This is useful for testing device independent logic.
-
- ```
-├── Controls 
-│   ├── test
-│   │   ├── Controls.Core.UnitTests
-├── Core 
-│   ├── test
-│   │   ├── Core.UnitTests
-├── Essentials 
-│   ├── test
-│   │   ├── Essentials.UnitTests
-```
+- [Testing Wiki](https://github.com/dotnet/maui/wiki/Testing)
 
 
 ## Stats

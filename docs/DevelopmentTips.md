@@ -1,0 +1,167 @@
+### Reproducing an Issue/Debugging .NET MAUI Code
+Open the .NET MAUI workspace in VSCode.
+In VSCode, select the device that you will be testing on. Using the command palette (ctrl-shift-P/command-shift-P) type `pick device` and
+you will be presented with a set of choices for your target device (Android, iOS, etc). Select one.
+There is a sample project in `src/Controls/samples/Controls.Sample.Sandbox`. This is an empty project
+into which you can add your code to reproduce an issue and also set breakpoints in .NET MAUI source code.
+Let VSCode know this is the project you want to select by going to the command palette (ctrl-shift-P/command-shift-P)
+and typing `pick startup` and select ".NET MAUI: Pick Startup Project" and select the Sandbox project.
+
+ Before using the command palette for the first time, you may have to wait a minute
+for intellisense and other tasks to complete before using the command palette. If the project hasn't
+'settled' yet, you will see an error "Pick Startup Project has resulted in an error."
+
+*Note:* When you are committing your PR, do not include your changes to the Sandbox project.
+
+
+### Cake Commands
+
+#### Clean
+`--clean`
+- This will do a recursive delete of all your obj/bin folders. This is helpful if for some reason your repository is in a bad state and you don't want to go as scorched earth as `git clean -xdf`
+
+#### Target a specific platform
+`--android`
+`--ios`
+`--windows`
+`--catalyst`
+
+```bash
+dotnet cake --target=VS --workloads=global --android --ios
+```
+
+*Note* you will have to `git clean -xdf` your project if you change or add platforms. 
+
+### Blazor Desktop
+
+To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
+
+# Advanced Scenarios
+
+### Compile using a local `bin\dotnet` via `dotnet-local.*`
+
+This method will use the .NET and workload versions that are specific to the branch you are on, which is a good way to ensure compatibility.
+
+Use `dotnet-local.cmd` on Windows or `dotnet-local.sh` on Unix to ensure that `PATH` is set consistently.
+
+#### Cake
+
+You can run a `Cake` target to bootstrap .NET SDK in `bin\dotnet` and launch Visual Studio:
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS
+```
+
+There is also a `VSCode` target for launching Visual Studio Code.
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VSCode
+```
+
+#### Testing branch against your project
+`--sln=<Path to SLN>`
+- This will pack .NET and then open a VS instance using the local pack. This is useful if you want to check to see if the changes in a branch will address your particular issues. Pack only runs the first time so you will need to explicitly add the `--pack` flag if you make changes and need to repack.
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --sln="<download_directory>\MauiApp2\MauiApp2.sln" --target=VS
+```
+
+#### Pack
+`--pack`
+- This creates .NET MAUI packs inside the local dotnet install. This lets you use the CLI commands with the local dotnet to create/deploy with any changes that have been made on that branch (including template changes).
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VS --pack --sln="<download_directory>\MauiApp2\MauiApp2.sln"
+```
+
+Create new .NET MAUI app using your new packs
+```dotnetcli
+dotnet tool restore
+dotnet cake --pack
+mkdir MyMauiApp
+cd MyMauiApp
+..\bin\dotnet\dotnet new maui
+..\bin\dotnet\dotnet build -t:Run -f net[current_sdk_version]-android
+```
+
+You can also run commands individually:
+```dotnetcli
+# install local tools required to build (cake, pwsh, etc..)
+dotnet tool restore
+# Provision .NET SDK in bin\dotnet
+dotnet build src\DotNet\DotNet.csproj
+# Builds Maui MSBuild tasks
+.\bin\dotnet\dotnet build Microsoft.Maui.BuildTasks.slnf
+# Builds the rest of Maui
+.\bin\dotnet\dotnet build Microsoft.Maui.sln
+# Launch Visual Studio
+dotnet cake --target=VS
+```
+
+## Debugging MSBuild Tasks using VS/VSCode
+
+One thing that is very useful is the ability to debug your Tasks while
+they are being run on a build process. This is possible thanks to the
+`MSBUILDDEBUGONSTART` environment variable. When set to `2` this will
+force MSBuild to wait for a debugger connection before continuing.
+You will see the following prompt.
+
+
+```dotnetcli
+Waiting for debugger to attach (dotnet PID 13001).  Press enter to continue...
+```
+
+You can then use VS or VSCode to attach to this process and debug you tasks.
+You can start your test app with the `dotnet-local` script (so it uses your maui build)
+
+### [MacOS](#tab/macos)
+
+```dotnetcli
+MSBUILDDEBUGONSTART=2 ~/<some maui checkout>/dotnet-local.sh build -m:1
+```
+
+### [Linux](#tab/linux)
+
+```dotnetcli
+MSBUILDDEBUGONSTART=2 ~/<some maui checkout>/dotnet-local.sh build -m:1
+```
+
+### [Windows](#tab/windows)
+
+```dotnetcli
+set MSBUILDDEBUGONSTART=2
+~/<some maui checkout>/dotnet-local.cmd build -m:1
+```
+
+---
+
+Note: the `-m:1` is important as it restricts MSBuild to 1 node.
+
+Once MSBuild starts it will print the following
+
+```dotnetcli
+Waiting for debugger to attach (dotnet PID xxxx).  Press enter to continue...
+```
+
+You need to copy the PID value so we can use this in the IDE. For Visual Studio you can use the `Attach to Process` menu option, while you have the Microsoft.Maui.sln solution open. For VSCode open the workspace then use the `Attach to Process` Run and Debug option. You will be prompted for the PID and it will then connect.
+
+Once connected go back to your command prompt and press ENTER so that the MSBuild process can continue.
+
+You will be able to set breakpoints in Tasks (but not Targets) and step through code from this point on.
+
+If you want to test in-tree in VSCode the `Build Platform Sample` command will ask you if you want to debug MSBuild tasks and fill in the `MSBUILDDEBUGONSTART` for you. The PID text will appear in the `Terminal` window in VSCode. You can then use the `Attach to Process` Run and Debug option to attach to the process.
+
+
+### Integration Tests
+
+The Integration test project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains tests which build and/or run MAUI templates or other projects.
+
+These tests can be ran using the test explorer in VS, or from command line with `dotnet test`. Here's how to run an individual test with parameters from command line:
+
+```bash
+dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
+```
