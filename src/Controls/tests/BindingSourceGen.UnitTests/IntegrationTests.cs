@@ -80,7 +80,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-3-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-3-7.g.cs"]);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-6-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-6-7.g.cs"]);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     public static IEnumerable<object[]> GenerateSimpleBindingWhenNullableDisabledAndPropertyNullableData =>
@@ -493,7 +493,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     [Fact]
@@ -611,7 +611,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-7-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     [Theory]
@@ -736,7 +736,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-4-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-4-7.g.cs"]);
     }
 
     [Fact]
@@ -855,7 +855,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-4-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-4-7.g.cs"]);
     }
 
     [Fact]
@@ -957,7 +957,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-3-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-3-7.g.cs"]);
     }
 
     [Fact]
@@ -1073,6 +1073,6 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path/To/Program.cs/GeneratedBindableObjectExtensions-6-7.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-6-7.g.cs"]);
     }
 }
