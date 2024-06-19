@@ -274,12 +274,17 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact("Cells Do Not Leak"
-#if !WINDOWS
+		[Theory("Cells Do Not Leak"
+#if !WINDOWS && !IOS
 			, Skip = "Skip for now on other platforms, due to how cells are recycled this does not pass."
 #endif
 		)]
-		public async Task CellsDoNotLeak()
+		[InlineData(typeof(TextCell))]
+		[InlineData(typeof(EntryCell))]
+		[InlineData(typeof(ImageCell))]
+		[InlineData(typeof(SwitchCell))]
+		[InlineData(typeof(ViewCell))]
+		public async Task CellsDoNotLeak(Type type)
 		{
 			SetupBuilder();
 
@@ -288,7 +293,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
-					var cell = new TextCell();
+					var cell = (Cell)Activator.CreateInstance(type);
+					if (cell is ViewCell viewCell)
+					{
+						viewCell.View = new Label();
+					}
 					references.Add(new(cell));
 					return cell;
 				})
@@ -299,6 +308,23 @@ namespace Microsoft.Maui.DeviceTests
 				listView.ItemsSource = new[] { 1, 2, 3 };
 				await Task.Delay(100);
 				ValidatePlatformCells(listView);
+
+				Assert.NotEmpty(references);
+				foreach (var reference in references.ToArray())
+				{
+					if (reference.Target is Cell cell)
+					{
+						Assert.NotNull(cell.Handler);
+						references.Add(new(cell.Handler));
+						Assert.NotNull(cell.Handler.PlatformView);
+						references.Add(new(cell.Handler.PlatformView));
+						#if IOS
+						Assert.NotNull(cell.TableView);
+						references.Add(new(cell.TableView));
+						#endif
+					}
+				}
+
 				listView.ItemsSource = null;
 				await Task.Delay(100);
 				ValidatePlatformCells(listView);

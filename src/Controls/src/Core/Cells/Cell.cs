@@ -307,8 +307,14 @@ namespace Microsoft.Maui.Controls
 		internal Android.Views.View ConvertView { get; set; }
 #elif IOS
 		internal UIKit.UITableViewCell ReusableCell { get; set; }
-		internal UIKit.UITableView TableView { get; set; }
 
+		WeakReference<UIKit.UITableView> _tableView;
+
+		internal UIKit.UITableView TableView
+		{
+			get => _tableView?.GetTargetOrDefault();
+			set => _tableView = value is null ? null : new(value);
+		}
 #endif
 
 
