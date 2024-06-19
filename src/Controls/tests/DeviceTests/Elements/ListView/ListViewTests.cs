@@ -23,11 +23,13 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<EntryCell, EntryCellRenderer>();
-					handlers.AddHandler<ViewCell, ViewCellRenderer>();
-					handlers.AddHandler<TextCell, TextCellRenderer>();
-					handlers.AddHandler<ListView, ListViewRenderer>();
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<ImageCell, ImageCellRenderer>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<ListView, ListViewRenderer>();
+					handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
+					handlers.AddHandler<TextCell, TextCellRenderer>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<ViewCell, ViewCellRenderer>();
 				});
 			});
 		}
