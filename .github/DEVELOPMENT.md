@@ -30,7 +30,8 @@ Before opening the solution in Visual Studio / VS Code you **MUST** build the bu
 - Microsoft.Maui-windows.slnf
 
 ## Mac
-- Just open the root folder of the repository in vscode
+
+Open the root folder of the repository in VS Code.
 
 *NOTE*: IntelliSense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having IntelliSense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 
