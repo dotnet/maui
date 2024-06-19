@@ -10,7 +10,7 @@ This page contains steps to build and run the .NET MAUI repository from source. 
    - If you're missing any of the Android SDKs, Visual Studio should prompt you to install them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
 
    ### Mac
-   - https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui
+   - Follow the steps for installing the .NET MAUI Dev Kit for VS Code: https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui
       
 ## Building the Build Tasks
 Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
