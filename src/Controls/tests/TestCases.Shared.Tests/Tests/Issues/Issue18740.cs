@@ -1,4 +1,4 @@
-﻿#if ANDROID
+#if ANDROID
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -37,7 +37,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				// 3. Verify that the virtual keyboard appears.
 				ClassicAssert.IsTrue(App.IsKeyboardShown());
-
 			}
 			finally
 			{
