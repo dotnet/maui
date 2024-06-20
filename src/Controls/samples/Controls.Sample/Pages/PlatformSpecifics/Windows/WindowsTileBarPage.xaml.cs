@@ -1,12 +1,14 @@
 ﻿using System;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class WindowsTitleBarPage : ContentPage
 	{
-		private TitleBarSampleViewModel _viewModel;
+		TitleBarSampleViewModel _viewModel;
+		TitleBar _customTitleBar;
 
 		public WindowsTitleBarPage()
 		{
@@ -14,24 +16,35 @@ namespace Maui.Controls.Sample.Pages
 
 			_viewModel = new TitleBarSampleViewModel();
 			BindingContext = _viewModel;
+
+			string titleBarXaml =
+				"""
+				<TitleBar
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					Title="{Binding Title}"
+					Subtitle="{Binding Subtitle}"
+					IsVisible="{Binding ShowTitleBar}"/>
+				""";
+
+			_customTitleBar = new TitleBar().LoadFromXaml(titleBarXaml);
+			_customTitleBar.BindingContext = _viewModel;
 		}
 
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-
-			Window.SetTitleBar(CustomTitleBar);
+			Window.TitleBar = _customTitleBar;
 		}
 
 		private void SetIconCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
-				CustomTitleBar.Icon = "tb_appicon.png";
+				_customTitleBar.Icon = "tb_appicon.png";
 			}
 			else
 			{
-				CustomTitleBar.Icon = "";
+				_customTitleBar.Icon = "";
 			}
 		}
 
@@ -39,7 +52,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ColorTextBox.Text, out var color))
 			{
-				CustomTitleBar.BackgroundColor = color;
+				_customTitleBar.BackgroundColor = color;
 			}
 		}
 
@@ -47,7 +60,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(InactiveColorTextBox.Text, out var color))
 			{
-				CustomTitleBar.InactiveBackgroundColor = color;
+				_customTitleBar.InactiveBackgroundColor = color;
 			}
 		}
 
@@ -55,7 +68,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ForegroundColorTextBox.Text, out var color))
 			{
-				CustomTitleBar.ForegroundColor = color;
+				_customTitleBar.ForegroundColor = color;
 			}
 		}
 
@@ -63,7 +76,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(InactiveForegroundColorTextBox.Text, out var color))
 			{
-				CustomTitleBar.InactiveForegroundColor = color;
+				_customTitleBar.InactiveForegroundColor = color;
 			}
 		}
 
@@ -71,14 +84,14 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (e.Value)
 			{
-				CustomTitleBar.LeadingContent = new Button()
+				_customTitleBar.LeadingContent = new Button()
 				{
 					Text = "Leading"
 				};
 			}
 			else
 			{
-				CustomTitleBar.LeadingContent = null;
+				_customTitleBar.LeadingContent = null;
 			}
 		}
 
@@ -86,7 +99,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (e.Value)
 			{
-				CustomTitleBar.Content = new Entry()
+				_customTitleBar.Content = new Entry()
 				{
 					Placeholder = "Search",
 					MinimumWidthRequest = 200,
@@ -96,7 +109,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 			else
 			{
-				CustomTitleBar.Content = null;
+				_customTitleBar.Content = null;
 			}
 		}
 
@@ -104,14 +117,14 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (e.Value)
 			{
-				CustomTitleBar.TrailingContent = new Button()
+				_customTitleBar.TrailingContent = new Button()
 				{
 					Text = "Trailing"
 				};
 			}
 			else
 			{
-				CustomTitleBar.TrailingContent = null;
+				_customTitleBar.TrailingContent = null;
 			}
 		}
 
@@ -119,11 +132,11 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (e.Value)
 			{
-				CustomTitleBar.HeightRequest = 48;
+				_customTitleBar.HeightRequest = 48;
 			}
 			else
 			{
-				CustomTitleBar.HeightRequest = 32;
+				_customTitleBar.HeightRequest = 32;
 			}
 		}
 	}

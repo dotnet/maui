@@ -1,4 +1,25 @@
 #nullable enable
+const Microsoft.Maui.Controls.TitleBar.ContentHiddenState = "ContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.ContentVisibleState = "ContentVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.IconHiddenState = "IconCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.IconVisibleState = "IconVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.LeadingHiddenState = "LeadingContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.LeadingVisibleState = "LeadingContentVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleHiddenState = "SubTitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleVisibleState = "SubtitleVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.TemplateRootName = "PART_Root" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarActiveState = "TitleBarTitleActive" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarContent = "PART_Content" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarIcon = "PART_Icon" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarInactiveState = "TitleBarTitleInactive" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarLeading = "PART_LeadingContent" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarSubtitle = "PART_Subtitle" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarTitle = "PART_Title" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarTrailing = "PART_TrailingContent" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleHiddenState = "TitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleVisibleState = "TitleVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
 Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.~CarouselViewHandler() -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement!
@@ -73,9 +94,11 @@ Microsoft.Maui.Controls.TitleBar.Title.set -> void
 Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
 Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
-Microsoft.Maui.Controls.Window.SetTitleBar(Microsoft.Maui.Controls.TitleBar? titleBar) -> void
+Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
+Microsoft.Maui.Controls.Window.TitleBar.set -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.TitleBar.OnApplyTemplate() -> void
 static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! item) -> void
 static Microsoft.Maui.Controls.Handlers.ShellSectionHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellSectionHandler! handler, Microsoft.Maui.Controls.ShellSection! item) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TNativeView>.ViewRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -90,6 +113,7 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static Microsoft.Maui.Controls.TitleBar.DefaultTemplate.get -> Microsoft.Maui.Controls.ControlTemplate!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!

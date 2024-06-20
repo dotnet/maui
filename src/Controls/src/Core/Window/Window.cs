@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="TitleBar"/>.</summary>
 		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
-			nameof(TitleBar), typeof(TitleBar), typeof(Window), null);
+			nameof(TitleBar), typeof(TitleBar), typeof(Window), null, propertyChanged: TitleBarChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
@@ -167,7 +168,7 @@ namespace Microsoft.Maui.Controls
 		public ITitleBar? TitleBar
 		{
 			get => (ITitleBar?)GetValue(TitleBarProperty);
-			private set => SetValue(TitleBarProperty, value);
+			set => SetValue(TitleBarProperty, value);
 		}
 
 		double IWindow.X => GetPositionCoordinate(XProperty);
@@ -384,6 +385,15 @@ namespace Microsoft.Maui.Controls
 				((IVisualTreeElement)bindable).GetVisualChildren());
 		}
 
+		static void TitleBarChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var self = (Window)bindable;
+			if (self != null && newValue is TitleBar titleBar)
+			{
+				self.AddLogicalChild(titleBar);
+			}
+		}
+
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 
 		Window IWindowController.Window
@@ -415,42 +425,6 @@ namespace Microsoft.Maui.Controls
 				Page?.SendDisappearing();
 
 			IsActivated = false;
-		}
-
-		public void SetTitleBar(TitleBar? titleBar)
-		{
-			if (TitleBar == titleBar)
-			{
-				return;
-			}
-
-			if (TitleBar is not null && TitleBar is TitleBar oldTb)
-			{
-				oldTb.UnhookWindowEvents(this);
-			}
-
-			// Detach the titlebar from everything
-			if (titleBar is not null)
-			{
-				titleBar.NotifyWindowReady(this);
-
-				// The following clears the binding context, so make sure it's saved
-				var bindingContext = titleBar.BindingContext;
-
-				if (titleBar.Parent is Layout parentLayout)
-				{
-					parentLayout.Children.Remove(titleBar);
-				}
-				else
-				{
-					titleBar.Parent?.RemoveLogicalChild(titleBar);
-				}
-
-				titleBar.BindingContext = bindingContext;
-			}
-
-			// Attach the titlebar to the window
-			TitleBar = titleBar;
 		}
 
 		internal void OnModalPopped(Page modalPage)

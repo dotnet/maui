@@ -7,13 +7,6 @@
     Title="WebView Platform-Specifics">
     <Grid
         ColumnDefinitions="*,*">
-      
-        <TitleBar
-            x:Name="CustomTitleBar"
-            Title="{Binding Title}"
-            Subtitle="{Binding Subtitle}"
-            IsVisible="{Binding ShowTitleBar}"/>
-      
         <VerticalStackLayout
             Spacing="16"
             Margin="16"

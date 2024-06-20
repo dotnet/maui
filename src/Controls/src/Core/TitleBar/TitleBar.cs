@@ -216,6 +216,20 @@ namespace Microsoft.Maui.Controls
 		{
 			PassthroughElements = new List<IView>();
 			ControlTemplate = DefaultTemplate;
+
+			PropertyChanged += TitleBar_PropertyChanged;
+		}
+
+		private void TitleBar_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(Window) && Window is not null)
+			{
+				Window.Activated -= Window_Activated;
+				Window.Deactivated -= Window_Deactivated;
+
+				Window.Activated += Window_Activated;
+				Window.Deactivated += Window_Deactivated;
+			}
 		}
 
 		public static ControlTemplate DefaultTemplate
@@ -260,18 +274,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			VisualStateManager.GoToState(_templateRoot, TitleBarActiveState);
-		}
-
-		internal void NotifyWindowReady(Window window)
-		{
-			window.Activated += Window_Activated;
-			window.Deactivated += Window_Deactivated;
-		}
-
-		internal void UnhookWindowEvents(Window window)
-		{
-			window.Activated -= Window_Activated;
-			window.Deactivated -= Window_Deactivated;
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)
