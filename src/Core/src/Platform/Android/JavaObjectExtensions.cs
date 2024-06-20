@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Android.Runtime;
 
 namespace Microsoft.Maui
 {
 	static class JavaObjectExtensions
 	{
-		const DynamicallyAccessedMemberTypes Constructors = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
-
 		public static bool IsDisposed(this Java.Lang.Object obj)
 		{
 			return obj.Handle == IntPtr.Zero;
@@ -32,19 +29,6 @@ namespace Microsoft.Maui
 				return false;
 
 			return !obj.IsDisposed();
-		}
-
-		public static TResult? TryJavaCast<[DynamicallyAccessedMembers (Constructors)] TResult>(this IJavaObject? instance)
-			where TResult : class, IJavaObject
-		{
-			try
-			{
-				return instance.JavaCast<TResult>();
-			}
-			catch
-			{
-				return null;
-			}
 		}
 	}
 }

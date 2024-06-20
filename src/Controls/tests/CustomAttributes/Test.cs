@@ -393,7 +393,6 @@ public static class Test
 	{
 		Source,
 		Source_FontImageSource,
-		IsAnimationPlaying,
 		Aspect,
 		IsOpaque,
 		IsLoading,
