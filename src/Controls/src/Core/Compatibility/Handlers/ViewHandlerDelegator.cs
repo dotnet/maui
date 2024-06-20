@@ -20,8 +20,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		internal IPropertyMapper _mapper;
 		internal readonly CommandMapper _commandMapper;
 		IPlatformViewHandler _viewHandler;
-		TElement? _element;
-		public TElement? Element => _element;
+		TElement? _tempElement;
+		WeakReference<TElement>? _element;
+		public TElement? Element => _tempElement ?? _element?.GetTargetOrDefault();
 		bool _disposed;
 
 		public ViewHandlerDelegator(
@@ -48,11 +49,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void DisconnectHandler()
 		{
-			if (_element == null)
+			if (Element is not TElement element)
 				return;
 
-			if (_element.Handler == _viewHandler)
-				_element.Handler = null;
+			if (element.Handler == _viewHandler)
+				element.Handler = null;
 
 			_element = null;
 
@@ -81,7 +82,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #if WINDOWS
 			VisualElementRenderer<TElement, TNativeElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
 #else
-			VisualElementRenderer<TElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _element, ref _mapper, _defaultMapper, autoPackage);
+			VisualElementRenderer<TElement>.SetVirtualView(view, _viewHandler, onElementChanged, ref _tempElement, ref _mapper, _defaultMapper, autoPackage);
+			_element = _tempElement is null ? null : new(_tempElement);
+			_tempElement = null;
 #endif
 		}
 

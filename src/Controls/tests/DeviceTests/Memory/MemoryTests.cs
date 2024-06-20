@@ -67,8 +67,10 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 	}
 
-	[Fact("Page Does Not Leak")]
-	public async Task PageDoesNotLeak()
+	[Theory("Pages Do Not Leak")]
+	[InlineData(typeof(ContentPage))]
+	[InlineData(typeof(NavigationPage))]
+	public async Task PagesDoNotLeak(Type type)
 	{
 		SetupBuilder();
 
@@ -80,7 +82,15 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
-			var page = new ContentPage { Content = new Label() };
+			var page = (Page)Activator.CreateInstance(type);
+			if (page is ContentPage contentPage)
+			{
+				contentPage.Content = new Label();
+			}
+			else if (page is NavigationPage navigationPage)
+			{
+				await navigationPage.PushAsync(new ContentPage { Content = new Label() });
+			}
 			
 			await navPage.Navigation.PushModalAsync(page);
 
