@@ -51,7 +51,7 @@ label.SetBinding(Label.TextProperty, "Customer.Name");
 ```
 
 Compiled binding in code:
-```c#
+```csharp
 label.SetBinding<PageViewModel, string>(Label.TextProperty, static vm => vm.Customer.Name);
 // or with type inference:
 label.SetBinding(Label.TextProperty, static (PageViewModel vm) => vm.Customer.Name);
