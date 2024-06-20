@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -105,6 +106,7 @@ namespace Microsoft.Maui.Platform
 		{
 			CALayer? backgroundLayer = platformView.Layer as MauiCALayer;
 
+			var initialRender = false;
 			if (backgroundLayer == null)
 			{
 				backgroundLayer = platformView.Layer?.Sublayers?
@@ -112,6 +114,7 @@ namespace Microsoft.Maui.Platform
 
 				if (backgroundLayer == null)
 				{
+					initialRender = true;
 					backgroundLayer = new MauiCALayer
 					{
 						Name = ViewExtensions.BackgroundLayerName
@@ -120,6 +123,13 @@ namespace Microsoft.Maui.Platform
 					platformView.BackgroundColor = UIColor.Clear;
 					platformView.InsertBackgroundLayer(backgroundLayer, 0);
 				}
+			}
+
+			// While we're in the process of connecting the handler properties will not change
+			// So it's useless to update the layer many times with the same value
+			if (platformView is ContentView { View: null } && !initialRender)
+			{
+				return;
 			}
 
 			if (backgroundLayer is MauiCALayer mauiCALayer)
@@ -151,26 +161,59 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMauiCALayer(this UIView view)
 		{
-			if (view == null || view.Frame.IsEmpty)
+			if (view.Frame.IsEmpty)
+			{
 				return;
+			}
 
 			var layer = view.Layer;
-
-			UpdateBackgroundLayer(layer, view.Bounds);
+			if (layer?.Sublayers is { Length: > 0 } sublayers)
+			{
+				var bounds = view.Bounds;
+				var backgroundLayers = GetBackgroundLayersNeedingUpdate(sublayers, bounds);
+				backgroundLayers.UpdateBackgroundLayers(bounds);
+			}
 		}
 
-		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
+		static IEnumerable<CALayer> GetBackgroundLayersNeedingUpdate(this CALayer[] layers, CGRect bounds)
 		{
-			var sublayers = layer?.Sublayers;
-			if (sublayers is not null)
+			foreach (var layer in layers)
 			{
-				foreach (var sublayer in sublayers)
+				if (layer.Sublayers is { Length: > 0 } sublayers)
 				{
-					UpdateBackgroundLayer(sublayer, bounds);
-
-					if (sublayer.Name == ViewExtensions.BackgroundLayerName && sublayer.Frame != bounds)
-						sublayer.Frame = bounds;
+					foreach (var sublayer in GetBackgroundLayersNeedingUpdate(sublayers, bounds))
+					{
+						yield return sublayer;
+					}
 				}
+
+				if (layer.Name == ViewExtensions.BackgroundLayerName && layer.Frame != bounds)
+				{
+					yield return layer;
+				}
+			}
+		}
+		
+		static void UpdateBackgroundLayers(this IEnumerable<CALayer> backgroundLayers, CGRect bounds)
+		{
+			using var backgroundLayerEnumerator = backgroundLayers.GetEnumerator();
+
+			if (backgroundLayerEnumerator.MoveNext())
+			{
+				// iOS by default adds animations to certain actions such as layer resizing (setting the Frame property).
+				// This can result in the background layer not keeping up with animations controlled by MAUI.
+				// To prevent this undesired effect, native animations will be turned off for the duration of the operation.
+				CATransaction.Begin();
+				CATransaction.AnimationDuration = 0;
+				
+				do
+				{
+					var backgroundLayer = backgroundLayerEnumerator.Current;
+					backgroundLayer.Frame = bounds;
+				}
+				while (backgroundLayerEnumerator.MoveNext());
+				
+				CATransaction.Commit();
 			}
 		}
 	}

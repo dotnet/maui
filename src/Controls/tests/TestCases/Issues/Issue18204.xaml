@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18204"
+             Title="Issue18204">
+
+    <VerticalStackLayout Padding="24">
+      <Border
+        HorizontalOptions="Center"
+        x:Name="TheBorder"
+        BackgroundColor="LightBlue"
+        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=2, Opacity=0.20}"
+        StrokeShape="{RoundRectangle CornerRadius=20}">
+        <Button x:Name="TheButton" Clicked="ButtonClicked" BackgroundColor="LightGreen" WidthRequest="200" HeightRequest="500" />
+      </Border>
+    </VerticalStackLayout>
+</ContentPage>
