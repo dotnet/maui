@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 #nullable disable
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			static bool IsValueOfXDataTypeOrTargetType(ElementNode node, INode parentNode, out XmlName propertyName)
-				=> ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName)
+				=> node.TryGetPropertyName(parentNode, out propertyName)
 					&& (IsXDataType(propertyName) || IsTargetTypePropertyOfMauiType(parentNode, propertyName));
 
 			static bool IsTargetTypePropertyOfMauiType(INode parentNode, XmlName propertyName)

@@ -260,7 +260,7 @@
       </Item>
       <Item ItemId=";XDataTypeSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.]]></Val>
+          <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>

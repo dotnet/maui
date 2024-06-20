@@ -41,6 +41,7 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
+Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
 
@@ -120,13 +121,10 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		{
 			args
 				.Append("/p:BuildIpa=true")
+				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
 
-			if (device.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
 			return args;
 		}
 	});
@@ -193,12 +191,14 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
 {
 	Information("Starting UI Tests...");
-	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+	
+	string testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
 
 	Information($"Testing Device: {device}");
 	Information($"Testing App Project: {app}");
 	Information($"Testing App: {testApp}");
 	Information($"Results Directory: {resultsDir}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
 
 	if (string.IsNullOrEmpty(testApp))
 	{
@@ -220,6 +220,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=IOSUITEST")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
 	});
 
@@ -233,8 +234,18 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
 {
 	Information($"Building UI Test app: {appProject}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
+
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
 	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+
+	if (USE_NATIVE_AOT && config.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+	{
+		var errMsg = $"Error: Running UI tests with NativeAOT is only supported in Release configuration";
+		Error(errMsg);
+		throw new Exception(errMsg);
+	}
+
 
 	DotNetBuild(appProject, new DotNetBuildSettings
 	{
@@ -245,14 +256,10 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 		{
 			args
 			.Append("/p:BuildIpa=true")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
+			.Append($"/p:RuntimeIdentifier={rid}")
 			.Append("/bl:" + binlog)
 			.Append("/tl");
-
-			// if we building for a device
-			if (device.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
 
 			return args;
 		}
@@ -268,7 +275,7 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 	CleanDirectories(resultsDir);
 
 	Information("Starting Compatibility Gallery UI Tests...");
-
+	
 	var testApp = GetTestApplications(appProject, device, config, tfm, rid).FirstOrDefault();
 
 	Information($"Testing Device: {device}");

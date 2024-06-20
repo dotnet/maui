@@ -2,6 +2,7 @@
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
+Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
@@ -68,6 +69,9 @@ static Microsoft.Maui.Handlers.SearchBarHandler.MapIsSpellCheckEnabled(Microsoft
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapSourceAsync(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! image) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler<TType>(this Microsoft.Maui.Hosting.IMauiHandlersCollection! handlersCollection, System.Func<System.IServiceProvider!, Microsoft.Maui.IElementHandler!>! handlerImplementationFactory) -> Microsoft.Maui.Hosting.IMauiHandlersCollection!
 static Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler<TType>(this Microsoft.Maui.Hosting.IMauiHandlersCollection! handlersCollection, System.Func<System.IServiceProvider!, Microsoft.Maui.IElementHandler!>! handlerImplementationFactory) -> Microsoft.Maui.Hosting.IMauiHandlersCollection!
+static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -105,6 +109,12 @@ static Microsoft.Maui.Handlers.DatePickerHandler.MapBackground(Microsoft.Maui.Ha
 static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
 static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
+static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
+static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!

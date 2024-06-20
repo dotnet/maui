@@ -8,7 +8,7 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
-    <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
+    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsAotCompatible>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS8305;IL2059</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 

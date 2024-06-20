@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// Provides a mechanism to propagate data changes from one object to another. Enables validation, type coercion, and an event system.
 	/// </summary>
 	/// <remarks>The <see cref="BindableObject" /> class provides a data storage mechanism that enables the application developer to synchronize data between objects in response to changes, for example, between the View and View Model in the MVVM design pattern. All of the visual elements in the <c>Microsoft.Maui.Controls</c> namespace inherit from <see cref="BindableObject" /> class, so they can all be used to bind the data behind their user interface.</remarks>
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents)]
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
@@ -35,6 +37,8 @@ namespace Microsoft.Maui.Controls
 			_dispatcher = Dispatching.Dispatcher.GetForCurrentThread();
 		}
 
+		internal ushort _triggerCount = 0;
+		internal Dictionary<TriggerBase, SetterSpecificity> _triggerSpecificity = new Dictionary<TriggerBase, SetterSpecificity>();
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
 		WeakReference _inheritedContext;
@@ -126,8 +130,9 @@ namespace Microsoft.Maui.Controls
 
 			var original = bpcontext.Values.GetSpecificityAndValue();
 			if (original.Key == SetterSpecificity.FromHandler)
+			{
 				bpcontext.Values.Remove(SetterSpecificity.FromHandler);
-
+			}
 
 			var newValue = bpcontext.Values.GetClearedValue(specificity);
 			var changed = !Equals(original.Value, newValue);
@@ -168,7 +173,7 @@ namespace Microsoft.Maui.Controls
 
 			var context = property.DefaultValueCreator != null ? GetOrCreateContext(property) : GetContext(property);
 
-			return context == null ? property.DefaultValue : context.Values.GetSpecificityAndValue().Value;
+			return context == null ? property.DefaultValue : context.Values.GetValue();
 		}
 
 		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
@@ -185,7 +190,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_propertiesEnumerator.MoveNext())
 				{
-					Current = new LocalValueEntry(_propertiesEnumerator.Current.Key, _propertiesEnumerator.Current.Value.Values.GetSpecificityAndValue().Value, _propertiesEnumerator.Current.Value.Attributes);
+					Current = new LocalValueEntry(_propertiesEnumerator.Current.Key, _propertiesEnumerator.Current.Value.Values.GetValue(), _propertiesEnumerator.Current.Value.Attributes);
 					return true;
 				}
 				return false;
@@ -224,7 +229,7 @@ namespace Microsoft.Maui.Controls
 				if (properties.TryGetValue(propArray[i], out var context))
 				{
 					var pair = context.Values.GetSpecificityAndValue();
-					resultArray[i].IsSet = pair.Key.CompareTo(SetterSpecificity.DefaultValue) != 0;
+					resultArray[i].IsSet = pair.Key != SetterSpecificity.DefaultValue;
 					resultArray[i].Value = (T)pair.Value;
 				}
 				else
@@ -250,7 +255,7 @@ namespace Microsoft.Maui.Controls
 				return false;
 			if ((bpcontext.Attributes & BindableContextAttributes.IsDefaultValueCreated) == BindableContextAttributes.IsDefaultValueCreated)
 				return true;
-			return bpcontext.Values.GetSpecificityAndValue().Key.CompareTo(SetterSpecificity.DefaultValue) != 0;
+			return bpcontext.Values.GetSpecificity() != SetterSpecificity.DefaultValue;
 		}
 
 
@@ -266,7 +271,7 @@ namespace Microsoft.Maui.Controls
 
 			var specificity = SetterSpecificity.FromBinding;
 			if (context != null && context.Bindings.Count > 0)
-				specificity = context.Bindings.Last().Key;
+				specificity = context.Bindings.GetSpecificity();
 
 			RemoveBinding(property, specificity);
 		}
@@ -301,23 +306,25 @@ namespace Microsoft.Maui.Controls
 			var context = GetOrCreateContext(targetProperty);
 
 			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied
-			var kvp = context.Values.GetSpecificityAndValue();
-			if (kvp.Key.CompareTo(SetterSpecificity.FromBinding) > 0)
+			var currentSpecificity = context.Values.GetSpecificity();
+			if (currentSpecificity > SetterSpecificity.FromBinding)
 			{
-				context.Values.Remove(kvp.Key);
-				context.Values[SetterSpecificity.FromBinding] = kvp.Value;
+				var currentValue = context.Values.GetValue();
+
+				context.Values.Remove(currentSpecificity);
+				context.Values[SetterSpecificity.FromBinding] = currentValue;
 			}
 
 			BindingBase oldBinding = null;
 			SetterSpecificity oldSpecificity = default;
 			if (context.Bindings.Count > 0)
 			{
-				var b_p = context.Bindings.Last();
+				var b_p = context.Bindings.GetSpecificityAndValue();
 				oldSpecificity = b_p.Key;
 				oldBinding = b_p.Value;
 			}
 
-			if (oldBinding != null && specificity.CompareTo(oldSpecificity) < 0)
+			if (oldBinding != null && specificity < oldSpecificity)
 			{
 				context.Bindings[specificity] = binding;
 				return;
@@ -341,15 +348,15 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetInheritedBindingContext(BindableObject bindable, object value)
 		{
-			//I wonder if we coulnd't treat bindingcoutext with specificities
+			//I wonder if we couldn't treat BindingContext with specificities
 			BindablePropertyContext bpContext = bindable.GetContext(BindingContextProperty);
-			if (bpContext != null && bpContext.Values.GetSpecificityAndValue().Key.CompareTo(SetterSpecificity.ManualValueSetter) >= 0)
+			if (bpContext != null && bpContext.Values.GetSpecificity() >= SetterSpecificity.ManualValueSetter)
 				return;
 
 			if (ReferenceEquals(bindable._inheritedContext?.Target, value))
 				return;
 
-			var binding = bpContext?.Bindings.Values.LastOrDefault();
+			var binding = bpContext?.Bindings.GetValue();
 
 			if (binding != null)
 			{
@@ -404,7 +411,7 @@ namespace Microsoft.Maui.Controls
 		protected void UnapplyBindings()
 		{
 			foreach (var context in _properties.Values)
-				context.Bindings.Values.LastOrDefault()?.Unapply();
+				context.Bindings.GetValue()?.Unapply();
 		}
 
 		internal bool GetIsBound(BindableProperty targetProperty)
@@ -587,21 +594,20 @@ namespace Microsoft.Maui.Controls
 
 		void SetValueActual(BindableProperty property, BindablePropertyContext context, object value, bool currentlyApplying, SetValueFlags attributes, SetterSpecificity specificity, bool silent = false)
 		{
-			var pair = context.Values.GetSpecificityAndValue();
-			var original = pair.Value;
-			var originalSpecificity = pair.Key;
+			var specificityAndValue = context.Values.GetSpecificityAndValue();
+			var original = specificityAndValue.Value;
+			var originalSpecificity = specificityAndValue.Key;
 
 			//if the last value was set from handler, override it
 			if (specificity != SetterSpecificity.FromHandler
 				&& originalSpecificity == SetterSpecificity.FromHandler)
 			{
 				context.Values.Remove(SetterSpecificity.FromHandler);
-				pair = context.Values.GetSpecificityAndValue();
-				originalSpecificity = pair.Key;
+				originalSpecificity = context.Values.GetSpecificity();
 			}
 
 			//We keep setter of lower specificity so we can unapply
-			if (specificity.CompareTo(originalSpecificity) < 0)
+			if (specificity < originalSpecificity)
 			{
 				context.Values[specificity] = value;
 				return;
@@ -610,8 +616,8 @@ namespace Microsoft.Maui.Controls
 			bool raiseOnEqual = (attributes & SetValueFlags.RaiseOnEqual) != 0;
 
 			bool clearDynamicResources = (attributes & SetValueFlags.ClearDynamicResource) != 0;
-			bool clearOneWayBindings = (attributes & SetValueFlags.ClearOneWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
-			bool clearTwoWayBindings = (attributes & SetValueFlags.ClearTwoWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
+			// bool clearOneWayBindings = (attributes & SetValueFlags.ClearOneWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
+			// bool clearTwoWayBindings = (attributes & SetValueFlags.ClearTwoWayBindings) != 0 && specificity != SetterSpecificity.FromHandler;
 
 			bool sameValue = ReferenceEquals(context.Property, BindingContextProperty) ? ReferenceEquals(value, original) : Equals(value, original);
 			if (!silent && (!sameValue || raiseOnEqual))
@@ -628,7 +634,7 @@ namespace Microsoft.Maui.Controls
 			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
 				RemoveDynamicResource(property);
 
-			BindingBase binding = context.Bindings.Values.LastOrDefault();
+			BindingBase binding = context.Bindings.GetValue();
 
 			if (!silent && (!sameValue || raiseOnEqual))
 			{
@@ -651,7 +657,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = 0, propLength = prop.Length; i < propLength; i++)
 			{
 				BindablePropertyContext context = prop[i];
-				var kvp = context.Bindings.LastOrDefault();
+				var kvp = context.Bindings.GetSpecificityAndValue();
 				var specificity = kvp.Key;
 				var binding = kvp.Value;
 
@@ -690,7 +696,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var defaultValueCreator = property.DefaultValueCreator;
 			var context = new BindablePropertyContext { Property = property };
-			context.Values.SetValue(SetterSpecificity.DefaultValue, defaultValueCreator != null ? defaultValueCreator(this) : property.DefaultValue);
+			context.Values[SetterSpecificity.DefaultValue] = defaultValueCreator != null ? defaultValueCreator(this) : property.DefaultValue;
 
 			if (defaultValueCreator != null)
 				context.Attributes = BindableContextAttributes.IsDefaultValueCreated;
@@ -712,7 +718,7 @@ namespace Microsoft.Maui.Controls
 			if (count == 0)
 				return; //used to fail;
 
-			var currentbinding = context.Bindings.Values.Last();
+			var currentbinding = context.Bindings.GetValue();
 			var binding = context.Bindings[specificity];
 			var isCurrent = binding == currentbinding;
 
@@ -722,11 +728,11 @@ namespace Microsoft.Maui.Controls
 
 				currentbinding = null;
 				if (count > 1)
-					currentbinding = context.Bindings.Values.ElementAt(count - 2);
+					currentbinding = context.Bindings.GetClearedValue();
 
 				property.BindingChanging?.Invoke(this, binding, currentbinding);
 
-				currentbinding?.Apply(BindingContext, this, property, false, context.Bindings.Keys.ElementAt(count - 2));
+				currentbinding?.Apply(BindingContext, this, property, false, context.Bindings.GetClearedSpecificity());
 			}
 
 			context.Bindings.Remove(specificity);
@@ -772,7 +778,7 @@ namespace Microsoft.Maui.Controls
 			if (bpcontext == null)
 				return;
 
-			object currentValue = bpcontext.Values.GetSpecificityAndValue().Value;
+			object currentValue = bpcontext.Values.GetValue();
 
 			if (property.ValidateValue != null && !property.ValidateValue(this, currentValue))
 				throw new ArgumentException($"Value is an invalid value for {property.PropertyName}", nameof(currentValue));
@@ -794,11 +800,11 @@ namespace Microsoft.Maui.Controls
 		{
 			public BindableContextAttributes Attributes;
 
-			public SortedList<SetterSpecificity, BindingBase> Bindings = new();
+			public SetterSpecificityList<BindingBase> Bindings = new();
 
 			public Queue<SetValueArgs> DelayedSetters;
 			public BindableProperty Property;
-			public readonly SetterSpecificityList Values = new();
+			public readonly SetterSpecificityList<object> Values = new(3);
 		}
 
 

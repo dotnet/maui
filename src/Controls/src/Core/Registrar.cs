@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,37 +22,58 @@ namespace Microsoft.Maui.Controls
 
 namespace Microsoft.Maui.Controls.Internals
 {
+	internal struct HandlerType
+	{
+		internal const DynamicallyAccessedMemberTypes TargetMembers = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
+
+		[DynamicallyAccessedMembers(TargetMembers)] 
+		public readonly Type Target;
+		public readonly short Priority;
+
+		public HandlerType(
+			[DynamicallyAccessedMembers(TargetMembers)] Type target,
+			short priority)
+		{
+			Target = target;
+			Priority = priority;
+		}
+	}
+
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Registrar<TRegistrable> where TRegistrable : class
 	{
-		readonly Dictionary<Type, Dictionary<Type, (Type target, short priority)>> _handlers = new Dictionary<Type, Dictionary<Type, (Type target, short priority)>>();
+		readonly Dictionary<Type, Dictionary<Type, HandlerType>> _handlers = new Dictionary<Type, Dictionary<Type, HandlerType>>();
 		static Type _defaultVisualType = typeof(VisualMarker.DefaultVisual);
 		//static Type _materialVisualType = typeof(VisualMarker.MaterialVisual);
 
 		static Type[] _defaultVisualRenderers = new[] { _defaultVisualType };
 
-		public void Register(Type tview, Type trender, Type[] supportedVisuals, short priority)
+		public void Register(
+			Type tview,
+			[DynamicallyAccessedMembers(HandlerType.TargetMembers)] Type trender,
+			Type[] supportedVisuals,
+			short priority)
 		{
 			supportedVisuals = supportedVisuals ?? _defaultVisualRenderers;
 			//avoid caching null renderers
 			if (trender == null)
 				return;
 
-			if (!_handlers.TryGetValue(tview, out Dictionary<Type, (Type target, short priority)> visualRenderers))
+			if (!_handlers.TryGetValue(tview, out Dictionary<Type, HandlerType> visualRenderers))
 			{
-				visualRenderers = new Dictionary<Type, (Type target, short priority)>();
+				visualRenderers = new Dictionary<Type, HandlerType>();
 				_handlers[tview] = visualRenderers;
 			}
 
 			for (int i = 0; i < supportedVisuals.Length; i++)
 			{
-				if (visualRenderers.TryGetValue(supportedVisuals[i], out (Type target, short priority) existingTargetValue))
+				if (visualRenderers.TryGetValue(supportedVisuals[i], out HandlerType existingTargetValue))
 				{
-					if (existingTargetValue.priority <= priority)
-						visualRenderers[supportedVisuals[i]] = (trender, priority);
+					if (existingTargetValue.Priority <= priority)
+						visualRenderers[supportedVisuals[i]] = new(trender, priority);
 				}
 				else
-					visualRenderers[supportedVisuals[i]] = (trender, priority);
+					visualRenderers[supportedVisuals[i]] = new(trender, priority);
 			}
 
 			// This registers a factory into the Handler version of the registrar.
@@ -71,9 +93,11 @@ namespace Microsoft.Maui.Controls.Internals
 			//	});
 		}
 
-		public void Register(Type tview, Type trender, Type[] supportedVisual) => Register(tview, trender, supportedVisual, 0);
+		public void Register(Type tview, [DynamicallyAccessedMembers(HandlerType.TargetMembers)] Type trender, Type[] supportedVisual)
+			=> Register(tview, trender, supportedVisual, 0);
 
-		public void Register(Type tview, Type trender) => Register(tview, trender, _defaultVisualRenderers);
+		public void Register(Type tview, [DynamicallyAccessedMembers(HandlerType.TargetMembers)] Type trender)
+			=> Register(tview, trender, _defaultVisualRenderers);
 
 		internal TRegistrable GetHandler(Type type) => GetHandler(type, _defaultVisualType);
 
@@ -143,27 +167,28 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public Type GetHandlerType(Type viewType) => GetHandlerType(viewType, _defaultVisualType);
 
+		[return: DynamicallyAccessedMembers(HandlerType.TargetMembers)]
 		public Type GetHandlerType(Type viewType, Type visualType)
 		{
 			visualType = visualType ?? _defaultVisualType;
 
 			// 1. Do we have this specific type registered already?
-			if (_handlers.TryGetValue(viewType, out Dictionary<Type, (Type target, short priority)> visualRenderers))
-				if (visualRenderers.TryGetValue(visualType, out (Type target, short priority) specificTypeRenderer))
-					return specificTypeRenderer.target;
+			if (_handlers.TryGetValue(viewType, out Dictionary<Type, HandlerType> visualRenderers))
+				if (visualRenderers.TryGetValue(visualType, out HandlerType specificTypeRenderer))
+					return specificTypeRenderer.Target;
 			//else if (visualType == _materialVisualType)
 			//	VisualMarker.MaterialCheck();
 
 			if (visualType != _defaultVisualType && visualRenderers != null)
-				if (visualRenderers.TryGetValue(_defaultVisualType, out (Type target, short priority) specificTypeRenderer))
-					return specificTypeRenderer.target;
+				if (visualRenderers.TryGetValue(_defaultVisualType, out HandlerType specificTypeRenderer))
+					return specificTypeRenderer.Target;
 
 			// 2. Do we have a RenderWith for this type or its base types? Register them now.
 			RegisterRenderWithTypes(viewType, visualType);
 
 			// 3. Do we have a custom renderer for a base type or did we just register an appropriate renderer from RenderWith?
-			if (LookupHandlerType(viewType, visualType, out (Type target, short priority) baseTypeRenderer))
-				return baseTypeRenderer.target;
+			if (LookupHandlerType(viewType, visualType, out HandlerType baseTypeRenderer))
+				return baseTypeRenderer.Target;
 			else
 				return null;
 		}
@@ -179,12 +204,12 @@ namespace Microsoft.Maui.Controls.Internals
 			return GetHandlerType(type);
 		}
 
-		bool LookupHandlerType(Type viewType, Type visualType, out (Type target, short priority) handlerType)
+		bool LookupHandlerType(Type viewType, Type visualType, out HandlerType handlerType)
 		{
 			visualType = visualType ?? _defaultVisualType;
 			while (viewType != null && viewType != typeof(Element))
 			{
-				if (_handlers.TryGetValue(viewType, out Dictionary<Type, (Type target, short priority)> visualRenderers))
+				if (_handlers.TryGetValue(viewType, out Dictionary<Type, HandlerType> visualRenderers))
 					if (visualRenderers.TryGetValue(visualType, out handlerType))
 						return true;
 
@@ -195,7 +220,7 @@ namespace Microsoft.Maui.Controls.Internals
 				viewType = viewType.BaseType;
 			}
 
-			handlerType = (null, 0);
+			handlerType = new(null, 0);
 			return false;
 		}
 
@@ -211,7 +236,7 @@ namespace Microsoft.Maui.Controls.Internals
 				// Only go through this process if we have not registered something for this type;
 				// we don't want RenderWith renderers to override ExportRenderers that are already registered.
 				// Plus, there's no need to do this again if we already have a renderer registered.
-				if (!_handlers.TryGetValue(viewType, out Dictionary<Type, (Type target, short priority)> visualRenderers) ||
+				if (!_handlers.TryGetValue(viewType, out Dictionary<Type, HandlerType> visualRenderers) ||
 					!(visualRenderers.ContainsKey(visualType) ||
 					  visualRenderers.ContainsKey(_defaultVisualType)))
 				{
@@ -272,7 +297,19 @@ namespace Microsoft.Maui.Controls.Internals
 			Registered = new Registrar<IRegisterable>();
 		}
 
-		internal static Dictionary<string, Type> Effects { get; } = new(StringComparer.Ordinal);
+		internal struct EffectType
+		{
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+			public readonly Type Type;
+
+			public EffectType(
+				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type type)
+			{
+				Type = type;
+			}
+		}
+
+		internal static Dictionary<string, EffectType> Effects { get; } = new(StringComparer.Ordinal);
 
 		internal static Dictionary<string, IList<StylePropertyAttribute>> StyleProperties => LazyStyleProperties.Value;
 
@@ -369,9 +406,12 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		public static void RegisterEffect(string resolutionName, string id, Type effectType)
+		public static void RegisterEffect(
+			string resolutionName,
+			string id,
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type effectType)
 		{
-			Effects[resolutionName + "." + id] = effectType;
+			Effects[resolutionName + "." + id] = new(effectType);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Registrar.xml" path="//Member[@MemberName='RegisterAll'][1]/Docs/*" />

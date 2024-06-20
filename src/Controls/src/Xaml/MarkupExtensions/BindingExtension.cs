@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
@@ -21,13 +22,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (TypedBinding == null)
-				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
-				{
-					UpdateSourceEventName = UpdateSourceEventName,
-					FallbackValue = FallbackValue,
-					TargetNullValue = TargetNullValue,
-				};
+			if (TypedBinding is null)
+			{
+				return CreateBinding();
+			}
 
 			TypedBinding.Mode = Mode;
 			TypedBinding.Converter = Converter;
@@ -38,6 +36,19 @@ namespace Microsoft.Maui.Controls.Xaml
 			TypedBinding.FallbackValue = FallbackValue;
 			TypedBinding.TargetNullValue = TargetNullValue;
 			return TypedBinding;
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
+				Justification = "This code is only reachable in XamlC compiled code when there is a missing x:DataType and the binding could not be compiled. " +
+					"In that case, we produce a warning that the binding could not be compiled.")]
+			BindingBase CreateBinding()
+			{
+				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
+				{
+					UpdateSourceEventName = UpdateSourceEventName,
+					FallbackValue = FallbackValue,
+					TargetNullValue = TargetNullValue,
+				};
+			}
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

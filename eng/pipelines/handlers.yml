@@ -5,6 +5,7 @@ trigger:
     - release/*
     - net7.0
     - net8.0
+    - net9.0
     - loc
   tags:
     include:
@@ -30,6 +31,7 @@ pr:
     - release/*
     - net7.0
     - net8.0
+    - net9.0
   paths:
     include:
     - '*'
@@ -118,8 +120,8 @@ parameters:
     default:
       - name: default
         tfm: default
-      - name: net8
-        tfm: net8.0
+      - name: net9
+        tfm: net9.0
 
 resources:
   repositories:
@@ -277,6 +279,11 @@ stages:
                 testRunner: VSTest
                 testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
                 testRunTitle: ${{ BuildPlatform.name }} sample build tests
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: build_net_${{ BuildPlatform.name }}_samples
 
   - stage: templates_net
     displayName: Test Templates

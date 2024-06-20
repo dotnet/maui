@@ -20,5 +20,4 @@
     <RuntimeIdentifier>win10-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
-
 </Project>

@@ -37,12 +37,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">8</_MauiDotNetVersionMajor>
+    <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">9</_MauiDotNetVersionMajor>
     <_MauiDotNetVersionMinor Condition="'$(_MauiDotNetVersionMinor)' == ''">0</_MauiDotNetVersionMinor>
     <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">$(_MauiDotNetVersionMajor).$(_MauiDotNetVersionMinor)</_MauiDotNetVersion>
     <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
     
-    <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">7</_MauiPreviousDotNetVersionMajor>
+    <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">8</_MauiPreviousDotNetVersionMajor>
     <_MauiPreviousDotNetVersionMinor Condition="'$(_MauiPreviousDotNetVersionMinor)' == ''">0</_MauiPreviousDotNetVersionMinor>
     <_MauiPreviousDotNetVersion Condition="'$(_MauiPreviousDotNetVersion)' == ''">$(_MauiPreviousDotNetVersionMajor).$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersion>
     <_MauiPreviousDotNetVersionNoDot Condition="'$(_MauiPreviousDotNetVersionNoDot)' == ''">$(_MauiPreviousDotNetVersionMajor)$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersionNoDot>
@@ -99,6 +99,7 @@
   <!-- this is CI, so everything should be there -->
   <PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
+    <!-- Disabled until net9.0-tizen is available -->
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
     <IncludeMacOSTargetFrameworks>true</IncludeMacOSTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
@@ -124,8 +125,8 @@
     <MacCatalystTargetFrameworkVersion>13.5</MacCatalystTargetFrameworkVersion>
     <MacosTargetFrameworkVersion>10.14</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>30.0</AndroidTargetFrameworkVersion>
-    <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
-    <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
+    <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
+    <Windows2TargetFrameworkVersion>10.0.20348</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
   </PropertyGroup>
 

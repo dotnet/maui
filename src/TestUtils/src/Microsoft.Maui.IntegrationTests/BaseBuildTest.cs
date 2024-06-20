@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Microsoft.Maui.IntegrationTests
 {
 	public enum RuntimeVariant
@@ -9,13 +10,13 @@ namespace Microsoft.Maui.IntegrationTests
 
 	public class BaseBuildTest
 	{
-		public const string DotNetCurrent = "net8.0";
-		public const string DotNetPrevious = "net7.0";
+		public const string DotNetCurrent = "net9.0";
+		public const string DotNetPrevious = "net8.0";
 
-		public const string MauiVersionCurrent = "8.0.0-rc.1.9171"; // this should not be the same as the last release
-		public const string MauiVersionPrevious = "7.0.86"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+		public const string MauiVersionCurrent = "8.0.0-rc.2.9530"; // this should not be the same as the last release
+		public const string MauiVersionPrevious = "8.0.1"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 
 		public string TestName
 		{
@@ -26,7 +27,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					result = result.Replace(c, '_');
 				}
-				return result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+				if (result.Length > 20)
+				{
+					// If the test name is too long, hash it to avoid path length issues
+					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+				}
+				return result;
 			}
 		}
 

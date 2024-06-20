@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Style))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
+	[RequireService([typeof(IXmlLineInfoProvider), typeof(IRootObjectProvider)])]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		public string Style { get; set; }

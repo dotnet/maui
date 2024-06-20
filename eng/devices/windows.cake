@@ -5,8 +5,8 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-const string defaultVersion = "10.0.19041.0";
-const string dotnetVersion = "net8.0";
+const string defaultVersion = "10.0.19041";
+const string dotnetVersion = "net9.0";
 
 // required
 string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
@@ -517,26 +517,34 @@ Task("uitest")
 	Information("old dotnet root: {0}", DOTNET_ROOT);
 	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("new dotnet toolPath: {0}", localToolPath);
-
-	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	var buildSettings = new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = localToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
-	});
+	};
+
+	string? localToolPath = null;
+
+	if (localDotnet)
+	{
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
+
+		DOTNET_ROOT = localDotnetRoot.ToString();
+
+		localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+		Information("new dotnet toolPath: {0}", localToolPath);
+
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+		buildSettings.ToolPath = localToolPath;
+	}
+
+	DotNetBuild(PROJECT.FullPath, buildSettings);
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
