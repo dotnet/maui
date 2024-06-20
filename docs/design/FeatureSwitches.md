@@ -10,7 +10,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
-| _MauiEnableBindingInterceptors | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
+| _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -34,7 +34,7 @@ If your library or your app defines an implicit operator on a type that can be u
 
 _Note: Prefer using the `TypeConverterAttribute` as it can help the trimmer achieve better binary size in certain scenarios._
 
-## _MauiEnableBindingInterceptors
+## _MauiBindingInterceptorsSupport
 
 When enabled, MAUI will enable a source generator which will identify calls to the `SetBinding<TSource, TProperty>(this BindableObject target, BindableProperty property, Func<TSource, TProperty> getter, ...)` methods and generate optimized bindings based on the lambda expression passed as the `getter` parameter.
 
