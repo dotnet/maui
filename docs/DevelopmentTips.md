@@ -23,7 +23,7 @@ The below parameters can be used with the `dotnet cake` command in the root of y
 
 #### Clean
 `--clean`
-- This will do a recursive delete of all your obj/bin folders. This is helpful if for some reason your repository is in a bad state and you don't want to go as scorched earth as `git clean -xdf`
+- Occasionally, when switching branches or syncing with the main branch, incremental builds may stop working. A common fix for this is to use git clean -xdf to delete all locally cached build information. However, the issue with git clean -xdf is that it will also wipe out any uncommitted changes. Using --clean to recursively delete the local obj/bin folders should hopefully resolve the issue while preserving your changes.
 
 #### Target a specific platform
 `--android`
@@ -37,7 +37,7 @@ dotnet cake --target=VS --workloads=global --android --ios
 
 *Note* you will have to `git clean -xdf` your project if you change or add platforms. 
 
-### Blazor Desktop
+### Blazor Hybrid
 
 To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://github.com/dotnet/maui/wiki/Blazor-Desktop) wiki topic.
 
@@ -45,7 +45,7 @@ To build and run Blazor Desktop samples, check out the [Blazor Desktop](https://
 
 ### Compile using a local `bin\dotnet` via `dotnet-local.*`
 
-This method will use the .NET and workload versions that are specific to the branch you are on, which is a good way to ensure compatibility.
+This method will use the .NET and workload versions that are specific to the branch you are on. There may be occasions when your global installation of .NET is not compatible with a particular branch. In such cases, this method will create a local folder containing all the .NET versions specific to that branch.
 
 Use `dotnet-local.cmd` on Windows or `dotnet-local.sh` on Unix to ensure that `PATH` is set consistently.
 
