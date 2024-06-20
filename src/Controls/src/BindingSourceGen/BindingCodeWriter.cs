@@ -128,7 +128,7 @@ public static class BindingCodeWriter
 		{
 			AppendLine(GeneratedCodeAttribute);
 			AppendInterceptorAttribute(binding.Location);
-			AppendMethodName(binding.MethodType, id, binding);
+			AppendMethodName(binding, id);
 			if (binding.SourceType.IsGenericParameter && binding.PropertyType.IsGenericParameter)
 			{
 				Append($"<{binding.SourceType}, {binding.PropertyType}>");
@@ -250,13 +250,14 @@ public static class BindingCodeWriter
 				_ => throw new ArgumentOutOfRangeException(nameof(interceptedMethodType))
 			};
 
-		private void AppendMethodName(InterceptedMethodType interceptedMethodType, uint id, BindingInvocationDescription binding)
+
+		private void AppendMethodName(BindingInvocationDescription binding, uint id)
 		{
-			Append(interceptedMethodType switch
+			Append(binding.MethodType switch
 			{
 				InterceptedMethodType.SetBinding => $"public static void SetBinding{id}",
 				InterceptedMethodType.Create => $"public static TypedBinding<{binding.SourceType}, {binding.PropertyType}> Create{id}",
-				_ => throw new ArgumentOutOfRangeException(nameof(interceptedMethodType))
+				_ => throw new ArgumentOutOfRangeException(nameof(binding.MethodType))
 			});
 		}
 
