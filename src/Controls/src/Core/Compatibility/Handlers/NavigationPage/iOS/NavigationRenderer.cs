@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			(this as IElementHandler).SetVirtualView(element);
-			_element = new(element);
+			_element = element is null ? null : new(element);
 		}
 
 		public UIViewController ViewController
