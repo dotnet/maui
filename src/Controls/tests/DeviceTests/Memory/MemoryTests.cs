@@ -61,8 +61,10 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ViewCell, ViewCellRenderer>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
+				handlers.AddHandler<TabbedPage, TabbedRenderer>();
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
+				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
 #endif
 			});
 		});
@@ -71,6 +73,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[Theory("Pages Do Not Leak")]
 	[InlineData(typeof(ContentPage))]
 	[InlineData(typeof(NavigationPage))]
+	[InlineData(typeof(TabbedPage))]
 	public async Task PagesDoNotLeak(Type type)
 	{
 		SetupBuilder();
@@ -91,6 +94,10 @@ public class MemoryTests : ControlsHandlerTestBase
 			else if (page is NavigationPage navigationPage)
 			{
 				await navigationPage.PushAsync(new ContentPage { Content = new Label() });
+			}
+			else if (page is TabbedPage tabbedPage)
+			{
+				tabbedPage.Children.Add(new ContentPage { Content = new Label() });
 			}
 			
 			await navPage.Navigation.PushModalAsync(page);
