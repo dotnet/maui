@@ -15,9 +15,10 @@ using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : Grid, IDisposable
+	public partial class WrapperView : Grid, IDisposable, IBackgroundContainingView
 	{
 		readonly Canvas _shadowCanvas;
+		readonly Panel _backgroundHost;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
 		UI.Xaml.Shapes.Rectangle? _shadowHost;
@@ -29,11 +30,15 @@ namespace Microsoft.Maui.Platform
 		public WrapperView()
 		{
 			_shadowCanvas = new Canvas();
+			_backgroundHost = new Canvas { IsHitTestVisible = false };
 			_borderPath = new Path();
 
 			Children.Add(_shadowCanvas);
+			Children.Add(_backgroundHost);
 			Children.Add(_borderPath);
 		}
+
+		FrameworkElement IBackgroundContainingView.BackgroundHost => _backgroundHost;
 
 		long _visibilityDependencyPropertyCallbackToken;
 		public FrameworkElement? Child

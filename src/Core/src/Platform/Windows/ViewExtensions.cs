@@ -7,6 +7,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Primitives;
+using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -99,23 +100,12 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateOpacity(this FrameworkElement platformView, double opacity) => platformView.Opacity = (float)opacity;
 
-		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
-		{
-			var hasBorder = border.Shape != null;
-
-			if (hasBorder)
-			{
-				platformView?.UpdateBorderBackground(border);
-			}
-			else if (border is IView v)
-			{
-				platformView?.UpdatePlatformViewBackground(v);
-			}
-		}
-
 		public static void UpdateBackground(this FrameworkElement platformView, IView view)
 		{
-			platformView?.UpdatePlatformViewBackground(view);
+			if (platformView is IBackgroundContainingView bmv)
+				platformView = bmv.BackgroundHost;
+
+			platformView.SetBackground(view.Background);
 		}
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
@@ -221,31 +211,6 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaximumWidth(this FrameworkElement platformView, IView view)
 		{
 			platformView.MaxWidth = view.MaximumWidth;
-		}
-
-		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
-		{
-			if (border is IView view)
-				(platformView as ContentPanel)?.UpdateBackground(view.Background);
-
-			if (platformView is Control control)
-				control.UpdateBackground((Paint?)null);
-			else if (platformView is Border b)
-				b.UpdateBackground(null);
-			else if (platformView is Panel panel)
-				panel.UpdateBackground(null);
-		}
-
-		internal static void UpdatePlatformViewBackground(this FrameworkElement platformView, IView view)
-		{
-			(platformView as ContentPanel)?.UpdateBackground(null);
-
-			if (platformView is Control control)
-				control.UpdateBackground(view.Background);
-			else if (platformView is Border border)
-				border.UpdateBackground(view.Background);
-			else if (platformView is Panel panel)
-				panel.UpdateBackground(view.Background);
 		}
 
 		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)

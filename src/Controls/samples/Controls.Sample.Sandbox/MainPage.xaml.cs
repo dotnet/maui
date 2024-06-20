@@ -6,4 +6,9 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	void Button_Clicked(object? sender, EventArgs e)
+	{
+		DisplayAlert("Alert", "Hello from " + ((Button?)sender)?.Text, "OK");
+	}
 }

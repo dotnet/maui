@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 				return true;
 #endif
 
-#if WINDOWS || TIZEN
+#if TIZEN
 			if (view is IBorderView border)
 				return border?.Shape != null || border?.Stroke != null;
 #endif

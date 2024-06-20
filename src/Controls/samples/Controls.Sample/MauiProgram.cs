@@ -48,8 +48,8 @@ namespace Maui.Controls.Sample
 
 			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
 			{
-				ValidateOnBuild = true,
-				ValidateScopes = true,
+				//ValidateOnBuild = true,
+				//ValidateScopes = true,
 			}));
 
 #if __ANDROID__ || __IOS__

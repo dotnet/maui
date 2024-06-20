@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="page">The associated <see cref="IContentView"/> instance.</param>
-		public static partial void MapContent(IContentViewHandler handler, IContentView page);
+		public static void MapContent(IContentViewHandler handler, IContentView page)
+		{
+			UpdateContent(handler);
+		}
+
+		static partial void UpdateContent(IContentViewHandler handler);
 	}
 }

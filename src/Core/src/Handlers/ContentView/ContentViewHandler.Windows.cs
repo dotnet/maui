@@ -14,16 +14,13 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
-		static void UpdateContent(IContentViewHandler handler)
+		static partial void UpdateContent(IContentViewHandler handler)
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.PlatformView.Children.Clear();
-
-			if (handler.VirtualView.PresentedContent is IView view)
-				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
+			handler.PlatformView.Content = handler.VirtualView.PresentedContent?.ToPlatform(handler.MauiContext);
 		}
 
 		protected override ContentPanel CreatePlatformView()
@@ -39,11 +36,6 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			return view;
-		}
-
-		public static partial void MapContent(IContentViewHandler handler, IContentView page)
-		{
-			UpdateContent(handler);
 		}
 
 		protected override void DisconnectHandler(ContentPanel platformView)

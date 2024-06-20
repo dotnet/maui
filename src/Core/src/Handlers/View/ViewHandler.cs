@@ -482,9 +482,11 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
+			// If the view claims to be able to manage its own input transparency
+			// then use that instead of wrapping it in a container
 			if (handler.PlatformView is IInputTransparentManagingView managing)
 				managing.InputTransparent = view.InputTransparent;
-			else if (handler.ContainerView is WrapperView wrapper)
+			else if (handler.ContainerView is IInputTransparentManagingView wrapper)
 				wrapper.InputTransparent = view.InputTransparent;
 #else
 

@@ -1,11 +1,17 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using WColors = Microsoft.UI.Colors;
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutPanel>
 	{
+		public override bool NeedsContainer =>
+			VirtualView is { InputTransparent: true, Background: { } } ||
+			base.NeedsContainer;
+
 		public void Add(IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
@@ -127,12 +133,65 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
-			handler.PlatformView?.UpdatePlatformViewBackground(layout);
+			MapBackgroundAndInputTransparent(handler, layout);
 		}
 
 		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout)
 		{
-			handler.PlatformView?.UpdatePlatformViewBackground(layout);
+			MapBackgroundAndInputTransparent(handler, layout);
+
+			Updates(handler.ContainerView as WrapperView, handler.PlatformView, layout);
+		}
+
+		private static void MapBackgroundAndInputTransparent(ILayoutHandler handler, ILayout layout)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+
+			Updates(handler.ContainerView as WrapperView, handler.PlatformView, layout);
+		}
+
+		private static void Updates(WrapperView? containerView, MauiPanel platformView, ILayout layout)
+		{
+			if (containerView is not null)
+			{
+				if (layout.InputTransparent)
+				{
+					containerView.BackgroundHost.UpdateBackground(layout); // may or may not be null, but it does not matter
+					platformView.Background = null;
+				}
+				else
+				{
+					if (layout.Background.IsNullOrEmpty())
+					{
+						platformView.Background = new WSolidColorBrush(WColors.Transparent);
+					}
+					else
+					{
+						platformView.UpdateBackground(layout);
+					}
+					containerView.BackgroundHost.Background = null;
+				}
+			}
+			else
+			{
+				// There is an impossible case here where the layout has a NON null background AND
+				// it IS input transparent. If that ever happens, then we sacrifice the
+				// input transparency. However, this should never happen since the NeedsContainer
+				// property will intercept this and always create a wrapper view.
+
+				if (layout.InputTransparent && layout.Background.IsNullOrEmpty())
+				{
+					platformView.Background = null;
+				}
+				else if (layout.Background.IsNullOrEmpty())
+				{
+					platformView.Background = new WSolidColorBrush(WColors.Transparent);
+				}
+				else
+				{
+					platformView.UpdateBackground(layout);
+				}
+			}
 		}
 	}
 }

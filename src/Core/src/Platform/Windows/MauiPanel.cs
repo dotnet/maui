@@ -1,8 +1,6 @@
-﻿#nullable enable
-using System;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
-using WSize = global::Windows.Foundation.Size;
+using WSize = Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {

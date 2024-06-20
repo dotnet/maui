@@ -4,4 +4,21 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+    <Grid>
+        <Grid >
+
+            <Button Text="BOTTOM" Clicked="Button_Clicked" />
+
+            <Border Stroke="#C49B33" StrokeThickness="4" StrokeShape="RoundRectangle 40,0,0,40">
+                <VerticalStackLayout InputTransparent="false" CascadeInputTransparent="False" Spacing="25" Padding="25">
+                    <Button Text="TOP" Clicked="Button_Clicked" InputTransparent="False" />
+                    <Button Text="TOP" Clicked="Button_Clicked" InputTransparent="False" />
+                    <Button Text="TOP" Clicked="Button_Clicked" InputTransparent="False" />
+                    <Button Text="TOP" Clicked="Button_Clicked" InputTransparent="False" />
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
+    </Grid>
+
 </ContentPage>
