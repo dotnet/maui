@@ -252,23 +252,19 @@ namespace Microsoft.Maui.Controls
 			var controlTemplate = (this as IControlTemplated);
 
 			_templateRoot = controlTemplate?.TemplateRoot as View;
-
 			_titleLabel = controlTemplate?.GetTemplateChild(TitleBarTitle) as View;
 
-			var leadingContent = controlTemplate?.GetTemplateChild(TitleBarLeading) as IView;
-			if (leadingContent is not null)
+			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
 				PassthroughElements.Add(leadingContent);
 			}
 
-			var content = controlTemplate?.GetTemplateChild(TitleBarContent) as IView;
-			if (content is not null)
+			if (controlTemplate?.GetTemplateChild(TitleBarContent) is IView content)
 			{
 				PassthroughElements.Add(content);
 			}
 
-			var trailingContent = controlTemplate?.GetTemplateChild(TitleBarTrailing) as IView;
-			if (trailingContent is not null)
+			if (controlTemplate?.GetTemplateChild(TitleBarTrailing) is IView trailingContent)
 			{
 				PassthroughElements.Add(trailingContent);
 			}
