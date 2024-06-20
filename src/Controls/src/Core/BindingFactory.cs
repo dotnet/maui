@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -31,7 +30,6 @@ namespace Microsoft.Maui.Controls
             object? fallbackValue = null,
             object? targetNullValue = null)
         {
-
             throw new InvalidOperationException($"Call to BindingFactory.Create<{typeof(TSource)}, {typeof(TProperty)}> was not intercepted.");
         }
     }
