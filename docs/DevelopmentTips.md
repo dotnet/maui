@@ -19,6 +19,8 @@ for IntelliSense and other tasks to initialize. If the project hasn't 'settled' 
 
 ### Cake Commands
 
+The below parameters can be used with the `dotnet cake` command in the root of your locally cloned .NET MAUI repository folder.
+
 #### Clean
 `--clean`
 - This will do a recursive delete of all your obj/bin folders. This is helpful if for some reason your repository is in a bad state and you don't want to go as scorched earth as `git clean -xdf`
