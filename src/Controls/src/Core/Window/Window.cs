@@ -388,9 +388,17 @@ namespace Microsoft.Maui.Controls
 		static void TitleBarChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var self = (Window)bindable;
-			if (self != null && newValue is TitleBar titleBar)
+			if (self != null)
 			{
-				self.AddLogicalChild(titleBar);
+				if (oldValue is TitleBar prevTitleBar)
+				{
+					self.RemoveLogicalChild(prevTitleBar);
+				}
+
+				if (newValue is TitleBar titleBar)
+				{
+					self.AddLogicalChild(titleBar);
+				}
 			}
 		}
 
