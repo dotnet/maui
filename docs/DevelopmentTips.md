@@ -1,15 +1,18 @@
 ### Reproducing an Issue/Debugging .NET MAUI Code
-Open the .NET MAUI workspace in VSCode.
-In VSCode, select the device that you will be testing on. Using the command palette (ctrl-shift-P/command-shift-P) type `pick device` and
-you will be presented with a set of choices for your target device (Android, iOS, etc). Select one.
-There is a sample project in `src/Controls/samples/Controls.Sample.Sandbox`. This is an empty project
-into which you can add your code to reproduce an issue and also set breakpoints in .NET MAUI source code.
-Let VSCode know this is the project you want to select by going to the command palette (ctrl-shift-P/command-shift-P)
-and typing `pick startup` and select ".NET MAUI: Pick Startup Project" and select the Sandbox project.
+Open the .NET MAUI [workspace](https://code.visualstudio.com/docs/editor/workspaces) in VS Code by simply opening the root of your locally cloned .NET MAUI repository folder. VS Code will detect the workspace automatically and suggest that you open it.
 
- Before using the command palette for the first time, you may have to wait a minute
-for intellisense and other tasks to complete before using the command palette. If the project hasn't
-'settled' yet, you will see an error "Pick Startup Project has resulted in an error."
+In VS Code, select the device that you will be testing on. Using the Command Palette (<kbd>CTRL</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> or on macOS <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>) type `pick device` and you will be presented with a set of choices for your target device (Android, iOS, etc). First select the option that describes the platform you want to run the project on, and then select the device that is available for that platform in the next menu.
+
+![VS Code Command Palette to pick a target device](https://github.com/dotnet/maui/assets/939291/d008102f-0295-4034-a60a-8c2b58f86641)
+
+There is a sample project in `src/Controls/samples/Controls.Sample.Sandbox`. This is an empty project, which directly references the .NET MAUI code. In this project you can add your code to reproduce an issue while allowing you to set breakpoints in .NET MAUI source code and debug through it easily.
+
+To let VS Code know this is the project you want run, select the Sandbox project by going to the Command Palette (<kbd>CTRL</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> or on macOS <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>) and start typing `pick startup` and select ".NET MAUI: Pick Startup Project" and then select the Sandbox project.
+
+![VS Code Command Palette to pick the startup project](https://github.com/dotnet/maui/assets/939291/eae00559-4811-4034-95ae-b6fd1ea6d1b7)
+
+Before using the Command Palette for the first time, you may have to wait a minute
+for IntelliSense and other tasks to initialize. If the project hasn't 'settled' yet, you will see an error "Pick Startup Project has resulted in an error."
 
 *Note:* When you are committing your PR, do not include your changes to the Sandbox project.
 
