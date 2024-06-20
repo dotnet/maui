@@ -187,15 +187,12 @@ namespace Microsoft.Maui.Controls.Platform
 					presentingWindow = senderPageWindow;
 				}
 
-				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad &&
-					arguments is not null &&
-					alert.PopoverPresentationController is not null &&
-					platformView.RootViewController?.View is not null)
+				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
 				{
 					var topViewController = GetTopUIViewController(presentingWindow);
 					UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 					var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
-						n => alert.PopoverPresentationController.SourceRect = topViewController.View.Bounds);
+						n => { alert.PopoverPresentationController.SourceRect = topViewController.View.Bounds; });
 
 					arguments.Result.Task.ContinueWith(t =>
 					{
@@ -219,7 +216,7 @@ namespace Microsoft.Maui.Controls.Platform
 			static UIViewController GetTopUIViewController(UIWindow platformWindow)
 			{
 				var topUIViewController = platformWindow.RootViewController;
-				while (topUIViewController?.PresentedViewController is not null)
+				while (topUIViewController.PresentedViewController is not null)
 				{
 					topUIViewController = topUIViewController.PresentedViewController;
 				}

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using Bumptech.Glide.Load.Resource.Gif;
 
 namespace Microsoft.Maui.Platform
 {
@@ -30,8 +29,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsAnimationPlaying(this Drawable? drawable, IImageSourcePart image)
 		{
-			var animatable = drawable.TryJavaCast<IAnimatable>();
-			if (animatable is not null)
+			if (drawable is IAnimatable animatable)
 			{
 				if (image.IsAnimationPlaying)
 				{

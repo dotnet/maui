@@ -11,7 +11,6 @@ namespace UITest.Appium
 			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
-			_commandExecutor.AddCommandGroup(new AppiumAndroidAlertActions(this));
 		}
 
 		public static AppiumAndroidApp CreateAndroidApp(Uri remoteAddress, IConfig config)

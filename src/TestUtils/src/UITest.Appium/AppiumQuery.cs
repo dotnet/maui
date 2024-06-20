@@ -11,13 +11,11 @@ namespace UITest.Appium
 		const string IdToken = "id";
 		const string NameToken = "name";
 		const string AccessibilityToken = "accessibilityid";
-		const string XPathToken = "xpath";
 		const string QuerySeparatorToken = "&";
 		const string IdQuery = IdToken + "={0}";
 		const string NameQuery = NameToken + "={0}";
 		const string AccessibilityQuery = AccessibilityToken + "={0}";
 		const string ClassQuery = ClassToken + "={0}";
-		const string XPathQuery = XPathToken + "={0}";
 		readonly string _queryStr;
 
 		public AppiumQuery(string queryStr)
@@ -50,11 +48,6 @@ namespace UITest.Appium
 			return new AppiumQuery(this, string.Format(NameQuery, nameQuery));
 		}
 
-		IQuery IQuery.ByXPath(string xpath)
-		{
-			return new AppiumQuery(this, string.Format(XPathQuery, Uri.EscapeDataString(xpath)));
-		}
-
 		public static AppiumQuery ById(string id)
 		{
 			return new AppiumQuery(string.Format(IdQuery, id));
@@ -73,11 +66,6 @@ namespace UITest.Appium
 		public static AppiumQuery ByClass(string classQuery)
 		{
 			return new AppiumQuery(string.Format(ClassQuery, classQuery));
-		}
-
-		public static AppiumQuery ByXPath(string xpath)
-		{
-			return new AppiumQuery(string.Format(XPathQuery, Uri.EscapeDataString(xpath)));
 		}
 
 #nullable disable
@@ -196,7 +184,6 @@ namespace UITest.Appium
 				NameToken => MobileBy.Name(value),
 				AccessibilityToken => MobileBy.AccessibilityId(value),
 				IdToken => MobileBy.Id(value),
-				XPathToken => MobileBy.XPath(Uri.UnescapeDataString(value)),
 				_ => throw new ArgumentException("Unknown query type"),
 			};
 		}
