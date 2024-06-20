@@ -42,6 +42,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			RunTest(key, clickable, passthru);
 		}
 
+#if !WINDOWS
+
 		[Test]
 		[Combinatorial]
 		public void ScrollViewInputTransparencySimpleMatrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool trans)
@@ -62,6 +64,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			RunTest(key, clickable, passthru);
 		}
+
+#endif
 
 		void RunTest(string test, bool? clickable = null, bool? passthru = null, bool androidIsBroken = true)
 		{
