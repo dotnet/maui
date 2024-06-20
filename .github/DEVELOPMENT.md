@@ -65,7 +65,7 @@ Use ‘main’ for bug fixes that don’t require API changes. For new features 
 
 - *Maui.Controls.Sample*: Full gallery sample with all of the controls and features of .NET MAUI
 - *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
-- *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
+- *Essentials.Sample*: Full gallery demonstrating the library previously known as Essentials. These are all the non UI related MAUI APIs.
 
 ### Testing
 
