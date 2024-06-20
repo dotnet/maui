@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IUserInteractionEnabledManagingView
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IInputTransparentManagingView
 	{
 		static bool? _respondsToSafeArea;
 
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 		WeakReference<IView>? _reference;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
-		bool _userInteractionEnabledOverride;
+		bool IInputTransparentManagingView.InputTransparent { get; set; }
 
 		public IView? View
 		{
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			if (!_userInteractionEnabledOverride && Equals(result))
+			if (((IInputTransparentManagingView)this).InputTransparent && Equals(result))
 			{
 				// If user interaction is disabled (IOW, if the corresponding View is InputTransparent),
 				// then we exclude the managing view itself from hit testing. But it's children are valid
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Platform
 				return null;
 			}
 
-			if (result is IUserInteractionEnabledManagingView v && !v.UserInteractionEnabledOverride)
+			if (result is IInputTransparentManagingView v && v.InputTransparent)
 			{
 				// If the child is a managing view then we need to check the UserInteractionEnabledOverride
 				// since managing view instances always have user interaction enabled.
@@ -204,22 +204,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return result;
-		}
-
-		bool IUserInteractionEnabledManagingView.UserInteractionEnabledOverride => _userInteractionEnabledOverride;
-
-		public override bool UserInteractionEnabled
-		{
-			get => base.UserInteractionEnabled;
-			set
-			{
-				// We leave the base UIE value true no matter what, so that hit testing will find children
-				// of the LayoutView. But we track the intended value so we can use it during hit testing
-				// to ignore the LayoutView itself, if necessary.
-
-				base.UserInteractionEnabled = true;
-				_userInteractionEnabledOverride = value;
-			}
 		}
 	}
 }

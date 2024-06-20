@@ -102,8 +102,8 @@ namespace Microsoft.Maui.DeviceTests
 		protected bool GetUserInteractionEnabled(IViewHandler viewHandler)
 		{
 			var platformView = (UIView)viewHandler.PlatformView;
-			if (platformView is IUserInteractionEnabledManagingView maui)
-				return maui.UserInteractionEnabledOverride;
+			if (platformView is IInputTransparentManagingView maui)
+				return !maui.InputTransparent;
 			return platformView.UserInteractionEnabled;
 		}
 
