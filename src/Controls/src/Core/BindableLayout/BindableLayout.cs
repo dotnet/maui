@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -240,7 +239,6 @@ namespace Microsoft.Maui.Controls
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
 		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
 		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
-		readonly IDispatcher _dispatcher;
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -258,7 +256,6 @@ namespace Microsoft.Maui.Controls
 
 		public BindableLayoutController(IBindableLayout layout)
 		{
-			_dispatcher = (layout as BindableObject)?.Dispatcher;
 			_layoutWeakReference = new WeakReference<IBindableLayout>(layout);
 			_collectionChangedEventHandler = ItemsSourceCollectionChanged;
 		}
@@ -493,17 +490,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void ItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (_dispatcher?.IsDispatchRequired ?? false)
-			{
-				_dispatcher.Dispatch(() => UpdateCollection(e));
-				return;
-			}
-
-			UpdateCollection(e);
-		}
-
-		void UpdateCollection(NotifyCollectionChangedEventArgs e)
 		{
 			if (!_layoutWeakReference.TryGetTarget(out IBindableLayout layout))
 			{
