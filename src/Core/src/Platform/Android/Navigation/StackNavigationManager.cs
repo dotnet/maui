@@ -46,6 +46,8 @@ namespace Microsoft.Maui.Platform
 		internal NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
+		internal bool HasNavHost => _navHost is not null;
+
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
