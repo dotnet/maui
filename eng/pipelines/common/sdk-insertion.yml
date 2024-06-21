@@ -78,6 +78,7 @@ jobs:
       projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
       arguments: >-
         -t:PushManifestToBuildAssetRegistry
+        -p:OfficialBuildId=$(_BuildOfficalId)
         -p:BuildAssetRegistryToken=$(MaestroAccessToken)
         -p:OutputPath=$(Build.StagingDirectory)\nuget-signed\
         -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
