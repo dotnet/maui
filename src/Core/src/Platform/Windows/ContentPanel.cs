@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 				var children = Children;
 
 				// Remove the previous content if it exists
-				if (_content is not null && children.Contains(_content))
+				if (_content is not null && children.Contains(_content) && value != _content)
 				{
 					children.Remove(_content);
 				}
