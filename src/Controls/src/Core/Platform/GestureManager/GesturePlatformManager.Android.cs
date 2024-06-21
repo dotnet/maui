@@ -269,8 +269,25 @@ namespace Microsoft.Maui.Controls.Platform
 			SetupGestures();
 		}
 
+		void ClearPlatformViewEventHandlers()
+		{
+			if (View == null)
+				return;
+
+			var platformView = Control;
+
+			if (platformView == null)
+				return;
+
+			if (View.GestureRecognizers.Any(gestureRecognizer => gestureRecognizer is not PointerGestureRecognizer))
+			{
+				platformView.Touch -= OnPlatformViewTouched;
+			}
+		}
+
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
+			ClearPlatformViewEventHandlers();
 			UpdateDragAndDrop();
 			UpdatePointer();
 			SetupGestures();
