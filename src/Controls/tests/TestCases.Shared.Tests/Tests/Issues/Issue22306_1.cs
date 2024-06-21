@@ -1,3 +1,4 @@
+#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,8 +25,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Category(UITestCategories.Button)]
         public void ButtonLayoutResizesWithImagePosition()
         {
-            this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
             App.WaitForElement("RotateButton");
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Top");
 
@@ -43,3 +42,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
     }
 }
+#endif
