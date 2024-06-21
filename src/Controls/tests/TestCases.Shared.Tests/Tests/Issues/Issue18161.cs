@@ -18,6 +18,7 @@ public class Issue18161 : _IssuesUITest
 	{
 		App.WaitForElement("ToggleBehaviour");
 		App.Tap("ToggleBehaviour");
+		App.Tap("ToggleBehaviour");
 
 		//The test passes if no exception is thrown
 	}

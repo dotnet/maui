@@ -4,7 +4,10 @@
             x:Class="Maui.Controls.Sample.Issues.Issue18161">
   <FlyoutPage.Flyout>
     <ContentPage Title="The FlyOut">
-      <Label Text="This is the flyout" />
+      <StackLayout>
+          <Label Text="This is the flyout" />
+          <Button Text="Change Flyout behaviour" AutomationId="ToggleBehaviour" Clicked="ToggleBehaviour_Clicked" />
+        </StackLayout>
     </ContentPage>
   </FlyoutPage.Flyout>
   <FlyoutPage.Detail>
@@ -13,7 +16,6 @@
         <ContentPage Title="The Detail">
           <StackLayout>
             <Label Text="The detail page." />
-            <Button Text="Change Flyout behaviour" AutomationId="ToggleBehaviour" Clicked="ToggleBehaviour_Clicked" />
           </StackLayout>
         </ContentPage>
       </x:Arguments>

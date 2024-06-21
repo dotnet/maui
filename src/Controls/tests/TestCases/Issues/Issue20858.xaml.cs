@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 20858, "FlyoutPage Android app crashing on orientation change when flyout is open", PlatformAffected.Android)]
-	public partial class Issue20858 : FlyoutPage
+	public partial class Issue20858 : FlyoutPage, IFlyoutPageController
 	{
 		public Issue20858()
 		{
@@ -17,5 +18,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			IsPresented = true;
 		}
+
+		bool IFlyoutPageController.ShouldShowSplitMode => FlyoutLayoutBehavior == FlyoutLayoutBehavior.Split;
 	}
 }
