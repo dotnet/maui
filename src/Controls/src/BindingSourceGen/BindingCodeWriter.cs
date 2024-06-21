@@ -45,7 +45,7 @@ public static class BindingCodeWriter
 			using System.CodeDom.Compiler;
 
 			{{GeneratedCodeAttribute}}
-			internal static partial class GeneratedBindableObjectExtensions
+			internal static partial class GeneratedBindingInterceptors
 			{
 				private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
 					=> mode == BindingMode.OneWayToSource
@@ -53,6 +53,11 @@ public static class BindingCodeWriter
 						|| (mode == BindingMode.Default
 							&& (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
 								|| bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
+
+				private static bool ShouldUseSetter(BindingMode mode)
+					=> mode == BindingMode.OneWayToSource
+						|| mode == BindingMode.TwoWay
+						|| mode == BindingMode.Default;
 			}
 		}
 		""";
@@ -75,7 +80,7 @@ public static class BindingCodeWriter
 			using System.Runtime.CompilerServices;
 			using Microsoft.Maui.Controls.Internals;
 
-			internal static partial class GeneratedBindableObjectExtensions
+			internal static partial class GeneratedBindingInterceptors
 			{
 				{{bindingMethodBody}}
 			}
@@ -83,7 +88,7 @@ public static class BindingCodeWriter
 	""";
 
 
-	public static string GenerateBinding(SetBindingInvocationDescription binding, uint id)
+	public static string GenerateBinding(BindingInvocationDescription binding, uint id)
 	{
 		if (!binding.NullableContextEnabled)
 		{
@@ -95,7 +100,7 @@ public static class BindingCodeWriter
 		return GenerateBindingCode(bindingMethod);
 	}
 
-	private static string GenerateBindingMethod(SetBindingInvocationDescription binding, uint id)
+	private static string GenerateBindingMethod(BindingInvocationDescription binding, uint id)
 	{
 		using var builder = new BindingInterceptorCodeBuilder(indent: 2);
 		builder.AppendSetBindingInterceptor(id: id, binding: binding);
@@ -119,11 +124,11 @@ public static class BindingCodeWriter
 			_indentedTextWriter = new IndentedTextWriter(_stringWriter, "\t") { Indent = indent };
 		}
 
-		public void AppendSetBindingInterceptor(uint id, SetBindingInvocationDescription binding)
+		public void AppendSetBindingInterceptor(uint id, BindingInvocationDescription binding)
 		{
 			AppendLine(GeneratedCodeAttribute);
 			AppendInterceptorAttribute(binding.Location);
-			Append($"public static void SetBinding{id}");
+			AppendMethodName(binding.MethodType, id, binding);
 			if (binding.SourceType.IsGenericParameter && binding.PropertyType.IsGenericParameter)
 			{
 				Append($"<{binding.SourceType}, {binding.PropertyType}>");
@@ -138,20 +143,12 @@ public static class BindingCodeWriter
 			}
 			AppendLine('(');
 
+			AppendFunctionArguments(binding);
+
 			AppendLines($$"""
-					this BindableObject bindableObject,
-					BindableProperty bindableProperty,
-					Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
-					BindingMode mode = BindingMode.Default,
-					IValueConverter? converter = null,
-					object? converterParameter = null,
-					string? stringFormat = null,
-					object? source = null,
-					object? fallbackValue = null,
-					object? targetNullValue = null)
 				{
 					Action<{{binding.SourceType}}, {{binding.PropertyType}}>? setter = null;
-					if (ShouldUseSetter(mode, bindableProperty))
+					if ({{GetShouldUseSetterCall(binding.MethodType)}})
 					{
 				""");
 
@@ -209,10 +206,58 @@ public static class BindingCodeWriter
 						FallbackValue = fallbackValue,
 						TargetNullValue = targetNullValue
 					};
-				
-					bindableObject.SetBinding(bindableProperty, binding);
+
+					{{GetEpilog(binding.MethodType)}}
 				}
 				""");
+		}
+
+		private void AppendFunctionArguments(BindingInvocationDescription binding)
+		{
+			if (binding.MethodType == InterceptedMethodType.SetBinding)
+			{
+				AppendLines($$"""
+					this BindableObject bindableObject,
+					BindableProperty bindableProperty,
+				""");
+
+			}
+			AppendLines($$"""
+				Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
+				BindingMode mode = BindingMode.Default,
+				IValueConverter? converter = null,
+				object? converterParameter = null,
+				string? stringFormat = null,
+				object? source = null,
+				object? fallbackValue = null,
+				object? targetNullValue = null)
+			""");
+		}
+
+		private static string GetEpilog(InterceptedMethodType interceptedMethodType) =>
+			interceptedMethodType switch
+			{
+				InterceptedMethodType.SetBinding => "bindableObject.SetBinding(bindableProperty, binding);",
+				InterceptedMethodType.Create => "return binding;",
+				_ => throw new ArgumentOutOfRangeException(nameof(interceptedMethodType))
+			};
+
+		private static string GetShouldUseSetterCall(InterceptedMethodType interceptedMethodType) =>
+			interceptedMethodType switch
+			{
+				InterceptedMethodType.SetBinding => "ShouldUseSetter(mode, bindableProperty)",
+				InterceptedMethodType.Create => "ShouldUseSetter(mode)",
+				_ => throw new ArgumentOutOfRangeException(nameof(interceptedMethodType))
+			};
+
+		private void AppendMethodName(InterceptedMethodType interceptedMethodType, uint id, BindingInvocationDescription binding)
+		{
+			Append(interceptedMethodType switch
+			{
+				InterceptedMethodType.SetBinding => $"public static void SetBinding{id}",
+				InterceptedMethodType.Create => $"public static TypedBinding<{binding.SourceType}, {binding.PropertyType}> Create{id}",
+				_ => throw new ArgumentOutOfRangeException(nameof(interceptedMethodType))
+			});
 		}
 
 		private void AppendInterceptorAttribute(InterceptorLocation location)
@@ -220,7 +265,7 @@ public static class BindingCodeWriter
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
-		private void AppendSetterAction(SetBindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
+		private void AppendSetterAction(BindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
 		{
 			var assignedValueExpression = valueVariableName;
 
@@ -283,7 +328,7 @@ public static class BindingCodeWriter
 			}
 		}
 
-		private void AppendHandlersArray(SetBindingInvocationDescription binding)
+		private void AppendHandlersArray(BindingInvocationDescription binding)
 		{
 			AppendLine($"new Tuple<Func<{binding.SourceType}, object?>, string>[]");
 			AppendLine('{');

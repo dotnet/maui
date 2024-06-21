@@ -8,13 +8,14 @@ public class BindingTransformerTests
     [Fact]
     public void WrapMemberAccessInConditionalAccessWhenSourceTypeIsReferenceType()
     {
-        var binding = new SetBindingInvocationDescription(
+        var binding = new BindingInvocationDescription(
             Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             SourceType: new TypeDescription("MyType", IsValueType: false),
             PropertyType: new TypeDescription("MyType2"),
             Path: new EquatableArray<IPathPart>([new MemberAccess("A")]),
             SetterOptions: new SetterOptions(IsWritable: true),
-            NullableContextEnabled: false);
+            NullableContextEnabled: false,
+            MethodType: InterceptedMethodType.SetBinding);
 
         var transformer = new ReferenceTypesConditionalAccessTransformer();
         var transformedBinding = transformer.Transform(binding);
@@ -26,7 +27,7 @@ public class BindingTransformerTests
     [Fact]
     public void WrapMemberAccessInConditionalAccessWhePreviousPartTypeIsReferenceType()
     {
-        var binding = new SetBindingInvocationDescription(
+        var binding = new BindingInvocationDescription(
             Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             SourceType: new TypeDescription("MyType", IsValueType: true),
             PropertyType: new TypeDescription("MyType2"),
@@ -36,7 +37,8 @@ public class BindingTransformerTests
                     new MemberAccess("B"),
                 ]),
             SetterOptions: new SetterOptions(IsWritable: true),
-            NullableContextEnabled: false);
+            NullableContextEnabled: false,
+            MethodType: InterceptedMethodType.SetBinding);
 
         var transformer = new ReferenceTypesConditionalAccessTransformer();
         var transformedBinding = transformer.Transform(binding);
@@ -52,7 +54,7 @@ public class BindingTransformerTests
     [Fact]
     public void DoNotWrapMemberAccessInConditionalAccessWhePreviousPartTypeIsValueType()
     {
-        var binding = new SetBindingInvocationDescription(
+        var binding = new BindingInvocationDescription(
             Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             SourceType: new TypeDescription("MyType", IsValueType: false),
             PropertyType: new TypeDescription("MyType2"),
@@ -62,7 +64,8 @@ public class BindingTransformerTests
                     new MemberAccess("B"),
                 ]),
             SetterOptions: new SetterOptions(IsWritable: true),
-            NullableContextEnabled: false);
+            NullableContextEnabled: false,
+            MethodType: InterceptedMethodType.SetBinding);
 
         var transformer = new ReferenceTypesConditionalAccessTransformer();
         var transformedBinding = transformer.Transform(binding);
@@ -78,7 +81,7 @@ public class BindingTransformerTests
     [Fact]
     public void WrapAccessInConditionalAccessWhenAllPartsAreReferenceTypes()
     {
-        var binding = new SetBindingInvocationDescription(
+        var binding = new BindingInvocationDescription(
             Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             SourceType: new TypeDescription("MyType"),
             PropertyType: new TypeDescription("MyType2"),
@@ -89,7 +92,8 @@ public class BindingTransformerTests
                     new MemberAccess("B"),
                 ]),
             SetterOptions: new SetterOptions(IsWritable: true),
-            NullableContextEnabled: false);
+            NullableContextEnabled: false,
+            MethodType: InterceptedMethodType.SetBinding);
 
         var transformer = new ReferenceTypesConditionalAccessTransformer();
         var transformedBinding = transformer.Transform(binding);
@@ -106,7 +110,7 @@ public class BindingTransformerTests
     [Fact]
     public void DoNotWrapAccessInConditionalAccessWhenNoPartsAreReferenceTypes()
     {
-        var binding = new SetBindingInvocationDescription(
+        var binding = new BindingInvocationDescription(
             Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             SourceType: new TypeDescription("MyType", IsValueType: true),
             PropertyType: new TypeDescription("MyType2"),
@@ -117,7 +121,8 @@ public class BindingTransformerTests
                     new MemberAccess("B", IsValueType: true),
                 ]),
             SetterOptions: new SetterOptions(IsWritable: true),
-            NullableContextEnabled: false);
+            NullableContextEnabled: false,
+            MethodType: InterceptedMethodType.SetBinding);
 
         var transformer = new ReferenceTypesConditionalAccessTransformer();
         var transformedBinding = transformer.Transform(binding);
