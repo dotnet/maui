@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,3 +24,4 @@ public class Issue22674 : _IssuesUITest
 		// Without crashes, the test has passed.
 	}
 }
+#endif
