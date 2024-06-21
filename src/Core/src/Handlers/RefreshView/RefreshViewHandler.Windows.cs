@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateContent(IRefreshViewHandler handler)
 		{
-			IView content;
+			IView? content;
 
 			if (handler.VirtualView is IContentView cv && cv.PresentedContent is IView view)
 			{
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 				content = handler.VirtualView.Content;
 			}
 
-			var platformContent = content.ToPlatform(handler.MauiContext!);
+			var platformContent = content?.ToPlatform(handler.MauiContext!);
 			if (handler.PlatformView.Content is ContentPanel contentPanel)
 			{
 				contentPanel.Content = platformContent;
