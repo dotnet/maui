@@ -7,9 +7,9 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class CarouselViewCoreGalleryPage : ContentPage
+	public partial class CarouselViewPageWithImages : ContentPage
 	{
-		public CarouselViewCoreGalleryPage()
+		public CarouselViewPageWithImages()
 		{
 			InitializeComponent();
 
