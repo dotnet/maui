@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			public IList<int> WarningsAsErrors { get; set; }
 			public IList<int> WarningsNotAsErrors { get; set; }
 			public IList<int> NoWarn { get; set; }
-			public bool HasLoggedError { get; set; }
 			public string PathPrefix { get; set; }
 		}
 
 		static LoggingHelperContext Context { get; set; }
+		internal static List<BuildException> LoggedErrors { get; set; }
 
 		public static void SetContext(
 			this TaskLoggingHelper loggingHelper,
@@ -98,7 +98,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				|| (Context.WarningsAsErrors != null && Context.WarningsAsErrors.Contains(code.CodeCode)))
 			{
 				loggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
-				Context.HasLoggedError = true;
+				LoggedErrors ??= new();
+				LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineNumber, linePosition), innerException: null));
 			}
 			else
 			{
@@ -309,7 +310,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							}
 							else
 							{
-								success &= !LoggingHelper.HasLoggedErrors;
+								if (LoggingHelperExtensions.LoggedErrors is List<BuildException> errors)
+								{
+									foreach (var error in errors)
+									{
+										success = false;
+										(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(error);
+									}
+
+									LoggingHelperExtensions.LoggedErrors = null;
+								}
 							}
 							
 							if (initComp.HasCustomAttributes)

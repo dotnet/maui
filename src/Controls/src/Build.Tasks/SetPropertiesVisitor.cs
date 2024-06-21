@@ -417,11 +417,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				skipNode = GetParent(node);
 			}
 
+			bool xDataTypeIsInOuterScope = false;
 			while (n != null)
 			{
 				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 				{
 					break;
+				}
+
+				if (n.XmlType.Name == nameof(Microsoft.Maui.Controls.DataTemplate)
+					&& n.XmlType.NamespaceUri == XamlParser.MauiUri)
+				{
+					xDataTypeIsInOuterScope = true;
 				}
 
 				n = GetParent(n);
@@ -432,6 +439,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 
 				yield break;
+			}
+
+			if (xDataTypeIsInOuterScope)
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				// continue compilation
 			}
 
 			if (dataTypeNode is ElementNode enode
