@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+	[SupportedOSPlatform("ios13.0")]
 	public partial class MenuFlyoutItemHandler
 	{
 		internal static Dictionary<int, IMenuElement> menus = new Dictionary<int, IMenuElement>();

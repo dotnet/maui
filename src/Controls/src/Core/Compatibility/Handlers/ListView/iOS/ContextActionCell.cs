@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
@@ -34,18 +35,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var rect = new RectangleF(0, 0, 1, 1);
 			var size = rect.Size;
 
-			UIGraphics.BeginImageContext(size);
-			var context = UIGraphics.GetCurrentContext();
-			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
-			context.FillRect(rect);
-			DestructiveBackground = UIGraphics.GetImageFromCurrentImageContext();
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				using var renderer = new UIGraphicsImageRenderer(size);
+				NormalBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+					var context = ctx.CGContext;
+					context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
+					context.FillRect(rect);
+				});
+				NormalBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+					var context = ctx.CGContext;
+					context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
+					context.FillRect(rect);
+				});
+			} else {
+				UIGraphics.BeginImageContext(size);
+				using var context = UIGraphics.GetCurrentContext();
+				context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
+				context.FillRect(rect);
+				DestructiveBackground = UIGraphics.GetImageFromCurrentImageContext();
 
-			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
-			context.FillRect(rect);
+				context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
+				context.FillRect(rect);
 
-			NormalBackground = UIGraphics.GetImageFromCurrentImageContext();
-
-			context.Dispose();
+				NormalBackground = UIGraphics.GetImageFromCurrentImageContext();
+			}
 		}
 
 		public ContextActionsCell() : base(UITableViewCellStyle.Default, Key)

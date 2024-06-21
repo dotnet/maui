@@ -121,16 +121,27 @@ namespace Microsoft.Maui.Controls.Platform
 			if (backgroundLayer == null)
 				return null;
 
-			UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				var size = new CGSize(backgroundLayer.Bounds.Size.Width * UIScreen.MainScreen.Scale, backgroundLayer.Bounds.Size.Height * UIScreen.MainScreen.Scale);
+				var renderer = new UIGraphicsImageRenderer(size);
+				var gradientImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+					backgroundLayer.RenderInContext(ctx.CGContext);
+				});
+				return gradientImage;
+			} else {
+				UIGraphics.BeginImageContextWithOptions(backgroundLayer.Bounds.Size, false, UIScreen.MainScreen.Scale);
 
-			if (UIGraphics.GetCurrentContext() == null)
-				return null;
+				if (UIGraphics.GetCurrentContext() == null)
+					return null;
 
-			backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
-			UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+				backgroundLayer.RenderInContext(UIGraphics.GetCurrentContext());
+				UIImage gradientImage = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
 
-			return gradientImage;
+				return gradientImage;
+			}
+
 		}
 
 		public static void InsertBackgroundLayer(this UIView view, CALayer backgroundLayer, int index = -1)

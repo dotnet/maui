@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -9,9 +10,9 @@ namespace Microsoft.Maui.Platform
 	{
 		internal static UITextField? GetSearchTextField(this UISearchBar searchBar)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
-				return searchBar.SearchTextField;
+				return SearchField(searchBar);
 			}
 
 			// Search Subviews up to two levels deep
@@ -30,6 +31,10 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+		
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UISearchTextField SearchField(UISearchBar bar) => bar.SearchTextField;
 
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{

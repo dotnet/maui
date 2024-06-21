@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
@@ -26,16 +27,27 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMenuElementAttributes(this UIMenuElement uiMenuElement, bool isEnabled)
 		{
-			if (uiMenuElement is UIAction action)
-				action.Attributes = isEnabled.ToUIMenuElementAttributes();
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+				if (uiMenuElement is UIAction action)
+						SetUIActionAttributes(action, isEnabled);				
 
-			if (uiMenuElement is UICommand command)
-				command.Attributes = isEnabled.ToUIMenuElementAttributes();
+				if (uiMenuElement is UICommand command)
+					SetUIMenuElementAttributes(command, isEnabled);
+			}
 		}
 
-		internal static UIMenuElementAttributes ToUIMenuElementAttributes(this bool isEnabled)
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void SetUIActionAttributes(UIAction action, bool isEnabled)
 		{
-			return isEnabled ? 0 : UIMenuElementAttributes.Disabled;
+			action.Attributes = isEnabled ? 0 : UIMenuElementAttributes.Disabled;
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void SetUIMenuElementAttributes(UICommand command, bool isEnabled)
+		{
+			command.Attributes = isEnabled ? 0 : UIMenuElementAttributes.Disabled;
 		}
 
 		internal static UIImage? GetPlatformMenuImage(this IImageSource? imageSource, IMauiContext mauiContext)

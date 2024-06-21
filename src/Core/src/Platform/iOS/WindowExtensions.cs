@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
@@ -14,8 +15,18 @@ namespace Microsoft.Maui.Platform
 			// If you set the title to null the app will crash
 			// If you set it to an empty string the title reverts back to the 
 			// default app title.
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && platformWindow.WindowScene is not null)
-				platformWindow.WindowScene.Title = window.Title ?? String.Empty;
+			if (OperatingSystem.IsIOSVersionAtLeast(13)|| OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				AssertWindowSceneTitle(platformWindow, window.Title ?? string.Empty);
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void AssertWindowSceneTitle(UIWindow platformWindow, string title)
+		{
+			if (platformWindow.WindowScene is not null)
+			{
+				platformWindow.WindowScene.Title = title;
+			}
 		}
 
 		internal static void UpdateX(this UIWindow platformWindow, IWindow window) =>
@@ -44,9 +55,14 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMaximumSize(this UIWindow platformWindow, double width, double height)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				return;
+			if (OperatingSystem.IsIOSVersionAtLeast(13)|| OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				UpdateMaximumSizeImpl(platformWindow, width, height);
+		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void UpdateMaximumSizeImpl(this UIWindow platformWindow, double width, double height)
+		{
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
 				return;
@@ -70,9 +86,14 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateMinimumSize(this UIWindow platformWindow, double width, double height)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				return;
+			if (OperatingSystem.IsIOSVersionAtLeast(13)|| OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				UpdateMinimumSizeImpl(platformWindow, width, height);
+		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void UpdateMinimumSizeImpl(this UIWindow platformWindow, double width, double height)
+		{
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
 				return;

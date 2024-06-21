@@ -29,41 +29,9 @@ namespace Microsoft.Maui
 			MenuBuilder = builder;
 
 			UIWindow? window = null;
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(15, 0) || OperatingSystem.IsMacCatalystVersionAtLeast(15, 0))
 			{
-				// for iOS 14+ where active apperance is supported
-				var activeWindowScenes = new List<UIWindowScene>();
-				foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
-				{
-					if (scene is UIWindowScene windowScene &&
-						windowScene.TraitCollection.ActiveAppearance == UIUserInterfaceActiveAppearance.Active)
-					{
-						activeWindowScenes.Add(windowScene);
-					}
-				}
-
-				if (activeWindowScenes.Count > 0)
-				{
-					// when a new window is created, some time more than 1 active window sence are returned
-					// we need to pick the newly created window in this case
-					// the order of window scene returned is not trustable, do not use last
-					// after some manual testing, windowing behaviour that is not ready yet is the newly created window
-					if (activeWindowScenes.Count > 1)
-					{
-						foreach (var ws in activeWindowScenes)
-						{
-							if (OperatingSystem.IsIOSVersionAtLeast(16, 0) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 0)) {
-								if (ws.WindowingBehaviors is not null && !ws.WindowingBehaviors.Closable)
-								{
-									window = ws.KeyWindow;
-									break;
-								}
-							}
-						}
-					}
-					else
-						window = activeWindowScenes[0].KeyWindow;
-				}
+				window = LastOpenedWindow();
 			}
 			else
 			{
@@ -74,6 +42,47 @@ namespace Microsoft.Maui
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 
 			MenuBuilder = null;
+		}
+
+		[SupportedOSPlatform("ios15.0")]
+		[SupportedOSPlatform("maccatalyst15.0")]
+		static UIWindow? LastOpenedWindow()
+		{
+			UIWindow? window = null;
+			// for iOS 14+ where active apperance is supported
+			var activeWindowScenes = new List<UIWindowScene>();
+			foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
+			{
+				if (scene is UIWindowScene windowScene &&
+					windowScene.TraitCollection.ActiveAppearance == UIUserInterfaceActiveAppearance.Active)
+				{
+					activeWindowScenes.Add(windowScene);
+				}
+			}
+
+			if (activeWindowScenes.Count > 0)
+			{
+				// when a new window is created, some time more than 1 active window sence are returned
+				// we need to pick the newly created window in this case
+				// the order of window scene returned is not trustable, do not use last
+				// after some manual testing, windowing behaviour that is not ready yet is the newly created window
+				if (activeWindowScenes.Count > 1)
+				{
+					foreach (var ws in activeWindowScenes)
+					{
+						if (OperatingSystem.IsIOSVersionAtLeast(16, 0) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 0)) {
+							if (ws.WindowingBehaviors is not null && !ws.WindowingBehaviors.Closable)
+							{
+								window = ws.KeyWindow;
+								break;
+							}
+						}
+					}
+				}
+				else
+					window = activeWindowScenes[0].KeyWindow;
+			}
+			return window;
 		}
 
 		public override bool CanPerform(Selector action, NSObject? withSender)

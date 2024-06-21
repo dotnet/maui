@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			{
 				// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
 				// else, use the RGBA equivalent of UIColor.SecondarySystemFill in Light mode
-				uIView.BackgroundColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : DefaultBackgroundColor;
+				uIView.BackgroundColor = OperatingSystem.IsIOSVersionAtLeast(13) ? SecondarySystemFill : DefaultBackgroundColor;
 			}
 
 			else if (view.TrackColor is not null)
@@ -35,6 +36,10 @@ namespace Microsoft.Maui.Platform
 				uIView.BackgroundColor = uiSwitch.OnTintColor;
 			}
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIColor SecondarySystemFill => UIColor.SecondarySystemFill;
 
 		public static void UpdateThumbColor(this UISwitch uiSwitch, ISwitch view)
 		{

@@ -22,6 +22,7 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Platform;
+using System.Runtime.Versioning;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -350,10 +351,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && !UIStyleMatches(previousTraitCollection))
 				UpdateBackgroundColor();
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		bool UIStyleMatches (UITraitCollection target)
+		{
+			return target.UserInterfaceStyle == TraitCollection.UserInterfaceStyle;
+		}
 
 		ParentingViewController CreateViewControllerForPage(Page page)
 		{
@@ -543,18 +550,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
-				if (shouldHide)
-				{
-					NavigationBar.CompactAppearance.ShadowColor = UIColor.Clear;
-					NavigationBar.StandardAppearance.ShadowColor = UIColor.Clear;
-					NavigationBar.ScrollEdgeAppearance.ShadowColor = UIColor.Clear;
-				}
-				else
-				{
-					NavigationBar.CompactAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76); //default ios13 shadow color
-					NavigationBar.StandardAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
-					NavigationBar.ScrollEdgeAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
-				}
+				SetShadowColors(shouldHide);
 			}
 			else
 			{
@@ -576,6 +572,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					NavigationBar.SetBackgroundImage(_defaultNavBarBackImage, UIBarMetrics.Default);
 			}
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0")]
+		void SetShadowColors (bool shouldHide)
+		{
+				if (shouldHide)
+				{
+					NavigationBar.CompactAppearance.ShadowColor = UIColor.Clear;
+					NavigationBar.StandardAppearance.ShadowColor = UIColor.Clear;
+					NavigationBar.ScrollEdgeAppearance.ShadowColor = UIColor.Clear;
+				}
+				else
+				{
+					NavigationBar.CompactAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76); //default ios13 shadow color
+					NavigationBar.StandardAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
+					NavigationBar.ScrollEdgeAppearance.ShadowColor = UIColor.FromRGBA(0, 0, 0, 76);
+				}
 		}
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
@@ -712,35 +726,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
-				var navigationBarAppearance = NavigationBar.StandardAppearance;
-				if (barBackgroundColor is null)
-				{
-					navigationBarAppearance.ConfigureWithOpaqueBackground();
-					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
-
-					var parentingViewController = GetParentingViewController();
-					parentingViewController?.SetupDefaultNavigationBarAppearance();
-				}
-				else
-				{
-					if(barBackgroundColor?.Alpha < 1f)
-						navigationBarAppearance.ConfigureWithTransparentBackground();
-					else
-						navigationBarAppearance.ConfigureWithOpaqueBackground();
-
-					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
-				}
-
-				if (barBackgroundBrush is not null)
-				{
-					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
-
-					navigationBarAppearance.BackgroundImage = backgroundImage;
-				}
-
-				NavigationBar.CompactAppearance = navigationBarAppearance;
-				NavigationBar.StandardAppearance = navigationBarAppearance;
-				NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
+				SetBarBackgroundAppearance(barBackgroundColor, barBackgroundBrush);
 			}
 			else
 			{
@@ -759,6 +745,41 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
 				}
 			}
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.0")]
+		void SetBarBackgroundAppearance(Color barBackgroundColor, Brush barBackgroundBrush)
+		{
+			var navigationBarAppearance = NavigationBar.StandardAppearance;
+			if (barBackgroundColor is null)
+			{
+				navigationBarAppearance.ConfigureWithOpaqueBackground();
+				navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
+
+				var parentingViewController = GetParentingViewController();
+				parentingViewController?.SetupDefaultNavigationBarAppearance();
+			}
+			else
+			{
+				if(barBackgroundColor?.Alpha < 1f)
+					navigationBarAppearance.ConfigureWithTransparentBackground();
+				else
+					navigationBarAppearance.ConfigureWithOpaqueBackground();
+
+				navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
+			}
+
+			if (barBackgroundBrush is not null)
+			{
+				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
+
+				navigationBarAppearance.BackgroundImage = backgroundImage;
+			}
+
+			NavigationBar.CompactAppearance = navigationBarAppearance;
+			NavigationBar.StandardAppearance = navigationBarAppearance;
+			NavigationBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
 
 		void UpdateBarTextColor()
@@ -788,14 +809,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
 			{
-				NavigationBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
-				NavigationBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
-
-				NavigationBar.StandardAppearance.TitleTextAttributes = titleTextAttributes;
-				NavigationBar.StandardAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
-
-				NavigationBar.ScrollEdgeAppearance.TitleTextAttributes = titleTextAttributes;
-				NavigationBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+				SetNavigationAppearances(titleTextAttributes, largeTitleTextAttributes);
 			}
 			else
 			{
@@ -813,6 +827,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			NavigationBar.TintColor = iconColor == null || NavPage.OnThisPlatform().GetStatusBarTextColorMode() == StatusBarTextColorMode.DoNotAdjust
 				? UINavigationBar.Appearance.TintColor
 				: iconColor.ToPlatform();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		void SetNavigationAppearances (UIStringAttributes titleTextAttributes, UIStringAttributes largeTitleTextAttributes)
+		{
+				NavigationBar.CompactAppearance.TitleTextAttributes = titleTextAttributes;
+				NavigationBar.CompactAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+
+				NavigationBar.StandardAppearance.TitleTextAttributes = titleTextAttributes;
+				NavigationBar.StandardAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
+
+				NavigationBar.ScrollEdgeAppearance.TitleTextAttributes = titleTextAttributes;
+				NavigationBar.ScrollEdgeAppearance.LargeTitleTextAttributes = largeTitleTextAttributes;
 		}
 
 		void SetStatusBarStyle()
@@ -1317,7 +1344,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
 					return;
+				
+				SetupDefaultNavigationBarAppearanceImpl (navigationRenderer);
+			}
 
+			[SupportedOSPlatform("ios13.0")]
+			[SupportedOSPlatform("maccatalyst13.0")]
+			void SetupDefaultNavigationBarAppearanceImpl(NavigationRenderer navigationRenderer)
+			{
 				// We will use UINavigationBar.Appareance to infer settings that
 				// were already set to navigation bar in older versions of
 				// iOS.
@@ -1364,15 +1398,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var rect = RectangleF.Empty;
 				var size = rect.Size;
 
-				UIGraphics.BeginImageContext(size);
-				var context = UIGraphics.GetCurrentContext();
-				context?.SetFillColor(1, 1, 1, 0);
-				context?.FillRect(rect);
+				if (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsIOSVersionAtLeast(11)) {
+					using var renderer = new UIGraphicsImageRenderer(size);
+					var renderedImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+						var context = ctx.CGContext;
+						context.SetFillColor(1, 1, 1, 0);
+						context.FillRect(rect);
+					});
+					return renderedImage;
+				} else {
+					UIGraphics.BeginImageContext(size);
+					using var context = UIGraphics.GetCurrentContext();
+					context.SetFillColor(1, 1, 1, 0);
+					context.FillRect(rect);
 
-				var empty = UIGraphics.GetImageFromCurrentImageContext();
-				context?.Dispose();
-
-				return empty;
+					var empty = UIGraphics.GetImageFromCurrentImageContext();
+					return empty;
+				}
 			}
 
 			public override void ViewWillTransitionToSize(SizeF toSize, IUIViewControllerTransitionCoordinator coordinator)

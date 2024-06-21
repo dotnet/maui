@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -221,15 +222,25 @@ namespace Microsoft.Maui.DeviceTests
 				}));
 			}
 
-			UIGraphics.BeginImageContext(imageRect.Size);
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				using var renderer = new UIGraphicsImageRenderer(imageRect.Size);
+				var renderedImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+					var context = ctx.CGContext;
+					view.Layer.RenderInContext(context);
+				});
+				return Task.FromResult(renderedImage);
+			} else {
+				UIGraphics.BeginImageContext(imageRect.Size);
 
-			var context = UIGraphics.GetCurrentContext();
-			view.Layer.RenderInContext(context);
-			var image = UIGraphics.GetImageFromCurrentImageContext();
+				var context = UIGraphics.GetCurrentContext();
+				view.Layer.RenderInContext(context);
+				var image = UIGraphics.GetImageFromCurrentImageContext();
 
-			UIGraphics.EndImageContext();
+				UIGraphics.EndImageContext();
 
-			return Task.FromResult(image);
+				return Task.FromResult(image);
+			}
 		}
 
 		public static UIColor ColorAtPoint(this UIImage bitmap, int x, int y)
@@ -599,30 +610,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(15))
 			{
-				foreach (var scene in application.ConnectedScenes)
-				{
-					if (scene is UIWindowScene windowScene
-						&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
-					{
-						foreach (var window in windowScene.Windows)
-						{
-#if MACCATALYST
-							// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
-							// Added an env variable to accommodate for this and just return the first window found.
-							if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
-							{	
-								return window;
-							}
-#endif
-							if (window.IsKeyWindow)
-							{
-								return window;
-							}
-						}
-					}
-				}
-
-				return null;
+				return GetKeyWindowImpl(application);
 			}
 
 			var windows = application.Windows;
@@ -632,6 +620,35 @@ namespace Microsoft.Maui.DeviceTests
 				var window = windows[i];
 				if (window.IsKeyWindow)
 					return window;
+			}
+
+			return null;
+		}
+
+		[SupportedOSPlatform("ios15.0")]
+		static UIWindow? GetKeyWindowImpl(UIApplication application)
+		{
+			foreach (var scene in application.ConnectedScenes)
+			{
+				if (scene is UIWindowScene windowScene
+					&& windowScene.ActivationState == UISceneActivationState.ForegroundActive)
+				{
+					foreach (var window in windowScene.Windows)
+					{
+#if MACCATALYST
+						// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
+						// Added an env variable to accommodate for this and just return the first window found.
+						if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
+						{	
+							return window;
+						}
+#endif
+						if (window.IsKeyWindow)
+						{
+							return window;
+						}
+					}
+				}
 			}
 
 			return null;

@@ -147,7 +147,13 @@ namespace Microsoft.Maui.Platform
 
 			if (application is null)
 				return;
+			SetViewControllerUIStyle(application);
+		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void SetViewControllerUIStyle(IApplication application)
+		{
 			var currentViewController = WindowStateManager.Default.GetCurrentUIViewController(false);
 
 			if (currentViewController is null)
@@ -156,15 +162,28 @@ namespace Microsoft.Maui.Platform
 			switch (application.UserAppTheme)
 			{
 				case AppTheme.Light:
-					currentViewController.OverrideUserInterfaceStyle = UIUserInterfaceStyle.Light;
+					currentViewController.OverrideUserInterfaceStyle = Light;
 					break;
 				case AppTheme.Dark:
-					currentViewController.OverrideUserInterfaceStyle = UIUserInterfaceStyle.Dark;
+					currentViewController.OverrideUserInterfaceStyle = Dark;
 					break;
 				default:
-					currentViewController.OverrideUserInterfaceStyle = UIUserInterfaceStyle.Unspecified;
+					currentViewController.OverrideUserInterfaceStyle = Unspecified;
 					break;
 			}
 		}
+		
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIUserInterfaceStyle Light = UIUserInterfaceStyle.Light;
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIUserInterfaceStyle Dark = UIUserInterfaceStyle.Dark;
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIUserInterfaceStyle Unspecified = UIUserInterfaceStyle.Unspecified;
+
 	}
 }

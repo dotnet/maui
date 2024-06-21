@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using UIKit;
@@ -58,46 +59,33 @@ namespace Microsoft.Maui.LifecycleEvents
 			iOS
 				.SceneWillEnterForeground(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
-					if (scene.Delegate is IUIWindowSceneDelegate windowScene &&
-						scene.ActivationState != UISceneActivationState.Unattached)
-					{
-						windowScene.GetWindow().GetWindow()?.Resumed();
+					if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+						WindowSceneResumed(scene);
 					}
 				})
 				.SceneOnActivated(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
-					if (scene.Delegate is IUIWindowSceneDelegate sd)
-						sd.GetWindow().GetWindow()?.Activated();
+					if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+						WindowSceneActivated(scene);
+					}
 				})
 				.SceneOnResignActivation(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
-					if (scene.Delegate is IUIWindowSceneDelegate sd)
-						sd.GetWindow().GetWindow()?.Deactivated();
+					if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+						WindowSceneDeactivated(scene);
+					}
 				})
 				.SceneDidEnterBackground(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
-					if (scene.Delegate is IUIWindowSceneDelegate sd)
-						sd.GetWindow().GetWindow()?.Stopped();
+					if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+						WindowSceneStopped(scene);
+					}
 				})
 				.SceneDidDisconnect(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
-					if (scene.Delegate is IUIWindowSceneDelegate sd)
-						sd.GetWindow().GetWindow()?.Destroying();
+					if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+						WindowSceneDestroying(scene);
+					}
 				});
 		}
 
@@ -110,19 +98,68 @@ namespace Microsoft.Maui.LifecycleEvents
 			iOS = iOS
 				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
-					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
-						wsd.GetWindow() is not UIWindow platformWindow)
-						return;
-
-					var window = platformWindow.GetWindow();
-					if (window is null)
-						return;
-
-					window.FrameChanged(platformWindow.Frame.ToRectangle());
+					if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) {
+						OnConfigureWindowImpl(windowScene);
+					}
 				});
+		}
+		
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void OnConfigureWindowImpl(UIWindowScene windowScene)
+		{
+			if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
+				wsd.GetWindow() is not UIWindow platformWindow)
+				return;
+
+			var window = platformWindow.GetWindow();
+			if (window is null)
+				return;
+
+			window.FrameChanged(platformWindow.Frame.ToRectangle());		
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void WindowSceneActivated(UIScene scene)
+		{
+			if (scene.Delegate is IUIWindowSceneDelegate sd)
+				sd.GetWindow().GetWindow()?.Activated();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void WindowSceneDeactivated(UIScene scene)
+		{
+			if (scene.Delegate is IUIWindowSceneDelegate sd)
+				sd.GetWindow().GetWindow()?.Deactivated();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void WindowSceneResumed(UIScene scene)
+		{
+			if (scene.Delegate is IUIWindowSceneDelegate windowScene &&
+				scene.ActivationState != UISceneActivationState.Unattached)
+			{
+				windowScene.GetWindow().GetWindow()?.Resumed();
+			}
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void WindowSceneStopped(UIScene scene)
+		{
+			if (scene.Delegate is IUIWindowSceneDelegate sd)
+				sd.GetWindow().GetWindow()?.Stopped();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static void WindowSceneDestroying(UIScene scene)
+		{
+			if (scene.Delegate is IUIWindowSceneDelegate sd)
+				sd.GetWindow().GetWindow()?.Destroying();
 		}
 	}
 }
