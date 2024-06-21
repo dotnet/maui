@@ -1,3 +1,4 @@
+#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Category(UITestCategories.Button)]
         public void ButtonsLayoutResolveWhenParentSizeChanges()
         {
-            this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
             try
             {
                 App.SetOrientationPortrait();
@@ -56,3 +56,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
     }
 }
+#endif
