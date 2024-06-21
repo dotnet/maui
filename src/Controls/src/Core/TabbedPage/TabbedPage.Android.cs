@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls
 			view._tabbedPageManager?.ScrollToCurrentPage();
 		}
 
-		public static void MapUpdateOffscreenPageLimit(ITabbedViewHandler handler, TabbedPage view)
+		internal static void MapUpdateOffscreenPageLimit(ITabbedViewHandler handler, TabbedPage view)
 		{
 			view._tabbedPageManager?.UpdateOffscreenPageLimit();
 		}
