@@ -4,7 +4,9 @@ using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	class ShellContentItemView : Frame
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellContentItemView), false, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateViewColors());
 		internal static readonly BindableProperty SelectedTextColorProperty = BindableProperty.Create(nameof(SelectedTextColor), typeof(GColor), typeof(ShellContentItemView), null, propertyChanged: (b, o, n) => ((ShellContentItemView)b).UpdateViewColors());
