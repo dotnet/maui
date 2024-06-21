@@ -19,6 +19,9 @@
     <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('iOS')) == true ">
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- NuGet package information -->
