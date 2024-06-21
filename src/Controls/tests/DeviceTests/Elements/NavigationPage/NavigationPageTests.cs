@@ -40,7 +40,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<CarouselView, CarouselViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<IContentView, ContentViewHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Layout, LayoutHandler>();
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				await navPage.PushAsync(new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }));
+				await navPage.PushAsync(new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }));
 				await navPage.PopAsync();
 			});
 		}
@@ -401,7 +400,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				var page = new ContentPage() { Content = new Frame(), Title = "Detail" };
+				var page = new ContentPage() { Content = new Border(), Title = "Detail" };
 				await navPage.PushAsync(new NavigationPage(page));
 				NavigationPage.SetTitleIconImageSource(page, "red.png");
 			});

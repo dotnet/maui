@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿#pragma warning disable CS0618 // Type or member is obsolete
+using System.Threading.Tasks;
 using Java.Lang;
 using Microsoft.Maui.Controls;
 using Xunit;
@@ -26,4 +27,4 @@ namespace Microsoft.Maui.DeviceTests
 			AssertWithinTolerance(expectedBounds.Size, nativeBoundingBox.Size);
 		}
 	}
-}
+}#pragma warning restore CS0618 // Type or member is obsolete

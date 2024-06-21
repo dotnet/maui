@@ -122,7 +122,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
 #endif
 			handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
+#pragma warning disable CS0618 // Type or member is obsolete
 			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
 #if WINDOWS || MACCATALYST
