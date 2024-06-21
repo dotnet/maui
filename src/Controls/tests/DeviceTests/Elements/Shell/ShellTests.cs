@@ -82,6 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(pageBounds.Height <= window.Height);
 			});
 		}
+#endif
 
 #if ANDROID || IOS || MACCATALYST
 		[Fact]
@@ -1014,18 +1015,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
-				var page = new ContentPage
-				{
-					Title = "Page 2",
-					Content = new VerticalStackLayout
-					{
-						new Label(),
-						new Button(),
-						new Controls.ContentView(),
-						new ScrollView(),
-						new CollectionView(),
-					}
-				};
+				var page = new LeakyShellPage();
 				pageReference = new WeakReference(page);
 
 				await shell.Navigation.PushAsync(page);
@@ -1033,6 +1023,33 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(pageReference);
+		}
+
+		class LeakyShellPage : ContentPage
+		{
+			public LeakyShellPage()
+			{
+				Title = "Page 2";
+				Content = new VerticalStackLayout
+				{
+					new Label(),
+					new Button(),
+					new Controls.ContentView(),
+					new ScrollView(),
+					new CollectionView(),
+				};
+
+				var item = new ToolbarItem { Text = "Primary Item", Order = ToolbarItemOrder.Primary };
+				item.Clicked += OnToolbarItemClicked;
+				ToolbarItems.Add(item);
+
+				item = new ToolbarItem { Text = "Secondary Item", Order = ToolbarItemOrder.Secondary };
+				item.Clicked += OnToolbarItemClicked;
+				ToolbarItems.Add(item);
+			}
+
+			// Needs to be an instance method
+			void OnToolbarItemClicked(object sender, EventArgs e) { }
 		}
 
 		//HideSoftInputOnTapped doesn't currently do anything on windows
@@ -1188,7 +1205,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
-#endif
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{

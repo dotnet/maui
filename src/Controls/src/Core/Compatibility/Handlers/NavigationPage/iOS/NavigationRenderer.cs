@@ -49,7 +49,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
-		VisualElement _element;
+		WeakReference<VisualElement> _element;
+		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
@@ -61,14 +62,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Delegate = new MauiNavigationDelegate(this);
 		}
 
-		Page Current { get; set; }
+		Page Current
+		{
+			get => _current?.GetTargetOrDefault();
+			set => _current = value is null ? null : new(value);
+		}
 
 		IPageController PageController => Element as IPageController;
 
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element; }
+		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault(); }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -86,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			(this as IElementHandler).SetVirtualView(element);
-			_element = element;
+			_element = element is null ? null : new(element);
 		}
 
 		public UIViewController ViewController
@@ -172,7 +177,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			if (Current == null)
+
+			if (Current is not Page current)
 				return;
 
 			UpdateToolBarVisible();
@@ -181,7 +187,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var toolbar = _secondaryToolbar;
 
 			//save the state of the Current page we are calculating, this will fire before Current is updated
-			_hasNavigationBar = NavigationPage.GetHasNavigationBar(Current);
+			_hasNavigationBar = NavigationPage.GetHasNavigationBar(current);
 
 			// Use 0 if the NavBar is hidden or will be hidden
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
@@ -482,8 +488,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 			{
-				Current = NavPage?.CurrentPage;
-				ValidateNavbarExists(Current);
+				var current = Current = NavPage?.CurrentPage;
+				ValidateNavbarExists(current);
 			}
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
@@ -688,11 +694,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void RemoveViewControllers(bool animated)
 		{
 			var controller = TopViewController as ParentingViewController;
-			if (controller == null || controller.Child == null || controller.Child.Handler == null)
+			if (controller?.Child is not Page child || child.Handler == null)
 				return;
 
 			// Gesture in progress, lets not be proactive and just wait for it to finish
-			var task = GetAppearedOrDisappearedTask(controller.Child);
+			var task = GetAppearedOrDisappearedTask(child);
 
 			task.ContinueWith(t =>
 			{
@@ -820,7 +826,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			// set Tint color (i. e. Back Button arrow and Text)
-			var iconColor = Current != null ? NavigationPage.GetIconColor(Current) : null;
+			var iconColor = Current is Page current ? NavigationPage.GetIconColor(current) : null;
 			if (iconColor == null)
 				iconColor = barTextColor;
 
@@ -887,8 +893,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (currentHidden != _secondaryToolbar.Hidden)
 			{
-				if (Current?.Handler != null)
-					Current.ToPlatform().InvalidateMeasure(Current);
+				if (Current is Page current && current.Handler is not null)
+					current.ToPlatform().InvalidateMeasure(current);
 
 				if (VisibleViewController is ParentingViewController pvc)
 					pvc.UpdateFrames();
@@ -1140,7 +1146,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			readonly WeakReference<NavigationRenderer> _navigation;
 
-			Page _child;
+			WeakReference<Page> _child;
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 
@@ -1155,19 +1161,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public Page Child
 			{
-				get { return _child; }
+				get => _child?.GetTargetOrDefault();
 				set
 				{
-					if (_child == value)
+					var child = Child;
+					if (child == value)
 						return;
 
-					if (_child != null)
-						_child.PropertyChanged -= HandleChildPropertyChanged;
+					if (child is not null)
+						child.PropertyChanged -= HandleChildPropertyChanged;
 
-					_child = value;
-
-					if (_child != null)
-						_child.PropertyChanged += HandleChildPropertyChanged;
+					if (value is not null)
+					{
+						_child = new(value);
+						value.PropertyChanged += HandleChildPropertyChanged;
+					}
+					else
+					{
+						_child = null;
+					}
 
 					UpdateHasBackButton();
 					UpdateLargeTitles();
@@ -1255,7 +1267,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_tracker.Target = Child;
 				_tracker.AdditionalTargets = Child.GetParentPages();
-				_tracker.CollectionChanged += TrackerOnCollectionChanged;
 
 				UpdateToolbarItems();
 			}
@@ -1274,6 +1285,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewWillAppear(animated);
 			}
 
+			public override void WillMoveToParentViewController(UIViewController parent)
+			{
+				base.WillMoveToParentViewController(parent);
+
+				if (parent is null)
+				{
+					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
+				}
+				else
+				{
+					_tracker.CollectionChanged += TrackerOnCollectionChanged;
+				}
+			}
+
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
@@ -1285,10 +1310,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
-					if (Child != null)
+					if (Child is Page child)
 					{
-						Child.SendDisappearing();
-						Child.PropertyChanged -= HandleChildPropertyChanged;
+						child.SendDisappearing();
+						child.PropertyChanged -= HandleChildPropertyChanged;
 						Child = null;
 					}
 
@@ -1559,17 +1584,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void UpdateHasBackButton()
 			{
-				if (Child == null || NavigationItem.HidesBackButton == !NavigationPage.GetHasBackButton(Child))
+				if (Child is not Page child || NavigationItem.HidesBackButton == !NavigationPage.GetHasBackButton(child))
 					return;
 
-				NavigationItem.HidesBackButton = !NavigationPage.GetHasBackButton(Child);
+				NavigationItem.HidesBackButton = !NavigationPage.GetHasBackButton(child);
 
 				NavigationRenderer n;
 				if (!_navigation.TryGetTarget(out n))
 					return;
 
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) || n._parentFlyoutPage != null)
-					UpdateTitleArea(Child);
+					UpdateTitleArea(child);
 			}
 
 			void UpdateNavigationBarVisibility(bool animated)
@@ -1739,7 +1764,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			_viewHandlerWrapper.SetVirtualView(view, ElementChanged, false);
-			_element = view as VisualElement;
+			_element = view is VisualElement v ? new(v) : null;
 
 			void ElementChanged(ElementChangedEventArgs<NavigationPage> e)
 			{

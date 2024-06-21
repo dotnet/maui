@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public async Task CanScrollWebView()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows, TestDevice.iOS });
-
 			await Task.Delay(1000); // Wait WebView to load.
 
 			App.WaitForElement("WaitForStubControl");
@@ -29,3 +28,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
   
 	}
 }
+#endif

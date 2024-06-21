@@ -2,8 +2,10 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.CarouselViewCoreGalleryPage"
-    Title="CarouselView Core Gallery">
+    Title="CarouselView Core Gallery"
+    x:DataType="local:CarouselViewModel">
     <ContentPage.Content>
         <Grid 
             Margin="0,0,0,10">
@@ -25,6 +27,7 @@
                 Grid.Column="0" />
             <Label 
                 Text="{Binding Path=Position, Source={x:Reference Name=carousel}}"
+                x:DataType="CarouselView"
                 AutomationId="lblPosition" 
                 Grid.Row="1" 
                 Grid.Column="1" />
@@ -33,7 +36,8 @@
                 Grid.Row="2" 
                 Grid.Column="0" />
             <Label 
-                Text="{Binding Path=CurrentItem.Index , Source={x:Reference Name=carousel}}" 
+                Text="{Binding Index, x:DataType=local:CarouselItem}"
+                BindingContext="{Binding CurrentItem, Source={x:Reference Name=carousel}, x:DataType=CarouselView}"
                 AutomationId="lblCurrentItem" 
                 Grid.Row="2"
                 Grid.Column="1" />
@@ -81,28 +85,33 @@
                 Position="{Binding Position}"
                 CurrentItem="{Binding Selected}">
                 <CarouselView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame 
+                    <DataTemplate x:DataType="local:CarouselItem">
+                        <Border 
                             x:Name="frame"
-                            HasShadow="True" 
-                            Padding="0" 
+                            Padding="10"
                             HeightRequest="100"
                             WidthRequest="200"
                             HorizontalOptions="Center" 
                             VerticalOptions="Center" 
                             BackgroundColor="Yellow">
-                            <Grid>
+                            <Grid RowDefinitions="*,Auto">
                                 <Image 
                                     Source="{Binding Image}"
                                     InputTransparent="true"
+                                    AutomationId="{Binding Title}"
                                     Aspect="AspectFit" />
                                 <Label 
-                                    Text="{Binding Index}" 
+                                    Text="{Binding Index}"  Grid.Row="1"
                                     FontSize="Large"
-                                    HorizontalOptions="Center" 
+                                    HorizontalOptions="Start" 
+                                    VerticalOptions="Center" />
+                                <Label 
+                                    Text="{Binding Title}"  Grid.Row="1"
+                                    FontSize="Large"
+                                    HorizontalOptions="End" 
                                     VerticalOptions="Center" />
                             </Grid>
-                        </Frame>
+                        </Border>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>
             </CarouselView>

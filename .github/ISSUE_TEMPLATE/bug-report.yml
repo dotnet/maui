@@ -44,10 +44,12 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
-        - 
+        -
+        - 9.0.0-preview.4.10690
         - 9.0.0-preview.3.10457
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.1.9973
+        - 8.0.60 SR6
         - 8.0.40 SR5
         - 8.0.21 SR4.1
         - 8.0.20 SR4
@@ -56,16 +58,6 @@ body:
         - 8.0.7 SR2
         - 8.0.6 SR1
         - 8.0.3 GA
-        - 7.0.101
-        - 7.0.100
-        - 7.0.96
-        - 7.0.92
-        - 7.0.86
-        - 7.0.81
-        - 7.0.59
-        - 7.0.58
-        - 7.0.52
-        - 7.0.49
         - Nightly / CI build (Please specify exact version)
         - Unknown/Other
     validations:
@@ -120,9 +112,11 @@ body:
         - 8.0.20 SR4
         - 8.0.21 SR4.1
         - 8.0.40 SR5
+        - 8.0.60 SR6
         - 9.0.0-preview.1.9973
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.3.10457
+        - 9.0.0-preview.4.10690
     validations:
       required: true
   - type: dropdown

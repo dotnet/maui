@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample
 		public Button StateChangeButton { get; private set; }
 		public Label ViewInteractionLabel { get; private set; }
 
-		public StateViewContainer(Enum formsMember, T view) : base(formsMember, view)
+		public StateViewContainer(Enum formsMember, T view, Func<object, string> converterFunc = null) : base(formsMember, view)
 		{
 			var name = formsMember.ToString();
 
@@ -38,6 +38,9 @@ namespace Maui.Controls.Sample
 
 			var converter = new GenericValueConverter(o =>
 			{
+				if (converterFunc is not null)
+					return converterFunc(o);
+
 				try
 				{
 					var attr = o.GetType().GetCustomAttribute<TypeConverterAttribute>();

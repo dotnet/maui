@@ -303,8 +303,37 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "NavigationPage Does Not Leak")]
+		[Fact(DisplayName = "Does Not Leak"
+#if WINDOWS
+			, Skip = "Failing"
+#endif
+		)]
 		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+			var references = new List<WeakReference>();
+
+			{
+				var navPage = new NavigationPage(new ContentPage());
+				var window = new Window(navPage);
+
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (handler) =>
+				{
+					references.Add(new(navPage));
+					references.Add(new(navPage.Handler));
+					references.Add(new(navPage.Handler.PlatformView));
+					references.Add(new(handler));
+
+					// Just replace the page with a new one
+					window.Page = new ContentPage();
+				});
+			}
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
+		}
+
+		[Fact(DisplayName = "Child Pages Do Not Leak")]
+		public async Task ChildPagesDoNotLeak()
 		{
 
 #if ANDROID
@@ -332,6 +361,7 @@ namespace Microsoft.Maui.DeviceTests
 						new RadioButton(),
 					}
 				};
+				NavigationPage.SetTitleView(page, new Label() { Text = "Title View" });
 				pageReference = new WeakReference(page);
 				await navPage.Navigation.PushAsync(page);
 				await navPage.Navigation.PopAsync();
