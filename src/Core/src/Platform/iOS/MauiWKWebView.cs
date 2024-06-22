@@ -214,5 +214,21 @@ namespace Microsoft.Maui.Platform
 			add => _movedToWindow += value;
 			remove => _movedToWindow -= value;
 		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToSuperview;
+		event EventHandler IUIViewLifeCycleEvents.MovedToSuperview
+		{
+			add => _movedToSuperview += value;
+			remove => _movedToSuperview -= value;
+		}
+
+		//todo remove if this PR makes sense
+		#pragma warning disable RS0016
+		public override void MovedToSuperview()
+		{
+			base.MovedToSuperview();
+			_movedToSuperview?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

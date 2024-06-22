@@ -632,19 +632,19 @@ namespace Microsoft.Maui.Platform
 				observers.Clear();
 			});
 
-			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
+			// Ideally we could wire into UIView.MovedToSuperview but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.
 
 			if (uiView is IUIViewLifeCycleEvents lifeCycleEvents)
 			{
-				lifeCycleEvents.MovedToWindow += OnLifeCycleEventsMovedToWindow;
+				lifeCycleEvents.MovedToSuperview += OnLifeCycleEventsMovedToSuperview;
 
 				observers.Add(new ActionDisposable(() =>
 				{
-					lifeCycleEvents.MovedToWindow -= OnLifeCycleEventsMovedToWindow;
+					lifeCycleEvents.MovedToSuperview -= OnLifeCycleEventsMovedToSuperview;
 				}));
 
-				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
+				void OnLifeCycleEventsMovedToSuperview(object? sender, EventArgs e)
 				{
 					OnLoadedCheck(null);
 				}
@@ -712,19 +712,19 @@ namespace Microsoft.Maui.Platform
 				observers.Clear();
 			});
 
-			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
+			// Ideally we could wire into UIView.MovedToSuperview but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
 
 			if (uiView is IUIViewLifeCycleEvents lifeCycleEvents)
 			{
-				lifeCycleEvents.MovedToWindow += OnLifeCycleEventsMovedToWindow;
+				lifeCycleEvents.MovedToSuperview += OnLifeCycleEventsMovedToSuperview;
 
 				observers.Add(new ActionDisposable(() =>
 				{
-					lifeCycleEvents.MovedToWindow -= OnLifeCycleEventsMovedToWindow;
+					lifeCycleEvents.MovedToSuperview -= OnLifeCycleEventsMovedToSuperview;
 				}));
 
-				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
+				void OnLifeCycleEventsMovedToSuperview(object? sender, EventArgs e)
 				{
 					UnLoadedCheck();
 				}
