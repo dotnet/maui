@@ -148,19 +148,19 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				NavAnimationInProgress = true;
 				dialogFragment!.AnimationEnded += OnAnimationEnded;
-
-				void OnAnimationEnded(object? sender, EventArgs e)
-				{
-					dialogFragment!.AnimationEnded -= OnAnimationEnded;
-					NavAnimationInProgress = false;
-					animationCompletionSource.SetResult(true);
-				}
 				
 				await animationCompletionSource.Task;
 			}
 			else
 			{
 				NavAnimationInProgress = false;
+			}
+
+			void OnAnimationEnded(object? sender, EventArgs e)
+			{
+				dialogFragment!.AnimationEnded -= OnAnimationEnded;
+				NavAnimationInProgress = false;
+				animationCompletionSource.SetResult(true);
 			}
 		}
 
@@ -268,12 +268,12 @@ namespace Microsoft.Maui.Controls.Platform
                     View.StartAnimation(animation);
 
 					animation!.AnimationEnd += OnAnimationEnded;
+				}
 
-					void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
-					{
-						animation!.AnimationEnd -= OnAnimationEnded;
-						AnimationEnded?.Invoke(this, EventArgs.Empty);
-					}
+				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+				{
+					animation!.AnimationEnd -= OnAnimationEnded;
+					AnimationEnded?.Invoke(this, EventArgs.Empty);
 				}
 			}
 
