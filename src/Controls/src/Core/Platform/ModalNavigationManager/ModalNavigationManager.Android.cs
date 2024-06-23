@@ -272,7 +272,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 				{
-					animation!.AnimationEnd -= OnAnimationEnded;
+					if (sender is not AAnimation animation)
+						return;
+					
+					animation.AnimationEnd -= OnAnimationEnded;
 					AnimationEnded?.Invoke(this, EventArgs.Empty);
 				}
 			}
