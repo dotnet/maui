@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls.Platform
 					throw new InvalidOperationException("Current Root View cannot be null");
 		}
 
-		Task PushModalPlatformAsync(Page modal, bool animated)
+		async Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			var viewToHide = GetCurrentRootView();
 
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_platformModalPages.Add(modal);
 
-			PresentModal(modal, animated);
+			await PresentModal(modal, animated);
 
 			// The state of things might have changed after the modal view was pushed
 			if (IsModalReady)
@@ -126,12 +126,12 @@ namespace Microsoft.Maui.Controls.Platform
 				GetCurrentRootView()
 					.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
 			}
-
-			return Task.CompletedTask;
 		}
 
-		void PresentModal(Page modal, bool animated)
+		async Task PresentModal(Page modal, bool animated)
 		{
+			TaskCompletionSource<bool> animationCompletionSource = new();
+
 			var parentView = GetModalParentView();
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
@@ -141,11 +141,27 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
-
+			modals.Add(modal, dialogFragment);
 			dialogFragment.Show(fragmentManager, null);
 
-			modals.Add(modal, dialogFragment);
-			NavAnimationInProgress = false;
+			if (animated)
+			{
+				NavAnimationInProgress = true;
+				dialogFragment!.AnimationEnded += OnAnimationEnded;
+
+				void OnAnimationEnded(object? sender, EventArgs e)
+				{
+					dialogFragment!.AnimationEnded -= OnAnimationEnded;
+					NavAnimationInProgress = false;
+					animationCompletionSource.SetResult(true);
+				}
+				
+				await animationCompletionSource.Task;
+			}
+			else
+			{
+				NavAnimationInProgress = false;
+			}
 		}
 
 		internal static void RestoreFocusability(AView platformView)
@@ -178,6 +194,8 @@ namespace Microsoft.Maui.Controls.Platform
 			static DialogBackButoonListener _backButtonListener = default!;
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
+			
+			public event EventHandler? AnimationEnded;
 
 			public NavigationRootManager? NavigationRootManager
 			{
@@ -244,21 +262,18 @@ namespace Microsoft.Maui.Controls.Platform
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
 
-
 				if (IsAnimated)
 				{
 					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim);
-					View.StartAnimation(animation);
+                    View.StartAnimation(animation);
 
-					// Remove this before merge, it's here in case the team preffer to use the animation in code
-					//var slideUp = new TranslateAnimation(0, 0, 1000, 0)
-					//{
-					//	Duration = 500,
-					//	FillAfter = true
-					//};
+					animation!.AnimationEnd += OnAnimationEnded;
 
-					//// Start the animation
-					//View.StartAnimation(slideUp);
+					void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+					{
+						animation!.AnimationEnd -= OnAnimationEnded;
+						AnimationEnded?.Invoke(this, EventArgs.Empty);
+					}
 				}
 			}
 
