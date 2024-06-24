@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        function SendRawMessageToCSharp() {
+
+            var message = "Message from JS!";
+
+            if (window.chrome && window.chrome.webview) {
+                // Windows WebView2
+                window.chrome.webview.postMessage(message);
+            }
+            else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
+                // iOS and MacCatalyst WKWebView
+                window.webkit.messageHandlers.webwindowinterop.postMessage(message);
+            }
+            else {
+                // Android WebView
+                hybridWebViewHost.sendMessage(message);
+            }
+
+        }
+
+        function ReceiveRawMessageFromCSharp(message) {
+            var messageFromCSharp = document.getElementById("messageFromCSharp");
+            messageFromCSharp.value += '\r\n' + message;
+        }
+
+        if (window.chrome && window.chrome.webview) {
+            // Windows WebView2
+            window.chrome.webview.addEventListener('message', arg => {
+                ReceiveRawMessageFromCSharp(arg.data);
+                setTimeout(() => {
+                    document.getElementById("browsertype").innerText = "WebView2";
+                }, 0);
+            });
+        }
+        else if (window.navigator && window.navigator.product === "Gecko") {
+            // iOS and MacCatalyst WKWebView
+            window.external = {
+                "receiveMessage": message => {
+                    ReceiveRawMessageFromCSharp(message);
+                }
+            };
+            setTimeout(() => {
+                document.getElementById("browsertype").innerText = "iOS/MacCat WKWebView";
+            }, 0);
+        }
+        else {
+            // Android WebView
+            window.addEventListener('message', arg => {
+                ReceiveRawMessageFromCSharp(arg.data);
+            });
+            setTimeout(() => {
+                document.getElementById("browsertype").innerText = "Android WebView";
+            }, 0);
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        Hybrid sample! <span id="browsertype">not set</span>
+    </div>
+    <div>
+        <button onclick="SendRawMessageToCSharp()">Send message to C#</button>
+    </div>
+    <div>
+        Message from C#: <textarea readonly id="messageFromCSharp" style="width: 80%; height: 10em;"></textarea>
+    </div>
+</body>
+</html>

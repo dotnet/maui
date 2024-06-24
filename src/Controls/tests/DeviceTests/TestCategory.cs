@@ -21,6 +21,7 @@
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Frame = "Frame";
 		public const string Gesture = "Gesture";
+		public const string HybridWebView = "HybridWebView";
 		public const string Image = "Image";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
