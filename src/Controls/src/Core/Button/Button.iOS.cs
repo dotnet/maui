@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
-			var borderWidth = button.BorderWidth == -1 ? 0 : button.BorderWidth;
+			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
 
 			var image = platformButton.CurrentImage;
 
@@ -68,10 +68,19 @@ namespace Microsoft.Maui.Controls
 				// even when the image is on top or bottom.
 				titleWidthConstraint -= image.Size.Width;
 
+				// When the image is on top or bottom and the HorizontalOptions is not fill,
+				// the title will only be as large as the borderwidth if there is no explicit width request.
+				// This shouldn't be an issue with Configuration APIs later down the line.
+				if ((layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
+					&& button.WidthRequest == -1 && button.HorizontalOptions != LayoutOptions.Fill)
+				{
+					titleWidthConstraint = borderWidth * 2;
+				}
+
 				// TODO: Do not use the title label as it is not yet updated and
 				//       if we move the image, then we technically have more
 				//       space and will require a new layout pass.
-				var titleRect = platformButton.GetTitleBoundingRect(Math.Max(titleWidthConstraint, 0.1f), Math.Max(titleHeightConstraint, 0.1f));
+				var titleRect = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
 				var imageWidth = image.Size.Width;
@@ -183,6 +192,33 @@ namespace Microsoft.Maui.Controls
 
 			return new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
 							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
+		}
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override Size ArrangeOverride(Rect bounds)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			Console.WriteLine($"ArrangeOverride Bounds: {bounds}");
+			var platformButton = Handler?.PlatformView as UIButton;
+
+			// Edge case: if the imageView and the image are different sizes, there may be unwanted clipping
+			// so let's relayout the button with these bounds.
+			if (platformButton.ImageView is UIImageView imageView
+				&& platformButton.CurrentImage is UIImage image
+				&& imageView.Bounds.Width > 0
+				&& imageView.Bounds.Height > 0
+				&& (AreSignificantlyDifferent(imageView.Bounds.Width, image.Size.Width) || AreSignificantlyDifferent(imageView.Bounds.Height, image.Size.Height)))
+				{
+					MeasureOverride(bounds.Width, bounds.Height);
+				}
+
+			return base.ArrangeOverride(bounds);
+		}
+
+		static bool AreSignificantlyDifferent(double value1, double value2)
+		{
+				return Math.Abs(value1 - value2) > 0.1;
 		}
 
 		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
