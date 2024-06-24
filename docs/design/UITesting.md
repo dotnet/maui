@@ -14,7 +14,7 @@ Appium relies on different implementations called `drivers` for each platform th
 
 ### The sample project
 
-The project that is used for UI Tests is located here: `src\Controls\tests\TestCases\Controls.TestCases.App.csproj`
+The project that is used for UI Tests is located here: `src\Controls\tests\TestCases\Controls.TestCases.HostApp.csproj`
 
 There are two types of tests you can add, Issue and Gallery.
 
