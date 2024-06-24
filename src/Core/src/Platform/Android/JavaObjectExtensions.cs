@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Android.Runtime;
 
 namespace Microsoft.Maui
 {
@@ -32,19 +31,6 @@ namespace Microsoft.Maui
 				return false;
 
 			return !obj.IsDisposed();
-		}
-
-		public static TResult? TryJavaCast<[DynamicallyAccessedMembers (Constructors)] TResult>(this IJavaObject? instance)
-			where TResult : class, IJavaObject
-		{
-			try
-			{
-				return instance.JavaCast<TResult>();
-			}
-			catch
-			{
-				return null;
-			}
 		}
 	}
 }
