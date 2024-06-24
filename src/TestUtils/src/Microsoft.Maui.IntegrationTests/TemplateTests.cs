@@ -117,7 +117,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("Release", "simplemulti")]
 		[TestCase("Debug", "MultiProject@Symbol & More")]
 		[TestCase("Release", "MultiProject@Symbol & More")]
-		public void BuildMultiProject(string config)
+		public void BuildMultiProject(string config, string projectName)
 		{
 			var projectDir = Path.Combine(TestDirectory, projectName);
 			var name = Path.GetFileName(projectDir);
