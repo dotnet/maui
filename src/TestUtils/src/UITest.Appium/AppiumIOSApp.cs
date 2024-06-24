@@ -15,6 +15,7 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumIOSTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSAlertActions(this));
 		}
 
 		public override ApplicationState AppState
