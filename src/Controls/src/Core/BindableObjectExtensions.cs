@@ -139,6 +139,11 @@ namespace Microsoft.Maui.Controls
 			object? fallbackValue = null,
 			object? targetNullValue = null)
 		{
+			if (!RuntimeFeature.AreBindingInterceptorsSupported)
+			{
+				throw new InvalidOperationException($"Call to SetBinding<{typeof(TSource)}, {typeof(TProperty)}> could not be intercepted because the feature has been disabled. Consider removing the DisableMauiAnalyzers property from your project file or set the _MauiBindingInterceptorsSupport property to true instead.");
+			}
+
 			throw new InvalidOperationException($"Call to SetBinding<{typeof(TSource)}, {typeof(TProperty)}> was not intercepted.");
 		}
 #nullable disable

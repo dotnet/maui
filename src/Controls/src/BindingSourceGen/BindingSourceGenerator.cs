@@ -68,7 +68,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<SetBindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
 
-		var overloadDiagnostics = VerifyCorrectOverload(invocation, context, t);
+		var overloadDiagnostics = new EquatableArray<DiagnosticInfo>(VerifyCorrectOverload(invocation, context, t));
 		if (overloadDiagnostics.Length > 0)
 		{
 			return Result<SetBindingInvocationDescription>.Failure(overloadDiagnostics);
@@ -121,31 +121,26 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		return (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
 	}
 
-	private static EquatableArray<DiagnosticInfo> VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
-
 		if (argumentList.Count < 2)
 		{
 			throw new ArgumentOutOfRangeException(nameof(invocation));
 		}
 
 		var secondArgument = argumentList[1].Expression;
-
-		if (secondArgument is IdentifierNameSyntax)
+		if (secondArgument is LambdaExpressionSyntax)
 		{
-			var type = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
-			if (type != null && type.Name == "Func")
-			{
-				return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())]);
-			}
-			else // String and Binding
-			{
-				return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())]);
-			}
+			return [];
 		}
 
-		return [];
+		var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
+		return secondArgumentType switch
+		{
+			{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
+			_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
+		};
 	}
 
 	private static Result<LambdaExpressionSyntax> ExtractLambda(InvocationExpressionSyntax invocation)

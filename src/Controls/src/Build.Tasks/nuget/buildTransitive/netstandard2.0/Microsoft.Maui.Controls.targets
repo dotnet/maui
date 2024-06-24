@@ -21,6 +21,15 @@
 		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.SourceGen.dll" IsImplicitlyDefined="true" />
 	</ItemGroup>
 
+	<!-- Enable BindingSourceGen -->
+	<PropertyGroup>
+		<_MauiBindingInterceptorsSupport Condition=" '$(_MauiBindingInterceptorsSupport)' == '' and '$(DisableMauiAnalyzers)' != 'true' ">true</_MauiBindingInterceptorsSupport>
+		<InterceptorsPreviewNamespaces Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+	</PropertyGroup>
+	<ItemGroup Condition=" '$(_MauiBindingInterceptorsSupport)' == 'true' ">
+		<Analyzer Include="$(MSBuildThisFileDirectory)Microsoft.Maui.Controls.BindingSourceGen.dll" IsImplicitlyDefined="true" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(AndroidEnableProfiledAot)' == 'true' and '$(MauiUseDefaultAotProfile)' != 'false'">
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui.aotprofile" />
 		<AndroidAotProfile Include="$(MSBuildThisFileDirectory)maui-blazor.aotprofile" />
@@ -241,6 +250,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported"
                                       Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
                                       Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
+                                      Condition="'$(_MauiBindingInterceptorsSupport)' != ''"
+                                      Value="$(_MauiBindingInterceptorsSupport)"
                                       Trim="true" />
     </ItemGroup>
   </Target>
