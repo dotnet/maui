@@ -342,7 +342,6 @@ public static class BindingCodeWriter
 			{
 				var previousExpression = nextExpression;
 				nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
-				var isNullableReferenceType = part is MemberAccess memberAccess && !memberAccess.IsValueType;
 				forceConditonalAccessToNextPart = part is Cast;
 
 				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
