@@ -1,4 +1,4 @@
-﻿#if !IOS
+﻿#if !IOS && !MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnIOS("VerifyScreenshot method not implemented on macOS")]
 		public void Issue15330Test()
 		{
 			// Currently fails on iOS; see https://github.com/dotnet/maui/issues/17125
