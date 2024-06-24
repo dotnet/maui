@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 							var tappedLocation = recognizer.LocationInView(control);
 							if (tappedLocation != default)
 							{
-								var val = (tappedLocation.X - control.Frame.X) * control.MaxValue / control.Frame.Size.Width;
+								var val = tappedLocation.X * control.MaxValue / control.Frame.Size.Width;
 								VirtualView.Value = val;
 							}
 						}
