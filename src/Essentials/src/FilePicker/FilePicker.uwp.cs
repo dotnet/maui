@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
@@ -42,11 +43,50 @@ namespace Microsoft.Maui.Storage
 
 			if (AppInfoUtils.IsPackagedApp)
 			{
-				foreach (var file in resultList)
-					StorageApplicationPermissions.FutureAccessList.Add(file);
+				AddToAndCleanUpFutureAccessList(resultList);
 			}
 
 			return resultList.Select(storageFile => new FileResult(storageFile));
+		}
+
+		void AddToAndCleanUpFutureAccessList(List<StorageFile> pickedFiles)
+		{
+			var fal = StorageApplicationPermissions.FutureAccessList;
+
+			try
+			{
+				// Check if (FutureAccessList current items + new picked files) is exceeding maximum items
+				if ((fal.Entries.Count + pickedFiles.Count) >= fal.MaximumItemsAllowed)
+				{
+					// We assume that the FutureAccessList items are saved in order, there is no metadata
+					// Therefore we start removing from the bottom of the list
+					var removeCount = Math.Min(fal.Entries.Count, pickedFiles.Count);
+					var falTokens = fal.Entries.TakeLast(removeCount).ToList();
+
+					foreach (AccessListEntry entry in falTokens)
+					{
+						fal.Remove(entry.Token);
+					}
+				}
+
+				// Check if the picked file count doesn't exceed the maximum, else take the last n number or picked files
+				var pickedFilesLimitedToMax = pickedFiles;
+				if (pickedFiles.Count > StorageApplicationPermissions.FutureAccessList.MaximumItemsAllowed)
+				{
+					pickedFilesLimitedToMax =
+						pickedFilesLimitedToMax.TakeLast((int)fal.MaximumItemsAllowed).ToList();
+				}
+
+				foreach (var file in pickedFilesLimitedToMax)
+				{
+					StorageApplicationPermissions.FutureAccessList.Add(file);
+				}
+			}
+			catch(Exception ex)
+			{
+				// Just log, we don't want to break on this
+				Debug.WriteLine($"Error adding to/cleaning up FutureAccessList: {ex.Message}");
+			}
 		}
 
 		static void SetFileTypes(PickOptions options, FileOpenPicker picker)
