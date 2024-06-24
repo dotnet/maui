@@ -63,7 +63,7 @@ namespace Microsoft.Maui
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (view is IBorder border && border.Border != null)
 				return true;
-#pragma warning retore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 #elif WINDOWS
 			if (view is IBorderView border)
 				return border?.Shape != null || border?.Stroke != null;
