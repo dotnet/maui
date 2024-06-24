@@ -187,6 +187,10 @@ namespace Microsoft.Maui.Handlers
 				Tag = ContentPanelTag
 			};
 
+			// The content view should be invisible to the user since we are "secretly"
+			// using it to host the ScrollView's content instead of the ScrollView itself.
+			((IInputTransparentManagingView)contentContainer).InputTransparent = true;
+
 			// This is where we normally would inject the cross-platform ScrollView's layout logic; instead, we're injecting the
 			// methods from this handler so it can make some adjustments for things like Padding before the default logic is invoked
 			contentContainer.CrossPlatformLayout = crossPlatformLayout;
