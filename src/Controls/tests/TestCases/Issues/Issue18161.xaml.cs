@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -13,6 +14,13 @@ namespace Maui.Controls.Sample.Issues
 		public Issue18161()
 		{
 			InitializeComponent();
+			this.Loaded += Issue18161_Loaded;
+		}
+
+		async void Issue18161_Loaded(object sender, EventArgs e)
+		{
+			// https://github.com/dotnet/maui/issues/13496
+			await Task.Yield();
 			this.IsPresented = true;
 		}
 
