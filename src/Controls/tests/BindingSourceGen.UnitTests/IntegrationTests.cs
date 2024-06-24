@@ -14,7 +14,9 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
-        var id = Math.Abs(result.Binding!.Location.GetHashCode());
+        Assert.NotNull(result.Binding);
+
+        var id = Math.Abs(result.Binding.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(

@@ -84,7 +84,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var overloadDiagnostics = new EquatableArray<DiagnosticInfo>(VerifyCorrectOverload(invocation, interceptedMethodType, context, t));
 		if (overloadDiagnostics.Length > 0)
 		{
-			return Result<BindingInvocationDescription>.Failure(overloadDiagnostics);
+			return Result<BindingInvocationDescription>.Failure(new EquatableArray<DiagnosticInfo>(overloadDiagnostics));
 		}
 
 		var lambdaResult = ExtractLambda(invocation, interceptedMethodType);
@@ -150,7 +150,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
 		if (symbol?.ContainingType?.Name != "BindingFactory" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
 		{
-			return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())]);
+			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
 		}
 
 		if (argumentList.Count == 0)
@@ -177,24 +177,48 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 	private static DiagnosticInfo[] VerifyCorrectOverloadSetBinding(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
 	{
-		var argumentList = invocation.ArgumentList.Arguments;
-		if (argumentList.Count < 2)
+		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
+		if (symbol is not null)
 		{
-			throw new ArgumentOutOfRangeException(nameof(invocation));
+			if (symbol is not IMethodSymbol methodSymbol
+				|| methodSymbol.Kind != SymbolKind.Method
+				|| methodSymbol.Name != "SetBinding"
+				|| !methodSymbol.IsGenericMethod
+				|| methodSymbol.TypeParameters.Length != 2
+				|| methodSymbol.Parameters.Length != 9
+				|| methodSymbol.ContainingType?.Name != "BindableObjectExtensions"
+				|| methodSymbol.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+			{
+				// ignore this method invocation
+				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
+			}
+		}
+		else
+		{
+			// It is not possible to resolve the method symbol when the bindable object (the first argument or the object that the extension method
+			// is called on) is referenced by a field that will be generated via XamlG based on the x:Name attributes. In that case, this source generator
+			// cannot see the outputs of the other source generator and we have incomplete information about the method invocation and we can only work with
+			// the syntax tree and not the semantic model.
+
+			var argumentsList = invocation.ArgumentList.Arguments;
+			if (argumentsList.Count < 2)
+			{
+				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
+			}
+
+			var secondArgument = argumentsList[1].Expression;
+			if (secondArgument is not LambdaExpressionSyntax)
+			{
+				var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
+				return secondArgumentType switch
+				{
+					{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
+					_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
+				};
+			}
 		}
 
-		var secondArgument = argumentList[1].Expression;
-		if (secondArgument is LambdaExpressionSyntax)
-		{
-			return [];
-		}
-
-		var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
-		return secondArgumentType switch
-		{
-			{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
-			_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
-		};
+		return [];
 	}
 
 	private static Result<LambdaExpressionSyntax> ExtractLambda(InvocationExpressionSyntax invocation, InterceptedMethodType methodType)
