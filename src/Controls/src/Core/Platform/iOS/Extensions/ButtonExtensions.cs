@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		internal static CGRect GetTitleBoundingRect(this UIButton platformButton, double widthConstraint, double heightConstraint)
 		{
-			if (platformButton.CurrentAttributedTitle != null ||
-					   platformButton.CurrentTitle != null)
+			if ((platformButton.CurrentAttributedTitle != null || platformButton.CurrentTitle != null)
+				&& widthConstraint > 0 && heightConstraint > 0)
 			{
 				var title =
 					   platformButton.CurrentAttributedTitle ??
