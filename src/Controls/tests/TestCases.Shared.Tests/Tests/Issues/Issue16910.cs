@@ -25,7 +25,7 @@ public class Issue16910 : _IssuesUITest
 	}
 
 // Windows only works with touch inputs which we don't have running on the test server
-#if !WINDOWS
+#if !WINDOWS && !MACCATALYST
     [Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
