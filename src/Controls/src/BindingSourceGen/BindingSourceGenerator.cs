@@ -147,13 +147,18 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	private static DiagnosticInfo[] VerifyCorrectOverloadBindingFactoryCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
 		var argumentList = invocation.ArgumentList.Arguments;
 
-		if (argumentList.Count < 1)
+		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
+		if (symbol?.ContainingType?.Name != "BindingFactory" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+		{
+			return new EquatableArray<DiagnosticInfo>([DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())]);
+		}
+
+		if (argumentList.Count == 0)
 		{
 			throw new ArgumentOutOfRangeException(nameof(invocation));
 		}
 
 		var firstArgument = argumentList[0].Expression;
-
 		if (firstArgument is IdentifierNameSyntax)
 		{
 			var type = context.SemanticModel.GetTypeInfo(firstArgument, cancellationToken: t).Type;

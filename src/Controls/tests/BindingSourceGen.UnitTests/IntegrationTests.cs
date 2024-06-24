@@ -88,7 +88,6 @@ public class IntegrationTests
     {
         var source = """
         using Microsoft.Maui.Controls;
-        var label = new Label();
         var bindingBase = BindingFactory.Create(static (string s) => s.Length);
         """;
 
@@ -119,7 +118,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 34)]
+                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 2, 34)]
                     public static TypedBinding<string, int> Create{{id}}(
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
@@ -157,7 +156,61 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-34.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-2-34.g.cs"]);
+    }
+
+    [Fact]
+    public void IgnoresOtherOtherCreateMethod()
+    {
+        var source = """
+        using System;
+        using Microsoft.Maui.Controls.Internals;
+        using MyNamespace;
+        var bindingBase = MyBindingFactory.Create(static (string s) => s.Length);
+
+        namespace MyNamespace
+        {
+        	public static class MyBindingFactory
+        	{
+        		public static TypedBinding<string, int> Create(Func<string, int> getter)
+        		{
+        			throw new NotImplementedException();
+        		}
+        	}
+        }
+        """;
+
+        var result = SourceGenHelpers.Run(source);
+
+        AssertExtensions.AssertNoDiagnostics(result);
+		Assert.Null(result.Binding);
+    }
+
+    [Fact]
+    public void IgnoresOtherBindingFactoryCreateMethod()
+    {
+        var source = """
+        using System;
+        using Microsoft.Maui.Controls.Internals;
+        using MyNamespace;
+        var bindingBase = BindingFactory.Create(static (string s) => s.Length);
+  
+        namespace MyNamespace
+        {
+        	public static class BindingFactory
+        	{
+        		public static TypedBinding<string, int> Create(Func<string, int> getter)
+        		{
+        			throw new NotImplementedException();
+        		}
+        	}
+        }
+        """;
+
+        var result = SourceGenHelpers.Run(source);
+
+        AssertExtensions.AssertNoDiagnostics(result);
+		Assert.Null(result.Binding);
     }
 
     [Fact]
