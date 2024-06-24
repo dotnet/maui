@@ -170,8 +170,7 @@ public static class BindingCodeWriter
 			}
 			else
 			{
-				// TODO is this too strict? I believe today when the Binding can't write to the property, it just silently ignores the value
-				AppendLine("throw new InvalidOperationException(\"Cannot set value on the source object.\");"); // TODO improve exception wording
+				AppendLine("throw new InvalidOperationException(\"Cannot set value on the source object.\");");
 			}
 
 			Unindent();
