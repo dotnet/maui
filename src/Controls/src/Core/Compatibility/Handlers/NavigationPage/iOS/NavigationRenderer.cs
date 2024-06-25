@@ -48,8 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
-		WeakReference<VisualElement> _element;
-		WeakReference<Page> _current;
+		VisualElement _element;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
@@ -61,18 +60,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Delegate = new MauiNavigationDelegate(this);
 		}
 
-		Page Current
-		{
-			get => _current?.GetTargetOrDefault();
-			set => _current = value is null ? null : new(value);
-		}
+		Page Current { get; set; }
 
 		IPageController PageController => Element as IPageController;
 
 		NavigationPage NavPage => Element as NavigationPage;
 		INavigationPageController NavPageController => NavPage;
 
-		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault(); }
+		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -90,7 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			(this as IElementHandler).SetVirtualView(element);
-			_element = element is null ? null : new(element);
+			_element = element;
 		}
 
 		public UIViewController ViewController
@@ -176,8 +171,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-
-			if (Current is not Page current)
+			if (Current == null)
 				return;
 
 			UpdateToolBarVisible();
@@ -186,7 +180,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var toolbar = _secondaryToolbar;
 
 			//save the state of the Current page we are calculating, this will fire before Current is updated
-			_hasNavigationBar = NavigationPage.GetHasNavigationBar(current);
+			_hasNavigationBar = NavigationPage.GetHasNavigationBar(Current);
 
 			// Use 0 if the NavBar is hidden or will be hidden
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
@@ -481,8 +475,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 			{
-				var current = Current = NavPage?.CurrentPage;
-				ValidateNavbarExists(current);
+				Current = NavPage?.CurrentPage;
+				ValidateNavbarExists(Current);
 			}
 			else if (e.PropertyName == IsNavigationBarTranslucentProperty.PropertyName)
 			{
@@ -812,7 +806,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			// set Tint color (i. e. Back Button arrow and Text)
-			var iconColor = Current is Page current ? NavigationPage.GetIconColor(current) : null;
+			var iconColor = Current != null ? NavigationPage.GetIconColor(Current) : null;
 			if (iconColor == null)
 				iconColor = barTextColor;
 
@@ -866,8 +860,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (currentHidden != _secondaryToolbar.Hidden)
 			{
-				if (Current is Page current && current.Handler is not null)
-					current.ToPlatform().InvalidateMeasure(current);
+				if (Current?.Handler != null)
+					Current.ToPlatform().InvalidateMeasure(Current);
 
 				if (VisibleViewController is ParentingViewController pvc)
 					pvc.UpdateFrames();
@@ -1722,7 +1716,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetVirtualView(Maui.IElement view)
 		{
 			_viewHandlerWrapper.SetVirtualView(view, ElementChanged, false);
-			_element = view is VisualElement v ? new(v) : null;
+			_element = view as VisualElement;
 
 			void ElementChanged(ElementChangedEventArgs<NavigationPage> e)
 			{

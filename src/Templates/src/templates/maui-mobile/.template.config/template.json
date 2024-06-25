@@ -106,12 +106,6 @@
           ]
         }
       },
-      "XmlEncodedAppNameParam": {
-        "type": "derived",
-        "valueSource": "name",
-        "valueTransform": "encode",
-        "replaces": "XmlEncodedAppName"
-      },
       "defaultAppId":{
         "type": "generated",
         "generator": "join",
@@ -136,11 +130,6 @@
           "fallbackVariableName": "defaultAppId"
         },
         "replaces": "com.companyname.mauiapp"
-      }
-    },
-    "forms": {
-      "encode": {
-        "identifier": "xmlEncode"
       }
     },
     "defaultName": "MauiApp1"

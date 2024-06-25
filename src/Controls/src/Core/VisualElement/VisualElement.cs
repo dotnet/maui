@@ -2146,19 +2146,19 @@ namespace Microsoft.Maui.Controls
 		{
 			add
 			{
-				bool loadedAlreadyFired = _isLoadedFired;
-
+				bool watchingLoaded = _watchingPlatformLoaded;
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
 
-				// The first time UpdatePlatformUnloadedLoadedWiring is called it will handle
-				// invoking _loaded
-				// This is only to make sure that new subscribers get invoked when the element is already loaded
-				// and a previous subscriber has already invoked the UpdatePlatformUnloadedLoadedWiring path
-				if (loadedAlreadyFired && _isLoadedFired)
-				{
+				// The point of this code, is to fire loaded if the element is already loaded.
+				//
+				// If this is the first time the user is subscribing to Loaded,
+				// UpdatePlatformUnloadedLoadedWiring will take care of firing Loaded.
+				// If we are already wired up to watch loaded, then we'll fire it off if we know this
+				// view is in a state where it's been determined that it's accurate to fire
+				// _isLoadedFired.
+				if (_isLoadedFired && watchingLoaded)
 					value?.Invoke(this, EventArgs.Empty);
-				}
 
 			}
 			remove
@@ -2212,9 +2212,7 @@ namespace Microsoft.Maui.Controls
 			// unloaded is still correctly being watched for.
 
 			if (updateWiring)
-			{
 				UpdatePlatformUnloadedLoadedWiring(Window);
-			}
 		}
 
 		void SendUnloaded() => SendUnloaded(true);

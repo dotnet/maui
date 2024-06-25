@@ -10,7 +10,7 @@ using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiRefreshView : MauiView
+	public class MauiRefreshView : UIView, IUIViewLifeCycleEvents
 	{
 		bool _isRefreshing;
 		nfloat _originalY;
@@ -54,14 +54,12 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
 		{
-			if (_refreshControlParent is not null)
-			{
+			if (_refreshControlParent != null)
 				TryRemoveRefresh(_refreshControlParent);
-			}
 
 			_contentView?.RemoveFromSuperview();
 
-			if (content is not null && mauiContext is not null)
+			if (content != null && mauiContext != null)
 			{
 				_contentView = content.ToPlatform(mauiContext);
 				AddSubview(_contentView);
@@ -168,6 +166,17 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
+		public override CGRect Bounds
+		{
+			get => base.Bounds;
+			set
+			{
+				base.Bounds = value;
+				if (_contentView != null)
+					_contentView.Frame = value;
+			}
+		}
+
 		public void UpdateIsEnabled(bool isRefreshViewEnabled)
 		{
 			_refreshControl.Enabled = isRefreshViewEnabled;
@@ -189,5 +198,19 @@ namespace Microsoft.Maui.Platform
 		bool CanUseRefreshControlProperty() =>
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
 #pragma warning restore CA1416
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

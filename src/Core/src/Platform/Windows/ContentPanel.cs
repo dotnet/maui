@@ -24,25 +24,8 @@ namespace Microsoft.Maui.Platform
 			get => _content;
 			set
 			{
-				var children = Children;
-
-				// Remove the previous content if it exists
-				if (_content is not null && children.Contains(_content) && value != _content)
-				{
-					children.Remove(_content);
-				}
-
 				_content = value;
-
-				if (_content is null)
-				{
-					return;
-				}
-
-				if (!children.Contains(_content))
-				{
-					children.Add(_content);
-				}
+				AddContent(_content);
 			}
 		}
 
@@ -157,6 +140,21 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdateClip(strokeShape, width, height);
+		}
+
+		void AddContent(FrameworkElement? content)
+		{
+			if (content is null)
+			{
+				return;
+			}
+
+			var children = Children;
+
+			if (!children.Contains(_content))
+			{
+				children.Add(_content);
+			}
 		}
 
 		void UpdateClip(IShape? borderShape, double width, double height)

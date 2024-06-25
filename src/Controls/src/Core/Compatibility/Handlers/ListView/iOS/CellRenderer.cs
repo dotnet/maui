@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
-		WeakReference<UITableView>? _tableView;
+		UITableView? _tableView;
 
 		private protected event PropertyChangedEventHandler? CellPropertyChanged;
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			_tableView = new(tv);
+			_tableView = tv;
 			Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
@@ -173,17 +173,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (command == "ForceUpdateSizeRequested" && 
 				VirtualView is BindableObject bindableObject &&
-				GetRealCell(bindableObject) is UITableViewCell ctv &&
-				_tableView is not null &&
-				_tableView.TryGetTarget(out var tableView))
+				GetRealCell(bindableObject) is UITableViewCell ctv)
 			{
-				var index = tableView.IndexPathForCell(ctv);
+				var index = _tableView?.IndexPathForCell(ctv);
 				if (index == null && VirtualView is Cell c)
 				{
 					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
 				}
 				if (index != null)
-					tableView.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+					_tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
 			}
 		}
 	}

@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnResume()
 		{
-			if (_currentView == null || !NavigationManager.HasNavHost)
+			if (_currentView == null || NavigationManager.NavHost == null)
 				return;
 
 			if (_currentView.Parent == null)

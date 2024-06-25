@@ -608,11 +608,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view == null)
 				return;
 
-			if (!view.IsEnabled)
-			{
-				return;
-			}
-
 			var tapPosition = e.GetPositionRelativeToPlatformElement(Control);
 
 			if (tapPosition == null)
