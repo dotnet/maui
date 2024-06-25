@@ -497,6 +497,12 @@ namespace Microsoft.Maui.Controls
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
+		
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+		}
 
 		/// <summary>
 		/// Indicates that the preferred size of a child <see cref="Element"/> has changed.
@@ -706,9 +712,6 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var item = (Element)e.OldItems[i];
-					if (item is VisualElement visual)
-						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
-
 					RemoveLogicalChild(item);
 				}
 			}
@@ -721,20 +724,21 @@ namespace Microsoft.Maui.Controls
 				{
 					int insertIndex = index;
 					if (insertIndex < 0)
-						insertIndex = InternalChildren.IndexOf(item);
-
-					if (item is VisualElement visual)
 					{
-						visual.MeasureInvalidated += OnChildMeasureInvalidated;
+						insertIndex = InternalChildren.IndexOf(item);
+					}
 
-						InsertLogicalChild(insertIndex, visual);
+					InsertLogicalChild(insertIndex, item);
+					
+					if (item is VisualElement)
+					{
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
-					else
-						InsertLogicalChild(insertIndex, item);
-
+					
 					if (index >= 0)
+					{
 						index++;
+					}
 				}
 			}
 		}
