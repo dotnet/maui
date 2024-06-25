@@ -84,6 +84,9 @@ namespace Microsoft.Maui.Storage
 							case DateTime dt:
 								editor.PutLong(key, dt.ToBinary());
 								break;
+							case DateTimeOffset dt:
+								editor.PutString(key, dt.ToString("O"));
+								break;
 						}
 					}
 					editor.Apply();
@@ -142,6 +145,13 @@ namespace Microsoft.Maui.Storage
 							case DateTime dt:
 								var encodedValue = sharedPreferences.GetLong(key, dt.ToBinary());
 								value = DateTime.FromBinary(encodedValue);
+								break;
+							case DateTimeOffset dt:
+								var savedDateTimeOffset = sharedPreferences.GetString(key, dt.ToString("O"));
+								if (DateTimeOffset.TryParse(savedDateTimeOffset, out var dateTimeOffset))
+								{
+									value = dateTimeOffset;
+								}
 								break;
 						}
 					}
