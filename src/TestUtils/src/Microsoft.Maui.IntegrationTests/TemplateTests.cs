@@ -238,11 +238,11 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", true, true)]
-		[TestCase("maui", true, false)]
-		[TestCase("maui", false, true)]
-		[TestCase("maui", false, false)]
-		public void BuildWindowsRidGraph(string id, bool useridgraph, bool unpackaged)
+		[TestCase("maui", true, "None")]
+		[TestCase("maui", true, "MSIX")]
+		[TestCase("maui", false, "None")]
+		[TestCase("maui", false, "MSIX")]
+		public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
 		{
 			if (TestEnvironment.IsMacOS)
 				Assert.Ignore("This test is designed for testing a windows build.");
@@ -258,7 +258,7 @@ namespace Microsoft.Maui.IntegrationTests
 				$"""
 				<UseMaui>true</UseMaui>
 				<UseRidGraph>{useridgraph}</UseRidGraph>
-				<WindowsPackageType>{unpackaged}</WindowsPackageType>
+				<WindowsPackageType>{packageType}</WindowsPackageType>
 				""");
 
 			var extendedBuildProps = BuildProps;
