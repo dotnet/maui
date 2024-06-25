@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Views;
 using AndroidX.Core.View;
@@ -269,8 +270,36 @@ namespace Microsoft.Maui.Controls.Platform
 			SetupGestures();
 		}
 
+		void ClearPlatformViewEventHandlers()
+		{
+			if (View == null)
+				return;
+
+			var platformView = Control;
+
+			if (platformView == null)
+				return;
+
+			if (View.GestureRecognizers.Count == 0)
+			{
+				var recognizers = View.GestureController.CompositeGestureRecognizers;
+				foreach (var recognizer in recognizers)
+				{
+					if (recognizer is not PointerGestureRecognizer)
+					{
+						platformView.Touch -= OnPlatformViewTouched;
+					}
+				}
+			}
+		     else if (View.GestureRecognizers.Any(gestureRecognizer => gestureRecognizer is not PointerGestureRecognizer))
+			{
+				platformView.Touch -= OnPlatformViewTouched;
+			}
+		}
+
 		void GestureCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
+			ClearPlatformViewEventHandlers();
 			UpdateDragAndDrop();
 			UpdatePointer();
 			SetupGestures();
