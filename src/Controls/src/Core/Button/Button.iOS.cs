@@ -190,8 +190,11 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			return new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
+			var ret = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
 							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
+
+			// try rounding the values up to the nearest whole number to match UIView.SizeThatFits
+			return new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
 		}
 
 
