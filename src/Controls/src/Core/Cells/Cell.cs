@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls
 			// don't run more than once per 16 milliseconds
 			await Task.Delay(TimeSpan.FromMilliseconds(16));
 			ForceUpdateSizeRequested?.Invoke(this, null);
-			Handler.Invoke("ForceUpdateSizeRequested", null);
+			Handler?.Invoke("ForceUpdateSizeRequested", null);
 
 			_nextCallToForceUpdateSizeQueued = false;
 		}
@@ -307,8 +307,14 @@ namespace Microsoft.Maui.Controls
 		internal Android.Views.View ConvertView { get; set; }
 #elif IOS
 		internal UIKit.UITableViewCell ReusableCell { get; set; }
-		internal UIKit.UITableView TableView { get; set; }
 
+		WeakReference<UIKit.UITableView> _tableView;
+
+		internal UIKit.UITableView TableView
+		{
+			get => _tableView?.GetTargetOrDefault();
+			set => _tableView = value is null ? null : new(value);
+		}
 #endif
 
 

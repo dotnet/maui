@@ -52,5 +52,35 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("DoubleTapResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
+		
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void SingleTap()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "SingleTapGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("SingleTapSurface");
+			App.Tap("SingleTapSurface");
+
+			var result = App.FindElement("SingleTapGestureResults").GetText();
+			ClassicAssert.AreEqual("Success", result);
+		}
+		
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void DisabledSingleTap()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "SingleTapGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("DisabledTapSurface");
+			App.Tap("DisabledTapSurface");
+
+			var result = App.FindElement("DisabledTapGestureResults").GetText();
+			ClassicAssert.AreNotEqual("Failed", result);
+		}
 	}
 }
