@@ -311,7 +311,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
-			var references = new List<WeakReference>();
+			WeakReference pageReference = null;
+			WeakReference handlerReference = null;
 
 			{
 				var navPage = new NavigationPage(new ContentPage());
@@ -319,17 +320,15 @@ namespace Microsoft.Maui.DeviceTests
 
 				await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (handler) =>
 				{
-					references.Add(new(navPage));
-					references.Add(new(navPage.Handler));
-					references.Add(new(navPage.Handler.PlatformView));
-					references.Add(new(handler));
+					pageReference = new WeakReference(navPage);
+					handlerReference = new WeakReference(handler);
 
 					// Just replace the page with a new one
 					window.Page = new ContentPage();
 				});
 			}
 
-			await AssertionExtensions.WaitForGC(references.ToArray());
+			await AssertionExtensions.WaitForGC(pageReference, handlerReference);
 		}
 
 		[Fact(DisplayName = "Child Pages Do Not Leak")]

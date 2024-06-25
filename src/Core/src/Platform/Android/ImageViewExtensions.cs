@@ -1,4 +1,8 @@
-﻿using Android.Graphics.Drawables;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
 
 namespace Microsoft.Maui.Platform
@@ -25,7 +29,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsAnimationPlaying(this Drawable? drawable, IImageSourcePart image)
 		{
-			if (drawable.IsAlive() && drawable.AsAnimatable() is IAnimatable animatable)
+			if (drawable is IAnimatable animatable)
 			{
 				if (image.IsAnimationPlaying)
 				{

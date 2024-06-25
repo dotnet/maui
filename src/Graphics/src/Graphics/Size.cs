@@ -10,62 +10,93 @@ namespace Microsoft.Maui.Graphics
 	[TypeConverter(typeof(Converters.SizeTypeConverter))]
 	public partial struct Size
 	{
+		double _width;
+		double _height;
+
 		public static readonly Size Zero;
 
 		public Size(double size = 0)
 		{
-			Width = size;
-			Height = size;
+			if (double.IsNaN(size))
+				throw new ArgumentException("NaN is not a valid value for size");
+			_width = size;
+			_height = size;
 		}
 
 		public Size(double width, double height)
 		{
-			Width = width;
-			Height = height;
+			if (double.IsNaN(width))
+				throw new ArgumentException("NaN is not a valid value for width");
+			if (double.IsNaN(height))
+				throw new ArgumentException("NaN is not a valid value for height");
+			_width = width;
+			_height = height;
 		}
 
 		public Size(Vector2 vector)
 		{
-			Width = vector.X;
-			Height = vector.Y;
+			if (float.IsNaN(vector.X))
+				throw new ArgumentException("NaN is not a valid value for X");
+			if (float.IsNaN(vector.Y))
+				throw new ArgumentException("NaN is not a valid value for Y");
+			_width = vector.X;
+			_height = vector.Y;
 		}
 
-		public bool IsZero => Width == 0 && Height == 0;
+		public bool IsZero => _width == 0 && _height == 0;
 
 		[DefaultValue(0d)]
-		public double Width { get; set; }
+		public double Width
+		{
+			get => _width;
+			set
+			{
+				if (double.IsNaN(value))
+					throw new ArgumentException("NaN is not a valid value for Width");
+				_width = value;
+			}
+		}
 
 		[DefaultValue(0d)]
-		public double Height { get; set; }
+		public double Height
+		{
+			get => _height;
+			set
+			{
+				if (double.IsNaN(value))
+					throw new ArgumentException("NaN is not a valid value for Height");
+				_height = value;
+			}
+		}
 
 		public static Size operator +(Size s1, Size s2)
 		{
-			return new Size(s1.Width + s2.Width, s1.Height + s2.Height);
+			return new Size(s1._width + s2._width, s1._height + s2._height);
 		}
 
 		public static Size operator -(Size s1, Size s2)
 		{
-			return new Size(s1.Width - s2.Width, s1.Height - s2.Height);
+			return new Size(s1._width - s2._width, s1._height - s2._height);
 		}
 
 		public static Size operator *(Size s1, double value)
 		{
-			return new Size(s1.Width * value, s1.Height * value);
+			return new Size(s1._width * value, s1._height * value);
 		}
 
 		public static Size operator /(Size s1, double value)
 		{
-			return new Size(s1.Width / value, s1.Height / value);
+			return new Size(s1._width / value, s1._height / value);
 		}
 
 		public static bool operator ==(Size s1, Size s2)
 		{
-			return s1.Width == s2.Width && s1.Height == s2.Height;
+			return s1._width == s2._width && s1._height == s2._height;
 		}
 
 		public static bool operator !=(Size s1, Size s2)
 		{
-			return s1.Width != s2.Width || s1.Height != s2.Height;
+			return s1._width != s2._width || s1._height != s2._height;
 		}
 
 		public static explicit operator Point(Size size)
@@ -75,7 +106,7 @@ namespace Microsoft.Maui.Graphics
 
 		public bool Equals(Size other)
 		{
-			return Width.Equals(other.Width) && Height.Equals(other.Height);
+			return _width.Equals(other._width) && _height.Equals(other._height);
 		}
 
 		public override bool Equals(object obj)
@@ -89,13 +120,13 @@ namespace Microsoft.Maui.Graphics
 		{
 			unchecked
 			{
-				return (Width.GetHashCode() * 397) ^ Height.GetHashCode();
+				return (_width.GetHashCode() * 397) ^ _height.GetHashCode();
 			}
 		}
 
 		public override string ToString()
 		{
-			return string.Format("{{Width={0} Height={1}}}", Width.ToString(CultureInfo.InvariantCulture), Height.ToString(CultureInfo.InvariantCulture));
+			return string.Format("{{Width={0} Height={1}}}", _width.ToString(CultureInfo.InvariantCulture), _height.ToString(CultureInfo.InvariantCulture));
 		}
 
 		public void Deconstruct(out double width, out double height)

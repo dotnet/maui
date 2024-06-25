@@ -241,7 +241,6 @@ namespace Microsoft.Maui.Controls.Hosting
 			Window.RemapForControls();
 			Editor.RemapForControls();
 			Entry.RemapForControls();
-			SwipeView.RemapForControls();
 			Picker.RemapForControls();
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();

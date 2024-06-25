@@ -757,11 +757,6 @@ namespace Microsoft.Maui.Controls.Platform
 					return false;
 				}
 
-				if (!virtualView.IsEnabled)
-				{
-					return false;
-				}
-
 				if (touch.View == platformView)
 				{
 					return true;

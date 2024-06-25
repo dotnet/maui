@@ -1,7 +1,7 @@
 {
     "recommendations": [
-      "ms-dotnettools.vscodeintellicode-csharp",
-      "ms-dotnettools.dotnet-maui",
-      "github.copilot-chat"
+      "ms-dotnettools.csharp",
+      "ms-vscode.mono-debug",
+      "visualstudioexptteam.vscodeintellicode",
     ]
 }

@@ -288,31 +288,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task LoadedFiresOnSecondSubscription()
-		{
-			var previousPage = new LCPage();
-			var lcPage = new LCPage();
-			var navigationPage =
-				new TestNavigationPage(true, previousPage)
-					.AddToTestWindow();
-
-			await navigationPage.PushAsync(lcPage);
-
-			int loadedCnt = 0;
-			lcPage.Loaded += OnLoaded;
-			Assert.Equal(1, loadedCnt);
-
-			lcPage.Loaded -= OnLoaded;
-			lcPage.Loaded += OnLoaded;		
-			Assert.Equal(2, loadedCnt);
-
-			void OnLoaded(object sender, System.EventArgs e)
-			{
-				loadedCnt++;
-			}
-		}
-
-		[Fact]
 		public async Task LoadedFiresOnInitialSubscription()
 		{
 			var previousPage = new LCPage();
@@ -324,7 +299,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await navigationPage.PushAsync(lcPage);
 
 			int loadedCnt = 0;
-			int secondLoadedSubscriberCnt = 0;
 			int unLoadedCnt = 0;
 
 			Assert.True(lcPage.IsLoaded);
@@ -335,25 +309,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				loadedCnt++;
 			};
 
-			Assert.Equal(1, loadedCnt);
-
-			// Subscribing to loaded a second time
-			// Should fire the event on the new subsciber;
+			// Subscribing to loaded should fire the loaded
+			// event if the page is already loaded
 			lcPage.Loaded += (_, _) => 
 			{
-				secondLoadedSubscriberCnt++;
+				loadedCnt++;
 			};
 
 			lcPage.Unloaded += (_, _) => unLoadedCnt++;
 
-			Assert.Equal(1, loadedCnt);
-			Assert.Equal(1, secondLoadedSubscriberCnt);
+			Assert.Equal(2, loadedCnt);
 			Assert.Equal(0, unLoadedCnt);
 			
 			await navigationPage.PopAsync();
 
-			Assert.Equal(1, loadedCnt);
-			Assert.Equal(1, secondLoadedSubscriberCnt);
+			Assert.Equal(2, loadedCnt);
 			Assert.Equal(1, unLoadedCnt);
 		}
 

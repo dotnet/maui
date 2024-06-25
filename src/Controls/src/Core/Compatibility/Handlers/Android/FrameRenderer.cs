@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 			if (Element.Handler is IPlatformViewHandler pvh &&
-				Element is ICrossPlatformLayout cv)
+				Element is IContentView cv)
 			{
 				pvh.LayoutVirtualView(l, t, r, b, cv.CrossPlatformArrange);
 			}
