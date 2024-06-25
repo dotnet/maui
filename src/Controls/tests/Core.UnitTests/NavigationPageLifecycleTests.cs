@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(true)]
 		public async Task PopLifeCycle(bool useMaui)
 		{
+			bool appearingShouldFireOnInitialPage = false;
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();
 
@@ -82,14 +83,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			_ = new TestWindow(nav);
 
 			await waitForFirstAppearing.Task;
-			initialPage.Appearing += (sender, _)
-				=> rootPageFiresAppearingAfterPop = (ContentPage)sender;
+			initialPage.Appearing += (sender, _) =>
+			{
+				Assert.True(appearingShouldFireOnInitialPage);
+				rootPageFiresAppearingAfterPop = (ContentPage)sender;
+			};
 
 			pushedPage.Disappearing += (sender, _)
 				=> pageDisappeared = (ContentPage)sender;
 
 			await nav.PushAsync(pushedPage);
 			Assert.Null(rootPageFiresAppearingAfterPop);
+			appearingShouldFireOnInitialPage = true;
 			Assert.Null(pageDisappeared);
 
 			await nav.PopAsync();
