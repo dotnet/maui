@@ -81,7 +81,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
 
-		var overloadDiagnostics = new EquatableArray<DiagnosticInfo>(VerifyCorrectOverload(invocation, interceptedMethodType, context, t));
+		var overloadDiagnostics = VerifyCorrectOverload(invocation, interceptedMethodType, context, t);
 		if (overloadDiagnostics.Length > 0)
 		{
 			return Result<BindingInvocationDescription>.Failure(new EquatableArray<DiagnosticInfo>(overloadDiagnostics));
