@@ -88,7 +88,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void DynamicallyAddedTapGesturesDontCauseMultipleTapEvents()
 		{
 			App.WaitForElement("TargetView");
-			App.EnterText("TargetView", "DynamicTapGallery");
+			App.EnterText("TargetView", "DynamicTapGestureGallery");
 			App.Tap("GoButton");
 
 			App.WaitForElement("DynamicTapSurface");
