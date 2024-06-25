@@ -41,13 +41,13 @@ namespace Microsoft.Maui.Controls.Platform
 					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
 					null);
 
-				// The width is more accurate when using the device metrics but does not always return a usable height
-				var boundingRectWithDeviceMetrics = title.GetBoundingRect(
-					availableSize,
-					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading | NSStringDrawingOptions.UsesDeviceMetrics,
-					null);
+				// // The width is more accurate when using the device metrics but does not always return a usable height
+				// var boundingRectWithDeviceMetrics = title.GetBoundingRect(
+				// 	availableSize,
+				// 	NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading | NSStringDrawingOptions.UsesDeviceMetrics,
+				// 	null);
 
-				return new CGRect(boundingRectWithDeviceMetrics.Location, new CGSize(boundingRectWithDeviceMetrics.Width, Math.Min(availableHeight, boundingRect.Height)));
+				return new CGRect(boundingRect.Location, new CGSize(boundingRect.Width, Math.Min(availableHeight, boundingRect.Height)));
 			}
 
 			return CGRect.Empty;
