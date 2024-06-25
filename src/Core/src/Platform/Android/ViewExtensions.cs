@@ -9,10 +9,8 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Core.View;
-using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
@@ -191,17 +189,20 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			bool restorePreviousDrawable = false;
 			// Remove previous background gradient if any
 			if (platformView.Background is MauiDrawable mauiDrawable)
 			{
 				platformView.Background = null;
 				mauiDrawable.Dispose();
+				restorePreviousDrawable = true;
 			}
 
 			if (platformView.Background is LayerDrawable layerDrawable)
 			{
 				platformView.Background = null;
 				layerDrawable.Dispose();
+				restorePreviousDrawable = true;
 			}
 
 			// Android will reset the padding when setting a Background drawable	
@@ -229,12 +230,11 @@ namespace Microsoft.Maui.Platform
 					//
 					// If the Background is null or is a ColorDrawable, a Custom Handler is being created, removing the default behavior.
 					// In this case, we don't want to reset the Drawable to the default one.
-					if (platformView.Background is not ColorDrawable)
+					if (restorePreviousDrawable)
 						platformView.Background = previousDrawable;
 				}
 				else
 				{
-
 					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable, previousDrawable });
 					platformView.Background = layer;
 				}

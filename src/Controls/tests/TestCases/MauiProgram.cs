@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -23,7 +23,11 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
 				})
-				.Issue21109AddMappers();
+				.Issue21109AddMappers()
+				.Issue18720AddMappers()
+				.Issue18720EditorAddMappers()
+				.Issue18720DatePickerAddMappers()
+				.Issue18720TimePickerAddMappers();
 
 			return appBuilder.Build();
 		}
