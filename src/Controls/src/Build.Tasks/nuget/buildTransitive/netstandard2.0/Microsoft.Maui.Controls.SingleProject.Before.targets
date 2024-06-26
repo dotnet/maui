@@ -67,3 +67,5 @@
     <TizenResourcePrefix>$(TizenProjectFolder)res</TizenResourcePrefix>
     <TizenSharedPrefix>$(TizenProjectFolder)shared</TizenSharedPrefix>
   </PropertyGroup>
+
+</Project>
