@@ -40,6 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 				});
 			});
