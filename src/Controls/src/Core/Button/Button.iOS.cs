@@ -14,15 +14,9 @@ namespace Microsoft.Maui.Controls
 	public partial class Button
 	{
 		CGSize _originalImageSize = CGSize.Empty;
-		Size originalMeasureArgSize = Size.Zero;
-		Size measureReturnSize = Size.Zero;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			originalMeasureArgSize = new Size(widthConstraint, heightConstraint);
-
-			// var baseMeasurement = base.MeasureOverride(widthConstraint, heightConstraint);
-
 			var button = this;
 
 			var platformButton = Handler?.PlatformView as UIButton;
@@ -35,14 +29,6 @@ namespace Microsoft.Maui.Controls
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
-
-			var image = platformButton.CurrentImage;
-
-			// Save the original image size for later image resizing
-			if (image is not null && _originalImageSize == CGSize.Empty)
-			{
-				_originalImageSize = image.Size;
-			}
 
 			// if the image is too large then we just position at the edge of the button
 			// depending on the position the user has picked
@@ -59,14 +45,25 @@ namespace Microsoft.Maui.Controls
 			var titleWidthConstraint = buttonWidthConstraint - padding.Left - padding.Right - borderWidth * 2;
 			var titleHeightConstraint = buttonHeightConstraint - padding.Top - padding.Bottom - borderWidth * 2;
 
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			var image = platformButton.CurrentImage;
+
+			if (image is not null)
 			{
+				// Save the original image size for later image resizing
+				if (_originalImageSize == CGSize.Empty)
+				{
+					_originalImageSize = image.Size;
+				}
+
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize))
 				{
 					image = platformButton.CurrentImage;
 				}
+			}
 
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
 				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
 				// even when the image is on top or bottom.
 				titleWidthConstraint -= image.Size.Width;
@@ -79,12 +76,6 @@ namespace Microsoft.Maui.Controls
 				{
 					titleWidthConstraint = borderWidth * 2;
 				}
-			}
-
-			// If we just have an image, we can still resize it here
-			else if (image is not null)
-			{
-				ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize);
 			}
 
 			platformButton.ImageView.ContentMode = contentMode;
@@ -102,9 +93,9 @@ namespace Microsoft.Maui.Controls
 
 			platformButton.UpdatePadding(button);
 
-			var titleRect2 = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
-			var titleRectWidth = titleRect2.Width;
-			var titleRectHeight = titleRect2.Height;
+			var titleRect = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
+			var titleRectWidth = titleRect.Width;
+			var titleRectHeight = titleRect.Height;
 
 			var buttonContentWidth =
 				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
@@ -118,6 +109,7 @@ namespace Microsoft.Maui.Controls
 				+ (nfloat)padding.Bottom
 				+ (nfloat)borderWidth * 2;
 
+			// if we have both an image and title, add the smaller of the two to the calculation as well
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
@@ -136,21 +128,25 @@ namespace Microsoft.Maui.Controls
 			var ret = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
 							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
 
-			measureReturnSize = new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
+			// Rounding the values up to the nearest whole number to match UIView.SizeThatFits
+			ret = new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
 
-			// try rounding the values up to the nearest whole number to match UIView.SizeThatFits
-			return measureReturnSize;
-			// return baseMeasurement;
+			return ret;
 		}
 
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected override Size ArrangeOverride(Rect bounds)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			var button = this;
 			var platformButton = Handler?.PlatformView as UIButton;
 
+			// Layout the image and title of the button
+			LayoutButton(platformButton, button, bounds);
+
+			return base.ArrangeOverride(bounds);
+		}
+
+		void LayoutButton(UIButton platformButton, Button button, Rect size)
+		{
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
@@ -159,27 +155,16 @@ namespace Microsoft.Maui.Controls
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
-			var buttonWidthConstraint = button.WidthRequest == -1 ? bounds.Width : Math.Min(button.WidthRequest, bounds.Width);
-			var buttonHeightConstraint = button.HeightRequest == -1 ? bounds.Height : Math.Min(button.HeightRequest, bounds.Height);
+			var buttonWidthConstraint = button.WidthRequest == -1 ? size.Width : Math.Min(button.WidthRequest, size.Width);
+			var buttonHeightConstraint = button.HeightRequest == -1 ? size.Height : Math.Min(button.HeightRequest, size.Height);
 
-			var additionalHorizontalSpace = (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
-			var additionalVerticalSpace = (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
-
-			var titleWidthConstraint = buttonWidthConstraint - additionalHorizontalSpace;
-			var titleHeightConstraint = buttonHeightConstraint - additionalVerticalSpace;
+			var titleWidthConstraint = buttonWidthConstraint - (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
+			var titleHeightConstraint = buttonHeightConstraint - (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
 
 			var imageInsets = new UIEdgeInsets();
 			var titleInsets = new UIEdgeInsets();
 
 			var image = platformButton.CurrentImage;
-
-			if (image is not null)
-			{
-				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize))
-				{
-					image = platformButton.CurrentImage;
-				}
-			}
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
@@ -255,8 +240,6 @@ namespace Microsoft.Maui.Controls
 				platformButton.TitleEdgeInsets = titleInsets;
 			}
 #pragma warning restore CA1416, CA1422
-
-			return base.ArrangeOverride(bounds);
 		}
 
 		static bool AreSignificantlyDifferent(double value1, double value2, double buffer = 0.1)
