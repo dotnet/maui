@@ -14,9 +14,15 @@ namespace Microsoft.Maui.Controls
 	public partial class Button
 	{
 		CGSize _originalImageSize = CGSize.Empty;
+		Size originalMeasureArgSize = Size.Zero;
+		Size measureReturnSize = Size.Zero;
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+			originalMeasureArgSize = new Size(widthConstraint, heightConstraint);
+
+			// var baseMeasurement = base.MeasureOverride(widthConstraint, heightConstraint);
+
 			var button = this;
 
 			var platformButton = Handler?.PlatformView as UIButton;
@@ -25,9 +31,6 @@ namespace Microsoft.Maui.Controls
 			{
 				return Size.Zero;
 			}
-
-			var imageInsets = new UIEdgeInsets();
-			var titleInsets = new UIEdgeInsets();
 
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
@@ -76,10 +79,123 @@ namespace Microsoft.Maui.Controls
 				{
 					titleWidthConstraint = borderWidth * 2;
 				}
+			}
 
-				// TODO: Do not use the title label as it is not yet updated and
-				//       if we move the image, then we technically have more
-				//       space and will require a new layout pass.
+			// If we just have an image, we can still resize it here
+			else if (image is not null)
+			{
+				ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize);
+			}
+
+			platformButton.ImageView.ContentMode = contentMode;
+
+			// This is used to match the behavior between platforms.
+			// If the image is too big then we just hide the label because
+			// the image is pushing the title out of the visible view.
+			// We can't use insets because then the title shows up outside the
+			// bounds of the UIButton. We could set the UIButton to clip bounds
+			// but that feels like it might cause confusing side effects
+			if (contentMode == UIViewContentMode.Center)
+				platformButton.TitleLabel.Layer.Hidden = false;
+			else
+				platformButton.TitleLabel.Layer.Hidden = true;
+
+			platformButton.UpdatePadding(button);
+
+			var titleRect2 = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
+			var titleRectWidth = titleRect2.Width;
+			var titleRectHeight = titleRect2.Height;
+
+			var buttonContentWidth =
+				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
+				+ (nfloat)padding.Left
+				+ (nfloat)padding.Right
+				+ (nfloat)borderWidth * 2;
+
+			var buttonContentHeight =
+				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
+				+ (nfloat)padding.Top
+				+ (nfloat)padding.Bottom
+				+ (nfloat)borderWidth * 2;
+
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
+				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
+				{
+					buttonContentHeight += spacing;
+					buttonContentHeight += (nfloat)Math.Min(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0);
+				}
+
+				else
+				{
+					buttonContentWidth += spacing;
+					buttonContentWidth += (nfloat)Math.Min(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0);
+				}
+			}
+
+			var ret = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
+							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
+
+			measureReturnSize = new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
+
+			// try rounding the values up to the nearest whole number to match UIView.SizeThatFits
+			return measureReturnSize;
+			// return baseMeasurement;
+		}
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override Size ArrangeOverride(Rect bounds)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			var button = this;
+			var platformButton = Handler?.PlatformView as UIButton;
+
+			var layout = button.ContentLayout;
+			var spacing = (nfloat)layout.Spacing;
+			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
+
+			var padding = button.Padding;
+			if (padding.IsNaN)
+				padding = ButtonHandler.DefaultPadding;
+
+			var buttonWidthConstraint = button.WidthRequest == -1 ? bounds.Width : Math.Min(button.WidthRequest, bounds.Width);
+			var buttonHeightConstraint = button.HeightRequest == -1 ? bounds.Height : Math.Min(button.HeightRequest, bounds.Height);
+
+			var additionalHorizontalSpace = (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
+			var additionalVerticalSpace = (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
+
+			var titleWidthConstraint = buttonWidthConstraint - additionalHorizontalSpace;
+			var titleHeightConstraint = buttonHeightConstraint - additionalVerticalSpace;
+
+			var imageInsets = new UIEdgeInsets();
+			var titleInsets = new UIEdgeInsets();
+
+			var image = platformButton.CurrentImage;
+
+			if (image is not null)
+			{
+				if (ResizeImageIfNecessary(platformButton, button, image, spacing, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize))
+				{
+					image = platformButton.CurrentImage;
+				}
+			}
+
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
+				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
+				// even when the image is on top or bottom.
+				titleWidthConstraint -= image.Size.Width;
+
+				// When the image is on top or bottom and the HorizontalOptions is not fill,
+				// the title will only be as large as the borderwidth if there is no explicit width request.
+				// This shouldn't be an issue with Configuration APIs later down the line.
+				if ((layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
+					&& button.WidthRequest == -1 && button.HorizontalOptions != LayoutOptions.Fill)
+				{
+					titleWidthConstraint = borderWidth * 2;
+				}
+
 				var titleRect = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
@@ -129,25 +245,6 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			// If we just have an image, we can still resize it here
-			else if (image is not null)
-			{
-				ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize);
-			}
-
-			platformButton.ImageView.ContentMode = contentMode;
-
-			// This is used to match the behavior between platforms.
-			// If the image is too big then we just hide the label because
-			// the image is pushing the title out of the visible view.
-			// We can't use insets because then the title shows up outside the
-			// bounds of the UIButton. We could set the UIButton to clip bounds
-			// but that feels like it might cause confusing side effects
-			if (contentMode == UIViewContentMode.Center)
-				platformButton.TitleLabel.Layer.Hidden = false;
-			else
-				platformButton.TitleLabel.Layer.Hidden = true;
-
 			platformButton.UpdatePadding(button);
 
 #pragma warning disable CA1416, CA1422
@@ -159,69 +256,12 @@ namespace Microsoft.Maui.Controls
 			}
 #pragma warning restore CA1416, CA1422
 
-			var titleRect2 = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
-			var titleRectWidth = titleRect2.Width;
-			var titleRectHeight = titleRect2.Height;
-
-			var buttonContentWidth =
-				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
-				+ (nfloat)padding.Left
-				+ (nfloat)padding.Right
-				+ (nfloat)borderWidth * 2;
-
-			var buttonContentHeight =
-				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
-				+ (nfloat)padding.Top
-				+ (nfloat)padding.Bottom
-				+ (nfloat)borderWidth * 2;
-
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
-			{
-				if (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom)
-				{
-					buttonContentHeight += spacing;
-					buttonContentHeight += (nfloat)Math.Min(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0);
-				}
-
-				else
-				{
-					buttonContentWidth += spacing;
-					buttonContentWidth += (nfloat)Math.Min(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0);
-				}
-			}
-
-			var ret = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
-							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
-
-			// try rounding the values up to the nearest whole number to match UIView.SizeThatFits
-			return new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
-		}
-
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		protected override Size ArrangeOverride(Rect bounds)
-#pragma warning restore RS0016 // Add public types and members to the declared API
-		{
-			Console.WriteLine($"ArrangeOverride Bounds: {bounds}");
-			var platformButton = Handler?.PlatformView as UIButton;
-
-			// Edge case: if the imageView and the image are different sizes, there may be unwanted clipping
-			// so let's relayout the button with these bounds.
-			if (platformButton.ImageView is UIImageView imageView
-				&& platformButton.CurrentImage is UIImage image
-				&& imageView.Bounds.Width > 0
-				&& imageView.Bounds.Height > 0
-				&& (AreSignificantlyDifferent(imageView.Bounds.Width, image.Size.Width) || AreSignificantlyDifferent(imageView.Bounds.Height, image.Size.Height)))
-				{
-					MeasureOverride(bounds.Width, bounds.Height);
-				}
-
 			return base.ArrangeOverride(bounds);
 		}
 
-		static bool AreSignificantlyDifferent(double value1, double value2)
+		static bool AreSignificantlyDifferent(double value1, double value2, double buffer = 0.1)
 		{
-				return Math.Abs(value1 - value2) > 0.1;
+				return Math.Abs(value1 - value2) > buffer;
 		}
 
 		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
