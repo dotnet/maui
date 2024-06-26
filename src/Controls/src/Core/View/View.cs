@@ -1,10 +1,10 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -96,19 +96,20 @@ namespace Microsoft.Maui.Controls
 			_gestureManager = new GestureManager(this);
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
-				void AddItems(IEnumerable<IElementDefinition> elements)
+				void AddItems(IList newItems)
 				{
-					foreach (IElementDefinition item in elements)
+					foreach (IElementDefinition item in newItems)
 					{
-						ValidateGesture(item as IGestureRecognizer);
+						var gestureRecognizer = item as IGestureRecognizer;
+						ValidateGesture(gestureRecognizer);
 						item.Parent = this;
-						GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
+						GestureController.CompositeGestureRecognizers.Add(gestureRecognizer);
 					}
 				}
 
-				void RemoveItems(IEnumerable<IElementDefinition> elements)
+				void RemoveItems(IList oldItems)
 				{
-					foreach (IElementDefinition item in elements)
+					foreach (IElementDefinition item in oldItems)
 					{
 						item.Parent = null;
 						GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
@@ -118,40 +119,45 @@ namespace Microsoft.Maui.Controls
 				switch (args.Action)
 				{
 					case NotifyCollectionChangedAction.Add:
-						AddItems(args.NewItems.OfType<IElementDefinition>());
+						AddItems(args.NewItems);
 						break;
 					case NotifyCollectionChangedAction.Remove:
-						RemoveItems(args.OldItems.OfType<IElementDefinition>());
+						RemoveItems(args.OldItems);
 						break;
 					case NotifyCollectionChangedAction.Replace:
-						AddItems(args.NewItems.OfType<IElementDefinition>());
-						RemoveItems(args.OldItems.OfType<IElementDefinition>());
+						AddItems(args.NewItems);
+						RemoveItems(args.OldItems);
 						break;
 					case NotifyCollectionChangedAction.Reset:
 
-						List<IElementDefinition> remove = new List<IElementDefinition>();
-						List<IElementDefinition> add = new List<IElementDefinition>();
-
-						foreach (IElementDefinition item in _gestureRecognizers.OfType<IElementDefinition>())
+						foreach (IGestureRecognizer gestureRecognizer in _gestureRecognizers)
 						{
-							if (!_gestureRecognizers.Contains((IGestureRecognizer)item))
-								add.Add(item);
-							item.Parent = this;
-						}
-
-						foreach (IElementDefinition item in GestureController.CompositeGestureRecognizers.OfType<IElementDefinition>())
-						{
-							if (item == _recognizerForPointerOverState)
-								continue;
-
-							if (_gestureRecognizers.Contains((IGestureRecognizer)item))
+							if (gestureRecognizer is IElementDefinition item)
+							{
 								item.Parent = this;
-							else
-								remove.Add(item);
+							}
 						}
 
-						AddItems(add);
-						RemoveItems(remove);
+						HashSet<IGestureRecognizer> compositeGestureRecognizers = new(GestureController.CompositeGestureRecognizers);
+
+						foreach (IGestureRecognizer gestureRecognizer in compositeGestureRecognizers)
+						{
+							if (gestureRecognizer is IElementDefinition item)
+							{
+								if (item == _recognizerForPointerOverState)
+									continue;
+
+								if (_gestureRecognizers.Contains(gestureRecognizer))
+								{
+									item.Parent = this;
+								}
+								else
+								{
+									item.Parent = null;
+									GestureController.CompositeGestureRecognizers.Remove(gestureRecognizer);
+								}
+							}
+						}
 
 						break;
 				}

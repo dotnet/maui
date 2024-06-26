@@ -61,8 +61,10 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ViewCell, ViewCellRenderer>();
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
+				handlers.AddHandler<TabbedPage, TabbedRenderer>();
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
+				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
 #endif
 			});
 		});
@@ -71,8 +73,15 @@ public class MemoryTests : ControlsHandlerTestBase
 	[Theory("Pages Do Not Leak")]
 	[InlineData(typeof(ContentPage))]
 	[InlineData(typeof(NavigationPage))]
+	[InlineData(typeof(TabbedPage))]
 	public async Task PagesDoNotLeak(Type type)
 	{
+#if WINDOWS
+		// FIXME: there is still an issue with TabbedPage on Windows
+		if (type == typeof(TabbedPage))
+			return;
+#endif
+
 		SetupBuilder();
 
 		WeakReference viewReference = null;
@@ -84,13 +93,20 @@ public class MemoryTests : ControlsHandlerTestBase
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
 			var page = (Page)Activator.CreateInstance(type);
+			var pageToWaitFor = page;
 			if (page is ContentPage contentPage)
 			{
 				contentPage.Content = new Label();
 			}
 			else if (page is NavigationPage navigationPage)
 			{
-				await navigationPage.PushAsync(new ContentPage { Content = new Label() });
+				pageToWaitFor = new ContentPage { Content = new Label() };
+				await navigationPage.PushAsync(pageToWaitFor);
+			}
+			else if (page is TabbedPage tabbedPage)
+			{
+				pageToWaitFor = new ContentPage { Content = new Label() };
+				tabbedPage.Children.Add(pageToWaitFor);
 			}
 			
 			await navPage.Navigation.PushModalAsync(page);
@@ -100,7 +116,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			platformViewReference = new WeakReference(page.Handler.PlatformView);
 
 			// Windows requires Loaded event to fire before unloading
-			await Task.Delay(500);
+			await OnLoadedAsync(pageToWaitFor);
 			await navPage.Navigation.PopModalAsync();
 		});
 

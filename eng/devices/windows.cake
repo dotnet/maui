@@ -438,9 +438,9 @@ Task("SetupTestPaths")
 		if (apps.Count() == 0) 
 		{
 			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.App"))
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.HostApp"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.App/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.HostApp/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
 			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
