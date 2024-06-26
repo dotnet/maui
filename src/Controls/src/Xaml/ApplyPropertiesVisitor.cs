@@ -282,8 +282,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			try
 			{
-				if (markupExtension != null)
+				if (markupExtension != null){
 					value = markupExtension.ProvideValue(serviceProvider);
+					if (value is BindingBase) {
+						var markupReturnType = markupExtension.GetType().GetInterfaces().SingleOrDefault(x=>x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IMarkupExtension<>))?.GetGenericArguments().First();
+						if (markupReturnType != typeof(BindingBase))
+							HydrationContext.PreventSetBinding.Add(value);
+					}
+				}
 				else if (valueProvider != null)
 					value = valueProvider.ProvideValue(serviceProvider);
 			}
@@ -359,7 +365,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			var serviceProvider = new XamlServiceProvider(node, context);
 			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
 
-			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
+			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, node, out var xpe))
 				return;
 
 			if (context.ExceptionHandler != null)
@@ -369,7 +375,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		//Used by HotReload, do not change signature
-		public static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, out Exception xpe)
+		public static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, INode node, out Exception xpe)
 		{
 			var localName = propertyName.LocalName;
 			xpe = null;
@@ -551,6 +557,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			binding = value.ConvertTo(typeof(BindingBase), pinfoRetriever: null, serviceProvider: null, exception: out exception) as BindingBase;
 			if (exception != null)
 				return false;
+			
+			if (HydrationContext.PreventSetBinding.Contains(value))
+				return false;
 
 			var nativeBindingService = DependencyService.Get<INativeBindingService>();
 
@@ -604,6 +613,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			else
 				minforetriever = () => property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == property.PropertyName);
 			var convertedValue = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out exception);
+			if (property.ReturnType == typeof(string) && convertedValue is not string)
+				convertedValue = convertedValue.ToString();
 			if (exception != null)
 				return false;
 
