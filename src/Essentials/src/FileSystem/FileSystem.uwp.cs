@@ -9,25 +9,6 @@ namespace Microsoft.Maui.Storage
 {
 	partial class FileSystemImplementation : IFileSystem
 	{
-		private readonly string _platformAppDataDirectory;
-
-		public FileSystemImplementation()
-		{
-			if (AppInfoUtils.IsPackagedApp)
-			{
-				_platformAppDataDirectory = ApplicationData.Current.LocalFolder.Path;
-			}
-			else
-			{
-				_platformAppDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppSpecificPath, "Data");
-
-				if (!File.Exists(_platformAppDataDirectory))
-				{
-					Directory.CreateDirectory(_platformAppDataDirectory);
-				}
-			}
-		}
-
 		static string CleanPath(string path) =>
 			string.Join("_", path.Split(Path.GetInvalidFileNameChars()));
 
@@ -39,7 +20,10 @@ namespace Microsoft.Maui.Storage
 				? ApplicationData.Current.LocalCacheFolder.Path
 				: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppSpecificPath, "Cache");
 
-		string PlatformAppDataDirectory => _platformAppDataDirectory;
+		string PlatformAppDataDirectory
+			=> AppInfoUtils.IsPackagedApp
+				? ApplicationData.Current.LocalFolder.Path
+				: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSpecificPath, "Data");
 
 		Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
 		{
