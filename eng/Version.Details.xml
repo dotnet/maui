@@ -1,6 +1,6 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.6.24324.9" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.6.24324.9">
       <Uri>https://github.com/dotnet/sdk</Uri>
       <Sha>3c7b1bd38bf76e6b639843276708e688ee485e69</Sha>
     </Dependency>
