@@ -177,8 +177,8 @@ namespace Microsoft.Maui.Controls
 			var buttonWidthConstraint = button.WidthRequest == -1 ? size.Width : Math.Min(button.WidthRequest, size.Width);
 			var buttonHeightConstraint = button.HeightRequest == -1 ? size.Height : Math.Min(button.HeightRequest, size.Height);
 
-			var titleWidthConstraint = buttonWidthConstraint - (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
-			var titleHeightConstraint = buttonHeightConstraint - (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
+			var titleWidthConstraint = buttonWidthConstraint - (nfloat)padding.Left - (nfloat)padding.Right - ((nfloat)borderWidth * 2);
+			var titleHeightConstraint = buttonHeightConstraint - (nfloat)padding.Top - (nfloat)padding.Bottom - ((nfloat)borderWidth * 2);
 
 			var imageInsets = new UIEdgeInsets();
 			var titleInsets = new UIEdgeInsets();
