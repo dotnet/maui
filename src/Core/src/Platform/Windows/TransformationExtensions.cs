@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				double anchorX = view.AnchorX;
+				double anchorY = view.AnchorY;
+
 				frameworkElement.RenderTransformOrigin = new global::Windows.Foundation.Point(anchorX, anchorY);
 				frameworkElement.RenderTransform = new ScaleTransform { ScaleX = scaleX, ScaleY = scaleY };
 
