@@ -150,6 +150,10 @@
       <Generator>MSBuild:Compile</Generator>
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
+    <Content
+      Include="$(WindowsProjectFolder)\Assets\Images\**"
+      Exclude="$(_SingleProjectWindowsExcludes)"
+      TargetPath="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!-- Tizen -->
