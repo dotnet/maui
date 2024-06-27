@@ -178,7 +178,11 @@ namespace Microsoft.Maui.Controls
 		public int CursorPosition
 		{
 			get { return (int)GetValue(CursorPositionProperty); }
-			set { SetValue(CursorPositionProperty, value); }
+			set
+			{
+				SetValueCore(CursorPositionProperty, value,
+					SetValueFlags.RaiseOnEqual | SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource, SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
+			}
 		}
 
 		/// <summary>
@@ -188,7 +192,15 @@ namespace Microsoft.Maui.Controls
 		public int SelectionLength
 		{
 			get { return (int)GetValue(SelectionLengthProperty); }
-			set { SetValue(SelectionLengthProperty, value); }
+			set 
+			{
+				// Note: this property (and CursorPosition) will always raise change events when set. On platforms like WinUI we 
+				// need to always push the xplat -> native value flow in scenarios such as "select all text on focus". If we 
+				// don't do this the native control will handle the input event and move the cursor after we set the selection
+				// length/cursor position, which is not the desired behavior.
+				SetValueCore(SelectionLengthProperty, value,
+					SetValueFlags.RaiseOnEqual | SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource, SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
+			}
 		}
 
 		/// <summary>
