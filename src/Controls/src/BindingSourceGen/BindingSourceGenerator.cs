@@ -139,16 +139,16 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		methodType switch
 		{
 			InterceptedMethodType.SetBinding => VerifyCorrectOverloadSetBinding(invocation, context, t),
-			InterceptedMethodType.Create => VerifyCorrectOverloadBindingFactoryCreate(invocation, context, t),
+			InterceptedMethodType.Create => VerifyCorrectOverloadBindingCreate(invocation, context, t),
 			_ => throw new NotSupportedException()
 		};
 
 
-	private static DiagnosticInfo[] VerifyCorrectOverloadBindingFactoryCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
+	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
 		var argumentList = invocation.ArgumentList.Arguments;
 
 		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if (symbol?.ContainingType?.Name != "BindingFactory" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+		if (symbol?.ContainingType?.Name != "Binding" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
 		{
 			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
 		}

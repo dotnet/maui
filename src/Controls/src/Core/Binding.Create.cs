@@ -1,9 +1,9 @@
 using System;
-using Microsoft.Maui.Controls.Internals;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-    public static class BindingFactory
+    partial class Binding
     {
         /// <summary>
         /// This factory method was added to simplify creating TypedBindingBase instances from lambda getters.
@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls
         /// <param name="fallbackValue">The value to use instead of the default value for the property, if no specified value exists.</param>
         /// <param name="targetNullValue">The value to supply for a bound property when the target of the binding is <see langword="null" />.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public static TypedBinding<TSource, TProperty> Create<TSource, TProperty>(
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCodeMessage",
+			Justification = "The Binding.Create<TSource, TProperty>() method does not create an instance of Binding but an instance of TypedBinding<TSource, TProperty>.")]
+        public static BindingBase Create<TSource, TProperty>(
             Func<TSource, TProperty> getter,
             BindingMode mode = BindingMode.Default,
             IValueConverter? converter = null,
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Controls
             object? fallbackValue = null,
             object? targetNullValue = null)
         {
-            throw new InvalidOperationException($"Call to BindingFactory.Create<{typeof(TSource)}, {typeof(TProperty)}> was not intercepted.");
+            throw new InvalidOperationException($"Call to Binding.Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
         }
     }
 }

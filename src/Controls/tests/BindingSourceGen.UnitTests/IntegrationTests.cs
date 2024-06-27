@@ -86,11 +86,11 @@ public class IntegrationTests
     }
 
     [Fact]
-    public void GenerateSimpleBindingFactoryCreate()
+    public void GenerateSimpleBindingCreate()
     {
         var source = """
         using Microsoft.Maui.Controls;
-        var bindingBase = BindingFactory.Create(static (string s) => s.Length);
+        var bindingBase = Binding.Create(static (string s) => s.Length);
         """;
 
         var result = SourceGenHelpers.Run(source);
@@ -120,7 +120,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 2, 34)]
+                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 2, 27)]
                     public static TypedBinding<string, int> Create{{id}}(
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
@@ -158,7 +158,7 @@ public class IntegrationTests
                 }
             }
             """,
-            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-2-34.g.cs"]);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-2-27.g.cs"]);
     }
 
     [Fact]
@@ -168,51 +168,58 @@ public class IntegrationTests
         using System;
         using Microsoft.Maui.Controls.Internals;
         using MyNamespace;
-        var bindingBase = MyBindingFactory.Create(static (string s) => s.Length);
+        var bindingBase = MyBinding.Create(static (string s) => s.Length);
 
         namespace MyNamespace
         {
-        	public static class MyBindingFactory
-        	{
-        		public static TypedBinding<string, int> Create(Func<string, int> getter)
-        		{
-        			throw new NotImplementedException();
-        		}
-        	}
+            public static class MyBinding
+            {
+                public static TypedBinding<string, int> Create(Func<string, int> getter)
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
         """;
 
         var result = SourceGenHelpers.Run(source);
 
         AssertExtensions.AssertNoDiagnostics(result);
-		Assert.Null(result.Binding);
+        Assert.Null(result.Binding);
     }
 
     [Fact]
-    public void IgnoresOtherBindingFactoryCreateMethod()
+    public void IgnoresOtherBindingCreateMethod()
     {
         var source = """
         using System;
-        using Microsoft.Maui.Controls.Internals;
         using MyNamespace;
-        var bindingBase = BindingFactory.Create(static (string s) => s.Length);
+        var bindingBase = Binding.Create(static (string s) => s.Length);
   
         namespace MyNamespace
         {
-        	public static class BindingFactory
-        	{
-        		public static TypedBinding<string, int> Create(Func<string, int> getter)
-        		{
-        			throw new NotImplementedException();
-        		}
-        	}
+            public class Binding
+            {
+                public static Microsoft.Maui.Controls.BindingBase Create<TSource, TProperty>(
+                    Func<TSource, TProperty> getter,
+                    Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default,
+                    Microsoft.Maui.Controls.IValueConverter? converter = null,
+                    object? converterParameter = null,
+                    string? stringFormat = null,
+                    object? source = null,
+                    object? fallbackValue = null,
+                    object? targetNullValue = null)
+                {
+                    throw new InvalidOperationException($"Call to Binding.Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
+                }
+            }
         }
         """;
 
         var result = SourceGenHelpers.Run(source);
 
         AssertExtensions.AssertNoDiagnostics(result);
-		Assert.Null(result.Binding);
+        Assert.Null(result.Binding);
     }
 
     [Fact]
