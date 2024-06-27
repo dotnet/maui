@@ -12,6 +12,14 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
+		/// <summary>
+		/// Compute the <see cref="CGRect"/> for the title of the button.
+		/// </summary>
+		/// <param name="platformButton"></param>
+		/// <param name="widthConstraint"></param>
+		/// <param name="heightConstraint"></param>
+		/// <returns>Returns the <see cref="CGRect"/> that contains the button's title.</returns>
+		/// <remarks>The <see cref="NSStringDrawingOptions.UsesDeviceMetrics"/> flag is useful for when there is truncation in the title so we will take the max width of the two bounding rects.</remarks>
 		internal static CGRect GetTitleBoundingRect(this UIButton platformButton, double widthConstraint, double heightConstraint)
 		{
 			if ((platformButton.CurrentAttributedTitle != null || platformButton.CurrentTitle != null)

@@ -15,6 +15,15 @@ namespace Microsoft.Maui.Controls
 	{
 		CGSize _originalImageSize = CGSize.Empty;
 
+		/// <summary>
+		/// Measure the desired size of the button based on the image and title size taking into account
+		/// the padding, spacing, margins, borders, and image placement.
+		/// This method will also try to resize the image if it is too large for the button.
+		/// </summary>
+		/// <param name="widthConstraint"></param>
+		/// <param name="heightConstraint"></param>
+		/// <returns>Returns a <see cref="Size"/> representing the width and height of the button.</returns>
+		/// <remarks>Calling base.MeasureOverride will call SizeThatFits() on the UIButton's UIView but will not consider some MAUI Button elements such as the BorderWidth and image placement. Instead we calculate that manually.</remarks>
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var button = this;
@@ -129,11 +138,14 @@ namespace Microsoft.Maui.Controls
 							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
 
 			// Rounding the values up to the nearest whole number to match UIView.SizeThatFits
-			ret = new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
-
-			return ret;
+			return new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
 		}
 
+		/// <summary>
+		/// Arrange the button and layout the image and title.
+		/// </summary>
+		/// <param name="bounds"></param>
+		/// <returns></returns>
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			var button = this;
@@ -145,6 +157,13 @@ namespace Microsoft.Maui.Controls
 			return base.ArrangeOverride(bounds);
 		}
 
+		/// <summary>
+		/// Calculate and layout the image and title insets of the UIButton.
+		/// </summary>
+		/// <param name="platformButton"></param>
+		/// <param name="button"></param>
+		/// <param name="size"></param>
+		/// <remarks>TitleEdgeInsets and ImageEdgeInsets are deprecated in iOS 15. The layout process will change with UIButton.Configuration API in the future.</remarks>
 		void LayoutButton(UIButton platformButton, Button button, Rect size)
 		{
 			var layout = button.ContentLayout;
@@ -242,11 +261,19 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CA1416, CA1422
 		}
 
-		static bool AreSignificantlyDifferent(double value1, double value2, double buffer = 0.1)
-		{
-				return Math.Abs(value1 - value2) > buffer;
-		}
-
+		/// <summary>
+		/// See if the button's image fits within the constraints and resize it if necessary.
+		/// </summary>
+		/// <param name="platformButton"></param>
+		/// <param name="button"></param>
+		/// <param name="image"></param>
+		/// <param name="spacing"></param>
+		/// <param name="padding"></param>
+		/// <param name="borderWidth"></param>
+		/// <param name="widthConstraint"></param>
+		/// <param name="heightConstraint"></param>
+		/// <param name="originalImageSize"></param>
+		/// <returns></returns>
 		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, nfloat spacing, Thickness padding, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
 		{
 			var currentImageWidth = image.Size.Width;
@@ -315,6 +342,15 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		/// <summary>
+		/// Resize the image to fit within the constraints.
+		/// </summary>
+		/// <param name="sourceImage"></param>
+		/// <param name="maxWidth"></param>
+		/// <param name="maxHeight"></param>
+		/// <param name="originalImageSize"></param>
+		/// <param name="shouldScaleUp"></param>
+		/// <returns></returns>
 		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
 		{
 			if (sourceImage is null || sourceImage.CGImage is null)
