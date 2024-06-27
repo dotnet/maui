@@ -42,6 +42,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return position;
 			}
+
+			public override long ContainsItem(int position)
+			{
+				return true;
+			}
 		}
 	}
 }
