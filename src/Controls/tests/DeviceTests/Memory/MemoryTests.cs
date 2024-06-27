@@ -407,6 +407,31 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references[0], references[1], references[2]);
 	}
 
+	[Fact("Window Does Not Leak")]
+	public async Task WindowDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+
+		await InvokeOnMainThreadAsync(async () =>
+		{
+			var page = new ContentPage();
+			var window = new Window(page);
+			var handler = CreateHandler<WindowHandler>(window);
+			await OnLoadedAsync(page);
+			references.Add(new(window));
+			references.Add(new(window.Handler));
+#if !WINDOWS
+			// FIXME: Microsoft.UI.Xaml.Window does not go away in this test
+			references.Add(new(window.Handler.PlatformView));
+#endif
+			((IWindow)window).Destroying();
+		});
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
+	}
+
 #if IOS
 	[Fact]
 	public async Task ResignFirstResponderTouchGestureRecognizer()
