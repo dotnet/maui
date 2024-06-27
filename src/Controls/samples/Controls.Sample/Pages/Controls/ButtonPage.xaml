@@ -257,7 +257,7 @@
                 <Slider
                     x:Name="BorderWidthSlider"
                     Minimum="0"
-                    Maximum="50"
+                    Maximum="100"
                     Value ="0"/>
             </VerticalStackLayout>
         </ScrollView>
