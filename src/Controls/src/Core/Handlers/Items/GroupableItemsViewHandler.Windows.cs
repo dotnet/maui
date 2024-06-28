@@ -16,6 +16,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.UpdateItemsSource();
 		}
 
+		protected override void CleanUpCollectionViewSource()
+		{
+			if (CollectionViewSource is not null)
+			{
+				if (CollectionViewSource.Source is GroupedItemTemplateCollection groupedItemTemplateCollection)
+				{
+					groupedItemTemplateCollection.CleanUp();
+				}
+			}
+			base.CleanUpCollectionViewSource();
+		}
+
 		protected override CollectionViewSource CreateCollectionViewSource()
 		{
 			if (ItemsView != null && ItemsView.IsGrouped)
