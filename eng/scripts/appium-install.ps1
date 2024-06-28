@@ -40,7 +40,7 @@ Find the script for that on the DevDiv Azure DevOps instance, Engineering team, 
 
 param
 (
-    [string] $appiumVersion = '2.5.4',
+    [string] $appiumVersion = '2.11.0',
     [string] $windowsDriverVersion = '2.12.23',
     [string] $androidDriverVersion = '3.5.1',
     [string] $iOSDriverVersion = '7.16.1',
