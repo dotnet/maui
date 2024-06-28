@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Platform
 				// It might have code in the handler that retrieves this class.
 				_rootView.Content = null;
 			}
-			
+
 			_rootView.Content = platformView is NavigationView ? platformView : new RootNavigationView()
 			{
 				Content = platformView
