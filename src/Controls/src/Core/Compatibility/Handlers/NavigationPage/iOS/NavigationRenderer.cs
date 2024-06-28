@@ -471,6 +471,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == NavigationPage.BarBackgroundProperty.PropertyName)
 			{
 				UpdateBarBackground();
+				var pack = (ParentingViewController)TopViewController;
+				pack?.UpdateToolbarItems();
 			}
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName
 				  || e.PropertyName == StatusBarTextColorModeProperty.PropertyName)
@@ -481,6 +483,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 			{
 				UpdateBackgroundColor();
+				var pack = (ParentingViewController)TopViewController;
+				pack?.UpdateToolbarItems();
 			}
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 			{
@@ -1605,7 +1609,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			void UpdateToolbarItems()
+			internal void UpdateToolbarItems()
 			{
 				if (NavigationItem.RightBarButtonItems != null)
 				{
