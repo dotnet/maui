@@ -178,6 +178,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_defaultBackgroundColor == null)
 				_defaultBackgroundColor = backgroundView.BackgroundColor;
 			backgroundView.BackgroundColor = backGroundColor.ToPlatform();
+			textField.BackgroundColor = backGroundColor.ToPlatform();
 		}
 
 		void UpdateCancelButtonColor(UIButton cancelButton)
