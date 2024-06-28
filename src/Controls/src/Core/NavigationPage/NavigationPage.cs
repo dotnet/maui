@@ -73,6 +73,12 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		internal override void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			base.OnParentResourcesChanged(sender, e);
+			_toolbar.OnParentResourcesChanged();
+		}
+
 		internal NavigationPage(bool setforMaui, Page root = null)
 		{
 			_setForMaui = setforMaui;
