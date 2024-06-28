@@ -110,12 +110,14 @@ namespace Microsoft.Maui.Controls
 				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
 				+ (nfloat)padding.Left
 				+ (nfloat)padding.Right
+				+ (nfloat)button.Margin.HorizontalThickness
 				+ (nfloat)borderWidth * 2;
 
 			var buttonContentHeight =
 				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
 				+ (nfloat)padding.Top
 				+ (nfloat)padding.Bottom
+				+ (nfloat)button.Margin.VerticalThickness
 				+ (nfloat)borderWidth * 2;
 
 			// if we have both an image and title, add the smaller of the two to the calculation as well
