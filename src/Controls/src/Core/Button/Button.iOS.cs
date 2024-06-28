@@ -110,14 +110,12 @@ namespace Microsoft.Maui.Controls
 				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
 				+ (nfloat)padding.Left
 				+ (nfloat)padding.Right
-				+ (nfloat)button.Margin.HorizontalThickness
 				+ (nfloat)borderWidth * 2;
 
 			var buttonContentHeight =
 				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
 				+ (nfloat)padding.Top
 				+ (nfloat)padding.Bottom
-				+ (nfloat)button.Margin.VerticalThickness
 				+ (nfloat)borderWidth * 2;
 
 			// if we have both an image and title, add the smaller of the two to the calculation as well
@@ -136,11 +134,15 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			var ret = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
+			var returnSize = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
 							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
 
+			// Add the margins to the return size
+			returnSize.Width += (nfloat)button.Margin.HorizontalThickness;
+			returnSize.Height += (nfloat)button.Margin.VerticalThickness;
+
 			// Rounding the values up to the nearest whole number to match UIView.SizeThatFits
-			return new Size((int)Math.Ceiling(ret.Width), (int)Math.Ceiling(ret.Height));
+			return new Size((int)Math.Ceiling(returnSize.Width), (int)Math.Ceiling(returnSize.Height));
 		}
 
 		/// <summary>
