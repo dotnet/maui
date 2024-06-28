@@ -184,11 +184,8 @@ namespace Microsoft.Maui.Controls
 				// need to always push the xplat -> native value flow in scenarios such as "select all text on focus". If we 
 				// don't do this the native control will handle the input event and move the cursor after we set the selection
 				// length/cursor position, which is not the desired behavior.
-				if ((int)GetValue(CursorPositionProperty) == value)
-				{
-					Handler?.UpdateValue(nameof(CursorPosition));
-				}
 				SetValue(CursorPositionProperty, value);
+				Handler?.UpdateValue(nameof(CursorPosition));
 			}
 		}
 
@@ -201,11 +198,8 @@ namespace Microsoft.Maui.Controls
 			get { return (int)GetValue(SelectionLengthProperty); }
 			set 
 			{
-				if ((int)GetValue(SelectionLengthProperty) == value)
-				{
-					Handler?.UpdateValue(nameof(SelectionLength));
-				}
 				SetValue(SelectionLengthProperty, value);
+				Handler?.UpdateValue(nameof(SelectionLength));
 			}
 		}
 
