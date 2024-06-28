@@ -21,6 +21,7 @@ public class Issue16910 : _IssuesUITest
 		_ = App.WaitForElement("StartRefreshing");
 		App.Tap("StartRefreshing");
 		App.WaitForElement("IsRefreshing");
+		App.WaitForElement("StopRefreshing");
 		App.Tap("StopRefreshing");
 	}
 

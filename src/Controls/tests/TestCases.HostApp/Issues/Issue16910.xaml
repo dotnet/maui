@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue16910">
     <ContentPage.Content>
-        <Grid RowDefinitions="Auto,100,*,Auto" x:Name="grid">
+        <Grid RowDefinitions="Auto,100,*,50,50" x:Name="grid">
             <Label Grid.Row="1" Text="Interact with the RefreshView and make sure the IsRefreshing Label correctly Represents current state." />
             <RefreshView x:Name="refreshView" Grid.Row="2" IsRefreshing="{Binding IsRefreshing, Mode=TwoWay}">
                 <CollectionView ItemsSource="{Binding ItemSource}" AutomationId="CollectionView">
@@ -15,7 +15,7 @@
                 </CollectionView>
             </RefreshView>
             <Button x:Name="StopRefreshing" AutomationId="StopRefreshing" Grid.Row="3" Text="Stop Refresh" Clicked="OnStopRefreshClicked" />
-            <Button x:Name="StartRefreshing" AutomationId="StartRefreshing" Grid.Row="3" Text="Refresh" Clicked="OnRefreshClicked" />
+            <Button x:Name="StartRefreshing" AutomationId="StartRefreshing" Grid.Row="4" Text="Refresh" Clicked="OnRefreshClicked" />
         </Grid>
     </ContentPage.Content>
 </ContentPage>
