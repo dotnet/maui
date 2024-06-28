@@ -97,9 +97,9 @@ namespace Microsoft.Maui.Platform
 			if (_disconnected)
 			{
 				_platformWindow.Activated += OnWindowActivated;
+				_disconnected = false;
 			}
 
-			_disconnected = false;
 			_rootView.OnWindowTitleBarContentSizeChanged += WindowRootViewOnWindowTitleBarContentSizeChanged;
 		}
 
