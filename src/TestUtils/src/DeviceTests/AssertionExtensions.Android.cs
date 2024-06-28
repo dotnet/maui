@@ -356,8 +356,16 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					rootView.RemoveView(layout);
-					layout.RemoveView(view);
+					if (rootView.IsAlive() && layout.IsAlive())
+					{
+						rootView.RemoveView(layout);
+					}
+
+					if (layout.IsAlive() && view.IsAlive())
+					{
+						layout.RemoveView(view);
+					}
+
 					_attachAndRunSemaphore.Release();
 				}
 			}
