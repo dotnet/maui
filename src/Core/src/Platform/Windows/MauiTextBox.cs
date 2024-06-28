@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -8,8 +9,6 @@ namespace Microsoft.Maui.Platform
 		const string ContentElementName = "ContentElement";
 		const string PlaceholderTextContentPresenterName = "PlaceholderTextContentPresenter";
 		const string DeleteButtonElementName = "DeleteButton";
-		const string ButtonStatesName = "ButtonStates";
-		const string ButtonVisibleStateName = "ButtonVisible";
 
 		public static void InvalidateAttachedProperties(DependencyObject obj)
 		{
@@ -76,7 +75,8 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					deleteButton.RenderTransform = new UI.Xaml.Media.TranslateTransform() { Y = -1000 };
+					// This is a workaround to move the button to be effectively invisible. It is not perfect.
+					deleteButton.RenderTransform = new TranslateTransform() { X = -int.MaxValue, Y = -int.MaxValue };
 				}
 			}
 		}
