@@ -16,11 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
-		[FailsOnIOS("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/17125")]
 		public void Issue15330Test()
 		{
-			// Currently fails on iOS; see https://github.com/dotnet/maui/issues/17125
-
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
 		}
