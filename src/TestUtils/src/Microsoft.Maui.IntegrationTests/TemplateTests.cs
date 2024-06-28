@@ -49,11 +49,13 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("Debug")]
-		[TestCase("Release")]
-		public void BuildMultiProject(string config)
+		[TestCase("Debug", "simplemulti")]
+		[TestCase("Release", "simplemulti")]
+		[TestCase("Debug", "MultiProject@Symbol & More")]
+		[TestCase("Release", "MultiProject@Symbol & More")]
+		public void BuildMultiProject(string config, string projectName)
 		{
-			var projectDir = TestDirectory;
+			var projectDir = Path.Combine(TestDirectory, projectName);
 			var name = Path.GetFileName(projectDir);
 			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (!TestEnvironment.IsWindows)
 			{
-				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+				Assert.IsTrue(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
 					$"Unable to remove WinUI project from solution. Check test output for errors.");
 			}
 
@@ -99,10 +101,10 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
-		[TestCase("maui", "Project@Symbol", "projectsymbol")]
-		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
-		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+  		// with lots tricky characters (the '&' requires XML escaping too)
+		[TestCase("maui", "Project@Symbol & More", "projectsymbolmore")]
+		[TestCase("maui-blazor", "Project@Symbol & More", "projectsymbolmore")]
+		[TestCase("mauilib", "Project@Symbol & More", "projectsymbolmore")]
 		public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 		{
 			var projectDir = Path.Combine(TestDirectory, projectName);
@@ -117,12 +119,22 @@ namespace Microsoft.Maui.IntegrationTests
 			if (id != "mauilib")
 			{
 				var doc = XDocument.Load(projectFile);
+
+				// Check the app ID got invalid characters removed
 				var appId = doc.Root!
 					.Elements("PropertyGroup")
 					.Elements("ApplicationId")
 					.Single()
 					.Value;
 				Assert.AreEqual($"com.companyname.{expectedId}", appId);
+
+				// Check the app title matches the project name exactly (it might have been XML-encoded, but loading the document decodes that)
+				var appTitle = doc.Root!
+					.Elements("PropertyGroup")
+					.Elements("ApplicationTitle")
+					.Single()
+					.Value;
+				Assert.AreEqual(projectName, appTitle);
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),

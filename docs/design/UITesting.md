@@ -14,7 +14,7 @@ Appium relies on different implementations called `drivers` for each platform th
 
 ### The sample project
 
-The project that is used for UI Tests is located here: `src\Controls\tests\TestCases\Controls.TestCases.App.csproj`
+The project that is used for UI Tests is located here: `src\Controls\tests\TestCases.HostApp\Controls.TestCases.HostApp.csproj`
 
 There are two types of tests you can add, Issue and Gallery.
 
@@ -26,17 +26,17 @@ You will need to create some kind of UI to test against, which will go in the Co
 
 Then in the Controls.AppiumTests project add a new class that derives from `_IssuesUITest` and add your test.
 
-You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/RefreshViewTests.cs).
+You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/RefreshViewTests.cs).
 
 ### Adding a GalleryPage
 
 Gallery tests are to make it easier to run the same set of tests on controls, if you are creating a new control you would want to add a new gallery page.
 
-We have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases/Elements/ContentViewGalleryPage.cs)
+We have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Elements/ContentViewGalleryPage.cs)
 
 All controls you intend to interact with need to set the 'AutomationId' property as this will be what you use to query for the element.
 
-Once you have created your GalleryPage, add it to [CorePageView](https://github.com/dotnet/maui/blob/5419846b1f20bdab1b5ce1dff40287edc5c38f12/src/Controls/tests/TestCases/CoreViews/CorePageView.cs#L45C41-L45C41) so that it will show up on the main page at launch.
+Once you have created your GalleryPage, add it to [CorePageView](https://github.com/dotnet/maui/blob/5419846b1f20bdab1b5ce1dff40287edc5c38f12/src/Controls/tests/TestCases.HostApp/CoreViews/CorePageView.cs#L45C41-L45C41) so that it will show up on the main page at launch.
 
 ### Adding the test
 
