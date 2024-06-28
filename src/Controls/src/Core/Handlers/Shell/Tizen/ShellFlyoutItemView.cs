@@ -3,7 +3,9 @@ using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	class ShellFlyoutItemView : Frame
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView), false, propertyChanged: (b, o, n) => ((ShellFlyoutItemView)b).UpdateSelectedState());
 
