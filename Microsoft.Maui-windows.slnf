@@ -14,7 +14,7 @@
       "src\\Controls\\Maps\\src\\Controls.Maps.csproj",
       "src\\Controls\\samples\\Controls.Sample.Profiling\\Maui.Controls.Sample.Profiling.csproj",
       "src\\Controls\\samples\\Controls.Sample.Sandbox\\Maui.Controls.Sample.Sandbox.csproj",
-      "src\\Controls\\tests\\TestCases\\Controls.TestCases.App.csproj",
+      "src\\Controls\\tests\\TestCases.HostApp\\Controls.TestCases.HostApp.csproj",
       "src\\Controls\\samples\\Controls.Sample\\Maui.Controls.Sample.csproj",
       "src\\Controls\\src\\Build.Tasks\\Controls.Build.Tasks.csproj",
       "src\\Controls\\src\\Core.Design\\Controls.Core.Design.csproj",

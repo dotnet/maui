@@ -82,5 +82,30 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("DisabledTapGestureResults").GetText();
 			ClassicAssert.AreNotEqual("Failed", result);
 		}
+
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void DynamicallyAddedTapGesturesDontCauseMultipleTapEvents()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DynamicTapGestureGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("DynamicTapSurface");
+			App.Tap("DynamicTapSurface");
+			App.Tap("DynamicTapSurface");
+			App.Tap("DynamicTapSurface");
+
+			var result = App.FindElement("DynamicTapGestureResults").GetText();
+
+			if (int.TryParse(result, out var resultInt))
+			{
+				ClassicAssert.AreEqual(3, resultInt);
+			}
+			else
+			{
+				ClassicAssert.Fail("Failed to parse result as int");
+			}
+		}
 	}
 }
