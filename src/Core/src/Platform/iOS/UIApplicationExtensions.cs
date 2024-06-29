@@ -47,6 +47,17 @@ namespace Microsoft.Maui.Platform
 		public static IWindow? GetWindow(this UIApplication application) =>
 			application.GetKeyWindow().GetWindow();
 
+		public static IWindow? GetFirstWindow(this UIApplication application)
+		{
+#pragma warning disable CA1422 // Validate platform compatibility
+			var windows = application.Windows;
+#pragma warning restore CA1422 // Validate platform compatibility
+
+			var window = windows.Length > 0 ? windows[0] : null;
+
+			return window.GetWindow();
+		}
+
 		public static IWindow? GetWindow(this UIWindow? platformWindow)
 		{
 			if (platformWindow is null)
