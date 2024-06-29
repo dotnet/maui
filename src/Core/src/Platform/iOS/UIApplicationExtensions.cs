@@ -46,21 +46,15 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow? GetWindow(this UIApplication application)
 		{
-			if(!application.Delegate.HasSceneManifest())
-				return application.GetFirstWindow().GetWindow();
+			if (!OperatingSystem.IsIOSVersionAtLeast(13) || !application.Delegate.HasSceneManifest())
+            {
+                var windows = IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>();
+
+                if (windows.Count == 1)
+                    return windows[0];
+            }
 
 			return application.GetKeyWindow().GetWindow();
-		}
-
-		public static UIWindow? GetFirstWindow(this UIApplication application)
-		{
-#pragma warning disable CA1422 // Validate platform compatibility
-			var windows = application.Windows;
-#pragma warning restore CA1422 // Validate platform compatibility
-
-			var window = windows.Length > 0 ? windows[0] : null;
-
-			return window;
 		}
 
 		public static IWindow? GetWindow(this UIWindow? platformWindow)
