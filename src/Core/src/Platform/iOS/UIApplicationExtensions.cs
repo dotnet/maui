@@ -44,10 +44,15 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		public static IWindow? GetWindow(this UIApplication application) =>
-			application.GetKeyWindow().GetWindow();
+		public static IWindow? GetWindow(this UIApplication application)
+		{
+			if(!application.Delegate.HasSceneManifest())
+				return application.GetFirstWindow().GetWindow();
 
-		public static IWindow? GetFirstWindow(this UIApplication application)
+			return application.GetKeyWindow().GetWindow();
+		}
+
+		public static UIWindow? GetFirstWindow(this UIApplication application)
 		{
 #pragma warning disable CA1422 // Validate platform compatibility
 			var windows = application.Windows;
@@ -55,7 +60,7 @@ namespace Microsoft.Maui.Platform
 
 			var window = windows.Length > 0 ? windows[0] : null;
 
-			return window.GetWindow();
+			return window;
 		}
 
 		public static IWindow? GetWindow(this UIWindow? platformWindow)
