@@ -25,28 +25,28 @@ namespace Microsoft.Maui.LifecycleEvents
 					.WillTerminate(app =>
 					{
 						// By this point if we were a multi window app, the GetWindow would be null anyway
-						app.GetFirstWindow()?.Destroying();
+						app.GetWindow()?.Destroying();
 						KeyboardAutoManagerScroll.Disconnect();
 					})
 					.WillEnterForeground(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
-							app.GetFirstWindow()?.Resumed();
+							app.GetWindow()?.Resumed();
 					})
 					.OnActivated(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
-							app.GetFirstWindow()?.Activated();
+							app.GetWindow()?.Activated();
 					})
 					.OnResignActivation(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
-							app.GetFirstWindow()?.Deactivated();
+							app.GetWindow()?.Deactivated();
 					})
 					.DidEnterBackground(app =>
 					{
 						if (!app.Delegate.HasSceneManifest())
-							app.GetFirstWindow()?.Stopped();
+							app.GetWindow()?.Stopped();
 					});
 
 
