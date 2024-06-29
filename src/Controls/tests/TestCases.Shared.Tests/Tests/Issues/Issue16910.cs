@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
@@ -21,8 +22,8 @@ public class Issue16910 : _IssuesUITest
 		_ = App.WaitForElement("StartRefreshing");
 		App.Tap("StartRefreshing");
 		App.WaitForElement("IsRefreshing");
-		App.WaitForElement("StopRefreshing");
-		App.Tap("StopRefreshing");
+		App.Click("StopRefreshing");
+		App.WaitForElement("IsNotRefreshing");
 	}
 
 // Windows only works with touch inputs which we don't have running on the test server
@@ -35,6 +36,7 @@ public class Issue16910 : _IssuesUITest
 		App.ScrollUp("CollectionView");
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
+		App.WaitForElement("IsNotRefreshing");
 	}
 #endif
 
