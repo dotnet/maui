@@ -273,6 +273,8 @@ namespace Microsoft.Maui.Platform
 					var child = GetChildAt(n);
 					child.Visibility = ViewStates.Visible;
 				}
+				
+				RequestLayout();
 			}
 		}
 
