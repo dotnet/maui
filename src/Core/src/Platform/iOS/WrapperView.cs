@@ -75,6 +75,8 @@ namespace Microsoft.Maui.Platform
 
 		public override void LayoutSubviews()
 		{
+			// WE might have to add something here as well....
+			// So that we can route to ICrossPlatformLayout.CrossPlatformArrange
 			base.LayoutSubviews();
 
 			var subviews = Subviews;
@@ -133,25 +135,34 @@ namespace Microsoft.Maui.Platform
 				return imageButton.ImageView.SizeThatFitsImage(size);
 			}
 
+			// TODO WE MIGHT HAVE TO ADD SOMETHING HERE that routes to ICrossPlatformLayout.CrossPlatformMeasure
 			return child.SizeThatFits(size);
 		}
 
-		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
+		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight, IView view)
 		{
 			var subviews = Subviews;
 			if (subviews.Length == 0)
 				return base.SizeThatFits(originalSpec);
 
 			var child = subviews[0];
+			
 
 			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 			{
 				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
 				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
-				return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+
+				if(view is ICrossPlatformLayout crossPlatformSizeThatFits1)
+					return crossPlatformSizeThatFits1.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				else
+					return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
 			}
 
-			return SizeThatFits(originalSpec);
+			if(view is ICrossPlatformLayout crossPlatformSizeThatFits2)
+				return crossPlatformSizeThatFits2.CrossPlatformMeasure(originalSpec.Width, originalSpec.Height);
+			else
+				return SizeThatFits(originalSpec);
 		}
 
 		public override void SetNeedsLayout()

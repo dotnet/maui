@@ -1,10 +1,23 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
+
+	public class MauiButton : UIButton
+	{
+
+		
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			// Code you wrote goe here
+		}
+	}
+
+
 	public partial class ButtonHandler : ViewHandler<IButton, UIButton>
 	{
 		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
