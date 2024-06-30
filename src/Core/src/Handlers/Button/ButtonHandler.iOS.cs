@@ -24,6 +24,15 @@ namespace Microsoft.Maui.Handlers
 			return button;
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override void SetupContainer()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.SetupContainer();
+			if (this.ContainerView is WrapperView wrapperView)
+				wrapperView.CrossPlatformLayout = VirtualView as ICrossPlatformLayout;
+		}
+
 		readonly ButtonEventProxy _proxy = new ButtonEventProxy();
 
 		protected override void ConnectHandler(UIButton platformView)

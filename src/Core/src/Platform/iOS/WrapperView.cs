@@ -11,6 +11,14 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;	
+
+		internal ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
+			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
@@ -135,6 +143,9 @@ namespace Microsoft.Maui.Platform
 				return imageButton.ImageView.SizeThatFitsImage(size);
 			}
 
+			if (CrossPlatformLayout is not null)
+				return CrossPlatformLayout.CrossPlatformMeasure(size.Width, size.Height).ToCGSize();
+
 			// TODO WE MIGHT HAVE TO ADD SOMETHING HERE that routes to ICrossPlatformLayout.CrossPlatformMeasure
 			return child.SizeThatFits(size);
 		}
@@ -153,14 +164,14 @@ namespace Microsoft.Maui.Platform
 				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
 				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
 
-				if(view is ICrossPlatformLayout crossPlatformSizeThatFits1)
-					return crossPlatformSizeThatFits1.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				if(CrossPlatformLayout is not null)
+					return CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 				else
 					return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
 			}
 
-			if(view is ICrossPlatformLayout crossPlatformSizeThatFits2)
-				return crossPlatformSizeThatFits2.CrossPlatformMeasure(originalSpec.Width, originalSpec.Height);
+			if (CrossPlatformLayout is not null)
+				return CrossPlatformLayout.CrossPlatformMeasure(originalSpec.Width, originalSpec.Height);
 			else
 				return SizeThatFits(originalSpec);
 		}
