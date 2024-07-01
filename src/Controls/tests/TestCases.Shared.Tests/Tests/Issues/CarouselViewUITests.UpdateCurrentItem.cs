@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue9827Test()
 		{
 			App.WaitForNoElement("Pos:0");
+			App.WaitForElement("btnNext");
 			App.Click("btnNext");
 			App.WaitForNoElement("Item 1 with some additional text");
 			App.WaitForNoElement("Pos:1");

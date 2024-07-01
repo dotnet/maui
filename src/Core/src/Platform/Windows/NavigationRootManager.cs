@@ -89,33 +89,17 @@ namespace Microsoft.Maui.Platform
 				_rootView.Content = null;
 			}
 
-			NavigationView rootNavigationView;
-			if (platformView is NavigationView nv)
+			_rootView.Content = platformView is NavigationView ? platformView : new RootNavigationView()
 			{
-				rootNavigationView = nv;
-				_rootView.Content = platformView;
-			}
-			else
-			{
-				if (_rootView.Content is RootNavigationView navView)
-				{
-					rootNavigationView = navView;
-				}
-				else
-				{
-					rootNavigationView = new RootNavigationView();
-				}
-
-				rootNavigationView.Content = platformView;
-				_rootView.Content = rootNavigationView;
-			}
+				Content = platformView
+			};
 
 			if (_disconnected)
 			{
 				_platformWindow.Activated += OnWindowActivated;
+				_disconnected = false;
 			}
 
-			_disconnected = false;
 			_rootView.OnWindowTitleBarContentSizeChanged += WindowRootViewOnWindowTitleBarContentSizeChanged;
 		}
 
