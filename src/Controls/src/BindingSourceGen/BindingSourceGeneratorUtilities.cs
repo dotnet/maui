@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
-internal static class BindingGenerationUtilities
+public static class BindingGenerationUtilities
 {
     internal static bool IsTypeNullable(ITypeSymbol typeInfo, bool enabledNullable)
     {

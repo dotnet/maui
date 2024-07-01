@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.BindingSourceGen;
 
 
 internal record CodeGeneratorResult(
-    string GeneratedCode,
+    Dictionary<string, string> GeneratedFiles,
     ImmutableArray<Diagnostic> SourceCompilationDiagnostics,
     ImmutableArray<Diagnostic> SourceGeneratorDiagnostics,
     ImmutableArray<Diagnostic> GeneratedCodeCompilationDiagnostics,
-    SetBindingInvocationDescription? Binding);
+    BindingInvocationDescription? Binding);
 
 internal static class SourceGenHelpers
 {
@@ -43,11 +43,11 @@ internal static class SourceGenHelpers
         var trackedSteps = result.TrackedSteps;
 
         var resultBinding = trackedSteps.TryGetValue("Bindings", out ImmutableArray<IncrementalGeneratorRunStep> value)
-            ? (SetBindingInvocationDescription)value[0].Outputs[0].Value
+            ? (BindingInvocationDescription)value[0].Outputs[0].Value
             : null;
 
         return new CodeGeneratorResult(
-            GeneratedCode: generatedCode,
+            GeneratedFiles: result.GeneratedSources.ToDictionary(source => source.HintName, source => source.SourceText.ToString()),
             SourceCompilationDiagnostics: inputCompilation.GetDiagnostics(),
             SourceGeneratorDiagnostics: result.Diagnostics,
             GeneratedCodeCompilationDiagnostics: generatedCodeDiagnostic,
@@ -71,9 +71,9 @@ internal static class SourceGenHelpers
         return CreateCompilationFromSyntaxTrees([CSharpSyntaxTree.ParseText(source, ParseOptions, path: @"Path\To\Program.cs")]);
     }
 
-    internal static Compilation CreateCompilation(List<string> sources)
+    internal static Compilation CreateCompilation(Dictionary<string, string> sources)
     {
-        var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source, ParseOptions, path: $@"Path\To\Program{sources.IndexOf(source)}.cs")).ToList();
+        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s.Value, ParseOptions, path: s.Key)).ToList(); 
         return CreateCompilationFromSyntaxTrees(syntaxTrees);
     }
 }
