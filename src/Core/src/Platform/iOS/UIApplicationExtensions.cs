@@ -46,34 +46,30 @@ namespace Microsoft.Maui.Platform
 
 		public static IWindow? GetWindow(this UIApplication application)
         {
-            if (!application.Delegate.HasSceneManifest())
-            {
-                // If there's only one window to return then just return that window
-                var windows = IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>();
+            // If there's only one window to return then just return that window
+			var windows = IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>();
 
-                if (windows.Count == 1)
-                    return windows[0];
+			if (windows.Count == 1)
+				return windows[0];
 
-                if (OperatingSystem.IsIOSVersionAtLeast(15))
-                {
-                    foreach(var windowScene in application.ConnectedScenes)
-                    {
-                        if (windowScene is UIWindowScene uiWindowScene)
-                        {
-                            if(uiWindowScene.Windows.Length == 1 && uiWindowScene.Windows[0].GetWindow() is IWindow window)
-							{
-								return window;
-							}
-                        }
-                    }
-
-                }
-                else
-                {
-                    if(application.Windows.Length == 1)
-                        return application.Windows[0].GetWindow();
-                }
-            }
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			{
+				foreach(var windowScene in application.ConnectedScenes)
+				{
+					if (windowScene is UIWindowScene uiWindowScene)
+					{
+						if(uiWindowScene.Windows.Length == 1 && uiWindowScene.Windows[0].GetWindow() is IWindow window)
+						{
+							return window;
+						}
+					}
+				}
+			}
+			else
+			{
+				if(application.Windows.Length == 1)
+					return application.Windows[0].GetWindow();
+			}
 
             return application.GetKeyWindow().GetWindow();
         }
