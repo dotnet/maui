@@ -12,7 +12,6 @@ namespace Maui.Controls.Sample
 			Add(new PointerGestureRecognizerEvents());
 			Add(new DoubleTapGallery());
 			Add(new SingleTapGallery());
-			Add(new DynamicTapGestureGallery());
 		}
 	}
 }
