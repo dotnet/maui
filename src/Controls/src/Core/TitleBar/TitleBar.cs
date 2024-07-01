@@ -4,6 +4,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <summary>
+	/// A <see cref="View"/> control that provides title bar functionality for a window.
+	/// <br/><br/>
+	/// The standard title bar height is 32px, but can be set to a larger value.
+	/// <br/><br/>
+	/// The title bar can also be hidden by setting the <see cref="Visibility"/> property, which
+	/// will cause the window content to be displayed in the title bar region.
+	/// </summary>
 	public partial class TitleBar : TemplatedView, ITitleBar
 	{
 		public const string TemplateRootName = "PART_Root";
@@ -35,30 +43,39 @@ namespace Microsoft.Maui.Controls
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
 
+		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
 
+		/// <summary>Bindable property for <see cref="LeadingContent"/>.</summary>
 		public static readonly BindableProperty LeadingContentProperty = BindableProperty.Create(nameof(LeadingContent), typeof(IView),
 			typeof(TitleBar), null, propertyChanged: OnLeadingChanged);
 
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(IView),
 			typeof(TitleBar), null, propertyChanged: OnContentChanged);
 
+		/// <summary>Bindable property for <see cref="TrailingContent"/>.</summary>
 		public static readonly BindableProperty TrailingContentProperty = BindableProperty.Create(nameof(TrailingContent), typeof(IView),
 			typeof(TitleBar), null, propertyChanged: OnTrailingContentChanged);
 
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string),
 			typeof(TitleBar), null, propertyChanged: OnTitleChanged);
 
+		/// <summary>Bindable property for <see cref="Subtitle"/>.</summary>
 		public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(nameof(Subtitle), typeof(string),
 			typeof(TitleBar), null, propertyChanged: OnSubtitleChanged);
 
+		/// <summary>Bindable property for <see cref="ForegroundColor"/>.</summary>
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
 			typeof(Color), typeof(TitleBar));
 
+		/// <summary>Bindable property for <see cref="InactiveBackgroundColor"/>.</summary>
 		public static readonly BindableProperty InactiveBackgroundColorProperty = BindableProperty.Create(nameof(InactiveBackgroundColor),
 			typeof(Color), typeof(TitleBar), null);
 
+		/// <summary>Bindable property for <see cref="InactiveForegroundColor"/>.</summary>
 		public static readonly BindableProperty InactiveForegroundColorProperty = BindableProperty.Create(nameof(InactiveForegroundColor),
 			typeof(Color), typeof(TitleBar), null);
 
@@ -141,60 +158,110 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets an optional icon image of the title bar. Icon images should be
+		/// 16x16 pixels in size.
+		/// <br/><br/>
+		/// Setting this property to an empty value will hide the icon.
+		/// </summary>
 		public ImageSource Icon
 		{
 			get { return (ImageSource)GetValue(IconProperty); }
 			set { SetValue(IconProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a <see cref="View"/> control that represents the leading content.<br/><br/>
+		/// The leading content follows the optional <see cref="Icon"/> and is aligned to
+		/// the left or right of the title bar, depending on the <see cref="FlowDirection"/>. Views
+		/// set here will be allocated as much space as they require.
+		/// <br/><br/>
+		/// Views set here will block all input to the title bar region and handle input directly.
+		/// </summary>
 		public IView? LeadingContent
 		{
 			get { return (View?)GetValue(LeadingContentProperty); }
 			set { SetValue(LeadingContentProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the title text of the title bar. The title usually specifies
+		/// the name of the application or indicates the purpose of the window
+		/// </summary>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the subtitle text of the title bar. The subtitle usually specifies
+		/// the secondary information about the application or window
+		/// </summary>
 		public string Subtitle
 		{
 			get { return (string)GetValue(SubtitleProperty); }
 			set { SetValue(SubtitleProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a <see cref="View"/> control that represents the content.<br/><br/>
+		/// This content is centered in the title bar, and is allocated the remaining space
+		/// between the leading and trailing content.<br/>
+		/// <br/><br/>
+		/// Views set here will block all input to the title bar region and handle input directly.
+		/// </summary>
 		public IView? Content
 		{
 			get { return (View?)GetValue(TitleBar.ContentProperty); }
 			set { SetValue(TitleBar.ContentProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a <see cref="View"/> control that represents the trailing content.<br/><br/>
+		/// The trailing content is aligned to the right or left of the title bar, depending 
+		/// on the <see cref="FlowDirection"/>. Views set here will be allocated as much space 
+		/// as they require.
+		/// <br/><br/>
+		/// Views set here will block all input to the title bar region and handle input directly.
+		/// </summary>
 		public IView? TrailingContent
 		{
 			get { return (View?)GetValue(TrailingContentProperty); }
 			set { SetValue(TrailingContentProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the foreground color of the title bar. This color is used for the 
+		/// title and subtitle text.
+		/// </summary>
 		public Color ForegroundColor
 		{
 			get { return (Color)GetValue(ForegroundColorProperty); }
 			set { SetValue(ForegroundColorProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the inactive background color of the title bar. This color will be
+		/// used when the window is inactive, such as when it is not in focus.
+		/// </summary>
 		public Color InactiveBackgroundColor
 		{
 			get { return (Color)GetValue(InactiveBackgroundColorProperty); }
 			set { SetValue(InactiveBackgroundColorProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the inactive foreground color of the title bar. This color will be
+		/// used when the window is inactive, such as when it is not in focus.
+		/// </summary>
 		public Color InactiveForegroundColor
 		{
 			get { return (Color)GetValue(InactiveForegroundColorProperty); }
 			set { SetValue(InactiveForegroundColorProperty, value); }
 		}
 
+		/// <inheritdoc/>
 		public IList<IView> PassthroughElements { get; private set; }
 
 #nullable disable
@@ -232,6 +299,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Gets the default template for the title bar
+		/// </summary>
 		public static ControlTemplate DefaultTemplate
 		{
 			get
@@ -343,8 +413,8 @@ namespace Microsoft.Maui.Controls
 			#region Icon
 			var icon = new Image()
 			{
-				WidthRequest = 20,
-				HeightRequest = 20,
+				WidthRequest = 16,
+				HeightRequest = 16,
 				VerticalOptions = LayoutOptions.Center,
 				Margin = new Thickness(16, 0, 0, 0),
 				IsVisible = false,
