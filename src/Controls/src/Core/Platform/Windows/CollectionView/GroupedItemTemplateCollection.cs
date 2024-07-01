@@ -1,11 +1,12 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class GroupedItemTemplateCollection : ObservableCollection<GroupTemplateContext>
+	internal class GroupedItemTemplateCollection : ObservableCollection<GroupTemplateContext>, IDisposable
 	{
 		readonly IEnumerable _itemsSource;
 		readonly DataTemplate _itemTemplate;
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IList _groupList;
 		readonly NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+		bool _disposedValue;
 
 		~GroupedItemTemplateCollection() => _proxy.Unsubscribe();
 
@@ -44,9 +46,22 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public void CleanUp()
+		protected virtual void Dispose(bool disposing)
 		{
-			_proxy?.Unsubscribe();
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					_proxy?.Unsubscribe();
+				}
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 
 		GroupTemplateContext CreateGroupTemplateContext(object group)
