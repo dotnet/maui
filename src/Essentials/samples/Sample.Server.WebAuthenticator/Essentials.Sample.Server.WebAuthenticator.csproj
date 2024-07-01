@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
-    <DisableMauiAnalyzers>true</DisableMauiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
