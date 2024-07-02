@@ -80,18 +80,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TabbedPage))]
 	public async Task PagesDoNotLeak(Type type)
 	{
-#if WINDOWS
-		// FIXME: there is still an issue with TabbedPage on Windows
-		if (type == typeof(TabbedPage))
-			return;
-#endif
-
 		SetupBuilder();
 
-		WeakReference viewReference = null;
-		WeakReference handlerReference = null;
-		WeakReference platformViewReference = null;
-
+		var references = new List<WeakReference>();
 		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
@@ -115,16 +106,22 @@ public class MemoryTests : ControlsHandlerTestBase
 			
 			await navPage.Navigation.PushModalAsync(page);
 
-			viewReference = new WeakReference(page);
-			handlerReference = new WeakReference(page.Handler);
-			platformViewReference = new WeakReference(page.Handler.PlatformView);
+			references.Add(new(page));
+			references.Add(new(page.Handler));
+			references.Add(new(page.Handler.PlatformView));
 
-			// Windows requires Loaded event to fire before unloading
 			await OnLoadedAsync(pageToWaitFor);
+			if (pageToWaitFor != page)
+			{
+				references.Add(new(pageToWaitFor));
+				references.Add(new(pageToWaitFor.Handler));
+				references.Add(new(pageToWaitFor.Handler.PlatformView));
+			}
+
 			await navPage.Navigation.PopModalAsync();
 		});
 
-		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
 	[Theory("Handler Does Not Leak")]
