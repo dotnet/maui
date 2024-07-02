@@ -17,6 +17,7 @@ Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint,
 Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminated! webProcessTerminated) -> void
 Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Alt = 4 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Cmd = 8 -> Microsoft.Maui.KeyboardAcceleratorModifiers
@@ -32,6 +33,8 @@ Microsoft.Maui.Platform.IImageSourcePartSetter.SetImageSource(object? platformIm
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Platform.IImageSourcePartSetter! setter) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.SoftInputExtensions
+Microsoft.Maui.WebProcessTerminated
+Microsoft.Maui.WebProcessTerminated.WebProcessTerminated() -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
