@@ -26,6 +26,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		int _value;
+		public virtual int Value
+		{
+			get { return _value; }
+			set
+			{
+				if (_value == value)
+					return;
+
+				_value = value;
+				OnPropertyChanged("Value");
+			}
+		}
+
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

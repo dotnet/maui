@@ -427,6 +427,22 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static readonly Type[] DecimalTypes = { typeof(float), typeof(decimal), typeof(double) };
+		static readonly Type[] NumericTypes =
+		{
+			typeof(sbyte),
+			typeof(byte),
+			typeof(short),
+			typeof(ushort),
+			typeof(int),
+			typeof(uint),
+			typeof(long),
+			typeof(ulong),
+			typeof(nint),
+			typeof(nuint),
+			typeof(float),
+			typeof(double),
+			typeof(decimal),
+		};
 
 		internal static bool TryConvert(ref object value, BindableProperty targetProperty, Type convertTo, bool toTarget)
 		{
@@ -461,6 +477,13 @@ namespace Microsoft.Maui.Controls
 				{
 					value = original;
 					return false;
+				}
+
+				// If the input string is null, empty, or consists only of whitespace, 
+				// and the target type is a numeric type, set the value to 0 to ensure proper numeric conversion
+				if (string.IsNullOrWhiteSpace(stringValue) && NumericTypes.Contains(convertTo))
+				{
+					value = 0;
 				}
 
 				value = Convert.ChangeType(value, convertTo, CultureInfo.CurrentCulture);

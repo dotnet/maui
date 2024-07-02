@@ -1953,6 +1953,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(slider.Value, Slider.ValueProperty.DefaultValue);
 		}
 
+		[Fact]
+		public void ConvertNumericToZero()
+		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+			var entry = new Entry();
+			var vm = new MockViewModel { Value = 5 };
+			entry.BindingContext = vm;
+			entry.SetBinding(Entry.TextProperty, "Value", BindingMode.TwoWay);
+
+			Assert.Equal("5", entry.Text);
+
+			entry.Text = string.Empty;
+
+			Assert.Equal(0, vm.Value);
+		}
+
 		class NullViewModel : INotifyPropertyChanged
 		{
 			public event PropertyChangedEventHandler PropertyChanged;
