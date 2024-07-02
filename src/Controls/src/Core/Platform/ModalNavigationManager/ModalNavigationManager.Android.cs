@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_fragmentManager
 					.BeginTransaction()
 					.Remove(_modalFragment)
-					.Commit();
+					.CommitAllowingStateLossEx();
 
 				Modal = null;
 				_windowMauiContext = null;
