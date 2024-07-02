@@ -5,6 +5,7 @@ Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler,
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
+Microsoft.Maui.IFlyoutView.FlyoutIcon.get -> Microsoft.Maui.IImageSource!
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
