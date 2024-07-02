@@ -2,31 +2,47 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-#nullable disable
-
 namespace Microsoft.Maui.Converters
 {
 	/// <inheritdoc/>
 	public class ThicknessTypeConverter : TypeConverter
 	{
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(string);
 
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
 			// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)
 			{
-				strValue = strValue.Trim();
+
+#if NET8_0_OR_GREATER
+				char separator;
+				string[] thickness;
 
 				if (strValue.ContainsChar(','))
+				{
+					separator = ',';
+					thickness = strValue.Split(separator, StringSplitOptions.TrimEntries);
+				}
+				else
+				{
+					separator = ' ';
+					thickness = strValue.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+				}
+#else
+				strValue = strValue.Trim();
+				var separator = strValue.ContainsChar(',') ? ',' : ' ';
+				var thickness = strValue.Split(separator);
+#endif
+
+				if (separator == ',')
 				{ //Xaml
-					var thickness = strValue.Split(',');
 					switch (thickness.Length)
 					{
 						case 2:
@@ -43,9 +59,8 @@ namespace Microsoft.Maui.Converters
 							break;
 					}
 				}
-				else if (strValue.ContainsChar(' '))
+				else if (separator == ' ')
 				{ //CSS
-					var thickness = strValue.Split(' ');
 					switch (thickness.Length)
 					{
 						case 2:
@@ -78,13 +93,12 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Thickness)}");
 		}
 
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not Thickness t)
 				throw new NotSupportedException();
 
-			return $"{t.Left.ToString(CultureInfo.InvariantCulture)}, {t.Top.ToString(CultureInfo.InvariantCulture)}, " +
-				$"{t.Right.ToString(CultureInfo.InvariantCulture)}, {t.Bottom.ToString(CultureInfo.InvariantCulture)}";
+			return $"{t.Left.ToString(CultureInfo.InvariantCulture)}, {t.Top.ToString(CultureInfo.InvariantCulture)}, {t.Right.ToString(CultureInfo.InvariantCulture)}, {t.Bottom.ToString(CultureInfo.InvariantCulture)}";
 		}
 	}
 }
