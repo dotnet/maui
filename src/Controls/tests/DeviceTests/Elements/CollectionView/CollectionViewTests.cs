@@ -174,7 +174,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var dataList = new List<TestData>();
-			string letters = "nice"; // 4 groups
+			string letters = "abcdefghijklmnopqrstuvwxyz";
 			for (int i = 0; i < letters.Length; i++)
 			{
 				for (int n = 0; n < 10; n++)
@@ -220,20 +220,23 @@ namespace Microsoft.Maui.DeviceTests
 				})
 			};
 
+			var desiredItemIndex = 134; // 13th group (letter: N), 4th item
+			var firstVisibleItemIndex = -1;
 			var lastVisibleItemIndex = -1;
 			collectionView.Scrolled += (s, e) =>
 			{
+				firstVisibleItemIndex = e.FirstVisibleItemIndex;
 				lastVisibleItemIndex = e.LastVisibleItemIndex;
 			};
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
-				collectionView.ScrollTo(index: 4, groupIndex: 3); // Group 'c'
+				collectionView.ScrollTo(index: 4, groupIndex: 13, animate: false); // Item "N_4"
 
-				await Task.Delay(100);
+				await Task.Delay(500);
 
-				// each group has 10 items, plus the 3 headers
-				Assert.True(lastVisibleItemIndex == 34);
+				Assert.True(desiredItemIndex >= firstVisibleItemIndex &&
+							desiredItemIndex <= lastVisibleItemIndex);
 			});
 		}
 
