@@ -54,6 +54,8 @@
 
   <PropertyGroup>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+    <!-- https://github.com/dotnet/msbuild/issues/9785 -->
+    <CompilerResponseFile Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(CompilerResponseFile);WorkaroundXamlPreCompilePreviewFeatures.rsp</CompilerResponseFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference
