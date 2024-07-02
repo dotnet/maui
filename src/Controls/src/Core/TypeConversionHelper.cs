@@ -64,7 +64,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		private static bool TryGetTypeConverter(Type type, [NotNullWhen(true)] out TypeConverter? converter)
-			=> type.TryGetTypeConverter(out converter);
+			=> TypeConversionAppBuilderExtensions.TryGetTypeConverter(type, out converter)
+				|| type.TryGetTypeConverter(out converter);
 
 		[RequiresUnreferencedCode("The method uses reflection to find implicit conversion operators. " +
 			"It is not possible to guarantee that trimming does not remove some of the implicit operators. " +
@@ -161,7 +162,7 @@ namespace Microsoft.Maui.Controls
 				Application.Current?.FindMauiContext()?.CreateLogger(nameof(TypeConversionHelper))?.LogWarning(
 					$"It is not possible to convert value of type {value.GetType()} to {targetType} via an implicit cast " +
 					"because this feature is disabled. You should add a type converter that will implement this conversion and attach it to either of " +
-					"these types using the [TypeConverter] attribute. Alternatively, you " +
+					"these types using the [TypeConverter] attribute or using the ConfigureTypeConversions method on MauiAppBuilder. Alternatively, you " +
 					"can enable this feature by setting the MauiImplicitCastOperatorsUsageViaReflectionSupport MSBuild property to true in your project file. " +
 					"Note: this feature is not compatible with trimming and with NativeAOT.");
 			}
