@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 {
 	public class StubBase : IView
 	{
+		bool IElement.IsPlatformViewNew { get; set; }
 		IElementHandler IElement.Handler
 		{
 			get => Handler;
