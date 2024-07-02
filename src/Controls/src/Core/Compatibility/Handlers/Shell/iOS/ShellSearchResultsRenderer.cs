@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							}
 #pragma warning restore CS0618
 
-							label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object o) => o));
+							label.SetBinding(Label.TextProperty, static (object o) => o);
 						}
 
 						label.HorizontalTextAlignment = TextAlignment.Center;

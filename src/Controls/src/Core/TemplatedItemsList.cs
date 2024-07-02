@@ -755,6 +755,8 @@ namespace Microsoft.Maui.Controls.Internals
 				// time for right now.
 				groupProxy.HeaderContent = _itemsView.CreateDefault(ListProxy.ProxiedEnumerable);
 				groupProxy.HeaderContent.BindingContext = groupProxy;
+				// TODO: the interceptor doesn't support generics at the moment
+				// groupProxy.HeaderContent.SetBinding(TextCell.TextProperty, static (TemplatedItemsList<TView, TItem> list) => list.Name);
 				groupProxy.HeaderContent.SetBinding(
 					TextCell.TextProperty,
 					TypedBinding.ForSingleNestingLevel(

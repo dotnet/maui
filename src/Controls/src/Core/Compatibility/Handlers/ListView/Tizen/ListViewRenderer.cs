@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					template = new CellWrapperTemplate(new DataTemplate(() =>
 					{
 						var label = new TextCell();
-						label.SetBinding(TextCell.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object source) => source));
+						label.SetBinding(TextCell.TextProperty, static (object source) => source);
 						return label;
 					}), Element);
 				}

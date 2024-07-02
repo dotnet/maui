@@ -1052,12 +1052,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				var cp = new ContentPresenter();
 				Grid.SetRow(cp, 1);
-				cp.SetBinding(ContentPresenter.ContentProperty,
-					TypedBinding.ForSingleNestingLevel(
-						nameof(ExpanderControl.Content),
-						static (ExpanderControl c) => c.Content,
-						static (c, v) => c.Content = v,
-						source: RelativeBindingSource.TemplatedParent));
+				cp.SetBinding(ContentPresenter.ContentProperty, static (ExpanderControl c) => c.Content, source: RelativeBindingSource.TemplatedParent);
 				cp.SetBinding(ContentPresenter.IsVisibleProperty, new MultiBinding
 				{
 					Bindings = {

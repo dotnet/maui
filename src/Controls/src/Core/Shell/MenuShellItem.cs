@@ -14,34 +14,11 @@ namespace Microsoft.Maui.Controls
 			MenuItem = menuItem;
 			MenuItem.Parent = this;
 			Shell.SetFlyoutItemIsVisible(this, Shell.GetFlyoutItemIsVisible(menuItem));
-			SetBinding(
-				TitleProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(MenuItem.Text),
-					static (MenuItem item) => item.Text,
-					mode: BindingMode.OneWay,
-					source: menuItem));
-			SetBinding(
-				IconProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(MenuItem.IconImageSource),
-					static (MenuItem item) => item.IconImageSource,
-					mode: BindingMode.OneWay,
-					source: menuItem));
-			SetBinding(
-				FlyoutIconProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(MenuItem.IconImageSource),
-					static (MenuItem item) => item.IconImageSource,
-					mode: BindingMode.OneWay,
-					source: menuItem));
-			SetBinding(
-				AutomationIdProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(MenuItem.AutomationId),
-					static (MenuItem item) => item.AutomationId,
-					mode: BindingMode.OneWay,
-					source: menuItem));
+
+			this.SetBinding(TitleProperty, static (MenuItem item) => item.Text, BindingMode.OneWay, source: menuItem);
+			this.SetBinding(IconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
+			this.SetBinding(FlyoutIconProperty, static (MenuItem item) => item.IconImageSource, BindingMode.OneWay, source: menuItem);
+			this.SetBinding(AutomationIdProperty, static (MenuItem item) => item.AutomationId, BindingMode.OneWay, source: menuItem);
 
 			MenuItem.PropertyChanged += OnMenuItemPropertyChanged;
 		}
