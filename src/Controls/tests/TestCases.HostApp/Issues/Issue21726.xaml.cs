@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using System.Threading.Tasks;
@@ -18,6 +19,15 @@ public partial class Issue21726 : ContentPage
 	void AddVC (object sender, EventArgs e)
 	{
 #if IOS
+		if (OperatingSystem.IsIOSVersionAtLeast(13))
+			AddVCImpl(sender, e);
+#endif
+	}
+
+#if IOS
+	[SupportedOSPlatform("ios13.0")]
+	void AddVCImpl(object sender, EventArgs e)
+	{
 		var window = UIKit.UIApplication.SharedApplication
         .ConnectedScenes
         .OfType<UIKit.UIWindowScene>()
@@ -40,10 +50,9 @@ public partial class Issue21726 : ContentPage
 
 			rootVC.PresentViewController(testNC, true, null);
 		}
-#endif
 	}
 
-#if IOS
+
 	public class TestViewController: UIKit.UIViewController {
 
 		UIKit.UITextField TextField1;

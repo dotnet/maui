@@ -6,6 +6,7 @@
  */
 
 using System;
+using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -336,13 +337,24 @@ public static class KeyboardAutoManagerScroll
 		}
 		else
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
-				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 0) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				statusBarHeight = StatusBarFrameHeight(window);
 			else
 				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
 
 			navigationBarAreaHeight = statusBarHeight;
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static nfloat StatusBarFrameHeight(UIWindow window)
+		{
+			// analyzer can't deal with this for some reason
+	#pragma warning disable CA1416
+			return window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
+	#pragma warning restore CA1416
+		}
+		
 
 		var topLayoutGuide = Math.Max(navigationBarAreaHeight, ContainerView.LayoutMargins.Top) + TextViewDistanceFromTop;
 
@@ -452,8 +464,8 @@ public static class KeyboardAutoManagerScroll
 			StartingContentInsets = superScrollView.ContentInset;
 			StartingContentOffset = superScrollView.ContentOffset;
 
-			StartingScrollIndicatorInsets = OperatingSystem.IsIOSVersionAtLeast(11, 1) ?
-				superScrollView.VerticalScrollIndicatorInsets : superScrollView.ScrollIndicatorInsets;
+			StartingScrollIndicatorInsets = (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) ?
+				VerticalScrollIndicatorInsets(superScrollView) : superScrollView.ScrollIndicatorInsets;
 		}
 
 		// Calculate the move for the ScrollViews
@@ -640,6 +652,13 @@ public static class KeyboardAutoManagerScroll
 		}
 	}
 
+	[SupportedOSPlatform("ios13.0")]
+	[SupportedOSPlatform("maccatalyst13.1")]
+	static UIEdgeInsets VerticalScrollIndicatorInsets(UIScrollView view)
+	{
+		return view.VerticalScrollIndicatorInsets;
+	}
+
 	static void AnimateInset(UIScrollView? scrollView, UIEdgeInsets movedInsets, nfloat bottomScrollIndicatorInset)
 	{
 		if (scrollView is null)
@@ -648,8 +667,8 @@ public static class KeyboardAutoManagerScroll
 		scrollView.ContentInset = movedInsets;
 		UIEdgeInsets newscrollIndicatorInset;
 
-		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
-			newscrollIndicatorInset = scrollView.VerticalScrollIndicatorInsets;
+		if (OperatingSystem.IsIOSVersionAtLeast(13, 0) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			newscrollIndicatorInset = VerticalScrollIndicatorInsets(scrollView);
 		else
 			newscrollIndicatorInset = scrollView.ScrollIndicatorInsets;
 

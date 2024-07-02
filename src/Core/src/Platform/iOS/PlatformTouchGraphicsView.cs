@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
@@ -34,7 +35,14 @@ namespace Microsoft.Maui.Platform
 			_graphicsView = new(graphicsView);
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				AddGestureRecognizer(_hoverGesture = new UIHoverGestureRecognizer(_proxy.OnHover));
+				AddGestureRecognizer(_hoverGesture = MakeRecognizer(_proxy));
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIHoverGestureRecognizer MakeRecognizer(UIHoverGestureRecognizerProxy proxy)
+		{
+			return new UIHoverGestureRecognizer(proxy.OnHover);
 		}
 
 		public void Disconnect()

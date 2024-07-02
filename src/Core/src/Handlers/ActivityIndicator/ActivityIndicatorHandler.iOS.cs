@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
@@ -11,13 +12,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			MauiActivityIndicator platformView;
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				platformView = new MauiActivityIndicator(CGRect.Empty, VirtualView) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Medium };
+			UIActivityIndicatorViewStyle style;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				style = MediumStyle;
 			else
-				platformView = new MauiActivityIndicator(CGRect.Empty, VirtualView) { ActivityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray };
+				style = UIActivityIndicatorViewStyle.Gray;
+			platformView = new MauiActivityIndicator(CGRect.Empty, VirtualView) { ActivityIndicatorViewStyle = style };
 
 			return platformView;
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIActivityIndicatorViewStyle MediumStyle => UIActivityIndicatorViewStyle.Medium;
+
 
 		public static partial void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{

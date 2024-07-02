@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -16,81 +17,114 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.Label;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return Label;
 
 				return UIColor.Black;
 			}
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		[SupportedOSPlatform("tvos13.0")]
+		static UIColor Label => UIColor.Label;
 
 		internal static UIColor PlaceholderColor
 		{
 			get
 			{
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.PlaceholderText;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return PlaceholderText;
 
 				return SeventyPercentGrey;
 			}
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		[SupportedOSPlatform("tvos13.0")]
+		static UIColor PlaceholderText => UIColor.Label;
 
 		internal static UIColor SecondaryLabelColor
 		{
 			get
 			{
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.SecondaryLabel;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return SecondaryLabel;
 
 				return new Color(.32f, .4f, .57f).ToPlatform();
 			}
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		[SupportedOSPlatform("tvos13.0")]
+		static UIColor SecondaryLabel => UIColor.Label;
+		
 		internal static UIColor BackgroundColor
 		{
 			get
 			{
 
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
-					return UIColor.SystemBackground;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return SystemBackground;
 
 				return UIColor.White;
 			}
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIColor SystemBackground => UIColor.SystemBackground;
+
 		internal static UIColor SeparatorColor
 		{
 			get
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.Separator;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return SeparatorColorImpl;
 
 				return UIColor.Gray;
 			}
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		[SupportedOSPlatform("tvos13.0")]
+		static UIColor SeparatorColorImpl => UIColor.Separator;
+		
 		internal static UIColor OpaqueSeparatorColor
 		{
 			get
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-					return UIColor.OpaqueSeparator;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return OpaqueSeparator;
 
 				return UIColor.Black;
 			}
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		[SupportedOSPlatform("tvos13.0")]
+		static UIColor OpaqueSeparator => UIColor.Separator;
+
 		internal static UIColor GroupedBackground
 		{
 			get
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
-					return UIColor.SystemGroupedBackground;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return SystemGroupedBackground;
 
 				return new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
 			}
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIColor SystemGroupedBackground => UIColor.SystemGroupedBackground;
 
 		internal static UIColor AccentColor
 		{
@@ -129,12 +163,17 @@ namespace Microsoft.Maui.Platform
 		{
 			get
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13))
-					return UIColor.SystemGray2;
+				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+					return SystemGray2;
 
 				return UIColor.LightGray;
 			}
 		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIColor SystemGray2 => UIColor.SystemGray2;
+
 
 		public static CGColor ToCGColor(this Color color)
 		{

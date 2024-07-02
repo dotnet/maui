@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
@@ -306,8 +307,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the cells adhere to changes UI theme
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && !UIStyleMatches(previousTraitCollection))
 				ReloadData();
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		bool UIStyleMatches (UITraitCollection target)
+		{
+			return target.UserInterfaceStyle == TraitCollection.UserInterfaceStyle;
 		}
 
 		NSIndexPath[] GetPaths(int section, int index, int count)

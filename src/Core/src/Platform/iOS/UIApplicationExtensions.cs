@@ -74,12 +74,12 @@ namespace Microsoft.Maui.Platform
 				if (managedWindow is not null)
 					return managedWindow;
 			}
-#pragma warning restore CA1416
 
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return null;
 			else if (windowScene.Delegate is IUIWindowSceneDelegate sd)
 				return sd.GetWindow().GetWindow();
+#pragma warning restore CA1416
 
 			return null;
 		}

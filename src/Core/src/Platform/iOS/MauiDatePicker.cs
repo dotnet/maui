@@ -1,6 +1,7 @@
 ﻿using System;
 using Foundation;
 using UIKit;
+using System.Runtime.Versioning;
 
 namespace Microsoft.Maui.Platform
 {
@@ -14,9 +15,9 @@ namespace Microsoft.Maui.Platform
 			BorderStyle = UITextBorderStyle.RoundedRect;
 			var picker = new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13, 4))
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 4))
 			{
-				picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
+				picker.PreferredDatePickerStyle = Wheels;
 			}
 
 			this.InputView = picker;
@@ -72,5 +73,9 @@ namespace Microsoft.Maui.Platform
 			BorderStyle = UITextBorderStyle.RoundedRect;
 		}
 #endif
+
+		[SupportedOSPlatform("ios13.4")]
+		[SupportedOSPlatform("maccatalyst13.4")]
+		internal static UIDatePickerStyle Wheels => UIDatePickerStyle.Wheels;
 	}
 }

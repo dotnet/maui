@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 
 			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
-				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
+				_picker.PreferredDatePickerStyle = MauiDatePicker.Wheels;
 			}
 
 			InputView = _picker;

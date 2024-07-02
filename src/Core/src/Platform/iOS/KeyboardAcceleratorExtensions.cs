@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using System.Runtime.Versioning;
+using Foundation;
 using ObjCRuntime;
 using UIKit;
 
@@ -8,6 +9,7 @@ namespace Microsoft.Maui.Platform
 	{
 		internal const string MenuItemSelectedSelector = "MenuItemSelected:";
 
+		[SupportedOSPlatform("ios13.0")]
 		internal static UIMenuElement CreateMenuItem(this IMenuFlyoutItem virtualView, IMauiContext mauiContext)
 		{
 			var index = MenuFlyoutItemHandler.menus.Count;
@@ -44,6 +46,7 @@ namespace Microsoft.Maui.Platform
 			return modifierFlags;
 		}
 
+		[SupportedOSPlatform("ios13.0")]
 		static UIKeyCommand CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
 		{
 			var keyCommand = UIKeyCommand.Create(
@@ -59,6 +62,7 @@ namespace Microsoft.Maui.Platform
 			return keyCommand;
 		}
 
+		[SupportedOSPlatform("ios13.0")]
 		static UICommand CreateMenuItemCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector)
 		{
 			var command = UICommand.Create(

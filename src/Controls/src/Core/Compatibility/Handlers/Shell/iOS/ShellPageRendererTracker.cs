@@ -443,8 +443,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var rect = new CGRect(0, 0, 23f, 23f);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 0);
-			var ctx = UIGraphics.GetCurrentContext();
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(13, 1) || OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				using var renderer = new UIGraphicsImageRenderer(rect.Size);
+				var renderedImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+					var context = ctx.CGContext;
+					RenderHamburger(context);
+				});
+				return renderedImage;
+			} else {
+				UIGraphics.BeginImageContextWithOptions(rect.Size, false, 0);
+				var ctx = UIGraphics.GetCurrentContext();
+				img = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+				RenderHamburger(ctx);
+				_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
+				return img;
+			}
+		}
+
+		static void RenderHamburger(CGContext ctx)
+		{
 			ctx.SaveState();
 			ctx.SetStrokeColor(UIColor.Blue.CGColor);
 
@@ -460,11 +479,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			ctx.RestoreState();
-			img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
-			return img;
 		}
 
 		void OnToolbarItemsChanged(object sender, NotifyCollectionChangedEventArgs e)

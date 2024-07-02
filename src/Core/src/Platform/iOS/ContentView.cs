@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Versioning;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -19,7 +20,15 @@ namespace Microsoft.Maui.Platform
 		public ContentView()
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
-				Layer.CornerCurve = CACornerCurve.Continuous; // Available from iOS 13. More info: https://developer.apple.com/documentation/quartzcore/calayercornercurve/3152600-continuous
+				SetCornerCurve();
+				 // Available from iOS 13. More info: https://developer.apple.com/documentation/quartzcore/calayercornercurve/3152600-continuous
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		void SetCornerCurve()
+		{
+			Layer.CornerCurve = CACornerCurve.Continuous;	
 		}
 
 		public override void LayoutSubviews()

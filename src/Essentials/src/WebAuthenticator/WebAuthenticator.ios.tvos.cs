@@ -70,15 +70,19 @@ namespace Microsoft.Maui.Authentication
 				sf = null;
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(12))
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
 			{
+#pragma warning disable CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+#pragma warning restore CA1416
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13))
 				{
 					var ctx = new ContextProvider(WindowStateManager.Default.GetCurrentUIWindow());
+#pragma warning disable CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
 					was.PresentationContextProvider = ctx;
 					was.PrefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession;
+#pragma warning restore CA1416
 				}
 				else if (prefersEphemeralWebBrowserSession)
 				{

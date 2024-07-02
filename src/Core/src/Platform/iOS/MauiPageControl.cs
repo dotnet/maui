@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Versioning;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
@@ -115,14 +116,22 @@ namespace Microsoft.Maui.Platform
 				{
 					if (view is UIImageView imageview)
 					{
-						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-							imageview.Image = UIImage.GetSystemImage("squareshape.fill");
+						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+							imageview.Image = GetSystemImage("squareshape.fill");
 						var frame = imageview.Frame;
 						//the square shape is not the same size as the circle so we might need to correct the frame
 						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
 					}
 				}
 			}
+		}
+
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("tvos13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIImage? GetSystemImage(string name)
+		{
+			return UIImage.GetSystemImage(name);
 		}
 
 		void UpdateCornerRadius()

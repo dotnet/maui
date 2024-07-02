@@ -135,13 +135,11 @@ namespace Microsoft.Maui.ApplicationModel
 		static UIWindow? GetKeyWindow()
 		{
 			// if we have scene support, use that
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
 				try
 				{
-					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
-					return windowScene?.Windows.FirstOrDefault();
+					return WindowsFromScenes()?.FirstOrDefault();
 				}
 				catch (InvalidCastException)
 				{
@@ -158,13 +156,11 @@ namespace Microsoft.Maui.ApplicationModel
 		static UIWindow[]? GetWindows()
 		{
 			// if we have scene support, use that
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
 				try
 				{
-					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
-					return windowScene?.Windows;
+					return WindowsFromScenes();
 				}
 				catch (InvalidCastException)
 				{
@@ -176,6 +172,15 @@ namespace Microsoft.Maui.ApplicationModel
 
 			// use the windows property (up to 15.0)
 			return UIApplication.SharedApplication.Windows;
+		}
+
+		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.1")]
+		static UIWindow[]? WindowsFromScenes()
+		{
+			using var scenes = UIApplication.SharedApplication.ConnectedScenes;
+			var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+			return windowScene?.Windows;
 		}
 	}
 }
