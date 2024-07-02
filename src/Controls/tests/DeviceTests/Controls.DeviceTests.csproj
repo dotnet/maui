@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <MtouchExtraArgs>--setenv=MONO_GC_PARAMS=nursery-size=4MB,major=marksweep</MtouchExtraArgs>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
