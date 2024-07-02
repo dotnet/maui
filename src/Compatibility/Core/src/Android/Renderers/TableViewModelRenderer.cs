@@ -90,9 +90,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			return false;
 		}
 
-		public override long GetItemId(int position)
+		public override bool ContainsItem(long itemId)
 		{
-			return position;
+			// This is a bit of a hack, but it must be added in order to prevent IllegalStateException for
+			// viewpager2
+			// this method did not exist and was not used in the original implementation
+			return true;
 		}
 
 		public override AView GetView(int position, AView convertView, ViewGroup parent)

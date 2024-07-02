@@ -685,6 +685,7 @@ namespace Microsoft.Maui.DeviceTests
 			MColor expectedColor,
 			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
 
+#pragma warning disable XAOBS001 // Type or member is obsolete
 		static public Task AssertTabItemIconContainsColor(
 			this BottomNavigationView navigationView,
 			string tabText,
@@ -709,5 +710,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return navItemView;
 		}
+#pragma warning restore XAOBS001 // Type or member is obsolete
 	}
 }
