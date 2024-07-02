@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -18,5 +19,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public Action<Exception> ExceptionHandler { get; set; }
 		public object RootElement { get; set; }
 		public Assembly RootAssembly { get; internal set; }
+		public static List<object> PreventSetBinding { get; internal set; } = new ();
 	}
 }
