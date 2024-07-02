@@ -27,6 +27,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
 
 			IValueConverterProvider = new ValueConverterProvider();
+
+			if (node is IElementNode elementNode)
+				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode));
 		}
 
 		public XamlServiceProvider() => IValueConverterProvider = new ValueConverterProvider();
@@ -261,5 +264,58 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public string LookupPrefix(string namespaceName) => throw new NotImplementedException();
 		public void Add(string prefix, string ns) => namespaces.Add(prefix, ns);
+	}
+
+	class XamlDataTypeProvider : IXamlDataTypeProvider
+	{
+		public XamlDataTypeProvider(IElementNode node)
+		{
+			static IElementNode GetParent(IElementNode node)
+			{
+				return node switch
+				{
+					{ Parent: ListNode { Parent: IElementNode parentNode } } => parentNode,
+					{ Parent: IElementNode parentNode } => parentNode,
+					_ => null,
+				};
+			}
+
+			static bool IsBindingContextBinding(IElementNode node)
+			{
+				if (   ApplyPropertiesVisitor.TryGetPropertyName(node, node.Parent, out XmlName name)
+					&& name.NamespaceURI == ""
+					&& name.LocalName == nameof(BindableObject.BindingContext))
+					return true;
+				return false;
+			}
+
+			INode dataTypeNode = null;
+			IElementNode n = node as IElementNode;
+
+			// Special handling for BindingContext={Binding ...}
+			// The order of checks is:
+			// - x:DataType on the binding itself
+			// - SKIP looking for x:DataType on the parent
+			// - continue looking for x:DataType on the parent's parent...
+			IElementNode skipNode = null;
+			if (IsBindingContextBinding(node))
+			{
+				skipNode = GetParent(node);
+			}
+
+			while (n != null)
+			{
+				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
+				{
+					break;
+				}
+
+				n = GetParent(n);
+			}
+			if (dataTypeNode is ValueNode valueNode)
+				BindingDataType = valueNode.Value as string;
+
+		}
+		public string BindingDataType { get; }
 	}
 }
