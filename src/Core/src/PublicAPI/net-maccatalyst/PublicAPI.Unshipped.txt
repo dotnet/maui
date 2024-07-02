@@ -69,6 +69,7 @@ override Microsoft.Maui.Platform.MauiCheckBox.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiLabel.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiPageControl.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiScrollView.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiShapeView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Platform.MauiScrollView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
 override Microsoft.Maui.Platform.MauiSearchBar.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiShapeView.MovedToWindow() -> void
