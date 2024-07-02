@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellController)ShellContext.Shell).AddFlyoutBehaviorObserver(this);
 			ShellContext.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
 			ShellContext.Shell.Navigated += OnShellNavigated;
+			ShellContext.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
 
 		void IShellToolbarTracker.SetToolbar(IToolbar toolbar)
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((IShellController)ShellContext.Shell)?.RemoveFlyoutBehaviorObserver(this);
 				ShellContext.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 				ShellContext.Shell.Navigated -= OnShellNavigated;
+				ShellContext.Shell.PropertyChanged -= HandleShellPropertyChanged;
 				UpdateTitleView(ShellContext.AndroidContext, _platformToolbar, null);
 
 				if (_searchView != null)
@@ -278,6 +280,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateLeftBarButtonItem();
 				UpdateTitleView();
 			}
+		}
+
+		void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.Is(Shell.FlyoutIconProperty))
+				UpdateLeftBarButtonItem();
 		}
 
 		BackButtonBehavior _backButtonBehavior = null;
