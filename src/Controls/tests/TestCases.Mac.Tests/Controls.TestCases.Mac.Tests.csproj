@@ -25,6 +25,10 @@
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj"
+      PrivateAssets="all"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
