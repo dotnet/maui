@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (view == null)
 				return;
-			
+
 			_isPanning = true;
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_fingers.Contains(id))
 					_fingers.Remove(id);
 			}
-			
+
 			SwipeComplete(true);
 			PinchComplete(true);
 		}
@@ -758,7 +758,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (allowDrop)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
-				
+
 				_container.AllowDrop = true;
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
@@ -785,7 +785,7 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
-				
+
 				_container.Tapped += OnTap;
 				_container.RightTapped += OnTap;
 			}

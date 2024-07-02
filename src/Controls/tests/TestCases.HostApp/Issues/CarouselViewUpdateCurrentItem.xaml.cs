@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Issues
 
 			BindingContext = new ViewModelIssue9827();
 		}
-		
+
 		ViewModelIssue9827 ViewModel => BindingContext as ViewModelIssue9827;
 
 		protected override void OnAppearing()

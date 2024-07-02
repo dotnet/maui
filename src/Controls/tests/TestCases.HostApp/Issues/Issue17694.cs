@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "Spin",
 				Text = "Spin",
 			};
-			button.Clicked += (s, e) => 
+			button.Clicked += (s, e) =>
 			{
 				circleView.Rotation = 180;
 			};

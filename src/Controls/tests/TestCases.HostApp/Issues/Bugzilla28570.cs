@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample.Issues
 			// Build the page.
 			Content = new StackLayout
 			{
-				Children = 
+				Children =
 				{
 					makeBig,
 					header,

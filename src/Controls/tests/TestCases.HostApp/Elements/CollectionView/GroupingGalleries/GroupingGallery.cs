@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui;
+﻿using Controls.Sample.UITests;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Controls.Sample.UITests;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 {
@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 						TestBuilder.NavButton("Grouping, Observable", () =>
 							new ObservableGrouping(), Navigation),
 						TestBuilder.NavButton("Grouping, Grid", () =>
-							new GridGrouping(), Navigation), 
+							new GridGrouping(), Navigation),
 					}
 				}
 			};

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
-using System.Collections.Generic;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -29,14 +29,14 @@ namespace Maui.Controls.Sample.Issues
 
 		class SampleCarouselItem1
 		{
-    		public SampleCarouselItem1(string title, string description )
-    		{
-        		Title = title;
-        		Description = description;
-    		}
+			public SampleCarouselItem1(string title, string description)
+			{
+				Title = title;
+				Description = description;
+			}
 
-    		public string Title { get; set; }
-    		public string Description { get; set; }
+			public string Title { get; set; }
+			public string Description { get; set; }
 			public Color Color { get; set; }
 		}
 	}

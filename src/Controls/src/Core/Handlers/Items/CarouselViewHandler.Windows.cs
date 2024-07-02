@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollViewer _scrollViewer;
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
-		Size _currentSize; 
+		Size _currentSize;
 		bool _isCarouselViewReady;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();

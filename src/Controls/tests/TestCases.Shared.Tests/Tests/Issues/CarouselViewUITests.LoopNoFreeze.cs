@@ -8,8 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		readonly string _carouselAutomationId = "carouselView";
 		readonly string _btnRemoveAutomationId = "btnRemove";
-		readonly string _btnRemoveAllAutomationId = "btnRemoveAll"; 
-		
+		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
+
 		public CarouselViewLoopNoFreeze(TestDevice device)
 			: base(device)
 		{

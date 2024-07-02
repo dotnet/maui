@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Github, 19379, "Not able to update CollectionView header", PlatformAffected.iOS)]
 	public partial class Issue19379 : ContentPage
 	{
-		int _initValue; 
+		int _initValue;
 		IList<string> _itemList;
 		Issue19379CustomHeader _customHeader;
 
@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 
-		
+
 		public IList<string> ItemList
 		{
 			get { return _itemList; }

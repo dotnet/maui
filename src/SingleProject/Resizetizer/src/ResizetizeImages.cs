@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				copiedResources.Add(new TaskItem(itemSpec, attr));
 				// force the date time so we never update an image if its not changed.
-				File.SetLastWriteTimeUtc (itemSpec, DateTime.UtcNow);
+				File.SetLastWriteTimeUtc(itemSpec, DateTime.UtcNow);
 			}
 
 			CopiedResources = copiedResources.ToArray();

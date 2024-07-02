@@ -1,6 +1,6 @@
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using System.Threading.Tasks;
 
 namespace Maui.Controls.Sample.Issues;
 

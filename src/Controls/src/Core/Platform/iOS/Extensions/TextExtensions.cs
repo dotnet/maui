@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 					tf.Text = newText;
 				else if (textInput is UITextView tv)
 					tv.Text = newText;
-				else 
+				else
 					textInput.ReplaceText(textRange, newText);
 
 				textInput.SetTextRange(cursorPosition, 0);
