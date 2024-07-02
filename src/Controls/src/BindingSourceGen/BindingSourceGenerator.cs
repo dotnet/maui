@@ -15,7 +15,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		)
 		.WithTrackingName(TrackingNames.BindingsWithDiagnostics);
 
-
 		context.RegisterSourceOutput(bindingsWithDiagnostics, (spc, bindingWithDiagnostic) =>
 		{
 			foreach (var diagnostic in bindingWithDiagnostic.Diagnostics)
@@ -27,20 +26,19 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var bindings = bindingsWithDiagnostics
 			.Where(static binding => !binding.HasDiagnostics)
 			.Select(static (binding, t) => binding.Value)
-			.WithTrackingName(TrackingNames.Bindings)
-			.Collect();
+			.WithTrackingName(TrackingNames.Bindings);
 
-
-		context.RegisterSourceOutput(bindings, (spc, bindings) =>
+		context.RegisterPostInitializationOutput(spc =>
 		{
-			var codeWriter = new BindingCodeWriter();
+			spc.AddSource("GeneratedBindableObjectExtensionsCommon.g.cs", BindingCodeWriter.GenerateCommonCode());
+		});
 
-			foreach (var binding in bindings)
-			{
-				codeWriter.AddBinding(binding);
-			}
-
-			spc.AddSource("GeneratedBindableObjectExtensions.g.cs", codeWriter.GenerateCode());
+		context.RegisterImplementationSourceOutput(bindings, (spc, binding) =>
+		{
+			var fileName = $"{binding.Location.FilePath}-GeneratedBindableObjectExtensions-{binding.Location.Line}-{binding.Location.Column}.g.cs";
+			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
+			var code = BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(binding.Location.GetHashCode()));
+			spc.AddSource(sanitizedFileName, code);
 		});
 	}
 

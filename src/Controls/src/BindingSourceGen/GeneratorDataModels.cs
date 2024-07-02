@@ -100,7 +100,7 @@ public interface IPathPart : IEquatable<IPathPart>
 	public string? PropertyName { get; }
 }
 
-internal sealed record Result<T>(T? OptionalValue, EquatableArray<DiagnosticInfo> Diagnostics)
+public sealed record Result<T>(T? OptionalValue, EquatableArray<DiagnosticInfo> Diagnostics)
 {
 	public bool HasDiagnostics => Diagnostics.Length > 0;
 
