@@ -3,7 +3,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.MenuBarPage"    
-    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
+    x:DataType="viewmodels:MenuBarViewModel"
+    x:Name="menuBarSamplePage">
     <views:BasePage.MenuBarItems>
         <MenuBarItem Text="Before File">
             <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action">
@@ -18,12 +21,12 @@
         <MenuBarItem Text="File">
             <MenuFlyoutItem x:Name="CustomFileMenuFlyoutItem" Clicked="ItemClicked" Text="Custom File" >
                 <MenuFlyoutItem.IconImageSource>
-                        <FontImageSource
+                    <FontImageSource
                             FontAutoScalingEnabled="False"
                             FontFamily = "Ionicons" 
                             Glyph = "&#xf30c;">
-                        </FontImageSource>
-                    </MenuFlyoutItem.IconImageSource>
+                    </FontImageSource>
+                </MenuFlyoutItem.IconImageSource>
             </MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="Custom Menu">
@@ -45,6 +48,27 @@
                 </MenuFlyoutItem>
             </MenuFlyoutSubItem>
             <MenuFlyoutItem Clicked="ItemClicked" Text="Item 2 (Disabled)" IsEnabled="False" />
+        </MenuBarItem>
+        <MenuBarItem Text="Icons">
+            <MenuFlyoutItem Text="Icon 1" >
+                <MenuFlyoutItem.IconImageSource>
+                    <FontImageSource Glyph="{Binding BindingContext.Icon1, Source={x:Reference menuBarSamplePage}}"  FontFamily="IconsFont"/>
+                </MenuFlyoutItem.IconImageSource>
+            </MenuFlyoutItem>
+
+            <MenuFlyoutItem Text="Icon 2">
+                <MenuFlyoutItem.IconImageSource>
+                    <FontImageSource Glyph="{Binding BindingContext.Icon2, Source={x:Reference menuBarSamplePage}}" FontFamily="IconsFont"/>
+                </MenuFlyoutItem.IconImageSource>
+            </MenuFlyoutItem>
+
+            <MenuFlyoutItem Text="IconImage 1" IconImageSource="{Binding IconImage1}"/>
+            <MenuFlyoutItem Text="IconImage 2" IconImageSource="{Binding IconImage2}"/>
+
+            <MenuFlyoutSeparator/>
+
+            <MenuFlyoutItem Clicked="SwapIcons" Text="Swap Icons" />
+
         </MenuBarItem>
     </views:BasePage.MenuBarItems>
     <views:BasePage.Content>
