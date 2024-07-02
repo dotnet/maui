@@ -443,6 +443,47 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
+		[TestCase("maui", "Debug", DotNetCurrent)]
+		[TestCase("maui", "Release", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Debug", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Release", DotNetCurrent)]
+		public void CheckPrivacyManifestForiOS(string id, string config, string framework)
+		{
+			if (TestEnvironment.IsWindows)
+			{
+				Assert.Ignore("Running iOS templates is only supported on Mac.");
+			}
+
+			string projectDir = TestDirectory;
+			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			string appFileName = $"{Path.GetFileName(projectDir)}.app";
+			string appLocation =
+				Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+
+			// Multi-project is in a .iOS subfolder and csproj is *.iOS.csproj
+			if (id.EndsWith("multiproject"))
+			{
+				projectFile = 
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", $"{Path.GetFileName(projectDir)}.iOS.csproj");
+
+				appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";
+
+				appLocation =
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+			}
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");
+
+			Assert.IsTrue(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
+		}
+
+		[Test]
 		public void BuildHandlesBadFilesInImages()
 		{
 			var projectDir = TestDirectory;
