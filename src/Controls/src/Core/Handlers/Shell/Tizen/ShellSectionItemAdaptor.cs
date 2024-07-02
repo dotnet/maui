@@ -28,8 +28,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var nativeView = base.CreateNativeView(index);
 
 			var view = GetTemplatedView(nativeView);
-			view?.SetBinding(ShellSectionItemView.SelectedColorProperty, TypedBinding.ForSingleNestingLevel("TitleColor", static (ItemAppearance appearance) => appearance.TitleColor, source: _itemAppearance));
-			view?.SetBinding(ShellSectionItemView.UnselectedColorProperty, TypedBinding.ForSingleNestingLevel("UnselectedColor", static (ItemAppearance appearance) => appearance.UnselectedColor, source: _itemAppearance));
+			view?.SetBinding(ShellSectionItemView.SelectedColorProperty, static (ItemAppearance appearance) => appearance.TitleColor, source: _itemAppearance);
+			view?.SetBinding(ShellSectionItemView.UnselectedColorProperty, static (ItemAppearance appearance) => appearance.UnselectedColor, source: _itemAppearance);
 
 			return nativeView;
 		}

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				TextColor = GColors.Black,
 			};
-			label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object source) => source));
+			label.SetBinding(Label.TextProperty, static (object source) => source);
 
 			return new Controls.StackLayout
 			{

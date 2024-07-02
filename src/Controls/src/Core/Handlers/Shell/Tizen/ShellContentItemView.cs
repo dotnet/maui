@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Platform
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			_label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (BaseShellItem item) => item.Title));
+			_label.SetBinding(Label.TextProperty, static (BaseShellItem item) => item.Title);
 
 			_bar = new BoxView
 			{
