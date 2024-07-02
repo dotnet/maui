@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var yaxis = startRect.Top;
 				var lineHeights = new List<double>();
 
-				while ((endRect.Bottom - yaxis) > 0.001)
+				while (Math.Max(endRect.Bottom, finalSize.Bottom) - yaxis > 0.001)
 				{
 					double lineHeight;
 					if (yaxis == startRect.Top) // First Line
@@ -197,8 +197,14 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					else // Bottom Line
 					{
-						lineHeight = endRect.Bottom - endRect.Top;
+						lineHeight = Math.Max(endRect.Bottom - endRect.Top, finalSize.Bottom - finalSize.Top);
 					}
+
+					if (lineHeight == 0)
+					{
+						break;
+					}
+
 					lineHeights.Add(lineHeight);
 					yaxis += (float)lineHeight;
 				}
@@ -211,7 +217,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), finalSize.Width, startRect.X, endRect.X, startRect.Top).Inflate(5);
+					((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), finalSize.Width, startRect.X, Math.Max(endRect.X, finalSize.Width - startRect.X), startRect.Top).Inflate(5);
 				}
 
 				// Update current location
