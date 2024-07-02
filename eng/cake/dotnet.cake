@@ -28,6 +28,7 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Essentials.*.{nupkg,snupkg}",
     "Microsoft.Maui.Graphics.*.{nupkg,snupkg}",
     "Microsoft.Maui.Maps.*.{nupkg,snupkg}",
+    "Microsoft.Maui.Resizetizer.*.{nupkg,snupkg}",
     "Microsoft.AspNetCore.Components.WebView.*.{nupkg,snupkg}",
 };
 
@@ -47,10 +48,8 @@ Task("dotnet")
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
-            ReplaceTextInFiles(
-                originalNuget,
-                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+            ReplaceTextInFiles(originalNuget, "<add key=\"nuget-only\" value=\"true\" />", "");
+            ReplaceTextInFiles(originalNuget, "NUGET_ONLY_PLACEHOLDER", nugetSource);
         }
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
@@ -267,10 +266,8 @@ Task("dotnet-pack-maui")
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
-            ReplaceTextInFiles(
-                originalNuget,
-                $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"local\" value=\"{nugetSource}\" />");
+            ReplaceTextInFiles(originalNuget, "<add key=\"local\" value=\"true\" />", "");
+            ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
         var sln = "./Microsoft.Maui.Packages.slnf";
@@ -304,7 +301,7 @@ Task("dotnet-pack-additional")
             Version = nativeAssetsVersion,
             ExcludeVersion = true,
             OutputDirectory = assetsDir,
-            Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
+            Source = new[] { "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json" },
         });
         foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
             DeleteFile(nupkg);
@@ -800,10 +797,8 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, s
     }
 
     // Add a specific folder for nuget-only packages
-    ReplaceTextInFiles(
-        config.FullPath,
-        $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-        $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
+    ReplaceTextInFiles(config.FullPath, "<add key=\"nuget-only\" value=\"true\" />", "");
+    ReplaceTextInFiles(config.FullPath, "NUGET_ONLY_PLACEHOLDER", nugetOnly.FullPath);
 
     // Create empty or copy test Directory.Build.props/targets
     if (string.IsNullOrEmpty(props))

@@ -1,3 +1,4 @@
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,8 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void ClearingGroupedNoCrash()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement(Go);
 			App.Click(Go);
 
@@ -31,3 +30,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
