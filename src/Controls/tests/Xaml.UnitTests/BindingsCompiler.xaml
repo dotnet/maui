@@ -23,6 +23,11 @@
 			<Label Text="{Binding StructModel.Model.Text, Mode=TwoWay}" x:Name="label10" />
             <Label Text="Text for label12" x:Name="label11" />
             <Label Text="{Binding Text, x:DataType=Label, Source={x:Reference label11}}" x:Name="label12" />
+
+			<Picker
+				ItemsSource="{Binding Items}"
+				ItemDisplayBinding="{Binding Title, x:DataType=local:MockItemViewModel}"
+				x:Name="picker0" />
 		</cmp:StackLayout>
 		<Label Text="{Binding Text}" x:Name="labelWithUncompiledBinding" />
 	</cmp:StackLayout>
