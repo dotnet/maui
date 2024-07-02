@@ -7447,6 +7447,7 @@ override Microsoft.Maui.Controls.Application.OnParentSet() -> void
 override Microsoft.Maui.Controls.Border.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.BoxView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.BoxView.OnPropertyChanged(string? propertyName = null) -> void
+override Microsoft.Maui.Controls.Button.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Button.ChangeVisualState() -> void
 override Microsoft.Maui.Controls.Button.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Cell.OnBindingContextChanged() -> void
