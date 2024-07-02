@@ -52,6 +52,16 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
   </ItemGroup>
 
+  <PropertyGroup>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <AndroidResource Include="$(AndroidRoot)Resources\layout\Tabbar.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\layout\Toolbar.axml" />

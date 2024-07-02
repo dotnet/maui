@@ -738,7 +738,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				groupHeaderCell = new TextCell();
 				groupHeaderCell.SetBinding(
 					TextCell.TextProperty,
-					TypedBinding.ForSingleNestingLevel(nameof(group.Name), static (ITemplatedItemsList<Cell> g) => g.Name));
+					static (ITemplatedItemsList<Cell> g) => g.Name);
 				groupHeaderCell.BindingContext = group;
 			}
 
