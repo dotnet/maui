@@ -137,15 +137,21 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			if (!isSimilar)
 			{
-				var maskFilename = Path.Combine(DestinationDirectory, GetTestImageFileName(args, methodName));
+				var root = GetThisFilePath();
+				root = Path.GetDirectoryName(root);
+				var filename = GetTestImageFileName(args, methodName);
+
+				var maskFilename = Path.Combine(root, "errors", filename);
 				maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
 
 				Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
 
-				using var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected);
-				using var data = mask.Encode(SKEncodedImageFormat.Png, 100);
-				using var maskFile = File.Create(maskFilename);
-				data.SaveTo(maskFile);
+				using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
+				using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
+				using (var maskFile = File.Create(maskFilename))
+				{
+					data.SaveTo(maskFile);
+				}
 
 				Assert.True(
 					isSimilar,
@@ -155,10 +161,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
-			// working + up 3 levels (../../..)
-			var root = Directory.GetCurrentDirectory();
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
+			var root = GetThisFilePath();
 			root = Path.GetDirectoryName(root);
 
 			var imagePath = GetTestImageFileName(args, methodName);
@@ -194,5 +197,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			return Path.Combine(TestImagesFolderName, name, methodName, filename);
 		}
+
+		private static string GetThisFilePath([CallerFilePath] string path = null) => path;
 	}
 }

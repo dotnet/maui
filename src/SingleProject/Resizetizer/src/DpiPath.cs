@@ -3,9 +3,17 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {
+	internal enum ClipShape
+	{
+		None,
+		// RoundedSquare,
+		Circle,
+		// Squircle
+	}
+		
 	internal class DpiPath
 	{
-		public DpiPath(string path, decimal scale, string nameSuffix = null, string scaleSuffix = null, SKSize? size = null, string[] idioms = null)
+		public DpiPath(string path, decimal scale, string nameSuffix = null, string scaleSuffix = null, SKSize? size = null, string[] idioms = null, ClipShape clip = ClipShape.None)
 		{
 			Path = path;
 			Scale = scale;
@@ -13,6 +21,7 @@ namespace Microsoft.Maui.Resizetizer
 			ScaleSuffix = scaleSuffix;
 			Size = size;
 			Idioms = idioms;
+			ClipShape = clip;
 		}
 
 		public string Path { get; set; }
@@ -32,6 +41,8 @@ namespace Microsoft.Maui.Resizetizer
 
 		public string[] Idioms { get; set; }
 
+		public ClipShape ClipShape { get; set; }
+
 		public static class Android
 		{
 			public static DpiPath Original =>
@@ -50,11 +61,18 @@ namespace Microsoft.Maui.Resizetizer
 			public static DpiPath[] AppIcon
 				=> new[]
 				{
+					// legacy square
 					new DpiPath("mipmap-mdpi", 1.0m, size: new SKSize(48, 48)),
 					new DpiPath("mipmap-hdpi", 1.5m, size: new SKSize(48, 48)),
 					new DpiPath("mipmap-xhdpi", 2.0m, size: new SKSize(48, 48)),
 					new DpiPath("mipmap-xxhdpi", 3.0m, size: new SKSize(48, 48)),
 					new DpiPath("mipmap-xxxhdpi", 4.0m, size: new SKSize(48, 48)),
+					// legacy round for Android 7
+					new DpiPath("mipmap-mdpi", 1.0m, "_round", size: new SKSize(48, 48), clip: ClipShape.Circle),
+					new DpiPath("mipmap-hdpi", 1.5m, "_round", size: new SKSize(48, 48), clip: ClipShape.Circle),
+					new DpiPath("mipmap-xhdpi", 2.0m, "_round", size: new SKSize(48, 48), clip: ClipShape.Circle),
+					new DpiPath("mipmap-xxhdpi", 3.0m, "_round", size: new SKSize(48, 48), clip: ClipShape.Circle),
+					new DpiPath("mipmap-xxxhdpi", 4.0m, "_round", size: new SKSize(48, 48), clip: ClipShape.Circle),
 				};
 
 			public static DpiPath[] AppIconParts
