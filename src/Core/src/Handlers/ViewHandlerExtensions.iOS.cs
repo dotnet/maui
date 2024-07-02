@@ -98,7 +98,7 @@ namespace Microsoft.Maui
 			}
 			else if (platformView is WrapperView wrapper)
 			{
-				sizeThatFits = wrapper.SizeThatFitsWrapper(new CGSize((float)widthConstraint, (float)heightConstraint), virtualView.Width, virtualView.Height);
+				sizeThatFits = wrapper.SizeThatFitsWrapper(new CGSize((float)widthConstraint, (float)heightConstraint), virtualView.Width, virtualView.Height, virtualView);
 			}
 			else
 			{

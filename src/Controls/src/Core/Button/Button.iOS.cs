@@ -8,10 +8,11 @@ using Microsoft.Maui.Handlers;
 using UIKit;
 using CoreGraphics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class Button
+	public partial class Button : ICrossPlatformLayout
 	{
 		CGSize _originalImageSize = CGSize.Empty;
 
@@ -23,8 +24,8 @@ namespace Microsoft.Maui.Controls
 		/// <param name="widthConstraint"></param>
 		/// <param name="heightConstraint"></param>
 		/// <returns>Returns a <see cref="Size"/> representing the width and height of the button.</returns>
-		/// <remarks>Calling base.MeasureOverride will call SizeThatFits() on the UIButton's UIView but will not consider some MAUI Button elements such as the BorderWidth and image placement. Instead we calculate that manually.</remarks>
-		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		/// <remarks>This method is used to pseudo-override the SizeThatFits() on the UIButton since we cannot override the UIButton class.</remarks>
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			var button = this;
 
@@ -48,11 +49,8 @@ namespace Microsoft.Maui.Controls
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
-			var buttonWidthConstraint = button.WidthRequest == -1 ? widthConstraint : Math.Min(button.WidthRequest, widthConstraint);
-			var buttonHeightConstraint = button.HeightRequest == -1 ? heightConstraint : Math.Min(button.HeightRequest, heightConstraint);
-
-			var titleWidthConstraint = buttonWidthConstraint - padding.Left - padding.Right - borderWidth * 2;
-			var titleHeightConstraint = buttonHeightConstraint - padding.Top - padding.Bottom - borderWidth * 2;
+			var titleWidthConstraint = widthConstraint - padding.Left - padding.Right - borderWidth * 2;
+			var titleHeightConstraint = heightConstraint - padding.Top - padding.Bottom - borderWidth * 2;
 
 			var image = platformButton.CurrentImage;
 
@@ -65,7 +63,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, buttonWidthConstraint, buttonHeightConstraint, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, 0, padding, borderWidth, widthConstraint, heightConstraint, _originalImageSize))
 				{
 					image = platformButton.CurrentImage;
 				}
@@ -134,12 +132,8 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			var returnSize = new Size(button.WidthRequest == -1 ? Math.Min(buttonContentWidth, buttonWidthConstraint) : button.WidthRequest,
-							button.HeightRequest == -1 ? Math.Min(buttonContentHeight, buttonHeightConstraint) : button.HeightRequest);
-
-			// Add the margins to the return size
-			returnSize.Width += (nfloat)button.Margin.HorizontalThickness;
-			returnSize.Height += (nfloat)button.Margin.VerticalThickness;
+			var returnSize = new Size(Math.Min(buttonContentWidth, widthConstraint),
+							Math.Min(buttonContentHeight, heightConstraint));
 
 			// Rounding the values up to the nearest whole number to match UIView.SizeThatFits
 			return new Size((int)Math.Ceiling(returnSize.Width), (int)Math.Ceiling(returnSize.Height));
@@ -149,16 +143,17 @@ namespace Microsoft.Maui.Controls
 		/// Arrange the button and layout the image and title.
 		/// </summary>
 		/// <param name="bounds"></param>
-		/// <returns></returns>
-		protected override Size ArrangeOverride(Rect bounds)
+		/// <returns>Returns a <see cref="Size"/> representing the width and height of the button.</returns>
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
-			var button = this;
+			bounds = this.ComputeFrame(bounds);
+
 			var platformButton = Handler?.PlatformView as UIButton;
 
 			// Layout the image and title of the button
-			LayoutButton(platformButton, button, bounds);
+			LayoutButton(platformButton, this, bounds);
 
-			return base.ArrangeOverride(bounds);
+			return new Size(bounds.Width, bounds.Height);
 		}
 
 		/// <summary>
