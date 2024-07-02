@@ -41,13 +41,16 @@ namespace Microsoft.Maui
 
 			_services = applicationContext.Services;
 
-			_services.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
+			if (_services is not null)
+			{
+				_services.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreating>(del => del(this));
 
-			_application = _services.GetRequiredService<IApplication>();
+				_application = _services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(_application, applicationContext);
+				this.SetApplicationHandler(_application, applicationContext);
 
-			_services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
+				_services.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationCreate>(del => del(this));
+			}
 
 			base.OnCreate();
 		}
