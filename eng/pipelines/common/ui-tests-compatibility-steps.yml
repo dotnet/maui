@@ -8,9 +8,9 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
-  where : "cat==Issues"
   targetSample: "dotnet-legacy-controlgallery"
   provisionPlatform: "windows"
+  testFilter: ''
 
 steps:
   - bash: |
@@ -56,7 +56,19 @@ steps:
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
+  - pwsh: |
+      $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project=""${{ parameters.path }}"""
+      $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
+      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
+      
+      $testFilter = "${{ parameters.testFilter }}"
+
+      # Cake does not allow empty parameters, so check if our filter is empty before adding it
+      if ($testFilter) {
+        $command += " --test-filter ""${{ parameters.testFilter }}"""
+      }
+
+      Invoke-Expression $command
     displayName: $(Agent.JobName)
     # retryCountOnTaskFailure: 2
 
