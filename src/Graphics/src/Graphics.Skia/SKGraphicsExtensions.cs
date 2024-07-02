@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public static RectF AsRectangleF(this SKRect target)
 		{
-			return new RectF(target.Left, target.Top, Math.Abs(target.Right - target.Left), Math.Abs(target.Bottom - target.Top));
+			return new RectF(target.Left, target.Top, MathF.Abs(target.Right - target.Left), MathF.Abs(target.Bottom - target.Top));
 		}
 
 		public static SKPoint ToSKPoint(this PointF target)

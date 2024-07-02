@@ -2,8 +2,11 @@
 using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
+#if MAUI_GRAPHICS_WIN2D
 using Microsoft.Maui.Graphics.Win2D;
+#else
+using Microsoft.Maui.Graphics.Platform;
+#endif
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
