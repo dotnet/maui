@@ -49,7 +49,17 @@ namespace Microsoft.Maui.Controls
 		public object SelectedItem
 		{
 			get => GetValue(SelectedItemProperty);
-			set => SetValue(SelectedItemProperty, value);
+			set
+			{
+				if (ReferenceEquals(SelectedItem, value))
+				{
+					SelectedItemPropertyChanged(this, SelectedItem, value);
+				}
+				else
+				{
+					SetValue(SelectedItemProperty, value);
+				}
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectedItems']/Docs/*" />
