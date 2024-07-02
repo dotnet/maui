@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SelectedIndex"/>.</summary>
 		public static readonly BindableProperty SelectedIndexProperty =
 			BindableProperty.Create(nameof(SelectedIndex), typeof(int), typeof(Picker), -1, BindingMode.TwoWay,
-									propertyChanged: OnSelectedIndexChanged, coerceValue: CoerceSelectedIndex);
+									propertyChanged: OnSelectedIndexChanged);
 
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
@@ -230,12 +230,6 @@ namespace Microsoft.Maui.Controls
 			return (string)GetValue(s_displayProperty);
 		}
 
-		static object CoerceSelectedIndex(BindableObject bindable, object value)
-		{
-			var picker = (Picker)bindable;
-			return picker.Items == null ? -1 : ((int)value).Clamp(-1, picker.Items.Count - 1);
-		}
-
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
 		{
 			ResetItems();
@@ -347,13 +341,16 @@ namespace Microsoft.Maui.Controls
 
 		void ClampSelectedIndex()
 		{
-			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
-			//FIXME use the specificity of the caller
-			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
-			// If the index has not changed, still need to change the selected item
-			if (newIndex == oldIndex)
-				UpdateSelectedItem(newIndex);
+			if (Items.Count == ItemsSource.Count)
+			{
+				var oldIndex = SelectedIndex;
+				var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+				//FIXME use the specificity of the caller
+				SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
+				// If the index has not changed, still need to change the selected item
+				if (newIndex == oldIndex)
+					UpdateSelectedItem(newIndex);
+			}
 		}
 
 		void UpdateSelectedIndex(object selectedItem)
@@ -372,7 +369,7 @@ namespace Microsoft.Maui.Controls
 		{
 			//FIXME use the specificity of the caller
 
-			if (index == -1)
+			if (index == -1 || index >= Items.Count)
 			{
 				SetValue(SelectedItemProperty, null, SetterSpecificity.FromHandler);
 				return;
