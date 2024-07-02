@@ -167,6 +167,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ValidateCorrectHorzScroll()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3"
+			};
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					return new VerticalStackLayout()
+					{
+						new Label()
+					};
+				}),
+				ItemsSource = data,
+				ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Horizontal)
+				{
+					Span = 2,
+					HorizontalItemSpacing = 4,
+					VerticalItemSpacing = 4
+				}
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				collectionView
+			};
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var cvHandler = (CollectionViewHandler)collectionView.Handler;
+				var control = cvHandler.PlatformView;
+
+				var horzScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.HorizontalScrollModeProperty);
+				var vertScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.VerticalScrollModeProperty);
+				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Auto);
+				Assert.True(vertScrollMode == UI.Xaml.Controls.ScrollMode.Disabled);
+			});
+		}
+
+		[Fact]
 		public async Task ValidateSendRemainingItemsThresholdReached()
 		{
 			SetupBuilder();
