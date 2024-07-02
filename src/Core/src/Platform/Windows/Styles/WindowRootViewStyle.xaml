@@ -43,7 +43,7 @@
             IsTabStop="False"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
-            ContentTemplateSelector="{StaticResource MauiAppTitleBarTemplateSelector}"
+            Content="{Binding WindowTitleBarContent}"
             Visibility="{Binding WindowTitleBarContentControlVisibility}"
             MinHeight="{Binding WindowTitleBarContentControlMinHeight}"
             x:Name="AppTitleBarContentControl">
@@ -107,4 +107,5 @@
         </Setter>
     </Style>
 
+    <!--  ContentTemplateSelector="{StaticResource MauiAppTitleBarContainerTemplateSelector}" -->
 </ResourceDictionary> 

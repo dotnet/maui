@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -61,6 +59,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="MinimumHeight"/>.</summary>
 		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
 			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
+
+		/// <summary>Bindable property for <see cref="TitleBar"/>.</summary>
+		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
+			nameof(TitleBar), typeof(TitleBar), typeof(Window), null, propertyChanged: TitleBarChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
@@ -161,6 +163,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (double)GetValue(MinimumHeightProperty);
 			set => SetValue(MinimumHeightProperty, value);
+		}
+
+		public ITitleBar? TitleBar
+		{
+			get => (ITitleBar?)GetValue(TitleBarProperty);
+			set => SetValue(TitleBarProperty, value);
 		}
 
 		double IWindow.X => GetPositionCoordinate(XProperty);
@@ -375,6 +383,23 @@ namespace Microsoft.Maui.Controls
 				FlowDirectionProperty.PropertyName,
 				(Element)bindable,
 				((IVisualTreeElement)bindable).GetVisualChildren());
+		}
+
+		static void TitleBarChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var self = (Window)bindable;
+			if (self != null)
+			{
+				if (oldValue is TitleBar prevTitleBar)
+				{
+					self.RemoveLogicalChild(prevTitleBar);
+				}
+
+				if (newValue is TitleBar titleBar)
+				{
+					self.AddLogicalChild(titleBar);
+				}
+			}
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;

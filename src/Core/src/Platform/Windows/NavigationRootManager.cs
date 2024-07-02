@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -107,7 +109,9 @@ namespace Microsoft.Maui.Platform
 		{
 			_rootView.OnWindowTitleBarContentSizeChanged -= WindowRootViewOnWindowTitleBarContentSizeChanged;
 			_platformWindow.Activated -= OnWindowActivated;
+
 			SetToolbar(null);
+			SetTitleBar(null, null);
 
 			if (_rootView.Content is RootNavigationView navView)
 				navView.Content = null;
@@ -134,6 +138,12 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetTitle(string? title) =>
 			_rootView.WindowTitle = title;
+
+		internal void SetTitleBar(ITitleBar? titlebar, IMauiContext? mauiContext)
+		{
+			_rootView.AppWindowId = _platformWindow.GetAppWindow()?.Id;
+			_rootView.SetTitleBar(titlebar, mauiContext);
+		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{
