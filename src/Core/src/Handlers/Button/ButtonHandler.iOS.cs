@@ -25,6 +25,15 @@ namespace Microsoft.Maui.Handlers
 
 		readonly ButtonEventProxy _proxy = new ButtonEventProxy();
 
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			if (ContainerView is WrapperView wrapperView)
+			{
+				wrapperView.CrossPlatformLayout = VirtualView as ICrossPlatformLayout;
+			}
+		}
+
 		protected override void ConnectHandler(UIButton platformView)
 		{
 			_proxy.Connect(VirtualView, platformView);

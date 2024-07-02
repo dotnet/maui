@@ -96,6 +96,8 @@
                 Style="{StaticResource PrimaryButtonOutlineIcon}"/>
         </HorizontalStackLayout>
 
+        <!-- This section is now expected to cut off the title in order to respect spacing, padding, and margins until the iOS 15+ Configuration APIs are used.
+            This can be fixed by adding a width request to your button. -->
         <HorizontalStackLayout>
             <Button 
                 ImageSource="{StaticResource CircleIconAlt}"
