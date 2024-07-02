@@ -19,7 +19,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is IWindow window)
 			{
-				(window.Handler?.PlatformView as Window)?.Close();
+				var platformWindow = window.Handler?.PlatformView as Window;
+
+				if (platformWindow is not null)
+				{
+					var handle = WinRT.Interop.WindowNative.GetWindowHandle(platformWindow);
+					var id = UI.Win32Interop.GetWindowIdFromWindow(handle);
+					var appWindow = UI.Windowing.AppWindow.GetFromWindowId(id);
+
+					// Cannot close an already closed, or disposed Window.
+					if (appWindow is not null && appWindow.IsVisible)
+					{
+						platformWindow.Close();
+					}
+				}
 			}
 		}
 	}
