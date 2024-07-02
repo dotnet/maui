@@ -543,6 +543,35 @@ namespace Microsoft.Maui.DeviceTests
 			}, vsl1, vsl2, vsl3);
 		}
 
+		[Fact]
+		public async Task NextMovesSkipsReadonlyFields()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+			};
+
+			var editor1 = new EditorStub
+			{
+				IsReadOnly = true
+			};
+
+			var editor2 = new EditorStub();
+
+			var vsl = new VerticalStackLayoutStub
+			{
+				entry1,
+				editor1,
+				editor2
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: vsl.ToPlatform().Superview);
+				Assert.True(editor2.IsFocused);
+			}, vsl);
+		}
+
 		async Task NextMovesHelper(Action action = null, params StubBase[] views)
 		{
 			EnsureHandlerCreated(builder =>
