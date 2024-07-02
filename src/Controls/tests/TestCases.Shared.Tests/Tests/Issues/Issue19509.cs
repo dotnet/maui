@@ -21,6 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// 1. Click a button to update the text
 			App.Tap("button");
 
+			await Task.Delay(1000); // Wait to Ripple Effect animation to complete.
+
 			// 2. Verify that the Entry TextColor is correct (Green).
 			VerifyScreenshot();
 		}
