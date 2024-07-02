@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 			titleView.Visibility = UI.Xaml.Visibility.Collapsed;
 		}
 
-		internal string? Title
+		internal static string? Title
 		{
 			get => title.Text;
 			set
@@ -45,12 +45,12 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal WImage? TitleIconImage
+		internal static WImage? TitleIconImage
 		{
 			get => titleIcon;
 		}
 
-		internal WImageSource? TitleIconImageSource
+		internal static WImageSource? TitleIconImageSource
 		{
 			get => titleIcon.Source;
 			set
@@ -64,13 +64,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal UI.Xaml.Thickness TitleViewMargin
+		internal static UI.Xaml.Thickness TitleViewMargin
 		{
 			get => titleView.Margin;
 			set => titleView.Margin = value;
 		}
 
-		internal object? TitleView
+		internal static object? TitleView
 		{
 			get => titleView.Content;
 			set
@@ -95,28 +95,28 @@ namespace Microsoft.Maui.Platform
 			UpdateMenuBarForeground();
 		}
 
-		internal CommandBar CommandBar => commandBar;
+		internal static CommandBar CommandBar => commandBar;
 
 
-		internal UI.Xaml.Thickness ContentGridMargin
+		internal static UI.Xaml.Thickness ContentGridMargin
 		{
 			get => contentGrid.Margin;
 			set => contentGrid.Margin = value;
 		}
 
-		internal VerticalAlignment TextBlockBorderVerticalAlignment
+		internal static VerticalAlignment TextBlockBorderVerticalAlignment
 		{
 			get => textBlockBorder.VerticalAlignment;
 			set => textBlockBorder.VerticalAlignment = value;
 		}
 
-		public NavigationViewBackButtonVisible IsBackButtonVisible
+		public static NavigationViewBackButtonVisible IsBackButtonVisible
 		{
 			get => (NavigationViewBackButtonVisible)GetValue(IsBackButtonVisibleProperty);
 			set => SetValue(IsBackButtonVisibleProperty, value);
 		}
 
-		public bool IsBackEnabled
+		public static bool IsBackEnabled
 		{
 			get => (bool)GetValue(IsBackEnabledProperty);
 			set => SetValue(IsBackEnabledProperty, value);

@@ -13,7 +13,7 @@ public class Issue19926 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	public void PropertiesShouldBeCorrectlyApplied()
 	{
 		_ = App.WaitForElement("boxView");

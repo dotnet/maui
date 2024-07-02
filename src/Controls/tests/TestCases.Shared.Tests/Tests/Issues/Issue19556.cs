@@ -13,7 +13,7 @@ public class Issue19556 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	public void SystemFontsShouldRenderCorrectly()
 	{
 		_ = App.WaitForElement("label");

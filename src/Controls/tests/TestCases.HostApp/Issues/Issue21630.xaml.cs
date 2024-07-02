@@ -25,12 +25,12 @@ public partial class Issue21630 : ContentPage
 		_modalStack = Navigation.ModalStack.ToList();
 	}
 
-	void SwapMainPageNav (object sender, EventArgs e)
+	void SwapMainPageNav(object sender, EventArgs e)
 	{
 		Application.Current.MainPage = new NavigationPage(new Issue21630_navPage(_page, _modalStack));
 	}
 
-	void SwapMainPageShell (object sender, EventArgs e)
+	void SwapMainPageShell(object sender, EventArgs e)
 	{
 		Application.Current.MainPage = new Issue21630_shellPage(_page, _modalStack);
 	}

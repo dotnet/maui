@@ -112,7 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "CornerRadius Initializes Correctly"
-#if __ANDROID_23__	
+#if __ANDROID_23__
 			, Skip = "Failing on Android 23"
 #endif
 		)]

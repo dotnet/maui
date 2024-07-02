@@ -12,21 +12,21 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			Content = new ScrollView()
-            {
-                Orientation = Microsoft.Maui.ScrollOrientation.Horizontal,
-                Content = new ScrollView()
-                {
-                    Orientation = Microsoft.Maui.ScrollOrientation.Vertical,
-                    Content = new Image()
-                    {
-                        Margin = 100,
-                        AutomationId = "dotnet_bot",
-                        Source = "dotnet_bot.png",
-                        HeightRequest = 1000,
-                        WidthRequest = 1000
-                    }
-                }
-            };
+			{
+				Orientation = Microsoft.Maui.ScrollOrientation.Horizontal,
+				Content = new ScrollView()
+				{
+					Orientation = Microsoft.Maui.ScrollOrientation.Vertical,
+					Content = new Image()
+					{
+						Margin = 100,
+						AutomationId = "dotnet_bot",
+						Source = "dotnet_bot.png",
+						HeightRequest = 1000,
+						WidthRequest = 1000
+					}
+				}
+			};
 		}
 	}
 }
