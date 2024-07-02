@@ -79,6 +79,7 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> v
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
 override Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.LoadView() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.SetIsEnabled() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
