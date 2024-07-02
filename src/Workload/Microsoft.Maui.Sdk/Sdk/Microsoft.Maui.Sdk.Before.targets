@@ -6,7 +6,7 @@
     <!-- Generate ReadyToRun (AOT) when building for Release -->
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' and '$(Configuration)' == 'Release' and '$(OutputType)' == 'WinExe' ">true</PublishReadyToRun>
     <!-- Use full RID graph: https://github.com/dotnet/docs/issues/36527 -->
-    <UseRidGraph Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">true</UseRidGraph>
+    <UseRidGraph Condition=" '$(UseRidGraph)' == '' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' ">true</UseRidGraph>
   </PropertyGroup>
 
   <!-- The Windows App SDK does not support AnyCPU without a RID, so make sure we pick the "best" one we can -->
@@ -17,7 +17,8 @@
   <PropertyGroup Condition=" '$(SingleProject)' == 'true' and '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' and '$(_SingleProjectRIDRequired)' == 'true' and '$(_SingleProjectRIDSpecified)' != 'true' ">
     <_SingleProjectHostArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</_SingleProjectHostArchitecture>
     <_SingleProjectHostArchitecture>$(_SingleProjectHostArchitecture.ToLower())</_SingleProjectHostArchitecture>
-    <RuntimeIdentifier>win10-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(UseRidGraph)' == 'true'">win10-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(UseRidGraph)' != 'true'">win-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
 
