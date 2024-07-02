@@ -65,8 +65,10 @@ public class IncrementalGenerationTests
             new Dictionary<string, string> { { nameof(source), source } },
             new Dictionary<string, string> { { nameof(source), newSource } });
 
-        var outputs = results[nameof(source)].SelectMany(step => step.Outputs);
-        Assert.All(outputs, output => Assert.True(output.Reason == IncrementalStepRunReason.Modified));
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(source)], TrackingNames.BindingsWithDiagnostics);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(source)], TrackingNames.Bindings);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Unchanged, results[nameof(source)], "SourceOutput");
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(source)], "ImplementationSourceOutput");
     }
 
     [Fact]
@@ -89,9 +91,16 @@ public class IncrementalGenerationTests
             new Dictionary<string, string> { { nameof(source), source } },
             new Dictionary<string, string> { { nameof(source), newSource } });
 
-        var outputs = results[nameof(source)].SelectMany(step => step.Outputs);
-        Assert.All(outputs, output => Assert.True(output.Reason == IncrementalStepRunReason.Modified));
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(source)], TrackingNames.BindingsWithDiagnostics);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(source)], TrackingNames.Bindings);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Unchanged, results[nameof(source)], "SourceOutput");
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(source)], "ImplementationSourceOutput");
     }
+
+	private static void AssertStepRunReasonEquals(IncrementalStepRunReason expectedReason, IncrementalGeneratorRunStep[] steps, string stepName)
+	{
+		Assert.Equal(expectedReason, steps.Single(r => r.Name == stepName).Outputs.Single().Reason);
+	}
 
     [Fact]
     public void DoesNotRegenerateCodeWhenNewCodeInsertedBelow()
@@ -143,10 +152,15 @@ public class IncrementalGenerationTests
             new Dictionary<string, string> { { nameof(fileASource), fileASource }, { nameof(fileBSource), fileBSource } },
             new Dictionary<string, string> { { nameof(fileASource), fileASource }, { nameof(fileBSource), fileBModified } });
 
-        var fileAOutputs = results[nameof(fileASource)].SelectMany(step => step.Outputs);
-        var fileBOutputs = results[nameof(fileBSource)].SelectMany(step => step.Outputs);
-        Assert.All(fileAOutputs, output => Assert.True(output.Reason == IncrementalStepRunReason.Unchanged || output.Reason == IncrementalStepRunReason.Cached));
-        Assert.All(fileBOutputs, output => Assert.True(output.Reason == IncrementalStepRunReason.Modified));
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Unchanged, results[nameof(fileASource)], TrackingNames.BindingsWithDiagnostics);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Cached, results[nameof(fileASource)], TrackingNames.Bindings);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Cached, results[nameof(fileASource)], "SourceOutput");
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Cached, results[nameof(fileASource)], "ImplementationSourceOutput");
+
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(fileBSource)], TrackingNames.BindingsWithDiagnostics);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(fileBSource)], TrackingNames.Bindings);
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Unchanged, results[nameof(fileBSource)], "SourceOutput");
+		AssertStepRunReasonEquals(IncrementalStepRunReason.Modified, results[nameof(fileBSource)], "ImplementationSourceOutput");
     }
 
     private static Dictionary<string, IncrementalGeneratorRunStep[]> RunGeneratorOnMultipleSourcesAndReturnSteps(
@@ -173,13 +187,11 @@ public class IncrementalGenerationTests
         // Single step runs, e.g. SourceOutput-fileA, SourceOuput-fileB
         var runs = newSteps.SelectMany(step => step.Value);
 
-
         // Pairs <binding, run>. Note that a single run can be associated with multiple bindings.
         // In such cases generate <binding, run> pair for each binding.
         var bindingRunPairs = runs
             .Select(run => (GetSetBindingInvocationDescription(run), run))
             .SelectMany(bindingsRunPair => bindingsRunPair.Item1.Select(binding => (binding, bindingsRunPair.run)));
-
 
         // Sometimes the binding has more than one run of the same step associated with it. 
         // In such cases keep the one with Modified reason for safety.
@@ -201,6 +213,7 @@ public class IncrementalGenerationTests
             { Name: TrackingNames.BindingsWithDiagnostics } => step.Outputs[0].Value,
             { Name: TrackingNames.Bindings } => step.Outputs[0].Value,
             { Name: "SourceOutput" } => step.Inputs[0].Source.Outputs[0].Value,
+            { Name: "ImplementationSourceOutput" } => step.Inputs[0].Source.Outputs[0].Value,
             _ => null
         };
 
