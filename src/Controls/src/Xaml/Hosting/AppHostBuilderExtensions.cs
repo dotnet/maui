@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+			handlersCollection.AddHandler<ReorderableItemsView, ReorderableItemsViewHandler<ReorderableItemsView>>();
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
