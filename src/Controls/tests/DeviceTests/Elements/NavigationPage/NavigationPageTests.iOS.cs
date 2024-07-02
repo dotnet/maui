@@ -65,5 +65,55 @@ namespace Microsoft.Maui.DeviceTests
 			var translucent = await GetValueAsync(navPage, (handler) => (handler.ViewController as UINavigationController).NavigationBar.Translucent);
 			Assert.Equal(enabled, translucent);
 		}
+
+		[Fact(DisplayName = "Navigating Back Via Back Button Fires OnBackButtonPressed Event")]
+		public async Task NavigatingBackViaBackButtonFiresOnBackButtonPressedEvent()
+		{
+			SetupBuilder();
+			var firstPage = new ContentPage();
+			var navPage = new NavigationPage(firstPage) { Title = "App Page" };
+
+			var secondPage = new DoubleBackContentPage();
+			await navPage.PushAsync(secondPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(navPage.CurrentPage);
+				var navController = navPage.Handler as UINavigationController;
+
+				navController.NavigationBar.TapBackButton();
+
+				// race condition that if we can the is back button pressed, it will always return false.
+				// wait a little bit
+				await AssertionExtensions.Wait(() => navPage.CurrentPage == firstPage);
+
+				Assert.True(navPage.CurrentPage == secondPage);
+				Assert.True(secondPage.IsBackButtonPressed);
+
+				navController.NavigationBar.TapBackButton();
+
+				// wait a little bit
+				await AssertionExtensions.Wait(() => navPage.CurrentPage == firstPage);
+
+				Assert.True(navPage.CurrentPage == firstPage);
+				Assert.False(IsBackButtonVisible(navPage.Handler));
+			});
+		}
+
+		class DoubleBackContentPage : ContentPage
+		{
+			public bool IsBackButtonPressed { get; set; }
+
+			protected override bool OnBackButtonPressed()
+			{
+				if (!IsBackButtonPressed)
+				{
+					IsBackButtonPressed = true;
+					return true;
+				}
+
+				return base.OnBackButtonPressed();
+			}
+		}
 	}
 }
