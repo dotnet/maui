@@ -470,7 +470,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				child.IgnoresContainerArea = child is NavigationPage;
 		}
 
-		void UpdateOffscreenPageLimit()
+		internal void UpdateOffscreenPageLimit()
 		{
 			_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
 		}
