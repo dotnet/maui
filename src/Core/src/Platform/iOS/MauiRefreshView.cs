@@ -141,6 +141,13 @@ namespace Microsoft.Maui.Platform
 				else
 					scrollView.InsertSubview(_refreshControl, index);
 
+				//Setting the bounds so that the refresh control renders above the potential header
+				_refreshControl.Bounds = new CGRect(
+					_refreshControl.Bounds.X,
+					-scrollView.ContentOffset.Y,
+					_refreshControl.Bounds.Width,
+					_refreshControl.Bounds.Height);
+
 				scrollView.AlwaysBounceVertical = true;
 
 				_originalY = scrollView.ContentOffset.Y;
