@@ -205,10 +205,10 @@ namespace Microsoft.Maui.Platform
 					if (radius > 100)
 						radius = MaximumRadius;
 
-					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
+					_shadowPaint.SetMaskFilter(new BlurMaskFilter(Context.ToPixels(radius), BlurMaskFilter.Blur.Normal));
 
-					float shadowOffsetX = (float)Shadow.Offset.X;
-					float shadowOffsetY = (float)Shadow.Offset.Y;
+					float shadowOffsetX = Context.ToPixels(Shadow.Offset.X);
+					float shadowOffsetY = Context.ToPixels(Shadow.Offset.Y);
 
 					if (Clip == null)
 					{
