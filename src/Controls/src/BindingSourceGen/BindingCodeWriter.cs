@@ -18,28 +18,6 @@ public static class BindingCodeWriter
 		//------------------------------------------------------------------------------
 		#nullable enable
 
-		namespace System.Runtime.CompilerServices
-		{
-			using System;
-			using System.CodeDom.Compiler;
-		
-			{{GeneratedCodeAttribute}}
-			[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-			internal sealed class InterceptsLocationAttribute : Attribute
-			{
-				public InterceptsLocationAttribute(string filePath, int line, int column)
-				{
-					FilePath = filePath;
-					Line = line;
-					Column = column;
-				}
-		
-				public string FilePath { get; }
-				public int Line { get; }
-				public int Column { get; }
-			}
-		}
-
 		namespace Microsoft.Maui.Controls.Generated
 		{
 			using System.CodeDom.Compiler;
@@ -67,6 +45,28 @@ public static class BindingCodeWriter
 		// </auto-generated>
 		//------------------------------------------------------------------------------
 		#nullable enable
+
+		namespace System.Runtime.CompilerServices
+		{
+			using System;
+			using System.CodeDom.Compiler;
+		
+			{{GeneratedCodeAttribute}}
+			[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+			file sealed class InterceptsLocationAttribute : Attribute
+			{
+				public InterceptsLocationAttribute(string filePath, int line, int column)
+				{
+					FilePath = filePath;
+					Line = line;
+					Column = column;
+				}
+		
+				public string FilePath { get; }
+				public int Line { get; }
+				public int Column { get; }
+			}
+		}
 
 		namespace Microsoft.Maui.Controls.Generated
 		{
