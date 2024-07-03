@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 23399, "Closing Modal While App is Backgrounded Fails", PlatformAffected.Android)]
@@ -26,7 +20,7 @@ namespace Maui.Controls.Sample.Issues
 						AutomationId = "OpenModal",
 						Command = new Command(async () =>
 						{
-							await this.Navigation.PushModalAsync(CreateDestinationPage());
+							await Navigation.PushModalAsync(CreateDestinationPage());
 						})
 					}
 				};
@@ -45,7 +39,7 @@ namespace Maui.Controls.Sample.Issues
 							Text = "Close Modal",
 							Command = new Command(()=>
 							{
-								this.Navigation.PopModalAsync();
+								Navigation.PopModalAsync();
 							})
 						}
 					}
