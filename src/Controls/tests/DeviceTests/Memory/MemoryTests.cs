@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -414,20 +415,25 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		var references = new List<WeakReference>();
 
-		await InvokeOnMainThreadAsync(async () =>
 		{
 			var page = new ContentPage();
 			var window = new Window(page);
-			var handler = CreateHandler<WindowHandler>(window);
-			await OnLoadedAsync(page);
-			references.Add(new(window));
-			references.Add(new(window.Handler));
-#if !WINDOWS
-			// FIXME: Microsoft.UI.Xaml.Window does not go away in this test
-			references.Add(new(window.Handler.PlatformView));
-#endif
-			((IWindow)window).Destroying();
-		});
+			await CreateHandlerAndAddToWindow(window, async () =>
+			{
+				await OnLoadedAsync(page);
+				references.Add(new(window));
+				references.Add(new(window.Handler));
+
+				// NOTE: the PlatformView in this case remains alive in the test application:
+				// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
+				//references.Add(new(window.Handler.PlatformView));
+
+				if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
+				{
+					app.SetWindow(null);
+				}
+			});
+		}
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
