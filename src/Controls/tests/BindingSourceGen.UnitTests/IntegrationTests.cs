@@ -14,6 +14,8 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
+
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -27,28 +29,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -56,13 +36,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<string, int> getter,
@@ -98,17 +77,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-3-7.g.cs"]);
     }
 
     [Fact]
@@ -137,6 +109,7 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -150,28 +123,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -179,13 +130,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, int> getter,
@@ -229,17 +179,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-6-7.g.cs"]);
     }
 
     [Fact]
@@ -269,6 +212,7 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -282,28 +226,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -311,13 +233,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, int> getter,
@@ -363,17 +284,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     public static IEnumerable<object[]> GenerateSimpleBindingWhenNullableDisabledAndPropertyNullableData =>
@@ -506,6 +420,7 @@ public class IntegrationTests
     public void GenerateSimpleBindingWhenNullableDisabledAndPropertyNullable(string source)
     {
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -519,28 +434,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -548,13 +441,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, global::MyNamespace.C?> getter,
@@ -598,17 +490,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     [Fact]
@@ -652,6 +537,7 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -665,28 +551,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -694,13 +558,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A?, global::MyNamespace.D?> getter,
@@ -745,17 +608,10 @@ public class IntegrationTests
                         };
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-7-7.g.cs"]);
     }
 
     [Theory]
@@ -798,6 +654,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -812,28 +669,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -841,13 +676,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
@@ -899,17 +733,10 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-4-7.g.cs"]);
     }
 
     [Fact]
@@ -950,6 +777,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -964,28 +792,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -993,13 +799,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
@@ -1047,17 +852,10 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-4-7.g.cs"]);
     }
 
     [Fact]
@@ -1089,6 +887,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -1103,28 +902,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -1132,12 +909,11 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.A, int> getter,
@@ -1178,17 +954,10 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-3-7.g.cs"]);
     }
 
     [Fact]
@@ -1224,6 +993,7 @@ public class IntegrationTests
             """;
 
         var result = SourceGenHelpers.Run(source);
+        var id = Math.Abs(result.Binding!.Location.GetHashCode());
 
         AssertExtensions.AssertNoDiagnostics(result);
         AssertExtensions.CodeIsEqual(
@@ -1238,28 +1008,6 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
-            namespace System.Runtime.CompilerServices
-            {
-                using System;
-                using System.CodeDom.Compiler;
-
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-                file sealed class InterceptsLocationAttribute : Attribute
-                {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
-                    {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
-                    }
-            
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
-                }
-            }
-
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -1267,13 +1015,12 @@ public class IntegrationTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                {{BindingCodeWriter.GeneratedCodeAttribute}}
-                file static class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindableObjectExtensions
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
-                    public static void SetBinding1(
+                    public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
                         Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
@@ -1323,16 +1070,9 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
                     }
-
-                    private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
-                        => mode == BindingMode.OneWayToSource
-                            || mode == BindingMode.TwoWay
-                            || (mode == BindingMode.Default
-                                && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
-                                    || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
                 }
             }
             """,
-            result.GeneratedCode);
+            result.GeneratedFiles["Path-To-Program.cs-GeneratedBindableObjectExtensions-6-7.g.cs"]);
     }
 }
