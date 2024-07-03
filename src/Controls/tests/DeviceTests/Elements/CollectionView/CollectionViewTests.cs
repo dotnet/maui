@@ -168,7 +168,11 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
 
-		[Fact]
+		[Fact(
+#if IOS || MACCATALYST
+Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
+#endif
+)]
 		public async Task CollectionScrollToGroupWorks()
 		{
 			SetupBuilder();
