@@ -338,6 +338,118 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Ringo", picker.Items[1]);
 		}
 
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		public void TestItemsSourceCollectionChangedInsertBeforeSelected(int insertionIndex)
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 1
+			};
+			items.Insert(insertionIndex, new { Name = "George" });
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Theory]
+		[InlineData(2)]
+		[InlineData(3)]
+		public void TestItemsSourceCollectionChangedInsertAfterSelected(int insertionIndex)
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 1
+			};
+			items.Insert(insertionIndex, new { Name = "George" });
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		public void TestItemsSourceCollectionChangedRemoveBeforeSelected(int removeIndex)
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" },
+				new { Name = "George" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 1
+			};
+			items.RemoveAt(removeIndex);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestItemsSourceCollectionChangedRemoveAtEndSelected()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" },
+				new { Name = "George" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 3
+			};
+			items.RemoveAt(3);
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal(items[2], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestItemsSourceCollectionChangedRemoveAfterSelected()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" },
+				new { Name = "George" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 1
+			};
+			items.RemoveAt(2);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+
+		// TODO: Multi-item add and remove
+
 		[Fact]
 		public void TestSelectedIndexAssignedItemsSourceCollectionChangedAppend()
 		{
