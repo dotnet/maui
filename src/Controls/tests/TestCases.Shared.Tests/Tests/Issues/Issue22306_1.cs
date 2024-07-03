@@ -13,8 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void ButtonMeasuresLargerThanDefault()
+        public async Task ButtonMeasuresLargerThanDefault()
         {
+            // seems possible in CI that the iOS Button is not laid out before the height evaluation
+            await Task.Delay(100);
             var rotateButtonRect = App.WaitForElement("RotateButton").GetRect();
             var button3Rect = App.WaitForElement("Button3").GetRect();
 
