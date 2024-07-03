@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void GridStarRowScrollingTest()
 		{
 			KeyboardScrolling.GridStarRowScrollingTest(App);

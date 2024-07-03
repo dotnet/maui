@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void ErrorShouldNotBeThrown()
 		{
 			try
