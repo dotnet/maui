@@ -3,6 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 internal class FrameCoreGalleryPage : CoreGalleryPage<Frame>
 {
 	protected override bool SupportsFocus => false;
@@ -19,3 +20,4 @@ internal class FrameCoreGalleryPage : CoreGalleryPage<Frame>
 		base.Build();
 	}
 }
+#pragma warning restore CS0618 // Type or member is obsolete

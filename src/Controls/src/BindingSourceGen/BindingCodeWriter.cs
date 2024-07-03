@@ -87,7 +87,6 @@ public static class BindingCodeWriter
 		}
 	""";
 
-
 	public static string GenerateBinding(BindingInvocationDescription binding, uint id)
 	{
 		if (!binding.NullableContextEnabled)
