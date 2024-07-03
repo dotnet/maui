@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 // TODO: UI testing alert code is not yet implemented on Windows.
 #if !WINDOWS
 		[Test]
+		[Category(UITestCategories.DisplayAlert)]
 		public void AlertCancel()
 		{
 			var test = Test.Alerts.AlertCancel;
@@ -54,7 +55,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 
-		[Test, Category(UITestCategories.DisplayAlert)]
+		[Test]
+		[Category(UITestCategories.DisplayAlert)]
 		[TestCase(Test.Alerts.AlertAcceptCancelClickAccept, "ACCEPT")]
 		[TestCase(Test.Alerts.AlertAcceptCancelClickCancel, "CANCEL")]
 		public void AlertAcceptCancel(Test.Alerts test, string buttonText)
@@ -91,7 +93,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
 		}
 
-		[Test, Category(UITestCategories.ActionSheet)]
+		[Test]
+		[Category(UITestCategories.ActionSheet)]
 		[TestCase(Test.Alerts.ActionSheetClickItem, "ITEM 2")]
 		[TestCase(Test.Alerts.ActionSheetClickCancel, "CANCEL")]
 		[TestCase(Test.Alerts.ActionSheetClickDestroy, "DESTROY")]
