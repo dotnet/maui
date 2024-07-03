@@ -6,33 +6,21 @@
              x:DataType="local:Issue23158">
 
   <VerticalStackLayout Padding="30,0">
-    <Button AutomationId="AddEntry" Text="Add entry dynamically" Margin="0,0,0,50" Clicked="AddEntryButton_Clicked"/>
+    <Button AutomationId="AddEntry" Text="Add entry dynamically" Margin="0,0,0,30" Clicked="AddEntryButton_Clicked"/>
     
-    <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="Auto" />
-      </Grid.RowDefinitions>
+    <!-- First entry. -->
+    <Label Text="Entry.ClearButtonVisibility=Never"/>
+    <Entry x:Name="Entry1" ClearButtonVisibility="Never" Text="A"/>
 
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="350" />
-        <ColumnDefinition Width="*" />
-      </Grid.ColumnDefinitions>
+    <!-- Second entry. -->
+    <Label Text="Entry.ClearButtonVisibility=WhileEditing"/>
+    <Entry x:Name="Entry2" ClearButtonVisibility="WhileEditing" Text="B"/>
 
-      <!-- First grid row. -->
-      <Label Grid.Row="0" Grid.Column="0" Text="Entry.ClearButtonVisibility=Never"/>
-      <Entry Grid.Row="0" Grid.Column="1" x:Name="Entry1" ClearButtonVisibility="Never" Text="A" />
+    <!-- Third entry. See #23112. -->
+    <Label Text="Dynamically Entry.ClearButtonVisibility=Never + Focus"/>
+    <VerticalStackLayout x:Name="Entry3Container"/> <!-- Container for a dynamically added entry. -->
 
-      <!-- Second grid row. -->
-      <Label Grid.Row="1" Grid.Column="0" Text="Entry.ClearButtonVisibility=WhileEditing"/>
-      <Entry Grid.Row="1" Grid.Column="1" x:Name="Entry2" ClearButtonVisibility="WhileEditing" Text="B" />
-
-      <!-- Third grid row. See #23112. -->
-      <Label Grid.Row="2" Grid.Column="0" Text="Dynamically Entry.ClearButtonVisibility=Never + Focus"/>
-      <VerticalStackLayout Grid.Row="2" Grid.Column="1" x:Name="Entry3Container" /> <!-- Container for a dynamically added entry. -->
-    </Grid>
-
-    <Label AutomationId="TestInstructions" Margin="0,50,0,0" FontAttributes="Bold" Text="Instructions: Click the top-most button and the third entry should not contain any clear button!"/>
+    <Label AutomationId="TestInstructions" Margin="0,30,0,0" FontAttributes="Bold"
+           Text="Instructions: Click the top-most button and the third entry should not contain any clear button!"/>
   </VerticalStackLayout>
 </ContentPage>
