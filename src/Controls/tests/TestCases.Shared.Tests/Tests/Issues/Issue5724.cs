@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Next Moves To Next Entry and Done Closes Input View";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public async Task TappingNextMovesToNextElement()
 		{
 			// Send Keys only works on Android which is why we are ignoring these other platforms.

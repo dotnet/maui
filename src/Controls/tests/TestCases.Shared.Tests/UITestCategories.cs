@@ -27,12 +27,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Layout = "Layout";
 		public const string ListView = "ListView";
 		public const string LifeCycle = "Lifecycle";
+		public const string FlexLayout = "FlexLayout";
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string Slider = "Slider";
+		public const string SoftInput = "SoftInput";
 		public const string Stepper = "Stepper";
 		public const string Switch = "Switch";
 		public const string SwipeView = "SwipeView";
@@ -44,6 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Maps = "Maps";
 		public const string InputTransparent = "InputTransparent";
 		public const string IsEnabled = "IsEnabled";
+		public const string IsVisible = "IsVisible";
 		public const string Gestures = "Gestures";
 		public const string Navigation = "Navigation";
 		public const string Effects = "Effects";

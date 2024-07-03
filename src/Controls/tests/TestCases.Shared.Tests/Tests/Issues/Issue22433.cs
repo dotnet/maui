@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button Device Tests Default";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public async Task ButtonLayoutAndSpacingTests()
 		{
 			App.WaitForElement("TestNavigateButtonLayout");
