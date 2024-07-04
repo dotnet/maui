@@ -40,9 +40,19 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.ToPlatform() is UIElement view)
+			if (child.Handler?.PlatformView is not null && child.ToPlatform() is UIElement view)
 			{
 				PlatformView.Children.Remove(view);
+			}
+			else 
+			{
+				var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+
+				if(targetIndex < PlatformView.Children.Count)
+				{
+					var childToRemove = PlatformView.Children[targetIndex];
+					PlatformView.Children.Remove(childToRemove);
+				}
 			}
 		}
 
