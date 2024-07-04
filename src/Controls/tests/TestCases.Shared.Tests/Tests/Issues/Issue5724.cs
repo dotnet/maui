@@ -32,6 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.SoftInput)]
 		public async Task TappingDoneClosesKeyboard()
 		{
 			App.WaitForElement("EntryDone");
