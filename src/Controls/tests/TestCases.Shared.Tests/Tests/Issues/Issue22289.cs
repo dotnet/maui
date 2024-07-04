@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.InputTransparent)]
 		public void ButtonsShouldBeVisible()
 		{
 			App.WaitForElement("changeVisibilityButton");
