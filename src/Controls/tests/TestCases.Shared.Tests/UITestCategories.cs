@@ -28,6 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Layout = "Layout";
 		public const string ListView = "ListView";
 		public const string LifeCycle = "Lifecycle";
+		public const string Flaky = "Flaky";
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
