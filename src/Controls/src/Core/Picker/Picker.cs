@@ -312,8 +312,23 @@ namespace Microsoft.Maui.Controls
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
 		{
-			int removeStart = e.OldStartingIndex < Items.Count ? e.OldStartingIndex : Items.Count - e.OldItems.Count;
-			int index = removeStart + e.OldItems.Count - 1;
+			int removeStart;
+			// Items are removed in reverse order, so index starts at the index of the last item to remove
+			int index;
+
+			if (e.OldStartingIndex < Items.Count)
+			{
+				// Remove e.OldItems.Count items starting at e.OldStartingIndex
+				removeStart = e.OldStartingIndex;
+				index = e.OldStartingIndex + e.OldItems.Count - 1;
+			}
+			else
+			{
+				// Remove e.OldItems.Count items at the end when e.OldStartingIndex is past the end of the Items collection
+				removeStart = Items.Count - e.OldItems.Count;
+				index = Items.Count - 1;
+			}
+
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 			if (removeStart <= SelectedIndex)
