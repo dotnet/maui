@@ -52,23 +52,6 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
-		void ILayoutHandler2.Remove(LayoutHandlerUpdate args)
-		{
-			if (args.View.Handler?.PlatformView is not null)
-			{
-				Remove(args.View);
-			}
-			else 
-			{
-				var targetIndex = VirtualView.GetLayoutHandlerIndex(args.View);
-
-				if(targetIndex < PlatformView.ChildCount)
-				{
-					PlatformView.RemoveViewAt(targetIndex);
-				}
-			}
-		}
-
 		public void Remove(IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
