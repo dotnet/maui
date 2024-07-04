@@ -56,14 +56,36 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		void ILayoutHandler2.Remove(LayoutHandlerUpdate args)
+		{
+			if (args.View.Handler?.PlatformView is not null)
+			{
+				Remove(args.View);
+			}
+			else 
+			{
+				var targetIndex = VirtualView.GetLayoutHandlerIndex(args.View);
+
+				if(targetIndex < PlatformView.Subviews.Length)
+					PlatformView.Subviews[targetIndex].RemoveFromSuperview();
+			}
+		}
+
 		public void Remove(IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.ToPlatform() is PlatformView childView)
+			if (child.Handler?.PlatformView is not null && child.ToPlatform() is PlatformView childView)
 			{
 				childView.RemoveFromSuperview();
+			}
+			else 
+			{
+				var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+
+				if(targetIndex < PlatformView.Subviews.Length)
+					PlatformView.Subviews[targetIndex].RemoveFromSuperview();
 			}
 		}
 
