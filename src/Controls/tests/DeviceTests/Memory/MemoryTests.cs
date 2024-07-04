@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -402,6 +403,36 @@ public class MemoryTests : ControlsHandlerTestBase
 		// 6 Ellipses total: first 3 should not leak, last 3 should still be in the layout & alive
 		Assert.Equal(6, references.Count);
 		await AssertionExtensions.WaitForGC(references[0], references[1], references[2]);
+	}
+
+	[Fact("Window Does Not Leak")]
+	public async Task WindowDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+
+		{
+			var page = new ContentPage();
+			var window = new Window(page);
+			await CreateHandlerAndAddToWindow(window, async () =>
+			{
+				await OnLoadedAsync(page);
+				references.Add(new(window));
+				references.Add(new(window.Handler));
+
+				// NOTE: the PlatformView in this case remains alive in the test application:
+				// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
+				//references.Add(new(window.Handler.PlatformView));
+
+				if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
+				{
+					app.SetWindow(null);
+				}
+			});
+		}
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
 #if IOS
