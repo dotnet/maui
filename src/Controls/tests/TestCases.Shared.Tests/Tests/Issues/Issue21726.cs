@@ -15,7 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         public override string Issue => "Modal with a bottom sheet should not crash iOS Keyboard Scroll";
 
         [Test]
-        public void PushViewControllerWithNullWindow()
+		[Category(UITestCategories.SoftInput)]
+		public void PushViewControllerWithNullWindow()
         {
             App.WaitForElement("AddVC");
             App.Click("AddVC");

@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.ImageButton)]
 		public void AppShouldNotCrash()
 		{
 			_ = App.WaitForElement("imageButton");
