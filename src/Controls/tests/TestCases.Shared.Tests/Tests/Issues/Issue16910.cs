@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.RefreshView)]
 public class Issue16910 : _IssuesUITest
 {
 	public override string Issue => "IsRefreshing binding works";
@@ -16,7 +17,7 @@ public class Issue16910 : _IssuesUITest
 
 	}
 
-    [Test]
+	[Test]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");
@@ -28,8 +29,7 @@ public class Issue16910 : _IssuesUITest
 
 // Windows only works with touch inputs which we don't have running on the test server
 #if !WINDOWS && !MACCATALYST
-    [Test]
-	[Category(UITestCategories.RefreshView)]
+	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");
