@@ -17,7 +17,9 @@ public class Issue16910 : _IssuesUITest
 
 	}
 
+#if !MACCATALYST
 	[Test]
+	[FailsOnMac("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");
@@ -26,6 +28,7 @@ public class Issue16910 : _IssuesUITest
 		App.Click("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
+#endif
 
 // Windows only works with touch inputs which we don't have running on the test server
 #if !WINDOWS && !MACCATALYST
