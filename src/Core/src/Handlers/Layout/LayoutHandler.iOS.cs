@@ -61,16 +61,9 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child.Handler?.PlatformView is not null && child.ToPlatform() is PlatformView childView)
+			if (child?.ToPlatform() is PlatformView childView)
 			{
 				childView.RemoveFromSuperview();
-			}
-			else 
-			{
-				var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-
-				if(targetIndex < PlatformView.Subviews.Length)
-					PlatformView.Subviews[targetIndex].RemoveFromSuperview();
 			}
 		}
 

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -74,30 +73,6 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			});
 
 			Assert.Equal(0, count);
-		}
-
-		[Fact(DisplayName = "Removing Child with DisconnectedHandler doesn't crash")]
-		public async Task RemovingChildWithDisconnectedHandlerDoesntCrash()
-		{
-			var layout = new LayoutStub();
-			var slider = new SliderStub();
-			var slider2 = new SliderStub();
-			layout.Add(slider);
-			layout.Add(slider2);
-
-			slider.ZIndex = 1;
-			slider2.ZIndex = 0;
-
-			var handler = await CreateHandlerAsync(layout);
-
-			var count = await InvokeOnMainThreadAsync(() =>
-			{
-				slider.Handler.DisconnectHandler();
-				handler.Invoke(nameof(ILayoutHandler.Remove), new LayoutHandlerUpdate(0, slider));
-				return GetNativeChildren(handler).First() == ((IPlatformViewHandler)slider2.Handler).PlatformView;
-			});
-
-			Assert.True(count);
 		}
 
 		[Fact(DisplayName = "DisconnectHandler removes child from native layout")]
