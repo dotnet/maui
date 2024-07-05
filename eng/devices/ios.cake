@@ -208,12 +208,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
 	var appiumLog = $"{binDir}/appium_ios.log";
-	var resultsFileName = $"{name}-{config}-ios-{testFilter.Replace("|", "_").Replace("TestCategory=", "")}";
-
-	if (resultsFileName.Contains("!~'.+'"))
-	{
-		resultsFileName = $"{name}-{config}-ios-notcategorized";
-	}
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter)}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

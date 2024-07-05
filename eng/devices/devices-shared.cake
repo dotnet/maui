@@ -222,3 +222,10 @@ void ExecuteWithRetries(Func<int> action, int retries)
         System.Threading.Thread.Sleep(1000);
     }
 }
+
+string SanitizeTestResultsFilename(string input)
+{
+    string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
+
+    return resultFilename;
+}

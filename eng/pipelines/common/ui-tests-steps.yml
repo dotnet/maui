@@ -62,18 +62,11 @@ steps:
       
       $testFilter = ""
 
-      if ("${{ parameters.testFilter }}" -eq "zzEmptyCategoryzz")
-      {
-        $testFilter = "TestCategory\!~'.+'"
+      "${{ parameters.testFilter }}".Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
       }
-      else
-      {
-        "${{ parameters.testFilter }}".Split(",") | ForEach {
-          $testFilter += "TestCategory=" + $_ + "|"
-        }
 
-        $testFilter = $testFilter.TrimEnd("|")
-      }
+      $testFilter = $testFilter.TrimEnd("|")
 
       # Cake does not allow empty parameters, so check if our filter is empty before adding it
       if ($testFilter) {

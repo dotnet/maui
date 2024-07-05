@@ -26,7 +26,6 @@ parameters:
     - 'ScrollView,SearchBar,Shape,Shell,Slider,SoftInput,Stepper,Switch,SwipeView'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
     - 'ViewBaseTests,Visual,WebView,Window'
-    #- 'zzEmptyCategoryzz' # reserved keyword to make sure we run tests with no category specified
 
   projects:
     - name: name

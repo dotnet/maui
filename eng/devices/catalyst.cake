@@ -143,12 +143,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
 	var appiumLog = $"{binDir}/appium_mac.log";
-	var resultsFileName = $"{name}-{config}-catalyst-{testFilter.Replace("|", "_").Replace("TestCategory=", "")}";
-
-	if (resultsFileName.Contains("!~'.+'"))
-	{
-		resultsFileName = $"{name}-{config}-catalyst-notcategorized";
-	}
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

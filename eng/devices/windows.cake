@@ -216,12 +216,7 @@ Task("Test")
 
 	if (!string.IsNullOrWhiteSpace(testFilter))
 	{
-		testResultsFile += $"-{testFilter.Replace("|", "_").Replace("TestCategory=", "")}";
-	}
-
-	if (testResultsFile.Contains("!~'.+'"))
-	{
-		testResultsFile = $"\\TestResults-{PACKAGEID.Replace(".", "_")}-notcategorized";
+		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
 	}
 
 	testResultsFile += ".xml";
