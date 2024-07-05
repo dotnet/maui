@@ -35,6 +35,8 @@ Microsoft.Maui.KeyboardAcceleratorModifiers.Shift = 1 -> Microsoft.Maui.Keyboard
 Microsoft.Maui.KeyboardAcceleratorModifiers.Windows = 16 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.RegisteredForRemoteNotifications
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.ReceivedRemoteNotification
 Microsoft.Maui.Platform.IImageSourcePartSetter
 Microsoft.Maui.Platform.IImageSourcePartSetter.Handler.get -> Microsoft.Maui.IElementHandler?
 Microsoft.Maui.Platform.IImageSourcePartSetter.ImageSourcePart.get -> Microsoft.Maui.IImageSourcePart?
@@ -107,6 +109,8 @@ static Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler<TTy
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.RegisteredForRemoteNotifications(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.RegisteredForRemoteNotifications! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ReceivedRemoteNotification(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.ReceivedRemoteNotification! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.KeyboardAutoManagerScroll.Connect() -> void
 static Microsoft.Maui.Platform.KeyboardAutoManagerScroll.Disconnect() -> void
@@ -146,6 +150,8 @@ virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
+virtual Microsoft.Maui.MauiUIApplicationDelegate.RegisteredForRemoteNotifications(UIKit.UIApplication! application, Foundation.NSData! deviceToken) -> void
+virtual Microsoft.Maui.MauiUIApplicationDelegate.ReceivedRemoteNotification(UIKit.UIApplication! application, Foundation.NSDictionary! userInfo) -> void
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void
 Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double heightConstraint) -> bool
