@@ -61,13 +61,17 @@ steps:
       $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
       $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
       
+      $testFilter = ""
+
       "${{ parameters.testFilter }}".Split(",") | ForEach {
         $testFilter += "TestCategory=" + $_ + "|"
       }
 
+      $testFilter = $testFilter.TrimEnd("|")
+
       # Cake does not allow empty parameters, so check if our filter is empty before adding it
       if ($testFilter) {
-        $command += " --test-filter ""${{ parameters.testFilter }}"""
+        $command += " --test-filter ""$testFilter"""
       }
 
       Invoke-Expression $command
