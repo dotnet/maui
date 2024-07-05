@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public Issue21948(TestDevice device) : base(device) { }
 
-		public override string Issue => "Crash upon resuming the app 'window was already activated'";
+		public override string Issue => "Crash upon resuming the app window was already activated";
 
 		[Test]
 		[Category(UITestCategories.Window)]
