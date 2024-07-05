@@ -56,25 +56,7 @@ steps:
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
-  - pwsh: |
-      $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project=""${{ parameters.path }}"""
-      $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
-      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
-      
-      $testFilter = ""
-
-      "${{ parameters.testFilter }}".Split(",") | ForEach {
-        $testFilter += "TestCategory=" + $_ + "|"
-      }
-
-      $testFilter = $testFilter.TrimEnd("|")
-
-      # Cake does not allow empty parameters, so check if our filter is empty before adding it
-      if ($testFilter) {
-        $command += " --test-filter ""$testFilter"""
-      }
-
-      Invoke-Expression $command
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
     displayName: $(Agent.JobName)
     # retryCountOnTaskFailure: 2
 

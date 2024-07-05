@@ -219,11 +219,6 @@ stages:
             - ${{ each api in parameters.androidApiLevels }}:
               - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
                 - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
-                  strategy:
-                    matrix:
-                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
                   timeoutInMinutes: 240
                   workspace:
                     clean: all
@@ -247,7 +242,6 @@ stages:
                           DEVICE: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                        testFilter: $(CATEGORYGROUP)
 
     - stage: ios_compatibility_ui_tests
       displayName: iOS Compatibility UITests
@@ -258,11 +252,6 @@ stages:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_compatibility_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
-                  strategy:
-                    matrix:
-                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
                   timeoutInMinutes: 240
                   workspace:
                     clean: all
@@ -289,4 +278,3 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                        testFilter: $(CATEGORYGROUP)
