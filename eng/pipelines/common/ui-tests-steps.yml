@@ -21,6 +21,32 @@ steps:
     inputs:
       artifact: ui-tests-samples-windows
   
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
+
+  - template: provision.yml
+    parameters:
+      skipProvisioning:  ${{ eq(parameters.platform, 'windows') }}
+      skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      
+  - task: PowerShell@2
+    condition: ne('${{ parameters.platform }}' , 'windows')
+    inputs:
+      targetType: 'inline'
+      script: |
+        defaults write -g NSAutomaticCapitalizationEnabled -bool false
+        defaults write -g NSAutomaticTextCompletionEnabled -bool false
+        defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+    displayName: "Modify defaults"
+    continueOnError: true
+  
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 2
