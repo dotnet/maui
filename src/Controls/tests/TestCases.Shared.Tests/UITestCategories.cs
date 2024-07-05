@@ -1,5 +1,7 @@
 namespace Microsoft.Maui.TestCases.Tests
 {
+	// Make sure that this list is always up-to-date with eng/pipelines/common/ui-tests.yml
+	// we might want to improve this somehow depending on how much the categories change over time
 	internal static class UITestCategories
 	{
 		public const string ViewBaseTests = "ViewBaseTests";
