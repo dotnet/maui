@@ -102,6 +102,55 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(pageFiredNavigated);
 		}
 
+		[Fact]
+		public async Task PopLifeCycle()
+		{
+			SetupBuilder();
+			
+			bool appearingShouldFireOnInitialPage = false;
+			ContentPage initialPage = new ContentPage();
+			ContentPage pushedPage = new ContentPage();
+
+			ContentPage rootPageFiresAppearingAfterPop = null;
+			ContentPage pageDisappeared = null;
+
+			NavigationPage nav = new NavigationPage(initialPage);
+
+			// Because of queued change propagation on BPs
+			// sometimes the appearing will fire a bit later than we expect.
+			// This ensures the first one fires before we move on
+			TaskCompletionSource waitForFirstAppearing = new TaskCompletionSource();
+			initialPage.Appearing += OnInitialPageAppearing;
+			void OnInitialPageAppearing(object sender, EventArgs e)
+			{
+				waitForFirstAppearing.SetResult();
+				initialPage.Appearing -= OnInitialPageAppearing;
+			}
+
+			await CreateHandlerAndAddToWindow(nav, async () =>
+			{
+				await waitForFirstAppearing.Task.WaitAsync(TimeSpan.FromSeconds(2));
+				initialPage.Appearing += (sender, _) =>
+				{
+					Assert.True(appearingShouldFireOnInitialPage);
+					rootPageFiresAppearingAfterPop = (ContentPage)sender;
+				};
+
+				pushedPage.Disappearing += (sender, _)
+					=> pageDisappeared = (ContentPage)sender;
+
+				await nav.PushAsync(pushedPage).WaitAsync(TimeSpan.FromSeconds(2));
+				Assert.Null(rootPageFiresAppearingAfterPop);
+				appearingShouldFireOnInitialPage = true;
+				Assert.Null(pageDisappeared);
+
+				await nav.PopAsync().WaitAsync(TimeSpan.FromSeconds(2));
+
+				Assert.Equal(initialPage, rootPageFiresAppearingAfterPop);
+				Assert.Equal(pushedPage, pageDisappeared);
+			});
+		}
+
 #if !IOS && !MACCATALYST
 
 		[Fact(DisplayName = "Swapping Navigation Toggles BackButton Correctly")]
