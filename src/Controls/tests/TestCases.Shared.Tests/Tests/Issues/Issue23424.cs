@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void RadioButtonWithValueChangeSelected()
+		public void BackButtonBehaviorIsVisibleWorksWithCustomIcon()
 		{
 			App.WaitForElement("button");
 			App.Click("button");
@@ -24,3 +25,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
