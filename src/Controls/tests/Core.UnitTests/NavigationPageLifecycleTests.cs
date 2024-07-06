@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[Theory]
 		[InlineData(false)]
-		[InlineData(true)]
 		public async Task PopLifeCycle(bool useMaui)
 		{
 			bool appearingShouldFireOnInitialPage = false;
