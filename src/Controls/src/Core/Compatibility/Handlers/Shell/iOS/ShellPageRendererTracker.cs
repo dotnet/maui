@@ -342,8 +342,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (icon != null)
 				{
-					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+					if (IsRootPage || backButtonVisible)
+					{
+						NavigationItem.LeftBarButtonItem =
+							new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+					}
+					else
+						NavigationItem.LeftBarButtonItem = null;
 				}
 				else
 				{
