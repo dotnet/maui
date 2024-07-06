@@ -322,6 +322,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				image = _context.Shell.FlyoutIcon;
 			}
 
+			if (!IsRootPage)
+			{
+				NavigationItem.HidesBackButton = !backButtonVisible;
+				image = backButtonVisible ? image : null;
+			}
+
 			image.LoadImage(MauiContext, result =>
 			{
 				UIImage icon = null;
@@ -367,13 +373,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 				}
 			});
-
-			if (!IsRootPage)
-			{
-				NavigationItem.HidesBackButton = !backButtonVisible;
-				if(!backButtonVisible)
-					NavigationItem.LeftBarButtonItem = null;
-			}
 
 			UpdateBackButtonTitle();
 		}

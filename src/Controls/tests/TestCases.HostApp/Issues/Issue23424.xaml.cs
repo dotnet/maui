@@ -7,8 +7,7 @@ public partial class Issue23424 : Shell
 	public Issue23424()
 	{
 		Items.Add(new ContentPage());
-		Routing.RegisterRoute(nameof(DetailPage),typeof(DetailPage));
-		GoToAsync(nameof(DetailPage));
+		Navigation.PushAsync(new DetailPage());
 	}
 	
 	public class DetailPage : ContentPage
