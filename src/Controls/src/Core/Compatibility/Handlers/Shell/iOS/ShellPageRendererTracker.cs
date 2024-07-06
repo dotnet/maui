@@ -322,11 +322,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				image = _context.Shell.FlyoutIcon;
 			}
 
-			if (!IsRootPage)
-			{
-				NavigationItem.HidesBackButton = !backButtonVisible;
-			}
-
 			image.LoadImage(MauiContext, result =>
 			{
 				UIImage icon = null;
@@ -342,13 +337,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (icon != null)
 				{
-					if (IsRootPage || backButtonVisible)
-					{
-						NavigationItem.LeftBarButtonItem =
-							new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
-					}
-					else
-						NavigationItem.LeftBarButtonItem = null;
+					NavigationItem.LeftBarButtonItem =
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
 				}
 				else
 				{
@@ -377,6 +367,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					}
 				}
 			});
+
+			if (!IsRootPage)
+			{
+				NavigationItem.HidesBackButton = !backButtonVisible;
+				if(!backButtonVisible)
+					NavigationItem.LeftBarButtonItem = null;
+			}
 
 			UpdateBackButtonTitle();
 		}
