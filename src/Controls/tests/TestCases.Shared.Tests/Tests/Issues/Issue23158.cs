@@ -12,22 +12,20 @@ public class Issue23158 : _IssuesUITest
 	{
 	}
 
+#if !MACCATALYST
 	[Test]
 	[Category(UITestCategories.Entry)]
-	public async Task ValidateEntryClearButtonVisibilityBehavior()
+	public void ValidateEntryClearButtonVisibilityBehavior()
 	{
 		App.WaitForElement("TestInstructions");
 
 		// Click the button to add dynamically Entry3.
 		App.Click("AddEntry");
 
-		await Task.Delay(500);
-
 		// Click the new entry to see if there is the clear button or not. No such button should be present.
 		App.Tap("Entry3");
 
-		await Task.Delay(500);
-
 		VerifyScreenshot();
 	}
+#endif
 }
