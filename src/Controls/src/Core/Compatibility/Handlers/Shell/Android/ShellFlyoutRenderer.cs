@@ -12,6 +12,7 @@ using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
 using LP = Android.Views.ViewGroup.LayoutParams;
+using LD = Android.Views.LayoutDirection;
 using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -144,6 +145,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			Shell.PropertyChanged += OnShellPropertyChanged;
 			ShellController.AddAppearanceObserver(this, Shell);
+			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
 
 			this.DrawerClosed += OnDrawerClosed;
 			this.DrawerSlide += OnDrawerSlide;
