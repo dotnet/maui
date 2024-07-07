@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			Shell.PropertyChanged += OnShellPropertyChanged;
 			ShellController.AddAppearanceObserver(this, Shell);
-			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
+			UpdateFlowDirection();
 
 			this.DrawerClosed += OnDrawerClosed;
 			this.DrawerSlide += OnDrawerSlide;
@@ -275,6 +275,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateDrawerState();
 			}
+			else if(e.PropertyName == Shell.FlowDirectionProperty.PropertyName)
+			{
+				UpdateFlowDirection();
+			}
 		}
 
 		void UpdateDrawerState()
@@ -290,6 +294,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				CloseDrawers();
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
 		}
 
 		void OnDualScreenServiceScreenChanged(object sender, EventArgs e)
