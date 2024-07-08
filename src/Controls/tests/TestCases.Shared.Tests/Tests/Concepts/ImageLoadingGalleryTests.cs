@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+	[Category(UITestCategories.Image)]
 	public class ImageLoadingGalleryTests : CoreGalleryBasePageTest
 	{
 		public ImageLoadingGalleryTests(TestDevice device)

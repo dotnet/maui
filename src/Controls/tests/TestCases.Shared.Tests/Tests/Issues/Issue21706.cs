@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue21706(TestDevice device) : base(device) { }
 
 		[Test]
+		[Category(UITestCategories.ImageButton)]
 		public async Task ImageButtonStuckAfterRightClick()
 		{
 			App.WaitForElement("WaitForElement");
