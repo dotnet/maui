@@ -435,7 +435,11 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	[Fact("VisualDiagnosticsOverlay Does Not Leak")]
+	[Fact("VisualDiagnosticsOverlay Does Not Leak"
+#if IOS || MACCATALYST
+		, Skip = "Fails with 'MauiContext should have been set on parent.'"
+#endif
+	)]
 	public async Task VisualDiagnosticsOverlayDoesNotLeak()
 	{
 		SetupBuilder();
