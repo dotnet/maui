@@ -13,6 +13,7 @@ public class Issue22443 : _IssuesUITest
     public override string Issue => "App Crash on Scroll Animation while navigating away from Page";
 
     [Test]
+	[Category(UITestCategories.Navigation)]
 	public void NoExceptionShouldBeThrown()
 	{
 		App.WaitForElement("button");

@@ -14,14 +14,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
-		public async Task EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
+		[Category(UITestCategories.Entry)]
+		public void EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
 		{
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Click a button to update the text
 			App.Tap("button");
-		
-			await Task.Yield();
 
 			// 2. Verify that the Entry TextColor is correct (Green).
 			VerifyScreenshot();
