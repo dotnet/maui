@@ -1,0 +1,69 @@
+parameters:
+  platform: '' # [ android, ios, windows, catalyst ]
+  path: '' # path to csproj
+  device: '' # the xharness device to use
+  cakeArgs: '' # additional cake args
+  app: '' #path to app to test
+  version: '' #the iOS version'
+  provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
+  configuration : "Release"
+  testFilter: ''
+
+steps:
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
+
+  - template: provision.yml
+    parameters:
+      skipProvisioning:  ${{ eq(parameters.platform, 'windows') }}
+      skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      
+  - task: PowerShell@2
+    condition: ne('${{ parameters.platform }}' , 'windows')
+    inputs:
+      targetType: 'inline'
+      script: |
+        defaults write -g NSAutomaticCapitalizationEnabled -bool false
+        defaults write -g NSAutomaticTextCompletionEnabled -bool false
+        defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+    displayName: "Modify defaults"
+    continueOnError: true
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 2
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
+
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
+    displayName: 'Build the MSBuild Tasks'
+
+  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
+    displayName: 'Build the samples'
+
+  - bash: |
+      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
+      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
+    displayName: Delete Old Simulator Logs
+    condition: ${{ eq(parameters.platform, 'ios') }}
+    continueOnError: true
+
+  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+    condition: ne('${{ parameters.platform }}' , 'windows')
+    artifact: ui-tests-samples
+
+  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+    condition: eq('${{ parameters.platform }}' , 'windows')
+    artifact: ui-tests-samples-windows

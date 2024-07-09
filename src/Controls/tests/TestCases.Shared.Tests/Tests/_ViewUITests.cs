@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public _ViewUITests(TestDevice device) : base(device) { }
 
 		[Test]
+		[Category(UITestCategories.IsEnabled)]
 		public virtual void IsEnabled()
 		{
 			var remote = GoToStateRemote();
@@ -36,6 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
+		[Category(UITestCategories.IsVisible)]
 		public virtual void IsVisible()
 		{
 			var remote = GoToStateRemote();
