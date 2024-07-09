@@ -13,10 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Making Fragment Changes While App is Backgrounded Fails";
 
-		[TestCase("SwapMainPage")]
-		[TestCase("SwapFlyoutPage")]
-		[TestCase("SwapTabbedPage")]
-		[TestCase("RemoveAddTabs")]
+		[TestCase("SwapMainPage", Category = UITestCategories.Navigation)]
+		[TestCase("SwapFlyoutPage", Category = UITestCategories.FlyoutPage)]
+		[TestCase("SwapTabbedPage", Category = UITestCategories.TabbedPage)]
+		[TestCase("RemoveAddTabs", Category = UITestCategories.TabbedPage)]
 		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails(string scenario)
 		{
 			try

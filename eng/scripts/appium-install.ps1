@@ -40,11 +40,11 @@ Find the script for that on the DevDiv Azure DevOps instance, Engineering team, 
 
 param
 (
-    [string] $appiumVersion = '2.5.4',
+    [string] $appiumVersion = '2.11.0',
     [string] $windowsDriverVersion = '2.12.23',
-    [string] $androidDriverVersion = '3.5.1',
-    [string] $iOSDriverVersion = '7.16.1',
-    [string] $macDriverVersion = '1.17.3',
+    [string] $androidDriverVersion = '3.7.0',    
+    [string] $iOSDriverVersion = '7.21.0',
+    [string] $macDriverVersion = '1.17.4',
     [string] $logsDir = '../appium-logs'
 )
 
@@ -67,13 +67,15 @@ if (!(Test-Path $logsDir -PathType Container)) {
 $AppiumHome = $env:APPIUM_HOME
 Write-Output "APPIUM_HOME: $AppiumHome"
 
-if (Test-Path $AppiumHome) {
-    Write-Output  "Removing existing APPIUM_HOME Cache..."
-    Remove-Item -Path $AppiumHome -Recurse -Force
-}
+if ($AppiumHome) {
+    if (Test-Path $AppiumHome) {
+        Write-Output  "Removing existing APPIUM_HOME Cache..."
+        Remove-Item -Path $AppiumHome -Recurse -Force
+    }
 
-# Create the directory for appium home
-New-Item -ItemType Directory -Path $AppiumHome
+    # Create the directory for appium home
+    New-Item -ItemType Directory -Path $AppiumHome
+}
 
 # Check for an existing appium install version
 $appiumCurrentVersion = ""

@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.AllowsMultipleSelection = false;
 		}
 
+		private protected override NSIndexPath GetAdjustedIndexPathForItemSource(NSIndexPath indexPath)
+		{
+			return NSIndexPath.FromItemSection(GetIndexFromIndexPath(indexPath), 0);
+		}
+
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
 			UICollectionViewCell cell;

@@ -18,8 +18,9 @@ public class Issue21630 : _IssuesUITest
     string FocusButton => "FocusButton";
     string RestoreButton => "RestoreMainPageButton";
 
-	[TestCase("SwapNavigationPage")]
-	[TestCase("SwapShellPage")]
+	[TestCase("SwapNavigationPage", Category = UITestCategories.Entry)]
+	[TestCase("SwapShellPage", Category = UITestCategories.Entry)]
+
 	public void NavBarEntryDoesNotTriggerKeyboardScroll(string scenario)
 	{
 		try

@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected nfloat ConstrainedDimension;
 
-		private WeakReference<DataTemplate> _currentTemplate;
+		WeakReference<DataTemplate> _currentTemplate;
 
 		public DataTemplate CurrentTemplate
 		{
