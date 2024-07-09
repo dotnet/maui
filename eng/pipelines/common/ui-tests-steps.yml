@@ -108,13 +108,6 @@ steps:
 
       Invoke-Expression $command
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic  --runtimevariant="${{ parameters.runtimeVariant }}"
-    displayName: $(Agent.JobName)
-    ${{ if ne(parameters.platform, 'android')}}:
-      retryCountOnTaskFailure: 1
-    env:
-      APPIUM_HOME: $(APPIUM_HOME)
-
   - bash: |
       pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
       displayName: Cleanup and Create Simulator Logs if Test Run Failed To
