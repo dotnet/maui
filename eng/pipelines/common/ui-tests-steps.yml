@@ -99,7 +99,12 @@ steps:
         $command += " --test-filter ""$testFilter"""
       }
 
-      Invoke-Expression $command
+      Invoke-Expression $command  
+    displayName: $(Agent.JobName)
+    ${{ if ne(parameters.platform, 'android')}}:
+      retryCountOnTaskFailure: 1
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
 
   - bash: |
       pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
