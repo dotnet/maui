@@ -415,10 +415,21 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapContainerView(IViewHandler handler, IView view)
 		{
+			bool hasContainerOldValue = handler.HasContainer;
+
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
 				handler.HasContainer = view.NeedsContainer();
+
+			if(hasContainerOldValue != handler.HasContainer)
+			{
+				handler.UpdateValue(nameof(IView.Visibility));
+	
+				#if WINDOWS
+				handler.UpdateValue(nameof(IView.Opacity));
+				#endif
+			}
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete

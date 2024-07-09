@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[Category(UITestCategories.Entry)]
 		public void EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
 		{
 			App.WaitForElement("WaitForStubControl");
