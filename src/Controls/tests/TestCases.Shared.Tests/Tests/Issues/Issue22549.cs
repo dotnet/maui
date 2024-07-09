@@ -11,6 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Binding Border.StrokeShape not working";
 
 		[Test]
+		[Category(UITestCategories.Border)]
 		public void BindingOnStrokeShapeShouldWork()
 		{
 			App.WaitForElement("button");

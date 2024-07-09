@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.SoftInput)]
 	public class HideSoftInputOnTappedPageTests : _IssuesUITest
 	{
 		public HideSoftInputOnTappedPageTests(TestDevice device) : base(device) { }

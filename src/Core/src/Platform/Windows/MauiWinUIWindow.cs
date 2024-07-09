@@ -165,7 +165,7 @@ namespace Microsoft.Maui
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
 						if (rootManager != null)
 						{
-							rootManager?.SetTitleBarVisibility(hasTitleBar);
+							rootManager?.SetTitleBarVisibility(this, hasTitleBar);
 						}
 					}
 				}
@@ -215,7 +215,8 @@ namespace Microsoft.Maui
 
 				titleBar.ButtonBackgroundColor = Colors.Transparent;
 				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-				titleBar.ButtonForegroundColor = _viewSettings.GetColorValue(ViewManagement.UIColorType.Foreground);
+				titleBar.ButtonForegroundColor = UI.Xaml.Application.Current.RequestedTheme == UI.Xaml.ApplicationTheme.Dark ?
+					Colors.White : Colors.Black;
 			}
 		}
 

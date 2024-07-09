@@ -8,9 +8,9 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
-  where : "cat==Issues"
   targetSample: "dotnet-legacy-controlgallery"
   provisionPlatform: "windows"
+  testFilter: ''
 
 steps:
   - bash: |
@@ -56,7 +56,7 @@ steps:
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
     # retryCountOnTaskFailure: 2
 
