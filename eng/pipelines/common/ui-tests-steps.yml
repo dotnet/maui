@@ -108,7 +108,7 @@ steps:
 
   - bash: |
       pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
-      displayName: Cleanup and Create Simulator Logs if Test Run Failed To
+    displayName: Cleanup and Create Simulator Logs if Test Run Failed To
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
