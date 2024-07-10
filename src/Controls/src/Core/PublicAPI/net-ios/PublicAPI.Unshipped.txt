@@ -41,8 +41,6 @@ Microsoft.Maui.Controls.TitleBar.Title.set -> void
 Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
 Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
-Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
-Microsoft.Maui.Controls.Window.TitleBar.set -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
@@ -150,7 +148,6 @@ static readonly Microsoft.Maui.Controls.TitleBar.LeadingContentProperty -> Micro
 static readonly Microsoft.Maui.Controls.TitleBar.SubtitleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
