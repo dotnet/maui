@@ -110,14 +110,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidAppear(bool animated)
 		{
-			Page.SendAppearing();
+			Page?.SendAppearing();
 			base.ViewDidAppear(animated);
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			Page.SendDisappearing();
+			Page?.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIViewController GetViewController(Page page)
 		{
-			if (page.Handler is not IPlatformViewHandler nvh)
+			if (page?.Handler is not IPlatformViewHandler nvh)
 				return null;
 
 			return nvh.ViewController;
