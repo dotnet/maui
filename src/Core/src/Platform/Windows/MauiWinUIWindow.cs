@@ -75,6 +75,13 @@ namespace Microsoft.Maui
 				else
 					_enableResumeEvent = true;
 			}
+			else if (args.WindowActivationState == UI.Xaml.WindowActivationState.Deactivated &&
+				!_isActivated)
+			{
+				// Don't invoke deactivated event if we're not activated. It's possible we can
+				// recieve this event twice if we start more than one process at a time
+				return;
+			}
 			else
 			{
 				_isActivated = false;

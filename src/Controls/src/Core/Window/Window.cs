@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Controls
 		void IWindow.Deactivated()
 		{
 			if (!IsActivated)
-				return;
+				throw new InvalidOperationException("Window was already deactivated");
 
 			IsActivated = false;
 			Deactivated?.Invoke(this, EventArgs.Empty);
