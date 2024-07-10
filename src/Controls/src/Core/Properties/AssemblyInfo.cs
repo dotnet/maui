@@ -8,7 +8,6 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI")]
 [assembly: InternalsVisibleTo("Compatibility.ControlGallery.WinUI")]
-[assembly: InternalsVisibleTo("TestCases.HostApp")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
@@ -30,6 +29,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.Tizen")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.UITests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.HostApp")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.FlexLayout.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Material")]
 
