@@ -4,7 +4,7 @@
 
   <PropertyGroup> 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>0219,CS0168,nullable</WarningsNotAsErrors>    
+    <WarningsNotAsErrors>NU1101,XAOBS001,CS0618,nullable</WarningsNotAsErrors>    
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>Latest</LangVersion>
