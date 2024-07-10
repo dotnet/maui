@@ -326,7 +326,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/DiagnosticReports_${sim.UDID}.zip")
+							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}.zip")
 							.AppendQuoted($"{homeDirectory}/Library/Logs/DiagnosticReports/"),
 						RedirectStandardOutput = false
 					});
@@ -335,7 +335,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/CoreSimulator_${sim.UDID}.zip")
+							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}.zip")
 							.AppendQuoted($"{homeDirectory}/Library/Logs/CoreSimulator/{sim.UDID}"),
 						RedirectStandardOutput = false
 					});
