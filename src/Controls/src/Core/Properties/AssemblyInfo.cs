@@ -8,6 +8,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI")]
 [assembly: InternalsVisibleTo("Compatibility.ControlGallery.WinUI")]
+[assembly: InternalsVisibleTo("TestCases.HostApp")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.ControlGallery")]
