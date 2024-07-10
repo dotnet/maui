@@ -15,7 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
 
         [Test]
-        public void ImageShouldBePortrait()
+		[Category(UITestCategories.Image)]
+		public void ImageShouldBePortrait()
         {
             var image = App.WaitForElement ("theImage").GetRect();
 			ClassicAssert.Greater(image.Height, image.Width);

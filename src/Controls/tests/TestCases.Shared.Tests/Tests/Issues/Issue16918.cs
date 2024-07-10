@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ImageButton is not properly anti-aliased when scaled down";
 
 		[Test]
+		[Category(UITestCategories.ImageButton)]
 		public void Issue16918Test()
 		{
 			// https://github.com/dotnet/maui/issues/16918

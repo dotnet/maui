@@ -2534,13 +2534,6 @@
 ~static Microsoft.Maui.Controls.OnPlatform<T>.implicit operator T(Microsoft.Maui.Controls.OnPlatform<T> onPlatform) -> T
 ~static Microsoft.Maui.Controls.PanGestureRecognizer.CurrentId.get -> Microsoft.Maui.Controls.Internals.AutoId
 ~static Microsoft.Maui.Controls.Picker.ControlsPickerMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IPicker, Microsoft.Maui.Handlers.PickerHandler>
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationProperties(this Microsoft.UI.Xaml.FrameworkElement frameworkElement, Microsoft.Maui.Controls.Element element, Microsoft.Maui.IMauiContext mauiContext, string defaultName = null) -> void
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesAccessibilityView(this Microsoft.UI.Xaml.FrameworkElement Control, Microsoft.Maui.Controls.Element Element, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView? _defaultAutomationPropertiesAccessibilityView = null) -> Microsoft.UI.Xaml.Automation.Peers.AccessibilityView?
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesAutomationId(this Microsoft.UI.Xaml.FrameworkElement Control, string id) -> void
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesHelpText(this Microsoft.UI.Xaml.FrameworkElement Control, Microsoft.Maui.Controls.Element Element, string _defaultAutomationPropertiesHelpText = null) -> string
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesLabeledBy(this Microsoft.UI.Xaml.FrameworkElement Control, Microsoft.Maui.Controls.Element Element, Microsoft.Maui.IMauiContext mauiContext, Microsoft.UI.Xaml.UIElement _defaultAutomationPropertiesLabeledBy = null) -> Microsoft.UI.Xaml.UIElement
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesName(this Microsoft.UI.Xaml.FrameworkElement Control, Microsoft.Maui.Controls.Element Element, string _defaultAutomationPropertiesName = null) -> string
-~static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetBackButtonTitle(this Microsoft.Maui.Controls.Platform.PageControl Control, Microsoft.Maui.Controls.Element Element) -> void
 ~static Microsoft.Maui.Controls.Platform.AccessKeyHelper.UpdateAccessKey(Microsoft.UI.Xaml.FrameworkElement control, Microsoft.Maui.Controls.VisualElement element) -> void
 ~static Microsoft.Maui.Controls.Platform.BrushExtensions.ToBrush(this Microsoft.Maui.Controls.Brush brush) -> Microsoft.UI.Xaml.Media.Brush
 ~static Microsoft.Maui.Controls.Platform.FontExtensions.ApplyFont(this Microsoft.UI.Xaml.Controls.Control self, Microsoft.Maui.Font font, Microsoft.Maui.IFontManager fontManager) -> void

@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <!-- The .NET product branding version -->
-    <ProductVersion>8.0.70</ProductVersion>
+    <ProductVersion>8.0.80</ProductVersion>
     <MajorVersion>8</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>70</PatchVersion>
+    <PatchVersion>80</PatchVersion>
     <SdkBandVersion>8.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.net8</PreReleaseVersionLabel>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
@@ -85,7 +85,7 @@
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <_MicrosoftWebWebView2Version>1.0.2151.40</_MicrosoftWebWebView2Version>
+    <_MicrosoftWebWebView2Version>1.0.2592.51</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.15.1.2</_XamarinAndroidGlideVersion>
