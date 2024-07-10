@@ -101,14 +101,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -155,7 +155,7 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
               demands:
-                - macOS.Name -equals Ventura
+                - macOS.Name -equals Sonoma
                 - macOS.Architecture -equals x64
             steps:
               - template: common/provision.yml
@@ -197,7 +197,7 @@ stages:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Ventura
+              - macOS.Name -equals Sonoma
               - macOS.Architecture -equals x64
           variables:
             - name: _buildScript
@@ -245,7 +245,7 @@ stages:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Ventura
+              - macOS.Name -equals Sonoma
               - macOS.Architecture -equals x64
           steps:
             - template: common/provision.yml
