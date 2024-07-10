@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.Versioning;
 using ObjCRuntime;
 using UIKit;
 
@@ -44,6 +47,23 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static IEnumerable<UIWindowScene> GetConnectedSceneWindows(this UIApplication application)
+		{
+			foreach(var windowScene in application.ConnectedScenes)
+			{
+				if (windowScene is UIWindowScene uiWindowScene)
+				{
+					yield return uiWindowScene;
+				}
+			}
+		}
+		
+		[SupportedOSPlatform("ios13.0")]
+		[SupportedOSPlatform("maccatalyst13.1")]
+		static UIWindow[] GetWindowSceneWindows(this UIWindowScene windowScene) => windowScene.Windows;
+
 		public static IWindow? GetWindow(this UIApplication application)
         {
             // If there's only one window to return then just return that window
@@ -52,18 +72,20 @@ namespace Microsoft.Maui.Platform
 			if (windows.Count == 1)
 				return windows[0];
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
-				foreach(var windowScene in application.ConnectedScenes)
+				foreach(var windowScene in application.GetConnectedSceneWindows())
 				{
 					if (windowScene is UIWindowScene uiWindowScene)
 					{
-						if(uiWindowScene.Windows.Length == 1 && uiWindowScene.Windows[0].GetWindow() is IWindow window)
+						var uiWindows = uiWindowScene.GetWindowSceneWindows();
+						if(uiWindows.Length == 1 && uiWindows[0].GetWindow() is IWindow window)
 						{
 							return window;
 						}
 					}
 				}
+				
 			}
 			else
 			{
