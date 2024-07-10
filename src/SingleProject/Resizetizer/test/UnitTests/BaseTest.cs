@@ -137,8 +137,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			if (!isSimilar)
 			{
-				var root = GetThisFilePath();
-				root = Path.GetDirectoryName(root);
+				var root = GetTestProjectRoot();
 				var filename = GetTestImageFileName(args, methodName);
 
 				var maskFilename = Path.Combine(root, "errors", filename);
@@ -161,9 +160,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
-			var root = GetThisFilePath();
-			root = Path.GetDirectoryName(root);
-
+			var root = GetTestProjectRoot();
 			var imagePath = GetTestImageFileName(args, methodName);
 			var path = Path.Combine(root, imagePath);
 
@@ -198,6 +195,13 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			return Path.Combine(TestImagesFolderName, name, methodName, filename);
 		}
 
-		private static string GetThisFilePath([CallerFilePath] string path = null) => path;
+		private static string GetTestProjectRoot()
+		{
+			var cwd = Directory.GetCurrentDirectory();
+
+			var root = Path.Combine(cwd, "../../../../../src/SingleProject/Resizetizer/test/UnitTests/");
+
+			return root;
+		}
 	}
 }
