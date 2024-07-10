@@ -435,6 +435,37 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
+	[Fact("VisualDiagnosticsOverlay Does Not Leak"
+#if IOS || MACCATALYST
+		, Skip = "Fails with 'MauiContext should have been set on parent.'"
+#endif
+	)]
+	public async Task VisualDiagnosticsOverlayDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var window = new WindowStub();
+		var overlay = new VisualDiagnosticsOverlay(window);
+		var references = new List<WeakReference>();
+
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var page = new ContentPage();
+				window.Content = page;
+				await CreateHandlerAsync(page);
+				overlay.Initialize();
+				references.Add(new(page));
+				references.Add(new(page.Handler));
+				references.Add(new(page.Handler.PlatformView));
+
+				window.Content = null;
+			});
+		}
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
+	}
+
 #if IOS
 	[Fact]
 	public async Task ResignFirstResponderTouchGestureRecognizer()
