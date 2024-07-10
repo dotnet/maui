@@ -165,7 +165,7 @@ namespace Microsoft.Maui
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
 						if (rootManager != null)
 						{
-							rootManager?.SetTitleBarVisibility(this, hasTitleBar);
+							rootManager?.SetTitleBarVisibility(hasTitleBar);
 						}
 					}
 				}

@@ -24,12 +24,16 @@ namespace Microsoft.Maui.Platform
 			var titleBar = platformWindow.GetAppWindow()?.TitleBar;
 			if (titleBar is not null)
 			{
-				SetTitleBarVisibility(platformWindow, titleBar.ExtendsContentIntoTitleBar);
+				SetTitleBarVisibility(titleBar.ExtendsContentIntoTitleBar);
 			}
 		}
 
-		internal void SetTitleBarVisibility(Window platformWindow, bool isVisible)
+		internal void SetTitleBarVisibility(bool isVisible)
 		{
+			var platformWindow = _platformWindow.GetTargetOrDefault();
+			if (platformWindow is null)
+				return;
+
 			// https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design
 			// Standard title bar height is 32px
 			// This should always get set by the code after but
@@ -145,8 +149,11 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetTitleBar(ITitleBar? titlebar, IMauiContext? mauiContext)
 		{
-			_rootView.AppWindowId = _platformWindow.GetAppWindow()?.Id;
-			_rootView.SetTitleBar(titlebar, mauiContext);
+			if (_platformWindow.TryGetTarget(out var window))
+			{ 
+				_rootView.AppWindowId = window.GetAppWindow()?.Id;
+				_rootView.SetTitleBar(titlebar, mauiContext);
+			}
 		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
