@@ -187,15 +187,15 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
 {
 	Information("Starting UI Tests...");
+	Information($"Testing Device: {device}");
+	Information($"Testing App Project: {app}");
+	Information($"Results Directory: {resultsDir}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
 	
 	string testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
 
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {app}");
-	Information($"Testing App: {testApp}");
-	Information($"Results Directory: {resultsDir}");
-	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
-
+	Information($"Testing App found: {testApp}");
+	
 	if (string.IsNullOrEmpty(testApp))
 	{
 		throw new Exception("UI Test application path not specified.");
