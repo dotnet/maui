@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Dispatcher.DispatchAsync(() =>
 				labelInteractions.Text = $"{name}: "
-					+ string.Join(", ", e.Touches.Select(t => $"[{Math.Round(t.X, 1)},{Math.Round(t.Y, 1)}]"))
+					+ string.Join(", ", e.Touches.Select(t => $"[{MathF.Round(t.X, 1)},{MathF.Round(t.Y, 1)}]"))
 					+ $" IsInsideBounds: {e.IsInsideBounds}");
 
 			Dispatcher.DispatchAsync(() =>

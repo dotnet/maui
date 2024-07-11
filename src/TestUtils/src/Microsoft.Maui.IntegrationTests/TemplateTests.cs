@@ -302,6 +302,37 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui", true, "None")]
+		[TestCase("maui", true, "MSIX")]
+		[TestCase("maui", false, "None")]
+		[TestCase("maui", false, "MSIX")]
+		public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+		{
+			if (TestEnvironment.IsMacOS)
+				Assert.Ignore("This test is designed for testing a windows build.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				$"""
+				<UseMaui>true</UseMaui>
+				<UseRidGraph>{useridgraph}</UseRidGraph>
+				<WindowsPackageType>{packageType}</WindowsPackageType>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-arm64")]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "iossimulator-x64")]
