@@ -18,9 +18,6 @@ var platform = testDevice.ToLower().Contains("simulator") ? "iPhoneSimulator" : 
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("IOS_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier(testDevice));
 var deviceCleanupEnabled = Argument("cleanup", true);
 
-// Test where clause
-string testWhere = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? "");
-
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
@@ -88,7 +85,6 @@ Task("uitest-build")
 	});
 
 Task("uitest")
-	.IsDependentOn("uitest-build")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
@@ -191,15 +187,15 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
 {
 	Information("Starting UI Tests...");
+	Information($"Testing Device: {device}");
+	Information($"Testing App Project: {app}");
+	Information($"Results Directory: {resultsDir}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
 	
 	string testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
 
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {app}");
-	Information($"Testing App: {testApp}");
-	Information($"Results Directory: {resultsDir}");
-	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
-
+	Information($"Testing App found: {testApp}");
+	
 	if (string.IsNullOrEmpty(testApp))
 	{
 		throw new Exception("UI Test application path not specified.");
@@ -212,7 +208,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
 	var appiumLog = $"{binDir}/appium_ios.log";
-	var resultsFileName = $"{name}-{config}-ios";
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

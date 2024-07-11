@@ -7,6 +7,8 @@ using OpenQA.Selenium.Interactions;
 using NUnit.Framework.Legacy;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+[Category(UITestCategories.Entry)]
 public class Issue19956: _IssuesUITest
 {
     public Issue19956(TestDevice device) : base(device) { }
@@ -14,7 +16,6 @@ public class Issue19956: _IssuesUITest
     public override string Issue => "Sticky headers and bottom content insets";
 
     [Test]
-	[Category(UITestCategories.Entry)]
 	public void ContentAccountsForStickyHeaders()
     {
 		// This is an iOS Keyboard Scrolling issue.
