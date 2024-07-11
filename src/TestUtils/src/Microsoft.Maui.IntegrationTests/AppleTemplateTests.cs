@@ -6,7 +6,8 @@ namespace Microsoft.Maui.IntegrationTests
 	public class AppleTemplateTests : BaseBuildTest
 	{
 		Simulator TestSimulator = new Simulator();
-
+		readonly int _timeoutInSeconds = 30;
+		readonly int _numberOfAttempts = 3;
 		[SetUp]
 		public void AppleTemplateSetup()
 		{
@@ -14,7 +15,10 @@ namespace Microsoft.Maui.IntegrationTests
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
 
 			TestSimulator.Shutdown();
-			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
+			bool launched = TestSimulator.TryLaunch(_numberOfAttempts, _timeoutInSeconds);
+
+    		Assert.IsTrue(launched, $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
+    		
 			TestSimulator.ShowWindow();
 		}
 

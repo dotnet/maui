@@ -33,6 +33,19 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			ToolRunner.Run("open", $"-a Simulator", out int exitCode, timeoutInSeconds: 30);
 			return exitCode == 0;
 		}
+
+		public bool TryLaunch(int attempts, int timeoutInSeconds)
+		{
+    		for (int i = 0; i < attempts; i++)
+    		{
+        		if (Launch())
+        		{
+            		return true;
+        		}
+        		Task.Delay(TimeSpan.FromSeconds(timeoutInSeconds)).Wait();
+    		}
+    		return false;
+		}
 	}
 }
 
