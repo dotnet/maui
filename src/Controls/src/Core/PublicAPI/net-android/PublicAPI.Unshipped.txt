@@ -87,6 +87,8 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter
 Microsoft.Maui.Controls.TitleBar
 Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.Content.set -> void
+Microsoft.Maui.Controls.TitleBar.ControlTemplate.get -> Microsoft.Maui.Controls.ControlTemplate!
+Microsoft.Maui.Controls.TitleBar.ControlTemplate.set -> void
 Microsoft.Maui.Controls.TitleBar.ForegroundColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.Controls.TitleBar.ForegroundColor.set -> void
 Microsoft.Maui.Controls.TitleBar.Icon.get -> Microsoft.Maui.Controls.ImageSource!

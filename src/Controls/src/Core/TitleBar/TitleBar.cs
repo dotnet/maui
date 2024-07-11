@@ -43,6 +43,11 @@ namespace Microsoft.Maui.Controls
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
 
+//#pragma warning disable RS0016
+//		public static new readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), 
+//			DefaultTemplate, propertyChanged: TemplateUtilities.OnControlTemplateChanged);
+//#pragma warning restore RS0016
+
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
@@ -84,11 +89,11 @@ namespace Microsoft.Maui.Controls
 			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, LeadingHiddenState);
+				titlebar.ApplyVisibleState(LeadingHiddenState);
 			}
 			else
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, LeadingVisibleState);
+				titlebar.ApplyVisibleState(LeadingVisibleState);
 			}
 		}
 
@@ -98,11 +103,11 @@ namespace Microsoft.Maui.Controls
 			var imageSource = newValue as ImageSource;
 			if (imageSource is null || imageSource.IsEmpty)
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, IconHiddenState);
+				titlebar.ApplyVisibleState(IconHiddenState);
 			}
 			else
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, IconVisibleState);
+				titlebar.ApplyVisibleState(IconVisibleState);
 			}
 		}
 
@@ -111,11 +116,11 @@ namespace Microsoft.Maui.Controls
 			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, TitleHiddenState);
+				titlebar.ApplyVisibleState(TitleHiddenState);
 			}
 			else
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, TitleVisibleState);
+				titlebar.ApplyVisibleState(TitleVisibleState);
 			}
 		}
 
@@ -124,11 +129,11 @@ namespace Microsoft.Maui.Controls
 			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, SubtitleHiddenState);
+				titlebar.ApplyVisibleState(SubtitleHiddenState);
 			}
 			else
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, SubtitleVisibleState);
+				titlebar.ApplyVisibleState(SubtitleVisibleState);
 			}
 		}
 
@@ -137,11 +142,11 @@ namespace Microsoft.Maui.Controls
 			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, ContentHiddenState);
+				titlebar.ApplyVisibleState(ContentHiddenState);
 			}
 			else
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, ContentVisibleState);
+				titlebar.ApplyVisibleState(ContentVisibleState);
 			}
 		}
 
@@ -150,11 +155,11 @@ namespace Microsoft.Maui.Controls
 			var titlebar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, TrailingHiddenState);
+				titlebar.ApplyVisibleState(TrailingHiddenState);
 			}
 			else
 			{
-				VisualStateManager.GoToState(titlebar._templateRoot, TrailingVisibleState);
+				titlebar.ApplyVisibleState(TrailingVisibleState);
 			}
 		}
 
@@ -261,6 +266,16 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(InactiveForegroundColorProperty, value); }
 		}
 
+		public new ControlTemplate ControlTemplate
+		{
+			get 
+			{
+				var template = (ControlTemplate)GetValue(ControlTemplateProperty);
+				return template is null ? DefaultTemplate : template;
+			}
+			set { SetValue(ControlTemplateProperty, value); }
+		}
+
 		/// <inheritdoc/>
 		public IList<IView> PassthroughElements { get; private set; }
 
@@ -282,8 +297,6 @@ namespace Microsoft.Maui.Controls
 		public TitleBar()
 		{
 			PassthroughElements = new List<IView>();
-			ControlTemplate = DefaultTemplate;
-
 			PropertyChanged += TitleBar_PropertyChanged;
 		}
 
@@ -296,6 +309,14 @@ namespace Microsoft.Maui.Controls
 
 				Window.Activated += Window_Activated;
 				Window.Deactivated += Window_Deactivated;
+			}
+		}
+
+		internal void ApplyVisibleState(string stateGroup)
+		{
+			if (_templateRoot is not null)
+			{
+				VisualStateManager.GoToState(_templateRoot, stateGroup);
 			}
 		}
 
@@ -339,7 +360,7 @@ namespace Microsoft.Maui.Controls
 				PassthroughElements.Add(trailingContent);
 			}
 
-			VisualStateManager.GoToState(_templateRoot, TitleBarActiveState);
+			ApplyVisibleState(TitleBarActiveState);
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)
@@ -350,7 +371,7 @@ namespace Microsoft.Maui.Controls
 				BackgroundColor = _backgroundColor;
 			}
 
-			VisualStateManager.GoToState(_templateRoot, TitleBarActiveState);
+			ApplyVisibleState(TitleBarActiveState);
 		}
 
 		private void Window_Deactivated(object? sender, System.EventArgs e)
@@ -367,7 +388,7 @@ namespace Microsoft.Maui.Controls
 				BackgroundColor = InactiveBackgroundColor;
 			}
 
-			VisualStateManager.GoToState(_templateRoot, TitleBarInactiveState);
+			ApplyVisibleState(TitleBarInactiveState);
 		}
 
 		static View BuildDefaultTemplate()
