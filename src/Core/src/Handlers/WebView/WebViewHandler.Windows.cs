@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Handlers
 		WebNavigationEvent _eventState;
 		readonly WebView2Proxy _proxy = new();
 		readonly HashSet<string> _loadedCookies = new();
-		Window? _window;
 
 		protected override WebView2 CreatePlatformView() => new MauiWebView(this);
 
@@ -42,26 +41,18 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded()
 		{
-			_window = MauiContext!.GetPlatformWindow();
-			_window.Closed += OnWindowClosed;
-		}
-
-		private void OnWindowClosed(object sender, WindowEventArgs args)
-		{
-			Disconnect(PlatformView);
+			var window = MauiContext!.GetPlatformWindow();
+			_proxy.Connect(window);
 		}
 
 		void Disconnect(WebView2 platformView)
 		{
-			if (_window is not null)
-			{
-				_window.Closed -= OnWindowClosed;
-				_window = null;
-			}
-
 			platformView.Loaded -= OnWebViewLoaded;
 			_proxy.Disconnect(platformView);
-			platformView.Close();
+			if (platformView.CoreWebView2 is not null)
+			{
+				platformView.Close();
+			}
 		}
 
 		protected override void DisconnectHandler(WebView2 platformView)
@@ -306,14 +297,22 @@ namespace Microsoft.Maui.Handlers
 
 		class WebView2Proxy
 		{
+			WeakReference<Window>? _window;
 			WeakReference<WebViewHandler>? _handler;
 
+			Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			WebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
 			public void Connect(WebViewHandler handler, WebView2 platformView)
 			{
 				_handler = new(handler);
 				platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
+			}
+
+			public void Connect(Window window)
+			{
+				_window = new(window);
+				window.Closed += OnWindowClosed;
 			}
 
 			public void Disconnect(WebView2 platformView)
@@ -328,7 +327,21 @@ namespace Microsoft.Maui.Handlers
 					webView2.Stop();
 				}
 
+				if (Window is Window window)
+				{
+					window.Closed -= OnWindowClosed;
+				}
+
 				_handler = null;
+				_window = null;
+			}
+
+			void OnWindowClosed(object sender, WindowEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.Disconnect(handler.PlatformView);
+				}
 			}
 
 			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
