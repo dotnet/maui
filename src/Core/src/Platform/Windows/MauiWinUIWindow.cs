@@ -79,7 +79,8 @@ namespace Microsoft.Maui
 				!_isActivated)
 			{
 				// Don't invoke deactivated event if we're not activated. It's possible we can
-				// recieve this event twice if we start more than one process at a time
+				// recieve this event multiple times if we start a new child process and that 
+				// process creates a new window
 				return;
 			}
 			else
