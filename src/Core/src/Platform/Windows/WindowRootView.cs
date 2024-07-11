@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Platform
 				if (AppWindowId.HasValue)
 				{
 					AppWindow.GetFromWindowId(AppWindowId.Value).TitleBar.PreferredHeightOption =
-						_appTitleBarHeight > 32 ? TitleBarHeightOption.Tall : TitleBarHeightOption.Standard;
+						_appTitleBarHeight >= 48 ? TitleBarHeightOption.Tall : TitleBarHeightOption.Standard;
 				}
 
 				this.RefreshThemeResources();
