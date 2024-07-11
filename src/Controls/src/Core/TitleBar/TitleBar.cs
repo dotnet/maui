@@ -393,7 +393,7 @@ namespace Microsoft.Maui.Controls
 			#endregion
 
 			#region Leading content
-			var leadingContent = new ContentPresenter()
+			var leadingContent = new ContentView()
 			{
 				IsVisible = false
 			};
@@ -401,7 +401,7 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(leadingContent);
 			contentGrid.SetColumn(leadingContent, 0);
 
-			leadingContent.SetBinding(ContentPresenter.ContentProperty,
+			leadingContent.SetBinding(ContentView.ContentProperty,
 				new Binding(LeadingContentProperty.PropertyName,
 							source: RelativeBindingSource.TemplatedParent));
 
@@ -513,7 +513,7 @@ namespace Microsoft.Maui.Controls
 			#endregion
 
 			#region Content
-			var content = new ContentPresenter()
+			var content = new ContentView()
 			{
 				IsVisible = false
 			};
@@ -521,7 +521,7 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(content);
 			contentGrid.SetColumn(content, 4);
 
-			content.SetBinding(ContentPresenter.ContentProperty,
+			content.SetBinding(ContentView.ContentProperty,
 				new Binding(ContentProperty.PropertyName,
 							source: RelativeBindingSource.TemplatedParent));
 
@@ -531,7 +531,7 @@ namespace Microsoft.Maui.Controls
 			#endregion
 
 			#region Trailing content
-			var trailingContent = new ContentPresenter()
+			var trailingContent = new ContentView()
 			{
 				IsVisible = false
 			};
@@ -539,7 +539,7 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(trailingContent);
 			contentGrid.SetColumn(trailingContent, 5);
 
-			trailingContent.SetBinding(ContentPresenter.ContentProperty,
+			trailingContent.SetBinding(ContentView.ContentProperty,
 				new Binding(TrailingContentProperty.PropertyName,
 							source: RelativeBindingSource.TemplatedParent));
 
