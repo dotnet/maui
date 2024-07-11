@@ -506,10 +506,26 @@ namespace Microsoft.Maui.Platform
 			var passthroughElements = new List<FrameworkElement>();
 			foreach (var element in _titleBar.PassthroughElements)
 			{
-				var platformView = element.ToHandler(mauiContext).PlatformView;
-				if (platformView is not null)
+				if (element.Visibility != Maui.Visibility.Visible)
 				{
-					passthroughElements.Add(platformView);
+					continue;
+				}
+
+				if (element is IContentView container && container.PresentedContent is not null)
+				{
+					var platformView = container.PresentedContent.ToHandler(mauiContext).PlatformView;
+					if (platformView is not null)
+					{
+						passthroughElements.Add(platformView);
+					}
+				}
+				else
+				{
+					var platformView = element.ToHandler(mauiContext).PlatformView;
+					if (platformView is not null)
+					{
+						passthroughElements.Add(platformView);
+					}
 				}
 			}
 			PassthroughTitlebarElements = passthroughElements;
