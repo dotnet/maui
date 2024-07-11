@@ -13,7 +13,7 @@ parameters:
 
 steps:
   - task: DownloadPipelineArtifact@2
-    condition: ne('${{ parameters.platform }}' , 'windows')
+    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
     inputs:
       artifact: ui-tests-samples
   
@@ -90,7 +90,8 @@ steps:
   - pwsh: |
       $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
       $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
-      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic" --runtimevariant=""${{ parameters.runtimeVariant }}"""
+      $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
+      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
       
       $testFilter = ""
 

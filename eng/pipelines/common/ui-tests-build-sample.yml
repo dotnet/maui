@@ -62,7 +62,7 @@ steps:
     continueOnError: true
 
   - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: ne('${{ parameters.platform }}' , 'windows')
+    condition: and(ne('${{ parameters.platform }}' , 'windows'), ne('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
     artifact: ui-tests-samples
   
   - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
