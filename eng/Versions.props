@@ -7,7 +7,7 @@
     <PatchVersion>0</PatchVersion>
     <SdkBandVersion>9.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>6</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
@@ -20,7 +20,7 @@
     <WorkloadsTestPreviousVersions Condition="'$(WorkloadsTestPreviousVersions)' == ''">true</WorkloadsTestPreviousVersions>
     <!-- Set assembly version to align with major and minor version,
          as for the patches and revisions should be manually updated per assembly if it is serviced. -->
-    <AssemblyVersion>$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <!-- Opt-out repo features -->
     <UsingToolIbcOptimization>false</UsingToolIbcOptimization>
     <UsingToolXliff>false</UsingToolXliff>
@@ -29,56 +29,56 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.61</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <VSToolsNetCoreSDKResolverPackageVersion>9.0.100-preview.5.24304.3</VSToolsNetCoreSDKResolverPackageVersion>
+    <VSToolsNetCoreSDKResolverPackageVersion>9.0.100-preview.7.24360.5</VSToolsNetCoreSDKResolverPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(VSToolsNetCoreSDKResolverPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.5.24280.5</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.7.24357.2</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
     <SystemTextEncodingsWebPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
     <!-- Microsoft/Extensions -->
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
-    <MicrosoftExtensionsConfigurationVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsPrimitivesVersion>9.0.0-preview.6.24318.7</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftExtensionsConfigurationVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsPrimitivesVersion>9.0.0-preview.7.24357.2</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.6.312</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.7.346</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet90_172PackageVersion>17.2.9638-net9-p5</MicrosoftMacCatalystSdknet90_172PackageVersion>
-    <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9638-net9-p5</MicrosoftmacOSSdknet90_142PackageVersion>
-    <MicrosoftiOSSdknet90_172PackageVersion>17.2.9638-net9-p5</MicrosoftiOSSdknet90_172PackageVersion>
-    <MicrosofttvOSSdknet90_172PackageVersion>17.2.9638-net9-p5</MicrosofttvOSSdknet90_172PackageVersion>
+    <MicrosoftMacCatalystSdknet90_172PackageVersion>17.2.9714-net9-p6</MicrosoftMacCatalystSdknet90_172PackageVersion>
+    <MicrosoftmacOSSdknet90_142PackageVersion>14.2.9714-net9-p6</MicrosoftmacOSSdknet90_142PackageVersion>
+    <MicrosoftiOSSdknet90_172PackageVersion>17.2.9714-net9-p6</MicrosoftiOSSdknet90_172PackageVersion>
+    <MicrosofttvOSSdknet90_172PackageVersion>17.2.9714-net9-p6</MicrosofttvOSSdknet90_172PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>9.0.0-preview.5.24273.1</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>9.0.0-preview.7.24319.4</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.5.240607001</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.756</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.2.0</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreComponentsFormsPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsFormsPackageVersion>
-    <MicrosoftAspNetCoreComponentsPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
-    <MicrosoftAspNetCoreMetadataPackageVersion>9.0.0-preview.6.24319.2</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftJSInteropPackageVersion>9.0.0-preview.6.24319.2</MicrosoftJSInteropPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>9.0.0-preview.7.24360.7</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftJSInteropPackageVersion>9.0.0-preview.7.24360.7</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview*</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
@@ -89,14 +89,14 @@
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <_MicrosoftWebWebView2Version>1.0.2151.40</_MicrosoftWebWebView2Version>
+    <_MicrosoftWebWebView2Version>1.0.2592.51</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
-    <_XamarinAndroidGlideVersion>4.16.0.5</_XamarinAndroidGlideVersion>
-    <_XamarinAndroidXSecurityVersion>1.1.0.2-alpha06</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.13.0.3</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinAndroidGlideVersion>4.15.1.2</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidXSecurityVersion>1.1.0.1-alpha06</_XamarinAndroidXSecurityVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.10.0</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
-    <XamarinGooglePlayServicesMaps>118.2.0.4</XamarinGooglePlayServicesMaps>
+    <XamarinGooglePlayServicesMaps>118.1.0.3</XamarinGooglePlayServicesMaps>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
        - NuGet versions below
@@ -146,7 +146,7 @@
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>9.0.100-preview.6</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet90_172PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet90_142PackageVersion)</MicrosoftmacOSSdkPackageVersion>
