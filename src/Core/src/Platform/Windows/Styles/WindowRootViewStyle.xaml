@@ -107,5 +107,4 @@
         </Setter>
     </Style>
 
-    <!--  ContentTemplateSelector="{StaticResource MauiAppTitleBarContainerTemplateSelector}" -->
 </ResourceDictionary> 

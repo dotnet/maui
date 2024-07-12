@@ -43,11 +43,6 @@ namespace Microsoft.Maui.Controls
 		public const string TitleBarActiveState = "TitleBarTitleActive";
 		public const string TitleBarInactiveState = "TitleBarTitleInactive";
 
-//#pragma warning disable RS0016
-//		public static new readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), 
-//			DefaultTemplate, propertyChanged: TemplateUtilities.OnControlTemplateChanged);
-//#pragma warning restore RS0016
-
 		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(ImageSource),
 			typeof(TitleBar), null, propertyChanged: OnIconChanged);
@@ -266,6 +261,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(InactiveForegroundColorProperty, value); }
 		}
 
+		/// <inheritdoc/>
 		public new ControlTemplate ControlTemplate
 		{
 			get 
@@ -285,14 +281,7 @@ namespace Microsoft.Maui.Controls
 
 		static ControlTemplate? _defaultTemplate;
 		View? _templateRoot;
-		View? _titleLabel;
 		Color? _backgroundColor;
-
-		static Color TextFillColorPrimaryLight = new(0, 0, 0, 228);
-		static Color TextFillInactiveColorPrimaryLight = new(0, 0, 0, 135);
-
-		static Color TextFillColorPrimaryDark = new(255, 255, 255, 255);
-		static Color TextFillInactiveColorPrimaryDark = new(255, 255, 255, 114);
 
 		public TitleBar()
 		{
@@ -327,10 +316,7 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (_defaultTemplate == null)
-				{
-					_defaultTemplate = new ControlTemplate(() => BuildDefaultTemplate());
-				}
+				_defaultTemplate ??= new ControlTemplate(() => BuildDefaultTemplate());
 
 				return _defaultTemplate;
 			}
@@ -343,7 +329,6 @@ namespace Microsoft.Maui.Controls
 			var controlTemplate = (this as IControlTemplated);
 
 			_templateRoot = controlTemplate?.TemplateRoot as View;
-			_titleLabel = controlTemplate?.GetTemplateChild(TitleBarTitle) as View;
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
