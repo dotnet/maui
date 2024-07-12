@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			AView platformChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = IndexOf(PlatformView, platformChildView);
+			var currentIndex = PlatformView.IndexOfChild(platformChildView);
 
 			if (currentIndex == -1)
 			{
@@ -133,19 +133,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.RemoveViewAt(currentIndex);
 				PlatformView.AddView(platformChildView, targetIndex);
 			}
-		}
-
-		static int IndexOf(LayoutViewGroup viewGroup, AView view)
-		{
-			for (int n = 0; n < viewGroup.ChildCount; n++)
-			{
-				if (viewGroup.GetChildAt(n) == view)
-				{
-					return n;
-				}
-			}
-
-			return -1;
 		}
 
 		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)

@@ -11,8 +11,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class TemplatedCell : ItemsViewCell
 	{
-		public const string ReuseId = "Microsoft.Maui.Controls.TemplatedCell";
-		
+		readonly WeakEventManager _weakEventManager = new();
+
+		public event EventHandler<EventArgs> ContentSizeChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
+		public event EventHandler<LayoutAttributesChangedEventArgs> LayoutAttributesChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
+		protected CGSize ConstrainedSize;
+
+		protected nfloat ConstrainedDimension;
+
+		WeakReference<DataTemplate> _currentTemplate;
+
+		public DataTemplate CurrentTemplate
+		{
+			get => _currentTemplate is not null && _currentTemplate.TryGetTarget(out var target) ? target : null;
+			private set => _currentTemplate = value is null ? null : new(value);
+		}
+
+		// Keep track of the cell size so we can verify whether a measure invalidation 
+		// actually changed the size of the cell
+		Size _size;
+
+		internal CGSize CurrentSize => _size.ToCGSize();
+
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TemplatedCell(CGRect frame) : base(frame)
@@ -141,6 +171,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 		}
+
+		protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
+
+		void MeasureInvalidated(object sender, EventArgs args)
+		{
+			var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
+
+			if (!needsUpdate)
+			{
+				return;
+			}
+
+			// Cache the size for next time
+			_size = toSize;
+
+			// Let the controller know that things need to be laid out again
+			OnContentSizeChanged();
+		}
+
+		protected void OnContentSizeChanged()
+		{
+			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(ContentSizeChanged));
+		}
+
+		protected void OnLayoutAttributesChanged(UICollectionViewLayoutAttributes newAttributes)
+		{
+			_weakEventManager.HandleEvent(this, new LayoutAttributesChangedEventArgs(newAttributes), nameof(LayoutAttributesChanged));
+		}
+
+		protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
 
 		void UpdateVisualStates()
 		{
