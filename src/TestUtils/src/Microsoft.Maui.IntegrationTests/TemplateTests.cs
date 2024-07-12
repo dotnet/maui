@@ -82,12 +82,12 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			const string templateShortName = "maui-blazor-web";
 
-			var solutionProjectDir = TestDirectory;
+			var solutionProjectDir = TestDirectory + " & More";
 
-			var webAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir) + ".Web");
+			var webAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir) + ".Web");
 			var webAppProjectFile = Path.Combine(webAppProjectDir, $"{Path.GetFileName(webAppProjectDir)}.csproj");
 
-			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
+			var mauiAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir));
 			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
 
 			TestContext.WriteLine($"Creating project in {solutionProjectDir}");

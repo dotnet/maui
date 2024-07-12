@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MauiApp.1.Shared\MauiApp.1.Shared.csproj" />
+    <ProjectReference Include="..\XmlEncodedAppName.Shared\XmlEncodedAppName.Shared.csproj" />
   </ItemGroup>
 
 </Project>
