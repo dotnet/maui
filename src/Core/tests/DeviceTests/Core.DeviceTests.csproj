@@ -55,6 +55,11 @@
     <AndroidEnvironment Include="Platforms\Android\environment.txt" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.8.3" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.8.3" />
+  </ItemGroup>
+
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />
