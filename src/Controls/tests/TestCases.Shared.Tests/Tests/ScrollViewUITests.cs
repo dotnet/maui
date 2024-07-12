@@ -21,7 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
@@ -43,7 +42,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
@@ -68,7 +66,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
@@ -130,7 +127,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #if ANDROID || IOS
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll down the ScrollView using a gesture")]
 		public void ScrollUpAndDownWithGestures()
 		{

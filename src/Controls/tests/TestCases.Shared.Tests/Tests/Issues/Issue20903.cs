@@ -12,6 +12,7 @@ public class Issue20903 : _IssuesUITest
 	public override string Issue => "Double-tap behavior should work correctly when adding a new double-tap handler";
 
 	[Test]
+	[Category(UITestCategories.Gestures)]
 	public async Task RegisterTwoDoubleTapHandlersAndCheckNumberOfFiredEventsAsync()
 	{
 		_ = App.WaitForElement("AddDoubleTapHandlerButton");

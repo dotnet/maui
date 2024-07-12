@@ -5,14 +5,28 @@ parameters:
   macosPool: { }
   androidCompatibilityPool: { }
   iosCompatibilityPool: { }
-  androidLegacyPool: { }
-  iosLegacyPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   runCompatibilityTests: false
-  runLegacyTests: true
+  categoryGroupsToTest:
+    # Make sure that this list is always up-to-date with src/Controls/tests/TestCases.Shared.Tests/UITestCategories.cs
+    # we might want to improve this somehow depending on how much the categories change over time
+    - 'Accessibility,ActionSheet,ActivityIndicator,Animation,AppLinks'
+    - 'Border,BoxView,Brush,Button'
+    - 'CarouselView,Cells,CheckBox,CollectionView,ContextActions,CustomRenderers'
+    - 'DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
+    - 'Editor,Effects,Entry,FlyoutPage,Focus,Frame,Gestures'
+    - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
+    - 'Label,Layout,Lifecycle,ListView'
+    - 'ManualReview,Maps,Navigation'
+    - 'Page,Performance,Picker,ProgressBar'
+    - 'RadioButton,RefreshView'
+    - 'ScrollView,SearchBar,Shape,Shell,Slider,SoftInput,Stepper,Switch,SwipeView'
+    - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
+    - 'ViewBaseTests,Visual,WebView,Window'
+
   projects:
     - name: name
       desc: Human Description
@@ -25,22 +39,50 @@ parameters:
       compatibilityAndroidTestProject: /optional/path/to/android.csproj
       compatibilityiOSTestProject: /optional/path/to/ios.csproj
       compatibilityiOSApp: /optional/path/to/app.csproj
-      legacyAndroidApp: /optional/path/to/app.csproj
-      legacyAndroidTestProject: /optional/path/to/android.csproj
-      legacyiOSTestProject: /optional/path/to/ios.csproj
-      legacyiOSApp: /optional/path/to/app.csproj
 
 stages:
+  - stage: build_ui_tests
+    displayName: Build UITests Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App
+        pool: ${{ parameters.androidPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+
+  - stage: build_ui_tests_windows
+    displayName: Build UITests Windows Sample App
+    dependsOn: []
+    jobs:
+      - job: build_ui_tests
+        displayName: Build Sample App (Windows)
+        pool: ${{ parameters.windowsPool }}
+        variables:
+          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+        steps:
+          - template: ui-tests-build-sample.yml
+            parameters:
+                platform: windows
 
   - stage: android_ui_tests
     displayName: Android UITests
-    dependsOn: []
+    dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -62,16 +104,22 @@ stages:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
 
   - stage: ios_ui_tests
     displayName: iOS UITests
-    dependsOn: []
+    dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -96,14 +144,20 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
-    dependsOn: []
+    dependsOn: build_ui_tests_windows
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -121,14 +175,20 @@ stages:
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
 
   - stage: mac_ui_tests
     displayName: macOS UITests
-    dependsOn: []
+    dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
+                strategy:
+                  matrix:
+                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                      ${{ categoryGroup }}:
+                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -147,6 +207,7 @@ stages:
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      testFilter: $(CATEGORYGROUP)
 
   - ${{ if eq(parameters.runCompatibilityTests, true) }}:  
     - stage: android_compatibility_ui_tests
@@ -210,73 +271,6 @@ stages:
                           version: ${{ version }}
                         path: ${{ project.compatibilityiOSTestProject }}
                         app: ${{ project.compatibilityiOSApp }}
-                        targetSample: "dotnet-legacy-controlgallery-ios"
-                        ${{ if eq(version, 'latest') }}:
-                          device: ios-simulator-64
-                        ${{ if ne(version, 'latest') }}:
-                          device: ios-simulator-64_${{ version }}
-                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-  - ${{ if eq(parameters.runLegacyTests, true) }}:  
-    - stage: android_legacy_ui_tests
-      displayName: Android Legacy UITests
-      dependsOn: []
-      jobs:
-        - ${{ each project in parameters.projects }}:
-          - ${{ if ne(project.android, '') }}:
-            - ${{ each api in parameters.androidApiLevels }}:
-              - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
-                - job: android_legacy_ui_tests_${{ project.name }}_${{ api }}
-                  timeoutInMinutes: 240
-                  workspace:
-                    clean: all
-                  displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                  pool: ${{ parameters.androidLegacyPool }}
-                  variables:
-                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                    APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  steps:
-                    - template: ui-tests-legacy-steps.yml
-                      parameters:
-                        platform: android
-                        version: ${{ api }}
-                        path: ${{ project.legacyAndroidTestProject }}
-                        app: ${{ project.legacyAndroidApp }}
-                        targetSample: "dotnet-legacy-controlgallery-android"
-                        ${{ if eq(api, 27) }}:
-                          device: android-emulator-32_${{ api }}
-                        ${{ if not(eq(api, 27)) }}:
-                          device: android-emulator-64_${{ api }}
-                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-
-    - stage: ios_legacy_ui_tests
-      displayName: iOS Legacy UITests
-      dependsOn: []
-      jobs:
-        - ${{ each project in parameters.projects }}:
-          - ${{ if ne(project.ios, '') }}:
-            - ${{ each version in parameters.iosVersions }}:
-              - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-                - job: ios_legacy_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
-                  timeoutInMinutes: 240
-                  workspace:
-                    clean: all
-                  displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
-                  pool: ${{ parameters.iosLegacyPool }}
-                  variables:
-                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                    APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-                  steps:
-                    - template: ui-tests-legacy-steps.yml
-                      parameters:
-                        platform: ios
-                        ${{ if eq(version, 'latest') }}:
-                          version: 16.4
-                        ${{ if ne(version, 'latest') }}:
-                          version: ${{ version }}
-                        path: ${{ project.legacyiOSTestProject }}
-                        app: ${{ project.legacyiOSApp }}
                         targetSample: "dotnet-legacy-controlgallery-ios"
                         ${{ if eq(version, 'latest') }}:
                           device: ios-simulator-64

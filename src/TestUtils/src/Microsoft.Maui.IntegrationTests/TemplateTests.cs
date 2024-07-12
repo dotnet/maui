@@ -49,11 +49,13 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("Debug")]
-		[TestCase("Release")]
-		public void BuildMultiProject(string config)
+		[TestCase("Debug", "simplemulti")]
+		[TestCase("Release", "simplemulti")]
+		[TestCase("Debug", "MultiProject@Symbol & More")]
+		[TestCase("Release", "MultiProject@Symbol & More")]
+		public void BuildMultiProject(string config, string projectName)
 		{
-			var projectDir = TestDirectory;
+			var projectDir = Path.Combine(TestDirectory, projectName);
 			var name = Path.GetFileName(projectDir);
 			var solutionFile = Path.Combine(projectDir, $"{name}.sln");
 
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (!TestEnvironment.IsWindows)
 			{
-				Assert.IsTrue(DotnetInternal.Run("sln", $"{solutionFile} remove {projectDir}/{name}.WinUI/{name}.WinUI.csproj"),
+				Assert.IsTrue(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
 					$"Unable to remove WinUI project from solution. Check test output for errors.");
 			}
 
@@ -99,10 +101,10 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with invalid characters
-		[TestCase("maui", "Project@Symbol", "projectsymbol")]
-		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
-		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+  		// with lots tricky characters (the '&' requires XML escaping too)
+		[TestCase("maui", "Project@Symbol & More", "projectsymbolmore")]
+		[TestCase("maui-blazor", "Project@Symbol & More", "projectsymbolmore")]
+		[TestCase("mauilib", "Project@Symbol & More", "projectsymbolmore")]
 		public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 		{
 			var projectDir = Path.Combine(TestDirectory, projectName);
@@ -117,12 +119,22 @@ namespace Microsoft.Maui.IntegrationTests
 			if (id != "mauilib")
 			{
 				var doc = XDocument.Load(projectFile);
+
+				// Check the app ID got invalid characters removed
 				var appId = doc.Root!
 					.Elements("PropertyGroup")
 					.Elements("ApplicationId")
 					.Single()
 					.Value;
 				Assert.AreEqual($"com.companyname.{expectedId}", appId);
+
+				// Check the app title matches the project name exactly (it might have been XML-encoded, but loading the document decodes that)
+				var appTitle = doc.Root!
+					.Elements("PropertyGroup")
+					.Elements("ApplicationTitle")
+					.Single()
+					.Value;
+				Assert.AreEqual(projectName, appTitle);
 			}
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
@@ -216,6 +228,37 @@ namespace Microsoft.Maui.IntegrationTests
 				<UseMaui>true</UseMaui>
 				<WindowsAppSDKSelfContained>{wasdkself}</WindowsAppSDKSelfContained>
 				<SelfContained>{netself}</SelfContained>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", true, "None")]
+		[TestCase("maui", true, "MSIX")]
+		[TestCase("maui", false, "None")]
+		[TestCase("maui", false, "MSIX")]
+		public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+		{
+			if (TestEnvironment.IsMacOS)
+				Assert.Ignore("This test is designed for testing a windows build.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				$"""
+				<UseMaui>true</UseMaui>
+				<UseRidGraph>{useridgraph}</UseRidGraph>
+				<WindowsPackageType>{packageType}</WindowsPackageType>
 				""");
 
 			var extendedBuildProps = BuildProps;
@@ -428,6 +471,47 @@ namespace Microsoft.Maui.IntegrationTests
 			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		}
+
+		[Test]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
+		[TestCase("maui", "Debug", DotNetCurrent)]
+		[TestCase("maui", "Release", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Debug", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Release", DotNetCurrent)]
+		public void CheckPrivacyManifestForiOS(string id, string config, string framework)
+		{
+			if (TestEnvironment.IsWindows)
+			{
+				Assert.Ignore("Running iOS templates is only supported on Mac.");
+			}
+
+			string projectDir = TestDirectory;
+			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			string appFileName = $"{Path.GetFileName(projectDir)}.app";
+			string appLocation =
+				Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+
+			// Multi-project is in a .iOS subfolder and csproj is *.iOS.csproj
+			if (id.EndsWith("multiproject"))
+			{
+				projectFile = 
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", $"{Path.GetFileName(projectDir)}.iOS.csproj");
+
+				appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";
+
+				appLocation =
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+			}
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");
+
+			Assert.IsTrue(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
 		}
 
 		[Test]
