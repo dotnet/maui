@@ -14,6 +14,7 @@ public class Issue22386 : _IssuesUITest
 	public override string Issue => "[WinUI] Application.Current.CloseWindow Crash When AppWindow.Hide is called in .Net Maui 9.0 Prev 3";
 
 	[Test]
+	[Category(UITestCategories.Window)]
 	public void CloseHiddenWindowNoCrash()
 	{
 		App.WaitForElement("UpdateWindowButton");

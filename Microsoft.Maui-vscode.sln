@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -183,7 +183,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.Int
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.InternalsHiddenAssembly", "src\Controls\tests\Xaml.UnitTests.InternalsHiddenAssembly\Controls.Xaml.UnitTests.InternalsHiddenAssembly.csproj", "{FB39FACE-BAF2-4F97-A249-E45BA63D77FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.App", "src\Controls\tests\TestCases\Controls.TestCases.App.csproj", "{07C26A25-08C2-4C52-9574-1C33EC8E7919}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.HostApp", "src\Controls\tests\TestCases.HostApp\Controls.TestCases.HostApp.csproj", "{07C26A25-08C2-4C52-9574-1C33EC8E7919}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{A6976D43-B3A4-47AF-89D9-FA388B56B52B}"
 EndProject
@@ -224,6 +224,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.Mac.Tests", "src\Controls\tests\TestCases.Mac.Tests\Controls.TestCases.Mac.Tests.csproj", "{0B3AF328-82B8-431D-8AFF-45F0F86CEA0E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.WinUI.Tests", "src\Controls\tests\TestCases.WinUI.Tests\Controls.TestCases.WinUI.Tests.csproj", "{DACF87DB-6354-4B18-A34C-923A55F317F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.Analyzers", "src\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj", "{DA001142-4777-4EDE-97D5-B1AC08162F99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -558,6 +560,10 @@ Global
 		{DACF87DB-6354-4B18-A34C-923A55F317F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DACF87DB-6354-4B18-A34C-923A55F317F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DACF87DB-6354-4B18-A34C-923A55F317F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA001142-4777-4EDE-97D5-B1AC08162F99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA001142-4777-4EDE-97D5-B1AC08162F99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA001142-4777-4EDE-97D5-B1AC08162F99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA001142-4777-4EDE-97D5-B1AC08162F99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -661,6 +667,7 @@ Global
 		{AF5A8B2E-13E7-4D94-A44E-BC96180C1FCC} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{0B3AF328-82B8-431D-8AFF-45F0F86CEA0E} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{DACF87DB-6354-4B18-A34C-923A55F317F0} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
+		{DA001142-4777-4EDE-97D5-B1AC08162F99} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

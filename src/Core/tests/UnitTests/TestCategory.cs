@@ -2,6 +2,7 @@ namespace Microsoft.Maui.UnitTests
 {
 	public static class TestCategory
 	{
+		public const string Animations = "Animations";
 		public const string Core = "Core";
 		public const string CommandMapping = "CommandMapping";
 		public const string Layout = "Layout";

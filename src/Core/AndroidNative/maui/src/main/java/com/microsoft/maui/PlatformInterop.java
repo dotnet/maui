@@ -13,6 +13,7 @@ import android.graphics.PathEffect;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
@@ -63,15 +64,16 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
-     public static void requestLayoutIfNeeded(View view) {
+
+    public static void requestLayoutIfNeeded(View view) {
         
         // If the view isn't currently in the layout process, then we simply request
         // that layout happen next time around
         if (!view.isInLayout())	{
             view.requestLayout();
-			return;
-		}
-		
+            return;
+        }
+        
         /* 
             Something is requesting layout while the view is already in the middle of a layout pass. This is most 
             likely because a layout-affecting property has been data bound to another layout-affecting property, e.g. 
@@ -84,13 +86,13 @@ public class PlatformInterop {
             layout pass has finished. Layout will happen again with the updated values.
         */
 
-		Runnable runnable = () -> { 
-			if (!view.isInLayout())	{
-				view.requestLayout();
-			}
-		};
-		
-		view.post(runnable);
+        Runnable runnable = () -> { 
+            if (!view.isInLayout())	{
+                view.requestLayout();
+            }
+        };
+        
+        view.post(runnable);
     }
 
     public static void removeFromParent(View view) {
@@ -673,4 +675,18 @@ public class PlatformInterop {
             return buttonState;
         }
     }
+
+    /*
+     * This method is used to get the Animatable object from a Drawable.
+     * This is useful when we need to start/stop animations on a drawable.
+     * @param drawable The drawable to get the Animatable object from.
+     * @return The Animatable object if the drawable is an instance of Animatable, otherwise null.
+     */
+    public static Animatable getAnimatable(Drawable drawable) {
+        if (drawable instanceof Animatable) {
+            return (Animatable) drawable;
+        }
+        return null;
+    }
+
 }

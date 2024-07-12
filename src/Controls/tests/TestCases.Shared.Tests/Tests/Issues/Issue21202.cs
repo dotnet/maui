@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "FontImageSource incorrectly sized";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Issue21202Test()
 		{
 			App.WaitForElement("WaitForStubControl");

@@ -59,7 +59,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateButtonBackground(this MaterialButton platformView, IButton button)
 		{
-			platformView.UpdateMauiRippleDrawableBackground(button,
+			platformView.UpdateMauiRippleDrawableBackground(
+				button.Background,
+				button,
 				() =>
 				{
 					// Copy the tints from a temporary button.
