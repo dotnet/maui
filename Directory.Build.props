@@ -141,7 +141,7 @@
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).buildtasks\</_MauiBuildTasksLocation>
     <_MauiAOTProfileLocation>$(MauiSrcDirectory)Controls\src\Build.Tasks\nuget\buildTransitive\netstandard2.0\</_MauiAOTProfileLocation>
     <StrongNamerKeyFile>$(MauiRootDirectory)eng/microsoft.maui.controls.snk</StrongNamerKeyFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

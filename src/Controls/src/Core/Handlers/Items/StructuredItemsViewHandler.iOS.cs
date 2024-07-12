@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 	}
-	
+
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
 		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, UICollectionViewLayout layout)

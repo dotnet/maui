@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (PlatformHandler is null)
 			{
-				var virtualView = template.CreateContent() as View;
+				var virtualView = template.CreateContent(bindingContext, itemsView) as View;
 
 				var mauiContext = itemsView.FindMauiContext()!;
 				var nativeView = virtualView!.ToPlatform(mauiContext);

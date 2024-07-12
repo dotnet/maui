@@ -204,17 +204,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollAnimationEndedCallback = null;
 		}
 
-		int GetLayoutSpanCount()
-		{
-			var span = 1;
-
-			if (ItemsView?.ItemsLayout is GridItemsLayout gridItemsLayout)
-			{
-				span = gridItemsLayout.Span;
-			}
-
-			return span;
-		}
 
 		// internal UIEdgeInsets GetInsetForSection(UICollectionViewLayout itemsViewLayout,
 		// 	UICollectionView collectionView, nint section)

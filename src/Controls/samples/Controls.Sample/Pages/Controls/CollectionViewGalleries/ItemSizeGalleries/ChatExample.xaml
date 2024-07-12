@@ -2,41 +2,29 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:chat="clr-namespace:Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries"
+             x:DataType="chat:ChatExampleViewModel"
              x:Class="Maui.Controls.Sample.Pages.CollectionViewGalleries.ItemSizeGalleries.ChatExample">
-
     <ContentPage.Resources>
         <ResourceDictionary>
-            <DataTemplate x:Key="Local">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Frame BorderColor="Green" BackgroundColor="LightGreen" CornerRadius="5" Grid.Column="1">
-                        <StackLayout Margin="2">
-                            <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="End" />
-                        </StackLayout>
-                    </Frame>
+            <DataTemplate x:Key="Local" x:DataType="chat:ChatMessage">
+                <Grid ColumnDefinitions="*,2*">
+                    <Border Background="LightGreen" Grid.Column="1" Padding="2">
+                        <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="End" />
+                    </Border>
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="Remote">
-                <Grid Padding="5,0,5,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Frame BorderColor="Blue" BackgroundColor="LightBlue" CornerRadius="5">
-                        <StackLayout Margin="2">
-                            <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="Start" />
-                        </StackLayout>
-                    </Frame>
+            <DataTemplate x:Key="Remote"  x:DataType="chat:ChatMessage">
+                <Grid Padding="5,0,5,0" ColumnDefinitions="2*,*">
+                    <Border Background="LightBlue" Padding="2">
+                        <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="Start" />
+                    </Border>
                 </Grid>
             </DataTemplate>
 
             <chat:ChatTemplateSelector x:Key="ChatTemplateSelector"
-                                                            LocalTemplate="{StaticResource Local}"
-                                                            RemoteTemplate="{StaticResource Remote}"/>
+                LocalTemplate="{StaticResource Local}"
+                RemoteTemplate="{StaticResource Remote}"/>
             
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -48,19 +36,29 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackLayout Orientation="Horizontal">
+            <HorizontalStackLayout Grid.Row="0">
                 <Button x:Name="AppendRandomSizedItem" Text="Append Random Message" Margin="2" />
                 <Button x:Name="Clear" Text="Clear" Margin="2" />
                 <Button x:Name="Lots" Text="Add 1000 Messages" Margin="2" />
-            </StackLayout>
+            </HorizontalStackLayout>
 
-            <CollectionView ItemsSource="{Binding ChatMessages}" 
+            <!-- ItemTemplate="{StaticResource ChatTemplateSelector}" -->
+            <CollectionView Background="Cyan" ItemsSource="{Binding ChatMessages}" 
                             ItemTemplate="{StaticResource ChatTemplateSelector}"
                             ItemSizingStrategy="MeasureAllItems"
                             Grid.Row="1">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
                 </CollectionView.ItemsLayout>
+                <!-- CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="chat:ChatMessage">
+                        <Grid Padding="5,0,5,0" ColumnDefinitions="2*,*">
+                            <Border Background="LightBlue" Padding="2">
+                                <Label Text="{Binding Text}" LineBreakMode="WordWrap" FontSize="10" HorizontalTextAlignment="Start" />
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate -->
             </CollectionView>
 
         </Grid>
