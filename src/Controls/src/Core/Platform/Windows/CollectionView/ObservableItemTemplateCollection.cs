@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			List<ItemTemplateContext> itemsToAdd = [];
+			List<ItemTemplateContext> itemsToAdd = new(capacity: count);
 
 			for (int n = 0; n < count; n++)
 			{
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			List<ItemTemplateContext> itemsToRemove = [];
+			List<ItemTemplateContext> itemsToRemove = new(capacity: count);
 
 			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
