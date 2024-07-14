@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 			Color? backgroundColor = swipeItemMenuItem.Background?.ToColor();
 
-			if (backgroundColor == null)
+			if (backgroundColor == null || (swipeItemMenuItem.Source is IFontImageSource fontImageSource && fontImageSource.Color != null))
 				return null;
 
 			var luminosity = 0.2126f * backgroundColor.Red + 0.7152f * backgroundColor.Green + 0.0722f * backgroundColor.Blue;
