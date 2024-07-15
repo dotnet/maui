@@ -3,23 +3,23 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public interface IBindingInvocationTransformer
 {
-    SetBindingInvocationDescription Transform(SetBindingInvocationDescription setBindingInvocationDescription);
+    BindingInvocationDescription Transform(BindingInvocationDescription BindingInvocationDescription);
 }
 
 public class ReferenceTypesConditionalAccessTransformer : IBindingInvocationTransformer
 {
-    public SetBindingInvocationDescription Transform(SetBindingInvocationDescription setBindingInvocationDescription)
+    public BindingInvocationDescription Transform(BindingInvocationDescription BindingInvocationDescription)
     {
-        var path = TransformPath(setBindingInvocationDescription);
-        return setBindingInvocationDescription with { Path = path };
+        var path = TransformPath(BindingInvocationDescription);
+        return BindingInvocationDescription with { Path = path };
     }
 
-    private static EquatableArray<IPathPart> TransformPath(SetBindingInvocationDescription setBindingInvocationDescription)
+    private static EquatableArray<IPathPart> TransformPath(BindingInvocationDescription BindingInvocationDescription)
     {
         var newPath = new List<IPathPart>();
-        foreach (var pathPart in setBindingInvocationDescription.Path)
+        foreach (var pathPart in BindingInvocationDescription.Path)
         {
-            var sourceIsReferenceType = newPath.Count == 0 && !setBindingInvocationDescription.SourceType.IsValueType;
+            var sourceIsReferenceType = newPath.Count == 0 && !BindingInvocationDescription.SourceType.IsValueType;
             var previousPartIsReferenceType = newPath.Count > 0 && PreviousPartIsReferenceType(newPath.Last());
 
             if (pathPart is not MemberAccess && pathPart is not IndexAccess)
