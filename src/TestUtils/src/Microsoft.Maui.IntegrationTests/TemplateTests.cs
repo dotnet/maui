@@ -52,42 +52,52 @@ namespace Microsoft.Maui.IntegrationTests
 		// Parameters:  target framework, build config, dotnet new additional parameters
 
 		// First, 4 default scenarios
-		[TestCase(DotNetCurrent, "Debug", "")]
-		[TestCase(DotNetCurrent, "Release", "")]
-		[TestCase(DotNetCurrent, "Debug", "")]
-		[TestCase(DotNetCurrent, "Release", "")]
+		[TestCase(DotNetCurrent, "Debug", "", false)]
+		[TestCase(DotNetCurrent, "Release", "", false)]
+		[TestCase(DotNetCurrent, "Debug", "", false)]
+		[TestCase(DotNetCurrent, "Release", "", false)]
 
 		// Then, scenarios with additional template parameters:
 		// - Interactivity Location: None/WASM/Server/Auto
 		// - Empty vs. With Sample Content
 		// - ProgramMain vs. TopLevel statements
 		// And alternately testing other options for a healthy mix.
-		[TestCase(DotNetCurrent, "Debug", "-I None --Empty")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty")]
-		[TestCase(DotNetCurrent, "Debug", "-I None")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto")]
-		[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain")]
-		public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams)
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I None", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain", false)]
+
+		// Then, some scenarios with tricky names in Debug builds only
+		// This doesn't work on Android in Release, so we skip that for now
+		// See https://github.com/dotnet/android/issues/9107
+		[TestCase(DotNetCurrent, "Debug", "", true)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
+		public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName)
 		{
 			const string templateShortName = "maui-blazor-web";
 
 			var solutionProjectDir = TestDirectory;
+   			if (useTrickyProjectName)
+	  		{
+	 			solutionProjectDir += "&More";
+	 		}
 
-			var webAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir) + ".Web");
+			var webAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir) + ".Web");
 			var webAppProjectFile = Path.Combine(webAppProjectDir, $"{Path.GetFileName(webAppProjectDir)}.csproj");
 
-			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
+			var mauiAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir));
 			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
 
 			TestContext.WriteLine($"Creating project in {solutionProjectDir}");

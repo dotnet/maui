@@ -53,6 +53,9 @@ Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handl
 Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Platform.MauiHybridWebViewClient
 Microsoft.Maui.Platform.MauiHybridWebViewClient.MauiHybridWebViewClient(Microsoft.Maui.Handlers.HybridWebViewHandler! handler) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.PlatformAppCompatTextView
 Microsoft.Maui.PlatformAppCompatTextView.PlatformAppCompatTextView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.IImageSourcePartSetter

@@ -1,6 +1,8 @@
 ﻿using System;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
@@ -22,6 +24,18 @@ namespace Microsoft.Maui.Platform
 
 		public MauiMaterialButton(Context context)
 			: base(context)
+		{
+		}
+
+		protected MauiMaterialButton(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		{
+		}
+
+		public MauiMaterialButton(Context context, IAttributeSet? attrs) : base(context, attrs)
+		{
+		}
+
+		public MauiMaterialButton(Context context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 		}
 

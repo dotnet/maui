@@ -49,7 +49,7 @@ public class BindingCodeWriterTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                internal static partial class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindingInterceptors
                 {
                     private static bool ShouldUseSetter(BindingMode mode, BindableProperty bindableProperty)
                         => mode == BindingMode.OneWayToSource
@@ -57,6 +57,11 @@ public class BindingCodeWriterTests
                             || (mode == BindingMode.Default
                                 && (bindableProperty.DefaultBindingMode == BindingMode.OneWayToSource
                                     || bindableProperty.DefaultBindingMode == BindingMode.TwoWay));
+
+                    private static bool ShouldUseSetter(BindingMode mode)
+                        => mode == BindingMode.OneWayToSource
+                            || mode == BindingMode.TwoWay
+                            || mode == BindingMode.Default;
                 }
             }
             """,
@@ -66,7 +71,7 @@ public class BindingCodeWriterTests
     [Fact]
     public void BuildsWholeBinding()
     {
-        var code = BindingCodeWriter.GenerateBinding(new SetBindingInvocationDescription(
+        var code = BindingCodeWriter.GenerateBinding(new BindingInvocationDescription(
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -76,7 +81,8 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("C")),
             ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
-            NullableContextEnabled: true), id: 1);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding), id: 1);
 
         AssertExtensions.CodeIsEqual(
             $$"""
@@ -97,7 +103,7 @@ public class BindingCodeWriterTests
                 using System.Runtime.CompilerServices;
                 using Microsoft.Maui.Controls.Internals;
 
-                internal static partial class GeneratedBindableObjectExtensions
+                internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
@@ -157,7 +163,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsSimpleBinding()
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(id: 1, new SetBindingInvocationDescription(
+        codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -167,7 +173,8 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("C")),
             ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
-            NullableContextEnabled: true));
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -228,7 +235,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithoutAnyNullablesInPath()
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(id: 1, new SetBindingInvocationDescription(
+        codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -238,7 +245,8 @@ public class BindingCodeWriterTests
                 new MemberAccess("C"),
             ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
-            NullableContextEnabled: true));
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -295,7 +303,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithoutSetter()
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(id: 1, new SetBindingInvocationDescription(
+        codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
@@ -305,7 +313,8 @@ public class BindingCodeWriterTests
                 new MemberAccess("C"),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true));
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -359,7 +368,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithIndexers()
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(id: 1, new SetBindingInvocationDescription(
+        codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
@@ -369,7 +378,8 @@ public class BindingCodeWriterTests
                 new IndexAccess("Item", 0),
             ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
-            NullableContextEnabled: true));
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding));
 
         var code = codeBuilder.ToString();
         AssertExtensions.CodeIsEqual(
@@ -434,7 +444,7 @@ public class BindingCodeWriterTests
     public void CorrectlyFormatsBindingWithCasts()
     {
         var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-        codeBuilder.AppendSetBindingInterceptor(id: 1, new SetBindingInvocationDescription(
+        codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
             Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
             SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
             PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
@@ -448,7 +458,8 @@ public class BindingCodeWriterTests
                 new ConditionalAccess(new MemberAccess("D")),
             ]),
             SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
-            NullableContextEnabled: true));
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding));
 
         var code = codeBuilder.ToString();
 

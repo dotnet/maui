@@ -17,7 +17,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("string"),
                 new TypeDescription("int", IsValueType: true),
@@ -25,7 +25,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Length", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -40,7 +41,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -49,7 +50,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -69,7 +71,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -79,7 +81,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
 
@@ -95,7 +98,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -104,7 +107,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -124,7 +128,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -132,7 +136,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Value", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -147,7 +152,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -156,7 +161,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -176,7 +182,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string", IsNullable: true),
@@ -184,7 +190,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Value"),
                 ]),
                 SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -205,7 +212,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -214,7 +221,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: false);
+                NullableContextEnabled: false,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -240,7 +248,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("int", IsValueType: true),
@@ -249,7 +257,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Length", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: false);
+                NullableContextEnabled: false,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -275,7 +284,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
@@ -284,7 +293,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Length", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: false);
+                NullableContextEnabled: false,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -315,7 +325,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo", IsNullable: true),
                 new TypeDescription("global::CustomLength", IsNullable: true),
@@ -324,7 +334,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Length"),
                 ]),
                 SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: false);
+                NullableContextEnabled: false,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -344,7 +355,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true),
@@ -354,7 +365,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Length", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -374,7 +386,7 @@ public class BindingRepresentationGenTests
         }
         """;
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true),
@@ -384,7 +396,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("Length", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -407,7 +420,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true),
@@ -416,7 +429,8 @@ public class BindingRepresentationGenTests
                 new MemberAccess("Length", IsValueType: true),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -436,7 +450,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -445,7 +459,8 @@ public class BindingRepresentationGenTests
                 new ConditionalAccess(new MemberAccess("Length", IsValueType: true)), // TODO: Improve naming so this looks right
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -470,7 +485,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -480,7 +495,8 @@ public class BindingRepresentationGenTests
                 new MemberAccess("Length", IsValueType: true),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -518,7 +534,7 @@ public class BindingRepresentationGenTests
             """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
             new TypeDescription("global::MyNamespace.MySourceClass"),
             new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true),
@@ -528,7 +544,8 @@ public class BindingRepresentationGenTests
                 new IndexAccess("Item", 0),
             ]),
             SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -551,7 +568,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("char", IsValueType: true),
@@ -560,7 +577,8 @@ public class BindingRepresentationGenTests
                 new IndexAccess("Chars", 0, IsValueType: true),
             ]),
             SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -581,7 +599,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("int", IsValueType: true),
@@ -590,7 +608,8 @@ public class BindingRepresentationGenTests
                 new MemberAccess("Length", IsValueType: true),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -610,7 +629,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string", IsNullable: true),
@@ -619,7 +638,8 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("string")),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -639,7 +659,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("string"),
@@ -648,7 +668,8 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("string")),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -673,7 +694,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -683,7 +704,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -708,7 +730,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true),
@@ -718,7 +740,8 @@ public class BindingRepresentationGenTests
                     new MemberAccess("X", IsValueType: true),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -746,7 +769,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
@@ -756,7 +779,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -778,7 +802,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
@@ -787,7 +811,8 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("int", IsNullable: true, IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
@@ -808,7 +833,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsValueType: true),
@@ -817,7 +842,8 @@ public class BindingRepresentationGenTests
                     new Cast(new TypeDescription("int", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
@@ -845,7 +871,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
                 new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
                 new TypeDescription("global::Foo"),
                 new TypeDescription("int", IsNullable: true, IsValueType: true),
@@ -855,7 +881,8 @@ public class BindingRepresentationGenTests
                     new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
                 ]),
                 SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true);
+                NullableContextEnabled: true,
+                MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -875,7 +902,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("char", IsValueType: true),
@@ -884,7 +911,8 @@ public class BindingRepresentationGenTests
                 new IndexAccess("Chars", 0, IsValueType: true),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -904,7 +932,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("char", IsValueType: true),
@@ -913,7 +941,8 @@ public class BindingRepresentationGenTests
                 new IndexAccess("Item", 0, IsValueType: true),
             ]),
             SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -933,7 +962,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("string"),
@@ -941,7 +970,8 @@ public class BindingRepresentationGenTests
                 new IndexAccess("Item", "key"),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -961,7 +991,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo"),
             new TypeDescription("string"),
@@ -969,7 +999,8 @@ public class BindingRepresentationGenTests
                 new IndexAccess("Item", "key"),
             ]),
             SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
@@ -989,7 +1020,7 @@ public class BindingRepresentationGenTests
         """;
 
         var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new SetBindingInvocationDescription(
+        var expectedBinding = new BindingInvocationDescription(
             new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
             new TypeDescription("global::Foo", IsNullable: true),
             new TypeDescription("int", IsValueType: true, IsNullable: true),
@@ -997,7 +1028,8 @@ public class BindingRepresentationGenTests
                 new ConditionalAccess(new IndexAccess("Item", 0, IsValueType: true)),
             ]),
             SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true);
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
