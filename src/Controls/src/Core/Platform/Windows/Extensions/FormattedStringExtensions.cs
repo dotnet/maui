@@ -79,6 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 						Foreground = textColor?.ToPlatform(),
 					};
 
+					run.Foreground = textColor?.ToPlatform();
 					textBlock.TextHighlighters.Add(textHighlighter);
 				}
 
