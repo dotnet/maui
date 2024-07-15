@@ -39,8 +39,20 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ]
-      }
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+            {
+                "condition": "(!SampleContent)",
+                "exclude": [
+                    "Components/Layout/NavMenu.*",
+                    "Components/Pages/Counter.*",
+                    "Components/Pages/Weather.*",
+                    "wwwroot/css/bootstrap/**",
+                    "wwwroot/favicon.*"
+                ]
+            }
+        ]
+    }
     ],
     "preferNameDirectory": true,
     "guids": [
@@ -132,6 +144,23 @@
           "fallbackVariableName": "defaultAppId"
         },
         "replaces": "com.companyname.mauiapp"
+      },
+      "IncludeSampleContent": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "true",
+        "displayName": "_Include sample pages",
+        "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
+      },
+      "Empty": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+      },
+      "SampleContent": {
+        "type": "computed",
+        "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
       }
     },
     "forms": {
