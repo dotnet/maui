@@ -71,14 +71,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
 			typeof(Color), typeof(TitleBar));
 
-		/// <summary>Bindable property for <see cref="InactiveBackgroundColor"/>.</summary>
-		public static readonly BindableProperty InactiveBackgroundColorProperty = BindableProperty.Create(nameof(InactiveBackgroundColor),
-			typeof(Color), typeof(TitleBar), null);
-
-		/// <summary>Bindable property for <see cref="InactiveForegroundColor"/>.</summary>
-		public static readonly BindableProperty InactiveForegroundColorProperty = BindableProperty.Create(nameof(InactiveForegroundColor),
-			typeof(Color), typeof(TitleBar), null);
-
 		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var titlebar = (TitleBar)bindable;
@@ -241,37 +233,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ForegroundColorProperty, value); }
 		}
 
-		/// <summary>
-		/// Gets or sets the inactive background color of the title bar. This color will be
-		/// used when the window is inactive, such as when it is not in focus.
-		/// </summary>
-		public Color InactiveBackgroundColor
-		{
-			get { return (Color)GetValue(InactiveBackgroundColorProperty); }
-			set { SetValue(InactiveBackgroundColorProperty, value); }
-		}
-
-		/// <summary>
-		/// Gets or sets the inactive foreground color of the title bar. This color will be
-		/// used when the window is inactive, such as when it is not in focus.
-		/// </summary>
-		public Color InactiveForegroundColor
-		{
-			get { return (Color)GetValue(InactiveForegroundColorProperty); }
-			set { SetValue(InactiveForegroundColorProperty, value); }
-		}
-
-		/// <inheritdoc/>
-		public new ControlTemplate ControlTemplate
-		{
-			get 
-			{
-				var template = (ControlTemplate)GetValue(ControlTemplateProperty);
-				return template is null ? DefaultTemplate : template;
-			}
-			set { SetValue(ControlTemplateProperty, value); }
-		}
-
 		/// <inheritdoc/>
 		public IList<IView> PassthroughElements { get; private set; }
 
@@ -281,12 +242,16 @@ namespace Microsoft.Maui.Controls
 
 		static ControlTemplate? _defaultTemplate;
 		View? _templateRoot;
-		Color? _backgroundColor;
 
 		public TitleBar()
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+
+			if (ControlTemplate is null)
+			{
+				ControlTemplate = DefaultTemplate;
+			}
 		}
 
 		private void TitleBar_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -303,6 +268,8 @@ namespace Microsoft.Maui.Controls
 
 		internal void ApplyVisibleState(string stateGroup)
 		{
+			VisualStateManager.GoToState(this, stateGroup);
+
 			if (_templateRoot is not null)
 			{
 				VisualStateManager.GoToState(_templateRoot, stateGroup);
@@ -350,29 +317,11 @@ namespace Microsoft.Maui.Controls
 
 		private void Window_Activated(object? sender, System.EventArgs e)
 		{
-			// Restore the color
-			if (_backgroundColor is not null && _templateRoot is not null)
-			{
-				BackgroundColor = _backgroundColor;
-			}
-
 			ApplyVisibleState(TitleBarActiveState);
 		}
 
 		private void Window_Deactivated(object? sender, System.EventArgs e)
 		{
-			// Save color
-			if (BackgroundColor is not null)
-			{
-				_backgroundColor = BackgroundColor;
-			}
-
-			// Set to inactive color
-			if (InactiveBackgroundColor is not null && _templateRoot is not null)
-			{
-				BackgroundColor = InactiveBackgroundColor;
-			}
-
 			ApplyVisibleState(TitleBarInactiveState);
 		}
 
