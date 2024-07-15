@@ -42,10 +42,10 @@
 	</ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.3" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.8.3" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.3" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.3" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.3.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.8.3.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.3.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.3.1" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
