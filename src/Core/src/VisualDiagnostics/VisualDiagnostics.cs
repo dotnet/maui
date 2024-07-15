@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 		static ConditionalWeakTable<object, SourceInfo> sourceInfos = new ConditionalWeakTable<object, SourceInfo>();
 		static Lazy<bool> isVisualDiagnosticsEnvVarSet  = new Lazy<bool>(() => Environment.GetEnvironmentVariable("ENABLE_XAML_DIAGNOSTICS_SOURCE_INFO") is { } value && value == "1");
 
-		static bool IsEnabled => DebuggerHelper.DebuggerIsAttached || isVisualDiagnosticsEnvVarSet.Value;
+		static public bool IsEnabled => DebuggerHelper.DebuggerIsAttached || isVisualDiagnosticsEnvVarSet.Value;
 
 		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='RegisterSourceInfo']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
