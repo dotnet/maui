@@ -91,7 +91,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var solutionProjectDir = TestDirectory;
    			if (useTrickyProjectName)
 	  		{
-	 			solutionProjectDir += " & More";
+	 			solutionProjectDir += "&More";
 	 		}
 
 			var webAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir) + ".Web");
