@@ -63,11 +63,11 @@ internal static class LayoutFactory
 		
 		// Setup the header/footer views
 		// The header/footer will use the same size as the group itself so it spans the size of it
-		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(
-			groupingInfo,
-			scrollDirection,
-			groupWidth,
-			groupHeight);
+		// layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(
+		// 	groupingInfo,
+		// 	scrollDirection,
+		// 	groupWidth,
+		// 	groupHeight);
 
 		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 		{
@@ -93,6 +93,12 @@ internal static class LayoutFactory
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
 
+			section.BoundarySupplementaryItems = CreateSupplementaryItems(
+				groupingInfo,
+				scrollDirection,
+				groupWidth,
+				groupHeight);
+			
 			return section;
 		}, layoutConfiguration);
 
