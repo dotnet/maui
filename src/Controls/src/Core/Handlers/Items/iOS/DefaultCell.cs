@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class DefaultCell : ItemsViewCell
 	{
-		public const string ReuseId = "Microsoft.Maui.Controls.DefaultCell";
+		//public const string ReuseId = "Microsoft.Maui.Controls.DefaultCell";
 		
 		public UILabel Label { get; }
 

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal sealed class HorizontalSupplementaryView : HeightConstrainedTemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalSupplementaryView");
+		public new static NSString ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalSupplementaryView");
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

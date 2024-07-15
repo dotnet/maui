@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class TemplatedCell : ItemsViewCell
 	{
+		internal const string ReuseId = "Microsoft.Maui.Controls.TemplatedCell";
+		
 		readonly WeakEventManager _weakEventManager = new();
 
 		public event EventHandler<EventArgs> ContentSizeChanged
@@ -39,9 +41,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		// Keep track of the cell size so we can verify whether a measure invalidation 
 		// actually changed the size of the cell
-		Size _size;
+		//Size _size;
 
-		internal CGSize CurrentSize => _size.ToCGSize();
+		//internal CGSize CurrentSize => _size.ToCGSize();
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -172,23 +174,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
+		//protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
 
-		void MeasureInvalidated(object sender, EventArgs args)
-		{
-			var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
-
-			if (!needsUpdate)
-			{
-				return;
-			}
-
-			// Cache the size for next time
-			_size = toSize;
-
-			// Let the controller know that things need to be laid out again
-			OnContentSizeChanged();
-		}
+		// void MeasureInvalidated(object sender, EventArgs args)
+		// {
+		// 	var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
+		//
+		// 	if (!needsUpdate)
+		// 	{
+		// 		return;
+		// 	}
+		//
+		// 	// Cache the size for next time
+		// 	_size = toSize;
+		//
+		// 	// Let the controller know that things need to be laid out again
+		// 	OnContentSizeChanged();
+		// }
 
 		protected void OnContentSizeChanged()
 		{
@@ -200,7 +202,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_weakEventManager.HandleEvent(this, new LayoutAttributesChangedEventArgs(newAttributes), nameof(LayoutAttributesChanged));
 		}
 
-		protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
+		//protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
 
 		void UpdateVisualStates()
 		{

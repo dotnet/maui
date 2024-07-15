@@ -49,22 +49,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
-				cell = cellAndCorrectedIndex.cell;
+				//cell = cellAndCorrectedIndex.cell;
 				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
 
-				if (cell is DefaultCell defaultCell)
-				{
-					UpdateDefaultCell(defaultCell, correctedIndexPath);
-				}
-
-				if (cell is TemplatedCell templatedCell)
-				{
-					UpdateTemplatedCell(templatedCell, correctedIndexPath);
-				}
-			}
-			else
-			{
-				cell = base.GetCell(collectionView, indexPath);
+				finalIndexPath = correctedIndexPath;
 			}
 			
 			cell = base.GetCell(collectionView, finalIndexPath);
@@ -114,7 +102,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				_isCenteringItem = true;
-				_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
+				//_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
 				_isCenteringItem = false;
 			}
 
@@ -658,17 +646,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_layout = layout;
 		}
 
-		public void CenterIfNeeded(UICollectionView collectionView, bool isHorizontal)
-		{
-			if (isHorizontal)
-			{
-				CenterHorizontalIfNeeded(collectionView);
-			}
-			else
-			{
-				CenterVerticallyIfNeeded(collectionView);
-			}
-		}
+		// public void CenterIfNeeded(UICollectionView collectionView, bool isHorizontal)
+		// {
+		// 	if (isHorizontal)
+		// 	{
+		// 		CenterHorizontalIfNeeded(collectionView);
+		// 	}
+		// 	else
+		// 	{
+		// 		CenterVerticallyIfNeeded(collectionView);
+		// 	}
+		// }
 
 		protected virtual void Dispose(bool disposing)
 		{

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class CarouselTemplatedCell : TemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.CarouselTemplatedCell");
+		public new static NSString ReuseId = new NSString("Microsoft.Maui.Controls.CarouselTemplatedCell");
 		//CGSize _constraint;
 
 		[Export("initWithFrame:")]

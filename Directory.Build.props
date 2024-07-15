@@ -4,6 +4,7 @@
 
   <PropertyGroup> 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);RS0016;RS0017</NoWarn>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>Latest</LangVersion>

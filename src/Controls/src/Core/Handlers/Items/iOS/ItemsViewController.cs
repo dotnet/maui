@@ -204,74 +204,74 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		void InvalidateMeasureIfContentSizeChanged()
-		{
-			var contentSize = CollectionView?.CollectionViewLayout?.CollectionViewContentSize;
-
-			if (!contentSize.HasValue)
-			{
-				return;
-			}
-
-			bool widthChanged = _previousContentSize.Width != contentSize.Value.Width;
-			bool heightChanged = _previousContentSize.Height != contentSize.Value.Height;
-
-			if (_initialized && (widthChanged || heightChanged))
-			{
-				var screenFrame = CollectionView?.Window?.Frame;
-
-				if (!screenFrame.HasValue)
-				{
-					return;
-				}
-
-				var screenWidth = screenFrame.Value.Width;
-				var screenHeight = screenFrame.Value.Height;
-				bool invalidate = false;
-
-				// If both the previous content size and the current content size are larger
-				// than the screen size, then we know that we're already maxed out and the 
-				// CollectionView items are scrollable. There's no reason to force an invalidation
-				// of the CollectionView to expand/contract it.
-
-				// If either size is smaller than that, we need to invalidate to ensure that the 
-				// CollectionView is re-measured and set to the correct size.
-
-				if (widthChanged && (contentSize.Value.Width < screenWidth || _previousContentSize.Width < screenWidth))
-				{
-					invalidate = true;
-				}
-
-				if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
-				{
-					invalidate = true;
-				}
-
-				if (invalidate)
-				{
-					(ItemsView as IView)?.InvalidateMeasure();
-				}
-			}
-			_previousContentSize = contentSize.Value;
-		}
+		// void InvalidateMeasureIfContentSizeChanged()
+		// {
+		// 	var contentSize = CollectionView?.CollectionViewLayout?.CollectionViewContentSize;
+		//
+		// 	if (!contentSize.HasValue)
+		// 	{
+		// 		return;
+		// 	}
+		//
+		// 	bool widthChanged = _previousContentSize.Width != contentSize.Value.Width;
+		// 	bool heightChanged = _previousContentSize.Height != contentSize.Value.Height;
+		//
+		// 	if (_initialized && (widthChanged || heightChanged))
+		// 	{
+		// 		var screenFrame = CollectionView?.Window?.Frame;
+		//
+		// 		if (!screenFrame.HasValue)
+		// 		{
+		// 			return;
+		// 		}
+		//
+		// 		var screenWidth = screenFrame.Value.Width;
+		// 		var screenHeight = screenFrame.Value.Height;
+		// 		bool invalidate = false;
+		//
+		// 		// If both the previous content size and the current content size are larger
+		// 		// than the screen size, then we know that we're already maxed out and the 
+		// 		// CollectionView items are scrollable. There's no reason to force an invalidation
+		// 		// of the CollectionView to expand/contract it.
+		//
+		// 		// If either size is smaller than that, we need to invalidate to ensure that the 
+		// 		// CollectionView is re-measured and set to the correct size.
+		//
+		// 		if (widthChanged && (contentSize.Value.Width < screenWidth || _previousContentSize.Width < screenWidth))
+		// 		{
+		// 			invalidate = true;
+		// 		}
+		//
+		// 		if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
+		// 		{
+		// 			invalidate = true;
+		// 		}
+		//
+		// 		if (invalidate)
+		// 		{
+		// 			(ItemsView as IView)?.InvalidateMeasure();
+		// 		}
+		// 	}
+		// 	_previousContentSize = contentSize.Value;
+		// }
 		
 
-		internal Size? GetSize()
-		{
-			if (_emptyViewDisplayed)
-			{
-				return _emptyUIView.Frame.Size.ToSize();
-			}
+		// internal Size? GetSize()
+		// {
+		// 	if (_emptyViewDisplayed)
+		// 	{
+		// 		return _emptyUIView.Frame.Size.ToSize();
+		// 	}
+		//
+		// 	return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		// }
 
-			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
-		}
-
-		void ConstrainItemsToBounds()
-		{
-			var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
-			var constrainedSize = contentBounds.Size;
-			ItemsViewLayout.UpdateConstraints(constrainedSize);
-		}
+		// void ConstrainItemsToBounds()
+		// {
+		// 	var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
+		// 	var constrainedSize = contentBounds.Size;
+		// 	ItemsViewLayout.UpdateConstraints(constrainedSize);
+		// }
 
 		void EnsureLayoutInitialized()
 		{
@@ -363,26 +363,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
-		void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs args)
-		{
-			CacheCellAttributes(args.NewAttributes.IndexPath, args.NewAttributes.Size);
-		}
-
-		protected virtual void CacheCellAttributes(NSIndexPath indexPath, CGSize size)
-		{
-			if (!ItemsSource.IsIndexPathValid(indexPath))
-			{
-				// The upate might be coming from a cell that's being removed; don't cache it.
-				return;
-			}
-
-			var item = ItemsSource[indexPath];
-			if (item != null)
-			{
-				ItemsViewLayout.CacheCellSize(item, size);
-			}
-		}
+		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
+		// void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs args)
+		// {
+		// 	CacheCellAttributes(args.NewAttributes.IndexPath, args.NewAttributes.Size);
+		// }
+		//
+		// protected virtual void CacheCellAttributes(NSIndexPath indexPath, CGSize size)
+		// {
+		// 	if (!ItemsSource.IsIndexPathValid(indexPath))
+		// 	{
+		// 		// The upate might be coming from a cell that's being removed; don't cache it.
+		// 		return;
+		// 	}
+		//
+		// 	var item = ItemsSource[indexPath];
+		// 	if (item != null)
+		// 	{
+		// 		ItemsViewLayout.CacheCellSize(item, size);
+		// 	}
+		// }
 
 		protected virtual string DetermineCellReuseId(NSIndexPath indexPath)
 		{
