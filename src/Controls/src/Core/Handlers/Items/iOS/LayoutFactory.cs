@@ -184,7 +184,7 @@ internal static class LayoutFactory
 
 
 	public static UICollectionViewLayout CreateHorizontalCarousel(LinearItemsLayout linearItemsLayout)
-		=> CreateListLayout(UICollectionViewScrollDirection.Vertical,
+		=> CreateListLayout(UICollectionViewScrollDirection.Horizontal,
 			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
 			// Fill the width and height
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
