@@ -147,4 +147,3 @@ virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Mic
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path
 *REMOVED*override Microsoft.Maui.Animations.PlatformTicker.SystemEnabled.get -> bool
-static Microsoft.Maui.VisualDiagnostics.IsEnabled.get -> bool
