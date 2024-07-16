@@ -18,10 +18,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AWebView CreatePlatformView()
 		{
-#if DEBUG
-			var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			logger.LogInformation("HybridWebViewHandler: CreatePlatformView Android WebView");
-#endif
 			var platformView = new MauiHybridWebView(this, Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
@@ -63,11 +59,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(AWebView platformView)
 		{
-#if DEBUG
-			var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			logger.LogInformation("HybridWebViewHandler: Connecting WebView2");
-#endif
-
 			base.ConnectHandler(platformView);
 
 			var webViewClient = new MauiHybridWebViewClient(this);
@@ -78,11 +69,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
-#if DEBUG
-			var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			logger.LogInformation("HybridWebViewHandler: Disconnecting WebView2");
-#endif
-
 			// TODO: Consider this code from WebView
 			//if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			//{

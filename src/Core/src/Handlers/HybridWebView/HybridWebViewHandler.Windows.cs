@@ -2,9 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.Storage.Streams;
@@ -13,27 +11,28 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WebView2>
 	{
+		private readonly HybridWebView2Proxy _proxy = new();
+
 		protected override WebView2 CreatePlatformView()
 		{
-#if DEBUG
-			var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			logger.LogInformation("HybridWebViewHandler: CreatePlatformView WebView2");
-#endif
-
 			return new MauiHybridWebView(this);
 		}
 
 		protected override async void ConnectHandler(WebView2 platformView)
 		{
-#if DEBUG
-			var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			logger.LogInformation("HybridWebViewHandler: Connecting WebView2");
-#endif
+			_proxy.Connect(this, platformView);
 
 			base.ConnectHandler(platformView);
 
 
-			platformView.WebMessageReceived += OnWebMessageReceived;
+			if (platformView.IsLoaded)
+			{
+				OnLoaded();
+			}
+			else
+			{
+				platformView.Loaded += OnWebViewLoaded;
+			}
 
 			await platformView.EnsureCoreWebView2Async();
 
@@ -42,21 +41,33 @@ namespace Microsoft.Maui.Handlers
 			platformView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 			platformView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
 
-
 			platformView.Source = new Uri(new Uri(AppOriginUri, "/").ToString());
+		}
 
+		void OnWebViewLoaded(object sender, RoutedEventArgs e)
+		{
+			OnLoaded();
+		}
+
+		void OnLoaded()
+		{
+			var window = MauiContext!.GetPlatformWindow();
+			_proxy.Connect(window);
+		}
+
+		void Disconnect(WebView2 platformView)
+		{
+			platformView.Loaded -= OnWebViewLoaded;
+			_proxy.Disconnect(platformView);
+			if (platformView.CoreWebView2 is not null)
+			{
+				platformView.Close();
+			}
 		}
 
 		protected override void DisconnectHandler(WebView2 platformView)
 		{
-#if DEBUG
-			var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			logger.LogInformation("HybridWebViewHandler: Disconnecting WebView2");
-#endif
-
-			platformView.WebMessageReceived -= OnWebMessageReceived;
-			platformView.Close();
-
+			Disconnect(platformView);
 			base.DisconnectHandler(platformView);
 		}
 
@@ -144,5 +155,61 @@ namespace Microsoft.Maui.Handlers
 		private protected static string GetHeaderString(string contentType, int contentLength) =>
 $@"Content-Type: {contentType}
 Content-Length: {contentLength}";
+
+		private sealed class HybridWebView2Proxy
+		{
+			private WeakReference<Window>? _window;
+			private WeakReference<HybridWebViewHandler>? _handler;
+
+			private Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
+			private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+
+			public void Connect(HybridWebViewHandler handler, WebView2 platformView)
+			{
+				_handler = new(handler);
+
+				platformView.WebMessageReceived += OnWebMessageReceived;
+			}
+
+			public void Connect(Window window)
+			{
+				_window = new(window);
+				window.Closed += OnWindowClosed;
+			}
+
+			public void Disconnect(WebView2 platformView)
+			{
+				platformView.WebMessageReceived -= OnWebMessageReceived;
+
+				if (platformView.CoreWebView2 is CoreWebView2 webView2)
+				{
+					webView2.Stop();
+				}
+
+				if (Window is Window window)
+				{
+					window.Closed -= OnWindowClosed;
+				}
+
+				_handler = null;
+				_window = null;
+			}
+
+			void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
+			{
+				if (Handler is HybridWebViewHandler handler)
+				{
+					handler.OnWebMessageReceived(sender, args);
+				}
+			}
+
+			void OnWindowClosed(object sender, WindowEventArgs args)
+			{
+				if (Handler is HybridWebViewHandler handler)
+				{
+					handler.Disconnect(handler.PlatformView);
+				}
+			}
+		}
 	}
 }

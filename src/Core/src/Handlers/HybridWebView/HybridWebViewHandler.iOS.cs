@@ -84,11 +84,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(WKWebView platformView)
 		{
-#if DEBUG
-			// var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			// logger.LogInformation("HybridWebViewHandler: Connecting WebView2");
-#endif
-
 			base.ConnectHandler(platformView);
 
 			using var nsUrl = new NSUrl(new Uri(AppOriginUri, "/").ToString());
@@ -99,11 +94,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
-#if DEBUG
-			// var logger = MauiContext!.Services!.GetService<ILogger<HybridWebViewHandler>>() ?? NullLogger<HybridWebViewHandler>.Instance;
-			// logger.LogInformation("HybridWebViewHandler: Disconnecting WebView2");
-#endif
-
 			// platformView.WebMessageReceived -= OnWebMessageReceived;
 			// platformView.Close();
 
