@@ -99,6 +99,7 @@ override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthCon
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.MauiAppCompatActivity.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiHybridWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
 override Microsoft.Maui.PlatformAppCompatTextView.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformAppCompatTextView.ThresholdClass.get -> nint

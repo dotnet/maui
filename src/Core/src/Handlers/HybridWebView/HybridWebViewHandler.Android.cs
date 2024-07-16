@@ -69,20 +69,22 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
-			// TODO: Consider this code from WebView
-			//if (OperatingSystem.IsAndroidVersionAtLeast(26))
-			//{
-			//	if (platformView.WebViewClient is MauiWebViewClient webViewClient)
-			//		webViewClient.Disconnect();
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				if (platformView.WebViewClient is MauiHybridWebViewClient webViewClient)
+				{
+					webViewClient.Disconnect();
+				}
+				//if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
+				//{
+				//	webChromeClient.Disconnect();
+				//}
+			}
 
-			//	if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
-			//		webChromeClient.Disconnect();
-			//}
-
-			//platformView.SetWebViewClient(null!);
+			platformView.SetWebViewClient(null!);
 			//platformView.SetWebChromeClient(null);
 
-			//platformView.StopLoading();
+			platformView.StopLoading();
 
 
 			base.DisconnectHandler(platformView);

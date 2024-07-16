@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiHybridWebViewClient : WebViewClient
 	{
-		private readonly WeakReference<HybridWebViewHandler> _handler;
+		private readonly WeakReference<HybridWebViewHandler?> _handler;
 
 		public MauiHybridWebViewClient(HybridWebViewHandler handler)
 		{
@@ -105,5 +105,20 @@ namespace Microsoft.Maui.Platform
 			new Dictionary<string, string> {
 				{ "Content-Type", contentType },
 			};
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				Disconnect();
+			}
+
+			base.Dispose(disposing);
+		}
+
+		internal void Disconnect()
+		{
+			_handler.SetTarget(null);
+		}
 	}
 }

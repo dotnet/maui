@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Handlers
 
 			base.ConnectHandler(platformView);
 
-
 			if (platformView.IsLoaded)
 			{
 				OnLoaded();
