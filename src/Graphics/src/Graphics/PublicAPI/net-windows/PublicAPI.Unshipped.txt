@@ -1244,6 +1244,7 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsWindowsColor(this Microsoft.Maui.Graphics.Color color, float alpha = 1) -> Windows.UI.Color
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsWindowsColor(this Microsoft.Maui.Graphics.Color color, Microsoft.Maui.Graphics.Color defaultColor, float alpha = 1) -> Windows.UI.Color
 ~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStreamAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> System.Threading.Tasks.Task<Microsoft.Maui.Graphics.IImage>
 ~static Microsoft.Maui.Graphics.Point.TryParse(string value, out Microsoft.Maui.Graphics.Point point) -> bool
 ~static Microsoft.Maui.Graphics.PointF.TryParse(string value, out Microsoft.Maui.Graphics.PointF pointF) -> bool
 ~static Microsoft.Maui.Graphics.Rect.TryParse(string value, out Microsoft.Maui.Graphics.Rect rectangle) -> bool

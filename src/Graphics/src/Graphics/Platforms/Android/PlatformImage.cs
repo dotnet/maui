@@ -152,5 +152,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			var bitmap = BitmapFactory.DecodeStream(stream);
 			return new PlatformImage(bitmap);
 		}
+
+		public static Task<IImage> FromStreamAsync(Stream stream, ImageFormat format = ImageFormat.Png)
+			=> Task.FromResult(FromStream(stream, format));
 	}
 }

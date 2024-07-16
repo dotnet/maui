@@ -159,5 +159,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			var image = UIImage.LoadFromData(data);
 			return new PlatformImage(image);
 		}
+
+		public static Task<IImage> FromStreamAsync(Stream stream, ImageFormat format = ImageFormat.Png)
+			=> Task.FromResult(FromStream(stream, format));
 	}
 }

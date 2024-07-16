@@ -187,6 +187,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
+		public static Task<IImage> FromStreamAsync(Stream stream, ImageFormat format = ImageFormat.Png) 
+			=> Task.FromResult(FromStream(stream, format));
+
 		public IImage ToPlatformImage()
 			=> this;
 	}

@@ -1390,6 +1390,7 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.ToPointF(this Microsoft.Maui.Graphics.PointF target) -> Android.Graphics.PointF
 ~static Microsoft.Maui.Graphics.Platform.ImageExtensions.AsBitmap(this Microsoft.Maui.Graphics.IImage image) -> Android.Graphics.Bitmap
 ~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat formatHint = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStreamAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> System.Threading.Tasks.Task<Microsoft.Maui.Graphics.IImage>
 ~static Microsoft.Maui.Graphics.Point.implicit operator Android.Graphics.Point(Microsoft.Maui.Graphics.Point size) -> Android.Graphics.Point
 ~static Microsoft.Maui.Graphics.Point.implicit operator Android.Graphics.PointF(Microsoft.Maui.Graphics.Point size) -> Android.Graphics.PointF
 ~static Microsoft.Maui.Graphics.Point.TryParse(string value, out Microsoft.Maui.Graphics.Point point) -> bool

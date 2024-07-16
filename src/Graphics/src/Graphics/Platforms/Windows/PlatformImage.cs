@@ -159,5 +159,18 @@ namespace Microsoft.Maui.Graphics.Platform
 			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
 			return new PlatformImage(creator, bitmap);
 		}
+
+		public static async Task<IImage> FromStreamAsync(Stream stream, ImageFormat format = ImageFormat.Png)
+		{
+			var creator = PlatformGraphicsService.Creator;
+
+			if (creator is null)
+			{
+				throw new Exception("No resource creator has been registered globally or for this thread.");
+			}
+
+			var bitmap = await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream());
+			return new PlatformImage(creator, bitmap);
+		}
 	}
 }
