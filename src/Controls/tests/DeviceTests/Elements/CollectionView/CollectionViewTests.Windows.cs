@@ -208,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var horzScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.HorizontalScrollModeProperty);
 				var vertScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.VerticalScrollModeProperty);
-				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Auto);
+				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Enabled);
 				Assert.True(vertScrollMode == UI.Xaml.Controls.ScrollMode.Disabled);
 			});
 		}
