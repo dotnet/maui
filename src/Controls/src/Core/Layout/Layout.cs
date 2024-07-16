@@ -9,6 +9,100 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+	public abstract class Layout<T> : Layout where T : View
+	{
+		public new IList<T> Children { get; }
+		public Layout()
+		{
+			Children = new CastingList<T, IView>(this);
+		}
+
+		// If we want to match the APIS
+
+		public void ForceLayout() => SizeAllocated(Width, Height);
+
+		protected override void OnChildAdded(Element child)
+		{
+			base.OnChildAdded(child);
+
+			if (child is T typedChild)
+			{
+				OnAdded(typedChild);
+			}
+		}
+
+		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
+		{
+			base.OnChildRemoved(child, oldLogicalIndex);
+
+			if (child is T typedChild)
+			{
+				OnRemoved(typedChild);
+			}
+		}
+
+		/// <summary>
+		/// Invoked when a child is added to the layout. Implement this method to add class handling for this event.
+		/// </summary>
+		/// <param name="view">The view which was added.</param>
+		protected virtual void OnAdded(T view)
+		{
+		}
+
+		/// <summary>
+		/// Invoked when a child is removed the layout. Implement this method to add class handling for this event.
+		/// </summary>
+		/// <param name="view">The view which was removed.</param>
+		protected virtual void OnRemoved(T view)
+		{
+		}
+
+		public void LowerChild(View view)
+		{
+		}
+
+		public void RaiseChild(View view)
+		{
+		}
+
+		protected virtual void InvalidateLayout()
+		{
+		}
+
+		protected abstract void LayoutChildren(double x, double y, double width, double height);
+
+		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
+		{
+			
+		}
+
+		protected virtual void OnChildMeasureInvalidated()
+		{
+		}
+
+		protected virtual bool ShouldInvalidateOnChildAdded(View child) => true;
+
+		protected virtual bool ShouldInvalidateOnChildRemoved(View child) => true;
+
+		protected void UpdateChildrenLayout()
+		{
+
+		}
+
+
+		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+		{
+			return base.Measure(widthConstraint, heightConstraint, flags);
+		}
+
+
+
+	}
+
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 	/// <summary>
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
@@ -138,6 +232,7 @@ namespace Microsoft.Maui.Controls
 
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
+			base.Measure
 			var size = (this as IView).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
 		}

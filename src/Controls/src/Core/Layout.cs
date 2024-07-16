@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	/// </summary>
 	/// <typeparam name="T">The type of <see cref="View"/> that can be added to the layout.</typeparam>
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.Layout<T> instead.")]
 	public abstract partial class Layout<T> : Layout, Microsoft.Maui.ILayout, ILayoutManager, IBindableLayout, IViewContainer<T> where T : View
 	{
 		readonly ElementCollection<T> _children;
