@@ -1,4 +1,44 @@
 #nullable enable
+const Microsoft.Maui.Controls.TitleBar.ContentHiddenState = "ContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.ContentVisibleState = "ContentVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.IconHiddenState = "IconCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.IconVisibleState = "IconVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.LeadingHiddenState = "LeadingContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.LeadingVisibleState = "LeadingContentVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleHiddenState = "SubTitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleVisibleState = "SubtitleVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.TemplateRootName = "PART_Root" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarActiveState = "TitleBarTitleActive" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarContent = "PART_Content" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarIcon = "PART_Icon" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarInactiveState = "TitleBarTitleInactive" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarLeading = "PART_LeadingContent" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarSubtitle = "PART_Subtitle" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarTitle = "PART_Title" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarTrailing = "PART_TrailingContent" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleHiddenState = "TitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleVisibleState = "TitleVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
+Microsoft.Maui.Controls.TitleBar
+Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.Content.set -> void
+Microsoft.Maui.Controls.TitleBar.ForegroundColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Controls.TitleBar.ForegroundColor.set -> void
+Microsoft.Maui.Controls.TitleBar.Icon.get -> Microsoft.Maui.Controls.ImageSource!
+Microsoft.Maui.Controls.TitleBar.Icon.set -> void
+Microsoft.Maui.Controls.TitleBar.LeadingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.LeadingContent.set -> void
+Microsoft.Maui.Controls.TitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
+Microsoft.Maui.Controls.TitleBar.Subtitle.get -> string!
+Microsoft.Maui.Controls.TitleBar.Subtitle.set -> void
+Microsoft.Maui.Controls.TitleBar.Title.get -> string!
+Microsoft.Maui.Controls.TitleBar.Title.set -> void
+Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
+Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
+Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
+Microsoft.Maui.Controls.Window.TitleBar.set -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDragEventArgs
