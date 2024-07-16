@@ -156,7 +156,20 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (creator == null)
 				throw new Exception("No resource creator has been registered globally or for this thread.");
 
-			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
+			var bitmap = AsyncPump.Run(async () =>
+			{
+				if (stream.CanSeek)
+				{
+					return await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream());
+				}
+				else
+				{
+					using MemoryStream memoryStream = new();
+					stream.CopyTo(memoryStream);
+
+					return await CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
+				}
+			});
 			return new PlatformImage(creator, bitmap);
 		}
 	}
