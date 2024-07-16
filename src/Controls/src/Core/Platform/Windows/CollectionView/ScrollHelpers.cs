@@ -226,7 +226,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			try
 			{
-				scrollViewer.ViewChanged += ViewChanged;
+				if (scrollViewer != null)
+					scrollViewer.ViewChanged += ViewChanged;
 
 				switch (scrollToPosition)
 				{
@@ -250,7 +251,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			finally
 			{
-				scrollViewer.ViewChanged -= ViewChanged;
+				if (scrollViewer != null)
+					scrollViewer.ViewChanged -= ViewChanged;
 			}
 		}
 
