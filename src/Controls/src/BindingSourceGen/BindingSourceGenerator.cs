@@ -119,10 +119,22 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
 		}
 
+		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
+		if (lambdaParamType is IErrorTypeSymbol)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+		}
+
+		var lambdaResultType = lambdaTypeInfo.Type;
+		if (lambdaResultType is IErrorTypeSymbol)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+		}
+
 		var binding = new BindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
-			SourceType: BindingGenerationUtilities.CreateTypeDescription(lambdaSymbolResult.Value.Parameters[0].Type, enabledNullable),
-			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaTypeInfo.Type, enabledNullable),
+			SourceType: BindingGenerationUtilities.CreateTypeDescription(lambdaParamType, enabledNullable),
+			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaResultType, enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
 			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable,

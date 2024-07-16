@@ -42,7 +42,7 @@ internal static class AssertExtensions
         AssertNoDiagnostics(codeGeneratorResult.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
     }
 
-    private static void AssertNoDiagnostics(ImmutableArray<Diagnostic> diagnostics, string name)
+    internal static void AssertNoDiagnostics(ImmutableArray<Diagnostic> diagnostics, string name)
     {
         if (diagnostics.Any())
         {
