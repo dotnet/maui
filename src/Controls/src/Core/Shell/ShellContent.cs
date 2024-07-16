@@ -60,21 +60,21 @@ namespace Microsoft.Maui.Controls
 			var content = Content;
 
 			Page result = null;
-			if (template == null)
+			if (template is null)
 			{
 				if (content is Page page)
 					result = page;
 			}
 			else
 			{
-				if (template.Type != null)
+				if (template.Type is not null)
 				{
 					template.LoadTemplate = () =>
 					{
 						var services = Parent?.FindMauiContext()?.Services;
-						if (services != null)
+						if (services is not null)
 						{
-							return services.GetService(template.Type) ?? Activator.CreateInstance(template.Type);
+							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, template.Type);
 						}
 						return Activator.CreateInstance(template.Type);
 					};
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls
 				ContentCache = result;
 			}
 
-			if (result == null)
+			if (result is null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
 			if (result is TabbedPage)

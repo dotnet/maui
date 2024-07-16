@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs/*" />
 		public static void RegisterRoute(
 			string route,
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 		{
 			RegisterRoute(route, new TypeRouteFactory(type));
 		}
@@ -258,11 +258,11 @@ namespace Microsoft.Maui.Controls
 
 		class TypeRouteFactory : RouteFactory
 		{
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 			readonly Type _type;
 
 			public TypeRouteFactory(
-				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 			{
 				_type = type;
 			}
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return (Element)(services.GetService(_type) ?? Activator.CreateInstance(_type));
+					return (Element)Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, _type);
 				}
 
 				return (Element)Activator.CreateInstance(_type);

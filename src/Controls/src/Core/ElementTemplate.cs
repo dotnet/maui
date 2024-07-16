@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		readonly Type _type;
 
 		internal ElementTemplate()
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ElementTemplate(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 			: this()
 		{
 			if (type == null)
@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		internal Type Type => _type;
 
 		Element IElementDefinition.Parent
