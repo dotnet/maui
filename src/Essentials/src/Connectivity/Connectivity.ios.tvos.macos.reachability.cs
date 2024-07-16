@@ -142,6 +142,7 @@ namespace Microsoft.Maui.Networking
 		{
 			var ip = new IPAddress(0);
 			defaultRouteReachability = new NetworkReachability(ip);
+#pragma warning disable CA1422 // Validate platform compatibility
 			defaultRouteReachability.SetNotification(OnChange);
 			defaultRouteReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
 
@@ -153,6 +154,7 @@ namespace Microsoft.Maui.Networking
 
 			remoteHostReachability.SetNotification(OnChange);
 			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
+#pragma warning restore CA1422 // Validate platform compatibility
 
 #if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938

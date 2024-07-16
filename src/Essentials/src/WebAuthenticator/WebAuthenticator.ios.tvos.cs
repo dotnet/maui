@@ -70,10 +70,24 @@ namespace Microsoft.Maui.Authentication
 				sf = null;
 			}
 
+
 			if (OperatingSystem.IsIOSVersionAtLeast(12))
 			{
+#if NET8_0
+				if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+				{
+					// Use the new ASWebAuthenticationSession constructor with ASWebAuthenticationSessionCallback overload
+					var callback = ASWebAuthenticationSessionCallback.Create(scheme);
+					was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), callback, AuthSessionCallback);
+				}
+				else
+				{
+					// Fallback to the original ASWebAuthenticationSession constructor for iOS versions below 17.4
+					was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+				}
+#else
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
-
+#endif
 				if (OperatingSystem.IsIOSVersionAtLeast(13))
 				{
 					var ctx = new ContextProvider(WindowStateManager.Default.GetCurrentUIWindow());
