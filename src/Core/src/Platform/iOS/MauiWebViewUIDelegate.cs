@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiWebViewUIDelegate(IWebViewHandler handler)
 		{
-			_ = handler ?? throw new ArgumentNullException("handler");
+			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 			_handler = new WeakReference<IWebViewHandler>(handler);
 		}
 
