@@ -1,3 +1,4 @@
+using System;
 using UIKit;
 
 namespace Microsoft.Maui.Devices
@@ -21,7 +22,19 @@ namespace Microsoft.Maui.Devices
 
 		void Click()
 		{
-			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
+			UIImpactFeedbackGenerator impact;
+#if NET8_0
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+			{
+				impact = UIImpactFeedbackGenerator.GetFeedbackGenerator(UIImpactFeedbackStyle.Light, new UIView());
+			}
+			else
+			{
+				impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
+			}
+#else
+				impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
+#endif
 			impact.Prepare();
 			impact.ImpactOccurred();
 			impact.Dispose();
@@ -29,7 +42,20 @@ namespace Microsoft.Maui.Devices
 
 		void LongPress()
 		{
-			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
+			UIImpactFeedbackGenerator impact;
+
+#if NET8_0
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+			{
+				impact = UIImpactFeedbackGenerator.GetFeedbackGenerator(UIImpactFeedbackStyle.Medium, new UIView());
+			}
+			else
+			{
+				impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
+			}
+#else
+		impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
+#endif
 			impact.Prepare();
 			impact.ImpactOccurred();
 			impact.Dispose();

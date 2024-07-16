@@ -1,3 +1,4 @@
+using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -77,12 +78,19 @@ namespace Microsoft.Maui.Platform
 		{
 			string text = label.Text ?? string.Empty;
 
+#if NET8_0
+			var attr = new NSAttributedStringDocumentAttributes
+			{
+				DocumentType = NSDocumentType.HTML,
+				CharacterEncoding = NSStringEncoding.UTF8
+			};
+#else
 			var attr = new NSAttributedStringDocumentAttributes
 			{
 				DocumentType = NSDocumentType.HTML,
 				StringEncoding = NSStringEncoding.UTF8
 			};
-
+#endif
 			NSError nsError = new();
 #pragma warning disable CS8601
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
