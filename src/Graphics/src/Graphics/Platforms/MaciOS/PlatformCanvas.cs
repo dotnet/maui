@@ -418,10 +418,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
-				startAngleInRadians += (float)Math.PI * 2;
+				startAngleInRadians += MathF.PI * 2;
 
 			while (endAngleInRadians < 0)
-				endAngleInRadians += (float)Math.PI * 2;
+				endAngleInRadians += MathF.PI * 2;
 
 			if (width == height)
 			{
@@ -467,10 +467,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
-				startAngleInRadians += (float)Math.PI * 2;
+				startAngleInRadians += MathF.PI * 2;
 
 			while (endAngleInRadians < 0)
-				endAngleInRadians += (float)Math.PI * 2;
+				endAngleInRadians += MathF.PI * 2;
 
 			if (width == height)
 			{
