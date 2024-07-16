@@ -414,10 +414,17 @@ namespace Microsoft.Maui.Controls.Platform
 				_rootViewLayoutListener?.Invalidate();
 				_rootViewLayoutListener = null;
 
-				_fragmentManager
-					.BeginTransaction()
-					.Remove(_modalFragment)
-					.Commit();
+				if (_windowMauiContext.Context is not null)
+				{
+					_fragmentManager.RunOrWaitForResume(_windowMauiContext.Context, fm =>
+					{
+						fm
+							.BeginTransaction()
+							.Remove(_modalFragment)
+							.SetReorderingAllowed(true)
+							.Commit();
+					});
+				}
 
 				Modal = null;
 				_windowMauiContext = null;
