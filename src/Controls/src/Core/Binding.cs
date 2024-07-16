@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -125,6 +126,7 @@ namespace Microsoft.Maui.Controls
 			var bindingContext = src ?? Context ?? context;
 			if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
 			{
+				BindingDiagnostics.SendBindingFailure(this, "Binding", "Mismatch between the specified x:DataType and the current binding context");
 				bindingContext = null;
 			}
 
