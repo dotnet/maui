@@ -376,7 +376,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ToolbarNavigationClickListener = this,
 				};
 
+				// TODO: Obsolete and Remove `UpdateDrawerArrowFromFlyoutIcon`
+				// Its original purpose was to set the icon from the FlyoutIcon which is now handled by GetFlyoutIcon below.
+				// See: https://github.com/xamarin/Xamarin.Forms/pull/6762
 				await UpdateDrawerArrowFromFlyoutIcon(context, _drawerToggle);
+
+				// Fragment might have been disposed while we were awaiting
+				if (_disposed)
+				{
+					return;
+				}
 
 				_drawerToggle.DrawerSlideAnimationEnabled = false;
 				drawerLayout.AddDrawerListener(_drawerToggle);
@@ -402,9 +411,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Drawable customIcon;
 
 				if (fid?.IconBitmapSource == image)
+				{
 					customIcon = fid.IconBitmap;
+				}
 				else
+				{
 					customIcon = (await image.GetPlatformImageAsync(MauiContext))?.Value;
+
+					// Fragment might have been disposed while we were waiting for the image drawable
+					if (_disposed)
+					{
+						return;
+					}
+				}
 
 				if (customIcon != null)
 				{

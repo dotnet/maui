@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.Border)]
 	public class Issue22606 : _IssuesUITest
 	{
 		public Issue22606(TestDevice device) : base(device) { }

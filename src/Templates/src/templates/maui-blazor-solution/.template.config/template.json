@@ -201,6 +201,12 @@
           ]
         }
       },
+      "XmlEncodedAppNameParam": {
+        "type": "derived",
+        "valueSource": "name",
+        "valueTransform": "encode",
+        "replaces": "XmlEncodedAppName"
+      },
       "defaultAppId":{
       "type": "generated",
       "generator": "join",
@@ -448,5 +454,10 @@
         "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
       }
     },
-  "defaultName": "MauiApp1"
+    "forms": {
+        "encode": {
+          "identifier": "xmlEncode"
+        }
+    },
+    "defaultName": "MauiApp1"
 }

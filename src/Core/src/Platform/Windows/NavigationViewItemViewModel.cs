@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Platform
 		WBrush? _unselectedForeground;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
+		WeakReference<object>? _data;
 
 		public object? Content
 		{
@@ -112,7 +113,11 @@ namespace Microsoft.Maui.Platform
 			get => IsSelected ? SelectedBackground : UnselectedBackground;
 		}
 
-		public object? Data { get; set; }
+		public object? Data
+		{
+			get => _data?.GetTargetOrDefault();
+			set => _data = value is null ? null : new(value);
+		}
 
 		public ObservableCollection<NavigationViewItemViewModel>? MenuItemsSource
 		{

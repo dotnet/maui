@@ -14,6 +14,7 @@ public class Issue21173 : _IssuesUITest
 
 #if ANDROID
 	[Test]
+	[Category(UITestCategories.Border)]
 	public void BorderWithRoundRectangleShouldRoundCornersOfContentWithinIt()
 	{
 		_ = App.WaitForElement("border");

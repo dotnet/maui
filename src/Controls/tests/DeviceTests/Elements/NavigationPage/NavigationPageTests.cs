@@ -40,7 +40,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<CarouselView, CarouselViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<IContentView, ContentViewHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Layout, LayoutHandler>();
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				await navPage.PushAsync(new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }));
+				await navPage.PushAsync(new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }));
 				await navPage.PopAsync();
 			});
 		}
@@ -100,6 +99,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.False(pageFiredNavigated);
+		}
+
+		[Fact]
+		public async Task PopLifeCycle()
+		{
+			SetupBuilder();
+			
+			bool appearingShouldFireOnInitialPage = false;
+			ContentPage initialPage = new ContentPage();
+			ContentPage pushedPage = new ContentPage();
+
+			ContentPage rootPageFiresAppearingAfterPop = null;
+			ContentPage pageDisappeared = null;
+
+			NavigationPage nav = new NavigationPage(initialPage);
+
+			// Because of queued change propagation on BPs
+			// sometimes the appearing will fire a bit later than we expect.
+			// This ensures the first one fires before we move on
+			TaskCompletionSource waitForFirstAppearing = new TaskCompletionSource();
+			initialPage.Appearing += OnInitialPageAppearing;
+			void OnInitialPageAppearing(object sender, EventArgs e)
+			{
+				waitForFirstAppearing.SetResult();
+				initialPage.Appearing -= OnInitialPageAppearing;
+			}
+
+			await CreateHandlerAndAddToWindow(nav, async () =>
+			{
+				await waitForFirstAppearing.Task.WaitAsync(TimeSpan.FromSeconds(2));
+				initialPage.Appearing += (sender, _) =>
+				{
+					Assert.True(appearingShouldFireOnInitialPage);
+					rootPageFiresAppearingAfterPop = (ContentPage)sender;
+				};
+
+				pushedPage.Disappearing += (sender, _)
+					=> pageDisappeared = (ContentPage)sender;
+
+				await nav.PushAsync(pushedPage).WaitAsync(TimeSpan.FromSeconds(2));
+				Assert.Null(rootPageFiresAppearingAfterPop);
+				appearingShouldFireOnInitialPage = true;
+				Assert.Null(pageDisappeared);
+
+				await nav.PopAsync().WaitAsync(TimeSpan.FromSeconds(2));
+
+				Assert.Equal(initialPage, rootPageFiresAppearingAfterPop);
+				Assert.Equal(pushedPage, pageDisappeared);
+			});
 		}
 
 #if !IOS && !MACCATALYST
@@ -401,7 +449,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				var page = new ContentPage() { Content = new Frame(), Title = "Detail" };
+				var page = new ContentPage() { Content = new Border(), Title = "Detail" };
 				await navPage.PushAsync(new NavigationPage(page));
 				NavigationPage.SetTitleIconImageSource(page, "red.png");
 			});

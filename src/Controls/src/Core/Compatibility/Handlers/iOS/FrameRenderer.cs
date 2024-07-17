@@ -7,6 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Buttons with Images layouts";
 
 		[Test]
+		[Category(UITestCategories.Button)]
 		public void Issue21394Test()
 		{
 			// iOS will be fixed in https://github.com/dotnet/maui/pull/20953
