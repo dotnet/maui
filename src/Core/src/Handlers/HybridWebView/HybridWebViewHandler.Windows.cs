@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override async void ConnectHandler(WebView2 platformView)
 		{
-			_proxy.Connect(this, platformView);
+			await _proxy.Connect(this, platformView);
 
 			base.ConnectHandler(platformView);
 
@@ -33,12 +33,9 @@ namespace Microsoft.Maui.Handlers
 				platformView.Loaded += OnWebViewLoaded;
 			}
 
-			await platformView.EnsureCoreWebView2Async();
-
 			platformView.CoreWebView2.Settings.AreDevToolsEnabled = true;//EnableWebDevTools;
 			platformView.CoreWebView2.Settings.IsWebMessageEnabled = true;
 			platformView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
-			platformView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
 
 			platformView.Source = new Uri(new Uri(AppOriginUri, "/").ToString());
 		}
@@ -86,7 +83,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.RawMessageReceived(args.TryGetWebMessageAsString());
 		}
 
-		private async void CoreWebView2_WebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
+		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 			using var deferral = eventArgs.GetDeferral();
@@ -163,11 +160,20 @@ Content-Length: {contentLength}";
 			private Window? Window => _window is not null && _window.TryGetTarget(out var w) ? w : null;
 			private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
-			public void Connect(HybridWebViewHandler handler, WebView2 platformView)
+			public async Task Connect(HybridWebViewHandler handler, WebView2 platformView)
 			{
 				_handler = new(handler);
 
 				platformView.WebMessageReceived += OnWebMessageReceived;
+
+				await platformView.EnsureCoreWebView2Async();
+
+				platformView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
+			}
+
+			private void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
+			{
+				Handler?.OnWebResourceRequested(sender, args);
 			}
 
 			public void Connect(Window window)
@@ -179,6 +185,7 @@ Content-Length: {contentLength}";
 			public void Disconnect(WebView2 platformView)
 			{
 				platformView.WebMessageReceived -= OnWebMessageReceived;
+				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
 
 				if (platformView.CoreWebView2 is CoreWebView2 webView2)
 				{
