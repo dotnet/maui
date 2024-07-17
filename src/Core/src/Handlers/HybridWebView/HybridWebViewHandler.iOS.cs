@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WKWebView>
 	{
+		private const string ScriptMessageHandlerName = "webwindowinterop";
+
 		//protected virtual float MinimumSize => 44f;
 
 		//WKUIDelegate? _delegate;
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 
 			config.DefaultWebpagePreferences!.AllowsContentJavaScript = true;
 
-			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
+			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), ScriptMessageHandlerName);
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
@@ -94,8 +96,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WKWebView platformView)
 		{
-			// platformView.WebMessageReceived -= OnWebMessageReceived;
-			// platformView.Close();
+			platformView.Configuration.UserContentController.RemoveScriptMessageHandler(ScriptMessageHandlerName);
 
 			base.DisconnectHandler(platformView);
 		}
@@ -119,12 +120,14 @@ namespace Microsoft.Maui.Handlers
 
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
-			private readonly HybridWebViewHandler _webViewHandler;
+			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
 
 			public SchemeHandler(HybridWebViewHandler webViewHandler)
 			{
-				_webViewHandler = webViewHandler;
+				_webViewHandler = new(webViewHandler);
 			}
+
+			private HybridWebViewHandler? Handler => _webViewHandler is not null && _webViewHandler.TryGetTarget(out var h) ? h : null;
 
 			[Export("webView:startURLSchemeTask:")]
 			[SupportedOSPlatform("ios11.0")]
@@ -156,6 +159,11 @@ namespace Microsoft.Maui.Handlers
 
 			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytes(string? url)
 			{
+				if (Handler is null)
+				{
+					return (Array.Empty<byte>(), ContentType: string.Empty, StatusCode: 404);
+				}
+
 				string contentType;
 
 				await Task.Delay(0);
@@ -167,11 +175,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
 
-					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, _webViewHandler.HybridRoot!);
+					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.HybridRoot!);
 
 					if (string.IsNullOrEmpty(relativePath))
 					{
-						relativePath = _webViewHandler.DefaultFile!.Replace('\\', '/');
+						relativePath = Handler.DefaultFile!.Replace('\\', '/');
 						contentType = "text/html";
 					}
 					else
