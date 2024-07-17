@@ -29,7 +29,7 @@ internal static class KeyboardAutoManager
 
 		var nextField = view.FindNextView(superview, view =>
 		{
-			var isValidTextView = view is UITextView textView && textView.Editable;
+			var isValidTextView = view is UITextView textView && textView.Editable && textView.UserInteractionEnabled;
 			var isValidTextField = view is UITextField textField && textField.Enabled;
 
 			return (isValidTextView || isValidTextField) && !view.Hidden && view.Alpha != 0f;
