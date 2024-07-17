@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 
 			config.DefaultWebpagePreferences!.AllowsContentJavaScript = true;
 
-			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), ScriptMessageHandlerName);
+			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(this), ScriptMessageHandlerName);
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
@@ -103,18 +103,19 @@ namespace Microsoft.Maui.Handlers
 
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
-			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "TODO: Temporary")]
-			private readonly Action<Uri, string> _messageReceivedAction;
+			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
 
-			public WebViewScriptMessageHandler(Action<Uri, string> messageReceivedAction)
+			public WebViewScriptMessageHandler(HybridWebViewHandler webViewHandler)
 			{
-				_messageReceivedAction = messageReceivedAction ?? throw new ArgumentNullException(nameof(messageReceivedAction));
+				_webViewHandler = new(webViewHandler);
 			}
+
+			private HybridWebViewHandler? Handler => _webViewHandler is not null && _webViewHandler.TryGetTarget(out var h) ? h : null;
 
 			public void DidReceiveScriptMessage(WKUserContentController userContentController, WKScriptMessage message)
 			{
 				ArgumentNullException.ThrowIfNull(message);
-				_messageReceivedAction(AppOriginUri, ((NSString)message.Body).ToString());
+				Handler?.MessageReceived(AppOriginUri, ((NSString)message.Body).ToString());
 			}
 		}
 
