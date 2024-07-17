@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +13,6 @@ public class Issue14825 : _IssuesUITest
 	{
 	}
 
-#if !MACCATALYST
 	[Test]
 	[Category(UITestCategories.WebView)]
 	public void ValidateWebViewScreenshot()
@@ -24,5 +24,5 @@ public class Issue14825 : _IssuesUITest
 
 		VerifyScreenshot();
 	}
-#endif
 }
+#endif
