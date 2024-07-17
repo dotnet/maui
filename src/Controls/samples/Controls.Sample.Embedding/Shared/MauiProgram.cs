@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Embedding;
 
 namespace Maui.Controls.Sample;
 
@@ -10,6 +11,7 @@ public static class MauiProgram
 
 		builder
 			.UseMauiApp<App>()
+			.UseMauiEmbedding()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
