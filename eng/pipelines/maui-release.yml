@@ -60,7 +60,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main
+      ref: refs/heads/dev/pjc/v4drop-metadata
     - repository: sdk-insertions
       type: github
       name: xamarin/sdk-insertions
