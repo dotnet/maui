@@ -16,14 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811")]
+		[FailsOnMac("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/18811")]
+		[FailsOnWindows("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
 		public async Task Issue18896Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
-				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811");
-
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },
-				"Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994");
-
 			App.WaitForElement("WaitForStubControl");
 
 			App.ScrollDown(ListView);

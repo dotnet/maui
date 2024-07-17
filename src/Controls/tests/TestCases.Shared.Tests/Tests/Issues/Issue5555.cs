@@ -13,14 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		
 		[Test]
 		[Category(UITestCategories.TableView)]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void TableViewMemoryLeakWhenUsingSwitchCellOrEntryCell()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac,
-				TestDevice.iOS,
-			});
-
 			App.WaitForElement("PushPage");
 			App.Tap("PushPage");
 			App.WaitForElement("PushPage");

@@ -109,24 +109,6 @@ parameters:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
 
-  - name: androidLegacyPool
-    type: object
-    default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
-
-  - name: iosLegacyPool
-    type: object
-    default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
-
 resources:
   repositories:
     - repository: yaml-templates
@@ -145,8 +127,6 @@ stages:
       macosPool: ${{ parameters.macosPool }}
       androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
       iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
-      iosLegacyPool: ${{ parameters.iosLegacyPool }}
-      androidLegacyPool: ${{ parameters.androidLegacyPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
@@ -163,7 +143,7 @@ stages:
           desc: Controls
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
-          app: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases/Controls.TestCases.App.csproj
+          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
@@ -172,8 +152,5 @@ stages:
           compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
           compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
           compatibilityiOSTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj
-          legacyAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
-          legacyAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.Appium.UITests/ControlGallery.Android.Appium.UITests.csproj
-          legacyiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
-          legacyiOSTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/iOS.Appium.UITests/ControlGallery.iOS.Appium.UITests.csproj
+
 

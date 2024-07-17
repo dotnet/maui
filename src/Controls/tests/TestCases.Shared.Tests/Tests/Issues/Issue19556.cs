@@ -13,7 +13,8 @@ public class Issue19556 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
+	[Category(UITestCategories.Label)]
 	public void SystemFontsShouldRenderCorrectly()
 	{
 		_ = App.WaitForElement("label");

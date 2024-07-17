@@ -18,9 +18,6 @@ var platform = testDevice.ToLower().Contains("simulator") ? "iPhoneSimulator" : 
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("IOS_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier(testDevice));
 var deviceCleanupEnabled = Argument("cleanup", true);
 
-// Test where clause
-string testWhere = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? "");
-
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
@@ -87,7 +84,6 @@ Task("uitest-build")
 	});
 
 Task("uitest")
-	.IsDependentOn("uitest-build")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
@@ -212,7 +208,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
 	var appiumLog = $"{binDir}/appium_ios.log";
-	var resultsFileName = $"{name}-{config}-ios";
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

@@ -23,12 +23,13 @@ if (TestTFM == "default")
 Exception pendingException = null;
 
 var NuGetOnlyPackages = new string[] {
-    "Microsoft.Maui.Controls.*.nupkg",
-    "Microsoft.Maui.Core.*.nupkg",
-    "Microsoft.Maui.Essentials.*.nupkg",
-    "Microsoft.Maui.Graphics.*.nupkg",
-    "Microsoft.Maui.Maps.*.nupkg",
-    "Microsoft.AspNetCore.Components.WebView.*.nupkg",
+    "Microsoft.Maui.Controls.*.{nupkg,snupkg}",
+    "Microsoft.Maui.Core.*.{nupkg,snupkg}",
+    "Microsoft.Maui.Essentials.*.{nupkg,snupkg}",
+    "Microsoft.Maui.Graphics.*.{nupkg,snupkg}",
+    "Microsoft.Maui.Maps.*.{nupkg,snupkg}",
+    "Microsoft.Maui.Resizetizer.*.{nupkg,snupkg}",
+    "Microsoft.AspNetCore.Components.WebView.*.{nupkg,snupkg}",
 };
 
 ProcessTFMSwitches();
@@ -47,10 +48,8 @@ Task("dotnet")
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
-            ReplaceTextInFiles(
-                originalNuget,
-                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
+            ReplaceTextInFiles(originalNuget, "<add key=\"nuget-only\" value=\"true\" />", "");
+            ReplaceTextInFiles(originalNuget, "NUGET_ONLY_PLACEHOLDER", nugetSource);
         }
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
@@ -267,10 +266,8 @@ Task("dotnet-pack-maui")
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
-            ReplaceTextInFiles(
-                originalNuget,
-                $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-                $"<add key=\"local\" value=\"{nugetSource}\" />");
+            ReplaceTextInFiles(originalNuget, "<add key=\"local\" value=\"true\" />", "");
+            ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
         var sln = "./Microsoft.Maui.Packages.slnf";
@@ -304,7 +301,7 @@ Task("dotnet-pack-additional")
             Version = nativeAssetsVersion,
             ExcludeVersion = true,
             OutputDirectory = assetsDir,
-            Source = new[] { "https://aka.ms/skiasharp-eap/index.json" },
+            Source = new[] { "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json" },
         });
         foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
             DeleteFile(nupkg);
@@ -334,42 +331,28 @@ Task("dotnet-pack-docs")
         EnsureDirectoryExists(destDir);
         CleanDirectories(destDir);
 
-        // Get the docs for .NET MAUI
-        foreach (var nupkg in GetFiles("./artifacts/Microsoft.Maui.*.Ref.any.*.nupkg"))
-        {
-            var d = $"{tempDir}/{nupkg.GetFilename()}";
-
-            Unzip(nupkg, d);
-            DeleteFiles($"{d}/**/*.pri");
-            DeleteFiles($"{d}/**/*.aar");
-            DeleteFiles($"{d}/**/*.DesignTools.*");
-            CopyFiles($"{d}/ref/**/net?.?/**/*.dll", $"{destDir}");
-            CopyFiles($"{d}/ref/**/net?.?/**/*.xml", $"{destDir}");
-        }
-
-        // Get the docs for libraries separately distributed as NuGets
+        // Extract the binaries, xml & pdb files for docs purposes
         foreach (var pattern in NuGetOnlyPackages)
         {
-            foreach (var nupkg in GetFiles($"./artifacts/{pattern}"))
+            foreach (var nupkg in GetFiles($"./artifacts/**/{pattern}"))
             {
                 var filename = nupkg.GetFilename().ToString();
                 var d = $"{tempDir}/{filename}";
                 Unzip(nupkg, d);
                 DeleteFiles($"{d}/**/*.pri");
                 DeleteFiles($"{d}/**/*.aar");
-                DeleteFiles($"{d}/**/*.pdb");
+                DeleteFiles($"{d}/**/*.DesignTools.*");
+                DeleteFiles($"{d}/**/*.resources.dll");
 
                 if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
                     || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
                 {
-                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.dll", $"{destDir}");
-                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.xml", $"{destDir}");    
+                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
 
                     continue;
                 }
 
-                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.dll", $"{destDir}");
-                CopyFiles($"{d}/lib/**/{{net,netstandard}}?.?/**/*.xml", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
             }
         }
 
@@ -814,10 +797,8 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, s
     }
 
     // Add a specific folder for nuget-only packages
-    ReplaceTextInFiles(
-        config.FullPath,
-        $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-        $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
+    ReplaceTextInFiles(config.FullPath, "<add key=\"nuget-only\" value=\"true\" />", "");
+    ReplaceTextInFiles(config.FullPath, "NUGET_ONLY_PLACEHOLDER", nugetOnly.FullPath);
 
     // Create empty or copy test Directory.Build.props/targets
     if (string.IsNullOrEmpty(props))

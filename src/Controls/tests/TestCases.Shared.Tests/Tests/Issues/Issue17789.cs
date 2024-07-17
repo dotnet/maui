@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Page)]
+		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
 		public void ContentPageBackgroundImageSourceWorks()
 		{
 			App.WaitForElement("WaitForStubControl");

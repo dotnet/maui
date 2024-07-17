@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 		public override string Issue => "Application.Current.Dispatcher.IsDispatchRequired race condition causes crash";
 		
 		[Test]
+		[Category(UITestCategories.Dispatcher)]
 		public void ApplicationDispatcherIsInvokeRequiredRaceConditionCausesCrash()
 		{
 			App.WaitForElement("crashButton");

@@ -17,11 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Bugzilla35127 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla35127.cs)
 		[Test]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void Issue35127Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },	
-				"This test is failing, likely due to product issue");
-
 			App.WaitForNoElement("See me?");
 			var count = App.FindElements("scrollView").Count;
 			ClassicAssert.IsTrue(count == 0);
