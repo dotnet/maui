@@ -406,8 +406,12 @@ namespace Microsoft.Maui.Platform
 			return mode.MakeMeasureSpec(deviceConstraint);
 		}
 
-		public static float GetDisplayDensity(this Context? context) =>
-			context?.Resources?.DisplayMetrics?.Density ?? 1.0f;
+		public static float GetDisplayDensity(this Context? context)
+		{
+			EnsureMetrics(context);
+
+			return s_displayDensity;
+		}
 
 		public static Rect ToCrossPlatformRectInReferenceFrame(this Context context, int left, int top, int right, int bottom)
 		{
