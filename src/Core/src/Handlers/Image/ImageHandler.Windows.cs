@@ -60,7 +60,17 @@ namespace Microsoft.Maui.Handlers
 			public override void SetImageSource(ImageSource? platformImage)
 			{
 				if (Handler?.PlatformView is not WImage image)
+				{
 					return;
+				}
+
+				if (platformImage is not null)
+				{
+					// Handle display scaling.
+					Graphics.Size size = platformImage.GetImageSourceSize(image);
+					image.Width = size.Width;
+					image.Height = size.Height;
+				}
 
 				image.Source = platformImage;
 			}
