@@ -5,7 +5,7 @@ parameters:
   pushMauiPackagesToMaestro: false
   nugetArtifactName: nuget-signed
   nugetArtifactPath: $(Build.StagingDirectory)\nuget-signed
-  dropRetentionDays: 90
+  dropRetentionDays: 120
 
 jobs:
 - job: create_artifact_statuses

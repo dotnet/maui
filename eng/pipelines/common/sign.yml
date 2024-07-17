@@ -42,7 +42,7 @@ stages:
             inputs:
               TargetFolders: |
                 $(Build.ArtifactStagingDirectory)\bin\manifests
-                $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
+                $(Build.ArtifactStagingDirectory)\bin\manifests-packs
                 $(Build.ArtifactStagingDirectory)\bin\msi-nupkgs
               ExcludeSNVerify: true
               ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt
