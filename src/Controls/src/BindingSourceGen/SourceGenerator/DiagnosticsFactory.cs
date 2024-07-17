@@ -60,7 +60,7 @@ internal static class DiagnosticsFactory
 				isEnabledByDefault: false),
 			location);
 
-	public static DiagnosticInfo LambdaParameterCannotBeResolved(Location location)
+	public static DiagnosticInfo LambdaParameterTypeCannotBeResolved(Location location)
 		=> new DiagnosticInfo(
 			new DiagnosticDescriptor(
 				id: "BSG0005",
@@ -71,12 +71,12 @@ internal static class DiagnosticsFactory
 				isEnabledByDefault: true),
 			location);
 
-	public static DiagnosticInfo LambdaResultCannotBeResolved(Location location)
+	public static DiagnosticInfo LambdaReturnTypeCannotBeResolved(Location location)
 		=> new DiagnosticInfo(
 			new DiagnosticDescriptor(
 				id: "BSG0006",
-				title: "Lambda result type cannot be resolved",
-				messageFormat: "The lambda result type cannot be resolved. Make sure that soruce generated fields / properties are not used in the path.",
+				title: "Lambda return type cannot be resolved",
+				messageFormat: "The lambda return type cannot be resolved. Make sure that soruce generated fields / properties are not used in the path.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),

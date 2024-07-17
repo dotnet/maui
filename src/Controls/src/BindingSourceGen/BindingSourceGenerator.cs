@@ -46,7 +46,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	{
 		return node is InvocationExpressionSyntax invocation
 			&& invocation.Expression is MemberAccessExpressionSyntax method
-			&& method.Name.Identifier.Text == "SetBinding"
+			&& method.Name.Identifier.Text == nameof(InterceptedMethodType.SetBinding)
 			&& invocation.ArgumentList.Arguments.Count >= 2
 			&& invocation.ArgumentList.Arguments[1].Expression is not LiteralExpressionSyntax
 			&& invocation.ArgumentList.Arguments[1].Expression is not ObjectCreationExpressionSyntax;
@@ -56,7 +56,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	{
 		return node is InvocationExpressionSyntax invocation
 			&& invocation.Expression is MemberAccessExpressionSyntax method
-			&& method.Name.Identifier.Text == "Create"
+			&& method.Name.Identifier.Text == nameof(InterceptedMethodType.Create)
 			&& invocation.ArgumentList.Arguments.Count >= 1
 			&& invocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax
 			&& invocation.ArgumentList.Arguments[0].Expression is not ObjectCreationExpressionSyntax;
@@ -71,8 +71,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var interceptedMethodType = method.Name.Identifier.Text switch
 		{
-			"SetBinding" => InterceptedMethodType.SetBinding,
-			"Create" => InterceptedMethodType.Create,
+			nameof(InterceptedMethodType.SetBinding) => InterceptedMethodType.SetBinding,
+			nameof(InterceptedMethodType.Create) => InterceptedMethodType.Create,
 			_ => throw new NotSupportedException()
 		};
 
@@ -106,10 +106,16 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
-		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t);
-		if (lambdaTypeInfo.Type == null)
+		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
+		if (lambdaParamType is IErrorTypeSymbol)
 		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterTypeCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+		}
+
+		var lambdaReturnType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
+		if (lambdaReturnType == null || lambdaReturnType is IErrorTypeSymbol)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaReturnTypeCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		var pathParser = new PathParser(context, enabledNullable);
@@ -119,22 +125,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
 		}
 
-		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
-		if (lambdaParamType is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
-		}
-
-		var lambdaResultType = lambdaTypeInfo.Type;
-		if (lambdaResultType is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
-		}
-
 		var binding = new BindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
 			SourceType: BindingGenerationUtilities.CreateTypeDescription(lambdaParamType, enabledNullable),
-			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaResultType, enabledNullable),
+			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaReturnType, enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
 			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable,

@@ -14,6 +14,7 @@ public class TrackingNames
 	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
 	public const string Bindings = nameof(Bindings);
 }
+
 public sealed record BindingInvocationDescription(
 	InterceptorLocation Location,
 	TypeDescription SourceType,
@@ -56,56 +57,6 @@ public sealed record TypeDescription(
 }
 
 public sealed record SetterOptions(bool IsWritable, bool AcceptsNullValue = false);
-
-public sealed record MemberAccess(string MemberName, bool IsValueType = false) : IPathPart
-{
-	public string PropertyName => MemberName;
-
-	public bool Equals(IPathPart other)
-	{
-		return other is MemberAccess memberAccess
-			&& MemberName == memberAccess.MemberName
-			&& IsValueType == memberAccess.IsValueType;
-	}
-}
-
-public sealed record IndexAccess(string DefaultMemberName, object Index, bool IsValueType = false) : IPathPart
-{
-	public string? PropertyName => $"{DefaultMemberName}[{Index}]";
-
-	public bool Equals(IPathPart other)
-	{
-		return other is IndexAccess indexAccess
-			&& DefaultMemberName == indexAccess.DefaultMemberName
-			&& Index.Equals(indexAccess.Index)
-			&& IsValueType == indexAccess.IsValueType;
-	}
-}
-
-public sealed record ConditionalAccess(IPathPart Part) : IPathPart
-{
-	public string? PropertyName => Part.PropertyName;
-
-	public bool Equals(IPathPart other)
-	{
-		return other is ConditionalAccess conditionalAccess && Part.Equals(conditionalAccess.Part);
-	}
-}
-
-public sealed record Cast(TypeDescription TargetType) : IPathPart
-{
-	public string? PropertyName => null;
-
-	public bool Equals(IPathPart other)
-	{
-		return other is Cast cast && TargetType.Equals(cast.TargetType);
-	}
-}
-
-public interface IPathPart : IEquatable<IPathPart>
-{
-	public string? PropertyName { get; }
-}
 
 public sealed record Result<T>(T? OptionalValue, EquatableArray<DiagnosticInfo> Diagnostics)
 {
