@@ -15,25 +15,27 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		// Parameters: short name, target framework, build config, use pack target
-		//[TestCase("maui", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui", DotNetPrevious, "Release", false)]
-		[TestCase("maui", DotNetCurrent, "Debug", false)]
-		[TestCase("maui", DotNetCurrent, "Release", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-		[TestCase("mauilib", DotNetPrevious, "Release", true)]
-		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
-		[TestCase("mauilib", DotNetCurrent, "Release", true)]
-		public void Build(string id, string framework, string config, bool shouldPack)
+		// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams
+		//[TestCase("maui", DotNetPrevious, "Debug", false, "")]
+		//[TestCase("maui", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui", DotNetCurrent, "Debug", false, "")]
+		[TestCase("maui", DotNetCurrent, "Release", false, "")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", false, "")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty")]
+		[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
+		[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
+		[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
+		[TestCase("mauilib", DotNetCurrent, "Release", true, "")]
+		public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -51,9 +53,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[Test]
 		// Parameters:  target framework, build config, dotnet new additional parameters
 
-		// First, 4 default scenarios
-		[TestCase(DotNetCurrent, "Debug", "", false)]
-		[TestCase(DotNetCurrent, "Release", "", false)]
+		// First, default scenarios
 		[TestCase(DotNetCurrent, "Debug", "", false)]
 		[TestCase(DotNetCurrent, "Release", "", false)]
 
