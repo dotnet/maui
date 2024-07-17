@@ -81,4 +81,37 @@ internal static class DiagnosticsFactory
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),
 			location);
+
+	public static DiagnosticInfo PrivateTypeUsedAsLambdaParameter(Location location)
+		=> new DiagnosticInfo(
+			new DiagnosticDescriptor(
+				id: "BSG0007",
+				title: "Private type used as lambda parameter",
+				messageFormat: "The lambda parameter type is declared as private.",
+				category: "Usage",
+				defaultSeverity: DiagnosticSeverity.Error,
+				isEnabledByDefault: true),
+			location);
+
+	public static DiagnosticInfo PrivateFieldInPath(Location location)
+	=> new DiagnosticInfo(
+		new DiagnosticDescriptor(
+			id: "BSG0008",
+			title: "Private field in path",
+			messageFormat: "The path contains a private field.",
+			category: "Usage",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true),
+		location);
+
+	public static DiagnosticInfo PrivatePropertyInPath(Location location)
+	=> new DiagnosticInfo(
+		new DiagnosticDescriptor(
+			id: "BSG0009",
+			title: "Private property in path",
+			messageFormat: "The path contains a private property.",
+			category: "Usage",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true),
+		location);
 }

@@ -220,6 +220,96 @@ public class DiagnosticsTests
 		Assert.Equal("BSG0006", diagnostic.Id);
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23534
+	public void ReportsWarningWhenSourceTypeIsPrivate()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var foo = new Foo();
+			foo.Bar();
+
+			public class Foo
+			{
+				public void Bar()
+				{
+					var label = new Label();
+					label.SetBinding(Label.RotationProperty, (UnaccessibleClass a) => a.Value);
+				}
+
+				private class UnaccessibleClass
+				{
+					public int Value { get; set; }
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0007", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23535
+	public void ReportsWarningWhenPrivateFieldInPath()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var foo = new Foo();
+			foo.Bar();
+
+			public class Foo
+			{
+				private int Value = 0;
+
+				public void Bar()
+				{
+					var label = new Label();
+					label.SetBinding(Label.RotationProperty, (Foo foo) => foo.Value);
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0008", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23535
+	public void ReportsWarningWhenPrivatePropertyInPath()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var foo = new Foo();
+			foo.Bar();
+
+			public class Foo
+			{
+				private int Value { get; set; }
+
+				public void Bar()
+				{
+					var label = new Label();
+					label.SetBinding(Label.RotationProperty, (Foo foo) => foo.Value);
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0009", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
 }
 
 internal class IncrementalGeneratorA : IIncrementalGenerator

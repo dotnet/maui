@@ -106,17 +106,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
-		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t);
-		if (lambdaTypeInfo.Type == null)
+		var lambdaResultType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
+		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
 		{
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
-		}
-
-		var pathParser = new PathParser(context, enabledNullable);
-		var pathParseResult = pathParser.ParsePath(lambdaBodyResult.Value);
-		if (pathParseResult.HasDiagnostics)
-		{
-			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
 		}
 
 		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
@@ -125,10 +118,16 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
-		var lambdaResultType = lambdaTypeInfo.Type;
-		if (lambdaResultType is IErrorTypeSymbol)
+		if (lambdaParamType.DeclaredAccessibility == Accessibility.Private)
 		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.PrivateTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
+		}
+
+		var pathParser = new PathParser(context, enabledNullable);
+		var pathParseResult = pathParser.ParsePath(lambdaBodyResult.Value);
+		if (pathParseResult.HasDiagnostics)
+		{
+			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
 		}
 
 		var binding = new BindingInvocationDescription(
@@ -157,7 +156,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		};
 
 
-	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
+	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	{
 		var argumentList = invocation.ArgumentList.Arguments;
 
 		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
