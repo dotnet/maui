@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample
 					return () =>
 					{
 						var page = ActivatePage(type);
-						Application.Current.MainPage = page;
+						this.Window.Page = page;
 					};
 				}
 

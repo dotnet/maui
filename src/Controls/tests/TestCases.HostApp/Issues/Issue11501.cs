@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 			private void OnLoaded(object sender, EventArgs e)
 			{
 				_window = Window;
-				_mainPage = Application.Current.MainPage;
+				_mainPage = this.Window.Page;
 				_modalStack = Navigation.ModalStack.ToList();
 			}
 
@@ -66,13 +66,13 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "SwapMainPage",
 					Command = new Command( () =>
 					{
-						Application.Current.MainPage =
+						this.Window.Page =
 							new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 
 						ConnectToWindow();
 						_currentTest = () =>
 						{
-							Application.Current.MainPage = CreateDestinationPage();
+							this.Window.Page = CreateDestinationPage();
 							return Task.CompletedTask;
 						};
 					})
@@ -92,7 +92,7 @@ namespace Maui.Controls.Sample.Issues
 							},
 						};
 
-						Application.Current.MainPage = flyoutPage;
+						this.Window.Page = flyoutPage;
 						ConnectToWindow();
 
 						_currentTest = () =>
@@ -110,11 +110,11 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "SwapTabbedPage",
 					Command = new Command( () =>
 					{
-						Application.Current.MainPage = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
+						this.Window.Page = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 						ConnectToWindow();
 						_currentTest = () =>
 						{
-							Application.Current.MainPage = new TabbedPage()
+							this.Window.Page = new TabbedPage()
 							{
 								Children =
 								{
@@ -147,7 +147,7 @@ namespace Maui.Controls.Sample.Issues
 							}
 						};
 
-						Application.Current.MainPage = tabbedPage;
+						this.Window.Page = tabbedPage;
 						ConnectToWindow();
 
 						_currentTest = () =>
@@ -174,7 +174,7 @@ namespace Maui.Controls.Sample.Issues
 						Text = "Restore",
 						Command = new Command(async ()=>
 						{
-							Application.Current.MainPage = _mainPage;
+							this.Window.Page = _mainPage;
 
 							await Task.Yield();
 

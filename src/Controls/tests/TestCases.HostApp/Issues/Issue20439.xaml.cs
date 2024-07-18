@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Issues
 					{ 
 						Text = "Go To Test", 
 						AutomationId = "GoToTest", 
-						Command = new Command(() => Application.Current.MainPage = new Issue20439()) 
+						Command = new Command(() => this.Window.Page = new Issue20439()) 
 					}
 				}
 			};			
