@@ -1,6 +1,7 @@
 ﻿using System;
 using Maui.Controls.Sample.ViewModels;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Pages
@@ -56,27 +57,11 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void InactiveColorButton_Clicked(object sender, EventArgs e)
-		{
-			if (Microsoft.Maui.Graphics.Color.TryParse(InactiveColorTextBox.Text, out var color))
-			{
-				_customTitleBar.InactiveBackgroundColor = color;
-			}
-		}
-
 		private void ForegroundColorButton_Clicked(object sender, EventArgs e)
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ForegroundColorTextBox.Text, out var color))
 			{
 				_customTitleBar.ForegroundColor = color;
-			}
-		}
-
-		private void InactiveForegroundColorButton_Clicked(object sender, EventArgs e)
-		{
-			if (Microsoft.Maui.Graphics.Color.TryParse(InactiveForegroundColorTextBox.Text, out var color))
-			{
-				_customTitleBar.InactiveForegroundColor = color;
 			}
 		}
 
@@ -99,7 +84,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (e.Value)
 			{
-				_customTitleBar.Content = new Entry()
+				_customTitleBar.Content = new SearchBar()
 				{
 					Placeholder = "Search",
 					MinimumWidthRequest = 200,
@@ -117,9 +102,21 @@ namespace Maui.Controls.Sample.Pages
 		{
 			if (e.Value)
 			{
-				_customTitleBar.TrailingContent = new Button()
+				_customTitleBar.TrailingContent = new Border()
 				{
-					Text = "Trailing"
+					WidthRequest = 32,
+					HeightRequest = 32,
+					StrokeShape = new Ellipse() { WidthRequest = 32, HeightRequest = 32 },
+					StrokeThickness = 0,
+					BackgroundColor = Microsoft.Maui.Graphics.Colors.Azure,
+					Content = new Label()
+					{
+						Text = "MC",
+						TextColor = Microsoft.Maui.Graphics.Colors.Black,
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+						FontSize = 10
+					}
 				};
 			}
 			else

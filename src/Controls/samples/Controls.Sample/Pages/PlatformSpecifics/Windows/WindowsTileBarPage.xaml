@@ -112,19 +112,6 @@
             <HorizontalStackLayout
                 Spacing="8">
                 <Entry 
-                    x:Name="InactiveColorTextBox"
-                    Placeholder="Green"
-                    HorizontalOptions="Start"
-                    WidthRequest="120" />
-                <Button 
-                    x:Name="InactiveColorButton"
-                    Text="Set Inactive Background Color"
-                    Clicked="InactiveColorButton_Clicked" />
-            </HorizontalStackLayout>
-  
-            <HorizontalStackLayout
-                Spacing="8">
-                <Entry 
                     x:Name="ForegroundColorTextBox"
                     Placeholder="Green"
                     HorizontalOptions="Start"
@@ -133,19 +120,6 @@
                     x:Name="ForegroundColorButton"
                     Text="Set Foreground Color"
                     Clicked="ForegroundColorButton_Clicked" />
-            </HorizontalStackLayout>
-  
-            <HorizontalStackLayout
-                Spacing="8">
-                <Entry 
-                    x:Name="InactiveForegroundColorTextBox"
-                    Placeholder="Green"
-                    HorizontalOptions="Start"
-                    WidthRequest="120" />
-                <Button 
-                    x:Name="InactiveForegroundColorButton"
-                    Text="Set Inactive Foreground Color"
-                    Clicked="InactiveForegroundColorButton_Clicked" />
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>
