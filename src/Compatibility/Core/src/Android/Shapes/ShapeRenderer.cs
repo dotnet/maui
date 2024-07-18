@@ -423,7 +423,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					_drawable.Paint.StrokeWidth = 0.01f;
 					_drawable.Paint.SetStyle(Paint.Style.Stroke);
 					_drawable.Paint.GetFillPath(_path, fillPath);
-					fillPath.ComputeBounds(_pathFillBounds, false);
+					fillPath.ComputeBounds(_pathFillBounds);
 					_drawable.Paint.StrokeWidth = _strokeWidth;
 				}
 			}
@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					_drawable.Paint.SetStyle(Paint.Style.Stroke);
 					_drawable.Paint.GetFillPath(_path, strokePath);
-					strokePath.ComputeBounds(_pathStrokeBounds, false);
+					strokePath.ComputeBounds(_pathStrokeBounds);
 				}
 			}
 			else
