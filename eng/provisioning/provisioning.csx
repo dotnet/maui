@@ -34,7 +34,8 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 		.ApiLevel((AndroidApiLevel)31)
 		.ApiLevel((AndroidApiLevel)32)
 		.ApiLevel((AndroidApiLevel)33)
-		.ApiLevel((AndroidApiLevel)34);
+		.ApiLevel((AndroidApiLevel)34)
+		.ApiLevel((AndroidApiLevel)35);
 
 	if(string.IsNullOrWhiteSpace(SKIP_ANDROID_API_IMAGES))
 	{
@@ -70,7 +71,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 		}
 	}
 
-	AndroidSdk().SdkManagerPackage ("build-tools;33.0.0");
+	AndroidSdk().SdkManagerPackage ("build-tools;35.0.0");
 }
 
 
