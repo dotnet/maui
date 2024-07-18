@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs/*" />
 		public Page? MainPage
 		{
-			[Obsolete("This property has been deprecated. For single-window applications, use Windows[0].Page. For multi-window applications, identify and use the appropriate Window object to access the desired Page."")]
+			[Obsolete("This property has been deprecated. For single-window applications, use Windows[0].Page. For multi-window applications, identify and use the appropriate Window object to access the desired Page. Additionally, each element features a Window property, accessible when it's part of the current window.")]
 			get
 			{
 				if (Windows.Count == 0)
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls
 
 				return Windows[0].Page;
 			}
-			[Obsolete("This property is deprecated. Initialize your application by overriding Application.CreateWindow rather than setting MainPage. To modify the root page in an active application, use Windows[0].Page for applications with a single window. For applications with multiple windows, use Application.Windows to identify and update the root page on the correct window.")]
+			[Obsolete("This property is deprecated. Initialize your application by overriding Application.CreateWindow rather than setting MainPage. To modify the root page in an active application, use Windows[0].Page for applications with a single window. For applications with multiple windows, use Application.Windows to identify and update the root page on the correct window.  Additionally, each element features a Window property, accessible when it's part of the current window.")]
 			set
 			{
 				if (MainPage == value)
