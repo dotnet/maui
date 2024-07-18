@@ -613,7 +613,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			else
 				minforetriever = () => property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == property.PropertyName);
 			var convertedValue = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out exception);
-			if (property.ReturnType == typeof(string) && convertedValue is not string)
+			if (property.ReturnType == typeof(string) && convertedValue != null && convertedValue is not string)
 				convertedValue = convertedValue.ToString();
 			if (exception != null)
 				return false;
