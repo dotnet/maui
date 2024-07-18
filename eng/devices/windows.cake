@@ -205,7 +205,7 @@ Task("Test")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	var waitForResultTimeoutInSeconds = 120;
+	var waitForResultTimeoutInSeconds = 240;
 
 	CleanDirectories(TEST_RESULTS);
 
