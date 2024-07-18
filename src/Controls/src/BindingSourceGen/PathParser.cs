@@ -44,18 +44,12 @@ internal class PathParser
         var typeInfo = Context.SemanticModel.GetTypeInfo(memberAccess).Type;
         var symbol = Context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
 
-        if (symbol is IFieldSymbol fieldSymbol
-            && fieldSymbol.DeclaredAccessibility != Accessibility.Public
-            && fieldSymbol.DeclaredAccessibility != Accessibility.Internal
-            && fieldSymbol.DeclaredAccessibility != Accessibility.ProtectedOrInternal)
+		if (symbol is IFieldSymbol fieldSymbol && !BindingGenerationUtilities.IsAccessible(fieldSymbol.DeclaredAccessibility))
         {
             return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnaccessibleFieldInPath(memberAccess.GetLocation()));
         }
 
-        if (symbol is IPropertySymbol propertySymbol
-        && propertySymbol.DeclaredAccessibility != Accessibility.Public
-        && propertySymbol.DeclaredAccessibility != Accessibility.Internal
-        && propertySymbol.DeclaredAccessibility != Accessibility.ProtectedOrInternal)
+		if (symbol is IPropertySymbol propertySymbol && !BindingGenerationUtilities.IsAccessible(propertySymbol.DeclaredAccessibility))
         {
             return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnaccessiblePropertyInPath(memberAccess.GetLocation()));
         }

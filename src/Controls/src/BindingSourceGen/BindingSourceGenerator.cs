@@ -118,10 +118,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
-		if (
-			lambdaParamType.DeclaredAccessibility != Accessibility.Public
-			&& lambdaParamType.DeclaredAccessibility != Accessibility.Internal
-			&& lambdaParamType.DeclaredAccessibility != Accessibility.ProtectedOrInternal)
+		if (!BindingGenerationUtilities.IsAccessible(lambdaParamType.DeclaredAccessibility))
 		{
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
 		}
