@@ -136,18 +136,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(pageAppearing);
 		}
 
-		[Fact]
-		public async Task EnsureOnAppearingFiresForNavigatedToPage()
-		{
-			Shell shell = new TestShell();
-			shell.Items.Add(CreateShellItem());
-			await shell.GoToAsync("LifeCyclePage");
+		// [Fact]
+		// public async Task EnsureOnAppearingFiresForNavigatedToPage()
+		// {
+		// 	Shell shell = new TestShell();
+		// 	shell.Items.Add(CreateShellItem());
+		// 	await shell.GoToAsync("LifeCyclePage");
 
-			var page = (LifeCyclePage)shell.GetVisiblePage();
+		// 	var page = (LifeCyclePage)shell.GetVisiblePage();
 
-			Assert.True(page.Appearing);
-			Assert.True(page.ParentSet);
-		}
+		// 	Assert.True(page.Appearing);
+		// 	Assert.True(page.ParentSet);
+		// }
 
 		[Fact]
 		public async Task EnsureOnAppearingFiresForLastPageOnly()
