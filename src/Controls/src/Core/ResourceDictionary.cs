@@ -12,7 +12,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
 {
@@ -24,6 +23,9 @@ namespace Microsoft.Maui.Controls
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
 		Uri _source;
+
+		// This action is instantiated in a module initializer in ResourceDictionaryHotReloadHelper
+		internal static Action<ResourceDictionary, Uri, string, Assembly, System.Xml.IXmlLineInfo> s_setAndLoadSource;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
@@ -46,6 +48,19 @@ namespace Microsoft.Maui.Controls
 		{
 			var instance = s_instances.GetValue(typeof(T), static _ => new T());
 			SetSource(value, instance);
+		}
+
+		// Used by hot reload
+		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='SetAndLoadSource']/Docs/*" />
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+		internal void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, global::System.Xml.IXmlLineInfo lineInfo)
+		{
+			if (s_setAndLoadSource is null)
+			{
+				throw new InvalidOperationException("ResourceDictionary.SetAndLoadSource was not initialized");
+			}
+
+			s_setAndLoadSource(this, value, resourcePath, assembly, lineInfo);
 		}
 
 		internal static ResourceDictionary GetOrCreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
