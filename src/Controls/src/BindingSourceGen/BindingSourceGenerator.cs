@@ -118,9 +118,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
-		if (lambdaParamType.DeclaredAccessibility == Accessibility.Private)
+		if (
+			lambdaParamType.DeclaredAccessibility != Accessibility.Public
+			&& lambdaParamType.DeclaredAccessibility != Accessibility.Internal
+			&& lambdaParamType.DeclaredAccessibility != Accessibility.ProtectedOrInternal)
 		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.PrivateTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		var pathParser = new PathParser(context, enabledNullable);

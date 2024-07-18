@@ -82,34 +82,34 @@ internal static class DiagnosticsFactory
 				isEnabledByDefault: true),
 			location);
 
-	public static DiagnosticInfo PrivateTypeUsedAsLambdaParameter(Location location)
+	public static DiagnosticInfo UnaccessibleTypeUsedAsLambdaParameter(Location location)
 		=> new DiagnosticInfo(
 			new DiagnosticDescriptor(
 				id: "BSG0007",
-				title: "Private type used as lambda parameter",
-				messageFormat: "The lambda parameter type is declared as private.",
+				title: "Unaccessible type used as lambda parameter",
+				messageFormat: "The lambda parameter type has to be declared as public, internal or protected internal.",
 				category: "Usage",
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),
 			location);
 
-	public static DiagnosticInfo PrivateFieldInPath(Location location)
+	public static DiagnosticInfo UnaccessibleFieldInPath(Location location)
 	=> new DiagnosticInfo(
 		new DiagnosticDescriptor(
 			id: "BSG0008",
-			title: "Private field in path",
-			messageFormat: "The path contains a private field.",
+			title: "Unaccessible field in path",
+			messageFormat: "The path can contain only public, internal and protected internal fields.",
 			category: "Usage",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true),
 		location);
 
-	public static DiagnosticInfo PrivatePropertyInPath(Location location)
+	public static DiagnosticInfo UnaccessiblePropertyInPath(Location location)
 	=> new DiagnosticInfo(
 		new DiagnosticDescriptor(
 			id: "BSG0009",
-			title: "Private property in path",
-			messageFormat: "The path contains a private property.",
+			title: "Unaccessible property in path",
+			messageFormat: "The path can contain only public, internal and protected internal properties.",
 			category: "Usage",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true),

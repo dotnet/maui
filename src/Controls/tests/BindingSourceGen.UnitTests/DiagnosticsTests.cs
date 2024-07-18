@@ -221,11 +221,14 @@ public class DiagnosticsTests
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 	}
 
-	[Fact]
+	[Theory]
+	[InlineData("private")]
+	[InlineData("protected")]
+	[InlineData("private protected")]
 	// https://github.com/dotnet/maui/issues/23534
-	public void ReportsWarningWhenSourceTypeIsPrivate()
+	public void ReportsWarningWhenSourceTypeIsUnaccessible(string modifier)
 	{
-		var source = """
+		var source = $$"""
 			using Microsoft.Maui.Controls;
 
 			var foo = new Foo();
@@ -239,7 +242,7 @@ public class DiagnosticsTests
 					label.SetBinding(Label.RotationProperty, (UnaccessibleClass a) => a.Value);
 				}
 
-				private class UnaccessibleClass
+				{{modifier}} class UnaccessibleClass
 				{
 					public int Value { get; set; }
 				}
@@ -253,11 +256,14 @@ public class DiagnosticsTests
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 	}
 
-	[Fact]
+	[Theory]
+	[InlineData("private")]
+	[InlineData("protected")]
+	[InlineData("private protected")]
 	// https://github.com/dotnet/maui/issues/23535
-	public void ReportsWarningWhenPrivateFieldInPath()
+	public void ReportsWarningWhenUnaccessibleFieldInPath(string modifier)
 	{
-		var source = """
+		var source = $$"""
 			using Microsoft.Maui.Controls;
 
 			var foo = new Foo();
@@ -265,7 +271,7 @@ public class DiagnosticsTests
 
 			public class Foo
 			{
-				private int Value = 0;
+				{{modifier}} int Value = 0;
 
 				public void Bar()
 				{
@@ -282,11 +288,15 @@ public class DiagnosticsTests
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 	}
 
-	[Fact]
+	[Theory]
+	[InlineData("private")]
+	[InlineData("protected")]
+	[InlineData("private protected")]
+
 	// https://github.com/dotnet/maui/issues/23535
-	public void ReportsWarningWhenPrivatePropertyInPath()
+	public void ReportsWarningWhenUnnaccessiblePropertyInPath(string modifier)
 	{
-		var source = """
+		var source = $$"""
 			using Microsoft.Maui.Controls;
 
 			var foo = new Foo();
@@ -294,7 +304,7 @@ public class DiagnosticsTests
 
 			public class Foo
 			{
-				private int Value { get; set; }
+				{{modifier}} int Value { get; set; }
 
 				public void Bar()
 				{
