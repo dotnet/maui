@@ -32,7 +32,7 @@ jobs:
   # Download symbols to be published to the symbols artifact drop declared above
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifactName: ${{ parameters.nugetArtifactName }}
+      artifactName: nuget
       downloadPath: $(Build.StagingDirectory)\symbols
       patterns: |
         **/*.snupkg
