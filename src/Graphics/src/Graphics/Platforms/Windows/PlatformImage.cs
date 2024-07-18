@@ -170,6 +170,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				using MemoryStream memoryStream = new();
 				stream.CopyTo(memoryStream);
+				memoryStream.Seek(0, SeekOrigin.Begin);
 
 				global::Windows.Foundation.IAsyncOperation<CanvasBitmap> bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
 				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
