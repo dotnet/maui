@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
 			{ typeof(Maui.Graphics.Color), new ColorTypeConverter() },
+			{ typeof(ImageSource), new ImageSourceConverter() }
 		};
 
 		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
@@ -66,6 +67,8 @@ namespace Microsoft.Maui.Controls
 			{ typeof(char), new[] { typeof(string), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) } },
 			{ typeof(float), new[] { typeof(string), typeof(double) } },
 			{ typeof(ulong), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } },
+			{ typeof(double), new[] { typeof(string) } },
+			{ typeof(bool), new[] { typeof(string) } },
 		};
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='UnsetValue']/Docs/*" />
@@ -216,10 +219,15 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
-			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
+			bool isSimpleType = false;
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo))
 			{
-				value = Convert.ChangeType(value, returnType);
-				return true;
+				isSimpleType = true;
+				if (Array.IndexOf(convertibleTo, returnType) != -1)
+				{
+					value = Convert.ChangeType(value, returnType);
+					return true;
+				}
 			}
 			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
 			{
@@ -229,11 +237,15 @@ namespace Microsoft.Maui.Controls
 			if (returnType.IsAssignableFrom(valueType))
 				return true;
 
-			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
-			if (cast != null)
+			// Don't look for implicit conversion operators on BCL-types
+			if (!isSimpleType && valueType != typeof(string))
 			{
-				value = cast.Invoke(null, new[] { value });
-				return true;
+				var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+				if (cast != null)
+				{
+					value = cast.Invoke(null, new[] { value });
+					return true;
+				}
 			}
 			if (KnownIValueConverters.TryGetValue(returnType, out IValueConverter valueConverter))
 			{
