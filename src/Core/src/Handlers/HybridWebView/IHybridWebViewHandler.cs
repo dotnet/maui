@@ -16,8 +16,5 @@ namespace Microsoft.Maui.Handlers
 	{
 		new IHybridWebView VirtualView { get; }
 		new PlatformView PlatformView { get; }
-
-		string? DefaultFile { get; set; }
-		string? HybridRoot { get; set; }
 	}
 }

@@ -45,8 +45,6 @@ namespace Microsoft.Maui.Handlers
 		
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
         {
-            [nameof(IHybridWebView.DefaultFile)] = MapDefaultFile,
-            [nameof(IHybridWebView.HybridRoot)] = MapHybridRoot,
 		};
 
         public static CommandMapper<IHybridWebView, IHybridWebViewHandler> CommandMapper = new(ViewCommandMapper)
@@ -66,19 +64,6 @@ namespace Microsoft.Maui.Handlers
         IHybridWebView IHybridWebViewHandler.VirtualView => VirtualView;
 
         PlatformView IHybridWebViewHandler.PlatformView => PlatformView;
-
-		public static void MapDefaultFile(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
-		{
-			handler.DefaultFile = hybridWebView.DefaultFile;
-		}
-
-		public static void MapHybridRoot(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
-		{
-			handler.HybridRoot = hybridWebView.HybridRoot;
-		}
-
-		public string? DefaultFile { get; set; }
-		public string? HybridRoot { get; set; }
 
 		internal static async Task<string?> GetAssetContentAsync(string assetPath)
 		{
