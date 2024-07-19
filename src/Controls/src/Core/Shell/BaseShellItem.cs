@@ -426,20 +426,20 @@ namespace Microsoft.Maui.Controls
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
 
-				BindingBase automationIdBinding = BindingBase.Create(static (Element element) => element.AutomationId);
+				BindingBase automationIdBinding = Binding.Create(static (Element element) => element.AutomationId);
 				defaultGridClass.Setters.Add(new Setter { Property = Element.AutomationIdProperty, Value = automationIdBinding });
 
 				BindingBase imageBinding = null;
 				BindingBase labelBinding = null;
 				if (bo is MenuItem)
 				{
-					imageBinding = BindingBase.Create(static (MenuItem item) => item.IconImageSource);
-					labelBinding = BindingBase.Create(static (MenuItem item) => item.Text);
+					imageBinding = Binding.Create(static (MenuItem item) => item.IconImageSource);
+					labelBinding = Binding.Create(static (MenuItem item) => item.Text);
 				}
 				else
 				{
-					imageBinding = BindingBase.Create(static (BaseShellItem item) => item.FlyoutIcon);
-					labelBinding = BindingBase.Create(static (BaseShellItem item) => item.Title);
+					imageBinding = Binding.Create(static (BaseShellItem item) => item.FlyoutIcon);
+					labelBinding = Binding.Create(static (BaseShellItem item) => item.Title);
 				}
 
 				var image = new Image();
