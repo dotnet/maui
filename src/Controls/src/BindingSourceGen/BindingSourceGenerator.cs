@@ -106,16 +106,16 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
-		var lambdaResultType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
-		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
-		}
-
 		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
 		if (lambdaParamType is IErrorTypeSymbol)
 		{
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+		}
+
+		var lambdaResultType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
+		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		if (!BindingGenerationUtilities.IsAccessible(lambdaParamType.DeclaredAccessibility))
