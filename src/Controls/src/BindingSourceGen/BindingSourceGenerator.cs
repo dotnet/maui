@@ -151,7 +151,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		};
 
 
-	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
+	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	{
 		var argumentList = invocation.ArgumentList.Arguments;
 
 		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
