@@ -808,7 +808,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (hasPointerGesture)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
 				SubscribePointerEvents(_container);
 			}
 
@@ -834,9 +833,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Pan, pinch, and swipe gestures need pointer events if not subscribed yet.
 			if (!hasPointerGesture)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
 				SubscribePointerEvents(_container);
 			}
 
@@ -850,6 +849,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SubscribePointerEvents(FrameworkElement container)
 		{
+			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
+
 			container.PointerEntered += OnPgrPointerEntered;
 			container.PointerExited += OnPgrPointerExited;
 			container.PointerMoved += OnPgrPointerMoved;
