@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UICollectionViewCell cell;
 
 			var finalIndexPath = indexPath;
-			
+
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				finalIndexPath = correctedIndexPath;
 			}
-			
+
 			cell = base.GetCell(collectionView, finalIndexPath);
 
 			var element = (cell as TemplatedCell)?.PlatformHandler?.VirtualView as VisualElement;
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return itemsSource;
 		}
 
-		
+
 
 		private protected override void AttachingToWindow()
 		{
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
-			
+
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
 			InitialPositionSet = false;
@@ -222,9 +222,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void Setup(CarouselView carouselView)
 		{
 			InitializeCarouselViewLoopManager();
-						
+
 			_oldViews = new List<View>();
-			
+
 			carouselView.Scrolled += CarouselViewScrolled;
 			DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
 
@@ -429,8 +429,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				_gotoPosition = goToPosition;
-				carousel.ScrollTo(goToPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
+
+				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
+				
+				var goToIndexPath = NSIndexPath.Create(0, _gotoPosition);
+				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
+
 		}
 
 		void SetPosition(int position)
@@ -538,7 +543,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					SetCurrentItem(position);
 				}
 
-				carousel.ScrollTo(position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false);
+				var indexPath = NSIndexPath.FromItemSection(position, 0);
+				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
+				CollectionView.ScrollToItem(indexPath, uICollectionViewScrollPosition, animated: false);
 			}
 
 			UpdateVisualStates();
@@ -552,7 +559,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// We aren't ready to update the visual states yet
-			if(_oldViews == null)
+			if (_oldViews == null)
 			{
 				return;
 			}
