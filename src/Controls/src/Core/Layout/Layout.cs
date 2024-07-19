@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// The actual backing store for the IViews in the ILayout
-		readonly List<IView> _children = new();
+		readonly private protected List<IView> _children = new();
 
 		/// <summary>
 		/// Gets the child objects contained in this layout.

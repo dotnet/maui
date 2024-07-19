@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public new IList<T> Children { get; }
 		public Layout()
 		{
-			Children = new CastingList<T, IView>(this);
+			Children = new CastingList<T, IView>(_children);
 		}
 
 
