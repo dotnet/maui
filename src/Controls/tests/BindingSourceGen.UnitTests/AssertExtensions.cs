@@ -20,7 +20,7 @@ internal static class AssertExtensions
         Assert.Equal(expectedLines.Count(), actualLines.Count());
     }
 
-    internal static void BindingsAreEqual(SetBindingInvocationDescription expectedBinding, CodeGeneratorResult codeGeneratorResult)
+    internal static void BindingsAreEqual(BindingInvocationDescription expectedBinding, CodeGeneratorResult codeGeneratorResult)
     {
         AssertNoDiagnostics(codeGeneratorResult);
         Assert.NotNull(codeGeneratorResult.Binding);

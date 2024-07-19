@@ -190,8 +190,9 @@ public class IncrementalGenerationTests
         // Pairs <binding, run>. Note that a single run can be associated with multiple bindings.
         // In such cases generate <binding, run> pair for each binding.
         var bindingRunPairs = runs
-            .Select(run => (GetSetBindingInvocationDescription(run), run))
+            .Select(run => (GetBindingInvocationDescription(run), run))
             .SelectMany(bindingsRunPair => bindingsRunPair.Item1.Select(binding => (binding, bindingsRunPair.run)));
+
 
         // Sometimes the binding has more than one run of the same step associated with it. 
         // In such cases keep the one with Modified reason for safety.
@@ -206,7 +207,7 @@ public class IncrementalGenerationTests
                 .ToArray());
     }
 
-    private static SetBindingInvocationDescription[] GetSetBindingInvocationDescription(IncrementalGeneratorRunStep step)
+    private static BindingInvocationDescription[] GetBindingInvocationDescription(IncrementalGeneratorRunStep step)
     {
         var bindingCandidate = step switch
         {
@@ -219,9 +220,9 @@ public class IncrementalGenerationTests
 
         return bindingCandidate switch
         {
-            SetBindingInvocationDescription => [(SetBindingInvocationDescription)bindingCandidate],
-            Result<SetBindingInvocationDescription> => [((Result<SetBindingInvocationDescription>)bindingCandidate).Value],
-            ImmutableArray<SetBindingInvocationDescription> => ((ImmutableArray<SetBindingInvocationDescription>)bindingCandidate).ToArray(),
+            BindingInvocationDescription => [(BindingInvocationDescription)bindingCandidate],
+            Result<BindingInvocationDescription> => [((Result<BindingInvocationDescription>)bindingCandidate).Value],
+            ImmutableArray<BindingInvocationDescription> => ((ImmutableArray<BindingInvocationDescription>)bindingCandidate).ToArray(),
             _ => []
         };
     }

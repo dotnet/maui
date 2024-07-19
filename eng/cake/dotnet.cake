@@ -192,6 +192,8 @@ Task("dotnet-samples")
             }
             projectsToBuild = "./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
             properties["_UseNativeAot"] = "true";
+            properties["RuntimeIdentifier"] = "iossimulator-x64";
+            properties["BuildIpa"] = "true";
         }
         else
         {

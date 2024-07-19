@@ -10,7 +10,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		var bindingsWithDiagnostics = context.SyntaxProvider.CreateSyntaxProvider(
-			predicate: static (node, _) => IsSetBindingMethod(node),
+			predicate: static (node, _) => IsSetBindingMethod(node) || IsCreateMethod(node),
 			transform: static (ctx, t) => GetBindingForGeneration(ctx, t)
 		)
 		.WithTrackingName(TrackingNames.BindingsWithDiagnostics);
@@ -30,12 +30,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		context.RegisterPostInitializationOutput(spc =>
 		{
-			spc.AddSource("GeneratedBindableObjectExtensionsCommon.g.cs", BindingCodeWriter.GenerateCommonCode());
+			spc.AddSource("GeneratedBindingInterceptorsCommon.g.cs", BindingCodeWriter.GenerateCommonCode());
 		});
 
 		context.RegisterImplementationSourceOutput(bindings, (spc, binding) =>
 		{
-			var fileName = $"{binding.Location.FilePath}-GeneratedBindableObjectExtensions-{binding.Location.Line}-{binding.Location.Column}.g.cs";
+			var fileName = $"{binding.Location.FilePath}-GeneratedBindingInterceptors-{binding.Location.Line}-{binding.Location.Column}.g.cs";
 			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
 			var code = BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(binding.Location.GetHashCode()));
 			spc.AddSource(sanitizedFileName, code);
@@ -52,65 +52,82 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			&& invocation.ArgumentList.Arguments[1].Expression is not ObjectCreationExpressionSyntax;
 	}
 
-	private static Result<SetBindingInvocationDescription> GetBindingForGeneration(GeneratorSyntaxContext context, CancellationToken t)
+	private static bool IsCreateMethod(SyntaxNode node)
 	{
-		var diagnostics = new List<DiagnosticInfo>();
+		return node is InvocationExpressionSyntax invocation
+			&& invocation.Expression is MemberAccessExpressionSyntax method
+			&& method.Name.Identifier.Text == "Create"
+			&& invocation.ArgumentList.Arguments.Count >= 1
+			&& invocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax
+			&& invocation.ArgumentList.Arguments[0].Expression is not ObjectCreationExpressionSyntax;
+	}
+
+	private static Result<BindingInvocationDescription> GetBindingForGeneration(GeneratorSyntaxContext context, CancellationToken t)
+	{
 		var enabledNullable = IsNullableContextEnabled(context);
 
 		var invocation = (InvocationExpressionSyntax)context.Node;
 		var method = (MemberAccessExpressionSyntax)invocation.Expression;
 
+		var interceptedMethodType = method.Name.Identifier.Text switch
+		{
+			"SetBinding" => InterceptedMethodType.SetBinding,
+			"Create" => InterceptedMethodType.Create,
+			_ => throw new NotSupportedException()
+		};
+
 		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
 		if (sourceCodeLocation == null)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
 
-		var overloadDiagnostics = new EquatableArray<DiagnosticInfo>(VerifyCorrectOverload(invocation, context, t));
+		var overloadDiagnostics = VerifyCorrectOverload(invocation, interceptedMethodType, context, t);
 		if (overloadDiagnostics.Length > 0)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(overloadDiagnostics);
+			return Result<BindingInvocationDescription>.Failure(new EquatableArray<DiagnosticInfo>(overloadDiagnostics));
 		}
 
-		var lambdaResult = ExtractLambda(invocation);
+		var lambdaResult = ExtractLambda(invocation, interceptedMethodType);
 		if (lambdaResult.HasDiagnostics)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
+			return Result<BindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
 		}
 
 		var lambdaBodyResult = ExtractLambdaBody(lambdaResult.Value);
 		if (lambdaBodyResult.HasDiagnostics)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(lambdaBodyResult.Diagnostics);
+			return Result<BindingInvocationDescription>.Failure(lambdaBodyResult.Diagnostics);
 		}
 
 		var lambdaSymbolResult = GetLambdaSymbol(lambdaResult.Value, context.SemanticModel);
 		if (lambdaSymbolResult.HasDiagnostics)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
+			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
 		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t);
 		if (lambdaTypeInfo.Type == null)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		var pathParser = new PathParser(context, enabledNullable);
 		var pathParseResult = pathParser.ParsePath(lambdaBodyResult.Value);
 		if (pathParseResult.HasDiagnostics)
 		{
-			return Result<SetBindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
+			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
 		}
 
-		var binding = new SetBindingInvocationDescription(
+		var binding = new BindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
 			SourceType: BindingGenerationUtilities.CreateTypeDescription(lambdaSymbolResult.Value.Parameters[0].Type, enabledNullable),
 			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaTypeInfo.Type, enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
 			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
-			NullableContextEnabled: enabledNullable);
-		return Result<SetBindingInvocationDescription>.Success(binding);
+			NullableContextEnabled: enabledNullable,
+			MethodType: interceptedMethodType);
+		return Result<BindingInvocationDescription>.Success(binding);
 	}
 
 	private static bool IsNullableContextEnabled(GeneratorSyntaxContext context)
@@ -119,39 +136,108 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		return (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
 	}
 
-	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
-	{
+	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, InterceptedMethodType methodType, GeneratorSyntaxContext context, CancellationToken t) =>
+		methodType switch
+		{
+			InterceptedMethodType.SetBinding => VerifyCorrectOverloadSetBinding(invocation, context, t),
+			InterceptedMethodType.Create => VerifyCorrectOverloadBindingCreate(invocation, context, t),
+			_ => throw new NotSupportedException()
+		};
+
+
+	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
 		var argumentList = invocation.ArgumentList.Arguments;
-		if (argumentList.Count < 2)
+
+		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
+		if (symbol?.ContainingType?.Name != "Binding" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+		{
+			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
+		}
+
+		if (argumentList.Count == 0)
 		{
 			throw new ArgumentOutOfRangeException(nameof(invocation));
 		}
 
-		var secondArgument = argumentList[1].Expression;
-		if (secondArgument is LambdaExpressionSyntax)
+		var firstArgument = argumentList[0].Expression;
+		if (firstArgument is IdentifierNameSyntax)
 		{
-			return [];
+			var type = context.SemanticModel.GetTypeInfo(firstArgument, cancellationToken: t).Type;
+			if (type != null && type.Name == "Func")
+			{
+				return [DiagnosticsFactory.GetterIsNotLambda(firstArgument.GetLocation())];
+			}
+			else // String and Binding
+			{
+				return [DiagnosticsFactory.SuboptimalSetBindingOverload(firstArgument.GetLocation())];
+			}
 		}
 
-		var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
-		return secondArgumentType switch
-		{
-			{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
-			_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
-		};
+		return [];
 	}
 
-	private static Result<LambdaExpressionSyntax> ExtractLambda(InvocationExpressionSyntax invocation)
+	private static DiagnosticInfo[] VerifyCorrectOverloadSetBinding(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	{
+		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
+		if (symbol is not null)
+		{
+			if (symbol is not IMethodSymbol methodSymbol
+				|| methodSymbol.Kind != SymbolKind.Method
+				|| methodSymbol.Name != "SetBinding"
+				|| !methodSymbol.IsGenericMethod
+				|| methodSymbol.TypeParameters.Length != 2
+				|| methodSymbol.Parameters.Length != 9
+				|| methodSymbol.ContainingType?.Name != "BindableObjectExtensions"
+				|| methodSymbol.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+			{
+				// ignore this method invocation
+				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
+			}
+		}
+		else
+		{
+			// It is not possible to resolve the method symbol when the bindable object (the first argument or the object that the extension method
+			// is called on) is referenced by a field that will be generated via XamlG based on the x:Name attributes. In that case, this source generator
+			// cannot see the outputs of the other source generator and we have incomplete information about the method invocation and we can only work with
+			// the syntax tree and not the semantic model.
+
+			var argumentsList = invocation.ArgumentList.Arguments;
+			if (argumentsList.Count < 2)
+			{
+				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
+			}
+
+			var secondArgument = argumentsList[1].Expression;
+			if (secondArgument is not LambdaExpressionSyntax)
+			{
+				var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
+				return secondArgumentType switch
+				{
+					{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
+					_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
+				};
+			}
+		}
+
+		return [];
+	}
+
+	private static Result<LambdaExpressionSyntax> ExtractLambda(InvocationExpressionSyntax invocation, InterceptedMethodType methodType)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
-		var lambda = argumentList[1].Expression;
+		var lambda = methodType switch
+		{
+			InterceptedMethodType.SetBinding => argumentList[1].Expression,
+			InterceptedMethodType.Create => argumentList[0].Expression,
+			_ => throw new NotSupportedException()
+		};
 
 		if (lambda is not LambdaExpressionSyntax lambdaExpression)
 		{
 			return Result<LambdaExpressionSyntax>.Failure(DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation()));
 		}
-		return Result<LambdaExpressionSyntax>.Success(lambdaExpression);
 
+		return Result<LambdaExpressionSyntax>.Success(lambdaExpression);
 	}
 
 	private static Result<ExpressionSyntax> ExtractLambdaBody(LambdaExpressionSyntax lambdaExpression)
@@ -159,8 +245,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		if (lambdaExpression.Body is not ExpressionSyntax lambdaBody)
 		{
 			return Result<ExpressionSyntax>.Failure(DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambdaExpression.Body.GetLocation()));
-
 		}
+
 		return Result<ExpressionSyntax>.Success(lambdaBody);
 	}
 

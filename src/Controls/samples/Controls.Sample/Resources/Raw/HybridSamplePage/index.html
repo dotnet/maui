@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="styles/app.css">
+    <script src="scripts/HybridWebView.js"></script>
+    <script>
+        window.addEventListener(
+            "HybridWebViewMessageReceived",
+            function (e) {
+                var messageFromCSharp = document.getElementById("messageFromCSharp");
+                messageFromCSharp.value += '\r\n' + e.detail.message;
+            });
+    </script>
+</head>
+<body>
+    <div>
+        Hybrid sample!
+    </div>
+    <div>
+        <button onclick="window.HybridWebView.SendRawMessage('Message from JS!')">Send message to C#</button>
+    </div>
+    <div>
+        Message from C#: <textarea readonly id="messageFromCSharp" style="width: 80%; height: 10em;"></textarea>
+    </div>
+    <div>
+        Consider checking out this PDF: <a href="docs/sample.pdf">sample.pdf</a>
+    </div>
+</body>
+</html>

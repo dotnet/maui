@@ -325,6 +325,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!IsRootPage)
 			{
 				NavigationItem.HidesBackButton = !backButtonVisible;
+				image = backButtonVisible ? image : null;
 			}
 
 			image.LoadImage(MauiContext, result =>

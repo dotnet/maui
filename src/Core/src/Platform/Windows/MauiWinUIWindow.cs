@@ -75,6 +75,14 @@ namespace Microsoft.Maui
 				else
 					_enableResumeEvent = true;
 			}
+			else if (args.WindowActivationState == UI.Xaml.WindowActivationState.Deactivated &&
+				!_isActivated)
+			{
+				// Don't invoke deactivated event if we're not activated. It's possible we can
+				// recieve this event multiple times if we start a new child process and that 
+				// process creates a new window
+				return;
+			}
 			else
 			{
 				_isActivated = false;
@@ -165,7 +173,7 @@ namespace Microsoft.Maui
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
 						if (rootManager != null)
 						{
-							rootManager?.SetTitleBarVisibility(hasTitleBar);
+							rootManager?.SetTitleBarVisibility(this, hasTitleBar);
 						}
 					}
 				}

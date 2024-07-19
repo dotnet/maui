@@ -45,7 +45,7 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
     const string artifactsDir = "../../artifacts/bin/";
     bool isAndroid = tfm.Contains("android");
 
-    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
+    var binDir = new DirectoryPath(project).Combine($"{config}/{tfm}/{rid}");
     IEnumerable<string> applications;
 
     if (isAndroid)
@@ -221,4 +221,11 @@ void ExecuteWithRetries(Func<int> action, int retries)
         retries--;
         System.Threading.Thread.Sleep(1000);
     }
+}
+
+string SanitizeTestResultsFilename(string input)
+{
+    string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
+
+    return resultFilename;
 }
