@@ -131,9 +131,15 @@ namespace Microsoft.Maui.Platform
 			var boundWidth = Bounds.Width;
 			var boundHeight = Bounds.Height;
 
-			if (!IsMeasureValid(boundWidth, boundHeight))
+			if (!IsMeasureValid(boundWidth, boundHeight) && CrossPlatformLayout is not null)
 			{
-				CrossPlatformLayout?.CrossPlatformMeasure(boundWidth, boundHeight);
+				var newSize = CrossPlatformLayout.CrossPlatformMeasure(boundWidth, boundHeight);
+				var newSizeBounds = new CGRect(Bounds.X, Bounds.Y, newSize.Width, newSize.Height);
+				if(newSizeBounds != Bounds)
+				{
+					// if the button is a different size now, we need to update the parent
+					Superview?.SetNeedsLayout();
+				}
 				CacheMeasureConstraints(boundWidth, boundHeight);
 			}
 
