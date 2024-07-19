@@ -167,7 +167,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var argumentList = invocation.ArgumentList.Arguments;
 
 		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if (symbol?.ContainingType?.Name != "Binding" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+		if (symbol?.ContainingType?.Name is not "Binding" or "BindingBase" || symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
 		{
 			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
 		}

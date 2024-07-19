@@ -1,9 +1,8 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
-    partial class Binding
+    partial class BindingBase
     {
         /// <summary>
         /// This factory method was added to simplify creating TypedBindingBase instances from lambda getters.
@@ -19,8 +18,6 @@ namespace Microsoft.Maui.Controls
         /// <param name="fallbackValue">The value to use instead of the default value for the property, if no specified value exists.</param>
         /// <param name="targetNullValue">The value to supply for a bound property when the target of the binding is <see langword="null" />.</param>
         /// <exception cref="ArgumentNullException"></exception>
-		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCodeMessage",
-			Justification = "The Binding.Create<TSource, TProperty>() method does not create an instance of Binding but an instance of TypedBinding<TSource, TProperty>.")]
         public static BindingBase Create<TSource, TProperty>(
             Func<TSource, TProperty> getter,
             BindingMode mode = BindingMode.Default,
