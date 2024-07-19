@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// The title bar can also be hidden by setting the <see cref="Visibility"/> property, which
 	/// will cause the window content to be displayed in the title bar region.
 	/// </summary>
-	public partial class TitleBar : TemplatedView, ITitleBar
+	public partial class TitleBar : TemplatedView, ITitleBar, ISafeAreaView
 	{
 		public const string TemplateRootName = "PART_Root";
 
@@ -236,6 +236,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		public IList<IView> PassthroughElements { get; private set; }
 
+		bool ISafeAreaView.IgnoreSafeArea => true;
+
 #nullable disable
 		IView IContentView.PresentedContent => (this as IControlTemplated).TemplateRoot as IView;
 #nullable enable
@@ -332,6 +334,9 @@ namespace Microsoft.Maui.Controls
 			#region Root Grid
 			var contentGrid = new Grid()
 			{
+#if MACCATALYST
+				Margin = new Thickness(80, 0, 0, 0),
+#endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
 				{
@@ -341,11 +346,13 @@ namespace Microsoft.Maui.Controls
 					new ColumnDefinition(GridLength.Auto), // Subtitle content
 					new ColumnDefinition(GridLength.Star), // Content
 					new ColumnDefinition(GridLength.Auto), // Trailing content
-					new ColumnDefinition(150),			   // Min drag region + padding for system buttons
+#if !MACCATALYST
+					new ColumnDefinition(150),             // Min drag region + padding for system buttons
+#endif
 				}
 			};
 			BindToTemplatedParent(contentGrid, BackgroundColorProperty, OpacityProperty);
-			#endregion
+#endregion
 
 			#region Leading content
 			var leadingContent = new ContentView()
