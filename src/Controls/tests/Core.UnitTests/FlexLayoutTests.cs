@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestBasicLayout()
 		{
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 
 			var layout = new FlexLayout
 			{
@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestBasicLayoutWithElementsWidth()
 		{
-			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
-			var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
+			var label1 = MockPlatformSizeService.Sub<Label>(width: 120);
+			var label2 = MockPlatformSizeService.Sub<Label>(width: 120);
 
 			var layout = new FlexLayout
 			{
@@ -61,8 +61,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestBasicLayoutWithElementsWidthAndMargin()
 		{
-			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
-			var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
+			var label1 = MockPlatformSizeService.Sub<Label>(width: 100, margin: new(5, 0, 0, 0));
+			var label2 = MockPlatformSizeService.Sub<Label>(width: 100, margin: new(5, 0, 0, 0));
 
 			var layout = new FlexLayout
 			{
@@ -94,15 +94,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var label1 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label2 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label3 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label3, 1);
 			layout.Children.Add(label3);
 
@@ -131,15 +131,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row
 			};
 
-			var label1 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label2 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label3 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label3, 1);
 			layout.Children.Add(label3);
 
@@ -165,15 +165,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			var label1 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label2 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label3 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label3, 1);
 
 			layout.Layout(new Rect(0, 0, layoutSize.Width, layoutSize.Height));
@@ -202,15 +202,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			var label0 = new Label { IsPlatformEnabled = true, Text = "Label0" };
+			var label0 = MockPlatformSizeService.Sub<Label>(text: "Label0");
 			FlexLayout.SetGrow(label0, 1);
 			layout.Children.Add(label0);
 
-			var label1 = new Label { IsPlatformEnabled = true, Text = "Label1" };
+			var label1 = MockPlatformSizeService.Sub<Label>(text: "Label1");
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { IsPlatformEnabled = true, Text = "Label2" };
+			var label2 = MockPlatformSizeService.Sub<Label>(text: "Label2");
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
@@ -237,8 +237,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestSizeThatFits()
 		{
-			MockPlatformSizeService.Current.UseRealisticLabelMeasure = true;
-
 			var layout = new FlexLayout
 			{
 				Direction = FlexDirection.Row,
@@ -246,22 +244,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-				LineBreakMode = LineBreakMode.TailTruncation,
-				Text = @"This is a very very very very very very very very long piece of text."
-			};
+			var label1 = MockPlatformSizeService.Sub<Label>(
+				useRealisticLabelMeasure: true,
+				lineBreak: LineBreakMode.TailTruncation,
+				text: @"This is a very very very very very very very very long piece of text.");
 			FlexLayout.SetShrink(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label
-			{
-				Text = "",
-				IsPlatformEnabled = true,
-				WidthRequest = 10,
-				HeightRequest = 10
-			};
+			var label2 = MockPlatformSizeService.Sub<Label>(
+				useRealisticLabelMeasure: true,
+				text: "",
+				width: 10,
+				height: 10);
 			layout.Children.Add(label2);
 			layout.Layout(new Rect(0, 0, 320, 50));
 
@@ -276,11 +270,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestNesting()
 		{
-			var header = new View { HeightRequest = 50, IsPlatformEnabled = true, };
-			var footer = new View { HeightRequest = 50, IsPlatformEnabled = true, };
+			var header = MockPlatformSizeService.Sub<View>(height: 50);
+			var footer = MockPlatformSizeService.Sub<View>(height: 50);
 			Func<View> createItem = () =>
 			{
-				var v = new View { WidthRequest = 50, Margin = 5, IsPlatformEnabled = true, };
+				var v = MockPlatformSizeService.Sub<View>(width: 50, margin: 5);
 				FlexLayout.SetGrow(v, 1);
 				return v;
 			};
@@ -325,10 +319,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMeasuring()
 		{
-			var label = new Label
-			{
-				IsPlatformEnabled = true,
-			};
+			var label = MockPlatformSizeService.Sub<Label>();
 			var Layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,
@@ -356,20 +347,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginsWithWrap()
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-				Margin = 6,
-			};
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-				Margin = 6,
-			};
-			var label2 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
+			var label0 = MockPlatformSizeService.Sub<Label>(margin: 6);
+			var label1 = MockPlatformSizeService.Sub<Label>(margin: 6);
+			var label2 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label0, 0);
 			FlexLayout.SetBasis(label0, new FlexBasis(.5f, true));
 			FlexLayout.SetGrow(label1, 0);
@@ -402,10 +382,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/2551
 		public void TestReverseWithGrow()
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
+			var label0 = MockPlatformSizeService.Sub<Label>();
 			FlexLayout.SetGrow(label0, 1);
 			var layout = new FlexLayout
 			{
@@ -424,18 +401,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestIsVisible()
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/2593
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label2 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
+			var label0 = MockPlatformSizeService.Sub<Label>();
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 			var layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,
@@ -516,18 +484,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void PaddingOnLayout()
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/2663
 		{
-			var label0 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label1 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var label2 = new Label
-			{
-				IsPlatformEnabled = true,
-			};
+			var label0 = MockPlatformSizeService.Sub<Label>();
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 			var layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentFlexStart()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(50, 10));
 
 			var layout = new FlexLayout
 			{
@@ -27,19 +27,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Wrap = FlexWrap.Wrap,
 			};
 
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 130, 100));
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentFlexStartWithoutHeightOnChildren()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(50, 10));
 
 			var layout = new FlexLayout
 			{
@@ -67,19 +67,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 				Wrap = FlexWrap.Wrap,
 			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 50, };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50);
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50, };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 100, 100));
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentFlexStartWithFlex()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(0, 0));
 
 			var layout = new FlexLayout
 			{
@@ -107,31 +107,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				AlignItems = FlexAlignItems.Start,
 			};
 
-			var view0 = new View { IsPlatformEnabled = true };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			FlexLayout.SetGrow(view0, 1);
 			FlexLayout.SetBasis(view0, 0);
 			view0.WidthRequest = 50;
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			FlexLayout.SetGrow(view1, 1);
 			FlexLayout.SetBasis(view1, 0);
 			view1.WidthRequest = 50;
 			view1.HeightRequest = 10;
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view2.WidthRequest = 50;
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			FlexLayout.SetGrow(view3, 1);
 			FlexLayout.SetShrink(view3, 1);
 			FlexLayout.SetBasis(view3, 0);
 			view3.WidthRequest = 50;
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view4.WidthRequest = 50;
 			layout.Children.Add(view4);
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentFlexEnd()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(50, 10));
 
 			var layout = new FlexLayout
 			{
@@ -162,12 +162,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Wrap = FlexWrap.Wrap,
 			};
 
-			Func<View> createView = () => new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 50,
-				HeightRequest = 10,
-			};
+			Func<View> createView = () => MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			var view0 = createView();
 			layout.Children.Add(view0);
 
@@ -198,7 +193,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentStretch()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(0, 0));
 
 			var layout = new FlexLayout
 			{
@@ -210,23 +205,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 150,
 				HeightRequest = 100
 			};
-			var view0 = new View { IsPlatformEnabled = true };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view0.WidthRequest = 50;
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view1.WidthRequest = 50;
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view2.WidthRequest = 50;
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view3.WidthRequest = 50;
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view4.WidthRequest = 50;
 			layout.Children.Add(view4);
 
@@ -266,7 +261,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentSpaceBetween()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(50, 10));
 
 			var layout = new FlexLayout
 			{
@@ -279,19 +274,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Wrap = FlexWrap.Wrap,
 			};
 
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10 };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10 };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10 };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10 };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10 };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 130, 100));
@@ -307,7 +302,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentSpaceAround()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(50, 10));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(50, 10));
 
 			var layout = new FlexLayout
 			{
@@ -319,19 +314,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				AlignContent = FlexAlignContent.SpaceAround,
 				Wrap = FlexWrap.Wrap,
 			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50, HeightRequest = 10, };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 50, height: 10);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 140, 120));
@@ -357,23 +352,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 150,
 				HeightRequest = 100
 			};
-			var view0 = new View { IsPlatformEnabled = true };
+			var view0 = MockPlatformSizeService.Sub<View>();
 			view0.WidthRequest = 50;
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>();
 			view1.WidthRequest = 50;
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true };
+			var view2 = MockPlatformSizeService.Sub<View>();
 			view2.WidthRequest = 50;
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true };
+			var view3 = MockPlatformSizeService.Sub<View>();
 			view3.WidthRequest = 50;
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true };
+			var view4 = MockPlatformSizeService.Sub<View>();
 			view4.WidthRequest = 50;
 			layout.Children.Add(view4);
 
@@ -426,22 +421,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var view0 = new FlexLayout { IsPlatformEnabled = true, WidthRequest = 50, };
 			layout.Children.Add(view0);
 
-			//var view0_child0 = new View { IsPlatformEnabled = true };
+			//var view0_child0 = MockPlatformSizeService.Sub<View>();
 			//FlexLayout.SetGrow(view0_child0, 1);
 			//FlexLayout.SetShrink(view0_child0, 1);
 			//FlexLayout.SetBasis(view0_child0, 0);
 			//view0.Children.Add(view0_child0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50, };
+			var view1 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50, };
+			var view2 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50, };
+			var view3 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50, };
+			var view4 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 150, 100));
@@ -490,25 +485,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Row,
 				Wrap = FlexWrap.Wrap,
 			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view0 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view1 = MockPlatformSizeService.Sub<View>(width: 50);
 			FlexLayout.SetGrow(view1, 1);
 			FlexLayout.SetShrink(view1, 1);
 			FlexLayout.SetBasis(view1, 0);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view2 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view3 = MockPlatformSizeService.Sub<View>(width: 50);
 			FlexLayout.SetGrow(view3, 1);
 			FlexLayout.SetShrink(view3, 1);
 			FlexLayout.SetBasis(view3, 0);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view4 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 150, 100));
@@ -533,24 +528,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 150,
 				HeightRequest = 100
 			};
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view0 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view1 = MockPlatformSizeService.Sub<View>(width: 50);
 			FlexLayout.SetGrow(view1, 1);
 			FlexLayout.SetShrink(view1, 1);
 			FlexLayout.SetBasis(view1, 0);
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view2 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view3 = MockPlatformSizeService.Sub<View>(width: 50);
 			FlexLayout.SetGrow(view3, 1);
 			FlexLayout.SetBasis(view3, 0);
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true, WidthRequest = 50 };
+			var view4 = MockPlatformSizeService.Sub<View>(width: 50);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 150, 100));
@@ -608,38 +603,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			layout.Children.Add(view0);
 
-			var view1 = new View
-			{
-				IsPlatformEnabled = true,
-				Margin = 10,
-				WidthRequest = 50,
-				HeightRequest = 20,
-			};
+			var view1 = MockPlatformSizeService.Sub<View>(width: 50, height: 20, margin: 10);
 			layout.Children.Add(view1);
 
-			var view2 = new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 50,
-				HeightRequest = 20,
-			};
+			var view2 = MockPlatformSizeService.Sub<View>(width: 50, height: 20);
 			layout.Children.Add(view2);
 
-			var view3 = new View
-			{
-				IsPlatformEnabled = true,
-				Margin = new Thickness(10),
-				WidthRequest = 50,
-				HeightRequest = 20,
-			};
+			var view3 = MockPlatformSizeService.Sub<View>(width: 50, height: 20, margin: 10);
 			layout.Children.Add(view3);
 
-			var view4 = new View
-			{
-				IsPlatformEnabled = true,
-				WidthRequest = 50,
-				HeightRequest = 20,
-			};
+			var view4 = MockPlatformSizeService.Sub<View>(width: 50, height: 20);
 			layout.Children.Add(view4);
 
 			layout.Layout(new Rect(0, 0, 150, 100));
@@ -664,11 +637,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 150,
 				HeightRequest = 100
 			};
-			var view0 = new View { IsPlatformEnabled = true };
+			var view0 = MockPlatformSizeService.Sub<View>();
 			view0.WidthRequest = 50;
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>();
 			view1.WidthRequest = 50;
 			layout.Children.Add(view1);
 
@@ -693,7 +666,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAlignContentStretchRowWithFixedHeight()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
+			static SizeRequest GetPlatformSize(VisualElement v, double w, double h) => new(new Size(0, 0));
 
 			var layout = new FlexLayout
 			{
@@ -705,24 +678,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 150,
 				HeightRequest = 100
 			};
-			var view0 = new View { IsPlatformEnabled = true };
+			var view0 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view0.WidthRequest = 50;
 			layout.Children.Add(view0);
 
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view1.WidthRequest = 50;
 			view1.HeightRequest = 60;
 			layout.Children.Add(view1);
 
-			var view2 = new View { IsPlatformEnabled = true };
+			var view2 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view2.WidthRequest = 50;
 			layout.Children.Add(view2);
 
-			var view3 = new View { IsPlatformEnabled = true };
+			var view3 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view3.WidthRequest = 50;
 			layout.Children.Add(view3);
 
-			var view4 = new View { IsPlatformEnabled = true };
+			var view4 = MockPlatformSizeService.Sub<View>(GetPlatformSize);
 			view4.WidthRequest = 50;
 			layout.Children.Add(view4);
 

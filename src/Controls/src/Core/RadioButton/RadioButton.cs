@@ -289,17 +289,11 @@ namespace Microsoft.Maui.Controls
 			base.ChangeVisualState();
 		}
 
-		IPlatformSizeService _platformSizeService;
-
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (ControlTemplate == null)
 			{
-				if (Handler != null)
-					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
-
-				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
-				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
+				return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 			}
 
 			return base.OnMeasure(widthConstraint, heightConstraint);

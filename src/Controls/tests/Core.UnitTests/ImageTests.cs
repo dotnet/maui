@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -14,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestSizing()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
@@ -25,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectSizingWithConstrainedHeight()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			var result = image.Measure(double.PositiveInfinity, 10);
 
@@ -36,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectSizingWithConstrainedWidth()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			var result = image.Measure(25, double.PositiveInfinity);
 
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectFillSizingWithConstrainedHeight()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(double.PositiveInfinity, 10);
@@ -59,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectFillSizingWithConstrainedWidth()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(25, double.PositiveInfinity);
@@ -71,7 +73,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestFillSizingWithConstrainedHeight()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(double.PositiveInfinity, 10);
@@ -83,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestFillSizingWithConstrainedWidth()
 		{
-			var image = new Image { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.Measure(25, double.PositiveInfinity);
@@ -266,6 +268,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			bool initialLoad = true;
+		}
+
+		class SizedHandler : ImageHandler
+		{
+			Size _size;
+
+			public SizedHandler(Size size) => _size = size;
+
+			public SizedHandler() => _size = new(100, 20);
+
+			protected override object CreatePlatformView() => new();
+
+			public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => _size;
 		}
 	}
 }
