@@ -12,6 +12,7 @@ public class Issue12429 : _IssuesUITest
 	{ }
 
 	[Test]
+	[Category(UITestCategories.CollectionView)]
 	public async Task HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");
