@@ -72,7 +72,9 @@ namespace Microsoft.Maui.Controls
 			bindable.ClearValue(_boundProperty, SetterSpecificity.FromBinding);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		bool EqualsToValue(object other)
 		{

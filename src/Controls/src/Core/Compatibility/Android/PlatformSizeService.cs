@@ -1,7 +1,9 @@
 #nullable disable
 using Microsoft.Maui.Controls.Internals;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.PlatformSizeService))]
+#pragma warning restore CS0618 // Type or member is obsolete
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 {

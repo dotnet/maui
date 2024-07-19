@@ -95,7 +95,9 @@ namespace Microsoft.Maui.Controls
 			return (bool)bindable.GetValue(_stateProperty);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		static IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		internal override void SetUp(BindableObject bindable)
 		{

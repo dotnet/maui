@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 #pragma warning disable RECS0108 // Warns about static fields in generic types
+#pragma warning disable CS0618 // Type or member is obsolete
 		static readonly IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore RECS0108 // Warns about static fields in generic types
 
 		public static implicit operator T(OnPlatform<T> onPlatform)

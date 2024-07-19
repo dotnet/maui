@@ -166,6 +166,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
@@ -177,6 +178,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<FontNamedSizeService>();
 #pragma warning restore CS0612, CA1416 // Type or member is obsolete
 #endif
+#pragma warning restore CS0618 // Type or member is obsolete
 			builder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
 			builder.ConfigureImageSourceHandlers();
 			builder

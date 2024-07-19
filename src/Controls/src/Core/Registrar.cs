@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			Registrar.CheckIfRendererIsCompatibilityRenderer(handlerType);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			object handler = DependencyResolver.ResolveOrCreate(handlerType);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return (TRegistrable)handler;
 		}
@@ -127,7 +129,9 @@ namespace Microsoft.Maui.Controls.Internals
 				Registrar.CheckIfRendererIsCompatibilityRenderer(handlerType);
 
 				if (handlerType != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 					returnValue = (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, source, visual?.GetType(), args);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			return returnValue;
@@ -507,7 +511,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			RegisterStylesheets(flags);
 			Profile.FramePartition("DependencyService.Initialize");
+#pragma warning disable CS0618 // Type or member is obsolete
 			DependencyService.Initialize(assemblies);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Profile.FrameEnd();
 		}

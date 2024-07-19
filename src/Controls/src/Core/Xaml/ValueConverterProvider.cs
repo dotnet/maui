@@ -5,7 +5,9 @@ using System.Reflection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: Dependency(typeof(ValueConverterProvider))]
+#pragma warning restore CS0618 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.Xaml
 {
 	class ValueConverterProvider : IValueConverterProvider

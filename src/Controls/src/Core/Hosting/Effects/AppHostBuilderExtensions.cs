@@ -77,8 +77,10 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			RegisteredEffects.Add(typeof(TEffect), () =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (DependencyResolver.Resolve(typeof(TPlatformEffect)) is TPlatformEffect pe)
 					return pe;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				return new TPlatformEffect();
 			});
@@ -91,7 +93,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			RegisteredEffects.Add(TEffect, () =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				return (PlatformEffect)DependencyResolver.ResolveOrCreate(TPlatformEffect);
+#pragma warning restore CS0618 // Type or member is obsolete
 			});
 
 			return this;

@@ -7,7 +7,9 @@ using Microsoft.Maui.Controls.Internals;
 using AndroidResource = Android.Resource;
 
 #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Android.FontNamedSizeService))]
+#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0612 // Type or member is obsolete
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

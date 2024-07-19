@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/DependencyService.xml" path="Type[@FullName='Microsoft.Maui.Controls.DependencyService']/Docs/*" />
+	[Obsolete("Use the service collection in the MauiAppBuilder instead. This will be removed in a future release.")]
 	public static class DependencyService
 	{
 		static bool s_initialized;

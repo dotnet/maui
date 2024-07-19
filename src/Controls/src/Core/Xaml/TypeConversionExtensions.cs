@@ -224,7 +224,9 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var platformValueConverterService = DependencyService.Get<INativeValueConverterService>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			object platformValue = null;
 			if (platformValueConverterService != null && platformValueConverterService.ConvertTo(value, toType, out platformValue))

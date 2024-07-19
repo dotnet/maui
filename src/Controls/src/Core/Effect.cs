@@ -34,7 +34,9 @@ namespace Microsoft.Maui.Controls
 			Effect result = null;
 			if (Internals.Registrar.Effects.TryGetValue(name, out var effectType))
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				result = (Effect)DependencyResolver.ResolveOrCreate(effectType.Type);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			if (result == null)

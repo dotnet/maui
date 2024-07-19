@@ -298,7 +298,9 @@ namespace Microsoft.Maui.Controls
 				if (Handler != null)
 					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 			}
 

@@ -548,7 +548,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (exception != null)
 				return false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var nativeBindingService = DependencyService.Get<INativeBindingService>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (binding == null)
 				return false;
@@ -576,7 +578,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			exception = null;
 
 			var elementType = element.GetType();
+#pragma warning disable CS0618 // Type or member is obsolete
 			var nativeBindingService = DependencyService.Get<INativeBindingService>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (property == null)
 				return false;
