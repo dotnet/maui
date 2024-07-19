@@ -165,7 +165,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 2, 27)]
-                    public static TypedBinding<string, int> Create{{id}}(
+                    public static BindingBase Create{{id}}(
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,

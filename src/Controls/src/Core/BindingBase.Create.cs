@@ -28,7 +28,12 @@ namespace Microsoft.Maui.Controls
             object? fallbackValue = null,
             object? targetNullValue = null)
         {
-            throw new InvalidOperationException($"Call to Binding.Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
+			if (!RuntimeFeature.AreBindingInterceptorsSupported)
+			{
+				throw new InvalidOperationException($"Call to Create<{typeof(TSource)}, {typeof(TProperty)}> could not be intercepted because the feature has been disabled. Consider removing the DisableMauiAnalyzers property from your project file or set the _MauiBindingInterceptorsSupport property to true instead.");
+			}
+
+            throw new InvalidOperationException($"Call to Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
         }
     }
 }
