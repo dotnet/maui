@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -39,6 +37,7 @@ namespace Microsoft.Maui.Platform
 			// This should always get set by the code after but
 			// we are setting it just in case
 			var appbarHeight = isVisible ? 32 : 0;
+			var titlebarMargins = new UI.Xaml.Thickness(0, 0, 0, 0);
 			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{
 				var titleBar = platformWindow.GetAppWindow()?.TitleBar;
@@ -46,13 +45,15 @@ namespace Microsoft.Maui.Platform
 				{
 					var density = platformWindow.GetDisplayDensity();
 					appbarHeight = (int)(titleBar.Height / density);
+					titlebarMargins = new UI.Xaml.Thickness(titleBar.LeftInset, 0, titleBar.RightInset, 0);
 				}
 			}
 
 			_rootView.UpdateAppTitleBar(
 					appbarHeight,
 					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
-					isVisible
+					isVisible,
+					titlebarMargins
 				);
 		}
 

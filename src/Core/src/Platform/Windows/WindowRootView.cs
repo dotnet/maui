@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void UpdateAppTitleBar(int appTitleBarHeight, bool useCustomAppTitleBar)
+		internal void UpdateAppTitleBar(int appTitleBarHeight, bool useCustomAppTitleBar, WThickness margin)
 		{
 			_useCustomAppTitleBar = useCustomAppTitleBar;
 			WindowTitleBarContentControlMinHeight = appTitleBarHeight;
@@ -134,6 +134,7 @@ namespace Microsoft.Maui.Platform
 				WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 
+			WindowTitleMargin = margin;
 			UpdateRootNavigationViewMargins(topMargin);
 			this.RefreshThemeResources();
 		}
@@ -413,12 +414,10 @@ namespace Microsoft.Maui.Platform
 			// If the AppIcon loads correctly then we set a margin for the text from the image
 			if (_hasTitleBarImage)
 			{
-				WindowTitleMargin = new WThickness(12, 0, 0, 0);
 				WindowTitleIconVisibility = UI.Xaml.Visibility.Visible;
 			}
 			else
 			{
-				WindowTitleMargin = new WThickness(0);
 				WindowTitleIconVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 		}
@@ -456,6 +455,13 @@ namespace Microsoft.Maui.Platform
 				// This will handle all size changed events when leading/trailing/main content
 				// changes size or is added
 				WindowTitleBarContent.LayoutUpdated += PlatformView_LayoutUpdated;
+
+				// Override the template selector and content
+				if (AppTitleBarContentControl is not null)
+				{
+					AppTitleBarContentControl.ContentTemplateSelector = null;
+					AppTitleBarContentControl.Content = WindowTitleBarContent;
+				}
 
 				// To handle when leading/trailing/main content is added/removed
 				if (_titleBar is INotifyPropertyChanged tpc)
@@ -506,11 +512,6 @@ namespace Microsoft.Maui.Platform
 			var passthroughElements = new List<FrameworkElement>();
 			foreach (var element in _titleBar.PassthroughElements)
 			{
-				if (element.Visibility != Maui.Visibility.Visible)
-				{
-					continue;
-				}
-
 				if (element is IContentView container && container.PresentedContent is not null)
 				{
 					var platformView = container.PresentedContent.ToHandler(mauiContext).PlatformView;
