@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls
 			var titleWidthConstraint = widthConstraint - (nfloat)padding.Left - (nfloat)padding.Right - ((nfloat)borderWidth * 2);
 			var titleHeightConstraint = heightConstraint - (nfloat)padding.Top - (nfloat)padding.Bottom - ((nfloat)borderWidth * 2);
 
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity)
 			{
 				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
 				// even when the image is on top or bottom.

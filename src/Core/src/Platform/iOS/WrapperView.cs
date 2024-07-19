@@ -175,13 +175,13 @@ namespace Microsoft.Maui.Platform
 				{
 					returnSize = imageView.SizeThatFitsImage(size);
 				}
-				else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
-				{
-					returnSize = imageButton.ImageView.SizeThatFitsImage(size);
-				}
 				else if (CrossPlatformLayout is not null)
 				{
 					returnSize = CrossPlatformLayout.CrossPlatformMeasure(size.Width, size.Height).ToCGSize();
+				}
+				else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
+				{
+					returnSize = imageButton.ImageView.SizeThatFitsImage(size);
 				}
 				else
 				{
