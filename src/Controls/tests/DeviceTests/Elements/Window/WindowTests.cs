@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (useAppMainPage)
 			{
 				var app = ApplicationServices.GetService<IApplication>() as ApplicationStub;
-				app.MainPage = rootPage;
+				app.Windows[0].Page = rootPage;
 				window = await InvokeOnMainThreadAsync(() => (app as IApplication).CreateWindow(null));
 
 			}
