@@ -1,4 +1,3 @@
-#if IOS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,9 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         [Category(UITestCategories.Button)]
         public void ButtonsLayoutResolveWhenParentSizeChanges()
         {
+#if IOS || ANDROID
             try
             {
                 App.SetOrientationPortrait();
+#endif
                 WaitForAllElements();
                 var changeBoundsButton = App.WaitForElement("ChangeBoundsButton");
                 VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
                 WaitForAllElements();
                 VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait");
 
+#if IOS || ANDROID
                 App.SetOrientationLandscape();
 
                 WaitForAllElements();
@@ -43,6 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             {
                 App.SetOrientationPortrait();
             }
+#endif
         }
 
         void WaitForAllElements()
@@ -56,4 +59,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
     }
 }
-#endif
