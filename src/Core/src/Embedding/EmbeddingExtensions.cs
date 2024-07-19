@@ -28,7 +28,7 @@ internal static class EmbeddingExtensions
 	/// <param name="builder">The <see cref="MauiAppBuilder"/> instance.</param>
 	/// <param name="platformApplication">The native application instance.</param>
 	/// <returns>The <see cref="MauiAppBuilder"/> instance.</returns>
-	public static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder, PlatformApplication? platformApplication = null)
+	internal static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder, PlatformApplication? platformApplication = null)
 	{
 #if ANDROID
 		platformApplication ??= (Android.App.Application)Android.App.Application.Context;
@@ -70,7 +70,7 @@ internal static class EmbeddingExtensions
 	/// <param name="platformWindow">The native window instance to create the context for.</param>
 	/// <param name="window">The MAUI window instance to connect to the platform window.</param>
 	/// <returns>The window-scoped <see cref="IMauiContext"/> instance.</returns>
-	public static IMauiContext CreateEmbeddedWindowContext(this MauiApp mauiApp, PlatformWindow platformWindow, IWindow window)
+	internal static IMauiContext CreateEmbeddedWindowContext(this MauiApp mauiApp, PlatformWindow platformWindow, IWindow window)
 	{
 		// Get the embedded application instance.
 		var embeddedApp = mauiApp.Services.GetRequiredService<EmbeddedPlatformApplication>();

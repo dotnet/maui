@@ -1,6 +1,10 @@
 ﻿#if ANDROID || IOS || MACCATALYST || WINDOWS
+using System;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Embedding;
 using Microsoft.Maui.Hosting;
 
@@ -17,19 +21,17 @@ using PlatformWindow = Microsoft.UI.Xaml.Window;
 
 namespace Microsoft.Maui.Controls.Embedding;
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
-
 /// <summary>
 /// A set of extension methods that allow for embedding a MAUI view within a native application.
 /// </summary>
-public static class EmbeddingExtensions
+internal static class EmbeddingExtensions
 {
 	/// <summary>
 	/// Enables MAUI to be embedded in native platform application by injecting embedded handlers into the service collection.
 	/// </summary>
 	/// <param name="builder">The <see cref="MauiAppBuilder"/> instance.</param>
 	/// <returns>The <see cref="MauiAppBuilder"/> instance.</returns>
-	public static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder)
+	internal static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder)
 	{
 #if ANDROID
 		var platformApplication = (Android.App.Application)Android.App.Application.Context;
