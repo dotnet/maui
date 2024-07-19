@@ -119,9 +119,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					Bindings = new Collection<BindingBase>
 					{
-						BindingBase.Create(static (Entry entry) => entry.FontFamily, source: RelativeBindingSource.Self),
-						BindingBase.Create(static (Entry entry) => entry.FontSize, source: RelativeBindingSource.Self),
-						BindingBase.Create(static (Entry entry) => entry.FontAttributes, source: RelativeBindingSource.Self),
+						Binding.Create(static (Entry entry) => entry.FontFamily, source: RelativeBindingSource.Self),
+						Binding.Create(static (Entry entry) => entry.FontSize, source: RelativeBindingSource.Self),
+						Binding.Create(static (Entry entry) => entry.FontAttributes, source: RelativeBindingSource.Self),
 					},
 					Converter = new StringConcatenationConverter()
 				});
@@ -242,16 +242,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Bindings = {
 						new MultiBinding {
 							Bindings = {
-								BindingBase.Create(static (PersonViewModel vm) => vm.IsOver16),
-								BindingBase.Create(static (PersonViewModel vm) => vm.HasPassedTest),
-								BindingBase.Create(static (PersonViewModel vm) => vm.IsSuspended, converter: new Inverter()),
-								BindingBase.Create(static (GroupViewModel vm) => vm.SuspendAll, converter: new Inverter(),
+								Binding.Create(static (PersonViewModel vm) => vm.IsOver16),
+								Binding.Create(static (PersonViewModel vm) => vm.HasPassedTest),
+								Binding.Create(static (PersonViewModel vm) => vm.IsSuspended, converter: new Inverter()),
+								Binding.Create(static (GroupViewModel vm) => vm.SuspendAll, converter: new Inverter(),
 									source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, ancestorType: typeof(GroupViewModel))),
 							},
 							Converter = new AllTrueMultiConverter()
 						},
-						BindingBase.Create(static (PersonViewModel vm) => vm.IsMonarch),
-						BindingBase.Create(static (GroupViewModel vm) => vm.PardonAllSuspensions,
+						Binding.Create(static (PersonViewModel vm) => vm.IsMonarch),
+						Binding.Create(static (GroupViewModel vm) => vm.PardonAllSuspensions,
 							source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(StackLayout))),
 					},
 					Converter = new AnyTrueMultiConverter(),
@@ -1016,8 +1016,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				cp.SetBinding(ContentPresenter.IsVisibleProperty, new MultiBinding
 				{
 					Bindings = {
-						BindingBase.Create(static (ExpanderControl c) => c.IsEnabled, source: RelativeBindingSource.TemplatedParent),
-						BindingBase.Create(static (ExpanderControl c) => c.IsExpanded, source: RelativeBindingSource.TemplatedParent),
+						Binding.Create(static (ExpanderControl c) => c.IsEnabled, source: RelativeBindingSource.TemplatedParent),
+						Binding.Create(static (ExpanderControl c) => c.IsExpanded, source: RelativeBindingSource.TemplatedParent),
 					},
 					Converter = new AllTrueMultiConverter(),
 					FallbackValue = false
