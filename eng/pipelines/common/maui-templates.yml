@@ -36,14 +36,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -71,7 +71,7 @@ jobs:
     name: $(POOL_NAME)
     vmImage: $(POOL_VIMAGE)
     demands:
-      - macOS.Name -equals Ventura
+      - macOS.Name -equals Sonoma
       - macOS.Architecture -equals x64
   steps:
 

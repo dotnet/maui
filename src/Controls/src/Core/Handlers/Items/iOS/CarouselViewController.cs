@@ -215,8 +215,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
-			InitialPositionSet = false;
-
 		}
 
 		void Setup(CarouselView carouselView)
