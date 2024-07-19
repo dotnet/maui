@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 
 #pragma warning disable RS0016 // Add public types and members to the declared API
-	public abstract class Layout<T> : Layout where T : View
+	public abstract class Layout<T> : Layout where T : View, ICrossPlatformLayout
 	{
 		public new IList<T> Children { get; }
 		public Layout()
@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Controls
 			if (child is T typedChild)
 			{
 				OnAdded(typedChild);
+#pragma warning disable CS0618 // Type or member is obsolete
+				typedChild.MeasureInvalidated += OnChildMeasureInvalidated;
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -40,6 +43,9 @@ namespace Microsoft.Maui.Controls
 			if (child is T typedChild)
 			{
 				OnRemoved(typedChild);
+#pragma warning disable CS0618 // Type or member is obsolete
+				typedChild.MeasureInvalidated -= OnChildMeasureInvalidated;
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -59,46 +65,84 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		[Obsolete("Use ZIndex")]
 		public void LowerChild(View view)
 		{
+			if (!this.Contains(view) || this.First() == view)
+			{
+				return;
+			}
+
+			this.Remove(view);
+			this.Insert(view, 0);
+			OnChildrenReordered();
 		}
 
+		[Obsolete("Use ZIndex")]
 		public void RaiseChild(View view)
 		{
+			if (!this.Contains(view) || this.Last() == view)
+			{
+				return;
+			}
+
+			this.Remove(view);
+			this.Insert(view,this.Count - 1);
+			OnChildrenReordered();
 		}
 
+		/// <summary>
+		/// Instructs the layout to relayout all of its children.
+		/// </summary>
+		/// <remarks>This method starts a new layout cycle for the layout. Invoking this method frequently can negatively impact performance.</remarks>
 		protected virtual void InvalidateLayout()
 		{
+			// Todo call this when InvalidateMeasure is called?
+			(this as IView).InvalidateMeasure();
 		}
 
-		protected abstract void LayoutChildren(double x, double y, double width, double height);
+		Graphics.Size _layoutChildren = Graphics.Size.Zero;
+		Graphics.Size ICrossPlatformLayout.CrossPlatformArrange(Graphics.Rect bounds)
+		{
+			_layoutChildren = bounds.Size;
+#pragma warning disable CS0618 // Type or member is obsolete
+			LayoutChildren(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+#pragma warning restore CS0618 // Type or member is obsolete
+			return _layoutChildren;
+		}
 
+
+		[Obsolete("Use your own LayoutManager")]
+		protected virtual void LayoutChildren(double x, double y, double width, double height)
+		{
+			_layoutChildren = base._layoutManager.ArrangeChildren(new Graphics.Rect(x, y, width, height));
+		}
+
+		[Obsolete("This method on the original class makes no sense and was probably accidently made protected. I'll write a better message before merging.")]
 		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			
+			OnChildMeasureInvalidated();
 		}
 
 		protected virtual void OnChildMeasureInvalidated()
 		{
 		}
 
+		
+		[Obsolete("Obsolete. This never really did anything because the platform is going to invalidate the layout anyway when views are removed/added.")]
 		protected virtual bool ShouldInvalidateOnChildAdded(View child) => true;
-
+		
+		[Obsolete("Obsolete. This never really did anything because the platform is going to invalidate the layout anyway when views are removed/added.")]
 		protected virtual bool ShouldInvalidateOnChildRemoved(View child) => true;
-
+		
+		/// <summary>
+		/// Instructs the layout to relayout all of its children.
+		/// </summary>
+		/// <remarks>This method starts a new layout cycle for the layout. Invoking this method frequently can negatively impact performance.</remarks>
 		protected void UpdateChildrenLayout()
 		{
-
+			(this as IView).InvalidateMeasure();
 		}
-
-
-		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
-		{
-			return base.Measure(widthConstraint, heightConstraint, flags);
-		}
-
-
-
 	}
 
 #pragma warning restore RS0016 // Add public types and members to the declared API
@@ -232,7 +276,6 @@ namespace Microsoft.Maui.Controls
 
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
-			base.Measure
 			var size = (this as IView).Measure(widthConstraint, heightConstraint);
 			return new SizeRequest(size);
 		}
