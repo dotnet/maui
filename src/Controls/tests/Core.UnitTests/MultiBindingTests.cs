@@ -251,8 +251,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 							Converter = new AllTrueMultiConverter()
 						},
 						Binding.Create(static (PersonViewModel vm) => vm.IsMonarch),
-						Binding.Create(static (GroupViewModel vm) => vm.PardonAllSuspensions,
-							source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(StackLayout))),
+						Binding.Create(static (StackLayout stack) => ((GroupViewModel)stack.BindingContext).PardonAllSuspensions,
+							source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout))),
 					},
 					Converter = new AnyTrueMultiConverter(),
 					FallbackValue = "false", //use a string literal here to test xaml conversion
