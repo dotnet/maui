@@ -1,7 +1,8 @@
-﻿using Microsoft.Maui.Graphics;
-using Microsoft.UI.Windowing;
+﻿using System;
+using ObjCRuntime;
+using UIKit;
 
-using PlatformWindow = Microsoft.UI.Xaml.Window;
+using PlatformWindow = UIKit.UIWindow;
 
 namespace Microsoft.Maui.Embedding;
 
