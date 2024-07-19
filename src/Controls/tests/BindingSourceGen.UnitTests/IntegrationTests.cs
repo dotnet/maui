@@ -254,7 +254,7 @@ public class IntegrationTests
                     object? fallbackValue = null,
                     object? targetNullValue = null)
                 {
-                    throw new InvalidOperationException($"Call to Binding.Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
+                    throw new InvalidOperationException($"Call to Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
                 }
             }
         }
