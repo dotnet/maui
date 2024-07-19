@@ -3,18 +3,25 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+public enum InterceptedMethodType
+{
+	SetBinding,
+	Create
+}
+
 public class TrackingNames
 {
 	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
 	public const string Bindings = nameof(Bindings);
 }
-public sealed record SetBindingInvocationDescription(
+public sealed record BindingInvocationDescription(
 	InterceptorLocation Location,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
 	EquatableArray<IPathPart> Path,
 	SetterOptions SetterOptions,
-	bool NullableContextEnabled);
+	bool NullableContextEnabled,
+	InterceptedMethodType MethodType);
 
 public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
 {
@@ -100,7 +107,7 @@ public interface IPathPart : IEquatable<IPathPart>
 	public string? PropertyName { get; }
 }
 
-internal sealed record Result<T>(T? OptionalValue, EquatableArray<DiagnosticInfo> Diagnostics)
+public sealed record Result<T>(T? OptionalValue, EquatableArray<DiagnosticInfo> Diagnostics)
 {
 	public bool HasDiagnostics => Diagnostics.Length > 0;
 

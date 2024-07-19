@@ -27,6 +27,9 @@ Microsoft.Maui.KeyboardAcceleratorModifiers.None = 0 -> Microsoft.Maui.KeyboardA
 Microsoft.Maui.KeyboardAcceleratorModifiers.Shift = 1 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Windows = 16 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.PlatformAppCompatTextView
 Microsoft.Maui.PlatformAppCompatTextView.PlatformAppCompatTextView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.IImageSourcePartSetter

@@ -15,25 +15,27 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		// Parameters: short name, target framework, build config, use pack target
-		//[TestCase("maui", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui", DotNetPrevious, "Release", false)]
-		[TestCase("maui", DotNetCurrent, "Debug", false)]
-		[TestCase("maui", DotNetCurrent, "Release", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
-		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-		[TestCase("mauilib", DotNetPrevious, "Release", true)]
-		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
-		[TestCase("mauilib", DotNetCurrent, "Release", true)]
-		public void Build(string id, string framework, string config, bool shouldPack)
+		// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams
+		//[TestCase("maui", DotNetPrevious, "Debug", false, "")]
+		//[TestCase("maui", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui", DotNetCurrent, "Debug", false, "")]
+		[TestCase("maui", DotNetCurrent, "Release", false, "")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
+		//[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", false, "")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty")]
+		[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
+		[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
+		[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
+		[TestCase("mauilib", DotNetCurrent, "Release", true, "")]
+		public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -51,43 +53,51 @@ namespace Microsoft.Maui.IntegrationTests
 		[Test]
 		// Parameters:  target framework, build config, dotnet new additional parameters
 
-		// First, 4 default scenarios
-		[TestCase(DotNetCurrent, "Debug", "")]
-		[TestCase(DotNetCurrent, "Release", "")]
-		[TestCase(DotNetCurrent, "Debug", "")]
-		[TestCase(DotNetCurrent, "Release", "")]
+		// First, default scenarios
+		[TestCase(DotNetCurrent, "Debug", "", false)]
+		[TestCase(DotNetCurrent, "Release", "", false)]
 
 		// Then, scenarios with additional template parameters:
 		// - Interactivity Location: None/WASM/Server/Auto
 		// - Empty vs. With Sample Content
 		// - ProgramMain vs. TopLevel statements
 		// And alternately testing other options for a healthy mix.
-		[TestCase(DotNetCurrent, "Debug", "-I None --Empty")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty")]
-		[TestCase(DotNetCurrent, "Debug", "-I None")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto")]
-		[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain")]
-		[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain")]
-		public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams)
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I None", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I None --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --Empty --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I None --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I WebAssembly --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", false)]
+		[TestCase(DotNetCurrent, "Release", "-I Auto --UseProgramMain", false)]
+
+		// Then, some scenarios with tricky names in Debug builds only
+		// This doesn't work on Android in Release, so we skip that for now
+		// See https://github.com/dotnet/android/issues/9107
+		[TestCase(DotNetCurrent, "Debug", "", true)]
+		[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
+		public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName)
 		{
 			const string templateShortName = "maui-blazor-web";
 
 			var solutionProjectDir = TestDirectory;
+   			if (useTrickyProjectName)
+	  		{
+	 			solutionProjectDir += "&More";
+	 		}
 
-			var webAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir) + ".Web");
+			var webAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir) + ".Web");
 			var webAppProjectFile = Path.Combine(webAppProjectDir, $"{Path.GetFileName(webAppProjectDir)}.csproj");
 
-			var mauiAppProjectDir = Path.Combine(TestDirectory, Path.GetFileName(solutionProjectDir));
+			var mauiAppProjectDir = Path.Combine(solutionProjectDir, Path.GetFileName(solutionProjectDir));
 			var mauiAppProjectFile = Path.Combine(mauiAppProjectDir, $"{Path.GetFileName(mauiAppProjectDir)}.csproj");
 
 			TestContext.WriteLine($"Creating project in {solutionProjectDir}");
@@ -292,6 +302,37 @@ namespace Microsoft.Maui.IntegrationTests
 				<UseMaui>true</UseMaui>
 				<WindowsAppSDKSelfContained>{wasdkself}</WindowsAppSDKSelfContained>
 				<SelfContained>{netself}</SelfContained>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", true, "None")]
+		[TestCase("maui", true, "MSIX")]
+		[TestCase("maui", false, "None")]
+		[TestCase("maui", false, "MSIX")]
+		public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+		{
+			if (TestEnvironment.IsMacOS)
+				Assert.Ignore("This test is designed for testing a windows build.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				$"""
+				<UseMaui>true</UseMaui>
+				<UseRidGraph>{useridgraph}</UseRidGraph>
+				<WindowsPackageType>{packageType}</WindowsPackageType>
 				""");
 
 			var extendedBuildProps = BuildProps;
@@ -540,6 +581,47 @@ namespace Microsoft.Maui.IntegrationTests
 			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		}
+
+		[Test]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
+		[TestCase("maui", "Debug", DotNetCurrent)]
+		[TestCase("maui", "Release", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Debug", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Release", DotNetCurrent)]
+		public void CheckPrivacyManifestForiOS(string id, string config, string framework)
+		{
+			if (TestEnvironment.IsWindows)
+			{
+				Assert.Ignore("Running iOS templates is only supported on Mac.");
+			}
+
+			string projectDir = TestDirectory;
+			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			string appFileName = $"{Path.GetFileName(projectDir)}.app";
+			string appLocation =
+				Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+
+			// Multi-project is in a .iOS subfolder and csproj is *.iOS.csproj
+			if (id.EndsWith("multiproject"))
+			{
+				projectFile = 
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", $"{Path.GetFileName(projectDir)}.iOS.csproj");
+
+				appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";
+
+				appLocation =
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+			}
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");
+
+			Assert.IsTrue(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
 		}
 
 		[Test]

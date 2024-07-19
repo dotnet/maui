@@ -242,7 +242,9 @@ namespace Maui.Controls.Sample
 						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
 						.WillEnterForeground((a) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
 						.ApplicationSignificantTimeChange((a) => LogEvent(nameof(iOSLifecycle.ApplicationSignificantTimeChange)))
-						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
+						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate)))
+						.RegisteredForRemoteNotifications((a, b) => LogEvent(nameof(iOSLifecycle.RegisteredForRemoteNotifications)))
+						.ReceivedRemoteNotification((a,b) => LogEvent(nameof(iOSLifecycle.ReceivedRemoteNotification))));
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows
