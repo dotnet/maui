@@ -1,3 +1,7 @@
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Xunit;
 
 namespace BindingSourceGen.UnitTests;
@@ -16,8 +20,9 @@ public class DiagnosticsTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0002", result.SourceGeneratorDiagnostics[0].Id);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0002", diagnostic.Id);
 	}
 
 	[Fact]
@@ -31,8 +36,8 @@ public class DiagnosticsTests
 
 		var result = SourceGenHelpers.Run(source);
 
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0003", result.SourceGeneratorDiagnostics[0].Id);
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0003", diagnostic.Id);
 	}
 
 	[Fact]
@@ -145,8 +150,8 @@ public class DiagnosticsTests
 
 		var result = SourceGenHelpers.Run(source);
 
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0001", result.SourceGeneratorDiagnostics[0].Id);
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0001", diagnostic.Id);
 	}
 
 	[Fact]
@@ -162,7 +167,80 @@ public class DiagnosticsTests
 
 		var result = SourceGenHelpers.Run(source);
 
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0001", result.SourceGeneratorDiagnostics[0].Id);
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0001", diagnostic.Id);
+	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23531
+	public void ReportsWarningWhenLambdaParameterIsSourceGeneratedType()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+			using SomeNamespace;
+
+			var label = new Label();
+			label.SetBinding(Label.RotationProperty, (ClassA a) => a.CounterBtn.Text.Length);
+			""";
+
+		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorA()]);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0005", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23531
+	public void ReportsWarningWhenPathContainsSourceGeneratedMember()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var a = new SomeNamespace.ClassA();
+			a.Foo();
+
+			namespace SomeNamespace
+			{
+				public partial class ClassA
+				{
+					public void Foo()
+					{
+						var label = new Label();
+						label.SetBinding(Label.RotationProperty, (ClassA a) => a.CounterBtn.Text.Length);
+					}
+				}
+			}
+
+			""";
+
+		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorA()]);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0006", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+}
+
+internal class IncrementalGeneratorA : IIncrementalGenerator
+{
+	public void Initialize(IncrementalGeneratorInitializationContext context)
+	{
+		context.RegisterSourceOutput(
+			context.CompilationProvider,
+			(ctx, compilation) =>
+			{
+				var source = """
+				using Microsoft.Maui.Controls;
+				namespace SomeNamespace
+				{
+					public partial class ClassA
+					{
+						public Button CounterBtn;
+					}
+				}
+				""";
+				ctx.AddSource("SampleSourceGeneratorOutput.g.cs", SourceText.From(source, Encoding.UTF8));
+			});
 	}
 }
