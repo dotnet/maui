@@ -79,9 +79,12 @@ namespace Microsoft.Maui.Controls
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;
 
-			platformButton.UpdatePadding(button);
+			var titleRect = platformButton.TitleLabel.Bounds;
+			if (titleRect.Height == 0 || titleRect.Width == 0)
+			{
+				titleRect = ComputeTitleRect(platformButton, button, image, widthConstraint, heightConstraint, padding, borderWidth);
+			}
 
-			var titleRect = ComputeTitleRect(platformButton, button, image, widthConstraint, heightConstraint, padding, borderWidth);
 			var titleRectWidth = titleRect.Width;
 			var titleRectHeight = titleRect.Height;
 
@@ -161,7 +164,12 @@ namespace Microsoft.Maui.Controls
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
-				var titleRect = ComputeTitleRect(platformButton, button, image, size.Width, size.Height, padding, borderWidth);
+				var titleRect = platformButton.TitleLabel.Bounds;
+				if (titleRect.Height == 0 || titleRect.Width == 0)
+				{
+					titleRect = ComputeTitleRect(platformButton, button, image, size.Width, size.Height, padding, borderWidth);
+				}
+
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
 				var imageWidth = image.Size.Width;
@@ -209,8 +217,6 @@ namespace Microsoft.Maui.Controls
 					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
 				}
 			}
-
-			platformButton.UpdatePadding(button);
 
 #pragma warning disable CA1416, CA1422
 			if (platformButton.ImageEdgeInsets != imageInsets ||
