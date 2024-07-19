@@ -219,15 +219,10 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
-			bool isSimpleType = false;
-			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo))
+			if (SimpleConvertTypes.TryGetValue(valueType, out Type[] convertibleTo) && Array.IndexOf(convertibleTo, returnType) != -1)
 			{
-				isSimpleType = true;
-				if (Array.IndexOf(convertibleTo, returnType) != -1)
-				{
-					value = Convert.ChangeType(value, returnType);
-					return true;
-				}
+				value = Convert.ChangeType(value, returnType);
+				return true;
 			}
 			if (KnownTypeConverters.TryGetValue(returnType, out TypeConverter typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
 			{
@@ -238,12 +233,21 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			// Don't look for implicit conversion operators on BCL-types
-			if (!isSimpleType && valueType != typeof(string))
+			if (ShouldCheckForImplicitConversionOperator(returnType))
 			{
-				var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+				var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
 				if (cast != null)
 				{
-					value = cast.Invoke(null, new[] { value });
+					value = cast.Invoke(null, [value]);
+					return true;
+				}
+			}
+			if (ShouldCheckForImplicitConversionOperator(valueType))
+			{
+				var cast = valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+				if (cast != null)
+				{
+					value = cast.Invoke(null, [value]);
 					return true;
 				}
 			}
@@ -255,6 +259,9 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		static bool ShouldCheckForImplicitConversionOperator(Type type) =>
+			type != typeof(string) && !SimpleConvertTypes.ContainsKey(type);
 
 		internal delegate void BindablePropertyBindingChanging(BindableObject bindable, BindingBase oldValue, BindingBase newValue);
 	}
