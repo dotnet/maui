@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "[Android] Border Stroke GradiantBrush can only switch to another gradiantbrush";
 
 		[Test]
+		[Category(UITestCategories.Border)]
 		public void BorderCollorShouldChange()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
