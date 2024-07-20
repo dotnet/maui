@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Title colour on Android Picker, initially appears grey";
 
 		[Test]
+		[Category(UITestCategories.Picker)]
 		public void Issue16737Test()
 		{
 			_ = App.WaitForElement("picker");
