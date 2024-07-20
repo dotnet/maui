@@ -6,7 +6,7 @@ public class AppiumIOSAlertActions : AppiumAppleAlertActions
 {
 	// Selects VISIBLE "Other" elements that are the direct child of
 	// a VISIBLE window AND are OVERLAYED on top of the first window.
-	const string PossibleAlertXPath = 
+	const string PossibleAlertXPath =
 		"//XCUIElementTypeWindow[@visible='true']/XCUIElementTypeOther[@visible='true' and @index > 0]";
 
 	public AppiumIOSAlertActions(AppiumApp appiumApp)

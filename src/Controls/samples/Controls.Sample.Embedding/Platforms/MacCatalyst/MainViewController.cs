@@ -60,7 +60,7 @@ public class MainViewController : UIViewController
 			UIBarButtonSystemItem.Add,
 			(sender, e) => RequestSession("NewTaskWindow"));
 
-		NavigationItem.RightBarButtonItems = [ addNewTaskButton, addNewWindowButton ];
+		NavigationItem.RightBarButtonItems = [addNewTaskButton, addNewWindowButton];
 	}
 
 	private void RequestSession(string? activityType = null)

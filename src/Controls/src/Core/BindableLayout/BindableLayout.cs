@@ -336,8 +336,9 @@ namespace Microsoft.Maui.Controls
 
 				// Empty view inherits the BindingContext automatically,
 				// we don't want to mess up with automatic inheritance.
-				if (child == _currentEmptyView) continue;
-				
+				if (child == _currentEmptyView)
+					continue;
+
 				// Given that we've set BindingContext manually on children we have to clear it on removal.
 				child.BindingContext = null;
 			}
@@ -410,7 +411,7 @@ namespace Microsoft.Maui.Controls
 				{
 					var child = (View)layout.Children[index]!;
 					layout.RemoveAt(index);
-					
+
 					// It's our responsibility to clear the BindingContext for the children
 					// Given that we've set them manually in CreateItemView
 					child.BindingContext = null;

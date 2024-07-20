@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue23291NavPage() : base(new Issue23291()) { }
 	}
-	
+
 	public partial class Issue23291 : ContentPage
 	{
 		public Issue23291()
@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public async void OpenDetailPage_Clicked(object obj, EventArgs eventArgs)
 		{
-			await Navigation.PushAsync(new ContentPage() { Title="Detail page" });
+			await Navigation.PushAsync(new ContentPage() { Title = "Detail page" });
 			await Navigation.PopAsync();
 		}
 
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public DataTemplate FragmentOneItemTemplate { get; set; }
 		public DataTemplate FragmentTwoItemTemplate { get; set; }
-		
+
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 		{
 			if (item is Issue23291.DashboardItem fragmentInfo)
@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					return FragmentOneItemTemplate;
 				}
-				
+
 				return FragmentTwoItemTemplate;
 			}
 
@@ -67,11 +67,11 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public Command OpenFragmentOneCommand => new Command(()=> PagePosition = 0);
-		public Command OpenFragmentTwoCommand => new Command(()=> PagePosition = 1);
+		public Command OpenFragmentOneCommand => new Command(() => PagePosition = 0);
+		public Command OpenFragmentTwoCommand => new Command(() => PagePosition = 1);
 
-		public ObservableCollection<Issue23291.DashboardItem> DashboardItems { get; set;}
-		
+		public ObservableCollection<Issue23291.DashboardItem> DashboardItems { get; set; }
+
 		public Issue23291ViewModel()
 		{
 			DashboardItems = new()
@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Issues
 				new Issue23291.DashboardItem { FragmentNumber = 2 }
 			};
 		}
-		
+
 		public event PropertyChangedEventHandler PropertyChanged;
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

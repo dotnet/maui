@@ -5,19 +5,19 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-    public class BasicVisualElement : VisualElement
-    {
-    }
+	public class BasicVisualElement : VisualElement
+	{
+	}
 
-    public class BasicVisualElementHandler : ViewHandler<BasicVisualElement, object>
-    {
-        public BasicVisualElementHandler(IPropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
-        {
-        }
+	public class BasicVisualElementHandler : ViewHandler<BasicVisualElement, object>
+	{
+		public BasicVisualElementHandler(IPropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
+		{
+		}
 
-        protected override object CreatePlatformView()
-        {
-            return new object();
-        }
-    }
+		protected override object CreatePlatformView()
+		{
+			return new object();
+		}
+	}
 }

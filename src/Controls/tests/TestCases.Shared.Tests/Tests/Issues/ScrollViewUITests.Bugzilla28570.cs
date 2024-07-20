@@ -19,11 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[FailsOnAndroid("This test is failing, likely due to product issue")]
 		public void Bugzilla28570Test()
 		{
-			App.WaitForElement ("Tap");
-			App.Screenshot ("At test page");
+			App.WaitForElement("Tap");
+			App.Screenshot("At test page");
 			App.Tap("Tap");
 
-			App.WaitForElement ("28570Target");
+			App.WaitForElement("28570Target");
 		}
 	}
 }

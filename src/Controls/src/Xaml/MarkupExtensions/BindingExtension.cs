@@ -21,7 +21,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (TypedBinding is null) {
+			if (TypedBinding is null)
+			{
 				Type bindingXDataType = null;
 				if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
 					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)

@@ -25,22 +25,22 @@ public partial class Issue21630_navPage : ContentPage
 		_modalStack = modalStack;
 	}
 
-	void FocusNavBarEntryNav (object sender, EventArgs e)
+	void FocusNavBarEntryNav(object sender, EventArgs e)
 	{
 		NavBarEntryNav.Focus();
 	}
 
-	void FocusNavBarEntryShell (object sender, EventArgs e)
+	void FocusNavBarEntryShell(object sender, EventArgs e)
 	{
 		NavBarEntryShell.Focus();
 	}
 
-	async void RestoreMainPage (object sender, EventArgs e)
+	async void RestoreMainPage(object sender, EventArgs e)
 	{
 		Application.Current.MainPage = _page;
 		await Task.Yield();
 
-		foreach(var page in _modalStack)
+		foreach (var page in _modalStack)
 		{
 			await _page.Navigation.PushModalAsync(page);
 		}

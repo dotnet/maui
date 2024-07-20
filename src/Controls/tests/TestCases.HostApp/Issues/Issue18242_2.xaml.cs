@@ -20,9 +20,9 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnSliderPaddingValueChanged(object sender, ValueChangedEventArgs e)
 		{
-			TopButton.Padding = 
-			BottonButton.Padding = 
-			LeftButton.Padding = 
+			TopButton.Padding =
+			BottonButton.Padding =
+			LeftButton.Padding =
 			RightButton.Padding = new Thickness(e.NewValue);
 		}
 
