@@ -11,6 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue22899(TestDevice device) : base(device) { }
 
 		[Test]
+		[Category(UITestCategories.TabbedPage)]
 		public void Issue22899Test()
 		{
 			_ = App.WaitForElement("button");
