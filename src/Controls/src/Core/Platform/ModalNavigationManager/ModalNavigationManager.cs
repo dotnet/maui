@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (FireLifeCycleEvents)
 			{
-				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Pop));
 				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
 			}
 
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (FireLifeCycleEvents)
 			{
-				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Push));
 				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 			}
 

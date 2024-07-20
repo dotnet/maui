@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			var previousPage = CurrentPage;
 			SendNavigating();
 			var removedPage = await RemoveAsyncInner(page, animated, fast);
-			SendNavigated(previousPage);
+			SendNavigated(previousPage, NavigationType.Pop);
 			return removedPage;
 		}
 
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			PoppedToRoot?.Invoke(this, new PoppedToRootEventArgs(RootPage, childrenToRemove.OfType<Page>().ToList()));
-			SendNavigated(previousPage);
+			SendNavigated(previousPage, NavigationType.PopToRoot);
 		}
 
 		async Task PushAsyncInner(Page page, bool animated)
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls
 					await args.Task;
 			}
 
-			SendNavigated(previousPage);
+			SendNavigated(previousPage, NavigationType.Push);
 			Pushed?.Invoke(this, args);
 		}
 

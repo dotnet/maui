@@ -853,6 +853,19 @@ namespace Microsoft.Maui.Controls
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
+
+			if (args.NavigationType == NavigationType.Pop || 
+				args.NavigationType == NavigationType.PopToRoot)
+			{
+				if (!this.IsLoaded)
+				{
+					this.DisconnectHandlers();
+				}
+				else
+				{
+					this.OnUnloaded(() => this.DisconnectHandlers());
+				}
+			}
 		}
 
 		/// <summary>

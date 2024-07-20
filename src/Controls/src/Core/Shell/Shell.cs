@@ -1563,7 +1563,34 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			NavigationType navigationType = NavigationType.PageSwap;
+
+			switch(args.Source)
+			{
+				case ShellNavigationSource.Pop:
+					navigationType = NavigationType.Pop;
+					break;
+				case ShellNavigationSource.ShellItemChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.ShellSectionChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.ShellContentChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.Push:
+					navigationType = NavigationType.Push;
+					break;
+				case ShellNavigationSource.PopToRoot:
+					navigationType = NavigationType.PopToRoot;
+					break;
+				case ShellNavigationSource.Insert:
+					navigationType = NavigationType.Insert;
+					break;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
 			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
 
