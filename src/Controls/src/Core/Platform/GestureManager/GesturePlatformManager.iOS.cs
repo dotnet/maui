@@ -275,11 +275,11 @@ namespace Microsoft.Maui.Controls.Platform
 					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
 						weakEventTracker.Target is GesturePlatformManager eventTracker &&
 						eventTracker._handler?.VirtualView is View view &&
-						UIApplication.SharedApplication.GetKeyWindow() is UIWindow window)
+						eventTracker.PlatformView is {} platformView)
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
-						originPoint = window.ConvertPointToView(originPoint, eventTracker.PlatformView);
+						originPoint = platformView.Window.ConvertPointToView(originPoint, platformView);
 
 						var scaledPoint = new Point(originPoint.X / view.Width, originPoint.Y / view.Height);
 
@@ -412,8 +412,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
 					weakEventTracker.Target is GesturePlatformManager eventTracker &&
-					eventTracker._handler?.VirtualView is View view &&
-					eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
+					eventTracker._handler?.VirtualView is View view)
 				{
 					var originPoint = pointerGesture.LocationInView(eventTracker?.PlatformView);
 					var platformPointerArgs = new PlatformPointerEventArgs(pointerGesture.View, pointerGesture);
