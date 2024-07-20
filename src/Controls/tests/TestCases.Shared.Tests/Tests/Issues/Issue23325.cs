@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Setting background color on the Searchbar does nothing";
 
 		[Test]
+		[Category(UITestCategories.SearchBar)]
 		public void Issue23325Test()
 		{
 			App.WaitForElement("label");
