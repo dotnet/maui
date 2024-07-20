@@ -18,14 +18,13 @@ namespace Microsoft.Maui.Controls
 			Children = new CastingList<T, IView>(_children);
 		}
 
-
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
 
 			if (child is T typedChild)
 			{
-				OnAdded(typedChild);
+				OnChildAdded(typedChild);
 #pragma warning disable CS0618 // Type or member is obsolete
 				typedChild.MeasureInvalidated += OnChildMeasureInvalidated;
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -38,17 +37,32 @@ namespace Microsoft.Maui.Controls
 
 			if (child is T typedChild)
 			{
-				OnRemoved(typedChild);
+				OnChildRemoved(typedChild, oldLogicalIndex);
 #pragma warning disable CS0618 // Type or member is obsolete
 				typedChild.MeasureInvalidated -= OnChildMeasureInvalidated;
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
+		protected virtual void OnChildAdded(T child)
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			OnAdded(child);
+#pragma warning restore CS0618 // Type or member is obsolete
+		}
+
+		protected virtual void OnChildRemoved(T child, int oldLogicalIndex)
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			OnRemoved(child);
+#pragma warning restore CS0618 // Type or member is obsolete
+		}
+
 		/// <summary>
 		/// Invoked when a child is added to the layout. Implement this method to add class handling for this event.
 		/// </summary>
 		/// <param name="view">The view which was added.</param>
+		[Obsolete("Use OnChildAdded")]
 		protected virtual void OnAdded(T view)
 		{
 		}
@@ -57,6 +71,7 @@ namespace Microsoft.Maui.Controls
 		/// Invoked when a child is removed the layout. Implement this method to add class handling for this event.
 		/// </summary>
 		/// <param name="view">The view which was removed.</param>
+		[Obsolete("Use OnChildRemoved")]
 		protected virtual void OnRemoved(T view)
 		{
 		}
