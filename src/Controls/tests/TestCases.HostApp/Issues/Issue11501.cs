@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 			private void OnLoaded(object sender, EventArgs e)
 			{
 				_window = Window;
-				_mainPage = this.Window.Page;
+				_mainPage = Application.Current.Windows[0].Page;
 				_modalStack = Navigation.ModalStack.ToList();
 			}
 
@@ -66,13 +66,13 @@ namespace Maui.Controls.Sample.Issues
 						AutomationId = "SwapMainPage",
 						Command = new Command( () =>
 						{
-							this.Window.Page =
+							Application.Current.Windows[0].Page =
 								new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 
 							ConnectToWindow();
 							_currentTest = () =>
 							{
-								this.Window.Page = CreateDestinationPage();
+								Application.Current.Windows[0].Page = CreateDestinationPage();
 								return Task.CompletedTask;
 							};
 						})
@@ -92,7 +92,7 @@ namespace Maui.Controls.Sample.Issues
 								},
 							};
 
-							this.Window.Page = flyoutPage;
+							Application.Current.Windows[0].Page = flyoutPage;
 							ConnectToWindow();
 
 							_currentTest = () =>
@@ -110,11 +110,11 @@ namespace Maui.Controls.Sample.Issues
 						AutomationId = "SwapTabbedPage",
 						Command = new Command( () =>
 						{
-							this.Window.Page = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
+							Application.Current.Windows[0].Page = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 							ConnectToWindow();
 							_currentTest = () =>
 							{
-								this.Window.Page = new TabbedPage()
+								Application.Current.Windows[0].Page = new TabbedPage()
 								{
 									Children =
 									{
@@ -147,7 +147,7 @@ namespace Maui.Controls.Sample.Issues
 								}
 							};
 
-							this.Window.Page = tabbedPage;
+							Application.Current.Windows[0].Page = tabbedPage;
 							ConnectToWindow();
 
 							_currentTest = () =>
