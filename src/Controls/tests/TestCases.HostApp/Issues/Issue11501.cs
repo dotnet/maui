@@ -59,106 +59,106 @@ namespace Maui.Controls.Sample.Issues
 			protected override void Init()
 			{
 				Content = new VerticalStackLayout()
-			{
-				new Button()
 				{
-					Text = "Swap Main Page",
-					AutomationId = "SwapMainPage",
-					Command = new Command( () =>
+					new Button()
 					{
-						this.Window.Page =
-							new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
+						Text = "Swap Main Page",
+						AutomationId = "SwapMainPage",
+						Command = new Command( () =>
+						{
+							this.Window.Page =
+								new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
 
-						ConnectToWindow();
-						_currentTest = () =>
-						{
-							this.Window.Page = CreateDestinationPage();
-							return Task.CompletedTask;
-						};
-					})
-				},
-				new Button()
-				{
-					Text = "Changing Details/Flyout on FlyoutPage in Background",
-					AutomationId = "SwapFlyoutPage",
-					Command = new Command(()=>
-					{
-						var flyoutPage = new FlyoutPage()
-						{
-							Flyout = new ContentPage() { Title = "Test", Content = new Label(){Text = "Background/Minimize the app" } },
-							Detail = new NavigationPage(new ContentPage(){ Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } })
+							ConnectToWindow();
+							_currentTest = () =>
 							{
-								Title = "Test"
-							},
-						};
-
-						this.Window.Page = flyoutPage;
-						ConnectToWindow();
-
-						_currentTest = () =>
-						{
-							flyoutPage.Flyout = CreateDestinationPage();
-							flyoutPage.Detail = new NavigationPage(CreateDestinationPage());
-							return Task.CompletedTask;
-						};
-					})
-				},
-
-				new Button()
-				{
-					Text = "Swap Tabbed Page",
-					AutomationId = "SwapTabbedPage",
-					Command = new Command( () =>
+								this.Window.Page = CreateDestinationPage();
+								return Task.CompletedTask;
+							};
+						})
+					},
+					new Button()
 					{
-						this.Window.Page = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
-						ConnectToWindow();
-						_currentTest = () =>
+						Text = "Changing Details/Flyout on FlyoutPage in Background",
+						AutomationId = "SwapFlyoutPage",
+						Command = new Command(()=>
 						{
-							this.Window.Page = new TabbedPage()
+							var flyoutPage = new FlyoutPage()
+							{
+								Flyout = new ContentPage() { Title = "Test", Content = new Label(){Text = "Background/Minimize the app" } },
+								Detail = new NavigationPage(new ContentPage(){ Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } })
+								{
+									Title = "Test"
+								},
+							};
+
+							this.Window.Page = flyoutPage;
+							ConnectToWindow();
+
+							_currentTest = () =>
+							{
+								flyoutPage.Flyout = CreateDestinationPage();
+								flyoutPage.Detail = new NavigationPage(CreateDestinationPage());
+								return Task.CompletedTask;
+							};
+						})
+					},
+
+					new Button()
+					{
+						Text = "Swap Tabbed Page",
+						AutomationId = "SwapTabbedPage",
+						Command = new Command( () =>
+						{
+							this.Window.Page = new ContentPage() { Title = "Test", Content = new Label() {AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } };
+							ConnectToWindow();
+							_currentTest = () =>
+							{
+								this.Window.Page = new TabbedPage()
+								{
+									Children =
+									{
+										new NavigationPage(CreateDestinationPage())
+										{
+											Title = "Test"
+										},
+										new ContentPage() { Title = "Test", Content = new Label(){Text = "Second Page" } },
+									}
+								};
+								return Task.CompletedTask;
+							};
+						})
+					},
+					new Button()
+					{
+						Text = "Removing and Changing Tabs",
+						AutomationId = "RemoveAddTabs",
+						Command = new Command(() =>
+						{
+							var tabbedPage = new TabbedPage()
 							{
 								Children =
 								{
+									new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } },
 									new NavigationPage(CreateDestinationPage())
 									{
 										Title = "Test"
-									},
-									new ContentPage() { Title = "Test", Content = new Label(){Text = "Second Page" } },
+									}
 								}
 							};
-							return Task.CompletedTask;
-						};
-					})
-				},
-				new Button()
-				{
-					Text = "Removing and Changing Tabs",
-					AutomationId = "RemoveAddTabs",
-					Command = new Command(() =>
-					{
-						var tabbedPage = new TabbedPage()
-						{
-							Children =
+
+							this.Window.Page = tabbedPage;
+							ConnectToWindow();
+
+							_currentTest = () =>
 							{
-								new ContentPage() { Title = "Test", Content = new Label() { AutomationId = "BackgroundMe", Text = "Background/Minimize the app" } },
-								new NavigationPage(CreateDestinationPage())
-								{
-									Title = "Test"
-								}
-							}
-						};
-
-						this.Window.Page = tabbedPage;
-						ConnectToWindow();
-
-						_currentTest = () =>
-						{
-							tabbedPage.Children.RemoveAt(0);
-							tabbedPage.Children.Add(CreateDestinationPage());
-							return Task.CompletedTask;
-						};
-					})
-				},
-			};
+								tabbedPage.Children.RemoveAt(0);
+								tabbedPage.Children.Add(CreateDestinationPage());
+								return Task.CompletedTask;
+							};
+						})
+					},
+				};
 			}
 
 			ContentPage CreateDestinationPage()
@@ -167,24 +167,24 @@ namespace Maui.Controls.Sample.Issues
 				{
 					Title = "Test",
 					Content = new VerticalStackLayout()
-				{
-					new Button()
 					{
-						AutomationId = "Restore",
-						Text = "Restore",
-						Command = new Command(async ()=>
+						new Button()
 						{
-							this.Window.Page = _mainPage;
-
-							await Task.Yield();
-
-							foreach(var page in _modalStack)
+							AutomationId = "Restore",
+							Text = "Restore",
+							Command = new Command(async ()=>
 							{
-								await _mainPage.Navigation.PushModalAsync(page);
-							}
-						})
+								Application.Current.Windows[0].Page = _mainPage;
+
+								await Task.Yield();
+
+								foreach(var page in _modalStack)
+								{
+									await _mainPage.Navigation.PushModalAsync(page);
+								}
+							})
+						}
 					}
-				}
 				};
 			}
 		}
