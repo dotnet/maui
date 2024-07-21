@@ -192,8 +192,7 @@ jobs:
             IOS_TEST_DEVICE: ios-simulator-64_17.2
 
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
-      - bash: |
-          pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+      - pwsh: ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
         displayName: Cleanup and Create Simulator Logs if Test Run Failed To
         condition: always()
         continueOnError: true
