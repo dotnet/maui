@@ -5,19 +5,11 @@ Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler,
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.Handlers.HybridWebViewHandler
-Microsoft.Maui.Handlers.HybridWebViewHandler.DefaultFile.get -> string?
-Microsoft.Maui.Handlers.HybridWebViewHandler.DefaultFile.set -> void
-Microsoft.Maui.Handlers.HybridWebViewHandler.HybridRoot.get -> string?
-Microsoft.Maui.Handlers.HybridWebViewHandler.HybridRoot.set -> void
 Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler() -> void
 Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Handlers.IHybridPlatformWebView
 Microsoft.Maui.Handlers.IHybridPlatformWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Handlers.IHybridWebViewHandler
-Microsoft.Maui.Handlers.IHybridWebViewHandler.DefaultFile.get -> string?
-Microsoft.Maui.Handlers.IHybridWebViewHandler.DefaultFile.set -> void
-Microsoft.Maui.Handlers.IHybridWebViewHandler.HybridRoot.get -> string?
-Microsoft.Maui.Handlers.IHybridWebViewHandler.HybridRoot.set -> void
 Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> Android.Webkit.WebView!
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
@@ -134,8 +126,6 @@ static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Mic
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapDefaultFile(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView) -> void
-static Microsoft.Maui.Handlers.HybridWebViewHandler.MapHybridRoot(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.ImageButtonHandler.MapBackground(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IImageButton! imageButton) -> void

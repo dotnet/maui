@@ -20,10 +20,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		private const string ScriptMessageHandlerName = "webwindowinterop";
 
-		//protected virtual float MinimumSize => 44f;
-
-		//WKUIDelegate? _delegate;
-
 		protected override WKWebView CreatePlatformView()
 		{
 			var config = new WKWebViewConfiguration();
@@ -176,11 +172,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
 
-					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.HybridRoot!);
+					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
 
 					if (string.IsNullOrEmpty(relativePath))
 					{
-						relativePath = Handler.DefaultFile!.Replace('\\', '/');
+						relativePath = Handler.VirtualView.DefaultFile!.Replace('\\', '/');
 						contentType = "text/html";
 					}
 					else

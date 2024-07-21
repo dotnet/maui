@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Platform
 				string contentType;
 				if (string.IsNullOrEmpty(relativePath))
 				{
-					relativePath = Handler.DefaultFile;
+					relativePath = Handler.VirtualView.DefaultFile;
 					contentType = "text/html";
 				}
 				else
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 
-				var assetPath = Path.Combine(Handler.HybridRoot!, relativePath!);
+				var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
 				var contentStream = PlatformOpenAppPackageFile(assetPath);
 
 				if (contentStream is null)
