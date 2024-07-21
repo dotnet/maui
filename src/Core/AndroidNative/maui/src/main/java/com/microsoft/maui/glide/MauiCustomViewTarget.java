@@ -9,15 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.CustomViewTarget;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import com.microsoft.maui.ImageLoaderCallback;
 
-public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> {
+public class MauiCustomViewTarget extends DrawableImageViewTarget {
     private final ImageLoaderCallback callback;
-    private boolean completed;
-    private boolean cleared;
 
     public MauiCustomViewTarget(@NonNull ImageView view, ImageLoaderCallback callback) {
         super(view);
@@ -26,36 +24,18 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     }
 
     @Override
-    protected void onResourceCleared(@Nullable Drawable placeholder) {
-        this.cleared = true;
-    }
-
-    @Override
     public void onLoadFailed(@Nullable Drawable errorDrawable) {
-        if (completed)
-            return;
-
-        this.completed = true;
-
-        if (this.cleared) {
-            this.view.setImageDrawable(null);
-        }
-
+        super.onLoadFailed(errorDrawable);
+        
         // trigger the callback out of this target
         post(() -> callback.onComplete(false, errorDrawable, this::clear));
     }
 
     @Override
     public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-        if (completed)
-            return;
-
-        this.completed = true;
+        super.onResourceReady(resource, transition);
 
         post(() -> {
-            // set the image
-            this.view.setImageDrawable(resource);
-
             // trigger the callback out of this target
             callback.onComplete(true, resource, this::clear);
         });

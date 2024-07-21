@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -14,6 +15,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Animatable;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
@@ -41,6 +43,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.window.layout.WindowMetricsCalculator;
 
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
@@ -312,9 +315,27 @@ public class PlatformInterop {
         builder
             .into(target);
     }
+    
+    private static Drawable getCurrentBitmapDrawable(ImageView imageView) {
+        Drawable drawable = imageView.getDrawable();
+        if (drawable instanceof BitmapDrawable) {
+            Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+            bitmap = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+            
+            return new BitmapDrawable(imageView.getContext().getResources(), bitmap);
+        }
+
+        return null;
+    }
 
     private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
+
+        // Glide clears the current image/resource when loading a new one
+        // That causes a (white) flicker when loading a new image into an ImageView.
+        // The workaround is to set the current image as a placeholder.
+        // See: https://github.com/bumptech/glide/issues/527#issuecomment-119253232
+        builder = builder.placeholder(getCurrentBitmapDrawable(imageView));
         prepare(builder, target, cachingEnabled, callback);
     }
 
