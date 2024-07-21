@@ -890,7 +890,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
 				if (_uiRequestedPop)
 				{
-					NavPage?.SendNavigatedFromHandler(pageBeingRemoved);
+					// Pretty sure this only fires during a pop
+					NavPage?.SendNavigatedFromHandler(pageBeingRemoved, NavigationType.Pop);
 				}
 			}
 
@@ -1097,8 +1098,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (r.Element is NavigationPage np && !_finishedWithInitialNavigation)
 					{
-						_finishedWithInitialNavigation = true;
-						np.SendNavigatedFromHandler(null);
+						_finishedWithInitialNavigation = true;						
+						np.SendNavigatedFromHandler(null, NavigationType.Push);
 					}
 
 					if (WaitingForNavigationToFinish)

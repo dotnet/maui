@@ -209,12 +209,12 @@ namespace Microsoft.Maui.Controls
 		// there are scenarios where the legacy handler needs to alert the xplat
 		// code of when a navigation has occurred.
 		// For example, initial load and when the user taps the back button
-		internal void SendNavigatedFromHandler(Page previousPage)
+		internal void SendNavigatedFromHandler(Page previousPage, NavigationType navigationType)
 		{
 			if (CurrentPage.HasNavigatedTo)
 				return;
 
-			SendNavigated(previousPage);
+			SendNavigated(previousPage, navigationType);
 		}
 #endif
 
