@@ -62,7 +62,7 @@ namespace Maui.Controls.Sample.Issues
 					return;
 				}
 
-				var mainWindowHandle = (this.Window.Page.Window.Handler.PlatformView as MauiWinUIWindow).GetWindowHandle();
+				var mainWindowHandle = (Application.Current.Windows[0].Handler.PlatformView as MauiWinUIWindow).GetWindowHandle();
 				var childWindowHandle = (Handler.PlatformView as MauiWinUIWindow).GetWindowHandle();
 
 				Platform.PlatformMethods.SetParent(childWindowHandle, mainWindowHandle);
