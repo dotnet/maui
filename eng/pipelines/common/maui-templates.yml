@@ -22,12 +22,12 @@ parameters:
     type: object
     default:
     - name: Windows
-      poolName: $(windowsNet6VmPool)
-      vmImage: $(windowsNet6VmImage)
+      poolName: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
       artifact: templates-windows
     - name: macOS
-      poolName: $(macOSXNet6VmPool)
-      vmImage: $(macOSXNet6VmImage)
+      poolName: $(macOSXVmPool)
+      vmImage: $(macOSXVmImage)
       artifact: templates-macos
 
   - name: RunPlatforms
