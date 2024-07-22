@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Google.Android.Material.Button;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -21,9 +21,14 @@ namespace Microsoft.Maui.Handlers
 			return imageView;
 		}
 
+		protected override void ConnectHandler(ImageView platformView)
+		{
+			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+		}
+
 		protected override void DisconnectHandler(ImageView platformView)
 		{
-			base.DisconnectHandler(platformView);
+			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			SourceLoader.Reset();
 		}
 
@@ -78,6 +83,14 @@ namespace Microsoft.Maui.Handlers
 
 			base.PlatformArrange(frame);
 		}
+		
+		void OnPlatformViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			if (PlatformView is {} platformView && PlatformInterop.GetGlideClearedTag(platformView) && VirtualView is { } virtualView)
+			{
+				Mapper.UpdateProperty(this, virtualView, nameof(IImage.Source));
+			}
+		}
 
 		partial class ImageImageSourcePartSetter
 		{
@@ -86,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not ImageView image)
 					return;
 
-				image.SetImageDrawable(platformImage);
+				PlatformInterop.LoadImageFromDrawable(image, platformImage);
 			}
 		}
 	}

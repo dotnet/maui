@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <item name="maui_glide_cleared_tag" type="id"/>
+  <item name="maui_glide_last_request_builder_tag" type="id"/>
+</resources>
