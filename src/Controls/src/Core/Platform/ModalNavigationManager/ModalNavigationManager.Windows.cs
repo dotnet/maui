@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 			page.Handler?.DisconnectHandler();
 		}
 
+		IDisposable? _waitingForIncomingPage;
 		void SetCurrent(
 			Page newPage,
 			Page previousPage,
@@ -79,6 +80,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			try
 			{
+				_waitingForIncomingPage?.Dispose();
+				_waitingForIncomingPage = newPage.OnLoaded(() => completedCallback?.Invoke());
+
 				if (popping)
 				{
 					RemovePage(previousPage, popping);
@@ -119,8 +123,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 					Container.AddPage(windowManager.RootView);
 				}
-
-				completedCallback?.Invoke();
 			}
 			catch (Exception error) when (error.HResult == -2147417842)
 			{

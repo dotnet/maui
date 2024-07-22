@@ -375,8 +375,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
-			else if (_window.IsActivated &&
-					_window?.Page?.Handler is not null)
+			else if (IsWindowReadyForModals)
 			{
 				if (CurrentPlatformPage.Handler is null)
 				{
@@ -390,7 +389,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// This accounts for cases where we swap the root page out
 				// We want to wait for that to finish loading before processing any modal changes
 #if ANDROID
-				else if (!_window.Page.IsLoadedOnPlatform())
+				else if (_window?.Page is not null && !_window.Page.IsLoadedOnPlatform())
 				{
 					var windowPage = _window.Page;
 					_platformPageWatchingForLoaded =
@@ -425,15 +424,22 @@ namespace Microsoft.Maui.Controls.Platform
 			SyncPlatformModalStack();
 		}
 
+		bool IsWindowReadyForModals =>
+					_window?.Page?.Handler is not null &&
+#if WINDOWS
+					_firstActivated;
+#else
+					_window.IsActivated;
+#endif
+
 		bool IsModalPlatformReady
 		{
 			get
 			{
 				bool result =
-					_window?.Page?.Handler is not null &&
-					_window.IsActivated
+					IsWindowReadyForModals
 #if ANDROID
-					&& _window.Page.IsLoadedOnPlatform()
+					&& _window?.Page?.IsLoadedOnPlatform() == true
 #endif
 					&& CurrentPlatformPage?.Handler is not null
 					&& CurrentPlatformPage.IsLoadedOnPlatform();
