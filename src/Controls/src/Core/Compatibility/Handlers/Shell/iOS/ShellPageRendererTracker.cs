@@ -359,7 +359,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage)
+						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
+						}
 						else
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
 					}
