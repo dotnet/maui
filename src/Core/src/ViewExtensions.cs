@@ -49,6 +49,11 @@ namespace Microsoft.Maui
 
 			void BuildFlatList(IView view, List<IView> flatList)
 			{
+				if (view is IHandlerBehaviors handlerBehaviors && handlerBehaviors.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
+				{
+					return;
+				}
+
 				flatList.Add(view);
 
 				if (view is IVisualTreeElement vte)
