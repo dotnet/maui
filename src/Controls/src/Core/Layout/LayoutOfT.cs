@@ -12,11 +12,14 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable RS0016 // Add public types and members to the declared API
 	public abstract class Layout<T> : Layout where T : View, ICrossPlatformLayout
     {
-		public new IList<T> Children { get; }
+		readonly CastingList<T, IView> _castChildren;
+
 		public Layout()
 		{
-			Children = new CastingList<T, IView>(_children);
+			_castChildren = new CastingList<T, IView>(_children);
 		}
+
+		public new IList<T> Children => _castChildren;
 
 		protected override void OnChildAdded(Element child)
 		{
