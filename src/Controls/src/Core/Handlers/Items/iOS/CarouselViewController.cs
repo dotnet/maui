@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				_isCenteringItem = true;
-				//	_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
+				_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
 				_isCenteringItem = false;
 			}
 
@@ -395,8 +395,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_gotoPosition = goToPosition;
 
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
+				var goToIndexPath = GetScrollToIndexPath(goToPosition);
 
-				var goToIndexPath = NSIndexPath.Create(0, _gotoPosition);
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
 
@@ -436,6 +436,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFromCurrentItem()
 		{
+			if(!InitialPositionSet)
+				return;
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -455,6 +458,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFromPosition()
 		{
+			if(!InitialPositionSet)
+				return;
+				
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -494,8 +500,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return;
 				}
 
-				InitialPositionSet = true;
-
 				int position = carousel.Position;
 				var currentItem = carousel.CurrentItem;
 				if (currentItem != null)
@@ -503,9 +507,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					position = ItemsSource.GetIndexForItem(currentItem).Row;
 				}
 
-				var indexPath = NSIndexPath.FromItemSection(position, 0);
-				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
-				CollectionView.ScrollToItem(indexPath, uICollectionViewScrollPosition, animated: false);
+				ScrollToPosition(position, carousel.Position, false, true);
+				SetPosition(position);
+				InitialPositionSet = true;
 			}
 
 			UpdateVisualStates();
