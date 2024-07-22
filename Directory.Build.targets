@@ -65,7 +65,16 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-<!--
+  <!--
+    Disable the linker and trimmer warnings for .NET 8 specifically because because that is not supported in .NET 8.
+  -->
+  <!-- <PropertyGroup Condition="$(TargetFramework.StartsWith('net8'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup> -->
+
+  <!--
     Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
     Enable this individually in projects that declare/use AndroidResource IDs.
   -->

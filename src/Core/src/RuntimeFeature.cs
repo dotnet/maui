@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		private const bool AreBindingInterceptorsSupportedByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
-#if !NETSTANDARD
+#if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 				? isEnabled
 				: IsIVisualAssemblyScanningEnabledByDefault;
 
-#if !NETSTANDARD
+#if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
@@ -39,7 +39,7 @@ namespace Microsoft.Maui
 				? isSupported
 				: IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault;
 
-#if !NETSTANDARD
+#if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 				? isSupported
 				: IsQueryPropertyAttributeSupportedByDefault;
 
-#if !NETSTANDARD
+#if NET9_0_OR_GREATER
 		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
