@@ -19,8 +19,13 @@ Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
+Microsoft.Maui.HybridWebViewRawMessage
+Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
+Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
+Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
 Microsoft.Maui.IHybridWebView
 Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
+Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
 Microsoft.Maui.IHybridWebView.HybridRoot.get -> string?
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
@@ -124,6 +129,7 @@ static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TView
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.MenuBarItemHandler.MapIsEnabled(Microsoft.Maui.Handlers.IMenuBarItemHandler! handler, Microsoft.Maui.IMenuBarItem! view) -> void

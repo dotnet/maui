@@ -8,16 +8,26 @@
     <script>
         window.addEventListener(
             "HybridWebViewMessageReceived",
-            function (e) {
+            function(e) {
                 var msg = e.detail.message;
 
                 window.HybridWebView.SendRawMessage('You said: ' + msg)
             });
+
+        function AddNumbers(a, b) {
+            var result = {
+                "result": a + b,
+                "operationName": "Addition"
+            };
+            return result;
+        }
+
     </script>
 </head>
 <body>
     <div>
         Hybrid test!
     </div>
+    <div id="htmlLoaded"></div>
 </body>
 </html>

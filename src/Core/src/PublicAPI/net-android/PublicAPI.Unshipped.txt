@@ -16,8 +16,13 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler
 Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> Android.Webkit.WebView!
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
+Microsoft.Maui.HybridWebViewRawMessage
+Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
+Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
+Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
 Microsoft.Maui.IHybridWebView
 Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
+Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
 Microsoft.Maui.IHybridWebView.HybridRoot.get -> string?
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
@@ -133,6 +138,7 @@ static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Mic
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
+static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.ImageButtonHandler.MapBackground(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IImageButton! imageButton) -> void
