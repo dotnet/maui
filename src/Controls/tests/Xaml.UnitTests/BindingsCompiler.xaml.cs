@@ -29,10 +29,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Test(bool useCompiledXaml)
+			
+			[Test] 
+			public void TestCompiledBindings([Values(false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(BindingsCompiler));
@@ -123,6 +122,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				//testing source
 				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
+			}
+			
+			[Test] 
+			public void BindingsNotAppliedWithWrongContext([Values(false, true)]bool useCompiledXaml)
+			{
+				var page = new BindingsCompiler(useCompiledXaml) { BindingContext = new {Text="Foo"} };
+				Assert.AreEqual(null, page.label0.Text);
 			}
 		}
 	}
