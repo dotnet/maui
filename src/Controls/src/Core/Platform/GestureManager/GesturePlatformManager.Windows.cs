@@ -730,15 +730,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateDragAndDropGestureRecognizers()
 		{
-			if (_container is null)
-			{
-				return;
-			}
-
-			var view = Element as View;
-			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
-
-			if (gestures is null)
+			if (_container is null || Element is not View view || view.GestureRecognizers is not IList<IGestureRecognizer> gestures)
 			{
 				return;
 			}
@@ -812,16 +804,17 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
-			_container.PointerEntered += OnPgrPointerEntered;
-			_container.PointerExited += OnPgrPointerExited;
-			_container.PointerMoved += OnPgrPointerMoved;
-			_container.PointerPressed += OnPgrPointerPressed;
-			_container.PointerReleased += OnPgrPointerReleased;
+			bool hasPointerGesture = ElementGestureRecognizers.HasAnyGesturesFor<PointerGestureRecognizer>();
+
+			if (hasPointerGesture)
+			{
+				SubscribePointerEvents(_container);
+			}
 
 			bool hasSwipeGesture = gestures.HasAnyGesturesFor<SwipeGestureRecognizer>();
 			bool hasPinchGesture = gestures.HasAnyGesturesFor<PinchGestureRecognizer>();
 			bool hasPanGesture = gestures.HasAnyGesturesFor<PanGestureRecognizer>();
+
 			if (!hasSwipeGesture && !hasPinchGesture && !hasPanGesture)
 			{
 				return;
@@ -840,12 +833,29 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Pan, pinch, and swipe gestures need pointer events if not subscribed yet.
+			if (!hasPointerGesture)
+			{
+				SubscribePointerEvents(_container);
+			}
+
 			_subscriptionFlags |= SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
 			_container.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 			_container.ManipulationDelta += OnManipulationDelta;
 			_container.ManipulationStarted += OnManipulationStarted;
 			_container.ManipulationCompleted += OnManipulationCompleted;
 			_container.PointerCanceled += OnPointerCanceled;
+		}
+
+		void SubscribePointerEvents(FrameworkElement container)
+		{
+			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
+
+			container.PointerEntered += OnPgrPointerEntered;
+			container.PointerExited += OnPgrPointerExited;
+			container.PointerMoved += OnPgrPointerMoved;
+			container.PointerPressed += OnPgrPointerPressed;
+			container.PointerReleased += OnPgrPointerReleased;
 		}
 
 		void HandleTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
