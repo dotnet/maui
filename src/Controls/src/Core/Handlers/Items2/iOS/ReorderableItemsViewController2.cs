@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
 
@@ -35,14 +36,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override IItemsViewSource CreateItemsViewSource()
 		{
-			if (ItemsSource != null)
-			{
-				// There's a bug in the current Maui Controls library.
-				// It will call "CreateItemsViewSource" 2x in a row when opening a page.
-				// It's invoked from both ViewDidLoad & UpdateItemsSource
-				// For the time being, until the issue is fixed, we need to dispose of the current source if one already exist.
-				ItemsSource.Dispose();
-			}
+			// There's a bug in the current Maui Controls library.
+			// It will call "CreateItemsViewSource" 2x in a row when opening a page.
+			// It's invoked from both ViewDidLoad & UpdateItemsSource
+			// For the time being, until the issue is fixed, we need to dispose of the current source if one already exist.
+			ItemsSource?.Dispose();
 			return base.CreateItemsViewSource();
 		}
 
