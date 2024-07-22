@@ -79,14 +79,6 @@ steps:
       Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
     displayName: 'Set Platform.Name'
 
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-      displayName: Delete Old Simulator Logs
-      condition: always()
-      continueOnError: true
-
   - ${{ if eq(parameters.platform, 'windows')}}:
     - pwsh: |
         $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
@@ -113,10 +105,8 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        suffix=$(date +%Y%m%d%H%M%S)
-        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
+        pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+      displayName: Cleanup and Create Simulator Logs if Test Run Failed To
       condition: always()
       continueOnError: true
 
