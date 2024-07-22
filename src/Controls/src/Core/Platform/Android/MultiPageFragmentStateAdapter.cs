@@ -7,7 +7,7 @@ using AndroidX.ViewPager2.Adapter;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class MultiPageFragmentStateAdapter<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] T> : FragmentStateAdapter where T : Page
+	internal class MultiPageFragmentStateAdapter<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers | BindableProperty.ReturnTypeMembers)] T> : FragmentStateAdapter where T : Page
 	{
 		MultiPage<T> _page;
 		readonly IMauiContext _context;

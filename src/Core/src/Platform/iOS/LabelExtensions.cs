@@ -80,7 +80,11 @@ namespace Microsoft.Maui.Platform
 			var attr = new NSAttributedStringDocumentAttributes
 			{
 				DocumentType = NSDocumentType.HTML,
+#if NET9_0_OR_GREATER
 				CharacterEncoding = NSStringEncoding.UTF8
+#else
+				StringEncoding = NSStringEncoding.UTF8
+#endif
 			};
 
 			NSError nsError = new();
