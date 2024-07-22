@@ -128,21 +128,33 @@ namespace Microsoft.Maui.Platform
 			SetShadow();
 			SetBorder();
 
+			// var boundWidth = Bounds.Width;
+			// var boundHeight = Bounds.Height;
+
+			// if (!IsMeasureValid(boundWidth, boundHeight) && CrossPlatformLayout is not null)
+			// {
+			// 	var newSize = CrossPlatformLayout.CrossPlatformMeasure(boundWidth, boundHeight);
+			// 	var newSizeBounds = new CGRect(Bounds.X, Bounds.Y, newSize.Width, newSize.Height);
+			// 	if(newSizeBounds != Bounds)
+			// 	{
+			// 		// if the button is a different size now, we need to update the parent
+			// 		// Superview?.SetNeedsLayout();
+			// 		// this.InvalidateMeasure(this);
+			// 	}
+			// 	CacheMeasureConstraints(boundWidth, boundHeight);
+			// }
+
+			// CrossPlatformLayout?.CrossPlatformArrange(Bounds.ToRectangle());
+
 			var boundWidth = Bounds.Width;
 			var boundHeight = Bounds.Height;
-
+ 
 			if (!IsMeasureValid(boundWidth, boundHeight) && CrossPlatformLayout is not null)
 			{
-				var newSize = CrossPlatformLayout.CrossPlatformMeasure(boundWidth, boundHeight);
-				var newSizeBounds = new CGRect(Bounds.X, Bounds.Y, newSize.Width, newSize.Height);
-				if(newSizeBounds != Bounds)
-				{
-					// if the button is a different size now, we need to update the parent
-					Superview?.SetNeedsLayout();
-				}
+				CrossPlatformLayout.CrossPlatformMeasure(boundWidth, boundHeight);
 				CacheMeasureConstraints(boundWidth, boundHeight);
 			}
-
+ 
 			CrossPlatformLayout?.CrossPlatformArrange(Bounds.ToRectangle());
 		}
 
