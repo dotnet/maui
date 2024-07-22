@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles/app.css">
     <script src="scripts/HybridWebView.js"></script>
     <script>
@@ -13,6 +14,31 @@
                 var messageFromCSharp = document.getElementById("messageFromCSharp");
                 messageFromCSharp.value += '\r\n' + e.detail.message;
             });
+
+        function AddNumbers(a, x, b, y) {
+            var result = {
+                "result": a + b,
+                "operationName": "Addition"
+            };
+            return result;
+        }
+
+        var count = 0;
+
+        async function EvaluateMeWithParamsAndAsyncReturn(s1, s2) {
+            const response = await fetch("/asyncdata.txt");
+            if (!response.ok) {
+                    throw new Error(`HTTP error: ${response.status}`);
+            }
+            var jsonData = await response.json();
+
+            jsonData[s1] = s2;
+
+            const msg = 'JSON data is available: ' + JSON.stringify(jsonData);
+            window.HybridWebView.SendRawMessage(msg)
+
+            return jsonData;
+        }
     </script>
 </head>
 <body>
@@ -20,7 +46,7 @@
         Hybrid sample!
     </div>
     <div>
-        <button onclick="window.HybridWebView.SendRawMessage('Message from JS!')">Send message to C#</button>
+        <button onclick="window.HybridWebView.SendRawMessage('Message from JS! ' + (count++))">Send message to C#</button>
     </div>
     <div>
         Message from C#: <textarea readonly id="messageFromCSharp" style="width: 80%; height: 10em;"></textarea>
