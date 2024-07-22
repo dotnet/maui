@@ -1970,7 +1970,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (disposing)
 				{
 
-					if (_child != null)
+					if (_child?.IsConnected() == true)
 					{
 						_child.PlatformView.RemoveFromSuperview();
 						_child.DisconnectHandler();
