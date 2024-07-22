@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Platform
 			: AppContext.BaseDirectory;
 
 		public async void LoadHtml(string? html, string? baseUrl)
-		{       
+		{
 			var mapBaseDirectory = false;
 			if (string.IsNullOrEmpty(baseUrl))
 			{
@@ -56,12 +56,12 @@ namespace Microsoft.Maui.Platform
 			await EnsureCoreWebView2Async();
 
 			if (mapBaseDirectory)
-		    {
-		    	CoreWebView2.SetVirtualHostNameToFolderMapping(
-		    		LocalHostName,
-		    		ApplicationPath,
-		    		Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-		    }
+			{
+				CoreWebView2.SetVirtualHostNameToFolderMapping(
+					LocalHostName,
+					ApplicationPath,
+					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+			}
 
 			// Insert script to set the base tag
 			var script = GetBaseTagInsertionScript(baseUrl);

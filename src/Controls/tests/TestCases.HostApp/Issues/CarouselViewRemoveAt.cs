@@ -71,7 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			_carousel.PositionChanged += Carousel_PositionChanged;
 
 			Grid.SetColumnSpan(_carousel, 2);
-						
+
 			_carousel.SetBinding(CarouselView.ItemsSourceProperty, new Binding("Items"));
 			_carousel.BindingContext = this;
 

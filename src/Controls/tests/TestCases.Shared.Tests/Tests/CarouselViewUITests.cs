@@ -70,7 +70,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblSelected", previousIndex);
 		}
 
-// Catalyst doesn't support orientation changes
+		// Catalyst doesn't support orientation changes
 #if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]

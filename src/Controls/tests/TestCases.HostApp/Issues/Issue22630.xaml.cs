@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-		
+
 		void OnListViewScrolled(System.Object sender, ScrolledEventArgs e)
 		{
 			TestLabel.Text = "Success";

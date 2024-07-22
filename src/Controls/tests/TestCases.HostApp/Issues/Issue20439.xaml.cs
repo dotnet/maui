@@ -10,16 +10,16 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Content = new VerticalStackLayout()
 			{
-				Children = 
+				Children =
 				{
-					new Button() 
-					{ 
-						Text = "Go To Test", 
-						AutomationId = "GoToTest", 
-						Command = new Command(() => Application.Current.MainPage = new Issue20439()) 
+					new Button()
+					{
+						Text = "Go To Test",
+						AutomationId = "GoToTest",
+						Command = new Command(() => Application.Current.MainPage = new Issue20439())
 					}
 				}
-			};			
+			};
 		}
 	}
 

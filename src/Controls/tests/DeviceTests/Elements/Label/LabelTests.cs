@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-		
+
 		[Fact(DisplayName = "Does Not Leak")]
 		public async Task DoesNotLeak()
 		{

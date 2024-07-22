@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
-		
+
 		static void UpdateBackgroundLayers(this IEnumerable<CALayer> backgroundLayers, CGRect bounds)
 		{
 			using var backgroundLayerEnumerator = backgroundLayers.GetEnumerator();
@@ -205,14 +205,14 @@ namespace Microsoft.Maui.Platform
 				// To prevent this undesired effect, native animations will be turned off for the duration of the operation.
 				CATransaction.Begin();
 				CATransaction.AnimationDuration = 0;
-				
+
 				do
 				{
 					var backgroundLayer = backgroundLayerEnumerator.Current;
 					backgroundLayer.Frame = bounds;
 				}
 				while (backgroundLayerEnumerator.MoveNext());
-				
+
 				CATransaction.Commit();
 			}
 		}

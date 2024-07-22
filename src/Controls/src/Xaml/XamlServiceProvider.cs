@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			static bool IsBindingContextBinding(IElementNode node)
 			{
-				if (   ApplyPropertiesVisitor.TryGetPropertyName(node, node.Parent, out XmlName name)
+				if (ApplyPropertiesVisitor.TryGetPropertyName(node, node.Parent, out XmlName name)
 					&& name.NamespaceURI == ""
 					&& name.LocalName == nameof(BindableObject.BindingContext))
 					return true;

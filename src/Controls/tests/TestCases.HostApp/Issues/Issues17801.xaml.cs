@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-		
+
 		void OnCounterClicked(object sender, EventArgs e)
 		{
 			_count++;

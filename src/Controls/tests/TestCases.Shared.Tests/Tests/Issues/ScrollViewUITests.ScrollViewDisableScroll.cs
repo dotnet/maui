@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnAllPlatforms("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		public void ScrollEnabled()
-		{			
+		{
 			App.WaitForElement(FirstItemMark);
 
 			App.Tap(ToggleButtonMark);
