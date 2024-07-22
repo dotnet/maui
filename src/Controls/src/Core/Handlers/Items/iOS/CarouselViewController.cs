@@ -24,10 +24,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// if this is null we are not attached to the window
 		List<View> _oldViews;
 		int _gotoPosition = -1;
-		CGSize _size;
 		ILoopItemsViewSource LoopItemsSource => ItemsSource as ILoopItemsViewSource;
 		bool _isDragging;
-		bool _isRotating;
 
 		public CarouselViewController(CarouselView itemsView, UICollectionViewLayout layout) : base(itemsView, layout)
 		{
@@ -84,11 +82,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ViewDidLoad();
 		}
 
-		void OnDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
-		{
-			_isRotating = true;
-		}
-
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
@@ -102,29 +95,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
 				_isCenteringItem = true;
-				//_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
+				//	_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
 				_isCenteringItem = false;
 			}
 
-			if (CollectionView.Bounds.Size != _size)
-			{
-				_size = CollectionView.Bounds.Size;
-				BoundsSizeChanged();
-			}
-			else
-			{
-				UpdateInitialPosition();
-			}
-			_isRotating = false;
-		}
-
-		void BoundsSizeChanged()
-		{
-			//if the size changed center the item
-			if (ItemsView is CarouselView carousel)
-			{
-				carousel.ScrollTo(carousel.Position, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: false);
-			}
+			UpdateInitialPosition();
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -188,8 +163,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return itemsSource;
 		}
 
-
-
 		private protected override void AttachingToWindow()
 		{
 			base.AttachingToWindow();
@@ -209,8 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = null;
 
 			carouselView.Scrolled -= CarouselViewScrolled;
-			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
-
+		
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 
 			_carouselViewLoopManager?.Dispose();
@@ -224,8 +196,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_oldViews = new List<View>();
 
 			carouselView.Scrolled += CarouselViewScrolled;
-			DeviceDisplay.MainDisplayInfoChanged += OnDisplayInfoChanged;
-
+		
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
 		}
 
@@ -260,6 +231,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
+			System.Diagnostics.Debug.WriteLine($"CarouselViewScrolled: {e.CenterItemIndex}");
 			// If we are trying to center the item when Loop is enabled we don't want to update the position
 			if (_isCenteringItem)
 			{
@@ -269,12 +241,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// If we are dragging the carousel we don't want to update the position
 			// We will do it when the dragging ends
 			if (_isDragging)
-			{
-				return;
-			}
-
-			// If we are rotating the device we don't want to update the position
-			if (_isRotating)
 			{
 				return;
 			}
@@ -429,7 +395,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_gotoPosition = goToPosition;
 
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
-				
+
 				var goToIndexPath = NSIndexPath.Create(0, _gotoPosition);
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
@@ -535,10 +501,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (currentItem != null)
 				{
 					position = ItemsSource.GetIndexForItem(currentItem).Row;
-				}
-				else
-				{
-					SetCurrentItem(position);
 				}
 
 				var indexPath = NSIndexPath.FromItemSection(position, 0);
@@ -651,17 +613,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_layout = layout;
 		}
 
-		// public void CenterIfNeeded(UICollectionView collectionView, bool isHorizontal)
-		// {
-		// 	if (isHorizontal)
-		// 	{
-		// 		CenterHorizontalIfNeeded(collectionView);
-		// 	}
-		// 	else
-		// 	{
-		// 		CenterVerticallyIfNeeded(collectionView);
-		// 	}
-		// }
+		public void CenterIfNeeded(UICollectionView collectionView, bool isHorizontal)
+		{
+			if (isHorizontal)
+			{
+				CenterHorizontalIfNeeded(collectionView);
+			}
+			else
+			{
+				CenterVerticallyIfNeeded(collectionView);
+			}
+		}
 
 		protected virtual void Dispose(bool disposing)
 		{
@@ -743,83 +705,83 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void SetItemsSource(ILoopItemsViewSource itemsSource) => _itemsSource = itemsSource;
 
-		// void CenterVerticallyIfNeeded(UICollectionView collectionView)
-		// {
-		// 	var cellHeight = _layout.ItemSize.Height;
-		// 	var cellPadding = 0;
-		// 	var currentOffset = collectionView.ContentOffset;
-		// 	var contentHeight = GetTotalContentHeight();
-		// 	var boundsHeight = collectionView.Bounds.Size.Height;
+		void CenterVerticallyIfNeeded(UICollectionView collectionView)
+		{
+			var cellHeight = collectionView.Bounds.Size.Height;
+			var cellPadding = 0;
+			var currentOffset = collectionView.ContentOffset;
+			var contentHeight = GetItemsSourceCount();
+			var boundsHeight = collectionView.Bounds.Size.Height;
 
-		// 	if (contentHeight == 0 || cellHeight == 0)
-		// 	{
-		// 		return;
-		// 	}
+			if (contentHeight == 0 || cellHeight == 0)
+			{
+				return;
+			}
 
-		// 	var centerOffsetY = (LoopCount * contentHeight - boundsHeight) / 2;
-		// 	var distFromCenter = centerOffsetY - currentOffset.Y;
+			var centerOffsetY = (LoopCount * contentHeight - boundsHeight) / 2;
+			var distFromCenter = centerOffsetY - currentOffset.Y;
 
-		// 	if (Math.Abs(distFromCenter) > (contentHeight / GetMinLoopCount()))
-		// 	{
-		// 		var cellcount = distFromCenter / (cellHeight + cellPadding);
-		// 		var shiftCells = (int)((cellcount > 0) ? Math.Floor(cellcount) : Math.Ceiling(cellcount));
-		// 		var offsetCorrection = (Math.Abs(cellcount) % 1.0) * (cellHeight + cellPadding);
+			if (Math.Abs(distFromCenter) > (contentHeight / GetMinLoopCount()))
+			{
+				var cellcount = distFromCenter / (cellHeight + cellPadding);
+				var shiftCells = (int)((cellcount > 0) ? Math.Floor(cellcount) : Math.Ceiling(cellcount));
+				var offsetCorrection = (Math.Abs(cellcount) % 1.0) * (cellHeight + cellPadding);
 
-		// 		if (collectionView.ContentOffset.Y < centerOffsetY)
-		// 		{
-		// 			collectionView.ContentOffset = new CGPoint(currentOffset.X, centerOffsetY - offsetCorrection);
-		// 		}
-		// 		else if (collectionView.ContentOffset.Y > centerOffsetY)
-		// 		{
-		// 			collectionView.ContentOffset = new CGPoint(currentOffset.X, centerOffsetY + offsetCorrection);
-		// 		}
+				if (collectionView.ContentOffset.Y < centerOffsetY)
+				{
+					collectionView.ContentOffset = new CGPoint(currentOffset.X, centerOffsetY - offsetCorrection);
+				}
+				else if (collectionView.ContentOffset.Y > centerOffsetY)
+				{
+					collectionView.ContentOffset = new CGPoint(currentOffset.X, centerOffsetY + offsetCorrection);
+				}
 
-		// 		FinishCenterIfNeeded(collectionView, shiftCells);
-		// 	}
-		// }
+				FinishCenterIfNeeded(collectionView, shiftCells);
+			}
+		}
 
-		// void CenterHorizontalIfNeeded(UICollectionView collectionView)
-		// {
-		// 	var cellWidth = _layout.ItemSize.Width;
-		// 	var cellPadding = 0;
-		// 	var currentOffset = collectionView.ContentOffset;
-		// 	var contentWidth = GetTotalContentWidth();
-		// 	var boundsWidth = collectionView.Bounds.Size.Width;
+		void CenterHorizontalIfNeeded(UICollectionView collectionView)
+		{
+			var cellWidth = collectionView.Bounds.Size.Width;
+			var cellPadding = 0;
+			var currentOffset = collectionView.ContentOffset;
+			var contentWidth = cellWidth * GetItemsSourceCount();
+			var boundsWidth = collectionView.Bounds.Size.Width;
 
-		// 	if (contentWidth == 0 || cellWidth == 0)
-		// 	{
-		// 		return;
-		// 	}
+			if (contentWidth == 0 || cellWidth == 0)
+			{
+				return;
+			}
 
-		// 	var centerOffsetX = (LoopCount * contentWidth - boundsWidth) / 2;
-		// 	var distFromCentre = centerOffsetX - currentOffset.X;
+			var centerOffsetX = (LoopCount * contentWidth - boundsWidth) / 2;
+			var distFromCentre = centerOffsetX - currentOffset.X;
 
-		// 	if (Math.Abs(distFromCentre) > (contentWidth / GetMinLoopCount()))
-		// 	{
-		// 		var cellcount = distFromCentre / (cellWidth + cellPadding);
-		// 		var shiftCells = (int)((cellcount > 0) ? Math.Floor(cellcount) : Math.Ceiling(cellcount));
-		// 		var offsetCorrection = (Math.Abs(cellcount % 1.0f)) * (cellWidth + cellPadding);
+			if (Math.Abs(distFromCentre) > (contentWidth / GetMinLoopCount()))
+			{
+				var cellcount = distFromCentre / (cellWidth + cellPadding);
+				var shiftCells = (int)((cellcount > 0) ? Math.Floor(cellcount) : Math.Ceiling(cellcount));
+				var offsetCorrection = (Math.Abs(cellcount % 1.0f)) * (cellWidth + cellPadding);
 
-		// 		if (collectionView.ContentOffset.X < centerOffsetX)
-		// 		{
-		// 			collectionView.ContentOffset = new CGPoint(centerOffsetX - offsetCorrection, currentOffset.Y);
-		// 		}
-		// 		else if (collectionView.ContentOffset.X > centerOffsetX)
-		// 		{
-		// 			collectionView.ContentOffset = new CGPoint(centerOffsetX + offsetCorrection, currentOffset.Y);
-		// 		}
+				if (collectionView.ContentOffset.X < centerOffsetX)
+				{
+					collectionView.ContentOffset = new CGPoint(centerOffsetX - offsetCorrection, currentOffset.Y);
+				}
+				else if (collectionView.ContentOffset.X > centerOffsetX)
+				{
+					collectionView.ContentOffset = new CGPoint(centerOffsetX + offsetCorrection, currentOffset.Y);
+				}
 
-		// 		FinishCenterIfNeeded(collectionView, shiftCells);
-		// 	}
+				FinishCenterIfNeeded(collectionView, shiftCells);
+			}
 
-		// }
+		}
 
-		// void FinishCenterIfNeeded(UICollectionView collectionView, int shiftCells)
-		// {
-		// 	ShiftContentArray(shiftCells);
+		void FinishCenterIfNeeded(UICollectionView collectionView, int shiftCells)
+		{
+			ShiftContentArray(shiftCells);
 
-		// 	collectionView.ReloadData();
-		// }
+			collectionView.ReloadData();
+		}
 
 		int GetCorrectedIndex(int indexToCorrect)
 		{
@@ -848,10 +810,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int GetMinLoopCount() => Math.Min(LoopCount, GetItemsSourceCount());
 
 		int GetItemsSourceCount() => _itemsSource.ItemCount;
-
-		// nfloat GetTotalContentWidth() => GetItemsSourceCount() * _layout.ItemSize.Width;
-
-		// nfloat GetTotalContentHeight() => GetItemsSourceCount() * _layout.ItemSize.Height;
 
 		void ShiftContentArray(int shiftCells)
 		{
