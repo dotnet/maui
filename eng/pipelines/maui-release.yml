@@ -196,7 +196,7 @@ extends:
             os: ${{ parameters.VM_IMAGE_HOST.os }}     
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
-        - ${{ if eq(variables['Build.Reason'], 'Schedule')) }}:
+        - ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
           - stage: nightly
             displayName: Nightly
             dependsOn: ['sdk_insertion']
