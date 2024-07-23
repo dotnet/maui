@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				TextColor = Colors.Black,
 			};
-			label.SetBinding(XLabel.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object source) => source, converter: new ToTextConverter()));
+			label.SetBinding(XLabel.TextProperty, static (object source) => source, converter: new ToTextConverter());
 
 			return new Controls.StackLayout
 			{

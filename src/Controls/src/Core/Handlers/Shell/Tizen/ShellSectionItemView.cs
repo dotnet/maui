@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Platform
 					VerticalOptions = LayoutOptions.Center,
 				};
 
-				_icon.SetBinding(Path.DataProperty, TypedBinding.ForSingleNestingLevel("IconPath", static (ShellItemView.MoreItem item) => item.IconPath, converter: new IconConverter()));
+				_icon.SetBinding(Path.DataProperty, static (ShellItemView.MoreItem item) => item.IconPath, converter: new IconConverter());
 				return _icon;
 			}
 			else
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Platform
 					VerticalOptions = LayoutOptions.Center,
 				};
 
-				_icon.SetBinding(Image.SourceProperty, TypedBinding.ForSingleNestingLevel("Icon", static (BaseShellItem item) => item.Icon));
+				_icon.SetBinding(Image.SourceProperty, static (BaseShellItem item) => item.Icon);
 				return _icon;
 			}
 		}
@@ -150,11 +150,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_isMoreItem)
 			{
-				_label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (ShellItemView.MoreItem item) => item.Title));
+				_label.SetBinding(Label.TextProperty, static (ShellItemView.MoreItem item) => item.Title);
 			}
 			else
 			{
-				_label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (BaseShellItem item) => item.Title));
+				_label.SetBinding(Label.TextProperty, static (BaseShellItem item) => item.Title);
 			}
 
 			return _label;

@@ -553,12 +553,7 @@ namespace Microsoft.Maui.Controls
 							// just bind the semantic description to the title
 							if (!g.IsSet(SemanticProperties.DescriptionProperty))
 							{
-								g.SetBinding(
-									SemanticProperties.DescriptionProperty,
-									TypedBinding.ForSingleNestingLevel(
-										nameof(BaseShellItem.Title),
-										static (BaseShellItem item) => item.Title,
-										static (item, val) => item.Title = val));
+								g.SetBinding(SemanticProperties.DescriptionProperty, static (BaseShellItem item) => item.Title);
 							}
 						}
 					}

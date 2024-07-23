@@ -202,10 +202,10 @@ namespace Microsoft.Maui.Controls
 				Padding = new Thickness(0);
 				HasShadow = false;
 				BorderColor = GColors.DarkGray;
-				SetBinding(BackgroundProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.BarBackground) , static (TabbedPage page) => page.BarBackground, source: _page));
-				SetBinding(BackgroundColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.BarBackgroundColor), static (TabbedPage page) => page.BarBackgroundColor, source: _page));
-				SetBinding(SelectedTabColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.SelectedTabColor), static (TabbedPage page) => page.SelectedTabColor, source: _page));
-				SetBinding(UnselectedTabColorProperty, TypedBinding.ForSingleNestingLevel(nameof(Microsoft.Maui.Controls.TabbedPage.UnselectedTabColor), static (TabbedPage page) => page.UnselectedTabColor, source: _page));
+				this.SetBinding(BackgroundProperty, static (TabbedPage page) => page.BarBackground, source: _page);
+				this.SetBinding(BackgroundColorProperty, static (TabbedPage page) => page.BarBackgroundColor, source: _page);
+				this.SetBinding(SelectedTabColorProperty, static (TabbedPage page) => page.SelectedTabColor, source: _page);
+				this.SetBinding(UnselectedTabColorProperty, static (TabbedPage page) => page.UnselectedTabColor, source: _page);
 
 				var label = new XLabel
 				{
@@ -214,8 +214,8 @@ namespace Microsoft.Maui.Controls
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
 				};
-				label.SetBinding(XLabel.TextProperty, TypedBinding.ForSingleNestingLevel("Title", static (TabbedPage page) => page.Title, source: _page));
-				label.SetBinding(XLabel.TextColorProperty, TypedBinding.ForSingleNestingLevel("BarTextColor", static (TabbedPage page) => page.BarTextColor, source: _page));
+				label.SetBinding(XLabel.TextProperty, static (TabbedPage page) => page.Title, source: _page);
+				label.SetBinding(XLabel.TextColorProperty, static (TabbedPage page) => page.BarTextColor, source: _page);
 
 				_bar = new BoxView
 				{
