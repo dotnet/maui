@@ -2,7 +2,6 @@ using Microsoft.Maui;
 
 namespace Microsoft.Maui.Controls
 {
-#pragma warning disable RS0016 // Add public types and members to the declared API
 	public static class HandlerBehavior
 	{
         public static readonly BindableProperty DisconnectPolicyProperty = BindableProperty.CreateAttached(
@@ -21,7 +20,4 @@ namespace Microsoft.Maui.Controls
             return (HandlerDisconnectPolicy)target.GetValue(DisconnectPolicyProperty);
         }
     }
-
-    
-#pragma warning restore RS0016 // Add public types and members to the declared API
 }
