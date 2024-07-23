@@ -87,14 +87,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 #pragma warning restore CS0618 // Obsolete
 			}
 
+#pragma warning disable CS0618 // Obsolete
 			ViewCompat.SetLabelFor(View, (int)(id ?? _defaultLabelFor));
+#pragma warning restore CS0618 // Obsolete
 		}
 
 		public void UpdateLayout()
 		{
-#pragma warning disable CS0618 // Obsolete
 			Tracker?.UpdateLayout();
-#pragma warning restore CS0618 // Obsolete
 		}
 	}
 }
