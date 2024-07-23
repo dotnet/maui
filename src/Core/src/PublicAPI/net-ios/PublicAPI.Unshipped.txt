@@ -205,3 +205,7 @@ Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void
+*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
+Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+*REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
+static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!

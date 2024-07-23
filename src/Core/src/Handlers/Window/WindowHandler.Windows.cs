@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Handlers
 			var previousRootView = windowManager.RootView;
 
 			windowManager.Disconnect();
-			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
+			windowManager.Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
 
 			if (handler.PlatformView.Content is WindowRootViewContainer container)
 			{

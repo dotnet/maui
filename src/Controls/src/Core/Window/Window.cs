@@ -385,7 +385,7 @@ namespace Microsoft.Maui.Controls
 			set => throw new InvalidOperationException("A window cannot set a window.");
 		}
 
-		IView IWindow.Content =>
+		IView? IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		Application? Application => Parent as Application;
