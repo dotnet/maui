@@ -39,7 +39,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			//TODO: Find a better way to do this 
 			itemsLayout.PropertyChanged += (sender, args) =>
 			{
-				if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) || args.PropertyName == nameof(ItemsLayout.SnapPointsType))
+				if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+					args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+					args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
+					args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) || 
+					args.PropertyName == nameof(GridItemsLayout.Span) ||
+					args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+
 				{
 					UpdateLayout();
 				}
