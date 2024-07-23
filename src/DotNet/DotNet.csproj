@@ -5,6 +5,7 @@
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
     <DotNetFeedUrl>https://dotnetcli.azureedge.net/dotnet</DotNetFeedUrl>
+    <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
@@ -41,7 +42,7 @@
     Running this with ./bin/dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
-  <Target Name="Install" DependsOnTargets="SetVersions">
+  <Target Name="Install">
 
     <Error
         Condition=" '$(MSBuildRuntimeType)' != 'Core' "
@@ -53,7 +54,7 @@
 
     <!-- Setup Microsoft.NET.Sdk.Maui/WorkloadManifest.* -->
     <ItemGroup>
-      <_PackagesToUnzip Include="$(PackageOutputPath)/Microsoft.NET.Sdk.Maui.Manifest-$(DotNetMauiManifestVersionBand).*.nupkg" />
+      <_PackagesToUnzip Include="$(NugetArtifactsPath)/Microsoft.NET.Sdk.Maui.Manifest-$(DotNetMauiManifestVersionBand).*.nupkg" />
     </ItemGroup>
     <Unzip
         SourceFiles="@(_PackagesToUnzip)"
@@ -71,10 +72,10 @@
 
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
-      <_WorkloadSource Include="$(PackageOutputPath)" />
+      <_WorkloadSource Include="$(NugetArtifactsPath)" />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
-    <Exec Command="dotnet nuget add source &quot;$(PackageOutputPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
+    <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
     <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
@@ -171,7 +172,7 @@
     <RemoveDir Directories="$(_WorkloadManifestDir);@(_WorkloadDirectoriesToRemove)" />
     <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
-        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(PackageOutputPath)/logs/DotNetWorkloads.binlog"
+        Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(ArtifactsLogDir)/DotNetWorkloads.binlog"
         EnvironmentVariables="MSBuildSDKsPath=;NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--

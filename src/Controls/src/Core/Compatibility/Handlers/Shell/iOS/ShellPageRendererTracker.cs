@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
+			else if (e.Is(Shell.FlyoutIconProperty))
+				UpdateLeftToolbarItems();
 		}
 
 		protected virtual void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -325,6 +327,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!IsRootPage)
 			{
 				NavigationItem.HidesBackButton = !backButtonVisible;
+				image = backButtonVisible ? image : null;
 			}
 
 			image.LoadImage(MauiContext, result =>

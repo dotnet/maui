@@ -60,6 +60,7 @@
         </CleanDependsOn>
 
         <_ResizetizerInputsFile>$(IntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
+        <_ResizetizerOutputsFile>$(IntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
         <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
         <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
         <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
@@ -115,6 +116,7 @@
             $(ResizetizeDependsOnTargets);
             ResizetizeCollectItems;
             ProcessMauiSplashScreens;
+            _ReadResizetizeImagesOutputs;
         </ResizetizeDependsOnTargets>
         <ProcessMauiFontsDependsOnTargets>
             $(ProcessMauiFontsDependsOnTargets);
@@ -601,10 +603,16 @@
         </ItemGroup>
     </Target>
 
+    <Target Name="_ReadResizetizeImagesOutputs">
+        <ReadLinesFromFile File="$(_ResizetizerOutputsFile)" Condition="Exists ('$(_ResizetizerOutputsFile)')">
+            <Output TaskParameter="Lines" ItemName="_ResizetizerOutputs" />
+        </ReadLinesFromFile>
+    </Target>
+
     <Target Name="ResizetizeImages"
         Condition="'$(EnableMauiImageProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
-        Outputs="$(_ResizetizerStampFile)"
+        Outputs="$(_ResizetizerStampFile);@(_ResizetizerOutputs)"
         AfterTargets="$(ResizetizeAfterTargets)"
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
@@ -720,10 +728,17 @@
 
         <!-- Touch/create our stamp file for outputs -->
         <Touch Files="$(_ResizetizerStampFile)" AlwaysCreate="True" />
+        <WriteLinesToFile
+            File="$(_ResizetizerOutputsFile)"
+            Lines="@(_ResizetizerCollectedImages->'%(Identity)')"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+        />
 
         <!-- Include our images and stamp file as filewrites so they don't get rm'd -->
         <ItemGroup>
             <FileWrites Include="$(_ResizetizerStampFile)" />
+            <FileWrites Include="$(_ResizetizerOutputsFile)" />
         </ItemGroup>
     </Target>
 

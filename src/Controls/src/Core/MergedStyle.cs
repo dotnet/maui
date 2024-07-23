@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls
 			Type type = TargetType;
 			while (true)
 			{
-				BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
+				BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 				_implicitStyles.Add(implicitStyleProperty);
 				Target.SetDynamicResource(implicitStyleProperty, type.FullName);
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls
 			_implicitStyles.Clear();
 
 			//Register the fallback
-			BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
+			BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);

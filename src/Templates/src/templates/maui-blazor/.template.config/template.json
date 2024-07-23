@@ -17,6 +17,9 @@
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
         "path": "Components/Pages/Home.razor"
+      },
+      {
+        "path": "MauiApp.1.csproj"
       }
     ],
     "postActions": [
@@ -99,6 +102,12 @@
           ]
         }
       },
+      "XmlEncodedAppNameParam": {
+        "type": "derived",
+        "valueSource": "name",
+        "valueTransform": "encode",
+        "replaces": "XmlEncodedAppName"
+      },
       "defaultAppId":{
         "type": "generated",
         "generator": "join",
@@ -124,6 +133,11 @@
         },
         "replaces": "com.companyname.mauiapp"
       }
+    },
+    "forms": {
+        "encode": {
+          "identifier": "xmlEncode"
+        }
     },
     "defaultName": "MauiApp1"
   }

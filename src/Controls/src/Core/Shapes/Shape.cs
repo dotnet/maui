@@ -310,8 +310,8 @@ namespace Microsoft.Maui.Controls.Shapes
 				float calculatedWidth = (float)(viewBounds.Width / pathBounds.Width);
 				float calculatedHeight = (float)(viewBounds.Height / pathBounds.Height);
 
-				float widthScale = float.IsNaN(calculatedWidth) ? 0 : calculatedWidth;
-				float heightScale = float.IsNaN(calculatedHeight) ? 0 : calculatedHeight;
+				float widthScale = float.IsNaN(calculatedWidth) || float.IsInfinity(calculatedWidth) ? 0 : calculatedWidth;
+				float heightScale = float.IsNaN(calculatedHeight) || float.IsInfinity(calculatedHeight) ? 0 : calculatedHeight;
 
 				switch (Aspect)
 				{
@@ -393,8 +393,8 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
-			scaleX = double.IsNaN(scaleX) ? 0 : scaleX;
-			scaleY = double.IsNaN(scaleY) ? 0 : scaleY;
+			scaleX = double.IsNaN(scaleX) || double.IsInfinity(scaleX) ? 0 : scaleX;
+			scaleY = double.IsNaN(scaleY) || double.IsInfinity(scaleY) ? 0 : scaleY;
 
 			switch (Aspect)
 			{

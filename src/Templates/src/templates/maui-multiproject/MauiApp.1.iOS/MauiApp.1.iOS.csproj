@@ -4,6 +4,7 @@
 		<TargetFramework>DOTNET_TFM-ios</TargetFramework>
 		<SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
 		<OutputType>Exe</OutputType>
+		<RootNamespace>MauiApp._1</RootNamespace>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseMaui>true</UseMaui>
@@ -16,7 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\MauiApp.1\MauiApp.1.csproj" />
+		<ProjectReference Include="..\XmlEncodedAppName\XmlEncodedAppName.csproj" />
 	</ItemGroup>
 
 </Project>

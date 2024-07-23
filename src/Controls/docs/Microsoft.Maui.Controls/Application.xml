@@ -26,9 +26,9 @@
   <Docs>
     <summary>Class that represents a cross-platform mobile application.</summary>
     <remarks>
-      <para>The <see cref="T:Microsoft.Maui.Controls.Application" /> class is the core of a Microsoft.Maui.Controls application. It sets the root page of the application, persists primitive type data across invocations of the application in the <see cref="P:Microsoft.Maui.Controls.Application.Properties" /> dictionary, and provides events to respond to pushing and popping of modal views. Visual studio creates this class for the developer in the appropriate project in a new Microsoft.Maui.Controls solution.</para>
+      <para>The <see cref="T:Microsoft.Maui.Controls.Application" /> class is the core of a .NET MAUI application. It sets the root page of the application, and provides events to respond to pushing and popping of modal views. Visual Studio creates this class for the developer in the appropriate project in a new .NET MAUI solution.</para>
       <example>
-        <para>Both Visual Studio for Mac and Visual Studio create a XAML and a code-behind file for the application when the developer creates a new Microsoft.Maui.Controls solution. The following example shows a typical <c>Application</c> class, with an entry in its resource dictionary.</para>
+        <para>Both Visual Studio creates a XAML and a code-behind file for the application when the developer creates a new .NET MAUI solution. The following example shows a typical <c>Application</c> class, with an entry in its resource dictionary.</para>
         <code lang="XAML"><![CDATA[
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"

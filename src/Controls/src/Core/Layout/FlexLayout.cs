@@ -497,22 +497,32 @@ namespace Microsoft.Maui.Controls
 			{
 				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
 				{
-					var sizeConstraints = item.GetConstraints();
+					Size request;
 
-					sizeConstraints.Width = (InMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
-					sizeConstraints.Height = (InMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
-
-					if (child is Image)
+					if (InMeasureMode)
 					{
-						// This is a hack to get FlexLayout to behave like it did in Forms
-						// Forms always did its initial image measure unconstrained, which would return
-						// the intrinsic size of the image (no scaling or aspect ratio adjustments)
+						var sizeConstraints = item.GetConstraints();
 
-						sizeConstraints.Width = double.PositiveInfinity;
-						sizeConstraints.Height = double.PositiveInfinity;
+						sizeConstraints.Width = (InMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
+						sizeConstraints.Height = (InMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+
+						if (child is Image)
+						{
+							// This is a hack to get FlexLayout to behave like it did in Forms
+							// Forms always did its initial image measure unconstrained, which would return
+							// the intrinsic size of the image (no scaling or aspect ratio adjustments)
+
+							sizeConstraints.Width = double.PositiveInfinity;
+							sizeConstraints.Height = double.PositiveInfinity;
+						}
+
+						request = child.Measure(sizeConstraints.Width, sizeConstraints.Height);
 					}
-
-					var request = child.Measure(sizeConstraints.Width, sizeConstraints.Height);
+					else
+					{
+						// Arrange pass, do not ever run a measure here!
+						request = child.DesiredSize;
+					}
 					w = (float)request.Width;
 					h = (float)request.Height;
 				};

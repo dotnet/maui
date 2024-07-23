@@ -7,12 +7,11 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class CompassImplementation : ICompass
 	{
-		static SensorManager _sensorManager;
 		static Sensor _accelerometer;
 		static Sensor _magnetic;
 
-		static SensorManager SensorManager =>
-			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+		static SensorManager SensorManager => 
+			Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor Accelerometer =>
 			_accelerometer ??= SensorManager?.GetDefaultSensor(SensorType.Accelerometer);

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_detail != null && value == null)
-					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+					throw new ArgumentNullException(nameof(value), "Detail cannot be set to null once a value is set.");
 
 				if (_detail == value)
 					return;
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_flyout != null && value == null)
-					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+					throw new ArgumentNullException(nameof(value), "Flyout cannot be set to null once a value is set");
 
 				if (string.IsNullOrEmpty(value.Title))
 					throw new InvalidOperationException("Title property must be set on Flyout page");
