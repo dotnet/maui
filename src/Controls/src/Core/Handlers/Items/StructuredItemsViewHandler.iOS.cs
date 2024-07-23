@@ -11,6 +11,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public bool HasFooter { get; set; }
 	}
 
+	internal class LayoutSnapInfo
+	{
+		public SnapPointsAlignment SnapAligment { get; set; }
+		public SnapPointsType SnapType { get; set; }
+	}
+
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
 		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, UICollectionViewLayout layout)
@@ -19,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override UICollectionViewLayout SelectLayout()
 		{
 			var groupInfo = new LayoutGroupingInfo();
-			
+
 			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
 			{
 				groupInfo.IsGrouped = groupableItemsView.IsGrouped;
@@ -39,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return LayoutFactory.CreateList(listItemsLayout, groupInfo);
 			}
-			
+
 			// Fall back to vertical list
 			return LayoutFactory.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), groupInfo);
 		}
