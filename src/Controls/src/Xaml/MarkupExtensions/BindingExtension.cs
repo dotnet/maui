@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Path))]
+	[RequireService([typeof(IXamlTypeResolver), typeof(IXamlDataTypeProvider)])]
 	public sealed class BindingExtension : IMarkupExtension<BindingBase>
 	{
 		public string Path { get; set; } = Binding.SelfPath;
