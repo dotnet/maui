@@ -1028,8 +1028,8 @@ namespace Microsoft.Maui.Controls
 
 		HandlerDisconnectPolicy IHandlerBehaviors.DisconnectPolicy 
 		{ 
-			get => HandlerBehavior.GetDisconnectionPolicy(this);
-			set => HandlerBehavior.SetDisconnectionPolicy(this, value);
+			get => HandlerBehavior.GetDisconnectPolicy(this);
+			set => HandlerBehavior.SetDisconnectPolicy(this, value);
 		}
 
 		class TemporaryWrapper : IList<Element>

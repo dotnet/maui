@@ -193,10 +193,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		Task _waitForModalToFinishTask = Task.CompletedTask;
+
 		public async Task<Page?> PopModalAsync(bool animated)
 		{
 			if (_modalPages.Count <= 0)
 				throw new InvalidOperationException("PopModalAsync failed because modal stack is currently empty.");
+
+			await _waitForModalToFinishTask;
 
 			Page modal = _modalPages[_modalPages.Count - 1].Page;
 
@@ -251,6 +255,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
+			await _waitForModalToFinishTask;
+
 			_window.OnModalPushing(modal);
 
 			var previousPage = CurrentPage;

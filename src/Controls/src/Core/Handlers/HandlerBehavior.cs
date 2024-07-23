@@ -5,20 +5,20 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable RS0016 // Add public types and members to the declared API
 	public static class HandlerBehavior
 	{
-        public static readonly BindableProperty DisconnectionPolicyProperty = BindableProperty.CreateAttached(
-            "DisconnectionPolicy",
+        public static readonly BindableProperty DisconnectPolicyProperty = BindableProperty.CreateAttached(
+            "DisconnectPolicy",
             typeof(HandlerDisconnectPolicy),
             typeof(HandlerBehavior),
             HandlerDisconnectPolicy.Automatic);
 
-        public static void SetDisconnectionPolicy(BindableObject target, HandlerDisconnectPolicy value)
+        public static void SetDisconnectPolicy(BindableObject target, HandlerDisconnectPolicy value)
         {
-            target.SetValue(DisconnectionPolicyProperty, value);
+            target.SetValue(DisconnectPolicyProperty, value);
         }
 
-        public static HandlerDisconnectPolicy GetDisconnectionPolicy(BindableObject target)
+        public static HandlerDisconnectPolicy GetDisconnectPolicy(BindableObject target)
         {
-            return (HandlerDisconnectPolicy)target.GetValue(DisconnectionPolicyProperty);
+            return (HandlerDisconnectPolicy)target.GetValue(DisconnectPolicyProperty);
         }
     }
 
