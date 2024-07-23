@@ -153,6 +153,8 @@ static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handle
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateUserInterfaceStyle(this Microsoft.Maui.IApplication! application) -> void
 static Microsoft.Maui.Platform.TextFieldExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
+static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
@@ -187,6 +189,7 @@ virtual Microsoft.Maui.MauiUIApplicationDelegate.ReceivedRemoteNotification(UIKi
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void
 Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double heightConstraint) -> bool
+Microsoft.Maui.Platform.UIWindowExtensions
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 *REMOVED*override Microsoft.Maui.Platform.LayoutView.LayoutSubviews() -> void
