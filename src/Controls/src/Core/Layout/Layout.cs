@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// The actual backing store for the IViews in the ILayout
-		readonly List<IView> _children = new();
+		readonly private protected List<IView> _children = new();
 
 		/// <summary>
 		/// Gets the child objects contained in this layout.

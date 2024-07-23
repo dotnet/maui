@@ -10,6 +10,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 	public class FlexLayout : Layout<View>
 	{
 		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
