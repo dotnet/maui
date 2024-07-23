@@ -228,7 +228,7 @@ extends:
                     # https://learn.microsoft.com/en-us/azure/devops/pipelines/scripts/logging-commands?view=azure-devops&tabs=bash#setendpoint-modify-a-service-connection-field
                     Write-Host "##vso[task.setendpoint id=$(MauiNightlyFeedServiceConnectionId);field=authParameter;key=apitoken]${accessToken}"
 
-              - task: NuGetAuthenticate@0
+              - task: NuGetAuthenticate@1
                 displayName: NuGet Authenticate using managed identity token
                 inputs:
                   nuGetServiceConnections: maui-nightly-feed
