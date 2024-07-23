@@ -453,14 +453,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				var templateLayout = new Grid
 				{
 					RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition() },
-					WidthRequest = 120,
+					WidthRequest = 200,
 					HeightRequest = 100,
 					BackgroundColor = Colors.BlanchedAlmond
 				};
 
 				var image = new Image
 				{
-					HeightRequest = 100,
 					WidthRequest = 100,
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center,
@@ -476,7 +475,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 					HorizontalOptions = LayoutOptions.Fill,
 					HorizontalTextAlignment = TextAlignment.Center,
 					VerticalTextAlignment = TextAlignment.Center,
-					Margin = new Thickness(2, 0, 2, 2)
+					Margin = new Thickness(2, 0, 2, 2),
+					BackgroundColor = Colors.Blue
 				};
 
 				caption.SetBinding(Label.TextProperty, new Binding("Caption"));

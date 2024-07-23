@@ -68,7 +68,7 @@ internal static class LayoutFactory
 			var itemSize = NSCollectionLayoutSize.Create(itemWidth, itemHeight);
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
-
+				
 			// Each group of items (for grouped collections) has a size
 			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
@@ -80,11 +80,11 @@ internal static class LayoutFactory
 				? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1)
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
 
-			if (itemSpacing > 0)
-				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(itemSpacing));
+			group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(itemSpacing));
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
+			section.InterGroupSpacing = new NFloat(itemSpacing);
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
@@ -124,13 +124,19 @@ internal static class LayoutFactory
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, columns);
 
 			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
-				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(verticalItemSpacing));
-			else
 				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(horizontalItemSpacing));
+			else
+				group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(verticalItemSpacing));
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
 
+			if (scrollDirection == UICollectionViewScrollDirection.Vertical)
+				section.InterGroupSpacing = new NFloat(verticalItemSpacing);
+			else
+				section.InterGroupSpacing = new NFloat(horizontalItemSpacing);
+
+		
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
 				scrollDirection,
