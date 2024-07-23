@@ -235,22 +235,15 @@ extends:
 
               - task: DownloadPipelineArtifact@2
                 inputs:
-                  artifactName: DropMetadata-$(Build.BuildId)-nugets-$(System.JobAttempt)
-                  downloadPath: $(Build.StagingDirectory)\metadata
-                displayName: Download nugets drop metadata
+                  artifactName: nuget-signed
+                  downloadPath: $(Build.StagingDirectory)\nuget-signed
+                displayName: Download nuget-signed
 
-              - powershell: |
-                  $jsonContent = Get-Content -Path "$(Build.StagingDirectory)\metadata\VSTSDrop.json" -Raw | ConvertFrom-Json
-                  $dropPrefix = $jsonContent.VstsDropBuildArtifact.VstsDropUrl -replace 'https://devdiv.artifacts.visualstudio.com/DefaultCollection/_apis/drop/drops/' -replace '/nugets'
-                  Write-Host "##vso[task.setvariable variable=ReleaseDropPrefix]$dropPrefix"
-                displayName: Set variable ReleaseDropPrefix
-
-              - task: ms-vscs-artifact.build-tasks.artifactDropDownloadTask-1.artifactDropDownloadTask@1
-                displayName: Download $(ReleaseDropPrefix)/nugets
+             - task: DownloadPipelineArtifact@2
                 inputs:
-                  dropServiceURI: https://devdiv.artifacts.visualstudio.com/DefaultCollection
-                  buildNumber: $(ReleaseDropPrefix)/nugets
-                  destinationPath: $(Build.StagingDirectory)\nuget-signed
+                  artifactName: vs-msi-nugets
+                  downloadPath: $(Build.StagingDirectory)\nuget-signed
+                displayName: Download vs-msi-nugets
 
               - powershell: |
                   $feed = "$env:NUGET_FEED_MAUI_NIGHTLY"
