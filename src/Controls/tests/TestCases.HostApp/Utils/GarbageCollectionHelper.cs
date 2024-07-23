@@ -97,8 +97,6 @@ namespace Maui.Controls.Sample
 						}
 					};
 
-
-					// Assert *before* the Window is closed
 					await WaitForGC(references.ToArray());
 					rootPage.Content = new VerticalStackLayout()
 					{
