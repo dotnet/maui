@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Controls
 		PopToRoot,
 		Insert,
 		Remove,
-		PageSwap, // Not a final name
-		PlaceHolder
+		PageSwap,
+		Initialize
 	}
 
 	public sealed class NavigatedFromEventArgs : EventArgs

@@ -700,7 +700,7 @@ namespace Microsoft.Maui.Controls
 				() =>
 				{
 					// TODO this is the wrong navigation type
-					SendNavigated(null, NavigationType.PlaceHolder);
+					SendNavigated(null, NavigationType.Initialize);
 				})
 				.FireAndForget(Handler);
 			}
