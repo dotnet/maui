@@ -14,10 +14,10 @@ internal static class LayoutFactory
 			? CreateVerticalList(linearItemsLayout, groupingInfo)
 			: CreateHorizontalList(linearItemsLayout, groupingInfo);
 
-	public static UICollectionViewLayout CreateCarousel(LinearItemsLayout linearItemsLayout, LayoutGroupingInfo groupingInfo)
+	public static UICollectionViewLayout CreateCarousel(LinearItemsLayout linearItemsLayout, LayoutGroupingInfo groupingInfo, Func<Thickness> peekAreaInsets)
 		=> linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
-			? CreateVerticalCarousel(linearItemsLayout)
-			: CreateHorizontalCarousel(linearItemsLayout);
+			? CreateVerticalCarousel(linearItemsLayout, peekAreaInsets)
+			: CreateHorizontalCarousel(linearItemsLayout, peekAreaInsets);
 
 	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout, LayoutGroupingInfo groupingInfo)
 		=> gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
@@ -57,7 +57,7 @@ internal static class LayoutFactory
 		return [];
 	}
 
-	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing)
+	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
@@ -69,6 +69,19 @@ internal static class LayoutFactory
 			// Create the item itself from the size
 			var item = NSCollectionLayoutItem.Create(layoutSize: itemSize);
 				
+			if(peekAreaInsetsFunc?.Invoke() is Thickness peekAreaInsets)
+			{
+				if( scrollDirection == UICollectionViewScrollDirection.Vertical)
+				{
+					var newGroupHeight = environment.Container.ContentSize.Height - peekAreaInsets.Top - peekAreaInsets.Bottom;
+					groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
+				}
+				else
+				{
+					var newGroupWidth = environment.Container.ContentSize.Width - peekAreaInsets.Left - peekAreaInsets.Right;
+					groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
+				}
+			}
 			// Each group of items (for grouped collections) has a size
 			var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
@@ -80,7 +93,7 @@ internal static class LayoutFactory
 				? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1)
 				: NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
 
-			group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(itemSpacing));
+			//group.InterItemSpacing = NSCollectionLayoutSpacing.CreateFixed(new NFloat(itemSpacing));
 
 			// Create our section layout
 			var section = NSCollectionLayoutSection.Create(group: group);
@@ -160,7 +173,8 @@ internal static class LayoutFactory
 			NSCollectionLayoutDimension.CreateEstimated(30f),
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
 			NSCollectionLayoutDimension.CreateEstimated(30f),
-			linearItemsLayout.ItemSpacing);
+			linearItemsLayout.ItemSpacing,
+			null);
 
 
 	public static UICollectionViewLayout CreateHorizontalList(LinearItemsLayout linearItemsLayout,
@@ -174,9 +188,10 @@ internal static class LayoutFactory
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			NSCollectionLayoutDimension.CreateEstimated(30f),
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			linearItemsLayout.ItemSpacing);
+			linearItemsLayout.ItemSpacing,
+			null);
 
-	public static UICollectionViewLayout CreateVerticalCarousel(LinearItemsLayout linearItemsLayout)
+	public static UICollectionViewLayout CreateVerticalCarousel(LinearItemsLayout linearItemsLayout, Func<Thickness> peekAreaInsets)
 		=> CreateListLayout(UICollectionViewScrollDirection.Vertical,
 			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
 			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
@@ -185,10 +200,10 @@ internal static class LayoutFactory
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			0d);
+			0d,peekAreaInsets);
 
 
-	public static UICollectionViewLayout CreateHorizontalCarousel(LinearItemsLayout linearItemsLayout)
+	public static UICollectionViewLayout CreateHorizontalCarousel(LinearItemsLayout linearItemsLayout, Func<Thickness> peekAreaInsets)
 		=> CreateListLayout(UICollectionViewScrollDirection.Horizontal,
 			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
 			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
@@ -197,7 +212,7 @@ internal static class LayoutFactory
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			0d);
+			0d,peekAreaInsets);
 
 	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
 		LayoutGroupingInfo groupingInfo)

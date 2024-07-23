@@ -7,13 +7,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
-		UICollectionViewLayout _layout;
+		//UICollectionViewLayout _layout;
 
 		protected override CarouselViewController CreateController(CarouselView newElement, UICollectionViewLayout layout)
 				=> new CarouselViewController(newElement, layout);
 
 		protected override UICollectionViewLayout SelectLayout() =>
-				_layout ??= LayoutFactory.CreateCarousel(VirtualView.ItemsLayout, new LayoutGroupingInfo());
+				 LayoutFactory.CreateCarousel(VirtualView.ItemsLayout, new LayoutGroupingInfo(), () => VirtualView.PeekAreaInsets);
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
@@ -49,7 +49,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapPeekAreaInsets(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			// TODO: Fix (handler.Controller.Layout as CarouselViewLayout)?.UpdateConstraints(handler.PlatformView.Frame.Size);
-			handler.Controller.Layout.InvalidateLayout();
+			handler.UpdateLayout();
+		//	handler.Controller.CollectionView.ReloadData();
 		}
 
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
