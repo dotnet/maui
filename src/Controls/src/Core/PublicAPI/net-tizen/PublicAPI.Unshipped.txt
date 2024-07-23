@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.HandlerBehavior
 Microsoft.Maui.Controls.HybridWebView
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void
