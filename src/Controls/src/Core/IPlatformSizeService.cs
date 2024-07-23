@@ -1,7 +1,8 @@
 #nullable disable
+using System;
 namespace Microsoft.Maui.Controls.Internals
 {
-	// TODO: Obsolete in .NET 9 as this is no longer used for anything.
+	[Obsolete("No .NET MAUI code makes use of IPlatformSizeService and this interface will be removed in a future .NET MAUI release.")]
 	public interface IPlatformSizeService
 	{
 		SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint);
