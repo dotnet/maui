@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public LoopableCollectionView(ICollectionView @internal)
 		{
 			_internal = @internal;
+			_internal.VectorChanged += OnItemsVectorChanged;
 		}
 
 		internal bool IsLoopingEnabled { get; set; }
@@ -178,6 +179,12 @@ namespace Microsoft.Maui.Controls.Platform
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return ((IEnumerable)_internal).GetEnumerator();
+		}
+
+		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, 
+			global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
+		{
+			_vectorChanged.Invoke(sender, @event);
 		}
 
 		EventHandler<object> _currentChanged;
