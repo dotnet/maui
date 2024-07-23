@@ -43,7 +43,6 @@ namespace Maui.Controls.Sample.Issues
                 references.Add(new(webView.Handler.PlatformView));
 
                 await Navigation.PopAsync();
-                webView.Handler.DisconnectHandler();
             }
 
 
