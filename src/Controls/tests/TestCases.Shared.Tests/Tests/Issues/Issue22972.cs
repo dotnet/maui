@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void WebViewDoesNotLeak()
 		{
-			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(10));
+			App.AssertMemoryTest();
 		}
 	}
 }

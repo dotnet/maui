@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
-
 namespace Maui.Controls.Sample
 {
 	public static class GarbageCollectionHelper
@@ -48,6 +46,81 @@ namespace Maui.Controls.Sample
 			if (!assertion())
 			{
 				throw new Exception(message);
+			}
+		}
+		
+		public static void RunMemoryTest(this NavigationPage navigationPage, Func<VisualElement> elementToTest)
+		{
+        	ContentPage rootPage = new ContentPage { Title = "Page 1" };
+			navigationPage.PushAsync(rootPage);
+			rootPage.Content = new VerticalStackLayout()
+            {
+                new Label
+                {
+                    Text = "If you don't see a success label this test has failed"
+                }
+            };
+
+            rootPage.Loaded += OnPageLoaded;
+
+			async void OnPageLoaded(object sender, EventArgs e)
+			{
+				var references = new List<WeakReference>();
+				rootPage.Loaded -= OnPageLoaded;
+
+				{
+					var element = elementToTest();
+					var page = new ContentPage
+					{
+						Content = new VerticalStackLayout { element }
+					};
+
+					await navigationPage.PushAsync(page);
+					await Task.Delay(500); // give the View time to load
+
+					references.Add(new(element));
+					references.Add(new(element.Handler));
+					references.Add(new(element.Handler.PlatformView));
+
+					await navigationPage.PopAsync();
+				}
+
+				try
+				{
+					rootPage.Content = new VerticalStackLayout()
+					{
+						new Label
+						{
+							Text = "Waiting for resources to cleanup",
+							AutomationId = "Waiting"
+							
+						}
+					};
+
+
+					// Assert *before* the Window is closed
+					await WaitForGC(references.ToArray());
+					rootPage.Content = new VerticalStackLayout()
+					{
+						new Label
+						{
+							Text = "Success, everything has been cleaned up",
+							AutomationId = "Success"
+						}
+					};
+				}
+				catch
+				{
+					var stillAlive = references.Where(x=> x.IsAlive).Select(x=> x.Target).ToList();
+					rootPage.Content = new VerticalStackLayout()
+					{
+						new Label
+						{
+							Text = "Failed to cleanup: " + string.Join(", ", stillAlive),
+							AutomationId = "Failed"
+						}
+					};
+				}
 			}
 		}
 	}
