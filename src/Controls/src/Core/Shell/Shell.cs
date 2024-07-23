@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Controls
 
 		static void OnBackButonBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is BackButtonBehavior oldHandlerBehavior)
-				SetInheritedBindingContext(oldHandlerBehavior, null);
-			if (newValue is BackButtonBehavior newHandlerBehavior)
-				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
+			if (oldValue is BackButtonBehavior oldHandlerProperties)
+				SetInheritedBindingContext(oldHandlerProperties, null);
+			if (newValue is BackButtonBehavior newHandlerProperties)
+				SetInheritedBindingContext(newHandlerProperties, bindable.BindingContext);
 		}
 
 		/// <summary>

@@ -2,8 +2,10 @@
 
 namespace Microsoft.Maui;
 
-// TODO .NET9/10 Make this public at some point. 
-internal interface IHandlerBehaviors
+// TODO .NET9/10 Discuss what to do with this
+// - default interface method on iElement?
+// - new interface?
+internal interface IHandlerDisconnectPolicies
 {
     HandlerDisconnectPolicy DisconnectPolicy { get; set;}
 }

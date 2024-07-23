@@ -28,10 +28,7 @@ namespace Microsoft.Maui
 {
 	public static partial class ViewExtensions
 	{
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public static void DisconnectHandlers(this IView view)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			// For our first go here
 			// My thinking is to build a flat list of all views in the tree
@@ -49,7 +46,7 @@ namespace Microsoft.Maui
 
 			void BuildFlatList(IView view, List<IView> flatList)
 			{
-				if (view is IHandlerBehaviors handlerBehaviors && handlerBehaviors.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
+				if (view is IHandlerDisconnectPolicies HandlerPropertiess && HandlerPropertiess.DisconnectPolicy == HandlerDisconnectPolicy.Manual)
 				{
 					return;
 				}
