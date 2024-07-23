@@ -108,4 +108,38 @@ public class SetterBuilderTests
         Assert.Equal("p1.C is Z p2", setter.PatternMatchingExpressions[2]);
         Assert.Equal("p2.D = value;", setter.AssignmentStatement);
     }
+
+    [Fact]
+    public void GeneratesSetterWithInaccessibleFieldMemberAccess()
+    {
+        var setter = Setter.From(
+            [
+                new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Field, "Y")
+            ]);
+        Assert.Empty(setter.PatternMatchingExpressions);
+        Assert.Equal("GetUnsafeFieldY(source) = value;", setter.AssignmentStatement);
+    }
+
+    [Fact]
+    public void GeneratesSetterThatSetsInaccessibleProperty()
+    {
+        var setter = Setter.From(
+            [
+                new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y")
+            ]);
+        Assert.Empty(setter.PatternMatchingExpressions);
+        Assert.Equal("SetUnsafePropertyY(source, value);", setter.AssignmentStatement);
+    }
+
+    [Fact]
+    public void GeneratesSetterWithInaccessiblePropertyMemberAccessInPath()
+    {
+        var setter = Setter.From(
+            [
+                new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y"),
+                new MemberAccess("A"),
+            ]);
+        Assert.Empty(setter.PatternMatchingExpressions);
+        Assert.Equal("GetUnsafePropertyY(source).A = value;", setter.AssignmentStatement);
+    }
 }

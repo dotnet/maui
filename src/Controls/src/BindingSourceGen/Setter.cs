@@ -22,7 +22,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
         {
             var skipConditionalAccess = skipNextConditionalAccess;
             skipNextConditionalAccess = false;
-            
+
             if (part is Cast { TargetType: var targetType })
             {
                 AddPatternMatchingExpression(targetType.GlobalName);
@@ -42,12 +42,19 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
             }
             else
             {
-                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
+                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, part == path.Last());
             }
         }
 
         return new Setter(
             patternMatchingExpressions.ToArray(),
-            AssignmentStatement: $"{accessAccumulator} = {assignedValueExpression};");
+            AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, assignedValueExpression));
     }
+
+    public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, string assignedValueExpression = "value") =>
+        lastPart switch
+        {
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"SetUnsafeProperty{inaccessibleMemberAccess.MemberName}({accessAccumulator}, {assignedValueExpression});",
+            _ => $"{accessAccumulator} = {assignedValueExpression};",
+        };
 }

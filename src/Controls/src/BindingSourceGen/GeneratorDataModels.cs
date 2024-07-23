@@ -41,6 +41,26 @@ public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, Line
 	}
 }
 
+public enum AccessorKind
+{
+	Field,
+	StaticField,
+	Property,
+}
+
+public static class AccessorKindFactory
+{
+	public static AccessorKind FromSymbol(ISymbol symbol)
+	{
+		return symbol switch
+		{
+			IFieldSymbol _ => AccessorKind.Field,
+			IPropertySymbol _ => AccessorKind.Property,
+			_ => throw new ArgumentException("Symbol is not a field or property.", nameof(symbol))
+		};
+	}
+}
+
 public sealed record InterceptorLocation(string FilePath, int Line, int Column);
 
 public sealed record TypeDescription(
@@ -57,10 +77,23 @@ public sealed record TypeDescription(
 
 public sealed record SetterOptions(bool IsWritable, bool AcceptsNullValue = false);
 
-public sealed record MemberAccess(string MemberName, bool IsValueType = false) : IPathPart
+public sealed record InaccessibleMemberAccess(TypeDescription ContainingType, TypeDescription memberType, AccessorKind Kind, string MemberName, bool IsValueType = false) : IPathPart
 {
 	public string PropertyName => MemberName;
 
+	public bool Equals(IPathPart other)
+	{
+		return other is InaccessibleMemberAccess memberAccess
+			&& ContainingType == memberAccess.ContainingType
+			&& Kind == memberAccess.Kind
+			&& MemberName == memberAccess.MemberName
+			&& IsValueType == memberAccess.IsValueType;
+	}
+}
+
+public record MemberAccess(string MemberName, bool IsValueType = false) : IPathPart
+{
+	public string PropertyName => MemberName;
 	public bool Equals(IPathPart other)
 	{
 		return other is MemberAccess memberAccess

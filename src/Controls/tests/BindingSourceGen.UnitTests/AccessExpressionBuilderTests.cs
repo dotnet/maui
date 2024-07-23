@@ -8,7 +8,7 @@ public class AccessExpressionBuilderTests
     [Fact]
     public void CorrectlyFormatsSimpleCast()
     {
-        var generatedCode = Build("source", 
+        var generatedCode = Build("source",
             [
                 new MemberAccess("A"),
                 new Cast(new TypeDescription("X", IsNullable: false, IsGenericParameter: false, IsValueType: false)),
@@ -42,6 +42,28 @@ public class AccessExpressionBuilderTests
             ]);
 
         Assert.Equal("(source.A as X?)?.B", generatedCode);
+    }
+
+    [Fact]
+    public void CorrectlyFormatsInaccessibleFieldMemberAccess()
+    {
+        var generatedCode = Build("source",
+            [
+                new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Field, "Y")
+            ]);
+
+        Assert.Equal("GetUnsafeFieldY(source)", generatedCode);
+    }
+
+    [Fact]
+    public void CorrectlyFormatsInaccessiblePropertyMemberAccess()
+    {
+        var generatedCode = Build("source",
+            [
+                new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y")
+            ]);
+
+        Assert.Equal("GetUnsafePropertyY(source)", generatedCode);
     }
 
     private static string Build(string initialExpression, IPathPart[] path)
