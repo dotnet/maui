@@ -82,7 +82,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			if (_defaultLabelFor == null)
 			{
+#pragma warning disable CS0618 // Obsolete
 				_defaultLabelFor = ViewCompat.GetLabelFor(View);
+#pragma warning restore CS0618 // Obsolete
 			}
 
 			ViewCompat.SetLabelFor(View, (int)(id ?? _defaultLabelFor));
@@ -90,7 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		public void UpdateLayout()
 		{
+#pragma warning disable CS0618 // Obsolete
 			Tracker?.UpdateLayout();
+#pragma warning restore CS0618 // Obsolete
 		}
 	}
 }
