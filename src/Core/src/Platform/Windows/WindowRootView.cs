@@ -275,22 +275,25 @@ namespace Microsoft.Maui.Platform
 
 		void LoadAppTitleBarControls()
 		{
-			if (AppTitleBar == null)
-				return;
-
-			if (AppFontIcon != null)
-				return;
-
-			AppFontIcon = (Image?)AppTitleBar?.FindName("AppFontIcon");
-			AppTitle = (TextBlock?)AppTitleBar?.FindName("AppTitle");
-
-			if (AppFontIcon != null)
+			if (WindowTitleBarContent is not null && AppTitleBarContentControl is not null)
 			{
-				AppFontIcon.ImageOpened += OnImageOpened;
-				AppFontIcon.ImageFailed += OnImageFailed;
+				AppTitleBarContentControl.ContentTemplateSelector = null;
+				AppTitleBarContentControl.Content = WindowTitleBarContent;
+			}
+			else if (AppTitleBar != null && AppFontIcon is null)
+			{
+				AppFontIcon = (Image?)AppTitleBar?.FindName("AppFontIcon");
+				AppTitle = (TextBlock?)AppTitleBar?.FindName("AppTitle");
+
+				if (AppFontIcon != null)
+				{
+					AppFontIcon.ImageOpened += OnImageOpened;
+					AppFontIcon.ImageFailed += OnImageFailed;
+				}
+
+				ApplyTitlebarColorPrevalence();
 			}
 
-			ApplyTitlebarColorPrevalence();
 			UpdateAppTitleBarMargins();
 		}
 
