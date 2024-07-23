@@ -1505,7 +1505,7 @@ public class IntegrationTests
                         {
                             setter = static (source, value) =>
                             {
-                                GetUnsafeField_button(source).Text = value;
+                                GetUnsafeField{{id}}_button(source).Text = value;
                             };
                         }
 
@@ -1515,7 +1515,7 @@ public class IntegrationTests
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "_button"),
-                                new(static source => GetUnsafeField_button(source), "Text"),
+                                new(static source => GetUnsafeField{{id}}_button(source), "Text"),
                             })
                         {
                             Mode = mode,
@@ -1531,7 +1531,7 @@ public class IntegrationTests
                     }
 
                     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_button")]
-                    private static extern ref global::Microsoft.Maui.Controls.Button GetUnsafeField_button(global::MyNamespace.MySourceClass source);
+                    private static extern ref global::Microsoft.Maui.Controls.Button GetUnsafeField{{id}}_button(global::MyNamespace.MySourceClass source);
                 }
             }
             """,
@@ -1608,7 +1608,7 @@ public class IntegrationTests
                         {
                             setter = static (source, value) =>
                             {
-                                GetUnsafePropertyButton(source).Text = value;
+                                GetUnsafeProperty{{id}}Button(source).Text = value;
                             };
                         }
 
@@ -1618,7 +1618,7 @@ public class IntegrationTests
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Button"),
-                                new(static source => GetUnsafePropertyButton(source), "Text"),
+                                new(static source => GetUnsafeProperty{{id}}Button(source), "Text"),
                             })
                         {
                             Mode = mode,
@@ -1634,10 +1634,10 @@ public class IntegrationTests
                     }
 
                     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Button")]
-                    private static extern global::Microsoft.Maui.Controls.Button GetUnsafePropertyButton(global::MyNamespace.MySourceClass source);
+                    private static extern global::Microsoft.Maui.Controls.Button GetUnsafeProperty{{id}}Button(global::MyNamespace.MySourceClass source);
 
                     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Button")]
-                    private static extern void SetUnsafePropertyButton(global::MyNamespace.MySourceClass source, global::Microsoft.Maui.Controls.Button value);
+                    private static extern void SetUnsafeProperty{{id}}Button(global::MyNamespace.MySourceClass source, global::Microsoft.Maui.Controls.Button value);
                 }
             }
             """,
@@ -1714,7 +1714,7 @@ public class IntegrationTests
                         {
                             setter = static (source, value) =>
                             {
-                                SetUnsafePropertyText(source, value);
+                                SetUnsafeProperty{{id}}Text(source, value);
                             };
                         }
 
@@ -1739,10 +1739,10 @@ public class IntegrationTests
                     }
 
                     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Text")]
-                    private static extern string GetUnsafePropertyText(global::MyNamespace.MySourceClass source);
+                    private static extern string GetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source);
 
                     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Text")]
-                    private static extern void SetUnsafePropertyText(global::MyNamespace.MySourceClass source, string value);
+                    private static extern void SetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source, string value);
                 }
             }
             """,

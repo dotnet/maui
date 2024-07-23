@@ -52,7 +52,7 @@ public class AccessExpressionBuilderTests
                 new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Field, "Y")
             ]);
 
-        Assert.Equal("GetUnsafeFieldY(source)", generatedCode);
+        Assert.Equal("GetUnsafeField0Y(source)", generatedCode);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class AccessExpressionBuilderTests
                 new InaccessibleMemberAccess(new TypeDescription("X"), new TypeDescription("Z"), AccessorKind.Property, "Y")
             ]);
 
-        Assert.Equal("GetUnsafePropertyY(source)", generatedCode);
+        Assert.Equal("GetUnsafeProperty0Y(source)", generatedCode);
     }
 
     private static string Build(string initialExpression, IPathPart[] path)
@@ -72,7 +72,7 @@ public class AccessExpressionBuilderTests
 
         foreach (var part in path)
         {
-            expression = AccessExpressionBuilder.ExtendExpression(expression, part);
+            expression = AccessExpressionBuilder.ExtendExpression(expression, part, id: 0);
         }
 
         return expression;

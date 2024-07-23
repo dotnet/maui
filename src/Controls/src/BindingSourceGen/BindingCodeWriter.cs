@@ -40,17 +40,17 @@ public static class BindingCodeWriter
 		}
 		""";
 
-	private static string GenerateUnsafeFieldAccessor(string fieldName, string memberType, string containingType) => $$"""
+	private static string GenerateUnsafeFieldAccessor(string fieldName, string memberType, string containingType, uint id) => $$"""
 	[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "{{fieldName}}")]
-	private static extern ref {{memberType}} GetUnsafeField{{fieldName}}({{containingType}} source);
+	private static extern ref {{memberType}} GetUnsafeField{{id}}{{fieldName}}({{containingType}} source);
 	""";
 
-	private static string GenerateUnsafePropertyAccessors(string propertyName, string memberType, string containingType) => $$"""
+	private static string GenerateUnsafePropertyAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
 	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
-	private static extern {{memberType}} GetUnsafeProperty{{propertyName}}({{containingType}} source);
+	private static extern {{memberType}} GetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source);
 
 	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
-	private static extern void SetUnsafeProperty{{propertyName}}({{containingType}} source, {{memberType}} value);
+	private static extern void SetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source, {{memberType}} value);
 	""";
 
 	private static string GenerateBindingCode(string bindingMethodBody, IEnumerable<string> unsafeAccessors) => $$"""
@@ -119,8 +119,8 @@ public static class BindingCodeWriter
 		{
 			var accessor = unsafeAccessor.Kind switch
 			{
-				AccessorKind.Field => GenerateUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName),
-				AccessorKind.Property => GenerateUnsafePropertyAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName),
+				AccessorKind.Field => GenerateUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id),
+				AccessorKind.Property => GenerateUnsafePropertyAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id),
 				_ => throw new ArgumentOutOfRangeException(nameof(unsafeAccessor.Kind))
 			};
 			unsafeAccessorsStrings.Add(accessor);
@@ -191,7 +191,7 @@ public static class BindingCodeWriter
 					""");
 				Indent();
 
-				AppendSetterAction(binding);
+				AppendSetterAction(binding, id);
 
 				Unindent();
 				AppendLine("};");
@@ -217,7 +217,7 @@ public static class BindingCodeWriter
 			Indent();
 
 			Append("handlers: ");
-			AppendHandlersArray(binding);
+			AppendHandlersArray(binding, id);
 			AppendLine(")");
 
 			Unindent();
@@ -293,7 +293,7 @@ public static class BindingCodeWriter
 			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
-		private void AppendSetterAction(BindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
+		private void AppendSetterAction(BindingInvocationDescription binding, uint id, string sourceVariableName = "source", string valueVariableName = "value")
 		{
 			var assignedValueExpression = valueVariableName;
 
@@ -316,7 +316,7 @@ public static class BindingCodeWriter
 				AppendLine('}');
 			}
 
-			var setter = Setter.From(binding.Path, sourceVariableName, assignedValueExpression);
+			var setter = Setter.From(binding.Path, id, sourceVariableName, assignedValueExpression);
 			if (setter.PatternMatchingExpressions.Length > 0)
 			{
 				Append("if (");
@@ -356,7 +356,7 @@ public static class BindingCodeWriter
 			}
 		}
 
-		private void AppendHandlersArray(BindingInvocationDescription binding)
+		private void AppendHandlersArray(BindingInvocationDescription binding, uint id)
 		{
 			AppendLine($"new Tuple<Func<{binding.SourceType}, object?>, string>[]");
 			AppendLine('{');
@@ -368,7 +368,7 @@ public static class BindingCodeWriter
 			foreach (var part in binding.Path)
 			{
 				var previousExpression = nextExpression;
-				nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
+				nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart), id);
 				forceConditonalAccessToNextPart = part is Cast;
 
 				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
