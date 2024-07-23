@@ -36,6 +36,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
 
+			//TODO: Find a better way to do this 
+			itemsLayout.PropertyChanged += (sender, args) =>
+			{
+				if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) || args.PropertyName == nameof(ItemsLayout.SnapPointsType))
+				{
+					UpdateLayout();
+				}
+			};
+
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				return LayoutFactory.CreateGrid(gridItemsLayout, groupInfo);
