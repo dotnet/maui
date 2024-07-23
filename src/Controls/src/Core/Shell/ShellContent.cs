@@ -213,27 +213,9 @@ namespace Microsoft.Maui.Controls
 			shellContent.Route = Routing.GenerateImplicitRoute(pageRoute);
 
 			shellContent.Content = page;
-			shellContent.SetBinding(
-				TitleProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(TemplatedPage.Title),
-					static (TemplatedPage page) => page.Title,
-					mode: BindingMode.OneWay,
-					source: page));
-			shellContent.SetBinding(
-				IconProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(TemplatedPage.IconImageSource),
-					static (TemplatedPage page) => page.IconImageSource,
-					mode: BindingMode.OneWay,
-					source: page));
-			shellContent.SetBinding(
-				FlyoutIconProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(TemplatedPage.IconImageSource),
-					static (TemplatedPage page) => page.IconImageSource,
-					mode: BindingMode.OneWay,
-					source: page));
+			shellContent.SetBinding(TitleProperty, static (TemplatedPage page) => page.Title, BindingMode.OneWay, source: page);
+			shellContent.SetBinding(IconProperty, static (TemplatedPage page) => page.IconImageSource, BindingMode.OneWay, source: page);
+			shellContent.SetBinding(FlyoutIconProperty, static (TemplatedPage page) => page.IconImageSource, BindingMode.OneWay, source: page);
 
 			return shellContent;
 		}

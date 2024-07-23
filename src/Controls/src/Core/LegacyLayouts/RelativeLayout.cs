@@ -11,7 +11,9 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <summary>Bindable property for attached property <c>XConstraint</c>.</summary>
 		public static readonly BindableProperty XConstraintProperty = BindableProperty.CreateAttached("XConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);

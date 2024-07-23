@@ -11,6 +11,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.AbsoluteLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 	public class AbsoluteLayout : Layout<View>, IElementConfiguration<AbsoluteLayout>
 	{
 		/// <summary>Bindable property for attached property <c>LayoutFlags</c>.</summary>

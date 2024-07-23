@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml;
 
 namespace Microsoft.Maui.Controls.Xaml
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Controls.Xaml
 #endif
 	public static class ResourceDictionaryHelpers
 	{
-		// Used from XamlC generated code
+		// Called from XamlC generated code when the ResourceDictionary is not compiled
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void LoadFromSource(ResourceDictionary rd, Uri source, string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			rd.SetSource(source, sourceInstance);
 		}
 
+		// Called from XamlParser
 		internal static void LoadFromSource(ResourceDictionary rd, string value, Type rootType, IXmlLineInfo lineInfo)
 		{
 			(value, var assembly) = ResourceDictionary.RDSourceTypeConverter.SplitUriAndAssembly(value, rootType.Assembly);
@@ -30,12 +32,18 @@ namespace Microsoft.Maui.Controls.Xaml
 			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(new Uri(value, UriKind.Relative), rootTargetPath);
 			var sourceUri = ResourceDictionary.RDSourceTypeConverter.CombineUriAndAssembly(value, assembly);
 
+			SetAndLoadSource(rd, sourceUri, resourcePath, assembly, lineInfo);
+		}
+
+		// Called from Hot Reload
+		internal static void SetAndLoadSource(ResourceDictionary rd, Uri value, string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
+		{
 			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
 			var sourceInstance = type is not null
 				? ResourceDictionary.GetOrCreateInstance(type)
 				: CreateFromResource(resourcePath, assembly, lineInfo);
 
-			rd.SetSource(sourceUri, sourceInstance);
+			rd.SetSource(value, sourceInstance);
 		}
 
 		static ResourceDictionary CreateFromResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
@@ -72,4 +80,23 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 	}
+
+#if !NETSTANDARD
+	internal static class ResourceDictionaryHotReloadHelper
+	{
+#pragma warning disable CA2255 // The 'ModuleInitializer' attribute should not be used in libraries
+		[ModuleInitializer]
+#pragma warning restore CA2255
+		internal static void Init()
+		{
+			// This code will be trimmed in production builds
+			if (HotReload.MauiHotReloadHelper.IsSupported)
+			{
+#pragma warning disable IL2026, IL3050
+				ResourceDictionary.s_setAndLoadSource = ResourceDictionaryHelpers.SetAndLoadSource;
+#pragma warning restore IL2026, IL3050
+			}
+		}
+	}
+#endif
 }

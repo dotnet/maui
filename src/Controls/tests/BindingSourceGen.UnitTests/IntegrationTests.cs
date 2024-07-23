@@ -31,6 +31,28 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
+
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -108,6 +130,28 @@ public class IntegrationTests
             // </auto-generated>
             //------------------------------------------------------------------------------
             #nullable enable
+
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
 
             namespace Microsoft.Maui.Controls.Generated
             {
@@ -262,6 +306,28 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
+
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -364,6 +430,28 @@ public class IntegrationTests
             // </auto-generated>
             //------------------------------------------------------------------------------
             #nullable enable
+
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
 
             namespace Microsoft.Maui.Controls.Generated
             {
@@ -573,6 +661,28 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
+
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -689,6 +799,28 @@ public class IntegrationTests
             // </auto-generated>
             //------------------------------------------------------------------------------
             #nullable enable
+
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
 
             namespace Microsoft.Maui.Controls.Generated
             {
@@ -807,6 +939,28 @@ public class IntegrationTests
             // </auto-generated>
             //------------------------------------------------------------------------------
             #nullable enable
+
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
 
             namespace Microsoft.Maui.Controls.Generated
             {
@@ -931,6 +1085,28 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
+
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -1041,6 +1217,28 @@ public class IntegrationTests
             //------------------------------------------------------------------------------
             #nullable enable
 
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
+
             namespace Microsoft.Maui.Controls.Generated
             {
                 using System;
@@ -1146,6 +1344,28 @@ public class IntegrationTests
             // </auto-generated>
             //------------------------------------------------------------------------------
             #nullable enable
+
+            namespace System.Runtime.CompilerServices
+            {
+                using System;
+                using System.CodeDom.Compiler;
+
+                {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+                file sealed class InterceptsLocationAttribute : Attribute
+                {
+                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    {
+                        FilePath = filePath;
+                        Line = line;
+                        Column = column;
+                    }
+
+                    public string FilePath { get; }
+                    public int Line { get; }
+                    public int Column { get; }
+                }
+            }
 
             namespace Microsoft.Maui.Controls.Generated
             {

@@ -293,27 +293,9 @@ namespace Microsoft.Maui.Controls
 
 			shellSection.Items.Add(shellContent);
 
-			shellSection.SetBinding(
-				TitleProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(BaseShellItem.Title),
-					static (BaseShellItem item) => item.Title,
-					mode: BindingMode.OneWay,
-					source: shellContent));
-			shellSection.SetBinding(
-				IconProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(BaseShellItem.Icon),
-					static (BaseShellItem item) => item.Icon,
-					mode: BindingMode.OneWay,
-					source: shellContent));
-			shellSection.SetBinding(
-				FlyoutIconProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(BaseShellItem.FlyoutIcon),
-					static (BaseShellItem item) => item.FlyoutIcon,
-					mode: BindingMode.OneWay,
-					source: shellContent));
+			shellSection.SetBinding(TitleProperty, static (BaseShellItem item) => item.Title, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(IconProperty, static (BaseShellItem item) => item.Icon, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(FlyoutIconProperty, static (BaseShellItem item) => item.FlyoutIcon, BindingMode.OneWay, source: shellContent);
 
 			return shellSection;
 		}

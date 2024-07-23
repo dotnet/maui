@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.StackLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IView
 	{
 		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
