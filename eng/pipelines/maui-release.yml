@@ -196,7 +196,7 @@ extends:
             os: ${{ parameters.VM_IMAGE_HOST.os }}     
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
-        - ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
+        - ${{ if eq(variables['Build.Reason'], 'Manual') }}:
           - stage: nightly
             displayName: Nightly
             dependsOn: ['sdk_insertion']
@@ -239,7 +239,7 @@ extends:
                   downloadPath: $(Build.StagingDirectory)\nuget-signed
                 displayName: Download nuget-signed
 
-             - task: DownloadPipelineArtifact@2
+              - task: DownloadPipelineArtifact@2
                 inputs:
                   artifactName: vs-msi-nugets
                   downloadPath: $(Build.StagingDirectory)\nuget-signed
