@@ -130,7 +130,7 @@ namespace UITest.Appium
 			catch (Exception)
 			{
 				// TODO: Pass in logger so we can log these exceptions
-				
+
 				// Occasionally the app seems to get so locked up it can't 
 				// even report back the appstate. In that case, we'll just
 				// try to trigger a reset.

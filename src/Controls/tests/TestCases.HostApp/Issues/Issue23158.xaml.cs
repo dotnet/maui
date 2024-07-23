@@ -11,8 +11,8 @@ public partial class Issue23158 : ContentPage
 
 	private void AddEntryButton_Clicked(object sender, EventArgs e)
 	{
-		Entry entry = new Entry() 
-		{ 
+		Entry entry = new Entry()
+		{
 			Text = "Some Text",
 			AutomationId = "Entry3"
 		};

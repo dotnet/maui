@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Content = new StackLayout
 			{
-				Children = 
+				Children =
 				{
 					new Label { Text = "See me?" },
 					new ScrollView {
