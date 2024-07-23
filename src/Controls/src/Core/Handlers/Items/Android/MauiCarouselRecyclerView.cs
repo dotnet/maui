@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SetCurrentItem(int carouselPosition)
 		{
-			if (ItemsViewAdapter?.ItemsSource?.Count == 0)
+			if (ItemsViewAdapter?.ItemsSource == null || ItemsViewAdapter.ItemsSource.Count == 0)
 				return;
 
 			var item = ItemsViewAdapter.ItemsSource.GetItem(carouselPosition);

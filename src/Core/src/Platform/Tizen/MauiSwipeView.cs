@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Platform
 
 			ISwipeItems? items = GetSwipeItemsByDirection();
 
-			if (items?.Count == 0 || items == null)
+			if (items == null || items.Count == 0)
 				return;
 
 			_actionView = new NView

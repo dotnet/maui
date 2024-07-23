@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Platform
 
 			var items = GetSwipeItemsByDirection(swipeDirection);
 
-			if (items == null || items?.Count == 0)
+			if (items == null || items.Count == 0)
 				return false;
 
 			return ShouldInterceptScrollChildrenTouch(swipeDirection);
@@ -531,7 +531,7 @@ namespace Microsoft.Maui.Platform
 
 			ISwipeItems? items = GetSwipeItemsByDirection();
 
-			if (items?.Count == 0 || items == null)
+			if (items == null || items.Count == 0)
 				return;
 
 			_actionView = new LinearLayoutCompat(_context);
