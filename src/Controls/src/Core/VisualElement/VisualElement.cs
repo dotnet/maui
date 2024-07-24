@@ -1281,8 +1281,6 @@ namespace Microsoft.Maui.Controls
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
-		IPlatformSizeService _platformSizeService;
-
 		/// <summary>
 		/// Method that is called when a layout measurement happens.
 		/// </summary>
@@ -1294,11 +1292,7 @@ namespace Microsoft.Maui.Controls
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			if (Handler != null)
-				return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
-
-			_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
-			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
+			return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 		}
 
 		/// <summary>

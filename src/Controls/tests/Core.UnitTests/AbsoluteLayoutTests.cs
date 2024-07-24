@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View { IsPlatformEnabled = true };
+			var child = MockPlatformSizeService.Sub<View>();
 
 			abs.Children.Add(child, new Rect(10, 20, 30, 40));
 
@@ -56,8 +56,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View { IsPlatformEnabled = true };
-
+			var child = MockPlatformSizeService.Sub<View>();
 
 			abs.Children.Add(child, new Rect(10, 20, 0.4, 0.5), AbsoluteLayoutFlags.SizeProportional);
 
@@ -81,7 +80,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View { IsPlatformEnabled = true };
+			var child = MockPlatformSizeService.Sub<View>();
 
 			abs.Children.Add(child, new Rect(relX, relY, width, height), AbsoluteLayoutFlags.PositionProportional);
 
@@ -109,10 +108,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View
-			{
-				IsPlatformEnabled = true
-			};
+			var child = MockPlatformSizeService.Sub<View>();
 			abs.Children.Add(child, new Rect(relX, relY, relWidth, relHeight), AbsoluteLayoutFlags.All);
 			abs.Layout(new Rect(0, 0, 100, 100));
 
@@ -135,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View();
+			var child = MockPlatformSizeService.Sub<View>();
 
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(10, 20, 30, 40));
@@ -154,7 +150,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View();
+			var child = MockPlatformSizeService.Sub<View>();
 
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(0.5, 0.5, 30, 40), AbsoluteLayoutFlags.PositionProportional);
@@ -173,10 +169,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View
-			{
-				IsPlatformEnabled = true
-			};
+			var child = MockPlatformSizeService.Sub<View>();
 
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(0.5, 0.5, 0.5, 0.5), AbsoluteLayoutFlags.All);
@@ -195,10 +188,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View
-			{
-				IsPlatformEnabled = true
-			};
+			var child = MockPlatformSizeService.Sub<View>();
 
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(10, 20, 0.5, 0.5), AbsoluteLayoutFlags.SizeProportional);
@@ -217,10 +207,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View
-			{
-				IsPlatformEnabled = true
-			};
+			var child = MockPlatformSizeService.Sub<View>();
 
 			abs.Children.Add(child, new Rect(1, 1, 100, 100));
 
@@ -240,10 +227,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var child = new View
-			{
-				IsPlatformEnabled = true
-			};
+			var child = MockPlatformSizeService.Sub<View>();
 
 			abs.Children.Add(child, new Rect(1, 1, 100, 100));
 

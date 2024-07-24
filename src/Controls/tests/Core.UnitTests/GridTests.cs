@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.UnitTests;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -916,9 +918,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.Children.AddVertical(new View[] {
 				label1,
@@ -941,9 +943,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.Children.AddHorizontal(new View[] {
 				label1,
@@ -966,8 +968,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 
 			layout.RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = new GridLength (1, GridUnitType.Star) },
@@ -990,8 +992,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = new GridLength (1, GridUnitType.Star) },
@@ -1014,8 +1016,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 
 			layout.RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = GridLength.Auto},
@@ -1038,8 +1040,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -1063,9 +1065,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.RowDefinitions = new RowDefinitionCollection {
 				new RowDefinition { Height = GridLength.Auto},
@@ -1091,9 +1093,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -1120,10 +1122,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
-			var label4 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
+			var label4 = MockPlatformSizeService.Sub<Label>();
 
 			layout.Children.Add(label1, 0, 0);
 			layout.Children.Add(label2, 1, 0);
@@ -1155,10 +1157,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
-			var label4 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
+			var label4 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -1186,9 +1188,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.Children.Add(label1, 0, 2, 0, 1);
 			layout.Children.Add(label2, 0, 1, 1, 2);
@@ -1218,9 +1220,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = new GridLength (1, GridUnitType.Star) },
@@ -1250,7 +1252,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
 
 			bool thrown = false;
 
@@ -1271,7 +1273,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+			var label1 = MockPlatformSizeService.Sub<Label>(horizOpts: LayoutOptions.Center, vertOpts: LayoutOptions.Center);
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition () {Width = new GridLength (1, GridUnitType.Star)},
 			};
@@ -1291,7 +1293,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.StartAndExpand };
+			var label1 = MockPlatformSizeService.Sub<Label>(horizOpts: LayoutOptions.Start, vertOpts: LayoutOptions.StartAndExpand);
 
 			layout.Children.AddVertical(label1);
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
@@ -1311,7 +1313,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.EndAndExpand };
+			var label1 = MockPlatformSizeService.Sub<Label>(horizOpts: LayoutOptions.End, vertOpts: LayoutOptions.EndAndExpand);
 
 			layout.Children.AddVertical(label1);
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
@@ -1436,9 +1438,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid { IsPlatformEnabled = true };
 			layout.Children.AddVertical(new[] {
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true}
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>()
 			});
 
 			var result = layout.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
@@ -1450,9 +1452,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid { IsPlatformEnabled = true };
 			layout.Children.AddVertical(new[] {
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true}
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>()
 			});
 
 			var result = layout.Measure(10, 10).Request;
@@ -1464,9 +1466,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid { IsPlatformEnabled = true };
 			layout.Children.AddVertical(new[] {
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true}
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>()
 			});
 
 			var result = layout.Measure(10, double.PositiveInfinity).Request;
@@ -1479,9 +1481,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var layout = new Grid { IsPlatformEnabled = true };
 			layout.Children.AddVertical(new[] {
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true}
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>()
 			});
 
 			var result = layout.Measure(double.PositiveInfinity, 10).Request;
@@ -1493,8 +1495,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsVisible = false, IsPlatformEnabled = true, VerticalOptions = LayoutOptions.FillAndExpand };
-			var label2 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>(visible: false, vertOpts: LayoutOptions.FillAndExpand);
+			var label2 = MockPlatformSizeService.Sub<Label>();
 
 			layout.Children.AddVertical(label1);
 			layout.Children.AddVertical(label2);
@@ -1521,9 +1523,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid { IsPlatformEnabled = true, Padding = new Thickness(20, 10, 15, 5) };
 			layout.Children.AddVertical(new[] {
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true},
-				new View {IsPlatformEnabled = true}
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>(),
+				MockPlatformSizeService.Sub<View>()
 			});
 
 			var result = layout.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
@@ -1548,13 +1550,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAddedBP()
 		{
-			var labela0 = new Label { IsPlatformEnabled = true };
-			var labela1 = new Label { IsPlatformEnabled = true };
+			var labela0 = MockPlatformSizeService.Sub<Label>();
+			var labela1 = MockPlatformSizeService.Sub<Label>();
 			Grid.SetColumn(labela1, 1);
-			var labelb1 = new Label { IsPlatformEnabled = true };
+			var labelb1 = MockPlatformSizeService.Sub<Label>();
 			Grid.SetRow(labelb1, 1);
 			Grid.SetColumn(labelb1, 1);
-			var labelc = new Label { IsPlatformEnabled = true };
+			var labelc = MockPlatformSizeService.Sub<Label>();
 			Grid.SetRow(labelc, 2);
 			Grid.SetColumnSpan(labelc, 2);
 
@@ -1592,13 +1594,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void Remove()
 		{
-			var labela0 = new Label { IsPlatformEnabled = true };
-			var labela1 = new Label { IsPlatformEnabled = true };
+			var labela0 = MockPlatformSizeService.Sub<Label>();
+			var labela1 = MockPlatformSizeService.Sub<Label>();
 			Grid.SetColumn(labela1, 1);
-			var labelb1 = new Label { IsPlatformEnabled = true };
+			var labelb1 = MockPlatformSizeService.Sub<Label>();
 			Grid.SetRow(labelb1, 1);
 			Grid.SetColumn(labelb1, 1);
-			var labelc = new Label { IsPlatformEnabled = true };
+			var labelc = MockPlatformSizeService.Sub<Label>();
 			Grid.SetRow(labelc, 2);
 			Grid.SetColumnSpan(labelc, 2);
 
@@ -1621,9 +1623,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = new GridLength (150)},
@@ -1655,9 +1657,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = new GridLength (150)},
@@ -1689,9 +1691,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = new GridLength (1, GridUnitType.Star)},
@@ -1725,9 +1727,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = new GridLength (1, GridUnitType.Star)},
@@ -1758,9 +1760,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = GridLength.Auto},
@@ -1792,9 +1794,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 150, Text = "label1" };
-			var label2 = new Label { IsPlatformEnabled = true, HeightRequest = 50, Text = "label2" };
-			var label3 = new Label { IsPlatformEnabled = true, Text = "label3" };
+			var label1 = MockPlatformSizeService.Sub<Label>(width: 150, text: "label1");
+			var label2 = MockPlatformSizeService.Sub<Label>(height: 50, text: "label2");
+			var label3 = MockPlatformSizeService.Sub<Label>(text: "label3");
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = GridLength.Auto},
@@ -1825,12 +1827,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
-			var label4 = new Label { IsPlatformEnabled = true, WidthRequest = 206 };
-			var label5 = new Label { IsPlatformEnabled = true, WidthRequest = 312 };
-			var label6 = new Label { IsPlatformEnabled = true, WidthRequest = 312 };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
+			var label4 = MockPlatformSizeService.Sub<Label>(width: 206);
+			var label5 = MockPlatformSizeService.Sub<Label>(width: 312);
+			var label6 = MockPlatformSizeService.Sub<Label>(width: 312);
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition {Width = GridLength.Auto},
@@ -1861,9 +1863,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var layout = new Grid();
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true, WidthRequest = 300 };
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>(width: 300);
 
 			layout.ColumnDefinitions = new ColumnDefinitionCollection {
 				new ColumnDefinition { Width = GridLength.Auto },
@@ -1909,12 +1911,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(300) } },
 				RowDefinitions = { new RowDefinition { Height = new GridLength(100) } },
 			};
-			var label = new Label
-			{
-				IsPlatformEnabled = true,
-				VerticalOptions = LayoutOptions.Center,
-				HorizontalOptions = LayoutOptions.End,
-			};
+			var label = MockPlatformSizeService.Sub<Label>(vertOpts: LayoutOptions.Center, horizOpts: LayoutOptions.End);
 
 			grid.Children.Add(label);
 			grid.Layout(new Rect(0, 0, 500, 500));
@@ -1942,7 +1939,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var content = new Image
 			{
 				Aspect = Aspect.AspectFit,
-				IsPlatformEnabled = true
+				Handler = new SizedImageHandler()
 			};
 			var grid = new Grid
 			{
@@ -1978,7 +1975,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Aspect = Aspect.AspectFit,
 				MinimumHeightRequest = 10,
 				MinimumWidthRequest = 50,
-				IsPlatformEnabled = true
+				Handler = new SizedImageHandler()
 			};
 			var grid = new Grid
 			{
@@ -2003,6 +2000,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(10, grid.Height);
 		}
 
+		class SizedImageHandler : ImageHandler
+		{
+			Size _size;
+
+			public SizedImageHandler() => _size = new(100, 20);
+
+			protected override object CreatePlatformView() => new();
+
+			public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => _size;
+		}
+
 		[Fact]
 		public void SizeRequestForStar()
 		{
@@ -2017,10 +2025,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					new ColumnDefinition {Width = GridLength.Auto},
 				}
 			};
-			grid.Children.Add(new Label { BackgroundColor = Colors.Lime, Text = "Foo", IsPlatformEnabled = true });
-			grid.Children.Add(new Label { Text = "Bar", IsPlatformEnabled = true }, 0, 1);
-			grid.Children.Add(new Label { Text = "Baz", HorizontalTextAlignment = TextAlignment.End, IsPlatformEnabled = true }, 1, 0);
-			grid.Children.Add(new Label { Text = "Qux", HorizontalTextAlignment = TextAlignment.End, IsPlatformEnabled = true }, 1, 1);
+			grid.Children.Add(MockPlatformSizeService.Sub<Label>(bgColor: Colors.Lime, text: "Foo"));
+			grid.Children.Add(MockPlatformSizeService.Sub<Label>(text: "Bar"), 0, 1);
+			grid.Children.Add(MockPlatformSizeService.Sub<Label>(text: "Baz", horizText: TextAlignment.End), 1, 0);
+			grid.Children.Add(MockPlatformSizeService.Sub<Label>(text: "Qux", horizText: TextAlignment.End), 1, 1);
 
 			var request = grid.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			Assert.Equal(206, request.Request.Width);
@@ -2035,16 +2043,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//Issue 1497
 		public void StarRowsShouldOccupyTheSpace()
 		{
-			var label = new Label
-			{
-				IsPlatformEnabled = true,
-			};
-			var Button = new Button
-			{
-				HorizontalOptions = LayoutOptions.FillAndExpand,
-				VerticalOptions = LayoutOptions.EndAndExpand,
-				IsPlatformEnabled = true,
-			};
+			var label = MockPlatformSizeService.Sub<Label>();
+			var button = MockPlatformSizeService.Sub<Button>(horizOpts: LayoutOptions.FillAndExpand, vertOpts: LayoutOptions.EndAndExpand);
 			var grid = new Grid
 			{
 				RowDefinitions = new RowDefinitionCollection {
@@ -2058,10 +2058,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			grid.Children.Add(label);
-			grid.Children.Add(Button, 0, 1);
+			grid.Children.Add(button, 0, 1);
 
 			grid.Layout(new Rect(0, 0, 300, 300));
-			Assert.Equal(new Rect(0, 280, 300, 20), Button.Bounds);
+			Assert.Equal(new Rect(0, 280, 300, 20), button.Bounds);
 		}
 
 		[Fact]
@@ -2114,8 +2114,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//Issue 1893
 		public void EditorSpanningOnMultipleAutoRows()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = GetResizableSize;
-
 			var grid0 = new Grid
 			{
 				ColumnDefinitions = {
@@ -2129,8 +2127,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			var label0 = new Label { IsPlatformEnabled = true };
-			var editor0 = new Editor { IsPlatformEnabled = true };
+			var label0 = MockPlatformSizeService.Sub<Label>(GetResizableSize);
+			var editor0 = MockPlatformSizeService.Sub<Editor>(GetResizableSize);
 			grid0.Children.Add(label0, 0, 0);
 			grid0.Children.Add(editor0, 1, 2, 0, 2);
 
@@ -2149,8 +2147,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			var label1 = new Label { IsPlatformEnabled = true };
-			var editor1 = new Editor { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>(GetResizableSize);
+			var editor1 = MockPlatformSizeService.Sub<Editor>(GetResizableSize);
 			grid1.Children.Add(label1, 0, 0);
 			grid1.Children.Add(editor1, 1, 0);
 
@@ -2161,8 +2159,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void WidthBoundRequestRespected()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = GetResizableSize;
-
 			var grid = new Grid
 			{
 				ColumnDefinitions = {
@@ -2178,9 +2174,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				ColumnSpacing = 0,
 			};
 
-			var topLabel = new Editor { IsPlatformEnabled = true };
-			var leftLabel = new Label { IsPlatformEnabled = true, WidthRequest = 10 };
-			var rightLabel = new Label { IsPlatformEnabled = true, WidthRequest = 10 };
+			var topLabel = MockPlatformSizeService.Sub<Editor>(GetResizableSize);
+			var leftLabel = MockPlatformSizeService.Sub<Label>(GetResizableSize, width: 10);
+			var rightLabel = MockPlatformSizeService.Sub<Label>(GetResizableSize, width: 10);
 
 			grid.Children.Add(topLabel, 0, 2, 0, 1);
 			grid.Children.Add(leftLabel, 0, 1);
@@ -2226,9 +2222,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			grid.RowDefinitions.Add(rowdef);
 
-			var label0 = new Label { IsPlatformEnabled = true };
+			var label0 = MockPlatformSizeService.Sub<Label>();
 			Grid.SetRow(label0, 0);
-			var label1 = new Label { IsPlatformEnabled = true };
+			var label1 = MockPlatformSizeService.Sub<Label>();
 			Grid.SetRow(label1, 1);
 
 			grid.BindingContext = new { Height = 0 };
@@ -2254,7 +2250,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var label = new Label { IsPlatformEnabled = true };
+			var label = MockPlatformSizeService.Sub<Label>();
 			grid.Children.Add(label);
 
 			bool invalidated = false;
@@ -2282,7 +2278,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 			//image will have "EVERYTHING IS 100 x 20" size so grid should shrink it and itself to 50x10
-			contentGrid.Children.Add(new Image() { IsPlatformEnabled = true }, 0, 0);
+			contentGrid.Children.Add(new Image { Handler = new SizedImageHandler() }, 0, 0);
 			var measurement = contentGrid.Measure(50, 100);
 			Assert.Equal(50, measurement.Request.Width);
 			Assert.Equal(10, measurement.Request.Height);
@@ -2454,7 +2450,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var label = new Label { IsPlatformEnabled = true };
+			var label = MockPlatformSizeService.Sub<Label>();
 			grid.Children.Add(label);
 
 			bool invalidated = false;
@@ -2482,16 +2478,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					IsPlatformEnabled = true
 				};
 
-				var child = new Label
-				{
-					IsPlatformEnabled = true
-				};
+				var child = MockPlatformSizeService.Sub<Label>();
 				grid.Children.Add(child);
 
-				var child2 = new Label
-				{
-					IsPlatformEnabled = true
-				};
+				var child2 = MockPlatformSizeService.Sub<Label>();
 				grid.Children.Add(child2);
 
 				bool fire = true;

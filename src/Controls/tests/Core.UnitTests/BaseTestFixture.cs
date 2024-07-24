@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
-			MockPlatformSizeService.Current?.Reset();
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
@@ -53,7 +52,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (disposing)
 			{
-				MockPlatformSizeService.Current?.Reset();
 				AppInfo.SetCurrent(null);
 				DeviceDisplay.SetCurrent(null);
 				DeviceInfo.SetCurrent(null);

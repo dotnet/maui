@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(ScrollOrientation.Both)]
 		public void GetsCorrectSizeRequestWithWrappingContent(ScrollOrientation orientation)
 		{
-			MockPlatformSizeService.Current.UseRealisticLabelMeasure = true;
-
 			var scrollView = new ScrollView
 			{
 				IsPlatformEnabled = true,
@@ -41,11 +39,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 				Orientation = StackOrientation.Horizontal,
 				Children = {
-					new Label {Text = "THIS IS A REALLY LONG STRING", IsPlatformEnabled = true},
-					new Label {Text = "THIS IS A REALLY LONG STRING", IsPlatformEnabled = true},
-					new Label {Text = "THIS IS A REALLY LONG STRING", IsPlatformEnabled = true},
-					new Label {Text = "THIS IS A REALLY LONG STRING", IsPlatformEnabled = true},
-					new Label {Text = "THIS IS A REALLY LONG STRING", IsPlatformEnabled = true},
+					MockPlatformSizeService.Sub<Label>(text: "THIS IS A REALLY LONG STRING", useRealisticLabelMeasure: true),
+					MockPlatformSizeService.Sub<Label>(text: "THIS IS A REALLY LONG STRING", useRealisticLabelMeasure: true),
+					MockPlatformSizeService.Sub<Label>(text: "THIS IS A REALLY LONG STRING", useRealisticLabelMeasure: true),
+					MockPlatformSizeService.Sub<Label>(text: "THIS IS A REALLY LONG STRING", useRealisticLabelMeasure: true),
+					MockPlatformSizeService.Sub<Label>(text: "THIS IS A REALLY LONG STRING", useRealisticLabelMeasure: true),
 				}
 			};
 
