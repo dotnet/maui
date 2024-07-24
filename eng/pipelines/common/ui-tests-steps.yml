@@ -106,7 +106,7 @@ steps:
         $command += " --test-filter ""$testFilter"""
       }
 
-      Invoke-Expression $command
+      Invoke-Expression $command  
     displayName: $(Agent.JobName)
     ${{ if ne(parameters.platform, 'android')}}:
       retryCountOnTaskFailure: 1
@@ -114,10 +114,8 @@ steps:
       APPIUM_HOME: $(APPIUM_HOME)
 
   - bash: |
-      suffix=$(date +%Y%m%d%H%M%S)
-      zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-      zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-    displayName: Zip Simulator Logs
+      pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+    displayName: Cleanup and Create Simulator Logs if Test Run Failed To
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 

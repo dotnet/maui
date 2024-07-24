@@ -7,6 +7,7 @@ dotnet_analyzer_diagnostic.category-Performance.severity = warning
 
 [*.cs]
 dotnet_diagnostic.CA1307.severity = error
+dotnet_diagnostic.CA1507.severity = error
 dotnet_diagnostic.CA1805.severity = error
 dotnet_diagnostic.CA1806.severity = error
 dotnet_diagnostic.CA1822.severity = error
