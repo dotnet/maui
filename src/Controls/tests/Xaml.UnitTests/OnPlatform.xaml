@@ -60,8 +60,9 @@
 				</OnPlatform>
 			</Label.HeightRequest>
 		</Label>
-        <Button x:Name="button0" Style="{StaticResource ButtonStyle0}" Text="Button label" />
-        <Button x:Name="button1" Style="{StaticResource ButtonStyle1}" Text="Button label" />
-        <Button x:Name="button2" FontSize="{OnPlatform iOS=36}" Text="Button label" />
+		<Button x:Name="button0" Style="{StaticResource ButtonStyle0}" Text="Button label" />
+		<Button x:Name="button1" Style="{StaticResource ButtonStyle1}" Text="Button label" />
+		<Button x:Name="button2" FontSize="{OnPlatform iOS=36}" Text="Button label" />
+		<Button x:Name="button3" FontSize="{OnPlatform iOS={AppThemeBinding Light=10, Dark=12, Default=14}, WinUI={AppThemeBinding Light=16, Dark=18, Default=20}, Default=22}" Text="Button label" />
 	</StackLayout>
 </ContentPage>
