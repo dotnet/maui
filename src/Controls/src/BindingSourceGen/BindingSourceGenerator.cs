@@ -111,11 +111,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
-		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
-		if (lambdaParamType is IErrorTypeSymbol)
+		var lambdaParams = lambdaSymbolResult.Value.Parameters;
+		if (lambdaParams.Length == 0 || lambdaParams[0].Type is IErrorTypeSymbol)
 		{
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
+		var lambdaParamType = lambdaParams[0].Type;
 
 		var lambdaResultType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
 		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)

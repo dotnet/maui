@@ -331,6 +331,7 @@ public class DiagnosticsTests
 		var source = """
 			using Microsoft.Maui.Controls;
 
+			var label = new Label();
 			var text = "Hello";
 			label.SetBinding(Label.RotationProperty, (Button b) => text.Length);
 			""";
@@ -339,6 +340,22 @@ public class DiagnosticsTests
 
 		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
 		Assert.Equal("BSG0010", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	public void ReportsWarningWhenLambdaHasNoParameters()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			label.SetBinding(Label.RotationProperty, static () => text.Length);
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0005", diagnostic.Id);
 	}
 }
 
