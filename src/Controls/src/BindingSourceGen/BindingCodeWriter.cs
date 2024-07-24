@@ -41,17 +41,17 @@ public static class BindingCodeWriter
 		""";
 
 	private static string GenerateUnsafeFieldAccessor(string fieldName, string memberType, string containingType, uint id) => $$"""
-	[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "{{fieldName}}")]
-	private static extern ref {{memberType}} GetUnsafeField{{id}}{{fieldName}}({{containingType}} source);
-	""";
+		[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "{{fieldName}}")]
+		private static extern ref {{memberType}} GetUnsafeField{{id}}{{fieldName}}({{containingType}} source);
+		""";
 
 	private static string GenerateUnsafePropertyAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
-	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
-	private static extern {{memberType}} GetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source);
+		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
+		private static extern {{memberType}} GetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source);
 
-	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
-	private static extern void SetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source, {{memberType}} value);
-	""";
+		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
+		private static extern void SetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source, {{memberType}} value);
+		""";
 
 	private static string GenerateBindingCode(string bindingMethodBody, IEnumerable<string> unsafeAccessors) => $$"""
 		//------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ public static class BindingCodeWriter
 			{
 				AccessorKind.Field => GenerateUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id),
 				AccessorKind.Property => GenerateUnsafePropertyAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id),
-				_ => throw new ArgumentOutOfRangeException(nameof(unsafeAccessor.Kind))
+				_ => throw new ArgumentException(nameof(unsafeAccessor.Kind))
 			};
 			unsafeAccessorsStrings.Add(accessor);
 		}

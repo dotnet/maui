@@ -12,7 +12,7 @@ public static class AccessExpressionBuilder
             MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",
             InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Field => $"GetUnsafeField{id}{inaccessibleMemberAccess.MemberName}({previousExpression})",
             InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && !shouldUseUnsafePropertySetter => $"GetUnsafeProperty{id}{inaccessibleMemberAccess.MemberName}({previousExpression})",
-            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => previousExpression, // Assign
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => previousExpression, // This case is handled by the caller
             _ => throw new NotSupportedException($"Unsupported path part type: {nextPart.GetType()}"),
         };
 
