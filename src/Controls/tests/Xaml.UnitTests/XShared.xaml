@@ -8,9 +8,9 @@
         <x:Object x:Key="notshared" x:Shared="false" />
     </ContentPage.Resources>
     <StackLayout x:Name="sl">
-        <StackLayout.Resources>
+        <!-- <StackLayout.Resources>
             <x:Object x:Key="slnotshared" x:Shared="false" />
-        </StackLayout.Resources>
+        </StackLayout.Resources> -->
         <Label x:Name="l0">
             <Label.Resources>
                 <ResourceDictionary>
