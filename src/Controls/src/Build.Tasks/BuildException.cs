@@ -90,6 +90,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode ResourceDictDuplicateKey = new BuildExceptionCode("XFC", 0125, nameof(ResourceDictDuplicateKey), "");
 		public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XFC", 0126, nameof(ResourceDictMissingKey), "");
 		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XFC", 0127, nameof(XKeyNotLiteral), "");
+		public static BuildExceptionCode XSharedInvalid = new BuildExceptionCode("XFC", 0128, nameof(XSharedInvalid), "");
+		public static BuildExceptionCode XSharedValueInvalid = new BuildExceptionCode("XFC", 0129, nameof(XSharedValueInvalid), "");
 
 		//CSC equivalents
 		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning
@@ -97,6 +99,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public string Code { get; }
 		public string CodePrefix { get; }
 		public int CodeCode { get; }
+
 
 		public string ErrorMessageKey { get; private set; }
 		public string HelpLink { get; private set; }

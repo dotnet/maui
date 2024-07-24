@@ -208,3 +208,4 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void

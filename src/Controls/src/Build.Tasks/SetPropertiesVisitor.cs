@@ -15,15 +15,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class SetPropertiesVisitor : IXamlNodeVisitor
 	{
-		static readonly IList<XmlName> skips = new List<XmlName>
-		{
-			XmlName.xKey,
-			XmlName.xTypeArguments,
+		static readonly IList<XmlName> skips =
+		[
 			XmlName.xArguments,
+			XmlName.xDataType,
 			XmlName.xFactoryMethod,
+			XmlName.xKey,
 			XmlName.xName,
-			XmlName.xDataType
-		};
+			XmlName.xShared,
+			XmlName.xTypeArguments,
+		];
 
 		public SetPropertiesVisitor(ILContext context, bool stopOnResourceDictionary = false)
 		{
@@ -423,11 +424,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (dataType is null)
 				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 
-			XmlType dtXType = null;
+			XmlType? dtXType = null;
 			try
 			{
-				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
-					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo);
 			}
 			catch (XamlParseException)
 			{
@@ -435,7 +435,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
 			}
 
-			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
+			var tSourceRef = ((XmlType)dtXType).GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
 				yield break; //throw
 

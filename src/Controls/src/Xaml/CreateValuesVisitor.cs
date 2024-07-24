@@ -11,15 +11,10 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	class CreateValuesVisitor : IXamlNodeVisitor
 	{
-		public CreateValuesVisitor(HydrationContext context)
-		{
-			Context = context;
-		}
+		public CreateValuesVisitor(HydrationContext context) => Context = context;
 
-		Dictionary<INode, object> Values
-		{
-			get { return Context.Values; }
-		}
+		Dictionary<INode, object> Values => Context.Values;
+		Dictionary<INode, Func<object>> ValueCreators => Context.ValueCreators;
 
 		HydrationContext Context { get; }
 
@@ -41,12 +36,12 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			object value = null;
 
-			var type = XamlParser.GetElementType(node.XmlType, node, Context.RootElement?.GetType().Assembly,
-				out XamlParseException xpe);
-			if (xpe != null)
-			{
+			Type type = null;
+			bool xShared = GetAndValidateXShared(node, parentNode, out var xpe);
+			if (xpe == null)
+				type = XamlParser.GetElementType(node.XmlType, node, Context.RootElement?.GetType().GetTypeInfo().Assembly, out xpe);
+			if (xpe != null) {
 				if (Context.ExceptionHandler != null)
 				{
 					Context.ExceptionHandler(xpe);
@@ -55,6 +50,64 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw xpe;
 			}
 			Context.Types[node] = type;
+
+			object valueCreator()
+			{
+				object value = CreateValue(node, parentNode, type, out Exception exception);
+				if (exception != null) {
+					if (Context.ExceptionHandler != null) {
+						Context.ExceptionHandler(exception);
+						return null;
+					}
+					throw exception;
+				}
+				Values[node] = value;
+				return value;
+			}
+
+			if (xShared)
+				valueCreator();
+			else
+				ValueCreators[node] = valueCreator;
+		}
+
+		static bool GetAndValidateXShared(ElementNode node, INode parentNode, out XamlParseException xpe)
+		{
+			xpe = null;
+			bool xShared = true;
+			if (!node.Properties.ContainsKey(XmlName.xShared))
+				return xShared;
+
+			if (!(((ValueNode)node.Properties[XmlName.xShared]).Value is string shared))
+				xpe = new XamlParseException($"Invalid value ('{((ValueNode)node.Properties[XmlName.xShared]).Value}') for x:Shared.", node);
+			else if (!bool.TryParse(shared, out xShared)) 
+				xpe = new XamlParseException($"Invalid boolean value ('{shared}') for x:Shared.", node);
+
+			if (xShared || xpe != null)
+				return xShared;
+
+			if (   parentNode is IElementNode enode
+				&& enode.XmlType.Equals(new XmlType(XamlParser.MauiUri, nameof(ResourceDictionary), null)))
+				return xShared; //parent is a RD
+
+			if (   parentNode is ListNode lnode
+				&& ApplyPropertiesVisitor.TryGetPropertyName(parentNode, lnode.Parent, out XmlName propertyName)
+				&& (propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)))
+				return xShared;
+
+			if (   ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName)
+				&& (propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)))
+				return xShared;
+
+			xpe = new XamlParseException("x:Shared is invalid at this position", node);
+			return xShared;
+		}
+
+		object CreateValue(ElementNode node, INode parentNode, Type type, out Exception exc)
+		{
+			object value = null;
+			exc = null;
+
 			if (IsXaml2009LanguagePrimitive(node))
 				value = CreateLanguagePrimitive(type, node);
 			else if (node.Properties.ContainsKey(XmlName.xArguments) || node.Properties.ContainsKey(XmlName.xFactoryMethod))
@@ -70,7 +123,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			else if (!type.GetTypeInfo().DeclaredConstructors.Any(ci => ci.IsPublic && ci.GetParameters().Length == 0) &&
 					 !ValidateCtorArguments(type, node, out ctorargname))
 			{
-				throw new XamlParseException($"The Property {ctorargname} is required to create a {type.FullName} object.", node);
+				exc = new XamlParseException($"The Property {ctorargname} is required to create a {type.FullName} object.", node);
+				return null;
 			}
 			else
 			{
@@ -91,10 +145,11 @@ namespace Microsoft.Maui.Controls.Xaml
 							if (Context.ExceptionHandler != null)
 							{
 								Context.ExceptionHandler(exception);
-								return;
+								return null;
 							}
 							throw exception;
 						}
+
 						if (converted != null && converted.GetType() == type)
 							value = converted;
 					}
@@ -103,11 +158,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 				catch (TargetInvocationException e) when (e.InnerException is XamlParseException || e.InnerException is XmlException)
 				{
-					throw e.InnerException;
+					exc = e.InnerException;
+					return null;
 				}
 				catch (MissingMemberException mme)
 				{
-					throw new XamlParseException(mme.Message, node, mme);
+					exc = new XamlParseException(mme.Message, node, mme);
+					return null;
 				}
 			}
 
@@ -156,6 +213,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (assemblyName != null && value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(Context.RootElement) is string path)
 				VisualDiagnostics.RegisterSourceInfo(value, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), ((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition);
 
+
+			return value;
 		}
 
 		public void Visit(RootNode node, INode parentNode)
@@ -194,14 +253,12 @@ namespace Microsoft.Maui.Controls.Xaml
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute))));
 			if (ctorInfo == null)
 				return true;
-			foreach (var parameter in ctorInfo.GetParameters())
-			{
+			foreach (var parameter in ctorInfo.GetParameters()) {
 				var propname =
 					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
-				if (!node.Properties.ContainsKey(new XmlName("", propname)))
-				{
+				if (!node.Properties.ContainsKey(new XmlName("", propname))) {
 					missingArgName = propname;
 					return false;
 				}
@@ -319,15 +376,15 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			object value;
 			if (nodeType == typeof(string))
-				value = String.Empty;
+				value = string.Empty;
 			else if (nodeType == typeof(Uri))
 				value = null;
 			else
 				value = Activator.CreateInstance(nodeType);
 
-			if (node.CollectionItems.Count == 1
-				&& node.CollectionItems[0] is ValueNode
-				&& ((ValueNode)node.CollectionItems[0]).Value is string valuestring)
+			if (   node.CollectionItems.Count == 1
+				&& node.CollectionItems[0] is ValueNode valueNode
+				&& valueNode.Value is string valuestring)
 			{
 				if (nodeType == typeof(SByte) && sbyte.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteval))
 					return sbyteval;

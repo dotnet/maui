@@ -257,5 +257,12 @@
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key expects a string literal.</value>
   </data>
+  <data name="XSharedInvalid" xml:space="preserve">
+    <value>x:Shared is invalid at this position.</value>
+  </data>
+  <data name="XSharedValueInvalid" xml:space="preserve">
+    <value>Invalid value "{0}" for x:Shared.</value>
+    <comment>0 is the value found</comment>
+  </data>
   
 </root>

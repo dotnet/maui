@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var attributes = ParseXamlAttributes(reader, out IList<KeyValuePair<string, string>> xmlns);
 			var prefixes = PrefixesToIgnore(xmlns);
-			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
+			(rootNode.IgnorablePrefixes ??= new List<string>()).AddRange(prefixes);
 			rootNode.Properties.AddRange(attributes);
 			ParseXamlElementFor(rootNode, reader);
 		}
@@ -120,8 +120,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						break;
 					case XmlNodeType.Text:
 					case XmlNodeType.CDATA:
-						if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
-							((ValueNode)node.CollectionItems[0]).Value += reader.Value.Trim();
+						if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode valueNode)
+							valueNode.Value += reader.Value.Trim();
 						else
 							node.CollectionItems.Add(new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader));
 						break;
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Xaml
 						node = new ElementNode(new XmlType(elementNsUri, elementName, typeArguments), elementNsUri,
 							reader as IXmlNamespaceResolver, elementXmlInfo.LineNumber, elementXmlInfo.LinePosition);
 						((IElementNode)node).Properties.AddRange(attributes);
-						(node.IgnorablePrefixes ?? (node.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
+						(node.IgnorablePrefixes ??= new List<string>()).AddRange(prefixes);
 
 						ParseXamlElementFor((IElementNode)node, reader);
 						nodes.Add(node);
@@ -274,6 +274,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						return XmlName.xFactoryMethod;
 					case "Arguments":
 						return XmlName.xArguments;
+					case "Shared":
+						return XmlName.xShared;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
 						return new XmlName(null, null);

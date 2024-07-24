@@ -193,9 +193,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!type.TryGetTypeReference(contextProvider.Context.Cache, contextProvider.Context.Module, null, out _))
 					type = new XmlType(namespaceuri, name, typeArguments);
 
-				if (type == null)
-					throw new NotSupportedException();
-
 				_node = xmlLineInfo == null
 					? new ElementNode(type, "", nsResolver)
 					: new ElementNode(type, "", nsResolver, xmlLineInfo.LineNumber, xmlLineInfo.LinePosition);

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.XShared">
+    <ContentPage.Resources>
+        <x:Object x:Key="shared"/>
+        <x:Object x:Key="notshared" x:Shared="false" />
+    </ContentPage.Resources>
+    <StackLayout x:Name="sl">
+        <StackLayout.Resources>
+            <x:Object x:Key="slnotshared" x:Shared="false" />
+        </StackLayout.Resources>
+        <Label x:Name="l0">
+            <Label.Resources>
+                <ResourceDictionary>
+                    <x:Object x:Key="l0shared" />
+                    <x:Object x:Key="l0notshared" x:Shared="false" />
+                </ResourceDictionary>
+            </Label.Resources>
+        </Label>
+        <Label x:Name="l1">
+            <Label.Resources>
+                <ResourceDictionary>
+                    <x:Object x:Key="l1notshared" x:Shared="false" />
+                </ResourceDictionary>
+            </Label.Resources>
+        </Label>
+    </StackLayout>
+</ContentPage>

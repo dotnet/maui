@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Controls
 	{
 		const string GetResourcePathUriScheme = "maui://";
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
+
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
+		readonly Dictionary<string, Func<object>> _valueCreators = new Dictionary<string, Func<object>>();
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 
@@ -138,6 +140,7 @@ namespace Microsoft.Maui.Controls
 		public void Clear()
 		{
 			_innerDictionary.Clear();
+			_valueCreators.Clear();
 		}
 
 		bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
@@ -154,7 +157,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Count']/Docs/*" />
 		public int Count
 		{
-			get { return _innerDictionary.Count + (_mergedInstance?.Count ?? 0); }
+			get { return _innerDictionary.Count + _valueCreators.Count + (_mergedInstance?.Count ?? 0); }
 		}
 
 		bool ICollection<KeyValuePair<string, object>>.IsReadOnly
@@ -176,13 +179,18 @@ namespace Microsoft.Maui.Controls
 			OnValueChanged(key, value);
 		}
 
+		public void AddValueCreator(string key, Func<object> valueCreator)
+		{
+			if (ContainsKey(key))
+				throw new ArgumentException($"A resource with the key '{key}' is already present in the ResourceDictionary.");
+			_valueCreators.Add(key, valueCreator);
+			OnValueChanged(key, valueCreator());
+		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='ContainsKey']/Docs/*" />
 		public bool ContainsKey(string key)
 		{
-			// Note that this only checks the inner dictionary and ignores the merged dictionaries. This is apparently an intended 
-			// behavior to support Hot Reload. 
-
-			return _innerDictionary.ContainsKey(key);
+			return _innerDictionary.ContainsKey(key) || _valueCreators.ContainsKey(key);
 		}
 
 		[IndexerName("Item")]
@@ -192,6 +200,8 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_innerDictionary.ContainsKey(index))
 					return _innerDictionary[index];
+				if (_valueCreators.ContainsKey(index))
+					return _valueCreators[index]();
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
 				if (_mergedDictionaries != null)
@@ -231,7 +241,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Remove']/Docs/*" />
 		public bool Remove(string key)
 		{
-			return _innerDictionary.Remove(key) || (_mergedInstance?.Remove(key) ?? false);
+			return _innerDictionary.Remove(key) || _valueCreators.Remove(key) || (_mergedInstance?.Remove(key) ?? false);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Values']/Docs/*" />
@@ -288,6 +298,7 @@ namespace Microsoft.Maui.Controls
 		{
 			source = this;
 			return _innerDictionary.TryGetValue(key, out value)
+				|| (_valueCreators.TryGetValue(key, out var vCreator) && ((value = vCreator()) != null))
 				|| (_mergedInstance != null && _mergedInstance.TryGetValueAndSource(key, out value, out source))
 				|| (_mergedDictionaries != null && TryGetMergedDictionaryValue(key, out value, out source));
 		}
@@ -321,11 +332,8 @@ namespace Microsoft.Maui.Controls
 		{
 			if (string.IsNullOrEmpty(style.Class))
 				Add(style.TargetType.FullName, style);
-			else
-			{
-				IList<Style> classes;
-				object outclasses;
-				if (!TryGetValue(Style.StyleClassPrefix + style.Class, out outclasses) || (classes = outclasses as IList<Style>) == null)
+			else {
+				if (!TryGetValue(Style.StyleClassPrefix + style.Class, out var outclasses) || !(outclasses is IList<Style> classes))
 					classes = new List<Style>();
 				classes.Add(style);
 				this[Style.StyleClassPrefix + style.Class] = classes;

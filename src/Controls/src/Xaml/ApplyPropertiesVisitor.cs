@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			XmlName.xArguments,
 			XmlName.xFactoryMethod,
 			XmlName.xName,
-			XmlName.xDataType
+			XmlName.xDataType,
+			XmlName.xShared,
 		};
 
 		public ApplyPropertiesVisitor(HydrationContext context, bool stopOnResourceDictionary = false)
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 				if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
 					return;
-				SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
+				SetPropertyValue(source, propertyName, value, valueCreator: null, Context.RootElement, node, Context, node);
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode)
 			{
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Controls.Xaml
 						return;
 					if (parentElement.SkipProperties.Contains(propertyName))
 						return;
-					SetPropertyValue(source, name, value, Context.RootElement, node, Context, node);
+					SetPropertyValue(source, name, value, valueCreator: null, Context.RootElement, node, Context, node);
 				}
 			}
 		}
@@ -104,7 +105,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				parentElement = parentNode as IElementNode;
 			}
 
-			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
+			Func<object> valueCreator = null;
+			if (!Values.TryGetValue(node, out var value) && !Context.ValueCreators.TryGetValue(node, out valueCreator) && Context.ExceptionHandler != null)
 				return;
 
 			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName))
@@ -117,7 +119,9 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (!Values.TryGetValue(parentNode, out var source) && Context.ExceptionHandler != null)
 					return;
 				ProvideValue(ref value, node, source, propertyName);
-				SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
+				Context.ValueCreators.TryGetValue(node, out valueCreator);
+				var vCreate = valueCreator != null ? () => { var v = valueCreator(); ProvideValue(ref v, node, source, propertyName); return v; } : (Func<object>)null;
+				SetPropertyValue(source, propertyName, value, vCreate, Context.RootElement, node, Context, node);
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode)
 			{
@@ -139,8 +143,18 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 
 				//ResourceDictionary
-				if (xpe == null
-					&& TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, node, out xpe))
+				bool xShared = true;
+				if (node.Properties.ContainsKey(XmlName.xShared)) {
+					if (!(((ValueNode)node.Properties[XmlName.xShared]).Value is string shared))
+						throw new XamlParseException($"Invalid value for x:Shared.", node);
+					if (!bool.TryParse(shared, out xShared))
+						throw new XamlParseException($"Invalid boolean value for x:Shared.", node);
+				}
+				Context.ValueCreators.TryGetValue(node, out valueCreator);
+				var vCreate = valueCreator != null ? () => { var v = valueCreator(); ProvideValue(ref v, node, source, propertyName); return v; } : (Func<object>)null;
+
+				if (   xpe == null 
+					&& TryAddToResourceDictionary(source as ResourceDictionary, value, xKey, xShared, vCreate, node, out xpe))
 					return;
 
 				//ContentProperty
@@ -153,7 +167,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					if (parentElement.SkipProperties.Contains(propertyName))
 						return;
 
-					SetPropertyValue(source, name, value, Context.RootElement, node, Context, node);
+					SetPropertyValue(source, name, value, null, Context.RootElement, node, Context, node);
 					return;
 				}
 
@@ -191,6 +205,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (Skips.Contains(parentList.XmlName))
 					return;
 				Exception xpe = null;
+
 				string xKey = null;
 				if (xpe == null && node.Properties.ContainsKey(XmlName.xKey))
 				{
@@ -199,12 +214,21 @@ namespace Microsoft.Maui.Controls.Xaml
 					if (xKey == null)
 						xpe = new XamlParseException("x:Key expects a string literal.", node as IXmlLineInfo);
 				}
-
+				bool xShared = true;
+				if (node.Properties.ContainsKey(XmlName.xShared))
+				{
+					if (!(((ValueNode)node.Properties[XmlName.xShared]).Value is string shared))
+						throw new XamlParseException($"Invalid value for x:Shared.", node);
+					if (!bool.TryParse(shared, out xShared))
+						throw new XamlParseException($"Invalid boolean value for x:Shared.", node);
+				}
 				var collection = GetPropertyValue(source, parentList.XmlName, Context.RootElement, parentList, out _, out _) as IEnumerable;
 				if (xpe == null && collection == null)
 					xpe = new XamlParseException($"Property {parentList.XmlName.LocalName} is null or is not IEnumerable", node);
 
-				if (xpe == null && TryAddToResourceDictionary(collection as ResourceDictionary, value, xKey, node, out xpe))
+				Context.ValueCreators.TryGetValue(node, out valueCreator);
+				var vCreate = valueCreator != null ? () => { var v = valueCreator(); ProvideValue(ref v, node, source, propertyName); return v; } : (Func<object>)null;
+				if (xpe == null && TryAddToResourceDictionary(collection as ResourceDictionary, value, xKey, xShared, vCreate, node, out xpe))
 					return;
 
 				MethodInfo addMethod;
@@ -354,12 +378,19 @@ namespace Microsoft.Maui.Controls.Xaml
 			return propertyInfo;
 		}
 
-		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, object rootElement, INode node, HydrationContext context, IXmlLineInfo lineInfo)
+		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, Func<object> valueCreator, object rootElement, INode node, HydrationContext context, IXmlLineInfo lineInfo)
 		{
 			var serviceProvider = new XamlServiceProvider(node, context);
-			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
 
-			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
+			var eNode = node as IElementNode;
+			var xKey = eNode is not null && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
+			bool xShared = true;
+			if (eNode is not null && eNode.Properties.ContainsKey(XmlName.xShared) && (((ValueNode)eNode.Properties[XmlName.xShared]).Value is string shared) && bool.TryParse(shared, out xShared))
+			{
+				
+			} //validation already happenend in CreateValueVisitor
+
+			if (TrySetPropertyValue(xamlelement, propertyName, xKey, xShared, value, valueCreator, rootElement, lineInfo, serviceProvider, out var xpe))
 				return;
 
 			if (context.ExceptionHandler != null)
@@ -369,7 +400,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		//Used by HotReload, do not change signature
-		public static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, out Exception xpe)
+		public static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, bool xShared, object value, Func<object> valueCreator, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, out Exception xpe)
 		{
 			var localName = propertyName.LocalName;
 			xpe = null;
@@ -389,23 +420,23 @@ namespace Microsoft.Maui.Controls.Xaml
 			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			//If the target is an event, connect
-			if (xpe == null && TryConnectEvent(element, localName, attached, value, rootElement, lineInfo, out xpe))
+			if (xpe == null && xShared && TryConnectEvent(element, localName, attached, value, rootElement, lineInfo, out xpe))
 				return true;
 
 			//If Value is DynamicResource and it's a BP, SetDynamicResource
-			if (xpe == null && TrySetDynamicResource(element, property, value, lineInfo, out xpe))
+			if (xpe == null && xShared && TrySetDynamicResource(element, property, value, lineInfo, out xpe))
 				return true;
 
 			//If value is BindingBase, SetBinding
-			if (xpe == null && TrySetBinding(element, property, localName, value, lineInfo, out var binding, out xpe))
+			if (xpe == null && xShared && TrySetBinding(element, property, localName, value, lineInfo, out var binding, out xpe))
 			{
 				if (binding != null && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(binding, path);
 				return true;
 			}
 
-			//If it's a BindableProberty, SetValue
-			if (xpe == null && TrySetValue(element, property, attached, value, lineInfo, serviceProvider, out xpe))
+			//If it's a BindableProperty, SetValue
+			if (xpe == null && xShared && TrySetValue(element, property, attached, value, lineInfo, serviceProvider, out xpe))
 			{
 				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
@@ -413,7 +444,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			//If we can assign that value to a normal property, let's do it
-			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
+			if (xpe == null && xShared && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
 			{
 				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
@@ -421,7 +452,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			//If it's an already initialized property, add to it
-			if (xpe == null && TryAddToProperty(element, propertyName, value, xKey, lineInfo, serviceProvider, rootElement, out xpe))
+			if (xpe == null && TryAddToProperty(element, propertyName, value, xKey, xShared, valueCreator, lineInfo, serviceProvider, rootElement, out xpe))
 			{
 				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
@@ -733,13 +764,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 
-		static bool TryAddToProperty(object element, XmlName propertyName, object value, string xKey, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, out Exception exception)
+		static bool TryAddToProperty(object element, XmlName propertyName, object value, string xKey, bool xShared, Func<object> valueCreator, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, out Exception exception)
 		{
 			exception = null;
 			if (!(GetPropertyValue(element, propertyName, rootElement, lineInfo, out _, out var targetProperty) is IEnumerable collection))
 				return false;
 
-			if (exception == null && TryAddToResourceDictionary(collection as ResourceDictionary, value, xKey, lineInfo, out exception))
+			if (exception == null && TryAddToResourceDictionary(collection as ResourceDictionary, value, xKey, xShared, valueCreator, lineInfo, out exception))
 				return true;
 
 			if (exception != null)
@@ -763,21 +794,23 @@ namespace Microsoft.Maui.Controls.Xaml
 			return exception == null;
 		}
 
-		static bool TryAddToResourceDictionary(ResourceDictionary resourceDictionary, object value, string xKey, IXmlLineInfo lineInfo, out Exception exception)
+		static bool TryAddToResourceDictionary(ResourceDictionary resourceDictionary, object value, string xKey, bool xShared, Func<object> valueCreator, IXmlLineInfo lineInfo, out Exception exception)
 		{
 			exception = null;
 
 			if (resourceDictionary == null)
 				return false;
 
-			if (xKey != null)
+			if (xKey != null && xShared)
 				resourceDictionary.Add(xKey, value);
-			else if (value is Style)
-				resourceDictionary.Add((Style)value);
-			else if (value is ResourceDictionary)
-				resourceDictionary.Add((ResourceDictionary)value);
-			else if (value is StyleSheets.StyleSheet)
-				resourceDictionary.Add((StyleSheets.StyleSheet)value);
+			else if (xKey != null && !xShared)
+				resourceDictionary.AddValueCreator(xKey, valueCreator);
+			else if (value is Style styleValue)
+				resourceDictionary.Add(styleValue);
+			else if (value is ResourceDictionary rdValue)
+				resourceDictionary.Add(rdValue);
+			else if (value is StyleSheets.StyleSheet stylesheetValue)
+				resourceDictionary.Add(stylesheetValue);
 			else
 			{
 				exception = new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
@@ -841,7 +874,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (runTimeName == null)
 				return false;
 
-			SetPropertyValue(source, new XmlName("", runTimeName.Name), value, Context.RootElement, node, Context, node);
+			SetPropertyValue(source, new XmlName("", runTimeName.Name), value, valueCreator: null, Context.RootElement, node, Context, node);
 			return true;
 		}
 	}

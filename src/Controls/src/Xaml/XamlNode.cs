@@ -42,8 +42,10 @@ namespace Microsoft.Maui.Controls.Xaml
 	}
 
 	[DebuggerDisplay("{NamespaceUri}:{Name}")]
-	class XmlType
+	readonly struct XmlType : IEquatable<XmlType>
 	{
+		public static readonly XmlType Empty = new XmlType();
+
 		public XmlType(string namespaceUri, string name, IList<XmlType> typeArguments)
 		{
 			NamespaceUri = namespaceUri;
@@ -58,10 +60,13 @@ namespace Microsoft.Maui.Controls.Xaml
 		public override bool Equals(object obj)
 		{
 			if (obj is not XmlType other)
-			{
 				return false;
-			}
 
+			return Equals(other);
+		}
+
+		public bool Equals(XmlType other)
+		{
 			return
 				NamespaceUri == other.NamespaceUri &&
 				Name == other.Name &&
@@ -83,6 +88,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return hashCode;
 			}
 		}
+
 	}
 
 	abstract class BaseNode : IXmlLineInfo, INode
@@ -190,14 +196,10 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		}
 
-		bool IsDataTemplate(INode parentNode)
-		{
-			if (parentNode is IElementNode parentElement &&
-				parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent) &&
-				createContent == this)
-				return true;
-			return false;
-		}
+		bool IsDataTemplate(INode parentNode) =>
+			   parentNode is IElementNode parentElement
+			&& parentElement.Properties.TryGetValue(XmlName._CreateContent, out INode createContent)
+			&& createContent == this;
 
 		protected bool SkipChildren(IXamlNodeVisitor visitor, INode node, INode parentNode) =>
 			   (visitor.StopOnDataTemplate && IsDataTemplate(parentNode))
@@ -219,6 +221,20 @@ namespace Microsoft.Maui.Controls.Xaml
 				clone.SkipProperties.Add(p);
 			foreach (var p in CollectionItems)
 				clone.CollectionItems.Add(p.Clone());
+			return clone;
+		}
+
+		public INode ShallowClone()
+		{
+			var clone = new ElementNode(XmlType, NamespaceURI, NamespaceResolver, LineNumber, LinePosition) {
+				IgnorablePrefixes = IgnorablePrefixes
+			};
+			
+			//clone.Properties.AddRange(Properties); //AddRange not available to the sourcegen
+			foreach(var property in Properties)
+				clone.Properties.Add(property.Key, property.Value);
+			clone.SkipProperties.AddRange(SkipProperties);
+			clone.CollectionItems.AddRange(CollectionItems);
 			return clone;
 		}
 	}

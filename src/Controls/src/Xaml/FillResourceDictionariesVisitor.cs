@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
+			if (!Values.TryGetValue(node, out var value) && !Context.ValueCreators.TryGetValue(node, out _) && Context.ExceptionHandler != null)
 				return;
 
 			//Set RD to VE
@@ -44,18 +44,18 @@ namespace Microsoft.Maui.Controls.Xaml
 					 propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) && value is ResourceDictionary)
 				{
 					var source = Values[parentNode];
-					ApplyPropertiesVisitor.SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
+					ApplyPropertiesVisitor.SetPropertyValue(source, propertyName, value, valueCreator: null, Context.RootElement, node, Context, node);
 					return;
 				}
 			}
 
 			//Only proceed further if the node is a keyless RD
-			if (parentNode is IElementNode
-				&& Context.Types.TryGetValue((IElementNode)parentNode, out var parentType)
+			if (   parentNode is IElementNode eParentNode
+				&& Context.Types.TryGetValue(eParentNode, out var parentType)
 				&& typeof(ResourceDictionary).IsAssignableFrom(parentType)
-				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+				&& !eParentNode.Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (parentNode is ListNode
+			else if (   parentNode is ListNode
 					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
 					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
@@ -84,6 +84,5 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			return false;
 		}
-
 	}
 }

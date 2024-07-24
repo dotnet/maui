@@ -21,13 +21,13 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static XmlType ParseSingle(string expression, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
 		{
 			string remaining = null;
-			XmlType type = Parse(expression, ref remaining, resolver, lineInfo);
+			XmlType? type = Parse(expression, ref remaining, resolver, lineInfo);
 			if (type is null || !string.IsNullOrWhiteSpace(remaining))
 			{
 				throw new XamlParseException($"Invalid type expression or more than one type declared in '{expression}'", lineInfo, null);
 			}
 
-			return type;
+			return (XmlType)type;
 		}
 
 		static XmlType Parse(string match, ref string remaining, IXmlNamespaceResolver resolver, IXmlLineInfo lineinfo)
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var split = type.Split(':');
 			if (split.Length > 2)
-				return null;
+				return XmlType.Empty;
 
 			string prefix, name;
 			if (split.Length == 2)

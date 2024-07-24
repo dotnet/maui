@@ -1193,6 +1193,7 @@
 ~Microsoft.Maui.Controls.ResourceDictionary.Add(Microsoft.Maui.Controls.Style style) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.Add(Microsoft.Maui.Controls.StyleSheets.StyleSheet styleSheet) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.Add(string key, object value) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.AddValueCreator(string key, System.Func<object> valueCreator) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.ContainsKey(string key) -> bool
 ~Microsoft.Maui.Controls.ResourceDictionary.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>
 ~Microsoft.Maui.Controls.ResourceDictionary.Keys.get -> System.Collections.Generic.ICollection<string>

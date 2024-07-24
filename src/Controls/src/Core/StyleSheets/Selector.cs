@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		{
 			Selector root = All, workingRoot = All;
 			Operator workingRootParent = null;
-			Action<Operator, Selector> setCurrentSelector = (op, sel) => SetCurrentSelector(ref root, ref workingRoot, ref workingRootParent, op, sel);
+			void setCurrentSelector(Operator op, Selector sel) => SetCurrentSelector(ref root, ref workingRoot, ref workingRootParent, op, sel);
 
 			int p;
 			reader.SkipWhiteSpaces();
@@ -146,21 +146,15 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		sealed class Generic : UnarySelector
 		{
-			readonly Func<IStyleSelectable, bool> func;
-			public Generic(Func<IStyleSelectable, bool> func)
-			{
-				this.func = func;
-			}
+			readonly Func<IStyleSelectable, bool> _func;
+			public Generic(Func<IStyleSelectable, bool> func) => _func = func;
 
-			public override bool Matches(IStyleSelectable styleable) => func(styleable);
+			public override bool Matches(IStyleSelectable styleable) => _func(styleable);
 		}
 
 		sealed class Class : UnarySelector
 		{
-			public Class(string className)
-			{
-				ClassName = className;
-			}
+			public Class(string className) => ClassName = className;
 
 			public string ClassName { get; }
 			public override bool Matches(IStyleSelectable styleable)
@@ -169,10 +163,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		sealed class Id : UnarySelector
 		{
-			public Id(string id)
-			{
-				IdName = id;
-			}
+			public Id(string id) => IdName = id;
 
 			public string IdName { get; }
 			public override bool Matches(IStyleSelectable styleable) => styleable.Id == IdName;
@@ -190,10 +181,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		sealed class Element : UnarySelector
 		{
-			public Element(string elementName)
-			{
-				ElementName = elementName;
-			}
+			public Element(string elementName) => ElementName = elementName;
 
 			public string ElementName { get; }
 			public override bool Matches(IStyleSelectable styleable) =>
@@ -202,10 +190,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		sealed class Base : UnarySelector
 		{
-			public Base(string elementName)
-			{
-				ElementName = elementName;
-			}
+			public Base(string elementName) => ElementName = elementName;
 
 			public string ElementName { get; }
 			public override bool Matches(IStyleSelectable styleable)

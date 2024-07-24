@@ -5,7 +5,7 @@ using System.Diagnostics;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[DebuggerDisplay("{NamespaceURI}:{LocalName}")]
-	internal struct XmlName
+	readonly struct XmlName
 	{
 		public static readonly XmlName _CreateContent = new XmlName("_", "CreateContent");
 		public static readonly XmlName xKey = new XmlName("x", "Key");
@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static readonly XmlName xArguments = new XmlName("x", "Arguments");
 		public static readonly XmlName xFactoryMethod = new XmlName("x", "FactoryMethod");
 		public static readonly XmlName xDataType = new XmlName("x", "DataType");
+		public static readonly XmlName xShared = new XmlName("x", "Shared");
 		public static readonly XmlName Empty = new XmlName();
 
 		public string NamespaceURI { get; }
@@ -29,14 +30,12 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			if (obj == null)
 				return false;
-			if (obj.GetType() != typeof(XmlName))
+			if (!(obj is XmlName other))
 				return false;
-			var other = (XmlName)obj;
 			return NamespaceURI == other.NamespaceURI && LocalName == other.LocalName;
 		}
 
-		public bool Equals(string namespaceUri, string localName)
-			=> Equals(new XmlName(namespaceUri, localName));
+		public bool Equals(string namespaceUri, string localName) => Equals(new XmlName(namespaceUri, localName));
 
 		public override int GetHashCode()
 		{
@@ -58,10 +57,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
-		public static bool operator ==(XmlName x1, XmlName x2)
-			=> x1.NamespaceURI == x2.NamespaceURI && x1.LocalName == x2.LocalName;
+		public static bool operator ==(XmlName x1, XmlName x2) => x1.Equals(x2);
 
-		public static bool operator !=(XmlName x1, XmlName x2)
-			=> !(x1 == x2);
+		public static bool operator !=(XmlName x1, XmlName x2) =>  !(x1 == x2);
 	}
 }
