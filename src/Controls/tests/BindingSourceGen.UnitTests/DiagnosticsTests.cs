@@ -145,7 +145,7 @@ public class DiagnosticsTests
             double GetRotation(Button b) => b.Rotation;
 
             var label = new Label();
-            label.SetBinding(Label.RotationProperty, (Button b) => GetRotation(b));
+            label.SetBinding(Label.RotationProperty, static (Button b) => GetRotation(b));
             """;
 
 		var result = SourceGenHelpers.Run(source);
@@ -158,12 +158,16 @@ public class DiagnosticsTests
 	public void ReportsUnableToResolvePathWhenUsingMultidimensionalArray()
 	{
 		var source = """
-            using Microsoft.Maui.Controls;
-            var label = new Label();
+			using Microsoft.Maui.Controls;
+			var label = new Label();
 
-            var array = new int[1, 1];
-            label.SetBinding(Label.RotationProperty, (Button b) => array[0, 0]);
-            """;
+			label.SetBinding(Label.RotationProperty, static (Foo b) => b.array[0, 0]);
+
+			class Foo
+			{
+				int[,] array = new int[1, 1];
+			}
+			""";
 
 		var result = SourceGenHelpers.Run(source);
 
@@ -180,7 +184,7 @@ public class DiagnosticsTests
 			using SomeNamespace;
 
 			var label = new Label();
-			label.SetBinding(Label.RotationProperty, (ClassA a) => a.CounterBtn.Text.Length);
+			label.SetBinding(Label.RotationProperty, static (ClassA a) => a.CounterBtn.Text.Length);
 			""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorA()]);
@@ -207,7 +211,7 @@ public class DiagnosticsTests
 					public void Foo()
 					{
 						var label = new Label();
-						label.SetBinding(Label.RotationProperty, (ClassA a) => a.CounterBtn.Text.Length);
+						label.SetBinding(Label.RotationProperty, static (ClassA a) => a.CounterBtn.Text.Length);
 					}
 				}
 			}
@@ -239,7 +243,7 @@ public class DiagnosticsTests
 				public void Bar()
 				{
 					var label = new Label();
-					label.SetBinding(Label.RotationProperty, (UnaccessibleClass a) => a.Value);
+					label.SetBinding(Label.RotationProperty, static (UnaccessibleClass a) => a.Value);
 				}
 
 				{{modifier}} class UnaccessibleClass
@@ -276,7 +280,7 @@ public class DiagnosticsTests
 				public void Bar()
 				{
 					var label = new Label();
-					label.SetBinding(Label.RotationProperty, (Foo foo) => foo.Value);
+					label.SetBinding(Label.RotationProperty, static (Foo foo) => foo.Value);
 				}
 			}
 			""";
@@ -309,7 +313,7 @@ public class DiagnosticsTests
 				public void Bar()
 				{
 					var label = new Label();
-					label.SetBinding(Label.RotationProperty, (Foo foo) => foo.Value);
+					label.SetBinding(Label.RotationProperty, static (Foo foo) => foo.Value);
 				}
 			}
 			""";
@@ -319,6 +323,22 @@ public class DiagnosticsTests
 		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
 		Assert.Equal("BSG0009", diagnostic.Id);
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	public void ReportsWarningWhenLambdaIsNotStatic()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var text = "Hello";
+			label.SetBinding(Label.RotationProperty, (Button b) => text.Length);
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0010", diagnostic.Id);
 	}
 }
 

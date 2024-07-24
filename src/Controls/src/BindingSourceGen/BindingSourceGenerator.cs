@@ -94,6 +94,11 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
 		}
 
+		if (!lambdaResult.Value.Modifiers.Any(SyntaxKind.StaticKeyword))
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaIsNotStatic(lambdaResult.Value.GetLocation()));
+		}
+
 		var lambdaBodyResult = ExtractLambdaBody(lambdaResult.Value);
 		if (lambdaBodyResult.HasDiagnostics)
 		{

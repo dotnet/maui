@@ -114,4 +114,15 @@ internal static class DiagnosticsFactory
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true),
 		location);
+
+	public static DiagnosticInfo LambdaIsNotStatic(Location location)
+	=> new DiagnosticInfo(
+		new DiagnosticDescriptor(
+			id: "BSG0010",
+			title: "Lambda is not static",
+			messageFormat: "The lambda must be static.",
+			category: "Usage",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true),
+		location);
 }
