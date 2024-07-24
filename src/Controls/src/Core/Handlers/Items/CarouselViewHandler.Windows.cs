@@ -50,11 +50,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselScrolled;
 
-			if (ListViewBase != null)
-			{
-				ListViewBase.SizeChanged -= OnListViewSizeChanged;
-				_proxy.Unsubscribe();
-			}
+			platformView.SizeChanged -= OnListViewSizeChanged;
+			_proxy.Unsubscribe();
 
 			if (_scrollViewer != null)
 			{
