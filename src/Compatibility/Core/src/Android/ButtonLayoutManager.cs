@@ -154,12 +154,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 						var measuredTextWidth = view.Paint.MeasureText(buttonText, 0, buttonText.Length());
 						var textWidth = Math.Min((int)measuredTextWidth, view.Layout.Width);
+#pragma warning disable CS0618 // Obsolete
 						var contentsWidth = ViewCompat.GetPaddingStart(view) + iconWidth + view.CompoundDrawablePadding + textWidth + ViewCompat.GetPaddingEnd(view);
+#pragma warning restore CS0618 // Obsolete
 
 						var newLeft = (view.MeasuredWidth - contentsWidth) / 2;
 						if (_element.ContentLayout.Position == Button.ButtonContentLayout.ImagePosition.Right)
 							newLeft = -newLeft;
+#pragma warning disable CS0618 // Obsolete
 						if (ViewCompat.GetLayoutDirection(view) == ViewCompat.LayoutDirectionRtl)
+#pragma warning restore CS0618 // Obsolete
 							newLeft = -newLeft;
 
 						_drawableBounds.Set(newLeft, _drawableBounds.Top, newLeft + iconWidth, _drawableBounds.Bottom);
