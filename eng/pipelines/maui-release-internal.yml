@@ -20,7 +20,14 @@ trigger:
     - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
-
+schedules:
+- cron: "0 5 * * *"
+  displayName: Run daily at 5:00 UTC
+  branches:
+    include:
+    - main
+    - net9.0
+    
 variables:
   - template: /eng/pipelines/common/variables.yml@self
   - group: DotNetBuilds storage account read tokens
