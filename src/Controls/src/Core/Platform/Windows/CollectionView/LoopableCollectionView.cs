@@ -18,11 +18,16 @@ namespace Microsoft.Maui.Controls.Platform
 		const int FakeCount = 655360; // 640k ought to be enough for anybody
 		readonly ICollectionView _internal;
 
+		VectorChangedEventHandler<object> _collectionChanged;
+		readonly WeakVectorChangedProxy _proxy = new();
+
+		~LoopableCollectionView() => _proxy.Unsubscribe();
 
 		public LoopableCollectionView(ICollectionView @internal)
 		{
 			_internal = @internal;
-			_internal.VectorChanged += OnItemsVectorChanged;
+			_collectionChanged ??= OnItemsVectorChanged;
+			_proxy.Subscribe(_internal, _collectionChanged);
 		}
 
 		internal bool IsLoopingEnabled { get; set; }
@@ -176,6 +181,11 @@ namespace Microsoft.Maui.Controls.Platform
 			return _internal.GetEnumerator();
 		}
 
+		internal void CleanUp()
+		{
+			_proxy.Unsubscribe();
+		}
+
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return ((IEnumerable)_internal).GetEnumerator();
@@ -262,5 +272,49 @@ namespace Microsoft.Maui.Controls.Platform
 		//			.RemoveEventHandler(value);
 		//	}
 		//}
+	}
+
+	class WeakVectorChangedProxy : WeakEventProxy<ICollectionView, VectorChangedEventHandler<object>>
+	{
+		public WeakVectorChangedProxy() { }
+
+		public WeakVectorChangedProxy(ICollectionView source, VectorChangedEventHandler<object> handler)
+		{
+			Subscribe(source, handler);
+		}
+
+		void OnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(ICollectionView source, VectorChangedEventHandler<object> handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.VectorChanged -= OnVectorChanged;
+			}
+
+			source.VectorChanged += OnVectorChanged;
+
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.VectorChanged -= OnVectorChanged;
+			}
+
+			base.Unsubscribe();
+		}
 	}
 }
