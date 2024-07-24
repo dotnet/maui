@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		void NextButton_Clicked(object sender, EventArgs e)
 		{
-			if (_TestCases == null || _TestCases.Count == 0 || _TestNumber + 1 > _TestCases.Count)
+			if (_TestCases is null || _TestCases.Count == 0 || _TestNumber + 1 > _TestCases.Count)
 				return;
 
 			ViewModel.View = null;
