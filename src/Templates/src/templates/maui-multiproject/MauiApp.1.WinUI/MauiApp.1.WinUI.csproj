@@ -16,6 +16,8 @@
 		<UseMaui>true</UseMaui>
 		<!-- We do not want XAML files to be processed as .NET MAUI XAML, but rather WinUI XAML. -->
 		<EnableDefaultMauiItems>false</EnableDefaultMauiItems>
+		<!-- To create a packaged Windows application delete the nextg line and update your launch settings.  See https://aka.ms/MauiTemplateUnpackaged. -->
+		<WindowsPackageType>None</WindowsPackageType>
 	</PropertyGroup>
 
 	<ItemGroup>
