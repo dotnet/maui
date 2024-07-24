@@ -6,6 +6,14 @@
     <ContentPage.Resources>
         <x:Object x:Key="shared"/>
         <x:Object x:Key="notshared" x:Shared="false" />
+        <RoundRectangle CornerRadius="20" x:Key="shapenotshared" x:Shared="false" >
+            <RoundRectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="White" Offset="0.1" />
+                    <GradientStop Color="Black" Offset="0.9" />
+                </LinearGradientBrush>
+            </RoundRectangle.Fill>
+        </RoundRectangle>
     </ContentPage.Resources>
     <StackLayout x:Name="sl">
         <!-- <StackLayout.Resources>

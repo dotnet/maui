@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
@@ -45,6 +46,12 @@ public partial class XShared : ContentPage
 			layout.Resources.TryGetValue("notshared", out var notshared);
 			Assert.That(layout.Resources.TryGetValue("notshared", out test), Is.True, "notshared");
 			Assert.That(test, Is.Not.SameAs(notshared)); //notshared values are... not
+
+			layout.Resources.TryGetValue("shapenotshared", out var shapenotshared);
+			Assert.That(layout.Resources.TryGetValue("shapenotshared", out test), Is.True, "shapenotshared");
+			Assert.That(test, Is.Not.SameAs(shapenotshared)); //notshared values are... notshared
+			Assert.That(((RoundRectangle)shapenotshared).CornerRadius.TopLeft, Is.EqualTo(20));
+
 
 			// Assert.That(layout.sl.Resources.TryGetValue("slnotshared", out test), Is.True, "slnotshared");
 			// layout.sl.Resources.TryGetValue("slnotshared", out var slnotshared);
