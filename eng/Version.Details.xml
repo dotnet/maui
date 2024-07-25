@@ -1,12 +1,12 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.7.24374.2">
+    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.7.24375.7">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>e23d1d49eae1c44585cd5840a7412471498fc8c4</Sha>
+      <Sha>3d74f478e507a6c6de362f392596f0e497822395</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24366.18" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24374.12" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>1f70f0cc663b5d45f77840e9728386e5fa7944f9</Sha>
+      <Sha>eedf30ebac80ca81b88c4c452614522a5ece1b27</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-preview.7.29">
       <Uri>https://github.com/dotnet/android</Uri>
@@ -31,9 +31,9 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.7.24365.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.7.24373.5" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>99ea0c06b84d3084d090da537080dd35d2a193cf</Sha>
+      <Sha>75567e63c265cb0a69bb11f8024349eda83f0878</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.7.24373.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
