@@ -633,7 +633,7 @@ namespace Microsoft.Maui.Controls
 			_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
 			base.OnBindablePropertySet(property, original, value, changed);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
-			UpdateHandlerValue(property.PropertyName, true);
+			UpdateHandlerValue(property.PropertyName, changed);
 
 		}
 
