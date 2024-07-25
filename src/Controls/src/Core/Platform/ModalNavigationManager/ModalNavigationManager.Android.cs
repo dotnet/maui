@@ -242,6 +242,85 @@ namespace Microsoft.Maui.Controls.Platform
 				_mauiWindowContext = mauiContext;
 			}
 
+			public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
+			{
+				var dialog = new CustomComponentDialog(RequireContext(), Theme);
+
+				if (dialog is null || dialog.Window is null)
+					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
+
+				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
+
+				return dialog;
+			}
+
+			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
+			{
+				var modalContext = _mauiWindowContext
+					.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
+
+				_navigationRootManager = modalContext.GetNavigationRootManager();
+				_navigationRootManager.Connect(_modal, modalContext);
+
+				return _navigationRootManager?.RootView ??
+					throw new InvalidOperationException("Root view not initialized");
+			}
+
+			public override void OnCreate(Bundle? savedInstanceState)
+			{
+				base.OnCreate(savedInstanceState);
+				SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
+			}
+
+			public override void OnStart()
+			{
+				base.OnStart();
+
+				var dialog = Dialog;
+
+				if (dialog is null || dialog.Window is null || View is null)
+					return;
+
+				int width = ViewGroup.LayoutParams.MatchParent;
+				int height = ViewGroup.LayoutParams.MatchParent;
+				dialog.Window.SetLayout(width, height);
+
+				if (IsAnimated)
+				{
+					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
+					View.StartAnimation(animation);
+
+					animation.AnimationEnd += OnAnimationEnded;
+				}
+
+				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+				{
+					if (sender is not AAnimation animation)
+					{
+						return;
+					}
+
+					animation.AnimationEnd -= OnAnimationEnded;
+					AnimationEnded?.Invoke(this, EventArgs.Empty);
+				}
+			}
+
+			public override void OnDismiss(IDialogInterface dialog)
+			{
+				if (_modal.Toolbar?.Handler is not null)
+				{
+					_modal.Toolbar.Handler = null;
+				}
+
+				_modal.Handler = null;
+				_modal = null!;
+				_mauiWindowContext = null!;
+				_navigationRootManager?.Disconnect();
+				_navigationRootManager = null;
+				base.OnDismiss(dialog);
+			}
+
+
 			sealed class CustomComponentDialog : ComponentDialog
 			{
 				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
@@ -307,89 +386,6 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					}
 				}
-			}
-
-			public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
-			{
-				var dialog = new CustomComponentDialog(RequireContext(), Theme);
-
-				if (dialog is null || dialog.Window is null)
-					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
-
-				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
-
-				return dialog;
-			}
-
-			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
-			{
-				var modalContext = _mauiWindowContext
-					.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
-
-				_navigationRootManager = modalContext.GetNavigationRootManager();
-				_navigationRootManager.Connect(_modal, modalContext);
-
-				return _navigationRootManager?.RootView ??
-					throw new InvalidOperationException("Root view not initialized");
-			}
-
-			public override void OnCreate(Bundle? savedInstanceState)
-			{
-				base.OnCreate(savedInstanceState);
-				SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
-			}
-
-			public override void OnViewCreated(AView view, Bundle? savedInstanceState)
-			{
-				base.OnViewCreated(view, savedInstanceState);
-			}
-
-			public override void OnStart()
-			{
-				base.OnStart();
-
-				var dialog = Dialog;
-
-				if (dialog is null || dialog.Window is null || View is null)
-					return;
-
-				int width = ViewGroup.LayoutParams.MatchParent;
-				int height = ViewGroup.LayoutParams.MatchParent;
-				dialog.Window.SetLayout(width, height);
-
-				if (IsAnimated)
-				{
-					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-					View.StartAnimation(animation);
-
-					animation.AnimationEnd += OnAnimationEnded;
-				}
-
-				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
-				{
-					if (sender is not AAnimation animation)
-					{
-						return;
-					}
-
-					animation.AnimationEnd -= OnAnimationEnded;
-					AnimationEnded?.Invoke(this, EventArgs.Empty);
-				}
-			}
-
-			public override void OnDismiss(IDialogInterface dialog)
-			{
-				if (_modal.Toolbar?.Handler is not null)
-				{
-					_modal.Toolbar.Handler = null;
-				}
-
-				_modal.Handler = null;
-				_modal = null!;
-				_mauiWindowContext = null!;
-				_navigationRootManager?.Disconnect();
-				_navigationRootManager = null;
-				base.OnDismiss(dialog);
 			}
 		}
 	}
