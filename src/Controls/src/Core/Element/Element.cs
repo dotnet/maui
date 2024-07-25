@@ -628,10 +628,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
-		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed)
+		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
 		{
-			_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
-			base.OnBindablePropertySet(property, original, value, changed);
+			if(willFirePropertyChanged)
+			{
+				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
+			}
+			
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
 			UpdateHandlerValue(property.PropertyName, changed);
 
