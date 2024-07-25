@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 	///			</item>
 	///		</list>
 	///</remarks>
-	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement
+	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement, IHandlerDisconnectPolicies
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
@@ -1025,6 +1025,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
+
+		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy 
+		{ 
+			get => HandlerProperties.GetDisconnectPolicy(this);
+			set => HandlerProperties.SetDisconnectPolicy(this, value);
+		}
 
 		class TemporaryWrapper : IList<Element>
 		{
