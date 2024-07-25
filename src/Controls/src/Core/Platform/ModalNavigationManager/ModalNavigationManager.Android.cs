@@ -230,6 +230,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
+			bool _pendingAnimation = true;
 
 			public event EventHandler? AnimationEnded;
 
@@ -301,7 +302,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					animation.AnimationEnd -= OnAnimationEnded;
-					AnimationEnded?.Invoke(this, EventArgs.Empty);
+					FireAnimationEnded();
 				}
 			}
 
@@ -318,6 +319,23 @@ namespace Microsoft.Maui.Controls.Platform
 				_navigationRootManager?.Disconnect();
 				_navigationRootManager = null;
 				base.OnDismiss(dialog);
+			}
+
+			public override void OnDestroy()
+			{
+				base.OnDestroy();
+				FireAnimationEnded();
+			}
+
+			void FireAnimationEnded()
+			{
+				if (!_pendingAnimation)
+				{
+					return;
+				}
+
+				_pendingAnimation = false;
+				AnimationEnded?.Invoke(this, EventArgs.Empty);
 			}
 
 
