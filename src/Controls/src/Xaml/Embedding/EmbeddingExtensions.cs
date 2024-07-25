@@ -20,7 +20,9 @@ internal static class EmbeddingExtensions
 		where TApp : class, IApplication
 	{
 		builder.UseMauiApp<TApp>();
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 		builder.UseMauiEmbedding();
+#endif
 		return builder;
 	}
 
@@ -35,7 +37,9 @@ internal static class EmbeddingExtensions
 		where TApp : class, IApplication
 	{
 		builder.UseMauiApp<TApp>(implementationFactory);
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 		builder.UseMauiEmbedding();
+#endif
 		return builder;
 	}
 }
