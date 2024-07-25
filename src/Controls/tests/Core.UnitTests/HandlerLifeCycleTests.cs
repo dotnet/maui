@@ -59,10 +59,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.NotNull(button2.Handler);
 			};
 
-			button1.HandlerChanged += (_, __) =>
-			{
-			};
-
 			Assert.NotNull(page.Handler);
 			Assert.NotNull(button1.Handler);
 			Assert.NotNull(button2.Handler);
