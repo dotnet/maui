@@ -148,11 +148,7 @@ namespace Microsoft.Maui.Controls
 			if (property.CoerceValue != null)
 				property.CoerceValue(this, newValue);
 
-			if (changed)
-			{
-				OnPropertyChanged(property.PropertyName);
-				property.PropertyChanged?.Invoke(this, original.Value, newValue);
-			}
+			OnBindablePropertySet(property, original.Value, newValue, changed);
 		}
 
 		/// <summary>
@@ -645,10 +641,18 @@ namespace Microsoft.Maui.Controls
 					_applying = false;
 				}
 
-				OnPropertyChanged(property.PropertyName);
-
-				property.PropertyChanged?.Invoke(this, original, value);
+				OnBindablePropertySet(property, original, value, true);
 			}
+			else
+			{
+				OnBindablePropertySet(property, original, value, false);
+			}
+		}
+
+		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange)
+		{
+			OnPropertyChanged(property.PropertyName);
+			property.PropertyChanged?.Invoke(this, original, value);
 		}
 
 		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)

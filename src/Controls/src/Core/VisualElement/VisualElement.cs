@@ -1936,7 +1936,7 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
-		private protected override void UpdateHandlerValue(string property)
+		private protected override void UpdateHandlerValue(string property, bool valueChanged)
 		{
 			// The HeightProperty and WidthProperty are not designed to propagate back to the handler.
 			// Instead, we use WidthRequestProperty and HeightRequestProperty to propagate changes to the handler.
@@ -1946,7 +1946,7 @@ namespace Microsoft.Maui.Controls
 			if (this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
 				return;
 
-			base.UpdateHandlerValue(property);
+			base.UpdateHandlerValue(property, valueChanged);
 		}
 
 		/// <inheritdoc/>
