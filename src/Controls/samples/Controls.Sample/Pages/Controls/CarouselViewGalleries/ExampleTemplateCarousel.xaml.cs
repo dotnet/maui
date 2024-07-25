@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				}
 			};
 
-			GestureRecognizers.Add(gesture);
+			//GestureRecognizers.Add(gesture);
 		}
 	}
 }

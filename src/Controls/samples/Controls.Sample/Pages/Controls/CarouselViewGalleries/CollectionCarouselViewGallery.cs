@@ -46,6 +46,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				IsScrollAnimated = true,
 				IsBounceEnabled = true,
 				AutomationId = "TheCarouselView",
+				Loop = false
 			};
 
 			carouselView.SetBinding(ItemsView.ItemsSourceProperty, "Items");
@@ -135,10 +136,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 				grid.Children.Add(info);
 
-				var frame = new Frame
+				var frame = new Border
 				{
 					Content = grid,
-					HasShadow = false
 				};
 
 				frame.SetBinding(BackgroundColorProperty, new Binding("Color"));

@@ -5,12 +5,15 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="CarouselView">
     <views:BasePage.Content>
-        <StackLayout
-            Margin="12">
+        <Grid Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             <Label
                 Text="Basic Horizontal Carousel"
                 Style="{StaticResource Headline}"/>
-            <CarouselView>
+            <CarouselView Grid.Row="1">
                 <CarouselView.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>Item 1</x:String>
@@ -33,6 +36,6 @@
                     </DataTemplate>
                 </CarouselView.ItemTemplate>
             </CarouselView>
-        </StackLayout>
+        </Grid>
     </views:BasePage.Content>
 </views:BasePage>

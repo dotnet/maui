@@ -138,7 +138,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			if (!string.IsNullOrEmpty(image))
 				FeaturedImage = image;
 			Index = index;
-			Image = "https://placeimg.com/700/300/any";
+			Image = "card_background.png";
 		}
 
 		public int Index { get; set; }
