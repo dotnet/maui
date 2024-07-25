@@ -225,7 +225,7 @@ public static partial class AppHostBuilderExtensions
 		return builder;
 	}
 
-	static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
+	internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
 	{
 		// Update the mappings for IView/View to work specifically for Controls
 		Element.RemapForControls();
