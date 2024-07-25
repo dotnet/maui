@@ -14,16 +14,31 @@ public class PlatformAppCompatImageView extends AppCompatImageView {
     }
 
     private boolean frozen;
-    private boolean invalidatedWhileFrozen;
+    
+    /** Freezes the view to avoid redrawing it while the image is loading. */
+    public void freeze() {
+        // When switching between images, the image view is invalidated which causes `onDraw` being called.
+        // At this point, the previous image `Drawable` is already removed from the Glide `BitmapPool` therefore the app will potentially crash.
+        // To avoid this, we need to skip redrawing while the new image is loading.
+        // See more: https://github.com/dotnet/maui/pull/12310
+        
+        frozen = true;
+    }
+    
+    @Override
+    public void requestLayout () {
+        if (frozen) {
+            // Prevent layout requests while frozen to avoid redrawing the view.
+            return;
+        }
+
+        super.requestLayout();
+    }
     
     @Override
     public void invalidate() {
         if (frozen) {
-            // When switching between images, the image view is invalidated which causes `onDraw` being called.
-            // At this point, the previous image `Drawable` is already removed from the Glide `BitmapPool` therefore the app will potentially crash.
-            // To avoid this, we need to skip the invalidation when the image is loading.
-            // See more: https://github.com/dotnet/maui/pull/12310
-            invalidatedWhileFrozen = true;
+            // Prevent invalidations while frozen to avoid redrawing the view.
             return;
         }
 
@@ -33,18 +48,19 @@ public class PlatformAppCompatImageView extends AppCompatImageView {
     @Override
     public void setImageDrawable(Drawable drawable) {
         frozen = false;
-
-        if (invalidatedWhileFrozen) {
-            // If the view was invalidated while frozen, make sure it is invalidated now that we have a new image.
-            invalidatedWhileFrozen = false;
-            invalidate();
-        }
-
         super.setImageDrawable(drawable);
     }
+    
+    @Override
+    protected void onDraw(Canvas canvas) {
+        if (frozen) {
+            // If for some weird reason this is still happening even when frozen
+            // we must skip the drawing to avoid reading a recycled bitmap drawable.
+            // See more: https://bumptech.github.io/glide/javadocs/4140/library/com.bumptech.glide.request.target/-target/on-load-cleared.html
+            // This will cause a white flicker but that's acceptable all considering.
+            return;
+        }
 
-    /** Freezes the view to avoid invalidating it while the image is loading. */
-    public void freeze() {
-        frozen = true;
+        super.onDraw(canvas);
     }
 }

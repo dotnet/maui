@@ -32,24 +32,22 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         this.callback = callback;
         this.platformView = view instanceof PlatformAppCompatImageView ? (PlatformAppCompatImageView) view : null;
     }
-    
-    @Override
-    protected void onResourceLoading(@Nullable Drawable placeholder) {
-        if (platformView != null) {
-            logV("onResourceLoading: freeze PlatformAppCompatImageView");
-            platformView.freeze();
-        }
-    }
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
         if (destroyed || platformView == null) {
             logV("onResourceCleared: setImageDrawable(placeholder)");
             view.setImageDrawable(placeholder);
+        } else if (platformView != null) {
+            logV("onResourceCleared: freeze PlatformAppCompatImageView");
+            // if we're switching the image with another one, don't set the empty placeholder (null)
+            // and simply freeze the view to prevent it from accessing the bitmap which is about to be recycled
+            // See more: https://bumptech.github.io/glide/javadocs/4140/library/com.bumptech.glide.request.target/-target/on-load-cleared.html
+            this.platformView.freeze();
         }
         
 		if (this.destroyed && !this.failed) {
-		    logV("setIsCleared: true");
+		    logV("onResourceCleared: setIsCleared: true");
             PlatformInterop.setGlideClearedTag(this.view, true);
         }
     }
