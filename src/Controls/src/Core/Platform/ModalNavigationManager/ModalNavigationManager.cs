@@ -397,7 +397,8 @@ namespace Microsoft.Maui.Controls.Platform
 						windowPage.OnLoaded(() => OnCurrentPlatformPageLoaded(windowPage, EventArgs.Empty));
 				}
 #endif
-				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
+
+				if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
 						  CurrentPlatformPage.Handler is not null)
 				{
 					var currentPlatformPage = CurrentPlatformPage;
