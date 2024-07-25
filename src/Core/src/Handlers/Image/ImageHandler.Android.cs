@@ -2,7 +2,6 @@
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
-using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ImageView CreatePlatformView()
 		{
-			var imageView = new AppCompatImageView(Context);
+			var imageView = new PlatformAppCompatImageView(Context);
 
 			// Enable view bounds adjustment on measure.
 			// This allows the ImageView's OnMeasure method to account for the image's intrinsic

@@ -59,6 +59,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import com.microsoft.maui.R;
+import com.microsoft.maui.PlatformAppCompatImageView;
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.font.FontModel;
@@ -71,7 +72,6 @@ import java.util.List;
 
 public class PlatformInterop {
     private static final int MAUI_GLIDE_CLEARED_TAG_ID = R.id.maui_glide_cleared_tag;
-    private static final int MAUI_GLIDE_LAST_REQUEST_BUILDER_TAG_ID = R.id.maui_glide_last_request_builder_tag;
     
     public static void setGlideClearedTag(View view, boolean isCleared) {
         view.setTag(MAUI_GLIDE_CLEARED_TAG_ID, isCleared);
@@ -80,15 +80,6 @@ public class PlatformInterop {
     public static boolean getGlideClearedTag(View view) {
         Object tag = view.getTag(MAUI_GLIDE_CLEARED_TAG_ID);
         return tag != null && (boolean)tag;
-    }
-    
-    public static void setGlideLastRequestBuilderTag(View view, RequestBuilder<Drawable> builder) {
-        view.setTag(MAUI_GLIDE_LAST_REQUEST_BUILDER_TAG_ID, builder);
-    }
-    
-    public static RequestBuilder<Drawable> getGlideLastRequestBuilderTag(View view) {
-        Object tag = view.getTag(MAUI_GLIDE_LAST_REQUEST_BUILDER_TAG_ID);
-        return tag != null ? (RequestBuilder<Drawable>)tag : null;
     }
 
     public static void requestLayoutIfNeeded(View view) {
@@ -320,16 +311,14 @@ public class PlatformInterop {
             default: throw new RuntimeException("Invalid Mode");
         }
     }
-    
-    private static RequestBuilder<Drawable> createUniqueBuilder(RequestBuilder<Drawable> builder, ImageLoaderCallback callback) {
+
+    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
         // but does not affect the various caching levels.
-        return builder.error(callback);
-    }
-
-    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
+        builder = builder.error(callback);
+    
         if (!cachingEnabled) {
             builder = builder
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -341,39 +330,19 @@ public class PlatformInterop {
     }
 
     private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
-        // Glide clears the target before loading a new image, this causes a white flicker
-        // when loading a new image into an ImageView.
-        // To avoid this, we check if the last request is complete and if it is, we use it as a thumbnail.
-        // See more: https://github.com/bumptech/glide/issues/527#issuecomment-148840717
-        RequestBuilder<Drawable> lastBuilder = getGlideLastRequestBuilderTag(imageView);
-        
-        // Create a new target for the image view
-        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, builder.clone().onlyRetrieveFromCache(true));
-
-        // Make the builder unique
-        builder = createUniqueBuilder(builder, callback);
-        
-        // If we have a last request builder, use the last request builder as a thumbnail
-        if (lastBuilder != null) {
-            builder = builder.thumbnail(lastBuilder);
-        }
-        
+        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
 
     private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback) {
-        builder = createUniqueBuilder(builder, callback);
-        
         MauiCustomTarget target = new MauiCustomTarget(context, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
     
     public static void loadImageFromDrawable(ImageView imageView, Drawable drawable) {
         imageView.setImageDrawable(drawable);
-
-        // We're setting the image manually (without Glide) so we have to clear the Glide tags
+        // We're setting the image manually (without Glide) so we have to clear the Glide tag
         setGlideClearedTag(imageView, false);
-        setGlideLastRequestBuilderTag(imageView, null);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
