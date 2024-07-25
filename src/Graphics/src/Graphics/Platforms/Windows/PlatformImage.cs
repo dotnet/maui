@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -168,12 +169,21 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 			else
 			{
-				using MemoryStream memoryStream = new();
-				stream.CopyTo(memoryStream);
-				memoryStream.Seek(0, SeekOrigin.Begin);
+				byte[] bytes = ArrayPool<byte>.Shared.Rent(100 * 1024); // 100 kB.
 
-				global::Windows.Foundation.IAsyncOperation<CanvasBitmap> bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
-				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
+				try
+				{
+					using MemoryStream memoryStream = new(bytes);
+					stream.CopyTo(memoryStream);
+					memoryStream.Seek(0, SeekOrigin.Begin);
+
+					global::Windows.Foundation.IAsyncOperation<CanvasBitmap> bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
+					bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
+				}
+				finally
+				{
+					ArrayPool<byte>.Shared.Return(bytes);
+				}
 			}
 
 			return new PlatformImage(creator, bitmap);
