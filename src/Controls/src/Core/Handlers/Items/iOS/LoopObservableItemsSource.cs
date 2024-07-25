@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class LoopObservableItemsSource : ObservableItemsSource, ILoopItemsViewSource
 	{
-		const int LoopBy = 3;
+		//const int LoopBy = 3;
 
 		public LoopObservableItemsSource(IEnumerable itemSource, UICollectionViewController collectionViewController, bool loop, int group = -1) : base(itemSource, collectionViewController, group)
 		{
@@ -18,21 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public bool Loop { get; set; }
 
-		public int LoopCount => Loop ? Count * LoopBy : Count;
-
-		protected override NSIndexPath[] CreateIndexesFrom(int startIndex, int count)
-		{
-			if (!Loop)
-			{
-				return base.CreateIndexesFrom(startIndex, count);
-			}
-
-			var collectionView = CollectionView;
-			if (collectionView is null)
-				return Array.Empty<NSIndexPath>();
-
-			return IndexPathHelpers.GenerateLoopedIndexPathRange(Section,
-				(int)collectionView.NumberOfItemsInSection(Section), LoopBy, startIndex, count);
-		}
+		//We are going to add 2 items since we are inserting 1 item at the beginning and 1 item at the end
+		public int LoopCount => Loop ? Count + 2 : Count;
 	}
 }

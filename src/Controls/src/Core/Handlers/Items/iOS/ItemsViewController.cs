@@ -110,8 +110,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				templatedCell.ScrollDirection = ScrollDirection;
 
 				//var nativeView = virtualView!.ToPlatform(ItemsView.FindMauiContext()!);
-				
-				templatedCell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);	
+				var indexpathAdjusted = GetAdjustedIndexPathForItemSource(indexPath);
+				templatedCell.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);	
 			}
 			else if (cell is DefaultCell defaultCell)
 			{

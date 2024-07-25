@@ -5,28 +5,19 @@ using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Devices;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
-		[Obsolete("Use ItemsView property instead")]
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Unused")]
-		protected readonly CarouselView Carousel;
-
 		CarouselViewLoopManager _carouselViewLoopManager;
-		bool _isCenteringItem;
-
+		
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
 		List<View> _oldViews;
-		int _gotoPosition = -1;
 		ILoopItemsViewSource LoopItemsSource => ItemsSource as ILoopItemsViewSource;
-		bool _isDragging;
-
+		
 		public CarouselViewController(CarouselView itemsView, UICollectionViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
@@ -42,21 +33,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			UICollectionViewCell cell;
 
-			var finalIndexPath = indexPath;
+			// var finalIndexPath = indexPath;
 
-			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
-			{
-				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
-				//cell = cellAndCorrectedIndex.cell;
-				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
+			//	System.Diagnostics.Debug.WriteLine($"GetCell: {indexPath.Row}");
 
-				finalIndexPath = correctedIndexPath;
-			}
+			// if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
+			// {
+			// 	var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
+			// 	//cell = cellAndCorrectedIndex.cell;
+			// 	var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
 
-			cell = base.GetCell(collectionView, finalIndexPath);
+			// 	finalIndexPath = correctedIndexPath;
+			// }
+
+			// System.Diagnostics.Debug.WriteLine($"Updated GetCell: {finalIndexPath.Row}");
+			cell = base.GetCell(collectionView, indexPath);
 
 			var element = (cell as TemplatedCell)?.PlatformHandler?.VirtualView as VisualElement;
-
+			//	System.Diagnostics.Debug.WriteLine($"element: {element}");
 			if (element != null)
 			{
 				VisualStateManager.GoToState(element, CarouselView.DefaultItemVisualState);
@@ -91,27 +85,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-
-			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
-			{
-				_isCenteringItem = true;
-				_carouselViewLoopManager.CenterIfNeeded(CollectionView, IsHorizontal);
-				_isCenteringItem = false;
-			}
-
 			UpdateInitialPosition();
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
-			_isDragging = true;
+			//	_isDragging = true;
 			ItemsView?.SetIsDragging(true);
 		}
 
 		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
 		{
 			ItemsView?.SetIsDragging(false);
-			_isDragging = false;
+			//_isDragging = false;
 		}
 
 		public override void UpdateItemsSource()
@@ -132,21 +118,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override UICollectionViewDelegateFlowLayout CreateDelegator() => new CarouselViewDelegator(ItemsViewLayout, this);
 
-		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
-		protected override string DetermineCellReuseId()
-		{
-			if (ItemsView?.ItemTemplate != null)
-			{
-				return CarouselTemplatedCell.ReuseId;
-			}
-
-			return base.DetermineCellReuseId();
-		}
-
 		protected override string DetermineCellReuseId(NSIndexPath indexPath)
 		{
-			var itemIndex = GetIndexFromIndexPath(indexPath);
-			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
+			var itemIndex = GetAdjustedIndexPathForItemSource(indexPath);
+			return base.DetermineCellReuseId(itemIndex);
 		}
 
 		protected override void RegisterViewTypes()
@@ -181,8 +156,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_oldViews = null;
 
-			carouselView.Scrolled -= CarouselViewScrolled;
-		
+			//carouselView.Scrolled -= CarouselViewScrolled;
+
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 
 			_carouselViewLoopManager?.Dispose();
@@ -195,8 +170,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_oldViews = new List<View>();
 
-			carouselView.Scrolled += CarouselViewScrolled;
-		
+			//carouselView.Scrolled += CarouselViewScrolled;
+
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
 		}
 
@@ -212,10 +187,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView?.Loop == true && _carouselViewLoopManager != null)
 			{
-				return _carouselViewLoopManager.GetGoToIndex(CollectionView, position);
+				return _carouselViewLoopManager.GetCorrectedIndexPathFromIndex(position);
 			}
 
-			return NSIndexPath.FromItemSection(position, 0);
+			return NSIndexPath.FromRowSection(position, 0);
 		}
 
 		internal int GetIndexFromIndexPath(NSIndexPath indexPath)
@@ -228,27 +203,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return indexPath.Row;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
-		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
-		{
-			System.Diagnostics.Debug.WriteLine($"CarouselViewScrolled: {e.CenterItemIndex}");
-			// If we are trying to center the item when Loop is enabled we don't want to update the position
-			if (_isCenteringItem)
-			{
-				return;
-			}
+		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		// void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+		// {
+		// 	System.Diagnostics.Debug.WriteLine($"CarouselViewScrolled: {e.CenterItemIndex}");
+		// 	// If we are trying to center the item when Loop is enabled we don't want to update the position
+		// 	// if (_isCenteringItem)
+		// 	// {
+		// 	// 	return;
+		// 	// }
 
-			// If we are dragging the carousel we don't want to update the position
-			// We will do it when the dragging ends
-			if (_isDragging)
-			{
-				return;
-			}
+		// 	// // If we are dragging the carousel we don't want to update the position
+		// 	// // We will do it when the dragging ends
+		// 	// if (_isDragging)
+		// 	// {
+		// 	// 	return;
+		// 	// }
 
-			SetPosition(e.CenterItemIndex);
+		// 	//	SetPosition(e.CenterItemIndex);
 
-			UpdateVisualStates();
-		}
+		// 	UpdateVisualStates();
+		// }
 
 		int _positionAfterUpdate = -1;
 
@@ -289,7 +264,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			_gotoPosition = -1;
+			//_gotoPosition = -1;
 
 			var targetPosition = _positionAfterUpdate;
 			_positionAfterUpdate = -1;
@@ -366,60 +341,44 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
-			CollectionView.ReloadData();
+			// CollectionView.ReloadData();
 
-			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+			// ScrollToPosition(carouselPosition, carouselPosition, false, true);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
 		{
-			if (ItemsView is not CarouselView carousel)
+			if (ItemsView is not CarouselView carousel || ItemsSource.ItemCount == 0)
 			{
 				return;
 			}
 
-			if (carousel.Loop)
+			if (goToPosition != carouselPosition || forceScroll)
 			{
-				carouselPosition = _carouselViewLoopManager?.GetCorrectPositionForCenterItem(CollectionView) ?? -1;
-			}
-
-			//no center item found, collection could be empty
-			//also if we are dragging we don't need to ScrollTo
-			if (carousel.IsDragging || carouselPosition == -1)
-			{
-				return;
-			}
-
-			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
-			{
-				_gotoPosition = goToPosition;
+				// 		_gotoPosition = goToPosition;
 
 				UICollectionViewScrollPosition uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 				var goToIndexPath = GetScrollToIndexPath(goToPosition);
 
 				CollectionView.ScrollToItem(goToIndexPath, uICollectionViewScrollPosition, animate);
 			}
-
 		}
 
-		void SetPosition(int position)
+		internal void SetPosition(int position)
 		{
-			if (position == -1 || ItemsView is not CarouselView carousel)
+			if (position == -1 || ItemsSource.ItemCount == 0)
 			{
 				return;
 			}
 
-			//we arrived center
-			if (position == _gotoPosition)
+			if (!InitialPositionSet)
 			{
-				_gotoPosition = -1;
+				return;
 			}
 
-			//If _gotoPosition is != -1 we are scrolling to that possition
-			if (_gotoPosition == -1 && carousel.Position != position)
-			{
-				carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
-			}
+			ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, position);
+			SetCurrentItem(position);
+			UpdateVisualStates();
 		}
 
 		void SetCurrentItem(int carouselPosition)
@@ -429,14 +388,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var item = GetItemAtIndex(NSIndexPath.FromItemSection(carouselPosition, 0));
+			var item = GetItemAtIndex(NSIndexPath.FromRowSection(carouselPosition, 0));
 			ItemsView?.SetValueFromRenderer(CarouselView.CurrentItemProperty, item);
 			UpdateVisualStates();
 		}
 
 		internal void UpdateFromCurrentItem()
 		{
-			if(!InitialPositionSet)
+			if (!InitialPositionSet)
 				return;
 
 			if (ItemsView is not CarouselView carousel)
@@ -460,7 +419,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if(!InitialPositionSet)
 				return;
-				
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -474,14 +433,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
 			var carouselPosition = carousel.Position;
-			if (carouselPosition == _gotoPosition)
-			{
-				_gotoPosition = -1;
-			}
-
+		
 			ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
 
-			SetCurrentItem(carouselPosition);
+			// SetCurrentItem(carouselPosition);
 		}
 
 		void UpdateInitialPosition()
@@ -506,10 +461,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					position = ItemsSource.GetIndexForItem(currentItem).Row;
 				}
+				var projectedPosition = NSIndexPath.FromRowSection(position, 0);
 
-				ScrollToPosition(position, carousel.Position, false, true);
-				SetPosition(position);
+				if (LoopItemsSource.Loop)
+				{
+					//We need to set the position to the correct position since we added 1 item at the beginning
+					projectedPosition = NSIndexPath.FromRowSection(position + 1, 0);
+				}
+
+				CollectionView.ScrollToItem(projectedPosition, UICollectionViewScrollPosition.CenteredHorizontally, false);
 				InitialPositionSet = true;
+				//Set the position on VirtualView to update the CurrentItem also
+				SetPosition(position);
 			}
 
 			UpdateVisualStates();
@@ -538,13 +501,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var cell in cells)
 			{
-				if (!((cell as CarouselTemplatedCell)?.PlatformHandler?.VirtualView is View itemView))
+				if (!((cell as TemplatedCell)?.PlatformHandler?.VirtualView is View itemView))
 				{
 					return;
 				}
 
 				var item = itemView.BindingContext;
-				var pos = ItemsSource.GetIndexForItem(item).Row;
+				var pos =  GetIndexForItem(item).Row;
 
 				if (pos == carouselPosition)
 				{
@@ -601,9 +564,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 	class CarouselViewLoopManager : IDisposable
 	{
-		int _indexOffset = 0;
 		UICollectionViewCompositionalLayout _layout;
-		const int LoopCount = 3;
 		ILoopItemsViewSource _itemsSource;
 		bool _disposed;
 
@@ -616,19 +577,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_layout = layout;
 		}
-
-		public void CenterIfNeeded(UICollectionView collectionView, bool isHorizontal)
-		{
-			if (isHorizontal)
-			{
-				CenterHorizontalIfNeeded(collectionView);
-			}
-			else
-			{
-				CenterVerticallyIfNeeded(collectionView);
-			}
-		}
-
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposed)
@@ -648,177 +596,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			GC.SuppressFinalize(this);
 		}
 
-		public (UICollectionViewCell cell, int correctedIndex) GetCellAndCorrectIndex(UICollectionView collectionView, NSIndexPath indexPath, string reuseId)
+
+		public NSIndexPath GetCorrectedIndexPathFromIndex(int index)
 		{
-			var cell = collectionView.DequeueReusableCell(reuseId, indexPath) as UICollectionViewCell;
-			var correctedIndex = GetCorrectedIndexFromIndexPath(indexPath);
-			return (cell, correctedIndex);
+			return NSIndexPath.FromRowSection(index + 1, 0);
 		}
 
 		public int GetCorrectedIndexFromIndexPath(NSIndexPath indexPath)
 		{
-			return GetCorrectedIndex(indexPath.Row - _indexOffset);
-		}
-
-		public int GetCorrectPositionForCenterItem(UICollectionView collectionView)
-		{
-			NSIndexPath centerIndexPath = GetIndexPathForCenteredItem(collectionView);
-			if (centerIndexPath == null)
+			if (indexPath.Row == 0)
 			{
-				return -1;
+				return _itemsSource.ItemCount - 1;
 			}
-
-			return GetCorrectedIndexFromIndexPath(centerIndexPath);
-		}
-
-		public NSIndexPath GetGoToIndex(UICollectionView collectionView, int newPosition)
-		{
-			NSIndexPath centerIndexPath = GetIndexPathForCenteredItem(collectionView);
-			if (centerIndexPath == null)
+			else if (indexPath.Row == _itemsSource.ItemCount + 1)
 			{
-				return NSIndexPath.FromItemSection(0, 0);
-			}
-
-			var currentCarouselPosition = GetCorrectedIndexFromIndexPath(centerIndexPath);
-			var itemSourceCount = _itemsSource.ItemCount;
-
-			var diffToStart = currentCarouselPosition + (itemSourceCount - newPosition);
-			var diffToEnd = itemSourceCount - currentCarouselPosition + newPosition;
-
-			var increment = currentCarouselPosition - newPosition;
-			var incrementAbs = Math.Abs(increment);
-
-			int goToPosition;
-			if (diffToStart < incrementAbs)
-			{
-				goToPosition = centerIndexPath.Row - diffToStart;
-			}
-			else if (diffToEnd < incrementAbs)
-			{
-				goToPosition = centerIndexPath.Row + diffToEnd;
+				return 0;
 			}
 			else
 			{
-				goToPosition = centerIndexPath.Row - increment;
+				return indexPath.Row - 1;
 			}
-
-			NSIndexPath goToIndexPath = NSIndexPath.FromItemSection(goToPosition, 0);
-
-			return goToIndexPath;
 		}
 
 		public void SetItemsSource(ILoopItemsViewSource itemsSource) => _itemsSource = itemsSource;
-
-		void CenterVerticallyIfNeeded(UICollectionView collectionView)
-		{
-			var cellHeight = collectionView.Bounds.Size.Height;
-			var cellPadding = 0;
-			var currentOffset = collectionView.ContentOffset;
-			var contentHeight = GetItemsSourceCount();
-			var boundsHeight = collectionView.Bounds.Size.Height;
-
-			if (contentHeight == 0 || cellHeight == 0)
-			{
-				return;
-			}
-
-			var centerOffsetY = (LoopCount * contentHeight - boundsHeight) / 2;
-			var distFromCenter = centerOffsetY - currentOffset.Y;
-
-			if (Math.Abs(distFromCenter) > (contentHeight / GetMinLoopCount()))
-			{
-				var cellcount = distFromCenter / (cellHeight + cellPadding);
-				var shiftCells = (int)((cellcount > 0) ? Math.Floor(cellcount) : Math.Ceiling(cellcount));
-				var offsetCorrection = (Math.Abs(cellcount) % 1.0) * (cellHeight + cellPadding);
-
-				if (collectionView.ContentOffset.Y < centerOffsetY)
-				{
-					collectionView.ContentOffset = new CGPoint(currentOffset.X, centerOffsetY - offsetCorrection);
-				}
-				else if (collectionView.ContentOffset.Y > centerOffsetY)
-				{
-					collectionView.ContentOffset = new CGPoint(currentOffset.X, centerOffsetY + offsetCorrection);
-				}
-
-				FinishCenterIfNeeded(collectionView, shiftCells);
-			}
-		}
-
-		void CenterHorizontalIfNeeded(UICollectionView collectionView)
-		{
-			var cellWidth = collectionView.Bounds.Size.Width;
-			var cellPadding = 0;
-			var currentOffset = collectionView.ContentOffset;
-			var contentWidth = cellWidth * GetItemsSourceCount();
-			var boundsWidth = collectionView.Bounds.Size.Width;
-
-			if (contentWidth == 0 || cellWidth == 0)
-			{
-				return;
-			}
-
-			var centerOffsetX = (LoopCount * contentWidth - boundsWidth) / 2;
-			var distFromCentre = centerOffsetX - currentOffset.X;
-
-			if (Math.Abs(distFromCentre) > (contentWidth / GetMinLoopCount()))
-			{
-				var cellcount = distFromCentre / (cellWidth + cellPadding);
-				var shiftCells = (int)((cellcount > 0) ? Math.Floor(cellcount) : Math.Ceiling(cellcount));
-				var offsetCorrection = (Math.Abs(cellcount % 1.0f)) * (cellWidth + cellPadding);
-
-				if (collectionView.ContentOffset.X < centerOffsetX)
-				{
-					collectionView.ContentOffset = new CGPoint(centerOffsetX - offsetCorrection, currentOffset.Y);
-				}
-				else if (collectionView.ContentOffset.X > centerOffsetX)
-				{
-					collectionView.ContentOffset = new CGPoint(centerOffsetX + offsetCorrection, currentOffset.Y);
-				}
-
-				FinishCenterIfNeeded(collectionView, shiftCells);
-			}
-
-		}
-
-		void FinishCenterIfNeeded(UICollectionView collectionView, int shiftCells)
-		{
-			ShiftContentArray(shiftCells);
-
-			collectionView.ReloadData();
-		}
-
-		int GetCorrectedIndex(int indexToCorrect)
-		{
-			var itemsCount = GetItemsSourceCount();
-			if ((indexToCorrect < itemsCount && indexToCorrect >= 0) || itemsCount == 0)
-			{
-				return indexToCorrect;
-			}
-
-			var countInIndex = (double)(indexToCorrect / itemsCount);
-			var flooredValue = (int)(Math.Floor(countInIndex));
-			var offset = itemsCount * flooredValue;
-			var newIndex = indexToCorrect - offset;
-			if (newIndex < 0)
-				return (itemsCount - Math.Abs(newIndex));
-			return newIndex;
-		}
-
-		NSIndexPath GetIndexPathForCenteredItem(UICollectionView collectionView)
-		{
-			var centerPoint = new CGPoint(collectionView.Center.X + collectionView.ContentOffset.X, collectionView.Center.Y + collectionView.ContentOffset.Y);
-			var centerIndexPath = collectionView.IndexPathForItemAtPoint(centerPoint);
-			return centerIndexPath;
-		}
-
-		int GetMinLoopCount() => Math.Min(LoopCount, GetItemsSourceCount());
-
-		int GetItemsSourceCount() => _itemsSource.ItemCount;
-
-		void ShiftContentArray(int shiftCells)
-		{
-			var correctedIndex = GetCorrectedIndex(shiftCells);
-			_indexOffset += correctedIndex;
-		}
 	}
 }

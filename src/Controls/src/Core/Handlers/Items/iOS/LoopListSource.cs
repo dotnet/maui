@@ -7,8 +7,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class LoopListSource : ListSource, ILoopItemsViewSource
 	{
-		const int LoopBy = 3;
-
 		public LoopListSource(IEnumerable<object> enumerable, bool loop) : base(enumerable)
 		{
 			Loop = loop;
@@ -26,6 +24,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public bool Loop { get; set; }
 
-		public int LoopCount => Loop ? Count * LoopBy : Count;
+		public int LoopCount => Loop ? Count + 2 : Count;
 	}
 }
