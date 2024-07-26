@@ -62,7 +62,11 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection)
 		{
+#if IOS || MACCATALYST
+			handlersCollection.AddHandler<CollectionView, Handlers.Items2.CollectionViewHandler2>();
+#else
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+#endif
 			handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
