@@ -62,7 +62,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var newValue = _defaultAutomationPropertiesAccessibilityView;
 
-			var elemValue = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
+			bool? elemValue = null;
+
+			if (!Element.IsPlatformViewNew)
+			{
+				elemValue = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
+			}
 
 			if (elemValue == true)
 			{
