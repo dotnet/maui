@@ -351,8 +351,22 @@ namespace Microsoft.Maui.Controls
 #endif
 				}
 			};
-			BindToTemplatedParent(contentGrid, BackgroundColorProperty, OpacityProperty);
-#endregion
+			
+			contentGrid.SetBinding(
+				BackgroundColorProperty,
+				static (TitleBar tb) => tb.BackgroundColor,
+				source: RelativeBindingSource.TemplatedParent);
+
+			contentGrid.SetBinding(
+				BackgroundProperty,
+				static (TitleBar tb) => tb.Background,
+				source: RelativeBindingSource.TemplatedParent);
+
+			contentGrid.SetBinding(
+				OpacityProperty,
+				static (TitleBar tb) => tb.Opacity,
+				source: RelativeBindingSource.TemplatedParent);
+			#endregion
 
 			#region Leading content
 			var leadingContent = new ContentView()
@@ -363,9 +377,10 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(leadingContent);
 			contentGrid.SetColumn(leadingContent, 0);
 
-			leadingContent.SetBinding(ContentView.ContentProperty,
-				new Binding(LeadingContentProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			leadingContent.SetBinding(
+				ContentView.ContentProperty,
+				static (TitleBar tb) => tb.LeadingContent,
+				source: RelativeBindingSource.TemplatedParent);
 
 			var leadingVisibleGroup = GetVisibleStateGroup(TitleBarLeading, LeadingVisibleState, LeadingHiddenState);
 			leadingVisibleGroup.Name = "LeadingContentGroup";
@@ -385,9 +400,10 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(icon);
 			contentGrid.SetColumn(icon, 1);
 
-			icon.SetBinding(Image.SourceProperty,
-				new Binding(IconProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			icon.SetBinding(
+				Image.SourceProperty,
+				static (TitleBar tb) => tb.Icon,
+				source: RelativeBindingSource.TemplatedParent);
 
 			var iconVisibleGroup = GetVisibleStateGroup(TitleBarIcon, IconVisibleState, IconHiddenState);
 			iconVisibleGroup.Name = "IconGroup";
@@ -409,13 +425,15 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(titleLabel);
 			contentGrid.SetColumn(titleLabel, 2);
 
-			titleLabel.SetBinding(Label.TextProperty,
-				new Binding(TitleProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			titleLabel.SetBinding(
+				Label.TextProperty, 
+				static (TitleBar tb) => tb.Title,
+				source: RelativeBindingSource.TemplatedParent);
 
-			titleLabel.SetBinding(Label.TextColorProperty,
-				new Binding(ForegroundColorProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			titleLabel.SetBinding(
+				Label.TextColorProperty, 
+				static (TitleBar tb) => tb.ForegroundColor,
+				source: RelativeBindingSource.TemplatedParent);
 
 			var activeVisualState = new VisualState() { Name = TitleBarActiveState };
 			activeVisualState.Setters.Add(
@@ -461,13 +479,15 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(subtitleLabel);
 			contentGrid.SetColumn(subtitleLabel, 3);
 
-			subtitleLabel.SetBinding(Label.TextProperty,
-				new Binding(SubtitleProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			subtitleLabel.SetBinding(
+				Label.TextProperty,
+				static (TitleBar tb) => tb.Subtitle,
+				source: RelativeBindingSource.TemplatedParent);
 
-			subtitleLabel.SetBinding(Label.TextColorProperty,
-				new Binding(ForegroundColorProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			subtitleLabel.SetBinding(
+				Label.TextColorProperty,
+				static (TitleBar tb) => tb.ForegroundColor,
+				source: RelativeBindingSource.TemplatedParent);
 
 			var subtitleVisibleGroup = GetVisibleStateGroup(TitleBarSubtitle, SubtitleVisibleState, SubtitleHiddenState);
 			subtitleVisibleGroup.Name = "SubtitleTextGroup";
@@ -483,9 +503,10 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(content);
 			contentGrid.SetColumn(content, 4);
 
-			content.SetBinding(ContentView.ContentProperty,
-				new Binding(ContentProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			content.SetBinding(
+				ContentView.ContentProperty,
+				static (TitleBar tb) => tb.Content,
+				source: RelativeBindingSource.TemplatedParent);
 
 			var contentVisibleGroup = GetVisibleStateGroup(TitleBarContent, ContentVisibleState, ContentHiddenState);
 			contentVisibleGroup.Name = "ContentGroup";
@@ -501,9 +522,10 @@ namespace Microsoft.Maui.Controls
 			contentGrid.Add(trailingContent);
 			contentGrid.SetColumn(trailingContent, 5);
 
-			trailingContent.SetBinding(ContentView.ContentProperty,
-				new Binding(TrailingContentProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			trailingContent.SetBinding(
+				ContentView.ContentProperty,
+				static (TitleBar tb) => tb.TrailingContent,
+				source: RelativeBindingSource.TemplatedParent);
 
 			var trailingContentVisibleGroup = GetVisibleStateGroup(TitleBarTrailing, TrailingVisibleState, TrailingHiddenState);
 			trailingContentVisibleGroup.Name = "TrailingContentGroup";
@@ -548,15 +570,6 @@ namespace Microsoft.Maui.Controls
 				});
 			visualGroup.States.Add(collapsedState);
 			return visualGroup;
-		}
-
-		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)
-		{
-			foreach (var property in properties)
-			{
-				bindableObject.SetBinding(property, new Binding(property.PropertyName,
-					source: RelativeBindingSource.TemplatedParent));
-			}
 		}
 	}
 }
