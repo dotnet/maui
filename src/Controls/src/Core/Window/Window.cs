@@ -614,7 +614,18 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (newPage is Shell newShell)
+			{
 				newShell.PropertyChanged += ShellPropertyChanged;
+			}
+
+			if (oldPage?.IsLoaded == true)
+			{
+				this.OnUnloaded(() => oldPage.DisconnectHandlers());
+			}
+			else
+			{
+				oldPage?.DisconnectHandlers();
+			}
 
 			Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 		}

@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
+			else if (e.Is(Shell.FlyoutIconProperty))
+				UpdateLeftToolbarItems();
 		}
 
 		protected virtual void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -357,7 +359,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage)
+						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
+						}
 						else
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
 					}

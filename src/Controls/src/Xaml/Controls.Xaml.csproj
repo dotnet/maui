@@ -41,7 +41,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
-	<PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
+  <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
 		<TargetsForTfmSpecificBuildOutput>
 			$(TargetsForTfmSpecificBuildOutput);
 			_MauiPackDesignAssemblies

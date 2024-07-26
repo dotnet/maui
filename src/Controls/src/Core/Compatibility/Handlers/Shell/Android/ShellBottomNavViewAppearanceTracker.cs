@@ -72,7 +72,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
 		{
+#pragma warning disable XAOBS001 // Obsolete
 			var menuView = bottomView.GetChildAt(0) as BottomNavigationMenuView;
+#pragma warning restore XAOBS001 // Obsolete
 			var oldBackground = bottomView.Background;
 			var colorDrawable = oldBackground as ColorDrawable;
 			var colorChangeRevealDrawable = oldBackground as ColorChangeRevealDrawable;
@@ -96,7 +98,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					backgroundColor.FillColor = ColorStateList.ValueOf(newColor);
 					backgroundColor.InitializeElevationOverlay(bottomView.Context);
 
+#pragma warning disable CS0618 // Obsolete
 					ViewCompat.SetBackground(bottomView, backgroundColor);
+#pragma warning restore CS0618 // Obsolete
 				}
 			}
 			else
@@ -114,7 +118,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var touchPoint = new Point(child.Left + (child.Right - child.Left) / 2, child.Top + (child.Bottom - child.Top) / 2);
 
+#pragma warning disable CS0618 // Obsolete
 				ViewCompat.SetBackground(bottomView, new ColorChangeRevealDrawable(lastColor, newColor, touchPoint));
+#pragma warning restore CS0618 // Obsolete
 			}
 		}
 

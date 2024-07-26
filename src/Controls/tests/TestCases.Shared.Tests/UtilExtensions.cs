@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -55,6 +56,24 @@ namespace Microsoft.Maui.TestCases.Tests
 		public static int CenterY(this Rectangle rect)
 		{
 			return rect.Y + rect.Height / 2;
+		}
+
+		public static void AssertMemoryTest(this IApp app)
+		{
+			try
+			{
+				app.WaitForElement("Success", timeout: TimeSpan.FromSeconds(10));
+			}
+			catch
+			{
+				var failure = app.FindElement("Failed")?.GetText();
+				if(failure is not null)
+				{
+					Assert.Fail(failure);
+				}
+
+				throw;
+			}
 		}
 	}
 }

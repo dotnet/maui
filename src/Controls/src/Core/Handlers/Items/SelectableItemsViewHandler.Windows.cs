@@ -49,8 +49,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (oldListViewBase != null)
 			{
-				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
 				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
 			}
 
 			if (ItemsView != null)

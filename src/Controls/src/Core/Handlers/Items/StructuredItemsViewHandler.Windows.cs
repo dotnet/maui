@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (gridView.Orientation == Orientation.Horizontal)
 			{
 				ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
-				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Auto);
+				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Enabled);
 			}
 
 			return gridView;

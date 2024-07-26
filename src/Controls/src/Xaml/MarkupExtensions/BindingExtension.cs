@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Path))]
-	[AcceptEmptyServiceProvider]
+	[RequireService([typeof(IXamlTypeResolver), typeof(IXamlDataTypeProvider)])]
 	public sealed class BindingExtension : IMarkupExtension<BindingBase>
 	{
 		public string Path { get; set; } = Binding.SelfPath;
@@ -42,12 +42,20 @@ namespace Microsoft.Maui.Controls.Xaml
 					"In that case, we produce a warning that the binding could not be compiled.")]
 			BindingBase CreateBinding()
 			{
+				Type bindingXDataType = null;
+				if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
+					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
+					&& dataTypeProvider.BindingDataType != null)
+				{
+					typeResolver.TryResolve(dataTypeProvider.BindingDataType, out bindingXDataType);
+				}
 				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
 				{
 					UpdateSourceEventName = UpdateSourceEventName,
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,
-				};
+					DataType = bindingXDataType,
+				};			
 			}
 		}
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -49,11 +50,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselScrolled;
 
-			if (ListViewBase != null)
-			{
-				ListViewBase.SizeChanged -= OnListViewSizeChanged;
-				_proxy.Unsubscribe();
-			}
+			platformView.SizeChanged -= OnListViewSizeChanged;
+			_proxy.Unsubscribe();
 
 			if (_scrollViewer != null)
 			{
@@ -187,7 +185,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdatePosition();
+			// If the initial position hasn't been set, we have a UpdateInitialPosition call on CarouselViewHandler
+			// that will handle this so we want to skip this mapper call. We need to wait for the LIstView to be ready
+			if (handler.InitialPositionSet)
+			{
+				handler.UpdatePosition();
+			}
+			
 		}
 
 		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
@@ -209,6 +213,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			handler.UpdateLoop();
 		}
+
+		internal bool InitialPositionSet { get; private set; }
+
 
 		void UpdateIsBounceEnabled()
 		{
@@ -337,7 +344,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return -1;
 		}
 
-		void UpdateCarouselViewInitialPosition()
+		void UpdateInitialPosition()
 		{
 			if (ListViewBase == null)
 			{
@@ -348,7 +355,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (Element.Loop)
 				{
-					var item = ListViewBase.Items[0];
+					var item = ItemsView.CurrentItem ?? ListViewBase.Items.FirstOrDefault();
 					_loopableCollectionView.CenterMode = true;
 					ListViewBase.ScrollIntoView(item);
 					_loopableCollectionView.CenterMode = false;
@@ -358,6 +365,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					UpdateCurrentItem();
 				else
 					UpdatePosition();
+
+				InitialPositionSet = true;
 			}
 		}
 
@@ -563,7 +572,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemsSource();
 			UpdateSnapPointsType();
 			UpdateSnapPointsAlignment();
-			UpdateCarouselViewInitialPosition();
+			UpdateInitialPosition();
 		}
 
 		void InvalidateItemSize()

@@ -7,25 +7,13 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-
 	public class ViewUnitTests : BaseTestFixture
 	{
 		MockDeviceInfo mockDeviceInfo;
 
-
 		public ViewUnitTests()
 		{
-
 			DeviceInfo.SetCurrent(mockDeviceInfo = new MockDeviceInfo());
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
-			{
-				if (widthConstraint < 30)
-				{
-					return new SizeRequest(new Size(40, 50));
-				}
-
-				return new SizeRequest(new Size(20, 100));
-			};
 		}
 
 		[Fact]
@@ -662,9 +650,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void WidthRequestEffectsGetSizeRequest()
 		{
-			var view = new View();
-			view.IsPlatformEnabled = true;
-			view.WidthRequest = 20;
+			static SizeRequest GetPlatformSize(VisualElement _, double w, double h) =>
+				w < 30 ? new(new(40, 50)) : new(new(20, 100));
+
+			var view = MockPlatformSizeService.Sub<View>(GetPlatformSize, width: 20);
 			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.Equal(new Size(20, 50), request.Request);
@@ -673,19 +662,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void HeightRequestEffectsGetSizeRequest()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, widthConstraint, heightConstraint) =>
-			{
-				if (heightConstraint < 30)
-				{
-					return new SizeRequest(new Size(40, 50));
-				}
+			static SizeRequest GetPlatformSize(VisualElement _, double w, double h) =>
+				h < 30 ? new(new(40, 50)) : new(new(20, 100));
 
-				return new SizeRequest(new Size(20, 100));
-			};
-
-			var view = new View();
-			view.IsPlatformEnabled = true;
-			view.HeightRequest = 20;
+			var view = MockPlatformSizeService.Sub<View>(GetPlatformSize, height: 20);
 			var request = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			Assert.Equal(new Size(40, 20), request.Request);

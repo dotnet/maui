@@ -335,8 +335,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 				Children = {
-					(child1 = new View {IsPlatformEnabled = true}),
-					(child2 = new View {IsPlatformEnabled = true})
+					(child1 = MockPlatformSizeService.Sub<View>()),
+					(child2 = MockPlatformSizeService.Sub<View>())
 				}
 			};
 

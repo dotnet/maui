@@ -11,9 +11,10 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
   rebootAgent: true
+  poolName: 'Azure Pipelines'
 
 steps:
-  - ${{ if eq(parameters.platform, 'ios')}}:
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
     - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
@@ -29,9 +30,8 @@ steps:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
-      ${{ if eq(parameters.platform, 'ios')}}:
-        skipAndroidSdks: false
-        skipAndroidImages: true
+      skipAndroidImages : ${{ eq(parameters.platform, 'ios') }}
+      skipAndroidSdks: ${{ eq(parameters.platform, 'ios') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -79,14 +79,6 @@ steps:
       Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
     displayName: 'Set Platform.Name'
 
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-      displayName: Delete Old Simulator Logs
-      condition: always()
-      continueOnError: true
-
   - ${{ if eq(parameters.platform, 'windows')}}:
     - pwsh: |
         $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
@@ -113,19 +105,8 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        suffix=$(date +%Y%m%d%H%M%S)
-        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
-      condition: always()
-      continueOnError: true
-
-
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
+        pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+      displayName: Cleanup and Create Simulator Logs if Test Run Failed To
       condition: always()
       continueOnError: true
 
@@ -143,7 +124,7 @@ steps:
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
-  - ${{ if eq(parameters.rebootAgent, true) }}:
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
     # This must always be placed as the last step in the job
     - template: agent-rebooter/mac.v1.yml@yaml-templates
       parameters:

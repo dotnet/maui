@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
@@ -10,13 +11,13 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
+using NSubstitute.Extensions;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: Dependency(typeof(MockResourcesProvider))]
 [assembly: Dependency(typeof(MockFontNamedSizeService))]
 #pragma warning restore CS0612 // Type or member is obsolete
-
-[assembly: Dependency(typeof(MockPlatformSizeService))]
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -181,21 +182,106 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public AppPackagingModel PackagingModel { get; set; }
 	}
 
-	class MockPlatformSizeService : IPlatformSizeService
+	static class MockPlatformSizeService
 	{
-		public static MockPlatformSizeService Current =>
-			DependencyService.Get<IPlatformSizeService>() as MockPlatformSizeService;
-
-		public bool UseRealisticLabelMeasure { get; set; }
-
-		public Func<VisualElement, double, double, SizeRequest> GetPlatformSizeFunc { get; set; }
-
-		public SizeRequest GetPlatformSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public static T Sub<T>(
+			bool useRealisticLabelMeasure = false,
+			LayoutOptions? horizOpts = default,
+			LayoutOptions? vertOpts = default,
+			bool? visible = default,
+			double? width = default,
+			double? height = default,
+			Thickness? margin = default,
+			string text = default,
+			TextAlignment? horizText = default,
+			LineBreakMode? lineBreak = default,
+			Color bgColor = default)
+			where T : View
 		{
-			if (GetPlatformSizeFunc != null)
-				return GetPlatformSizeFunc(view, widthConstraint, heightConstraint);
+			return Sub<T>(
+				(v, w, h) => DefaultLogic(v, w, h, useRealisticLabelMeasure),
+				horizOpts,
+				vertOpts,
+				visible,
+				width,
+				height,
+				margin,
+				text,
+				horizText,
+				lineBreak,
+				bgColor);
+		}
 
-			if (view is not Label label || !UseRealisticLabelMeasure)
+		public static T Sub<T>(
+			Func<VisualElement, double, double, SizeRequest> func,
+			LayoutOptions? horizOpts = default,
+			LayoutOptions? vertOpts = default,
+			bool? visible = default,
+			double? width = default,
+			double? height = default,
+			Thickness? margin = default,
+			string text = default,
+			TextAlignment? horizText = default,
+			LineBreakMode? lineBreak = default,
+			Color bgColor = default)
+			where T : View
+		{
+			var element = Substitute.ForPartsOf<T>();
+			element.IsPlatformEnabled = true;
+
+			if (horizOpts.HasValue)
+				element.HorizontalOptions = horizOpts.Value;
+			if (vertOpts.HasValue)
+				element.VerticalOptions = vertOpts.Value;
+			if (visible.HasValue)
+				element.IsVisible = visible.Value;
+			if (width.HasValue)
+				element.WidthRequest = width.Value;
+			if (height.HasValue)
+				element.HeightRequest = height.Value;
+			if (margin.HasValue)
+				element.Margin = margin.Value;
+			if (text != null)
+			{
+				if (element is Label labelElement)
+					labelElement.Text = text;
+				else if (element is Button buttonElement)
+					buttonElement.Text = text;
+				else
+					throw new ArgumentException("Only Label is supported for text");
+			}
+			if (horizText.HasValue)
+			{
+				if (element is Label labelElement)
+					labelElement.HorizontalTextAlignment = horizText.Value;
+				else
+					throw new ArgumentException("Only Label is supported for text");
+			}
+			if (lineBreak.HasValue)
+			{
+				if (element is Label labelElement)
+					labelElement.LineBreakMode = lineBreak.Value;
+				else
+					throw new ArgumentException("Only Label is supported for text");
+			}
+			if (bgColor != default)
+				element.BackgroundColor = bgColor;
+
+			var onMeasure = typeof(VisualElement)
+				.GetMethod("OnMeasure", BindingFlags.NonPublic | BindingFlags.Instance);
+
+			var configure = element.Configure();
+
+			onMeasure
+				.Invoke(configure, new object[] { Arg.Any<double>(), Arg.Any<double>() })
+				.Returns(i => func(element, i.ArgAt<double>(0), i.ArgAt<double>(1)));
+
+			return element;
+		}
+
+		static SizeRequest DefaultLogic(VisualElement view, double widthConstraint, double heightConstraint, bool useRealisticLabelMeasure)
+		{
+			if (view is not Label label || !useRealisticLabelMeasure)
 				return new SizeRequest(new Size(100, 20));
 
 			var letterSize = new Size(5, 10);
@@ -208,12 +294,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			return new SizeRequest(new Size(w, h), new Size(Math.Min(10, w), h));
-		}
-
-		public void Reset()
-		{
-			UseRealisticLabelMeasure = false;
-			GetPlatformSizeFunc = null;
 		}
 	}
 }

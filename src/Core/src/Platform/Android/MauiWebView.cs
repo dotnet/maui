@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiWebView(WebViewHandler handler, Context context) : base(context)
 		{
-			_handler = handler ?? throw new ArgumentNullException("handler");
+			_handler = handler ?? throw new ArgumentNullException(nameof(handler));
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)

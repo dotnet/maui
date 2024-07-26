@@ -61,6 +61,7 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            poolName: ${{ parameters.androidPool.name }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -71,7 +72,7 @@ stages:
         clean: all
       displayName: "iOS tests"
       pool: ${{ parameters.iosPool }}
-      timeoutInMinutes: 140
+      timeoutInMinutes: 120
       strategy:
         matrix:
           # create all the variables used for the matrix
@@ -102,6 +103,7 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            poolName: 'Azure Pipelines'
 
   - stage: catalyst_device_tests
     displayName: macOS Device Tests
@@ -141,6 +143,8 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            poolName: 'Azure Pipelines'
+
 
   - stage: windows_device_tests
     displayName: Windows Device Tests

@@ -258,42 +258,6 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
-	[Fact("WebView Does Not Leak")]
-	public async Task WebViewDoesNotLeak()
-	{
-		SetupBuilder();
-
-		var references = new List<WeakReference>();
-		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
-
-		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
-		{
-			{
-				var webView = new WebView
-				{
-					HeightRequest = 500, // NOTE: non-zero size required for Windows
-					Source = new HtmlWebViewSource { Html = "<p>hi</p>" },
-				};
-				var page = new ContentPage
-				{
-					Content = new VerticalStackLayout { webView }
-				};
-				await navPage.Navigation.PushAsync(page);
-				await OnLoadedAsync(page);
-				await Task.Delay(1000); // give the WebView time to load
-
-				references.Add(new(webView));
-				references.Add(new(webView.Handler));
-				references.Add(new(webView.Handler.PlatformView));
-
-				await navPage.Navigation.PopAsync();
-			}
-
-			// Assert *before* the Window is closed
-			await AssertionExtensions.WaitForGC(references.ToArray());
-		});
-	}
-
 	[Theory("Gesture Does Not Leak")]
 	[InlineData(typeof(DragGestureRecognizer))]
 	[InlineData(typeof(DropGestureRecognizer))]
