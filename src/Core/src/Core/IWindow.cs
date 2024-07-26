@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
@@ -131,7 +130,6 @@ namespace Microsoft.Maui
 		float RequestDisplayDensity();
 
 #if WINDOWS
-		ITitleBar? TitleBar => null;
 		Rect[]? TitleBarDragRectangles => null;
 #endif
 	}
