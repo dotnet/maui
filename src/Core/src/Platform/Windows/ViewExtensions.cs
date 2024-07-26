@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
 		{
-			if (!view.IsPlatformViewNew || view.FlowDirection != FlowDirection.LeftToRight)
+			if (!view.IsPlatformViewNew || view.FlowDirection != FlowDirection.MatchParent)
 			{
 				var flowDirection = view.FlowDirection;
 				switch (flowDirection)
