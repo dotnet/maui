@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Authentication
 			currentRedirectUri = callbackUrl;
 
 			// Try to start with custom tabs if the system supports it and we resolve it
-			AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
+			AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url, webAuthenticatorOptions.PrefersEphemeralWebBrowserSession);
 
 			// Fall back to using the system browser if necessary
 			if (!AuthenticatingWithCustomTabs)
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Authentication
 			return await tcsResponse.Task;
 		}
 
-		static async Task<bool> StartCustomTabsActivity(Uri url)
+		static async Task<bool> StartCustomTabsActivity(Uri url, bool incognito)
 		{
 			// Is only set to true if BindServiceAsync succeeds and no exceptions are thrown
 			var success = false;
@@ -103,6 +103,9 @@ namespace Microsoft.Maui.Authentication
 						.Build();
 
 					customTabsIntent.Intent.SetData(global::Android.Net.Uri.Parse(url.OriginalString));
+
+					if (incognito)
+						customTabsIntent.Intent.PutExtra("com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB", true);
 
 					if (customTabsIntent.Intent.ResolveActivity(parentActivity.PackageManager) != null)
 					{

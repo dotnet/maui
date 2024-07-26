@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Authentication
 		/// Gets or sets whether the browser used for the authentication flow is short-lived.
 		/// This means it will not share session nor cookies with the regular browser on this device if set the <see langword="true"/>. 
 		/// </summary>
-		/// <remarks>This setting only has effect on iOS.</remarks>
+		/// <remarks>This setting only has effect on iOS and Android.</remarks>
 		public bool PrefersEphemeralWebBrowserSession { get; set; }
 
 		/// <summary>
