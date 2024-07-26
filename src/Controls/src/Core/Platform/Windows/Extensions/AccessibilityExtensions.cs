@@ -50,7 +50,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
 			{
-				_defaultAutomationPropertiesAccessibilityView = currentValue = (AccessibilityView)Control.GetValue(NativeAutomationProperties.AccessibilityViewProperty);
+				if (Element.IsPlatformViewNew)
+				{
+					_defaultAutomationPropertiesAccessibilityView = AccessibilityView.Content;
+				}
+				else
+				{
+					_defaultAutomationPropertiesAccessibilityView = currentValue = (AccessibilityView)Control.GetValue(NativeAutomationProperties.AccessibilityViewProperty);
+				}
 			}
 
 			var newValue = _defaultAutomationPropertiesAccessibilityView;
