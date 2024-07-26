@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -52,11 +50,6 @@ namespace Microsoft.Maui.Platform
 			mauiContext?
 				.GetNavigationRootManager()?
 				.SetTitle(window.Title);
-		}
-
-		internal static void UpdateTitleBar(this UI.Xaml.Window platformWindow, IWindow window, IMauiContext? mauiContext)
-		{
-			mauiContext?.GetNavigationRootManager().SetTitleBar(window.TitleBar, mauiContext);
 		}
 
 		public static void UpdateX(this UI.Xaml.Window platformWindow, IWindow window) =>

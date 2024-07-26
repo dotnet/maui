@@ -188,13 +188,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal static void MapTitleBar(IWindowHandler handler, IWindow window)
-		{
-			handler
-				.PlatformView
-				.UpdateTitleBar(window, handler.MauiContext);
-		}
-
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
 		{
 			if (!args.DidSizeChange && !args.DidPositionChange)

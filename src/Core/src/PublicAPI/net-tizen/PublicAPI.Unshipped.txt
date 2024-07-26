@@ -32,10 +32,6 @@ Microsoft.Maui.Platform.IImageSourcePartSetter.SetImageSource(Microsoft.Maui.Pla
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Platform.IImageSourcePartSetter! setter) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.SoftInputExtensions
-Microsoft.Maui.ITitleBar
-Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
-Microsoft.Maui.ITitleBar.Subtitle.get -> string?
-Microsoft.Maui.ITitleBar.Title.get -> string?
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
