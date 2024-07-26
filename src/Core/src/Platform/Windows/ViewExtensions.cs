@@ -41,29 +41,32 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
 		{
-			double opacity = view.Opacity;
-			var wasCollapsed = platformView.Visibility == UI.Xaml.Visibility.Collapsed;
-
-			switch (view.Visibility)
+			if (!view.IsPlatformViewNew || !(view.Visibility == Visibility.Visible && view.Opacity == 1.0))
 			{
-				case Visibility.Visible:
-					platformView.Opacity = opacity;
-					platformView.Visibility = UI.Xaml.Visibility.Visible;
-					break;
-				case Visibility.Hidden:
-					platformView.Opacity = 0;
-					platformView.Visibility = UI.Xaml.Visibility.Visible;
-					break;
-				case Visibility.Collapsed:
-					platformView.Opacity = opacity;
-					platformView.Visibility = UI.Xaml.Visibility.Collapsed;
-					break;
-			}
+				double opacity = view.Opacity;
+				var wasCollapsed = platformView.Visibility == UI.Xaml.Visibility.Collapsed;
 
-			if (view.Visibility != Visibility.Collapsed && wasCollapsed)
-			{
-				// We may need to force the parent layout (if any) to re-layout to accomodate the new size
-				(platformView.Parent as FrameworkElement)?.InvalidateMeasure();
+				switch (view.Visibility)
+				{
+					case Visibility.Visible:
+						platformView.Opacity = opacity;
+						platformView.Visibility = UI.Xaml.Visibility.Visible;
+						break;
+					case Visibility.Hidden:
+						platformView.Opacity = 0;
+						platformView.Visibility = UI.Xaml.Visibility.Visible;
+						break;
+					case Visibility.Collapsed:
+						platformView.Opacity = opacity;
+						platformView.Visibility = UI.Xaml.Visibility.Collapsed;
+						break;
+				}
+
+				if (view.Visibility != Visibility.Collapsed && wasCollapsed)
+				{
+					// We may need to force the parent layout (if any) to re-layout to accomodate the new size
+					(platformView.Parent as FrameworkElement)?.InvalidateMeasure();
+				}
 			}
 		}
 
@@ -123,18 +126,21 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
 		{
-			var flowDirection = view.FlowDirection;
-			switch (flowDirection)
+			if (!view.IsPlatformViewNew || view.FlowDirection != FlowDirection.LeftToRight)
 			{
-				case FlowDirection.MatchParent:
-					platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
-					break;
-				case FlowDirection.LeftToRight:
-					platformView.FlowDirection = WFlowDirection.LeftToRight;
-					break;
-				case FlowDirection.RightToLeft:
-					platformView.FlowDirection = WFlowDirection.RightToLeft;
-					break;
+				var flowDirection = view.FlowDirection;
+				switch (flowDirection)
+				{
+					case FlowDirection.MatchParent:
+						platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
+						break;
+					case FlowDirection.LeftToRight:
+						platformView.FlowDirection = WFlowDirection.LeftToRight;
+						break;
+					case FlowDirection.RightToLeft:
+						platformView.FlowDirection = WFlowDirection.RightToLeft;
+						break;
+				}
 			}
 		}
 
