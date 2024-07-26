@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Networking
 		{
 			var ip = new IPAddress(0);
 			defaultRouteReachability = new NetworkReachability(ip);
-			defaultRouteReachability.SetNotification(OnChange);
 #pragma warning disable CA1422 // obsolete in MacCatalyst 15, iOS 13
+			defaultRouteReachability.SetNotification(OnChange);
 			defaultRouteReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
 #pragma warning restore CA1422
 
