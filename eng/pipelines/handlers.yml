@@ -88,6 +88,18 @@ parameters:
         vmImage: $(macOSXVmImage)
         artifact: nuget-macos
 
+  - name: BuilTemplatePlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
+        artifact: build-windows
+      - name: macOS
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
+        artifact: build-macos
+
   - name: RunTemplatePlatforms
     type: object
     default:
@@ -283,7 +295,7 @@ stages:
     - template: common/maui-templates.yml
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
-        BuildPlatforms: ${{ parameters.BuildPlatforms }}
+        BuildPlatforms: ${{ parameters.BuilTemplatePlatforms }}
 
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
   #   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
