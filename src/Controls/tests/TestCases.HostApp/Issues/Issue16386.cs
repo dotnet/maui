@@ -12,16 +12,16 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "HardwareEnterKeyEntry"
 			};
 
-			Content = 
-				new VerticalStackLayout() 
-				{ 
+			Content =
+				new VerticalStackLayout()
+				{
 					new Label()
 					{
 						Text = "Focus entry and hit the Enter key on the hardware keyboard. A success label should appear."
 					},
 					entry
 				};
-		
+
 			entry.Completed += (sender, args) =>
 			{
 				(Content as VerticalStackLayout)

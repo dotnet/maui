@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls
 				}
 			};
 			BindToTemplatedParent(contentGrid, BackgroundColorProperty, OpacityProperty);
-#endregion
+			#endregion
 
 			#region Leading content
 			var leadingContent = new ContentView()
@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls
 				FontSize = 12,
 				IsVisible = false
 			};
-			
+
 			contentGrid.Add(titleLabel);
 			contentGrid.SetColumn(titleLabel, 2);
 

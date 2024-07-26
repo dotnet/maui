@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView is RootNavigationView rnv)
 				rnv.FlyoutView = handler.VirtualView.Flyout;
 
-			handler.PlatformView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
+			MauiNavigationView.FlyoutCustomContent = handler.VirtualView.Flyout?.ToPlatform(handler.MauiContext);
 		}
 
 		public static void MapDetail(IFlyoutViewHandler handler, IFlyoutView flyoutView)

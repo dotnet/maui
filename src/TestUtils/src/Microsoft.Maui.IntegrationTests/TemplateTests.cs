@@ -101,7 +101,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "Project Space", "projectspace")]
 		[TestCase("maui-blazor", "Project Space", "projectspace")]
 		[TestCase("mauilib", "Project Space", "projectspace")]
-  		// with lots tricky characters (the '&' requires XML escaping too)
+		// with lots tricky characters (the '&' requires XML escaping too)
 		[TestCase("maui", "Project@Symbol & More", "projectsymbolmore")]
 		[TestCase("maui-blazor", "Project@Symbol & More", "projectsymbolmore")]
 		[TestCase("mauilib", "Project@Symbol & More", "projectsymbolmore")]
@@ -496,7 +496,7 @@ namespace Microsoft.Maui.IntegrationTests
 			// Multi-project is in a .iOS subfolder and csproj is *.iOS.csproj
 			if (id.EndsWith("multiproject"))
 			{
-				projectFile = 
+				projectFile =
 					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", $"{Path.GetFileName(projectDir)}.iOS.csproj");
 
 				appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";

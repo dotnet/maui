@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
 	{
-		public AutoSuggestBox? QueryEditor => null;
+		public static AutoSuggestBox? QueryEditor => null;
 
 		protected override AutoSuggestBox CreatePlatformView() => new AutoSuggestBox
 		{

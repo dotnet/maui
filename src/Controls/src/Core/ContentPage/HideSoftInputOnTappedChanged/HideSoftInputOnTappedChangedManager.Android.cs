@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 		IDisposable? SetupHideSoftInputOnTapped(AView aView)
 		{
 			if (aView is AViewGroup vg &&
-				vg.GetFirstChildOfType<EditText>() is {} editText)
+				vg.GetFirstChildOfType<EditText>() is { } editText)
 			{
 				aView = editText;
 			}
