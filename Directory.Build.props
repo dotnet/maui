@@ -37,6 +37,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+  </PropertyGroup>
+    
+  <PropertyGroup>
     <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">8</_MauiDotNetVersionMajor>
     <_MauiDotNetVersionMinor Condition="'$(_MauiDotNetVersionMinor)' == ''">0</_MauiDotNetVersionMinor>
     <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">$(_MauiDotNetVersionMajor).$(_MauiDotNetVersionMinor)</_MauiDotNetVersion>
