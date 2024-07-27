@@ -63,7 +63,6 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
-Microsoft.Maui.Controls.Window.Activate() -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
@@ -80,6 +79,7 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedC
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

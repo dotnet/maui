@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.Maui.Controls.Window.Activate() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
@@ -96,6 +95,7 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedC
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

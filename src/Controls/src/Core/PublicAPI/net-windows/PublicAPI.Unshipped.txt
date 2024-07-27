@@ -52,7 +52,6 @@ Microsoft.Maui.Controls.InputView.FontSize.get -> double
 Microsoft.Maui.Controls.InputView.FontSize.set -> void
 Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
 Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
-Microsoft.Maui.Controls.Window.Activate() -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! item) -> void
@@ -88,6 +87,7 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedC
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

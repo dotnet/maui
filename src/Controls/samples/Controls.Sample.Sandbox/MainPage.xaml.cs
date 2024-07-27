@@ -37,7 +37,7 @@ public partial class MainPage : ContentPage
 		if (windows.Count >= windowNumber)
 		{
 			Window windowToActivate = windows[windowIndex];
-			windowToActivate.Activate();
+			Application.Current!.ActivateWindow(windowToActivate);
 		}
 	}
 

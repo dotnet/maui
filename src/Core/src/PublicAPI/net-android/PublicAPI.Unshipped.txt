@@ -5,6 +5,7 @@ Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler,
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
+Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
@@ -96,6 +97,7 @@ static Microsoft.Maui.FontSize.operator ==(Microsoft.Maui.FontSize left, Microso
 static Microsoft.Maui.Graphics.PaintExtensions.ToDrawable(this Microsoft.Maui.Graphics.Paint? paint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.ImageButtonHandler.MapBackground(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IImageButton! imageButton) -> void

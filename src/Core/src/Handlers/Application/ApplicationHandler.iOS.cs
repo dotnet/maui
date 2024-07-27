@@ -44,6 +44,21 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[SupportedOSPlatform("maccatalyst13.0")]
+		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				var sceneSession = (window.Handler?.PlatformView as UIWindow)?.WindowScene?.Session;
+
+				if (sceneSession is not null)
+				{
+					UISceneSessionActivationRequest activationRequest = UISceneSessionActivationRequest.Create(sceneSession);
+					UIApplication.SharedApplication.ActivateSceneSession(activationRequest, errorHandler: null);
+				}
+			}
+		}
+
 #if __MACCATALYST__
 		class NSApplication
 		{

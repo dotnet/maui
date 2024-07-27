@@ -30,5 +30,13 @@ namespace Microsoft.Maui.Handlers
 					activity.Finish();
 			}
 		}
+
+		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				// TODO.
+			}
+		}
 	}
 }

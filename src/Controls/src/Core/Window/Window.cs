@@ -269,27 +269,6 @@ namespace Microsoft.Maui.Controls
 				Handler?.UpdateValue(nameof(IWindow.Content));
 		}
 
-		public void Activate()
-		{
-			var platformView = Handler?.PlatformView;
-
-#if WINDOWS
-
-			if (platformView is Microsoft.UI.Xaml.Window platformWindow)
-			{
-				platformWindow.Activate();
-			}
-
-#elif MACCATALYST17_0_OR_GREATER
-
-			if (platformView is UIKit.UIView platformWindow && platformWindow is UIKit.UIWindow window && window.WindowScene is not null)
-			{
-				UIKit.UISceneSessionActivationRequest activationRequest = UIKit.UISceneSessionActivationRequest.Create(window.WindowScene.Session);
-				UIKit.UIApplication.SharedApplication.ActivateSceneSession(activationRequest, errorHandler: null);
-			}
-#endif
-		}
-
 		/// <inheritdoc/>
 		public bool AddOverlay(IWindowOverlay overlay)
 		{

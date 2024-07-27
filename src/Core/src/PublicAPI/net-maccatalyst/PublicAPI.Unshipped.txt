@@ -7,6 +7,7 @@ Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
+Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
@@ -97,6 +98,7 @@ static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TVi
 static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.MenuBarItemHandler.MapIsEnabled(Microsoft.Maui.Handlers.IMenuBarItemHandler! handler, Microsoft.Maui.IMenuBarItem! view) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapIsEnabled(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapIsEnabled(Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler! handler, Microsoft.Maui.IMenuFlyoutSubItem! view) -> void

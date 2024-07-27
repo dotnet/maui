@@ -2,6 +2,7 @@
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
+Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
@@ -49,6 +50,7 @@ static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TVi
 static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapIsSpellCheckEnabled(Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

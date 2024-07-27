@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.Maui.Controls.Window.Activate() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
@@ -95,6 +94,7 @@ override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.Pref
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersStatusBarHidden() -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidAppear(bool animated) -> void
+virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
