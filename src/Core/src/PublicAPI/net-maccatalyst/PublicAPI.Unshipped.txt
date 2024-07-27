@@ -210,3 +210,4 @@ Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 *REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiLabel.InvalidateIntrinsicContentSize() -> void
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
