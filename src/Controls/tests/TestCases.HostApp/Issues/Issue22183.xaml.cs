@@ -22,11 +22,11 @@ namespace Maui.Controls.Sample.Issues
 			[new Issue22183Model()
 			{
 				GroupId = 0,
-			}, 
-			new Issue22183Model()
-			{
-				GroupId = 1,
-			}]);
+			},
+				new Issue22183Model()
+				{
+					GroupId = 1,
+				}]);
 	}
 
 	public class Issue22183Model : BindableObject
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public string True => $"True_{GroupId}";
 
-		public static readonly BindableProperty ShowOptionsProperty =	
+		public static readonly BindableProperty ShowOptionsProperty =
 			BindableProperty.Create(nameof(ShowOptions), typeof(bool), typeof(Issue22183Model));
 
 		public bool ShowOptions

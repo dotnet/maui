@@ -21,12 +21,12 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-		
+
 		async void OnToolbarItemClicked(object sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new Issue7823Page2());
 		}
-		
+
 		async void OnButtonClicked(object sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new Issue7823Page2());

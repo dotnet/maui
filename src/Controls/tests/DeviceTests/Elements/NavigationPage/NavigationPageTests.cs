@@ -106,7 +106,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task PopLifeCycle()
 		{
 			SetupBuilder();
-			
+
 			bool appearingShouldFireOnInitialPage = false;
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();

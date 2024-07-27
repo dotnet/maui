@@ -21,9 +21,9 @@ static class EmbeddingReflection
 	{
 		typeof(DynamicResourceExtension).Assembly // Controls.Xaml
 			.GetType("Microsoft.Maui.Controls.Embedding.EmbeddingExtensions")!
-			.GetMethod("UseMauiEmbeddedApp", 1, [ typeof(MauiAppBuilder) ])!
+			.GetMethod("UseMauiEmbeddedApp", 1, [typeof(MauiAppBuilder)])!
 			.MakeGenericMethod(typeof(TApp))
-			.Invoke(null, [ builder ]);
+			.Invoke(null, [builder]);
 		return builder;
 	}
 
@@ -31,23 +31,23 @@ static class EmbeddingReflection
 	{
 		return (IMauiContext)typeof(Application).Assembly // Controls.Core
 			.GetType("Microsoft.Maui.Controls.Embedding.EmbeddingExtensions")!
-			.GetMethod("CreateEmbeddedWindowContext", [ typeof(MauiApp), typeof(PlatformWindow) ])!
-			.Invoke(null, [ mauiApp, platformWindow ])!;
+			.GetMethod("CreateEmbeddedWindowContext", [typeof(MauiApp), typeof(PlatformWindow)])!
+			.Invoke(null, [mauiApp, platformWindow])!;
 	}
 
 	public static PlatformView ToPlatformEmbedded(this IElement element, IMauiContext context)
 	{
 		return (PlatformView)typeof(Application).Assembly // Controls.Core
 			.GetType("Microsoft.Maui.Controls.Embedding.EmbeddingExtensions")!
-			.GetMethod("ToPlatformEmbedded", [ typeof(IElement), typeof(IMauiContext) ])!
-			.Invoke(null, [ element, context ])!;
+			.GetMethod("ToPlatformEmbedded", [typeof(IElement), typeof(IMauiContext)])!
+			.Invoke(null, [element, context])!;
 	}
 
 	public static PlatformView ToPlatformEmbedded(this IElement element, MauiApp mauiApp, PlatformWindow platformWindow)
 	{
 		return (PlatformView)typeof(Application).Assembly // Controls.Core
 			.GetType("Microsoft.Maui.Controls.Embedding.EmbeddingExtensions")!
-			.GetMethod("ToPlatformEmbedded", [ typeof(IElement), typeof(MauiApp), typeof(PlatformWindow) ])!
-			.Invoke(null, [ element, mauiApp, platformWindow ])!;
+			.GetMethod("ToPlatformEmbedded", [typeof(IElement), typeof(MauiApp), typeof(PlatformWindow)])!
+			.Invoke(null, [element, mauiApp, platformWindow])!;
 	}
 }

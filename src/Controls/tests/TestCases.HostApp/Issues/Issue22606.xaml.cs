@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue22606()
 		{
-			InitializeComponent();		
+			InitializeComponent();
 		}
 
 		void OnSetHeightTo200Clicked(object sender, EventArgs e)

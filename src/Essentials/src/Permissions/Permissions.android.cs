@@ -474,7 +474,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 					return permissions.ToArray();
 				}
-			}						
+			}
 		}
 
 		public partial class Reminders : BasePlatformPermission

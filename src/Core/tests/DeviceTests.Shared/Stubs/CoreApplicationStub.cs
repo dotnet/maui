@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			if (_singleWindow is not null)
 				return _singleWindow;
-				
+
 			_windows.Add(new WindowStub());
 			return _windows.Last();
 		}
