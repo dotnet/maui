@@ -1,0 +1,11 @@
+﻿<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.TestPage"
+    x:DataType="local:TestPage"
+    xmlns:local="clr-namespace:Maui.Controls.Sample">
+  <HorizontalStackLayout>
+    <Label Text="I'm:"/>
+    <Label Text="{Binding Description}"/>
+  </HorizontalStackLayout>
+</ContentPage>
