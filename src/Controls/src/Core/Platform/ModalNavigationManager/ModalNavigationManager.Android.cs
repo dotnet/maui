@@ -140,6 +140,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
+				dialogFragment.Dismiss();
 				source.TrySetResult(modal);
 			}
 
