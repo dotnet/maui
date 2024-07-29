@@ -4,13 +4,60 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None, 0, "Navigating Between Transient Shell States Recreates Pages")]
+	[Issue(IssueTracker.None, 0, "Validate Basic Service Lifetime Behavior On Shell")]
 	public class ShellTransientTests : Shell
 	{
-        List<ContentPage> _contentPages = new List<ContentPage>();
+        static List<ContentPage> _contentPages = new List<ContentPage>();
 		protected override void OnNavigated(ShellNavigatedEventArgs args)
 		{
 			base.OnNavigated(args);
+            LoadCurrentPage();
+		}
+
+        void LoadCurrentPage()
+        {
+            var navigatetoTransientPage = new Button 
+            { 
+                Text = "Navigate to transient page", 
+                AutomationId = "NavigateToTransientPage",
+                Command = new Command(() => 
+                {
+                    ((ContentPage)this.CurrentPage).Content = new Label(){ Text = "Navigating. If you tried to navigate to the same page type, you'll be stuck here."};
+                    this.CurrentItem = Items[0];
+                })
+            };
+
+            var navigateToNotRegisteredPage = new Button 
+            { 
+                Text = "Navigate to Unregistered page", 
+                AutomationId = "NavigateToUnregisteredPage",
+                Command = new Command(() => 
+                {
+                    ((ContentPage)this.CurrentPage).Content = new Label(){ Text = "Navigating. If you tried to navigate to the same page type, you'll be stuck here."};
+                    this.CurrentItem = Items[1];
+                })
+            };
+
+            var navigateToScopedPage = new Button 
+            { 
+                Text = "Navigate to scoped page", 
+                AutomationId = "NavigateToScopedPage",
+                Command = new Command(() => 
+                {
+                    ((ContentPage)this.CurrentPage).Content = new Label(){ Text = "Navigating. If you tried to navigate to the same page type, you'll be stuck here."};
+                    this.CurrentItem = Items[2];
+                })
+            };
+
+            var navigateToNewShell = new Button 
+            { 
+                Text = "Navigate to New Shell", 
+                AutomationId = "NavigateToNewShell",
+                Command = new Command(() => 
+                {
+                    this.Window.Page = new ShellTransientTests();
+                })
+            };
 
             if (_contentPages.Contains(this.CurrentPage))
             {
@@ -18,7 +65,11 @@ namespace Maui.Controls.Sample.Issues
                 {
                     Children =
                     {
-                        new Label { Text = "Test Failed I am not a new page", AutomationId = "Failure" }
+                        navigatetoTransientPage,
+                        navigateToNotRegisteredPage,
+                        navigateToScopedPage,
+                        navigateToNewShell,
+                        new Label { Text = "I am not a new page", AutomationId = "OldPage" }
                     }
                 };
             }
@@ -28,13 +79,17 @@ namespace Maui.Controls.Sample.Issues
                 {
                     Children =
                     {
-                        new Label { Text = "I am a new page", AutomationId = "Success" }
+                        navigatetoTransientPage,
+                        navigateToNotRegisteredPage,
+                        navigateToScopedPage,
+                        navigateToNewShell,
+                        new Label { Text = "I am a new page", AutomationId = "NewPage" }
                     }
                 };
             }
 
             _contentPages.Add((ContentPage)this.CurrentPage);
-		}
+        }
 
 		public ShellTransientTests()
         {
@@ -43,20 +98,19 @@ namespace Maui.Controls.Sample.Issues
                 ContentTemplate = new DataTemplate(typeof(TransientPage))
             };
 
-
             var shellContent2 = new ShellContent()
-            {
-                ContentTemplate = new DataTemplate(typeof(TransientPage))
-            };
-
-            var shellContent3 = new ShellContent()
             {
                 ContentTemplate = new DataTemplate(typeof(ContentPage))
             };
 
+            var shellContent3 = new ShellContent()
+            {
+                ContentTemplate = new DataTemplate(typeof(ScopedPage))
+            };
+
             Items.Add(new FlyoutItem()
             {
-                Title = "Flyout Item 1",
+                Title = "Transient Page",
                 Items =
                 {
                     shellContent1
@@ -65,17 +119,16 @@ namespace Maui.Controls.Sample.Issues
 
             Items.Add(new FlyoutItem()
             {
-                Title = "Flyout Item 2",
+                Title = "Not Registered Page",
                 Items =
                 {
                     shellContent2
                 }
             });
 
-
             Items.Add(new FlyoutItem()
             {
-                Title = "Flyout Item 3",
+                Title = "Scoped Page",
                 Items =
                 {
                     shellContent3

@@ -249,8 +249,8 @@ namespace Microsoft.Maui.Controls
 
 			if (_contentCache is not null)
 			{
-				RemoveLogicalChild(_contentCache);
 				_contentCache.Unloaded -= OnPageUnloaded;
+				RemoveLogicalChild(_contentCache);
 			}
 
 			_contentCache = null;
