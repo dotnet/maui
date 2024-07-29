@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class LayoutHandler : ViewHandler<ILayout, object>
 	{
 		public void Add(IView view) => throw new NotImplementedException();
+		public void AddBulk(IView[] views) => throw new NotImplementedException();
 		public void Remove(IView view) => throw new NotImplementedException();
 		public void Clear() => throw new NotImplementedException();
 		public void Insert(int index, IView view) => throw new NotImplementedException();

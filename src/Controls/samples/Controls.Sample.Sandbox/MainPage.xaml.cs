@@ -30,14 +30,36 @@ public partial class MainPage : ContentPage
 		Stopwatch sw = Stopwatch.StartNew();
 		contentGrid.Clear();
 
+		for (int n = 0; n < rowCount; n++)
+		{
+			contentGrid.RowDefinitions.Add(new RowDefinition());
+		}
+
+		for (int n = 0; n < columnCount; n++)
+		{
+			contentGrid.ColumnDefinitions.Add(new ColumnDefinition());
+		}
+
 		for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
 		{
+			Label[] views = new Label[columnCount];
+
 			for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
 			{
-				Label control = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
-				// Button control = new() { Text = $"[{columnIndex}x{rowIndex}]" };
-				contentGrid.Add(control, column: columnIndex, row: rowIndex);
+				Label view = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
+				// Button view = new() { Text = $"[{columnIndex}x{rowIndex}]" };
+				// contentGrid.Add(view, column: columnIndex, row: rowIndex);
+
+				views[columnIndex] = view;
+
+				contentGrid.SetRow(view, rowIndex);
+				contentGrid.SetRowSpan(view, 1);
+
+				contentGrid.SetColumn(view, columnIndex);
+				contentGrid.SetColumnSpan(view, 1);
 			}
+
+			contentGrid.AddBulk(views);
 		}
 
 		sw.Stop();
@@ -62,9 +84,9 @@ public partial class MainPage : ContentPage
 			{
 				for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
 				{
-					 Label control = new() { Text = $"[{columnIndex}x{rowIndex}]" };
-					//Button control = new() { Text = $"[{columnIndex}x{rowIndex}]" };
-					contentGrid.Add(control, column: columnIndex, row: rowIndex);
+					 Label view = new() { Text = $"[{columnIndex}x{rowIndex}]" };
+					//Button view = new() { Text = $"[{columnIndex}x{rowIndex}]" };
+					contentGrid.Add(view, column: columnIndex, row: rowIndex);
 				}
 			}
 

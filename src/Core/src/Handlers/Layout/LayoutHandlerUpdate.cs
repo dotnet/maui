@@ -6,4 +6,9 @@ namespace Microsoft.Maui.Handlers
 	/// Communicates information from an ILayout about updates to an ILayoutHandler
 	/// </summary>
 	public record LayoutHandlerUpdate(int Index, IView View);
+
+	/// <summary>
+	/// Communicates information from an ILayout about updates to an ILayoutHandler
+	/// </summary>
+	public record LayoutHandlerBulkUpdate(int Index, IView[] Views);
 }

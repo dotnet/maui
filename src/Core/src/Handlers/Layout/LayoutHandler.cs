@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Handlers
 		public static CommandMapper<ILayout, ILayoutHandler> CommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(ILayoutHandler.Add)] = MapAdd,
+			[nameof(ILayoutHandler.AddBulk)] = MapAddBulk,
 			[nameof(ILayoutHandler.Remove)] = MapRemove,
 			[nameof(ILayoutHandler.Clear)] = MapClear,
 			[nameof(ILayoutHandler.Insert)] = MapInsert,
@@ -83,6 +84,14 @@ namespace Microsoft.Maui.Handlers
 			if (arg is LayoutHandlerUpdate args)
 			{
 				handler.Add(args.View);
+			}
+		}
+
+		public static void MapAddBulk(ILayoutHandler handler, ILayout layout, object? arg)
+		{
+			if (arg is LayoutHandlerBulkUpdate args)
+			{
+				handler.AddBulk(args.Views);
 			}
 		}
 
