@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.UpdateItemTemplate();
 
-			ListViewBase.GroupStyleSelector = new GroupHeaderStyleSelector();
+			//ListViewBase.GroupStyleSelector = new GroupHeaderStyleSelector();
 		}
 	}
 }

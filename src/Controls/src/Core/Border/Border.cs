@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Options;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -65,7 +66,13 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
-				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
+				_strokeShapeChanged ??= (sender, e) =>
+				{
+					if (e.PropertyName != WindowProperty.PropertyName)
+					{
+						OnPropertyChanged(nameof(StrokeShape));
+					}
+				};
 				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}

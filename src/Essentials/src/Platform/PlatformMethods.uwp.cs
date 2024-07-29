@@ -14,6 +14,7 @@ namespace Microsoft.Maui.ApplicationModel
 			public const int WM_THEMECHANGE = 0x031A;
 			public const int WM_GETMINMAXINFO = 0x0024;
 			public const int WM_STYLECHANGING = 0x007C;
+			public const int WM_SIZE = 0x0005;
 		}
 
 		public delegate IntPtr WindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);

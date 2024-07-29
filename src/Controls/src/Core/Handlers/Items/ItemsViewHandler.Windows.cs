@@ -18,10 +18,11 @@ using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, ListViewBase> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, WItemsView> where TItemsView : ItemsView
 	{
 		protected CollectionViewSource CollectionViewSource;
 		ScrollViewer _scrollViewer;
@@ -32,7 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
-		protected ListViewBase ListViewBase => PlatformView;
+
+		protected WItemsView ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 		protected WASDKDataTemplate ViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["View"];
@@ -42,19 +44,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected abstract IItemsLayout Layout { get; }
 
-		protected override ListViewBase CreatePlatformView()
+		protected override WItemsView CreatePlatformView()
 		{
 			return SelectListViewBase();
 		}
 
-		protected override void ConnectHandler(ListViewBase platformView)
+		protected override void ConnectHandler(WItemsView platformView)
 		{
 			base.ConnectHandler(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
 			FindScrollViewer(ListViewBase);
 		}
 
-		protected override void DisconnectHandler(ListViewBase platformView)
+		protected override void DisconnectHandler(WItemsView platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			base.DisconnectHandler(platformView);
@@ -107,51 +109,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateItemsUpdatingScrollMode()
 		{
-			if (PlatformView is null || PlatformView.Items is null)
-				return;
-
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
-			{
-				// The scroll position is maintained when new items are added as the default,
-				// so we don't need to watch for data changes
-				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
-			}
-			else
-			{
-				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
-				PlatformView.Items.VectorChanged += OnItemsVectorChanged;
-			}
+			//if (PlatformView is null || PlatformView.ItemsSource is null)
+			//	return;
+			//
+			//if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			//{
+			//	// The scroll position is maintained when new items are added as the default,
+			//	// so we don't need to watch for data changes
+			//	PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
+			//}
+			//else
+			//{
+			//	PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
+			//	PlatformView.Items.VectorChanged += OnItemsVectorChanged;
+			//}
 		}
 
 		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
 		{
-			if (VirtualView is null)
-				return;
-
-			if (sender is not ItemCollection items)
-				return;
-
-			var itemsCount = items.Count;
-
-			if (itemsCount == 0)
-				return;
-
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
-			{
-				var firstItem = items[0];
-				// Keeps the first item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(firstItem);
-			}
-
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-			{
-				var lastItem = items[itemsCount - 1];
-				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(lastItem);
-			}
+			//if (VirtualView is null)
+			//	return;
+			//
+			//if (sender is not ItemCollection items)
+			//	return;
+			//
+			//var itemsCount = items.Count;
+			//
+			//if (itemsCount == 0)
+			//	return;
+			//
+			//if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			//{
+			//	var firstItem = items[0];
+			//	// Keeps the first item in the list displayed when new items are added.
+			//	ListViewBase.ScrollIntoView(firstItem);
+			//}
+			//
+			//if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			//{
+			//	var lastItem = items[itemsCount - 1];
+			//	// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+			//	ListViewBase.ScrollIntoView(lastItem);
+			//}
 		}
 
-		protected abstract ListViewBase SelectListViewBase();
+		protected abstract WItemsView SelectListViewBase();
 
 		protected virtual void CleanUpCollectionViewSource()
 		{
@@ -254,6 +256,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			ListViewBase.ItemsSource = GetCollectionView(CollectionViewSource);
+			ListViewBase.ItemTemplate = new ItemFactory(Element);
 
 			UpdateEmptyViewVisibility();
 		}
@@ -335,8 +338,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateItemsLayout()
 		{
-			ListViewBase.IsSynchronizedWithCurrentItem = false;
-
 			FindScrollViewer(ListViewBase);
 
 			_defaultHorizontalScrollVisibility = null;
@@ -349,7 +350,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateEmptyView();
 		}
 
-		void FindScrollViewer(ListViewBase listView)
+		void FindScrollViewer(WItemsView listView)
 		{
 			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
 
@@ -361,7 +362,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			void ListViewLoaded(object sender, RoutedEventArgs e)
 			{
-				var lv = (ListViewBase)sender;
+				var lv = (WItemsView)sender;
 				lv.Loaded -= ListViewLoaded;
 				FindScrollViewer(listView);
 			}
@@ -525,12 +526,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int firstVisibleItemIndex = -1;
 			int lastVisibleItemIndex = -1;
 
-			if (ListViewBase.ItemsPanelRoot is ItemsStackPanel itemsPanel)
-			{
-				firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
-				lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
-			}
-			else
+			//if (ListViewBase.ItemsPanelRoot is ItemsStackPanel itemsPanel)
+			//{
+			//	firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
+			//	lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
+			//}
+			//else
 			{
 				var presenters = ListViewBase.GetChildren<ListViewItemPresenter>();
 
@@ -645,6 +646,98 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual object GetItem(int index)
 		{
 			return CollectionViewSource.View[index];
+		}
+	}
+
+	class ItemFactory(ItemsView view) : IElementFactory
+	{
+		private readonly ItemsView _view = view;
+		private readonly RecyclePool _recyclePool = new();
+
+		public UIElement GetElement(ElementFactoryGetArgs args)
+		{
+			if (args.Data is ItemTemplateContext templateContext)
+			{
+				Microsoft.Maui.Controls.DataTemplate template = _view.ItemTemplate;
+				if (_view.ItemTemplate is Microsoft.Maui.Controls.DataTemplateSelector selector)
+				{
+					template = selector.SelectTemplate(templateContext.Item, _view);
+				}
+
+				ItemContainer container = null;
+				ElementWrapper wrapper = null;
+				var pool = RecyclePool.GetPoolInstance(template);
+				if (pool is not null)
+				{
+					container = pool.TryGetElement(string.Empty, args.Parent) as ItemContainer;
+					if (container is not null)
+					{
+						wrapper = container.Child as ElementWrapper;
+					}
+				}
+
+				if (wrapper is null)
+				{
+					var viewContent = template.CreateContent() as View;
+					wrapper = new ElementWrapper(_view.Handler.MauiContext);
+					wrapper.SetContent(viewContent);
+
+					((View)wrapper.VirtualView).SetValue(RecyclePool.OriginTemplateProperty, template);
+				}
+
+				if (wrapper.VirtualView is View view)
+				{
+					view.BindingContext = templateContext.Item ?? _view.BindingContext;
+					_view.AddLogicalChild(view);
+				}
+
+				container ??= new ItemContainer()
+				{
+					Child = wrapper
+				};
+				return container;
+
+			}
+			return null;
+		}
+
+		public void RecycleElement(ElementFactoryRecycleArgs args)
+		{
+			var item = args.Element as ItemContainer;
+			var wrapper = item.Child as ElementWrapper;
+			var wrapperView = wrapper.VirtualView as View;
+			Microsoft.Maui.Controls.DataTemplate template =
+				wrapperView.GetValue(RecyclePool.OriginTemplateProperty) as Microsoft.Maui.Controls.DataTemplate;
+
+			var recyclePool = RecyclePool.GetPoolInstance(template);
+			if (recyclePool == null)
+			{
+				// No Recycle pool in the template, create one.
+				recyclePool = new RecyclePool();
+				RecyclePool.SetPoolInstance(template, recyclePool);
+			}
+			recyclePool.PutElement(element: item, key: string.Empty, owner: args.Parent);
+			_view.RemoveLogicalChild(wrapperView);
+		}
+	}
+
+	class ElementWrapper : UserControl
+	{
+		private IMauiContext _context;
+		public IView VirtualView { get; private set; }
+
+		public ElementWrapper(IMauiContext context)
+		{
+			_context = context;
+		}
+
+		public void SetContent(IView view)
+		{
+			if (VirtualView is null || VirtualView.Handler is null)
+			{
+				Content = view.ToPlatform(_context);
+				VirtualView = view;
+			}
 		}
 	}
 }

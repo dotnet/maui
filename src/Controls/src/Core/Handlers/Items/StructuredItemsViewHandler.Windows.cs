@@ -9,6 +9,7 @@ using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSetter = Microsoft.UI.Xaml.Setter;
 using WStyle = Microsoft.UI.Xaml.Style;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
-		protected override void ConnectHandler(ListViewBase platformView)
+		protected override void ConnectHandler(WItemsView platformView)
 		{
 			base.ConnectHandler(platformView);
 
@@ -39,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected override void DisconnectHandler(ListViewBase platformView)
+		protected override void DisconnectHandler(WItemsView platformView)
 		{
 			base.DisconnectHandler(platformView);
 
@@ -80,18 +81,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		}
 
-		protected override ListViewBase SelectListViewBase()
+		protected override WItemsView SelectListViewBase()
 		{
 			switch (VirtualView.ItemsLayout)
 			{
-				case GridItemsLayout gridItemsLayout:
-					return CreateGridView(gridItemsLayout);
+				//case GridItemsLayout gridItemsLayout:
+				//	return CreateGridView(gridItemsLayout);
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical:
-					return CreateVerticalListView(listItemsLayout);
+					return new WItemsView()
+					{
+						Layout = new Microsoft.UI.Xaml.Controls.StackLayout
+						{
+							Orientation = Orientation.Vertical
+						}
+					};
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
-					return CreateHorizontalListView(listItemsLayout);
+					return new WItemsView()
+					{
+						Layout = new Microsoft.UI.Xaml.Controls.StackLayout
+						{
+							Orientation = Orientation.Horizontal
+						}
+					};
 			}
-
 			throw new NotImplementedException("The layout is not implemented");
 		}
 
@@ -108,40 +120,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_currentHeader = null;
 			}
 
-			var header = ItemsView.Header;
-
-			switch (header)
-			{
-				case null:
-					ListViewBase.Header = null;
-					break;
-
-				case string text:
-					ListViewBase.HeaderTemplate = null;
-					ListViewBase.Header = new TextBlock { Text = text };
-					break;
-
-				case View view:
-					ListViewBase.HeaderTemplate = ViewTemplate;
-					_currentHeader = view;
-					Element.AddLogicalChild(_currentHeader);
-					ListViewBase.Header = view;
-					break;
-
-				default:
-					var headerTemplate = ItemsView.HeaderTemplate;
-					if (headerTemplate != null)
-					{
-						ListViewBase.HeaderTemplate = ItemsViewTemplate;
-						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element);
-					}
-					else
-					{
-						ListViewBase.HeaderTemplate = null;
-						ListViewBase.Header = null;
-					}
-					break;
-			}
+			//var header = ItemsView.Header;
+			//
+			//switch (header)
+			//{
+			//	case null:
+			//		ListViewBase.Header = null;
+			//		break;
+			//
+			//	case string text:
+			//		ListViewBase.HeaderTemplate = null;
+			//		ListViewBase.Header = new TextBlock { Text = text };
+			//		break;
+			//
+			//	case View view:
+			//		ListViewBase.HeaderTemplate = ViewTemplate;
+			//		_currentHeader = view;
+			//		Element.AddLogicalChild(_currentHeader);
+			//		ListViewBase.Header = view;
+			//		break;
+			//
+			//	default:
+			//		var headerTemplate = ItemsView.HeaderTemplate;
+			//		if (headerTemplate != null)
+			//		{
+			//			ListViewBase.HeaderTemplate = ItemsViewTemplate;
+			//			ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element);
+			//		}
+			//		else
+			//		{
+			//			ListViewBase.HeaderTemplate = null;
+			//			ListViewBase.Header = null;
+			//		}
+			//		break;
+			//}
 		}
 
 		protected virtual void UpdateFooter()
@@ -157,40 +169,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_currentFooter = null;
 			}
 
-			var footer = ItemsView.Footer;
-
-			switch (footer)
-			{
-				case null:
-					ListViewBase.Footer = null;
-					break;
-
-				case string text:
-					ListViewBase.FooterTemplate = null;
-					ListViewBase.Footer = new TextBlock { Text = text };
-					break;
-
-				case View view:
-					ListViewBase.FooterTemplate = ViewTemplate;
-					_currentFooter = view;
-					Element.AddLogicalChild(_currentFooter);
-					ListViewBase.Footer = view;
-					break;
-
-				default:
-					var footerTemplate = ItemsView.FooterTemplate;
-					if (footerTemplate != null)
-					{
-						ListViewBase.FooterTemplate = ItemsViewTemplate;
-						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element);
-					}
-					else
-					{
-						ListViewBase.FooterTemplate = null;
-						ListViewBase.Footer = null;
-					}
-					break;
-			}
+			//var footer = ItemsView.Footer;
+			//
+			//switch (footer)
+			//{
+			//	case null:
+			//		ListViewBase.Footer = null;
+			//		break;
+			//
+			//	case string text:
+			//		ListViewBase.FooterTemplate = null;
+			//		ListViewBase.Footer = new TextBlock { Text = text };
+			//		break;
+			//
+			//	case View view:
+			//		ListViewBase.FooterTemplate = ViewTemplate;
+			//		_currentFooter = view;
+			//		Element.AddLogicalChild(_currentFooter);
+			//		ListViewBase.Footer = view;
+			//		break;
+			//
+			//	default:
+			//		var footerTemplate = ItemsView.FooterTemplate;
+			//		if (footerTemplate != null)
+			//		{
+			//			ListViewBase.FooterTemplate = ItemsViewTemplate;
+			//			ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element);
+			//		}
+			//		else
+			//		{
+			//			ListViewBase.FooterTemplate = null;
+			//			ListViewBase.Footer = null;
+			//		}
+			//		break;
+			//}
 		}
 
 		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
@@ -283,31 +295,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateItemsLayoutSpan()
 		{
-			if (ListViewBase is FormsGridView formsGridView)
-			{
-				formsGridView.Span = ((GridItemsLayout)Layout).Span;
-			}
+			//if (ListViewBase is FormsGridView formsGridView)
+			//{
+			//	formsGridView.Span = ((GridItemsLayout)Layout).Span;
+			//}
 		}
 
 		void UpdateItemsLayoutItemSpacing()
 		{
-			if (ListViewBase is FormsGridView formsGridView && Layout is GridItemsLayout gridLayout)
-			{
-				formsGridView.ItemContainerStyle = GetItemContainerStyle(gridLayout);
-			}
-
-			if (Layout is LinearItemsLayout linearItemsLayout)
-			{
-				switch (ListViewBase)
-				{
-					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
-						break;
-					case WListView listView:
-						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
-						break;
-				}
-			}
+			//if (ListViewBase is FormsGridView formsGridView && Layout is GridItemsLayout gridLayout)
+			//{
+			//	formsGridView.ItemContainerStyle = GetItemContainerStyle(gridLayout);
+			//}
+			//
+			//if (Layout is LinearItemsLayout linearItemsLayout)
+			//{
+			//	switch (ListViewBase)
+			//	{
+			//		case FormsListView formsListView:
+			//			formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+			//			break;
+			//		case WListView listView:
+			//			listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
+			//			break;
+			//	}
+			//}
 		}
 	}
 }

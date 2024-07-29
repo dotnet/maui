@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System.Collections.Specialized;
 using Microsoft.UI.Xaml.Controls;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -8,18 +9,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		bool _trackerAllowDrop;
 
-		protected override void ConnectHandler(ListViewBase platformView)
+		protected override void ConnectHandler(WItemsView platformView)
 		{
 			base.ConnectHandler(platformView);
 
-			platformView.DragItemsStarting += HandleDragItemsStarting;
-			platformView.DragItemsCompleted += HandleDragItemsCompleted;
+			//platformView.DragItemsStarting += HandleDragItemsStarting;
+			//platformView.DragItemsCompleted += HandleDragItemsCompleted;
 		}
 
-		protected override void DisconnectHandler(ListViewBase platformView)
+		protected override void DisconnectHandler(WItemsView platformView)
 		{
-			platformView.DragItemsStarting -= HandleDragItemsStarting;
-			platformView.DragItemsCompleted -= HandleDragItemsCompleted;
+			//platformView.DragItemsStarting -= HandleDragItemsStarting;
+			//platformView.DragItemsCompleted -= HandleDragItemsCompleted;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -65,15 +66,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (Element.CanReorderItems)
 			{
-				ListViewBase.CanDragItems = true;
-				ListViewBase.CanReorderItems = true;
-				ListViewBase.IsSwipeEnabled = true; // Needed so user can reorder with touch (according to docs).
+				//ListViewBase.CanDragItems = true;
+				//ListViewBase.CanReorderItems = true;
+				//ListViewBase.IsSwipeEnabled = true; // Needed so user can reorder with touch (according to docs).
 			}
 			else
 			{
-				ListViewBase.CanDragItems = false;
-				ListViewBase.CanReorderItems = false;
-				ListViewBase.IsSwipeEnabled = false;
+				//ListViewBase.CanDragItems = false;
+				//ListViewBase.CanReorderItems = false;
+				//ListViewBase.IsSwipeEnabled = false;
 			}
 		}
 	}

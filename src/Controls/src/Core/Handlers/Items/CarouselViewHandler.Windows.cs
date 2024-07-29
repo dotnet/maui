@@ -13,6 +13,7 @@ using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
 using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		LinearItemsLayout CarouselItemsLayout => ItemsView?.ItemsLayout;
 		WDataTemplate CarouselItemsViewTemplate => (WDataTemplate)WApp.Current.Resources["CarouselItemsViewDefaultTemplate"];
 
-		protected override void ConnectHandler(ListViewBase platformView)
+		protected override void ConnectHandler(WItemsView platformView)
 		{
 			ItemsView.Scrolled += CarouselScrolled;
 			ListViewBase.SizeChanged += OnListViewSizeChanged;
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(ListViewBase platformView)
+		protected override void DisconnectHandler(WItemsView platformView)
 		{
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselScrolled;
@@ -112,7 +113,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return _loopableCollectionView;
 		}
 
-		protected override ListViewBase SelectListViewBase()
+		protected override WItemsView SelectListViewBase()
 		{
 			return CreateCarouselListLayout(CarouselItemsLayout.Orientation);
 		}
@@ -149,35 +150,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return args;
 		}
 
-		ListViewBase CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
+		WItemsView CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
 		{
-			UI.Xaml.Controls.ListView listView;
-
-			if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
-			{
-				listView = new FormsListView()
-				{
-					Style = (UI.Xaml.Style)WApp.Current.Resources["HorizontalCarouselListStyle"],
-					ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"]
-				};
-
-				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
-				ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
-			}
-			else
-			{
-				listView = new FormsListView()
-				{
-					Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"]
-				};
-
-				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
-				ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
-			}
-
-			listView.Padding = WinUIHelpers.CreateThickness(ItemsView.PeekAreaInsets.Left, ItemsView.PeekAreaInsets.Top, ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom);
-
-			return listView;
+			return new WItemsView();
+			//UI.Xaml.Controls.ListView listView;
+			//
+			//if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
+			//{
+			//	listView = new FormsListView()
+			//	{
+			//		Style = (UI.Xaml.Style)WApp.Current.Resources["HorizontalCarouselListStyle"],
+			//		ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"]
+			//	};
+			//
+			//	ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
+			//	ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
+			//}
+			//else
+			//{
+			//	listView = new FormsListView()
+			//	{
+			//		Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"]
+			//	};
+			//
+			//	ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
+			//	ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
+			//}
+			//
+			//listView.Padding = WinUIHelpers.CreateThickness(ItemsView.PeekAreaInsets.Left, ItemsView.PeekAreaInsets.Top, ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom);
+			//
+			//return listView;
 		}
 
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
@@ -218,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateIsSwipeEnabled()
 		{
-			ListViewBase.IsSwipeEnabled = ItemsView.IsSwipeEnabled;
+			//ListViewBase.IsSwipeEnabled = ItemsView.IsSwipeEnabled;
 
 			switch (CarouselItemsLayout.Orientation)
 			{
@@ -344,21 +346,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (ListViewBase.Items.Count > 0)
-			{
-				if (Element.Loop)
-				{
-					var item = ListViewBase.Items[0];
-					_loopableCollectionView.CenterMode = true;
-					ListViewBase.ScrollIntoView(item);
-					_loopableCollectionView.CenterMode = false;
-				}
-
-				if (ItemsView.CurrentItem != null)
-					UpdateCurrentItem();
-				else
-					UpdatePosition();
-			}
+			//if (ListViewBase.Items.Count > 0)
+			//{
+			//	if (Element.Loop)
+			//	{
+			//		var item = ListViewBase.Items[0];
+			//		_loopableCollectionView.CenterMode = true;
+			//		ListViewBase.ScrollIntoView(item);
+			//		_loopableCollectionView.CenterMode = false;
+			//	}
+			//
+			//	if (ItemsView.CurrentItem != null)
+			//		UpdateCurrentItem();
+			//	else
+			//		UpdatePosition();
+			//}
 		}
 
 		void UpdateCurrentItem()
