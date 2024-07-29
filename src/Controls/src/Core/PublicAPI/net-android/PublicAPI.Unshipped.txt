@@ -86,6 +86,9 @@ Microsoft.Maui.Controls.InputView.FontSize.get -> double
 Microsoft.Maui.Controls.InputView.FontSize.set -> void
 Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
 Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -116,6 +119,9 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
+Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnAttachedToWindow() -> void
@@ -202,6 +208,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
+~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.DisconnectHandler(Android.Views.View platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.DisconnectHandler(AndroidX.RecyclerView.Widget.RecyclerView platformView) -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void

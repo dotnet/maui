@@ -545,7 +545,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		void AddWindow(Window window)
+		internal void AddWindow(Window window)
 		{
 			_windows.Add(window);
 

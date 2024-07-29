@@ -119,6 +119,8 @@ Microsoft.Maui.Controls.InputView.FontSize.get -> double
 Microsoft.Maui.Controls.InputView.FontSize.set -> void
 Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
 Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> WebKit.WKWebView!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -137,6 +139,9 @@ Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
 static readonly Microsoft.Maui.Controls.HandlerProperties.DisconnectPolicyProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
 override Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.LoadView() -> void
 static readonly Microsoft.Maui.Controls.HybridWebView.DefaultFileProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.HybridWebView.HybridRootProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -213,6 +218,7 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
+~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void

@@ -72,6 +72,8 @@ Microsoft.Maui.Controls.InputView.FontSize.get -> double
 Microsoft.Maui.Controls.InputView.FontSize.set -> void
 Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
 Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.PlatformWebViewProcessTerminatedEventArgs() -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -93,6 +95,9 @@ static readonly Microsoft.Maui.Controls.HandlerProperties.DisconnectPolicyProper
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 static readonly Microsoft.Maui.Controls.HybridWebView.DefaultFileProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.HybridWebView.HybridRootProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
 Microsoft.Maui.Controls.TitleBar
 Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.Content.set -> void
@@ -205,6 +210,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool

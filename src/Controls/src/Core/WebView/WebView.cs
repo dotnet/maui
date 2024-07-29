@@ -191,6 +191,11 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<WebNavigatingEventArgs> Navigating;
 
+		/// <summary>
+		///  Raised when a WebView process ends unexpectedly.
+		/// </summary>
+		public event EventHandler<WebViewProcessTerminatedEventArgs> ProcessTerminated;
+
 		/// <inheritdoc/>
 		protected override void OnBindingContextChanged()
 		{
@@ -360,6 +365,23 @@ namespace Microsoft.Maui.Controls
 		{
 			var args = new WebNavigatedEventArgs(evnt, new UrlWebViewSource { Url = url }, url, result);
 			(this as IWebViewController)?.SendNavigated(args);
+		}
+
+		void IWebView.ProcessTerminated(WebProcessTerminatedEventArgs args)
+		{
+#if ANDROID
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender, args.RenderProcessGoneDetail);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#elif IOS || MACCATALYST
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#elif WINDOWS
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender, args.CoreWebView2ProcessFailedEventArgs);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#else
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs();
+#endif
+			ProcessTerminated?.Invoke(this, webViewProcessTerminatedEventArgs);
 		}
 	}
 }

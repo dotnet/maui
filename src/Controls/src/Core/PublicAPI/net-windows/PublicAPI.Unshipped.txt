@@ -105,6 +105,12 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.CoreWebView2ProcessFailedEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs!
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
+Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.TitleBar.OnApplyTemplate() -> void
 static Microsoft.Maui.Controls.Handlers.ShellItemHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellItemHandler! handler, Microsoft.Maui.Controls.ShellItem! item) -> void
@@ -214,6 +220,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
+~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void

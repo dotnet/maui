@@ -39,6 +39,7 @@ Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint,
 Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 Microsoft.Maui.ITitleBar
 Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
@@ -59,6 +60,8 @@ Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Ma
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> object!
+Microsoft.Maui.WebProcessTerminatedEventArgs
+Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
@@ -119,3 +122,5 @@ virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
+*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
+Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
