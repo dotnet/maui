@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reflection;
+using System.Security.Cryptography;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -54,6 +55,7 @@ namespace Microsoft.Maui.Controls
 		EventHandler _isPageVisibleChanged;
 		event EventHandler IShellContentController.IsPageVisibleChanged { add => _isPageVisibleChanged += value; remove => _isPageVisibleChanged -= value; }
 
+		bool _createdViaService;
 		Page IShellContentController.GetOrCreateContent()
 		{
 			var template = ContentTemplate;
@@ -74,11 +76,19 @@ namespace Microsoft.Maui.Controls
 						var services = Parent?.FindMauiContext()?.Services;
 						if (services is not null)
 						{
-							return Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, template.Type);
+							var result = services.GetService(template.Type);
+							if (result is not null)
+							{
+								_createdViaService = true;
+								return result;
+							}
 						}
-						return Activator.CreateInstance(template.Type);
+
+						_createdViaService = false;
+						return Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(services, template.Type);
 					};
 				}
+
 				result = ContentCache ?? (Page)template.CreateContent(content, this);
 				ContentCache = result;
 			}
@@ -108,7 +118,10 @@ namespace Microsoft.Maui.Controls
 		Page _contentCache;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
-		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
+		public ShellContent()
+		{
+			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
+		}
 
 		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection && shellSection.CurrentItem == this;
 
@@ -187,17 +200,78 @@ namespace Microsoft.Maui.Controls
 				var oldCache = _contentCache;
 				_contentCache = value;
 				if (oldCache != null)
-					RemoveLogicalChild(oldCache);
-
-				if (value != null && value.Parent != this)
 				{
-					AddLogicalChild(value);
+					RemoveLogicalChild(oldCache);
+					oldCache.Unloaded -= OnPageUnloaded;
 				}
 
-				if (Parent != null)
+				if (value is not null && value.Parent != this)
+				{
+					AddLogicalChild(value);
+
+					if (_createdViaService)
+					{
+						value.Unloaded += OnPageUnloaded;
+					}
+				}
+
+				if (Parent is not null)
+				{
 					((ShellSection)Parent).UpdateDisplayedPage();
+				}
 			}
 		}
+
+		internal void EvaluateDisconnect()
+		{
+			if(!_createdViaService)
+				return;
+
+			// If the user has set the IsVisible property on this shell content to false
+			bool disconnect = true;
+			
+			if(Parent is ShellSection shellSection &&
+				shellSection.Parent is ShellItem shellItem &&
+				shellItem.Parent is Shell shell)
+			{
+				disconnect = 
+					!this.IsVisible || // user has set the IsVisible property to false
+					(_contentCache is not null && !_contentCache.IsVisible) || // user has set IsVisible on the Page to false
+					shell.CurrentItem != shellItem || // user has navigated to a different TabBar or a different FlyoutItem
+					!shellSection.IsVisible || // user has set IsVisible on the ShellSection to false
+					this.Window is null; // user has set the main page to a different shell instance
+			}
+
+			if (!disconnect)
+			{
+				return;
+			}
+
+			if (_contentCache is not null)
+			{
+				RemoveLogicalChild(_contentCache);
+				_contentCache.Unloaded -= OnPageUnloaded;
+			}
+
+			_contentCache = null;
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == WindowProperty.PropertyName)
+			{
+				if(_contentCache?.IsLoaded == true)
+					return;
+
+				EvaluateDisconnect();
+			}
+		}
+
+		void OnPageUnloaded(object sender, EventArgs e) => EvaluateDisconnect();
 
 		public static implicit operator ShellContent(TemplatedPage page)
 		{
@@ -223,6 +297,7 @@ namespace Microsoft.Maui.Controls
 		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shellContent = (ShellContent)bindable;
+			shellContent._createdViaService = false;
 			// This check is wrong but will work for testing
 			if (shellContent.ContentTemplate == null)
 			{
