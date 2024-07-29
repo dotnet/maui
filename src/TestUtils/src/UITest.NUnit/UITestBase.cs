@@ -10,8 +10,8 @@ namespace UITest.Appium.NUnit
 	{
 		protected virtual bool ResetAfterEachTest => false;
 
-		public UITestBase(TestDevice testDevice)
-			: base(testDevice)
+		public UITestBase(TestDevice testDevice, bool useBrowserStack)
+			: base(testDevice, useBrowserStack)
 		{
 		}
 

@@ -17,13 +17,17 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			var remote = GoToStateRemote();
 
+#if !USE_BROWSERSTACK
 			var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
 			ClassicAssert.IsTrue(enabled);
+#endif
 
 			remote.TapStateButton();
 
+#if !USE_BROWSERSTACK
 			enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
 			ClassicAssert.IsFalse(enabled);
+#endif
 
 			remote.TapStateButton();
 
