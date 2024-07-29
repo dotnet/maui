@@ -2,6 +2,10 @@
 
 public class MainViewController : UIViewController
 {
+	EmbeddingScenarios.IScenario? _scenario;
+	MyMauiContent? _mauiView;
+	UIView? _nativeView;
+
 	public override void ViewDidLoad()
 	{
 		base.ViewDidLoad();
@@ -34,7 +38,16 @@ public class MainViewController : UIViewController
 		firstButton.SetTitle("UIKit Button Above MAUI", UIControlState.Normal);
 		stackView.AddArrangedSubview(firstButton);
 
-		// TODO: The MAUI content will go here.
+		// Uncomment the scenario to test:
+		// _scenario = new EmbeddingScenarios.Scenario1_Basic();
+		//_scenario = new EmbeddingScenarios.Scenario2_Scoped();
+		_scenario = new EmbeddingScenarios.Scenario3_Correct();
+
+		// create the view and (maybe) the window
+		(_mauiView, _nativeView) = _scenario.Embed(ParentViewController!.View!.Window);
+
+		// add the new view to the UI
+		stackView.AddArrangedSubview(new ContainerView(_nativeView));
 
 		// Create UIKit button
 		var secondButton = new UIButton(UIButtonType.System);
@@ -44,10 +57,22 @@ public class MainViewController : UIViewController
 		// Create UIKit button
 		var thirdButton = new UIButton(UIButtonType.System);
 		thirdButton.SetTitle("UIKit Button Magic", UIControlState.Normal);
+		thirdButton.TouchUpInside += OnMagicClicked;
 		stackView.AddArrangedSubview(thirdButton);
 
 		if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
 			AddNavBarButtons();
+	}
+
+	private async void OnMagicClicked(object? sender, EventArgs e)
+	{
+		if (_mauiView?.DotNetBot is not Image bot)
+			return;
+
+		await bot.RotateTo(360, 1000);
+		bot.Rotation = 0;
+
+		bot.HeightRequest = 90;
 	}
 
 	private void AddNavBarButtons()
@@ -87,5 +112,34 @@ public class MainViewController : UIViewController
 				Console.WriteLine(new NSErrorException(error));
 			});
 		}
+	}
+
+	// UIStackView uses IntrinsicContentSize instead of SizeThatFits
+	// so we need to create a container view to wrap the Maui view and
+	// redirect the IntrinsicContentSize to the Maui view's SizeThatFits.
+	class ContainerView : UIView
+	{
+		public ContainerView(UIView view)
+		{
+			AddSubview(view);
+		}
+
+		public override CGSize IntrinsicContentSize =>
+			SizeThatFits(new CGSize(nfloat.MaxValue, nfloat.MaxValue));
+
+		public override void LayoutSubviews()
+		{
+			if (Subviews?.FirstOrDefault() is {} view)
+				view.Frame = Bounds;
+		}
+
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+			InvalidateIntrinsicContentSize();
+		}
+
+		public override CGSize SizeThatFits(CGSize size) =>
+			Subviews?.FirstOrDefault()?.SizeThatFits(size) ?? CGSize.Empty;
 	}
 }
