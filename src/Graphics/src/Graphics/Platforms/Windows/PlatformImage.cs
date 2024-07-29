@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (stream.CanSeek)
 			{
-				global::Windows.Foundation.IAsyncOperation<CanvasBitmap> bitmapAsync = CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream());
+				var bitmapAsync = CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream());
 				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
 			}
 			else
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				stream.CopyTo(memoryStream);
 				memoryStream.Seek(0, SeekOrigin.Begin);
 
-				global::Windows.Foundation.IAsyncOperation<CanvasBitmap> bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
+				var bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
 				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
 			}
 
