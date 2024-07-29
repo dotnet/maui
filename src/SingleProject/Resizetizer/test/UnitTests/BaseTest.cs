@@ -146,15 +146,20 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				if (!isSimilar)
 				{
-					var maskFilename = Path.Combine(DestinationDirectory, expectedFilename);
+					var root = GetTestProjectRoot();
+					var filename = GetTestImageFileName(args, methodName);
+
+					var maskFilename = Path.Combine(root, "errors", filename);
 					maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
 
 					Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
 
-					using var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected);
-					using var data = mask.Encode(SKEncodedImageFormat.Png, 100);
-					using var maskFile = File.Create(maskFilename);
-					data.SaveTo(maskFile);
+					using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
+					using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
+					using (var maskFile = File.Create(maskFilename))
+					{
+						data.SaveTo(maskFile);
+					}
 
 					Assert.True(
 						isSimilar,
@@ -165,15 +170,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
-			var root = Directory.GetCurrentDirectory();
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
-			root = Path.Combine(root, "src/SingleProject/Resizetizer/test/UnitTests/");
-
-			var imagePath = GetTestImageFileName(args, methodName, Path.GetExtension(destinationFilename));
+			var root = GetTestProjectRoot();
+			var imagePath = GetTestImageFileName(args, methodName);
 			var path = Path.Combine(root, imagePath);
 
 			var dir = Path.GetDirectoryName(path);
@@ -205,6 +203,15 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				name = name.Substring(TestFolderName.Length + 1);
 
 			return Path.Combine(TestImagesFolderName, name, methodName, filename);
+		}
+
+		private static string GetTestProjectRoot()
+		{
+			var cwd = Directory.GetCurrentDirectory();
+
+			var root = Path.Combine(cwd, "../../../../../src/SingleProject/Resizetizer/test/UnitTests/");
+
+			return root;
 		}
 	}
 }
