@@ -27,7 +27,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			else
 			{
 #if IOS || MACCATALYST
-				// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+				// On iOS/MacCatalyst 18 and higher the 0.0.0.0 address does not work, so we use localhost instead.
+				// This preserves behavior on older versions of those systems, while defaulting to new behavior on
+				// the new system.
 				if (System.OperatingSystem.IsIOSVersionAtLeast(18) ||
 					System.OperatingSystem.IsMacCatalystVersionAtLeast(18))
 				{
