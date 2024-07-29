@@ -32,7 +32,7 @@ public static class EmbeddingExtensions
 	/// <param name="builder">The <see cref="MauiAppBuilder"/> instance.</param>
 	/// <returns>The <see cref="MauiAppBuilder"/> instance.</returns>
 	/// <remarks>
-	/// This is internal as it is exposed in Controls.Xaml sonce it needs to setup XAML defaults.
+	/// This is internal as it is exposed in Controls.Xaml since it needs to setup XAML defaults.
 	/// </remarks>
 	internal static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder)
 	{
