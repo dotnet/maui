@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Platform
 		internal MauiToolbar? Toolbar => _rootView.Toolbar;
 		public FrameworkElement RootView => _rootView;
 
-		public virtual void Connect(UIElement platformView)
+		public virtual void Connect(UIElement? platformView)
 		{
 			if (_rootView.Content != null)
 			{
