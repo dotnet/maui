@@ -40,9 +40,11 @@ public partial class MainPage : ContentPage
 			contentGrid.ColumnDefinitions.Add(new ColumnDefinition());
 		}
 
+		int i = 0;
+		Label[] views = new Label[rowCount * columnCount];
+
 		for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
 		{
-			Label[] views = new Label[columnCount];
 
 			for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
 			{
@@ -50,7 +52,8 @@ public partial class MainPage : ContentPage
 				// Button view = new() { Text = $"[{columnIndex}x{rowIndex}]" };
 				// contentGrid.Add(view, column: columnIndex, row: rowIndex);
 
-				views[columnIndex] = view;
+				views[i] = view;
+				i++;
 
 				contentGrid.SetRow(view, rowIndex);
 				contentGrid.SetRowSpan(view, 1);
@@ -58,9 +61,9 @@ public partial class MainPage : ContentPage
 				contentGrid.SetColumn(view, columnIndex);
 				contentGrid.SetColumnSpan(view, 1);
 			}
-
-			contentGrid.AddBulk(views);
 		}
+
+		contentGrid.AddBulk(views);
 
 		sw.Stop();
 		info.Text = $"Grid was created in: {sw.ElapsedMilliseconds} ms";
