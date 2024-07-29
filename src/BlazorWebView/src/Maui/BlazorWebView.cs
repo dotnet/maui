@@ -11,7 +11,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
-		internal const string AppHostAddress = "0.0.0.0";
+		internal static string AppHostAddress { get; } = GetAppHostAddress();
+
+		private const string AppHostAddressAlways0000Switch = "BlazorWebView.AppHostAddressAlways0000";
+
+		private static bool IsAppHostAddressAlways0000Enabled =>
+			AppContext.TryGetSwitch(AppHostAddressAlways0000Switch, out var enabled) && enabled;
+
+		private static string GetAppHostAddress()
+		{
+			if (IsAppHostAddressAlways0000Enabled)
+			{
+				return "0.0.0.0";
+			}
+			else
+			{
+#if IOS || MACCATALYST
+				return "localhost";
+#else
+				return "0.0.0.0";
+#endif
+			}
+		}
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
 
