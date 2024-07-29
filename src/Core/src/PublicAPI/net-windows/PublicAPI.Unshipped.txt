@@ -32,6 +32,7 @@ Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint,
 Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 Microsoft.Maui.ITitleBar
 Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
@@ -68,6 +69,9 @@ Microsoft.Maui.Platform.MauiPanel.MauiPanel() -> void
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.SoftInputExtensions
+Microsoft.Maui.WebProcessTerminatedEventArgs
+Microsoft.Maui.WebProcessTerminatedEventArgs.CoreWebView2ProcessFailedEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs!
+Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Microsoft.Web.WebView2.Core.CoreWebView2!
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
