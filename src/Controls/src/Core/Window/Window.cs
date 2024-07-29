@@ -235,14 +235,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private protected override void UpdateHandlerValue(string property)
+		private protected override void UpdateHandlerValue(string property, bool valueChanged)
 		{
-			if (_batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
+			if (valueChanged && _batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
 			{
 				return;
 			}
 
-			base.UpdateHandlerValue(property);
+			base.UpdateHandlerValue(property, valueChanged);
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
