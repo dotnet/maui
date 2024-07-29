@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.7.24375.12">
+    <Dependency Name="VS.Tools.Net.Core.SDK.Resolver" Version="9.0.100-preview.7.24378.4">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>9a99a3bf325e427373470965b069b0970c1a7eab</Sha>
+      <Sha>b02a3882ad7fbcc1b098833edec5fc2f54591144</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24374.12" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-preview.7.24376.15" CoherentParentDependency="VS.Tools.Net.Core.SDK.Resolver">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>eedf30ebac80ca81b88c4c452614522a5ece1b27</Sha>
+      <Sha>bdcf3ef75e11d22e4973bf37f2d5b660b73aa266</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-preview.7.29">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-preview.7.34">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>ab412a5629778598f9b33b9b976721898dbacc95</Sha>
+      <Sha>0f68e068519bcc9509be88037501f77593222e73</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9216-net9-p7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
