@@ -34,8 +34,9 @@ public partial class MainPage : ContentPage
 		{
 			for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
 			{
-				Label label = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
-				contentGrid.Add(label, column: columnIndex, row: rowIndex);
+				Label control = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
+				// Button control = new() { Text = $"[{columnIndex}x{rowIndex}]" };
+				contentGrid.Add(control, column: columnIndex, row: rowIndex);
 			}
 		}
 
@@ -61,8 +62,9 @@ public partial class MainPage : ContentPage
 			{
 				for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
 				{
-					Label label = new Label() { Text = $"[{columnIndex}x{rowIndex}]" };
-					contentGrid.Add(label, column: columnIndex, row: rowIndex);
+					 Label control = new() { Text = $"[{columnIndex}x{rowIndex}]" };
+					//Button control = new() { Text = $"[{columnIndex}x{rowIndex}]" };
+					contentGrid.Add(control, column: columnIndex, row: rowIndex);
 				}
 			}
 
