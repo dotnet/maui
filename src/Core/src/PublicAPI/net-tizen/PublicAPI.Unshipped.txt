@@ -50,6 +50,10 @@ Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Ma
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.ITitleBar
+Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
+Microsoft.Maui.ITitleBar.Subtitle.get -> string?
+Microsoft.Maui.ITitleBar.Title.get -> string?
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
@@ -117,3 +121,6 @@ static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IVie
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
 static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
+Microsoft.Maui.WebProcessTerminatedEventArgs
+Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
+Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
