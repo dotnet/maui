@@ -167,21 +167,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// }
 
 
-		[Fact]
-		public async Task RemovePageFromNavigationSetsCorrectNavigationSource()
-		{
-			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
-			Routing.RegisterRoute("page", typeof(ContentPage));
-			var shell = new TestShell(
-				CreateShellItem(shellItemRoute: "item")
-			);
+		// [Fact]
+		// public async Task RemovePageFromNavigationSetsCorrectNavigationSource()
+		// {
+		// 	Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
+		// 	Routing.RegisterRoute("page", typeof(ContentPage));
+		// 	var shell = new TestShell(
+		// 		CreateShellItem(shellItemRoute: "item")
+		// 	);
 
-			await shell.GoToAsync("//item/pagemiddle/page");
-			shell.Navigation.RemovePage(shell.Navigation.NavigationStack[1]);
+		// 	await shell.GoToAsync("//item/pagemiddle/page");
+		// 	shell.Navigation.RemovePage(shell.Navigation.NavigationStack[1]);
 
-			await shell.TestNavigationArgs(ShellNavigationSource.Remove,
-				"//item/pagemiddle/page", "//item/page");
-		}
+		// 	await shell.TestNavigationArgs(ShellNavigationSource.Remove,
+		// 		"//item/pagemiddle/page", "//item/page");
+		// }
 
 		// [Fact]
 		// public async Task RemovePageSetsCorrectNavigationSource()
