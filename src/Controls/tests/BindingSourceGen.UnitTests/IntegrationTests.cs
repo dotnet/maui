@@ -116,9 +116,10 @@ public class IntegrationTests
         """;
 
         var result = SourceGenHelpers.Run(source);
-        var id = Math.Abs(result.Binding!.Location.GetHashCode());
-
         AssertExtensions.AssertNoDiagnostics(result);
+		Assert.NotNull(result.Binding);
+
+        var id = Math.Abs(result.Binding.Location.GetHashCode());
         AssertExtensions.CodeIsEqual(
             $$"""
             //------------------------------------------------------------------------------
@@ -165,7 +166,7 @@ public class IntegrationTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [InterceptsLocationAttribute(@"Path\To\Program.cs", 2, 27)]
-                    public static TypedBinding<string, int> Create{{id}}(
+                    public static BindingBase Create{{id}}(
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,
@@ -254,7 +255,7 @@ public class IntegrationTests
                     object? fallbackValue = null,
                     object? targetNullValue = null)
                 {
-                    throw new InvalidOperationException($"Call to Binding.Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
+                    throw new InvalidOperationException($"Call to Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
                 }
             }
         }

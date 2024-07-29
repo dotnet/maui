@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="Type[@FullName='Microsoft.Maui.Controls.Binding']/Docs/*" />
 	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
-	public sealed partial class Binding : BindingBase
+	public sealed class Binding : BindingBase
 	{
 		public const string SelfPath = ".";
 		IValueConverter _converter;
