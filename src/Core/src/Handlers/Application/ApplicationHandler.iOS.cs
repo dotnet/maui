@@ -38,8 +38,9 @@ namespace Microsoft.Maui.Handlers
 				if (sceneSession != null)
 				{
 					// Request that the scene be destroyed
-					// TODO: Error handler?
-					UIApplication.SharedApplication.RequestSceneSessionDestruction(sceneSession, null, null);
+					UIApplication.SharedApplication.RequestSceneSessionDestruction(sceneSession, null, errorHandler: (Foundation.NSError error) => {
+						handler.Logger?.LogWarning("Error during window closing. Error: {}", error);
+					});
 				}
 			}
 		}
@@ -54,7 +55,9 @@ namespace Microsoft.Maui.Handlers
 				if (sceneSession is not null)
 				{
 					UISceneSessionActivationRequest activationRequest = UISceneSessionActivationRequest.Create(sceneSession);
-					UIApplication.SharedApplication.ActivateSceneSession(activationRequest, errorHandler: null);
+					UIApplication.SharedApplication.ActivateSceneSession(activationRequest, errorHandler: (Foundation.NSError error) => {
+						handler.Logger?.LogWarning("Error during window activation. Error: {}", error);
+					});
 				}
 			}
 		}
