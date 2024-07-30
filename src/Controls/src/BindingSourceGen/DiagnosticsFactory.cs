@@ -81,4 +81,48 @@ internal static class DiagnosticsFactory
 				defaultSeverity: DiagnosticSeverity.Error,
 				isEnabledByDefault: true),
 			location);
+
+	public static DiagnosticInfo UnaccessibleTypeUsedAsLambdaParameter(Location location)
+		=> new DiagnosticInfo(
+			new DiagnosticDescriptor(
+				id: "BSG0007",
+				title: "Unaccessible type used as lambda parameter",
+				messageFormat: "The lambda parameter type has to be declared as public, internal or protected internal.",
+				category: "Usage",
+				defaultSeverity: DiagnosticSeverity.Error,
+				isEnabledByDefault: true),
+			location);
+
+	public static DiagnosticInfo UnaccessibleFieldInPath(Location location)
+	=> new DiagnosticInfo(
+		new DiagnosticDescriptor(
+			id: "BSG0008",
+			title: "Unaccessible field in path",
+			messageFormat: "The path can contain only public, internal and protected internal fields.",
+			category: "Usage",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true),
+		location);
+
+	public static DiagnosticInfo UnaccessiblePropertyInPath(Location location)
+	=> new DiagnosticInfo(
+		new DiagnosticDescriptor(
+			id: "BSG0009",
+			title: "Unaccessible property in path",
+			messageFormat: "The path can contain only public, internal and protected internal properties.",
+			category: "Usage",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true),
+		location);
+
+	public static DiagnosticInfo LambdaIsNotStatic(Location location)
+	=> new DiagnosticInfo(
+		new DiagnosticDescriptor(
+			id: "BSG0010",
+			title: "Lambda is not static",
+			messageFormat: "The lambda must be static.",
+			category: "Usage",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true),
+		location);
 }
