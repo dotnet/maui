@@ -351,9 +351,9 @@ function InitializeBuildTool {
 function GetNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
-      export NUGET_PACKAGES="$HOME/.nuget/packages"
+      export NUGET_PACKAGES="$HOME/.nuget/packages/"
     else
-      export NUGET_PACKAGES="$repo_root/.packages"
+      export NUGET_PACKAGES="$repo_root/.packages/"
       export RESTORENOHTTPCACHE=true
     fi
   fi
