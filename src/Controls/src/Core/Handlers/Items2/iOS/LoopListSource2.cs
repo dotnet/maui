@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	internal class LoopListSource2 : ListSource, ILoopItemsViewSource
+	internal class LoopListSource2 : Items.ListSource, Items.ILoopItemsViewSource
 	{
 		public LoopListSource2(IEnumerable<object> enumerable, bool loop) : base(enumerable)
 		{

@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	internal class LoopObservableItemsSource2 : ObservableItemsSource, ILoopItemsViewSource
+	internal class LoopObservableItemsSource2 : Items.ObservableItemsSource, Items.ILoopItemsViewSource
 	{
 		//const int LoopBy = 3;
 

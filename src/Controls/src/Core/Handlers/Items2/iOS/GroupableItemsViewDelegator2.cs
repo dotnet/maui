@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	public class GroupableItemsViewDelegator2<TItemsView, TViewController> : SelectableItemsViewDelegator2<TItemsView, TViewController>
 		where TItemsView : GroupableItemsView
-		where TViewController : GroupableItemsViewController22<TItemsView>
+		where TViewController : GroupableItemsViewController2<TItemsView>
 	{
 		public GroupableItemsViewDelegator2(UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2)
 			: base(itemsViewLayout, ItemsViewController2)

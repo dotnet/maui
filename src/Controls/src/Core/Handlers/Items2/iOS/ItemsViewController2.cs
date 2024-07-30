@@ -11,13 +11,13 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, MauiCollectionView.ICustomMauiCollectionViewDelegate
+	public abstract class ItemsViewController2<TItemsView> : UICollectionViewController, Items.MauiCollectionView.ICustomMauiCollectionViewDelegate
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
 		readonly WeakReference<TItemsView> _itemsView;
 
-		public IItemsViewSource ItemsSource { get; protected set; }
+		public Items.IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
 		// ItemsViewLayout provides an accessor to the typed UICollectionViewLayout. It's also important to note that the
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override void LoadView()
 		{
 			base.LoadView();
-			var collectionView = new MauiCollectionView(CGRect.Empty, ItemsViewLayout);
+			var collectionView = new Items.MauiCollectionView(CGRect.Empty, ItemsViewLayout);
 			collectionView.SetCustomDelegate(this);
 			CollectionView = collectionView;
 		}
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 
 
-		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
+		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
 		{
 			if (CollectionView?.Window != null)
 			{
@@ -295,9 +295,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return new ItemsViewDelegator2<TItemsView, ItemsViewController2<TItemsView>>(ItemsViewLayout, this);
 		}
 
-		protected virtual IItemsViewSource CreateItemsViewSource()
+		protected virtual Items.IItemsViewSource CreateItemsViewSource()
 		{
-			return ItemsSourceFactory.Create(ItemsView.ItemsSource, this);
+			return Items.ItemsSourceFactory.Create(ItemsView.ItemsSource, this);
 		}
 
 		public virtual void UpdateItemsSource()
@@ -410,20 +410,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return ScrollDirection == UICollectionViewScrollDirection.Horizontal ? HorizontalDefaultCell2.ReuseId : VerticalDefaultCell2.ReuseId;
 		}
 
-		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
-		protected virtual string DetermineCellReuseId()
-		{
-			if (ItemsView.ItemTemplate != null)
-			{
-				return ScrollDirection == UICollectionViewScrollDirection.Horizontal
-					? HorizontalCell2.ReuseId
-					: VerticalCell2.ReuseId;
-			}
+		//[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
+		//protected virtual string DetermineCellReuseId()
+		//{
+		//	if (ItemsView.ItemTemplate != null)
+		//	{
+		//		return ScrollDirection == UICollectionViewScrollDirection.Horizontal
+		//			? HorizontalCell2.ReuseId
+		//			: VerticalCell2.ReuseId;
+		//	}
 
-			return ScrollDirection == UICollectionViewScrollDirection.Horizontal
-				? HorizontalDefaultCell2.ReuseId
-				: VerticalDefaultCell2.ReuseId;
-		}
+		//	return ScrollDirection == UICollectionViewScrollDirection.Horizontal
+		//		? HorizontalDefaultCell2.ReuseId
+		//		: VerticalDefaultCell2.ReuseId;
+		//}
 
 		protected virtual void RegisterViewTypes()
 		{
@@ -463,7 +463,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				// Create the native renderer for the view, and keep the actual Forms element (if any)
 				// around for updating the layout later
-				(uiView, formsElement) = TemplateHelpers.RealizeView(view, viewTemplate, ItemsView);
+				(uiView, formsElement) = Items.TemplateHelpers.RealizeView(view, viewTemplate, ItemsView);
 			}
 		}
 
@@ -643,7 +643,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				var itemsSource = ItemsSource;
 				if (itemsSource is null ||
-					!itemsSource.IsIndexPathValid(indexPath) ||
+					!Items.IndexPathHelpers.IsIndexPathValid(itemsSource, indexPath) ||
 					!Equals(itemsSource[indexPath], bindingContext))
 				{
 					TemplatedCell2.Unbind();

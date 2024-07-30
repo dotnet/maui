@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class ReorderableItemsViewController2<TItemsView> : GroupableItemsViewController22<TItemsView>
+	public class ReorderableItemsViewController2<TItemsView> : GroupableItemsViewController2<TItemsView>
 		where TItemsView : ReorderableItemsView
 	{
 		bool _disposed;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return new ReorderableItemsViewDelegator2<TItemsView, ReorderableItemsViewController2<TItemsView>>(ItemsViewLayout, this);
 		}
 
-		protected override IItemsViewSource CreateItemsViewSource()
+		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
 			if (ItemsSource != null)
 			{
@@ -142,9 +142,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		void SetObserveChanges(IItemsViewSource itemsSource, bool enable)
+		void SetObserveChanges(Items.IItemsViewSource itemsSource, bool enable)
 		{
-			if (itemsSource is IObservableItemsViewSource observableSource)
+			if (itemsSource is Items.IObservableItemsViewSource observableSource)
 			{
 				observableSource.ObserveChanges = enable;
 			}

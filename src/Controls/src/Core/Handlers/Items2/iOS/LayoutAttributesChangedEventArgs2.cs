@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class LayoutAttributesChangedEventArgs22 : EventArgs
+	public class LayoutAttributesChangedEventArgs2 : EventArgs
 	{
 		public UICollectionViewLayoutAttributes NewAttributes { get; }
 

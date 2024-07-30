@@ -285,7 +285,7 @@ internal static class LayoutFactory2
 			if (visibleElements.Length == 1)
 			{
 				// If there is only one item in the viewport,  then we need to align the viewport with it
-				return SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport,
+				return Items.SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport,
 					alignment, Configuration.ScrollDirection);
 			}
 
@@ -293,21 +293,21 @@ internal static class LayoutFactory2
 			// closest to the relevant part of the viewport while being sufficiently visible
 
 			// Find the spot in the viewport we're trying to align with
-			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, proposedContentOffset,
+			var alignmentTarget = Items.SnapHelpers.FindAlignmentTarget(alignment, proposedContentOffset,
 				CollectionView, Configuration.ScrollDirection);
 
 			// Find the closest sufficiently visible candidate
-			var bestCandidate = SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
+			var bestCandidate = Items.SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
 
 			if (bestCandidate != null)
 			{
-				return SnapHelpers.AdjustContentOffset(proposedContentOffset, bestCandidate.Frame, viewport, alignment,
+				return Items.SnapHelpers.AdjustContentOffset(proposedContentOffset, bestCandidate.Frame, viewport, alignment,
 					Configuration.ScrollDirection);
 			}
 
 			// If we got this far an nothing matched, it means that we have multiple items but somehow
 			// none of them fit at least half in the viewport. So just fall back to the first item
-			return SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport, alignment,
+			return Items.SnapHelpers.AdjustContentOffset(proposedContentOffset, visibleElements[0].Frame, viewport, alignment,
 					Configuration.ScrollDirection);
 		}
 
@@ -318,12 +318,12 @@ internal static class LayoutFactory2
 			var viewport = new CGRect(contentOffset, CollectionView.Bounds.Size);
 
 			// Find the spot in the viewport we're trying to align with
-			var alignmentTarget = SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, Configuration.ScrollDirection);
+			var alignmentTarget = Items.SnapHelpers.FindAlignmentTarget(alignment, contentOffset, CollectionView, Configuration.ScrollDirection);
 
 			var visibleElements = LayoutAttributesForElementsInRect(viewport);
 
 			// Find the current aligned item
-			var currentItem = SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
+			var currentItem = Items.SnapHelpers.FindBestSnapCandidate(visibleElements, viewport, alignmentTarget);
 
 			if (currentItem == null)
 			{
@@ -343,9 +343,9 @@ internal static class LayoutFactory2
 			// }
 
 			// Find the next item in the
-			currentItem = SnapHelpers.FindNextItem(visibleElements, Configuration.ScrollDirection, span, scrollingVelocity, currentIndex);
+			currentItem = Items.SnapHelpers.FindNextItem(visibleElements, Configuration.ScrollDirection, span, scrollingVelocity, currentIndex);
 
-			return SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
+			return Items.SnapHelpers.AdjustContentOffset(CollectionView.ContentOffset, currentItem.Frame, viewport, alignment,
 				Configuration.ScrollDirection);
 		}
 	}

@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class GroupableItemsViewController22<TItemsView> : SelectableItemsViewController2<TItemsView>
+	public class GroupableItemsViewController2<TItemsView> : SelectableItemsViewController2<TItemsView>
 		where TItemsView : GroupableItemsView
 	{
 		// Keep a cached value for the current state of grouping around so we can avoid hitting the 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		Action _scrollAnimationEndedCallback;
 
-		public GroupableItemsViewController22(TItemsView groupableItemsView, UICollectionViewLayout layout)
+		public GroupableItemsViewController2(TItemsView groupableItemsView, UICollectionViewLayout layout)
 			: base(groupableItemsView, layout)
 		{
 			_isGrouped = ItemsView.IsGrouped;
@@ -30,15 +30,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override UICollectionViewDelegateFlowLayout CreateDelegator()
 		{
-			return new GroupableItemsViewDelegator2<TItemsView, GroupableItemsViewController22<TItemsView>>(ItemsViewLayout, this);
+			return new GroupableItemsViewDelegator2<TItemsView, GroupableItemsViewController2<TItemsView>>(ItemsViewLayout, this);
 		}
 
-		protected override IItemsViewSource CreateItemsViewSource()
+		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
 			// Use the BindableProperty here (instead of _isGroupingEnabled) because the cached value might not be set yet
 			if (ItemsView.IsGrouped)
 			{
-				return ItemsSourceFactory.CreateGrouped(ItemsView.ItemsSource, this);
+				return Items.ItemsSourceFactory.CreateGrouped(ItemsView.ItemsSource, this);
 			}
 
 			return base.CreateItemsViewSource();

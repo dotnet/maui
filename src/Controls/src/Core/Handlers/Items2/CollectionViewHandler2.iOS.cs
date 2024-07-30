@@ -24,12 +24,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 	{
 		// Reorderable
-		protected override ItemsViewController2<TItemsView> CreateController(TItemsView itemsView, UICollectionViewLayout layout)
-			 => new ReorderableItemsViewController2<TItemsView>(itemsView, layout);
+		protected override ItemsViewController2<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, UICollectionViewLayout layout)
+			 => new ReorderableItemsViewController2<ReorderableItemsView>(itemsView, layout);
 
 		public static void MapCanReorderItems(CollectionViewHandler2 handler, ReorderableItemsView itemsView)
 		{
-			(handler.Controller as ReorderableItemsViewController2<TItemsView>)?.UpdateCanReorderItems();
+			(handler.Controller as ReorderableItemsViewController2<ReorderableItemsView>)?.UpdateCanReorderItems();
 		}
 
 
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				if (args.IsAnimated)
 				{
-					(Controller as GroupableItemsViewController22<TItemsView>).SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
+					(Controller as GroupableItemsViewController2<ReorderableItemsView>)?.SetScrollAnimationEndedCallback(() => base.ScrollToRequested(sender, args));
 				}
 				else
 				{
@@ -67,23 +67,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Selectable
 		public static void MapItemsSource(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 		{
-			ItemsViewHandler2<TItemsView>.MapItemsSource(handler, itemsView);
+			ItemsViewHandler2<ReorderableItemsView>.MapItemsSource(handler, itemsView);
 			MapSelectedItem(handler, itemsView);
 		}
 
 		public static void MapSelectedItem(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 		{
-			(handler.Controller as SelectableItemsViewController2<TItemsView>)?.UpdatePlatformSelection();
+			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdatePlatformSelection();
 		}
 
 		public static void MapSelectedItems(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 		{
-			(handler.Controller as SelectableItemsViewController2<TItemsView>)?.UpdatePlatformSelection();
+			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdatePlatformSelection();
 		}
 
 		public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 		{
-			(handler.Controller as SelectableItemsViewController2<TItemsView>)?.UpdateSelectionMode();
+			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateSelectionMode();
 		}
 
 
@@ -119,26 +119,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
-				return LayoutFactory.CreateGrid(gridItemsLayout, groupInfo);
+				return LayoutFactory2.CreateGrid(gridItemsLayout, groupInfo);
 			}
 
 			if (itemsLayout is LinearItemsLayout listItemsLayout)
 			{
-				return LayoutFactory.CreateList(listItemsLayout, groupInfo);
+				return LayoutFactory2.CreateList(listItemsLayout, groupInfo);
 			}
 
 			// Fall back to vertical list
-			return LayoutFactory.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), groupInfo);
+			return LayoutFactory2.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), groupInfo);
 		}
 
 		public static void MapHeaderTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
-			(handler.Controller as StructuredItemsViewController2<TItemsView>)?.UpdateHeaderView();
+			(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
 		}
 
 		public static void MapFooterTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
-			(handler.Controller as StructuredItemsViewController2<TItemsView>)?.UpdateFooterView();
+			(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateFooterView();
 		}
 
 		public static void MapItemsLayout(CollectionViewHandler2 handler, StructuredItemsView itemsView)

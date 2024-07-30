@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
 		List<View> _oldViews;
-		ILoopItemsViewSource LoopItemsSource => ItemsSource as ILoopItemsViewSource;
+		Items.ILoopItemsViewSource LoopItemsSource => ItemsSource as Items.ILoopItemsViewSource;
 		
 		public CarouselViewController2(CarouselView itemsView, UICollectionViewLayout layout) : base(itemsView, layout)
 		{
@@ -130,9 +130,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.RegisterViewTypes();
 		}
 
-		protected override IItemsViewSource CreateItemsViewSource()
+		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
-			var itemsSource = ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
+			var itemsSource = Items.ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
 			return itemsSource;
@@ -309,18 +309,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return carouselPosition;
 		}
 
-		void SubscribeCollectionItemsSourceChanged(IItemsViewSource itemsSource)
+		void SubscribeCollectionItemsSourceChanged(Items.IItemsViewSource itemsSource)
 		{
-			if (itemsSource is ObservableItemsSource newItemsSource)
+			if (itemsSource is Items.ObservableItemsSource newItemsSource)
 			{
 				newItemsSource.CollectionViewUpdating += CollectionViewUpdating;
 				newItemsSource.CollectionViewUpdated += CollectionViewUpdated;
 			}
 		}
 
-		void UnsubscribeCollectionItemsSourceChanged(IItemsViewSource oldItemsSource)
+		void UnsubscribeCollectionItemsSourceChanged(Items.IItemsViewSource oldItemsSource)
 		{
-			if (oldItemsSource is ObservableItemsSource oldObservableItemsSource)
+			if (oldItemsSource is Items.ObservableItemsSource oldObservableItemsSource)
 			{
 				oldObservableItemsSource.CollectionViewUpdating -= CollectionViewUpdating;
 				oldObservableItemsSource.CollectionViewUpdated -= CollectionViewUpdated;
@@ -565,7 +565,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	class CarouselViewLoopManager : IDisposable
 	{
 		UICollectionViewCompositionalLayout _layout;
-		ILoopItemsViewSource _itemsSource;
+		Items.ILoopItemsViewSource _itemsSource;
 		bool _disposed;
 
 		public CarouselViewLoopManager(UICollectionViewCompositionalLayout layout)
@@ -618,6 +618,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		public void SetItemsSource(ILoopItemsViewSource itemsSource) => _itemsSource = itemsSource;
+		public void SetItemsSource(Items.ILoopItemsViewSource itemsSource) => _itemsSource = itemsSource;
 	}
 }

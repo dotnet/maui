@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 						if (ItemsView.Loop)
 						{
-							var maxIndex = (Controller.ItemsSource as ILoopItemsViewSource).LoopCount - 1;
+							var maxIndex = (Controller.ItemsSource as Items.ILoopItemsViewSource).LoopCount - 1;
 
 							//To mimic looping, we needed to modify the ItemSource and inserted a new item at the beginning and at the end
 							if (pageIndex == maxIndex)

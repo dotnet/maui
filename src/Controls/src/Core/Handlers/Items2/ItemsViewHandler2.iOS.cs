@@ -12,6 +12,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	public abstract partial class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
+		public ItemsViewHandler2() : base(ItemsViewMapper)
+		{
+
+		}
+
+		public ItemsViewHandler2(PropertyMapper mapper = null) : base(mapper ?? ItemsViewMapper)
+		{
+
+		}
+
+		public static PropertyMapper<TItemsView, ItemsViewHandler2<TItemsView>> ItemsViewMapper = new(ViewMapper)
+		{
+			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
+			[Controls.ItemsView.HorizontalScrollBarVisibilityProperty.PropertyName] = MapHorizontalScrollBarVisibility,
+			[Controls.ItemsView.VerticalScrollBarVisibilityProperty.PropertyName] = MapVerticalScrollBarVisibility,
+			[Controls.ItemsView.ItemTemplateProperty.PropertyName] = MapItemTemplate,
+			[Controls.ItemsView.EmptyViewProperty.PropertyName] = MapEmptyView,
+			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
+			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
+			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
+		};
+
 		UICollectionViewLayout _layout;
 
 		protected override void DisconnectHandler(UIView platformView)
@@ -107,8 +130,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
+				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, UICollectionViewScrollDirection.Vertical);
+
 				Controller.CollectionView.ScrollToItem(indexPath,
-					args.ScrollToPosition.ToCollectionViewScrollPosition( UICollectionViewScrollDirection.Vertical /* TODO: Fix _layout.ScrollDirection */), args.IsAnimated);
+					position, args.IsAnimated);
 			}
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
