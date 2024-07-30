@@ -38,10 +38,11 @@
     "sourceName": "NewContent1",
     "defaultName": "NewContent1",
     "symbols": {
-        "namespace": {
-            "description": "Namespace for the generated code.",
-            "replaces": "MauiApp1",
-            "type": "parameter"
+        "DefaultNamespace": {
+          "type": "bind",
+          "binding": "msbuild:RootNamespace",
+          "replaces": "MauiApp1",
+          "defaultValue": "MauiApp1"
         },
         "HostIdentifier": {
             "type": "bind",
