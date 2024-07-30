@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reflection;
-using System.Security.Cryptography;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
