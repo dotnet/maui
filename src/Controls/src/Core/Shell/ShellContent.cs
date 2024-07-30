@@ -255,9 +255,7 @@ namespace Microsoft.Maui.Controls
 			_contentCache = null;
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			base.OnPropertyChanged(propertyName);
 
