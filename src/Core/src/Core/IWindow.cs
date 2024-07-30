@@ -12,7 +12,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the current Page displayed in the Window.
 		/// </summary>
-		IView Content { get; }
+		IView? Content { get; }
 
 		/// <summary>
 		/// Gets the current visual diagnostics overlay for the Window.

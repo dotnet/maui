@@ -235,14 +235,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private protected override void UpdateHandlerValue(string property)
+		private protected override void UpdateHandlerValue(string property, bool valueChanged)
 		{
-			if (_batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
+			if (valueChanged && _batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
 			{
 				return;
 			}
 
-			base.UpdateHandlerValue(property);
+			base.UpdateHandlerValue(property, valueChanged);
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls
 			set => throw new InvalidOperationException("A window cannot set a window.");
 		}
 
-		IView IWindow.Content =>
+		IView? IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		Application? Application => Parent as Application;

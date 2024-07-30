@@ -117,6 +117,10 @@ static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
+*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
+Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+*REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
+static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
