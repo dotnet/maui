@@ -17,6 +17,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+
 #if COMPATIBILITY_ENABLED
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 #endif
@@ -39,6 +40,8 @@ namespace Maui.Controls.Sample
 	{
 		static bool UseMauiGraphicsSkia = false;
 
+		static bool UseCollectionView2 = true;
+
 		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
 		readonly static PageType _pageType = PageType.Main;
 
@@ -57,6 +60,17 @@ namespace Maui.Controls.Sample
 #endif
 			appBuilder.UseMauiApp<XamlApp>();
 			var services = appBuilder.Services;
+
+#if IOS || MACCATALYST
+			if (UseCollectionView2)
+			{
+				appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+				});
+			}
+#endif
 
 			if (UseMauiGraphicsSkia)
 			{
