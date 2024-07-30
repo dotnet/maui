@@ -19,6 +19,7 @@ using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WRect = Windows.Foundation.Rect;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
+using System.Collections;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -656,10 +657,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public UIElement GetElement(ElementFactoryGetArgs args)
 		{
+			// NOTE: 1.6: replace w/ RecyclePool
 			if (args.Data is ItemTemplateContext templateContext)
 			{
-				Microsoft.Maui.Controls.DataTemplate template = _view.ItemTemplate;
-				if (_view.ItemTemplate is Microsoft.Maui.Controls.DataTemplateSelector selector)
+				Microsoft.Maui.Controls.DataTemplate template = templateContext.FormsDataTemplate;
+				if (template is Microsoft.Maui.Controls.DataTemplateSelector selector)
 				{
 					template = selector.SelectTemplate(templateContext.Item, _view);
 				}
@@ -693,7 +695,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				container ??= new ItemContainer()
 				{
-					Child = wrapper
+					Child = wrapper,
+					IsEnabled = !templateContext.IsHeader
+					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 				return container;
 
