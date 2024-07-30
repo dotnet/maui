@@ -30,8 +30,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// On iOS/MacCatalyst 18 and higher the 0.0.0.0 address does not work, so we use localhost instead.
 				// This preserves behavior on older versions of those systems, while defaulting to new behavior on
 				// the new system.
-				if (System.OperatingSystem.IsIOSVersionAtLeast(18) ||
-					System.OperatingSystem.IsMacCatalystVersionAtLeast(18))
+
+				// Note that pre-release versions of iOS/MacCatalyst have the expected Major/Minor values,
+				// but the Build, MajorRevision, MinorRevision, and Revision values are all -1, so we need
+				// to pass in int.MinValue for those values.
+
+				if (System.OperatingSystem.IsIOSVersionAtLeast(major: 18, minor: int.MinValue, build: int.MinValue) ||
+					System.OperatingSystem.IsMacCatalystVersionAtLeast(major: 18, minor: int.MinValue, build: int.MinValue))
 				{
 					return "localhost";
 				}
