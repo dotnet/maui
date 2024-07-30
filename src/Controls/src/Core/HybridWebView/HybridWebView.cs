@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 
@@ -90,11 +91,10 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <typeparam name="TReturnType">The type of the return value to deserialize from JSON.</typeparam>
 		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="jsonTypeInfo">Metadata about deserializing the type <typeparamref name="TReturnType"/> of the return value.</param>
 		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
 		/// <returns>An object of type <typeparamref name="TReturnType"/> containing the return value of the called method.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = TrimmerJustification)]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = TrimmerJustification)]
-		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(string methodName, params object[] paramValues)
+		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(string methodName, JsonTypeInfo<TReturnType?> jsonTypeInfo, params object[] paramValues)
 		{
 #if !WINDOWS && !ANDROID && !IOS && !MACCATALYST
 			await Task.Delay(0);
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 			{
 				return default;
 			}
-			return System.Text.Json.JsonSerializer.Deserialize<TReturnType>(stringResult);
+			return System.Text.Json.JsonSerializer.Deserialize<TReturnType?>(stringResult, jsonTypeInfo);
 #endif
 		}
 
