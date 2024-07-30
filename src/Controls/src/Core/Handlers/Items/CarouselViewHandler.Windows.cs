@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
 		LoopableCollectionView _loopableCollectionView;
-		ScrollViewer _scrollViewer;
+		ScrollViewer _scrollViewer = new();
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize; 
@@ -89,17 +89,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 		}
 
-		protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
-		{
-			base.OnScrollViewerFound(scrollViewer);
-
-			_scrollViewer = scrollViewer;
-			_scrollViewer.ViewChanging += OnScrollViewChanging;
-			_scrollViewer.ViewChanged += OnScrollViewChanged;
-			_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
-
-			UpdateScrollBarVisibilityForLoop();
-		}
+		//protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
+		//{
+		//	base.OnScrollViewerFound(scrollViewer);
+		//
+		//	_scrollViewer = scrollViewer;
+		//	_scrollViewer.ViewChanging += OnScrollViewChanging;
+		//	_scrollViewer.ViewChanged += OnScrollViewChanged;
+		//	_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
+		//
+		//	UpdateScrollBarVisibilityForLoop();
+		//}
 
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
 		{
@@ -136,9 +136,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			};
 		}
 
-		protected override ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
+		protected override ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
 		{
-			args = base.ComputeVisibleIndexes(args, orientation, advancing);
+			args = base.ComputeVisibleIndexes(args, advancing);
 
 			if (ItemsView.Loop)
 			{

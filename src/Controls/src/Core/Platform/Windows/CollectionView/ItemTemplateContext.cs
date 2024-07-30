@@ -15,9 +15,10 @@ namespace Microsoft.Maui.Controls.Platform
 		public double ItemWidth { get; }
 		public Thickness ItemSpacing { get; }
 		public bool IsHeader { get; }
+		public bool IsFooter { get; }
 
 		public ItemTemplateContext(DataTemplate formsDataTemplate, object item, BindableObject container,
-			double? height = null, double? width = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null, bool isHeader = false)
+			double? height = null, double? width = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null, bool isHeader = false, bool isFooter = false)
 		{
 			FormsDataTemplate = formsDataTemplate;
 			Item = item;
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 				ItemSpacing = itemSpacing.Value;
 
 			IsHeader = isHeader;
+			IsFooter = isFooter;
 		}
 	}
 }

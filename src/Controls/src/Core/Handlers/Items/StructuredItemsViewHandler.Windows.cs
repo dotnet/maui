@@ -1,14 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using WASDKApp = Microsoft.UI.Xaml.Application;
-using WListView = Microsoft.UI.Xaml.Controls.ListView;
-using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using WSetter = Microsoft.UI.Xaml.Setter;
-using WStyle = Microsoft.UI.Xaml.Style;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -85,14 +78,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			switch (VirtualView.ItemsLayout)
 			{
-				//case GridItemsLayout gridItemsLayout:
-				//	return CreateGridView(gridItemsLayout);
+				case GridItemsLayout gridItemsLayout:
+					return CreateGridView(gridItemsLayout);
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical:
 					return new WItemsView()
 					{
 						Layout = new Microsoft.UI.Xaml.Controls.StackLayout
 						{
-							Orientation = Orientation.Vertical
+							Orientation = Orientation.Vertical,
+							Spacing = listItemsLayout.ItemSpacing
 						}
 					};
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
@@ -100,7 +94,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						Layout = new Microsoft.UI.Xaml.Controls.StackLayout
 						{
-							Orientation = Orientation.Horizontal
+							Orientation = Orientation.Horizontal,
+							Spacing = listItemsLayout.ItemSpacing
 						}
 					};
 			}
@@ -205,121 +200,43 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			//}
 		}
 
-		static ListViewBase CreateGridView(GridItemsLayout gridItemsLayout)
+		static WItemsView CreateGridView(GridItemsLayout gridItemsLayout)
 		{
-			var gridView = new FormsGridView
+			return new WItemsView()
 			{
-				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-					? Orientation.Horizontal
-					: Orientation.Vertical,
-
-				Span = gridItemsLayout.Span,
-				ItemContainerStyle = GetItemContainerStyle(gridItemsLayout)
+				Layout = new UniformGridLayout()
+				{
+					Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Horizontal : Orientation.Vertical,
+					MaximumRowsOrColumns = gridItemsLayout.Span,
+					MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
+					MinRowSpacing = gridItemsLayout.VerticalItemSpacing
+				}
 			};
-
-			if (gridView.Orientation == Orientation.Horizontal)
-			{
-				ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
-				ScrollViewer.SetHorizontalScrollMode(gridView, WScrollMode.Auto);
-			}
-
-			return gridView;
-		}
-
-		static ListViewBase CreateVerticalListView(LinearItemsLayout listItemsLayout)
-		{
-			return new FormsListView()
-			{
-				ItemContainerStyle = GetVerticalItemContainerStyle(listItemsLayout)
-			};
-		}
-
-		static ListViewBase CreateHorizontalListView(LinearItemsLayout listItemsLayout)
-		{
-			var horizontalListView = new FormsListView()
-			{
-				ItemsPanel = (ItemsPanelTemplate)WASDKApp.Current.Resources["HorizontalListItemsPanel"],
-				ItemContainerStyle = GetHorizontalItemContainerStyle(listItemsLayout)
-			};
-			ScrollViewer.SetVerticalScrollBarVisibility(horizontalListView, Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Hidden);
-			ScrollViewer.SetVerticalScrollMode(horizontalListView, WScrollMode.Disabled);
-			ScrollViewer.SetHorizontalScrollMode(horizontalListView, WScrollMode.Auto);
-			ScrollViewer.SetHorizontalScrollBarVisibility(horizontalListView, Microsoft.UI.Xaml.Controls.ScrollBarVisibility.Auto);
-
-			return horizontalListView;
-		}
-
-		static WStyle GetItemContainerStyle(GridItemsLayout layout)
-		{
-			var h = layout?.HorizontalItemSpacing ?? 0;
-			var v = layout?.VerticalItemSpacing ?? 0;
-			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
-
-			var style = new WStyle(typeof(GridViewItem));
-
-			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
-			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
-			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
-
-			return style;
-		}
-
-		static WStyle GetVerticalItemContainerStyle(LinearItemsLayout layout)
-		{
-			var v = layout?.ItemSpacing ?? 0;
-			var margin = WinUIHelpers.CreateThickness(0, v, 0, v);
-
-			var style = new WStyle(typeof(ListViewItem));
-
-			style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
-			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
-			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
-			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
-
-			return style;
-		}
-
-		static WStyle GetHorizontalItemContainerStyle(LinearItemsLayout layout)
-		{
-			var h = layout?.ItemSpacing ?? 0;
-			var padding = WinUIHelpers.CreateThickness(h, 0, h, 0);
-
-			var style = new WStyle(typeof(ListViewItem));
-
-			style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
-			style.Setters.Add(new WSetter(Control.PaddingProperty, padding));
-			style.Setters.Add(new WSetter(Control.VerticalContentAlignmentProperty, VerticalAlignment.Stretch));
-
-			return style;
 		}
 
 		void UpdateItemsLayoutSpan()
 		{
-			//if (ListViewBase is FormsGridView formsGridView)
-			//{
-			//	formsGridView.Span = ((GridItemsLayout)Layout).Span;
-			//}
+			if (ListViewBase.Layout is UniformGridLayout listViewLayout &&
+				Layout is GridItemsLayout gridItemsLayout)
+			{
+				listViewLayout.MaximumRowsOrColumns = gridItemsLayout.Span;
+			}
 		}
 
 		void UpdateItemsLayoutItemSpacing()
 		{
-			//if (ListViewBase is FormsGridView formsGridView && Layout is GridItemsLayout gridLayout)
-			//{
-			//	formsGridView.ItemContainerStyle = GetItemContainerStyle(gridLayout);
-			//}
-			//
-			//if (Layout is LinearItemsLayout linearItemsLayout)
-			//{
-			//	switch (ListViewBase)
-			//	{
-			//		case FormsListView formsListView:
-			//			formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
-			//			break;
-			//		case WListView listView:
-			//			listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
-			//			break;
-			//	}
-			//}
+			if (ListViewBase.Layout is UniformGridLayout listViewLayout &&
+				Layout is GridItemsLayout gridItemsLayout)
+			{
+				listViewLayout.MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing;
+				listViewLayout.MinRowSpacing = gridItemsLayout.VerticalItemSpacing;
+			}
+			else if (ListViewBase.Layout is Microsoft.UI.Xaml.Controls.StackLayout stackLayout &&
+				Layout is LinearItemsLayout linearItemsLayout)
+			{
+				stackLayout.Spacing = linearItemsLayout.ItemSpacing;
+			}
 		}
 	}
 }

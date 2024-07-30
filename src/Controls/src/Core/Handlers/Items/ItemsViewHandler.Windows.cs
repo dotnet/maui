@@ -1,14 +1,9 @@
 ﻿#nullable disable
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -16,17 +11,14 @@ using Microsoft.UI.Xaml.Data;
 using WASDKApp = Microsoft.UI.Xaml.Application;
 using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
-using WRect = Windows.Foundation.Rect;
-using WVisibility = Microsoft.UI.Xaml.Visibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
-using System.Collections;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, WItemsView> where TItemsView : ItemsView
 	{
 		protected CollectionViewSource CollectionViewSource;
-		ScrollViewer _scrollViewer;
 		FrameworkElement _emptyView;
 		WASDKScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		WASDKScrollBarVisibility? _defaultVerticalScrollVisibility;
@@ -353,11 +345,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void FindScrollViewer(WItemsView listView)
 		{
-			var scrollViewer = listView.GetFirstDescendant<ScrollViewer>();
-
-			if (scrollViewer != null)
+			if (ListViewBase.ScrollView != null)
 			{
-				OnScrollViewerFound(scrollViewer);
+				OnScrollViewerFound();
 				return;
 			}
 
@@ -420,25 +410,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
+		protected virtual void OnScrollViewerFound()
 		{
-			if (_scrollViewer == scrollViewer)
+			if (ListViewBase.ScrollView != null)
 			{
-				return;
+				ListViewBase.ScrollView.ViewChanged -= ScrollViewChanged;
 			}
 
-			if (_scrollViewer != null)
-			{
-				_scrollViewer.ViewChanged -= ScrollViewChanged;
-			}
-
-			_scrollViewer = scrollViewer;
-			_scrollViewer.ViewChanged += ScrollViewChanged;
+			ListViewBase.ScrollView.ViewChanged += ScrollViewChanged;
 		}
 
-		void ScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+		void ScrollViewChanged(UI.Xaml.Controls.ScrollView sender, object args)
 		{
-			HandleScroll(_scrollViewer);
+			HandleScroll(ListViewBase.ScrollView.ScrollPresenter);
 		}
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
@@ -470,7 +454,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return platformView as FrameworkElement;
 		}
 
-		internal void HandleScroll(ScrollViewer scrollViewer)
+		internal void HandleScroll(ScrollPresenter scrollViewer)
 		{
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
@@ -483,23 +467,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_previousHorizontalOffset = scrollViewer.HorizontalOffset;
 			_previousVerticalOffset = scrollViewer.VerticalOffset;
 
-			var layoutOrientaton = ItemsLayoutOrientation.Vertical;
 			bool advancing = true;
 			switch (Layout)
 			{
 				case LinearItemsLayout linearItemsLayout:
-					layoutOrientaton = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
 					advancing = itemsViewScrolledEventArgs.HorizontalDelta > 0;
 					break;
 				case GridItemsLayout gridItemsLayout:
-					layoutOrientaton = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal ? ItemsLayoutOrientation.Horizontal : ItemsLayoutOrientation.Vertical;
 					advancing = itemsViewScrolledEventArgs.VerticalDelta > 0;
 					break;
 				default:
 					break;
 			}
 
-			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, layoutOrientaton, advancing);
+			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, advancing);
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
 
@@ -511,9 +492,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
+		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
 		{
-			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(orientation, advancing);
+			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(advancing);
 
 			args.FirstVisibleItemIndex = firstVisibleItemIndex;
 			args.CenterItemIndex = centerItemIndex;
@@ -522,37 +503,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return args;
 		}
 
-		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(ItemsLayoutOrientation itemsLayoutOrientation, bool advancing)
+		(int firstVisibleItemIndex, int lastVisibleItemIndex, int centerItemIndex) GetVisibleIndexes(bool advancing)
 		{
 			int firstVisibleItemIndex = -1;
 			int lastVisibleItemIndex = -1;
 
-			//if (ListViewBase.ItemsPanelRoot is ItemsStackPanel itemsPanel)
-			//{
-			//	firstVisibleItemIndex = itemsPanel.FirstVisibleIndex;
-			//	lastVisibleItemIndex = itemsPanel.LastVisibleIndex;
-			//}
-			//else
-			{
-				var presenters = ListViewBase.GetChildren<ListViewItemPresenter>();
-
-				if (presenters != null && _scrollViewer != null)
-				{
-					int count = 0;
-					foreach (ListViewItemPresenter presenter in presenters)
-					{
-						if (IsElementVisibleInContainer(presenter, _scrollViewer, itemsLayoutOrientation))
-						{
-							if (firstVisibleItemIndex == -1)
-								firstVisibleItemIndex = count;
-
-							lastVisibleItemIndex = count;
-						}
-
-						count++;
-					}
-				}
-			}
+			ListViewBase.TryGetItemIndex(0, 0, out firstVisibleItemIndex);
+			ListViewBase.TryGetItemIndex(1, 1, out lastVisibleItemIndex);
 
 			double center = (lastVisibleItemIndex + firstVisibleItemIndex) / 2.0;
 			int centerItemIndex = advancing ? (int)Math.Ceiling(center) : (int)Math.Floor(center);
@@ -560,87 +517,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex);
 		}
 
-		bool IsElementVisibleInContainer(FrameworkElement element, FrameworkElement container, ItemsLayoutOrientation itemsLayoutOrientation)
+		void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			if (element == null || container == null)
-				return false;
-
-			if (element.Visibility != WVisibility.Visible)
-				return false;
-
-			var elementBounds = element.TransformToVisual(container).TransformBounds(new WRect(0, 0, element.ActualWidth, element.ActualHeight));
-			var containerBounds = new WRect(0, 0, container.ActualWidth, container.ActualHeight);
-
-			switch (itemsLayoutOrientation)
+			var index = args.Index;
+			if (args.Mode == ScrollToMode.Element)
 			{
-				case ItemsLayoutOrientation.Vertical:
-					return elementBounds.Top < containerBounds.Bottom && elementBounds.Bottom > containerBounds.Top;
-
-				default:
-					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
-		}
-
-		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
-		{
-			await ScrollTo(args);
-		}
-
-		protected virtual async Task ScrollTo(ScrollToRequestEventArgs args)
-		{
-			if (!(Control is ListViewBase list))
-			{
-				return;
-			}
-
-			var item = FindBoundItem(args);
-
-			if (item == null)
-			{
-				// Item wasn't found in the list, so there's nothing to scroll to
-				return;
-			}
-
-			if (args.IsAnimated)
-			{
-				await ScrollHelpers.AnimateToItemAsync(list, item, args.ScrollToPosition);
-			}
-			else
-			{
-				await ScrollHelpers.JumpToItemAsync(list, item, args.ScrollToPosition);
-			}
-		}
-
-		object FindBoundItem(ScrollToRequestEventArgs args)
-		{
-			if (args.Mode == ScrollToMode.Position)
-			{
-				if (args.Index >= ItemCount)
+				for (int i = 0; i < ItemCount; i++)
 				{
-					return null;
-				}
-
-				return GetItem(args.Index);
-			}
-
-			if (Element.ItemTemplate == null)
-			{
-				return args.Item;
-			}
-
-			for (int n = 0; n < ItemCount; n++)
-			{
-				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
-				{
-					if (pair.Item == args.Item)
+					if (CollectionViewSource.View[i] is ItemTemplateContext pair)
 					{
-						return CollectionViewSource.View[n];
+						if (pair.Item == args.Item)
+						{
+							index = i;
+							break;
+						}
 					}
 				}
 			}
 
-			return null;
+			if (index >= 0)
+			{
+				float offset = 0.0f;
+				switch (args.ScrollToPosition)
+				{
+					case ScrollToPosition.Start:
+						offset = 0.0f;
+						break;
+					case ScrollToPosition.Center:
+						offset = 0.5f;
+						break;
+					case ScrollToPosition.End:
+						offset = 1.0f;
+						break;
+				}
+
+				this.ListViewBase.StartBringItemIntoView(index, new BringIntoViewOptions()
+				{
+					AnimationDesired = args.IsAnimated,
+					VerticalAlignmentRatio = offset,
+					HorizontalAlignmentRatio = offset
+				});
+			}
 		}
+
 
 		protected virtual int ItemCount => CollectionViewSource.View.Count;
 
@@ -696,7 +615,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
-					IsEnabled = !templateContext.IsHeader
+					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 				return container;
