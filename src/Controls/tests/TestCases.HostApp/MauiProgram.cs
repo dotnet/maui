@@ -25,6 +25,8 @@ namespace Maui.Controls.Sample
 				})
 				.Issue21109AddMappers();
 
+			appBuilder.Services.AddTransient<TransientPage>();
+			appBuilder.Services.AddScoped<ScopedPage>();
 			return appBuilder.Build();
 		}
 	}

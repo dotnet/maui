@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Devices
 
 		void Click()
 		{
+#pragma warning disable CA1422 // obsolete in MacCatalyst 13, iOS 13
 			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
+#pragma warning restore CA1422
 			impact.Prepare();
 			impact.ImpactOccurred();
 			impact.Dispose();
@@ -29,7 +31,9 @@ namespace Microsoft.Maui.Devices
 
 		void LongPress()
 		{
+#pragma warning disable CA1422 // obsolete in MacCatalyst 13, iOS 13
 			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
+#pragma warning restore CA1422
 			impact.Prepare();
 			impact.ImpactOccurred();
 			impact.Dispose();
