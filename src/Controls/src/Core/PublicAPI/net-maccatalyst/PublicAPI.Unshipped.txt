@@ -1,5 +1,36 @@
 #nullable enable
+abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.IsHorizontal.get -> bool
+const Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.EmptyTag = 333 -> int
+const Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.FooterTag = 222 -> int
+const Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.HeaderTag = 111 -> int
 Microsoft.Maui.Controls.HandlerProperties
+Microsoft.Maui.Controls.Handlers.Items2.CarouselTemplatedCell2
+Microsoft.Maui.Controls.Handlers.Items2.CarouselTemplatedCell2.CarouselTemplatedCell2(CoreGraphics.CGRect frame) -> void
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2
+Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CarouselViewHandler2() -> void
+Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2
+Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.CollectionViewHandler2() -> void
+Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2
+Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.DefaultCell2(CoreGraphics.CGRect frame) -> void
+Microsoft.Maui.Controls.Handlers.Items2.ItemsViewCell2
+Microsoft.Maui.Controls.Handlers.Items2.ItemsViewCell2.ItemsViewCell2(CoreGraphics.CGRect frame) -> void
+Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ScrollDirection.get -> UIKit.UICollectionViewScrollDirection
+Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.PreviousHorizontalOffset -> float
+Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.PreviousVerticalOffset -> float
+Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsViewHandler2() -> void
+Microsoft.Maui.Controls.Handlers.Items2.LayoutAttributesChangedEventArgs2
+Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.UpdateCanReorderItems() -> void
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ConstrainedDimension -> System.Runtime.InteropServices.NFloat
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ConstrainedSize -> CoreGraphics.CGSize
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ContentSizeChanged -> System.EventHandler<System.EventArgs>
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.LayoutAttributesChanged -> System.EventHandler<Microsoft.Maui.Controls.Handlers.Items2.LayoutAttributesChangedEventArgs2>
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.OnContentSizeChanged() -> void
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ScrollDirection.get -> UIKit.UICollectionViewScrollDirection
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ScrollDirection.set -> void
+Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.TemplatedCell2(CoreGraphics.CGRect frame) -> void
 Microsoft.Maui.Controls.HybridWebView
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void
@@ -54,6 +85,31 @@ Microsoft.Maui.Controls.Window.TitleBar.set -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.IsHorizontal.get -> bool
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.RegisterViewTypes() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.UpdateItemsSource() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.UpdateVisibility() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.ViewDidLayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.ViewDidLoad() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.ViewWillLayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.GetVisibleItemsIndex() -> (bool VisibleItems, int First, int Center, int Last)
+override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.CreateController(Microsoft.Maui.Controls.ReorderableItemsView! itemsView, UIKit.UICollectionViewLayout! layout) -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<Microsoft.Maui.Controls.ReorderableItemsView!>!
+override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.ScrollToRequested(object! sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs! args) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.SelectLayout() -> UIKit.UICollectionViewLayout!
+override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.RegisterViewTypes() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.UpdateItemsSource() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.LoadView() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLoad() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewWillLayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.DetermineEmptyViewFrame() -> CoreGraphics.CGRect
+override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.Dispose(bool disposing) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.IsHorizontal.get -> bool
+override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.ViewWillLayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.PrepareForReuse() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Selected.get -> bool
+override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Selected.set -> void
 override Microsoft.Maui.Controls.Label.ArrangeOverride(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersStatusBarHidden() -> bool
@@ -138,6 +194,16 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpa
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapCanReorderItems(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.ReorderableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapFooterTemplate(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.StructuredItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapHeaderTemplate(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.StructuredItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapIsGrouped(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.GroupableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapItemSizingStrategy(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.StructuredItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapItemsLayout(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.StructuredItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapItemsSource(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapSelectedItem(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapSelectedItems(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
+static Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.MapSelectionMode(Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2! handler, Microsoft.Maui.Controls.SelectableItemsView! itemsView) -> void
 static readonly Microsoft.Maui.Controls.HandlerProperties.DisconnectPolicyProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
 Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
@@ -211,15 +277,110 @@ static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region
 static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.DetermineEmptyViewFrame() -> CoreGraphics.CGRect
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.RegisterViewTypes() -> void
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateItemsSource() -> void
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateVisibility() -> void
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndex() -> (bool VisibleItems, int First, int Center, int Last)
+virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateLayout() -> void
+~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreateController(TItemsView newElement, UIKit.UICollectionViewLayout layout) -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
+~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.SelectLayout() -> UIKit.UICollectionViewLayout
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
+~Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CarouselViewController2(Microsoft.Maui.Controls.CarouselView itemsView, UIKit.UICollectionViewLayout layout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.CarouselViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2 ItemsViewController2) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Constraint.get -> UIKit.NSLayoutConstraint
+~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Constraint.set -> void
+~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Label.get -> UIKit.UILabel
+~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.GroupableItemsViewController2(TItemsView groupableItemsView, UIKit.UICollectionViewLayout layout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewDelegator2<TItemsView, TViewController>
+~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewDelegator2<TItemsView, TViewController>.GroupableItemsViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewCell2.InitializeContentConstraints(UIKit.UIView platformView) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.Delegator.get -> UIKit.UICollectionViewDelegateFlowLayout
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.Delegator.set -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetItemAtIndex(Foundation.NSIndexPath index) -> object
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ItemsSource.get -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ItemsSource.set -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ItemsView.get -> TItemsView
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ItemsViewController2(TItemsView itemsView, UIKit.UICollectionViewLayout layout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ItemsViewLayout.get -> UIKit.UICollectionViewLayout
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ItemsViewLayout.set -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateLayout(UIKit.UICollectionViewLayout newLayout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.ItemsViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.ItemsViewLayout.get -> UIKit.UICollectionViewLayout
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.ViewController.get -> TViewController
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Controller.get -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.IsIndexPathValid(Foundation.NSIndexPath indexPath) -> bool
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsView.get -> TItemsView
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsViewHandler2(Microsoft.Maui.PropertyMapper mapper = null) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.LayoutAttributesChangedEventArgs2.LayoutAttributesChangedEventArgs2(UIKit.UICollectionViewLayoutAttributes newAttributes) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.LayoutAttributesChangedEventArgs2.NewAttributes.get -> UIKit.UICollectionViewLayoutAttributes
+~Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.ReorderableItemsViewController2(TItemsView reorderableItemsView, UIKit.UICollectionViewLayout layout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewDelegator2<TItemsView, TViewController>
+~Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewDelegator2<TItemsView, TViewController>.ReorderableItemsViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewController2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewController2<TItemsView>.SelectableItemsViewController2(TItemsView selectableItemsView, UIKit.UICollectionViewLayout layout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>
+~Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>.SelectableItemsViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>
+~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.StructuredItemsViewController2(TItemsView structuredItemsView, UIKit.UICollectionViewLayout layout) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Bind(Microsoft.Maui.Controls.DataTemplate template, object bindingContext, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.CurrentTemplate.get -> Microsoft.Maui.Controls.DataTemplate
+~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.OnLayoutAttributesChanged(UIKit.UICollectionViewLayoutAttributes newAttributes) -> void
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DraggingEnded(UIKit.UIScrollView scrollView, bool willDecelerate) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DraggingStarted(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.GetCell(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionViewCell
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.GetItemsCount(UIKit.UICollectionView collectionView, nint section) -> nint
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.DecelerationEnded(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.DraggingEnded(UIKit.UIScrollView scrollView, bool willDecelerate) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.DraggingStarted(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.ScrollAnimationEnded(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.Scrolled(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CreateController(Microsoft.Maui.Controls.CarouselView newElement, UIKit.UICollectionViewLayout layout) -> Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.SelectLayout() -> UIKit.UICollectionViewLayout
+~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
+~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
+~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.GetViewForSupplementaryElement(UIKit.UICollectionView collectionView, Foundation.NSString elementKind, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionReusableView
+~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewDelegator2<TItemsView, TViewController>.ScrollAnimationEnded(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetCell(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionViewCell
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetItemsCount(UIKit.UICollectionView collectionView, nint section) -> nint
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.NumberOfSections(UIKit.UICollectionView collectionView) -> nint
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.CellDisplayingEnded(UIKit.UICollectionView collectionView, UIKit.UICollectionViewCell cell, Foundation.NSIndexPath indexPath) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetInsetForSection(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, nint section) -> UIKit.UIEdgeInsets
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetMinimumInteritemSpacingForSection(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, nint section) -> System.Runtime.InteropServices.NFloat
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetMinimumLineSpacingForSection(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, nint section) -> System.Runtime.InteropServices.NFloat
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.Scrolled(UIKit.UIScrollView scrollView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ConnectHandler(UIKit.UIView platformView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreatePlatformView() -> UIKit.UIView
+~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.DisconnectHandler(UIKit.UIView platformView) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.CanMoveItem(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> bool
+~override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
+~override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
+~override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.MoveItem(UIKit.UICollectionView collectionView, Foundation.NSIndexPath sourceIndexPath, Foundation.NSIndexPath destinationIndexPath) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewDelegator2<TItemsView, TViewController>.GetTargetIndexPathForMove(UIKit.UICollectionView collectionView, Foundation.NSIndexPath originalIndexPath, Foundation.NSIndexPath proposedIndexPath) -> Foundation.NSIndexPath
+~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewController2<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
+~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewController2<TItemsView>.ItemDeselected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewController2<TItemsView>.ItemSelected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>.ItemDeselected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>.ItemSelected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.PreferredLayoutAttributesFittingAttributes(UIKit.UICollectionViewLayoutAttributes layoutAttributes) -> UIKit.UICollectionViewLayoutAttributes
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
@@ -236,6 +397,23 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselTemplatedCell2.ReuseId -> Foundation.NSString
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsSwipeEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapLoop(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapPeekAreaInsets(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapPosition(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsViewMapper -> Microsoft.Maui.PropertyMapper<TItemsView, Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>>
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapEmptyView(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapEmptyViewTemplate(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapFlowDirection(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapHorizontalScrollBarVisibility(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapIsVisible(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapItemsSource(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapItemsUpdatingScrollMode(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapItemTemplate(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapVerticalScrollBarVisibility(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -376,4 +554,10 @@ Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.CreateEmbeddedWindowContext(this Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> Microsoft.Maui.IMauiContext!
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> UIKit.UIView!
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> UIKit.UIView!
+~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
+~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
+~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
+~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetIndexForItem(object item) -> Foundation.NSIndexPath
+~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndexPath() -> (bool VisibleItems, Foundation.NSIndexPath First, Foundation.NSIndexPath Center, Foundation.NSIndexPath Last)
+~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
 *REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
