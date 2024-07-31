@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -25,7 +24,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Empty(abs.Children);
 
-			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(Size.Zero, sizeReq.Request);
 			Assert.Equal(Size.Zero, sizeReq.Minimum);
 		}
@@ -136,7 +135,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(10, 20, 30, 40));
 
-			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(new Size(40, 60), sizeReq.Request);
 			Assert.Equal(new Size(40, 60), sizeReq.Minimum);
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(0.5, 0.5, 30, 40), AbsoluteLayoutFlags.PositionProportional);
 
-			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(new Size(30, 40), sizeReq.Request);
 			Assert.Equal(new Size(30, 40), sizeReq.Minimum);
@@ -174,7 +173,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(0.5, 0.5, 0.5, 0.5), AbsoluteLayoutFlags.All);
 
-			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(new Size(200, 40), sizeReq.Request);
 			Assert.Equal(new Size(0, 0), sizeReq.Minimum);
@@ -193,7 +192,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ChildSizeReq == 100x20
 			abs.Children.Add(child, new Rect(10, 20, 0.5, 0.5), AbsoluteLayoutFlags.SizeProportional);
 
-			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeReq = abs.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(new Size(210, 60), sizeReq.Request);
 			Assert.Equal(new Size(10, 20), sizeReq.Minimum);

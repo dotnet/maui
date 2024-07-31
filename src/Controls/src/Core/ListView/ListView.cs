@@ -415,6 +415,7 @@ namespace Microsoft.Maui.Controls
 			return textCell;
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var minimumSize = new Size(40, 40);

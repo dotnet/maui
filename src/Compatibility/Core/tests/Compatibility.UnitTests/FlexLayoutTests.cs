@@ -259,11 +259,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			layout.Children.Add(label2);
 			layout.Layout(new Rect(0, 0, 320, 50));
 
-			var label2Size = label2.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var label2Size = label2.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(10, label2Size.Request.Height);
 			Assert.Equal(10, label2Size.Request.Width);
 
-			var label1Size = label1.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var label1Size = label1.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			//	var layoutSize = layout.Measure(-1, -1);
 		}
 
@@ -331,15 +331,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			//measure sith +inf as main-axis
-			var measure = Layout.Measure(double.PositiveInfinity, 40);
+			var measure = Layout.Measure(double.PositiveInfinity, 40, MeasureFlags.None);
 			Assert.Equal(measure.Request, new Size(100, 40));
 
 			//measure sith +inf as cross-axis
-			measure = Layout.Measure(200, double.PositiveInfinity);
+			measure = Layout.Measure(200, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(measure.Request, new Size(200, 20));
 
 			//measure with +inf as both axis
-			measure = Layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			measure = Layout.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(measure.Request, new Size(100, 20));
 
 		}
@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var measure = layout.Measure(300, double.PositiveInfinity);
+			var measure = layout.Measure(300, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(measure.Request, new Size(300, 52));
 			layout.Layout(new Rect(0, 0, 300, 300));
 			Assert.Equal(label0.Bounds, new Rect(6, 6, 138, 20));
