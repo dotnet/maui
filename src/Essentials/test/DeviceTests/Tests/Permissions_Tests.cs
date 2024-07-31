@@ -79,7 +79,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact
+#if !__ANDROID__
+		(Skip = "Test only applies to Android")
+#endif
+		]
 		public async Task StorageAndroid13AlwaysGranted()
 		{
 			if (DeviceInfo.Platform == DevicePlatform.Android && OperatingSystem.IsAndroidVersionAtLeast(33))
