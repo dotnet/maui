@@ -72,7 +72,9 @@ namespace Microsoft.Maui.Authentication
 
 			if (OperatingSystem.IsIOSVersionAtLeast(12))
 			{
+#pragma warning disable CA1422 // obsolete in MacCatalyst 13, iOS 12
 				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+#pragma warning restore CA1422
 
 				if (OperatingSystem.IsIOSVersionAtLeast(13))
 				{
