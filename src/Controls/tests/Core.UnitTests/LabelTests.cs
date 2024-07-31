@@ -86,13 +86,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				return new SizeRequest(new Size(l.FontSize, l.FontSize));
 			});
 
-			Assert.Equal(label.FontSize, label.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
+			Assert.Equal(label.FontSize, label.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request.Width);
 
 			bool fired = false;
 
 			label.MeasureInvalidated += (sender, args) =>
 			{
-				Assert.Equal(25, label.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
+				Assert.Equal(25, label.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request.Width);
 				fired = true;
 			};
 

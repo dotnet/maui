@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.OnChildRemoved(child, oldLogicalIndex);
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var bestFitSize = new Size();

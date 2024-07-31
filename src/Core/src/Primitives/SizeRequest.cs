@@ -9,6 +9,7 @@ namespace Microsoft.Maui
 	/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="Type[@FullName='Microsoft.Maui.SizeRequest']/Docs/*" />
 	[DebuggerDisplay("Request={Request.Width}x{Request.Height}, Minimum={Minimum.Width}x{Minimum.Height}")]
 	[TypeConverter(typeof(SizeRequestTypeConverter))]
+	[Obsolete("Use Microsoft.Maui.Size instead.")]
 	public struct SizeRequest : IEquatable<SizeRequest>
 	{
 		/// <include file="../../docs/Microsoft.Maui/SizeRequest.xml" path="//Member[@MemberName='Request']/Docs/*" />

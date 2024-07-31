@@ -190,12 +190,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
 
+#pragma warning disable CS0672 // Member overrides obsolete member
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			SizeRequest size = base.Measure(widthConstraint - Padding.HorizontalThickness, heightConstraint - Padding.VerticalThickness, flags);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			return new SizeRequest(new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness),
 				new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
+#pragma warning restore CS0672 // Member overrides obsolete member
 
 		/// <summary>
 		/// Positions a child element into a bounding region while respecting the child elements <see cref="View.HorizontalOptions" /> and <see cref="View.VerticalOptions" />.
@@ -231,7 +239,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			LayoutOptions horizontalOptions = view.HorizontalOptions;
 			if (horizontalOptions.Alignment != LayoutAlignment.Fill)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				SizeRequest request = child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
+#pragma warning restore CS0618 // Type or member is obsolete
 				double diff = Math.Max(0, region.Width - request.Request.Width);
 				double horizontalAlign = horizontalOptions.Alignment.ToDouble();
 				if (isRightToLeft)
@@ -246,7 +256,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			LayoutOptions verticalOptions = view.VerticalOptions;
 			if (verticalOptions.Alignment != LayoutAlignment.Fill)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				SizeRequest request = child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
+#pragma warning restore CS0618 // Type or member is obsolete
 				double diff = Math.Max(0, region.Height - request.Request.Height);
 				region.Y += (int)(diff * verticalOptions.Alignment.ToDouble());
 				region.Height -= diff;
@@ -350,7 +362,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var sansMargins = OnMeasure(widthConstraint, heightConstraint).Request;
+#pragma warning restore CS0618 // Type or member is obsolete
 			return new Size(sansMargins.Width + Margin.HorizontalThickness, sansMargins.Height + Margin.VerticalThickness);
 		}
 
@@ -439,7 +453,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static void LayoutChildIntoBoundingRegion(View child, Rect region, SizeRequest childSizeRequest)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			bool isRightToLeft = false;
 			if (child.Parent is IFlowDirectionController parent && (isRightToLeft = parent.ApplyEffectiveFlowDirectionToChildContainer && parent.EffectiveFlowDirection.IsRightToLeft()))
@@ -461,7 +477,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				LayoutOptions horizontalOptions = child.HorizontalOptions;
 				if (horizontalOptions.Alignment != LayoutAlignment.Fill)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					SizeRequest request = canUseAlreadyDoneRequest ? childSizeRequest : child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
+#pragma warning restore CS0618 // Type or member is obsolete
 					double diff = Math.Max(0, region.Width - request.Request.Width);
 					double horizontalAlign = horizontalOptions.Alignment.ToDouble();
 					if (isRightToLeft)
@@ -476,7 +494,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 				LayoutOptions verticalOptions = child.VerticalOptions;
 				if (verticalOptions.Alignment != LayoutAlignment.Fill)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					SizeRequest request = canUseAlreadyDoneRequest ? childSizeRequest : child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
+#pragma warning restore CS0618 // Type or member is obsolete
 					double diff = Math.Max(0, region.Height - request.Request.Height);
 					region.Y += (int)(diff * verticalOptions.Alignment.ToDouble());
 					region.Height -= diff;
@@ -674,7 +694,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <inheritdoc cref="ICrossPlatformLayout.CrossPlatformMeasure(double, double)" />
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			return OnMeasure(widthConstraint, heightConstraint).Request;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		/// <inheritdoc cref="ICrossPlatformLayout.CrossPlatformArrange(Rect)" />

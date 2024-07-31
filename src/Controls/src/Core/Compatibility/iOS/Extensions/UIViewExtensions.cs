@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			}
 		}
 
+		[Obsolete("Use IView.Measure or just call SizeThatFits directly on the UIView")]
 		public static SizeRequest GetSizeRequest(this UIView self, double widthConstraint, double heightConstraint,
 			double minimumWidth = -1, double minimumHeight = -1)
 		{
