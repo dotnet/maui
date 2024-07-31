@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Direction = FlexDirection.Column,
 			};
 
-			var sizeRequest = layout.Measure(100, double.PositiveInfinity);
+			var sizeRequest = layout.Measure(100, double.PositiveInfinity, MeasureFlags.None);
 			layout.Layout(new Rect(0, 0, sizeRequest.Request.Width, sizeRequest.Request.Height));
 			Assert.Equal(layout.Bounds, new Rect(0, 0, 100, 30));
 			Assert.Equal(view0.Bounds, new Rect(0, 0, 100, 10));
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var measure = layout.Measure(double.PositiveInfinity, 100);
+			var measure = layout.Measure(double.PositiveInfinity, 100, MeasureFlags.None);
 			layout.Layout(new Rect(0, 0, measure.Request.Width, measure.Request.Height));
 			Assert.Equal(layout.Bounds, new Rect(0, 0, 30, 100));
 			Assert.Equal(view0.Bounds, new Rect(0, 0, 10, 100));

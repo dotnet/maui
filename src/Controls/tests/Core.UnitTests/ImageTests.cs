@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
-			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(100, result.Request.Width);
 			Assert.Equal(20, result.Request.Height);
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
-			var result = image.Measure(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10, MeasureFlags.None);
 
 			Assert.Equal(50, result.Request.Width);
 			Assert.Equal(10, result.Request.Height);
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
-			var result = image.Measure(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10, MeasureFlags.None);
 
 			Assert.Equal(50, result.Request.Width);
 			Assert.Equal(10, result.Request.Height);
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10, MeasureFlags.None);
 
 			Assert.Equal(50, result.Request.Width);
 			Assert.Equal(10, result.Request.Height);
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var image = new Image { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);

@@ -46,7 +46,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0672 // Member overrides obsolete member
 		{
 			if (!InternalChildren.Any())
 				return new SizeRequest(new Size(0, 0));

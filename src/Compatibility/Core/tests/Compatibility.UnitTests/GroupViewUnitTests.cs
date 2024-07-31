@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			foreach (var child in ((IElementController)this).LogicalChildren.Cast<View>())
 			{
 				var result = new Rect(x, y, 0, 0);
-				var request = child.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				var request = child.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 				result.Width = request.Request.Width;
 				result.Height = request.Request.Height;
 

@@ -137,12 +137,6 @@ namespace Microsoft.Maui.Controls
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
 
-		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
-		{
-			var size = (this as IView).Measure(widthConstraint, heightConstraint);
-			return new SizeRequest(size);
-		}
-
 		protected override void InvalidateMeasureOverride()
 		{
 			base.InvalidateMeasureOverride();

@@ -548,6 +548,7 @@ static Microsoft.Maui.Controls.Binding.Create<TSource, TProperty>(System.Func<TS
 *REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
 *REMOVED*static Microsoft.Maui.Controls.FlyoutPage.ControlsFlyoutPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.FlyoutViewHandler!>!
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.ControlsToolbarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Toolbar!, Microsoft.Maui.Handlers.ToolbarHandler!>!
+Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.CreateEmbeddedWindowContext(this Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> Microsoft.Maui.IMauiContext!
@@ -559,3 +560,4 @@ static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetIndexForItem(object item) -> Foundation.NSIndexPath
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndexPath() -> (bool VisibleItems, Foundation.NSIndexPath First, Foundation.NSIndexPath Center, Foundation.NSIndexPath Last)
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
+*REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest

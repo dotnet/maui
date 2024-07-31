@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var r = stack.Measure(100, 100);
+			var r = stack.Measure(100, 100, MeasureFlags.None);
 
 			Assert.Equal(new SizeRequest(new Size(20, 20)), r);
 		}
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request;
 			Assert.Equal(new Size(30, 56), size);
 		}
 
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request;
 			Assert.Equal(new Size(56, 30), size);
 		}
 
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(result.Minimum, new Size(100, 230));
 		}
 
@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(result.Minimum, new Size(230, 100));
 		}
 
@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			stack.Layout(new Rect(0, 0, 100, 100));
 
-			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request;
 			Assert.Equal(new Rect(0, 0, 100, 20), child1.Bounds);
 			Assert.Equal(new Rect(0, 26, 100, 20), child2.Bounds);
 			Assert.Equal(new Size(100, 46), size);
@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.False(child1.IsVisible);
 			Assert.Equal(new Rect(0, 0, 100, 20), child2.Bounds);
-			size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			size = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request;
 			Assert.Equal(new Size(100, 20), size);
 		}
 
@@ -380,7 +380,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				MinimumHeightRequest = 10
 			});
 
-			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var result = stack.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(new Size(10, 10), result.Minimum);
 		}
 

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			scrollView.Content = hLayout;
 
-			var r = scrollView.Measure(100, 100);
+			var r = scrollView.Measure(100, 100, MeasureFlags.None);
 
 			Assert.Equal(10, r.Request.Height);
 		}
