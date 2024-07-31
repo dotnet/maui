@@ -2,7 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
@@ -87,6 +89,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
 				Assert.Equal(PermissionStatus.Granted, status);
+			}
+			else // Android < API 33, we didn't request these, so status denied
+			{
+				var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+				Assert.Equal(PermissionStatus.Denied, status);
+
+				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+				Assert.Equal(PermissionStatus.Denied, status);
 			}
 		}
 	}
