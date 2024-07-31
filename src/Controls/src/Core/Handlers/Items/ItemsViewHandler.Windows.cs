@@ -585,6 +585,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					template = selector.SelectTemplate(templateContext.Item, _view);
 				}
 
+				if (template is null)
+				{
+					template = _view.EmptyViewTemplate;
+				}
+
 				ItemContainer container = null;
 				ElementWrapper wrapper = null;
 				var pool = RecyclePool.GetPoolInstance(template);

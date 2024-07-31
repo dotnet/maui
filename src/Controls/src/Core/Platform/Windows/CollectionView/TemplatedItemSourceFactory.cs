@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 			DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate, BindableObject container, IMauiContext mauiContext = null)
 		{
 			return new GroupedItemTemplateCollection2(itemsSource, itemTemplate, groupHeaderTemplate, groupFooterTemplate, container, mauiContext);
-			//return new GroupedItemTemplateCollection(itemsSource, itemTemplate, groupHeaderTemplate, groupFooterTemplate, container, mauiContext);
 		}
 	}
 }

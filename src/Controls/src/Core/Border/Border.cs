@@ -309,6 +309,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
+			if (propertyName == nameof(WindowProperty.PropertyName))
+			{
+				return;
+			}
+
 			if (propertyName == HeightProperty.PropertyName ||
 				propertyName == StrokeThicknessProperty.PropertyName ||
 				propertyName == StrokeShapeProperty.PropertyName ||

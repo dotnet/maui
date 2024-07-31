@@ -28,16 +28,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (newListViewBase != null)
 			{
-				//newListViewBase.SetBinding(ListViewBase.SelectionModeProperty,
-				//		new Microsoft.UI.Xaml.Data.Binding
-				//		{
-				//			Source = ItemsView,
-				//			Path = new Microsoft.UI.Xaml.PropertyPath("SelectionMode"),
-				//			Converter = new SelectionModeConvert(),
-				//			Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
-				//		});
-				//
-				//newListViewBase.SelectionChanged += PlatformSelectionChanged;
+				newListViewBase.SetBinding(WItemsView.SelectionModeProperty,
+						new Microsoft.UI.Xaml.Data.Binding
+						{
+							Source = ItemsView,
+							Path = new Microsoft.UI.Xaml.PropertyPath("SelectionMode"),
+							Converter = new SelectionModeConvert(),
+							Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
+						});
+				
+				newListViewBase.SelectionChanged += PlatformSelectionChanged;
 			}
 
 			UpdatePlatformSelection();
@@ -49,8 +49,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (oldListViewBase != null)
 			{
-				//oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
-				//oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+				oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
+				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
 			}
 
 			if (ItemsView != null)
@@ -78,6 +78,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignorePlatformSelectionChange = true;
 
 			var itemList = ListViewBase.ItemsSource as ICollectionView;
+			if (itemList is null)
+				return;
+
 			switch (ListViewBase.SelectionMode)
 			{
 				case ItemsViewSelectionMode.None:
@@ -139,7 +142,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdatePlatformSelection();
 		}
 
-		void PlatformSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
+		void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 		{
 			UpdateVirtualSelection();
 		}

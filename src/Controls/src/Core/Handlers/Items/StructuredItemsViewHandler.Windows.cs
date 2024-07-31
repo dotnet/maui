@@ -207,10 +207,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Layout = new UniformGridLayout()
 				{
 					Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-						? Orientation.Horizontal : Orientation.Vertical,
+						? Orientation.Vertical : Orientation.Horizontal,
 					MaximumRowsOrColumns = gridItemsLayout.Span,
 					MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
-					MinRowSpacing = gridItemsLayout.VerticalItemSpacing
+					MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
+					ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+					ItemsJustification = UniformGridLayoutItemsJustification.Start,
 				}
 			};
 		}
