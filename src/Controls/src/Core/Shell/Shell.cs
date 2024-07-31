@@ -1634,7 +1634,17 @@ namespace Microsoft.Maui.Controls
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is ShellItem oldShellItem)
+			{
 				oldShellItem.SendDisappearing();
+
+				foreach(var section in oldShellItem.Items)
+				{
+					foreach(var content in section.Items)
+					{
+						content.EvaluateDisconnect();
+					}
+				}
+			}
 
 			if (newValue == null)
 				return;

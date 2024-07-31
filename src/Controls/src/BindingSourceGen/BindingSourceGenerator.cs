@@ -94,6 +94,11 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
 		}
 
+		if (!lambdaResult.Value.Modifiers.Any(SyntaxKind.StaticKeyword))
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaIsNotStatic(lambdaResult.Value.GetLocation()));
+		}
+
 		var lambdaBodyResult = ExtractLambdaBody(lambdaResult.Value);
 		if (lambdaBodyResult.HasDiagnostics)
 		{
@@ -106,10 +111,22 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
 		}
 
-		var lambdaTypeInfo = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t);
-		if (lambdaTypeInfo.Type == null)
+		var lambdaParams = lambdaSymbolResult.Value.Parameters;
+		if (lambdaParams.Length == 0 || lambdaParams[0].Type is IErrorTypeSymbol)
 		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(lambdaBodyResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+		}
+		var lambdaParamType = lambdaParams[0].Type;
+
+		var lambdaResultType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
+		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
+		}
+
+		if (!BindingGenerationUtilities.IsAccessible(lambdaParamType.DeclaredAccessibility))
+		{
+			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		var pathParser = new PathParser(context, enabledNullable);
@@ -117,18 +134,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		if (pathParseResult.HasDiagnostics)
 		{
 			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
-		}
-
-		var lambdaParamType = lambdaSymbolResult.Value.Parameters[0].Type;
-		if (lambdaParamType is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
-		}
-
-		var lambdaResultType = lambdaTypeInfo.Type;
-		if (lambdaResultType is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
 		var binding = new BindingInvocationDescription(
@@ -157,7 +162,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		};
 
 
-	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t){
+	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	{
 		var argumentList = invocation.ArgumentList.Arguments;
 
 		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;

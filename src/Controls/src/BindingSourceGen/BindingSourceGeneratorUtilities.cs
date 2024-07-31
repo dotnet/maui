@@ -42,4 +42,9 @@ public static class BindingGenerationUtilities
 
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
+
+    internal static bool IsAccessible(Accessibility declaredAccessibility) =>
+        declaredAccessibility == Accessibility.Public
+            || declaredAccessibility == Accessibility.Internal
+            || declaredAccessibility == Accessibility.ProtectedOrInternal;
 }

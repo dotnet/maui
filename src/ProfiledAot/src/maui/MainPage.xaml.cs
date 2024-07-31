@@ -10,7 +10,9 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 
+#pragma warning disable CS0618 // get_MainPage is obsolete
 		if (Application.Current?.MainPage is not AppFlyoutPage)
+#pragma warning restore CS0618
 		{
 			Start();
 			this.Loaded += OnMainPageLoaded;

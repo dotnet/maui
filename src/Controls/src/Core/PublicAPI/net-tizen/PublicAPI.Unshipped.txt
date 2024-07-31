@@ -319,3 +319,4 @@ Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.PlatformWebViewProcessTerminatedEventArgs() -> void
+~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
