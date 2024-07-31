@@ -27,7 +27,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.70</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.71</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
     <VSToolsNetCoreSDKResolverPackageVersion>9.0.100-preview.7.24379.15</VSToolsNetCoreSDKResolverPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(VSToolsNetCoreSDKResolverPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
