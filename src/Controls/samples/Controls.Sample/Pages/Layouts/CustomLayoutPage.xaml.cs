@@ -153,8 +153,7 @@ namespace Maui.Controls.Sample.Pages
 				{
 					if (child.IsVisible)
 					{
-						SizeRequest sizeRequest = ((IView)child).Measure(widthConstraint, heightConstraint);
-						Size request = sizeRequest.Request;
+						var request = child.Measure(widthConstraint, heightConstraint);
 
 						switch (_layout.GetDock(child))
 						{
