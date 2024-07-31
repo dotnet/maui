@@ -16,12 +16,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams
-		//[TestCase("maui", DotNetPrevious, "Debug", false, "")]
-		//[TestCase("maui", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui", DotNetPrevious, "Debug", false, "")]
+		[TestCase("maui", DotNetPrevious, "Release", false, "")]
 		[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 		[TestCase("maui", DotNetCurrent, "Release", false, "")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false, "")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty")]
@@ -217,12 +217,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		//[TestCase("maui", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui", DotNetPrevious, "Release", false)]
+		[TestCase("maui", DotNetPrevious, "Debug", false)]
+		[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
 		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
@@ -256,12 +256,44 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		//[TestCase("maui", DotNetPrevious, "Debug")]
-		//[TestCase("maui", DotNetPrevious, "Release")]
+		[TestCase("maui", "Debug", false)]
+		[TestCase("maui", "Release", false)]
+		[TestCase("maui-blazor", "Debug", false)]
+		[TestCase("maui-blazor", "Release", false)]
+		[TestCase("mauilib", "Debug", true)]
+		[TestCase("mauilib", "Release", true)]
+		public void PreviousDotNetCanUseLatestMaui(string id, string config, bool shouldPack)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+
+			if (shouldPack)
+				FileUtilities.ReplaceInFile(projectFile,
+					"</Project>",
+					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+
+			// set <MauiVersion> in the csproj as that is the reccommended place
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"<PropertyGroup><MauiVersion>{MauiVersionNext}</MauiVersion></PropertyGroup></Project>");
+
+			string target = shouldPack ? "Pack" : "";
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", DotNetPrevious, "Debug")]
+		[TestCase("maui", DotNetPrevious, "Release")]
 		[TestCase("maui", DotNetCurrent, "Debug")]
 		[TestCase("maui", DotNetCurrent, "Release")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		[TestCase("maui-blazor", DotNetPrevious, "Release")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
