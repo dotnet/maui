@@ -370,9 +370,11 @@ static Microsoft.Maui.Controls.Binding.Create<TSource, TProperty>(System.Func<TS
 *REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
 *REMOVED*static Microsoft.Maui.Controls.FlyoutPage.ControlsFlyoutPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.FlyoutViewHandler!>!
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.ControlsToolbarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Toolbar!, Microsoft.Maui.Handlers.ToolbarHandler!>!
+Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.CreateEmbeddedWindowContext(this Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> Microsoft.Maui.IMauiContext!
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> UIKit.UIView!
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> UIKit.UIView!
+*REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest

@@ -317,3 +317,5 @@ static Microsoft.Maui.Controls.Binding.Create<TSource, TProperty>(System.Func<TS
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.ControlsToolbarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Toolbar!, Microsoft.Maui.Handlers.ToolbarHandler!>!
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
+Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest

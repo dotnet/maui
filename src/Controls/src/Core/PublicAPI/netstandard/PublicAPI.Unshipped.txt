@@ -316,4 +316,6 @@ static Microsoft.Maui.Controls.Binding.Create<TSource, TProperty>(System.Func<TS
 *REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
 *REMOVED*static Microsoft.Maui.Controls.FlyoutPage.ControlsFlyoutPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.FlyoutViewHandler!>!
 *REMOVED*static Microsoft.Maui.Controls.Toolbar.ControlsToolbarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Toolbar!, Microsoft.Maui.Handlers.ToolbarHandler!>!
+Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
+*REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest

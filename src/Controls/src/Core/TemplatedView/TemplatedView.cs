@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;
