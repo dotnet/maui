@@ -275,6 +275,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (Content == null)
@@ -359,26 +360,6 @@ namespace Microsoft.Maui.Controls
 			coordinate += (double)typeof(VisualElement).GetProperty(coordinateName).GetValue(item, null);
 			var visualParentElement = item.RealParent as VisualElement;
 			return visualParentElement != null ? GetCoordinate(visualParentElement, coordinateName, coordinate) : coordinate;
-		}
-
-		double GetMaxHeight(double height)
-		{
-			return Math.Max(height, _content.Bounds.Top + Padding.Top + _content.Bounds.Bottom + Padding.Bottom);
-		}
-
-		static double GetMaxHeight(double height, SizeRequest size)
-		{
-			return Math.Max(size.Request.Height, height);
-		}
-
-		double GetMaxWidth(double width)
-		{
-			return Math.Max(width, _content.Bounds.Left + Padding.Left + _content.Bounds.Right + Padding.Right);
-		}
-
-		static double GetMaxWidth(double width, SizeRequest size)
-		{
-			return Math.Max(size.Request.Width, width);
 		}
 
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)

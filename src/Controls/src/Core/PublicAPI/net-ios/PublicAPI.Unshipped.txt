@@ -49,6 +49,7 @@ Microsoft.Maui.Controls.TitleBar.Title.set -> void
 Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
 Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
+Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
@@ -375,3 +376,4 @@ Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.CreateEmbeddedWindowContext(this Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> Microsoft.Maui.IMauiContext!
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> UIKit.UIView!
 static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.Hosting.MauiApp! mauiApp, UIKit.UIWindow! platformWindow) -> UIKit.UIView!
+*REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest

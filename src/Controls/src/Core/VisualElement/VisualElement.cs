@@ -490,7 +490,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(WindowPropertyKey, value);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
@@ -1115,6 +1117,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<FocusEventArgs> Focused;
 
+		[Obsolete]
 		SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			var constraintSize = new Size(widthConstraint, heightConstraint);
@@ -1167,6 +1170,20 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
+		/// Returns the minimum size that an element needs in order to be displayed on the device. Margins are excluded from the measurement, but returned with the size.
+		/// It is not recommended to call this method outside of the `MeasureOverride` pass on the parent element.
+		/// </summary>
+		/// <param name="widthConstraint">The suggested maximum width constraint for the element to render.</param>
+		/// <param name="heightConstraint">The suggested maximum height constraint for the element to render.</param>
+		/// <returns>The minimum size that an element needs in order to be displayed on the device. </returns>
+		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
+		public Size Measure(double widthConstraint, double heightConstraint)
+		{
+			var result = (this as IView).Measure(widthConstraint, heightConstraint);
+			return result;
+		}
+
+		/// <summary>
 		/// Returns the minimum size that an element needs in order to be displayed on the device.
 		/// </summary>
 		/// <param name="widthConstraint">The suggested maximum width constraint for the element to render.</param>
@@ -1174,7 +1191,11 @@ namespace Microsoft.Maui.Controls
 		/// <param name="flags">A value that controls whether margins are included in the returned size.</param>
 		/// <returns>The minimum size that an element needs in order to be displayed on the device.</returns>
 		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+
+		[Obsolete("Use Measure with no flags.")]
 		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
 			Thickness margin = default(Thickness);
@@ -1287,6 +1308,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="widthConstraint">The width constraint to request.</param>
 		/// <param name="heightConstraint">The height constraint to request.</param>
 		/// <returns>The requested size that the element requires in order to be displayed on the device.</returns>
+		[Obsolete("Use MeasureOverride instead")]
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
@@ -1876,7 +1898,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Provides a way to allow subclasses to override <see cref="Measure"/> even though
+		/// Provides a way to allow subclasses to override <see cref="Measure(double, double)"/> even though
 		/// the interface has to be explicitly implemented to avoid conflict with the old Measure method.
 		/// </summary>
 		/// <param name="widthConstraint">The width constraint to request.</param>
