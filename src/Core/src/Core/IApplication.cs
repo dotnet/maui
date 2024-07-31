@@ -36,7 +36,12 @@ namespace Microsoft.Maui
 		/// Request that the application brings to the front the given window.
 		/// </summary>
 		/// <param name="window">The window to bring to the front.</param>
+#if NETSTANDARD2_0
 		void ActivateWindow(IWindow window);
+#else
+		void ActivateWindow(IWindow window) { }
+#endif
+		
 
 		/// <summary>
 		/// Gets the current requested theme by the system for your application. 
