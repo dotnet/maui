@@ -525,7 +525,7 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				get
 				{
-					if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+					if (OperatingSystem.IsAndroidVersionAtLeast(33))
 					{
 						return [];
 					}
@@ -562,7 +562,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 				get 
 				{
-					if (!OperatingSystem.IsAndroidVersionAtLeast(33))
+					if (OperatingSystem.IsAndroidVersionAtLeast(33))
 					{
 						return [];
 					}
