@@ -285,7 +285,7 @@ namespace Microsoft.Maui.IntegrationTests
 			// set <MauiVersion> in the csproj as that is the reccommended place
 			FileUtilities.ReplaceInFile(projectFile,
 				"</Project>",
-				$"<PropertyGroup><MauiVersion>{MauiVersionNext}</MauiVersion></PropertyGroup></Project>");
+				$"<PropertyGroup><MauiVersion>{MauiPackageVersion}</MauiVersion></PropertyGroup></Project>");
 
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
