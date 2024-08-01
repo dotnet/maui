@@ -1,18 +1,25 @@
 ﻿#nullable disable
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Hosting;
 using WASDKApp = Microsoft.UI.Xaml.Application;
 using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using WRect = Windows.Foundation.Rect;
+using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -26,6 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
+		IList _itemsSource;
 
 		protected WItemsView ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
@@ -39,7 +47,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override WItemsView CreatePlatformView()
 		{
-			return SelectListViewBase();
+			var itemsView = SelectListViewBase();
+			itemsView.ItemTransitionProvider = new DefaultItemCollectionTransitionProvider();
+			return itemsView;
 		}
 
 		protected override void ConnectHandler(WItemsView platformView)
@@ -97,53 +107,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.UpdateItemsUpdatingScrollMode();
-		}
-
-		void UpdateItemsUpdatingScrollMode()
-		{
-			//if (PlatformView is null || PlatformView.ItemsSource is null)
-			//	return;
-			//
-			//if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
-			//{
-			//	// The scroll position is maintained when new items are added as the default,
-			//	// so we don't need to watch for data changes
-			//	PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
-			//}
-			//else
-			//{
-			//	PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
-			//	PlatformView.Items.VectorChanged += OnItemsVectorChanged;
-			//}
-		}
-
-		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
-		{
-			//if (VirtualView is null)
-			//	return;
-			//
-			//if (sender is not ItemCollection items)
-			//	return;
-			//
-			//var itemsCount = items.Count;
-			//
-			//if (itemsCount == 0)
-			//	return;
-			//
-			//if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
-			//{
-			//	var firstItem = items[0];
-			//	// Keeps the first item in the list displayed when new items are added.
-			//	ListViewBase.ScrollIntoView(firstItem);
-			//}
-			//
-			//if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-			//{
-			//	var lastItem = items[itemsCount - 1];
-			//	// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-			//	ListViewBase.ScrollIntoView(lastItem);
-			//}
 		}
 
 		protected abstract WItemsView SelectListViewBase();
@@ -186,6 +149,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void ItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			UpdateEmptyViewVisibility();
+
+			if (_itemsSource is null)
+				return;
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				// Keeps the first item in the list displayed when new items are added.
+				ListViewBase.StartBringItemIntoView(0, new BringIntoViewOptions() { AnimationDesired = false });
+			}
+			else if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+				ListViewBase.StartBringItemIntoView(_itemsSource.Count - 1, new BringIntoViewOptions() { AnimationDesired = false });
+			}
 		}
 
 		protected virtual void UpdateEmptyViewVisibility()
@@ -242,6 +219,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			CollectionViewSource = CreateCollectionViewSource();
+			_itemsSource = CollectionViewSource?.Source as IList;
 
 			if (CollectionViewSource?.Source is INotifyCollectionChanged incc)
 			{
@@ -415,14 +393,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ListViewBase.ScrollView != null)
 			{
 				ListViewBase.ScrollView.ViewChanged -= ScrollViewChanged;
+				ListViewBase.ScrollView.PointerWheelChanged -= PointerScrollChanged;
 			}
 
 			ListViewBase.ScrollView.ViewChanged += ScrollViewChanged;
+			ListViewBase.ScrollView.PointerWheelChanged += PointerScrollChanged;
 		}
 
 		void ScrollViewChanged(UI.Xaml.Controls.ScrollView sender, object args)
 		{
 			HandleScroll(ListViewBase.ScrollView.ScrollPresenter);
+		}
+
+		private void PointerScrollChanged(object sender, PointerRoutedEventArgs e)
+		{
+			if (ListViewBase.ScrollView.ComputedHorizontalScrollMode == ScrollingScrollMode.Enabled)
+			{
+				ListViewBase.ScrollView.AddScrollVelocity(new(e.GetCurrentPoint(ListViewBase.ScrollView).Properties.MouseWheelDelta / -2.5f, 0), null);
+			}
 		}
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
@@ -535,29 +523,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 
-			if (index >= 0)
-			{
-				float offset = 0.0f;
-				switch (args.ScrollToPosition)
-				{
-					case ScrollToPosition.Start:
-						offset = 0.0f;
-						break;
-					case ScrollToPosition.Center:
-						offset = 0.5f;
-						break;
-					case ScrollToPosition.End:
-						offset = 1.0f;
-						break;
-				}
-
-				this.ListViewBase.StartBringItemIntoView(index, new BringIntoViewOptions()
-				{
-					AnimationDesired = args.IsAnimated,
-					VerticalAlignmentRatio = offset,
-					HorizontalAlignmentRatio = offset
-				});
-			}
+			//if (index >= 0)
+			//{
+			//	float offset = 0.0f;
+			//	switch (args.ScrollToPosition)
+			//	{
+			//		case ScrollToPosition.Start:
+			//			offset = 0.0f;
+			//			break;
+			//		case ScrollToPosition.Center:
+			//			offset = 0.5f;
+			//			break;
+			//		case ScrollToPosition.End:
+			//			offset = 1.0f;
+			//			break;
+			//	}
+			//
+			//	this.ListViewBase.StartBringItemIntoView(index, new BringIntoViewOptions()
+			//	{
+			//		AnimationDesired = args.IsAnimated,
+			//		VerticalAlignmentRatio = offset,
+			//		HorizontalAlignmentRatio = offset
+			//	});
+			//}
 		}
 
 
@@ -649,15 +637,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 	}
 
-	class ElementWrapper : UserControl
+	class ElementWrapper(IMauiContext context) : UserControl
 	{
-		private IMauiContext _context;
+		private IMauiContext _context = context;
 		public IView VirtualView { get; private set; }
-
-		public ElementWrapper(IMauiContext context)
-		{
-			_context = context;
-		}
 
 		public void SetContent(IView view)
 		{
@@ -666,6 +649,133 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Content = view.ToPlatform(_context);
 				VirtualView = view;
 			}
+		}
+	}
+
+	/// <summary>
+	///  From the Repeater WinAppSDK test UI sample
+	/// </summary>
+	class DefaultItemCollectionTransitionProvider : ItemCollectionTransitionProvider
+	{
+		private const double DefaultAnimationDurationInMs = 150.0;
+		public static double AnimationSlowdownFactor { get; set; }
+
+		static DefaultItemCollectionTransitionProvider()
+		{
+			AnimationSlowdownFactor = 1.0;
+		}
+
+		protected override bool ShouldAnimateCore(ItemCollectionTransition transition)
+		{
+			return true;
+		}
+
+		protected override void StartTransitions(IList<ItemCollectionTransition> transitions)
+		{
+			var addTransitions = transitions.Where(transition => transition.Operation == ItemCollectionTransitionOperation.Add).ToList();
+			var removeTransitions = transitions.Where(transition => transition.Operation == ItemCollectionTransitionOperation.Remove).ToList();
+			var moveTransitions = transitions.Where(transition => transition.Operation == ItemCollectionTransitionOperation.Move).ToList();
+
+			StartAddTransitions(addTransitions, removeTransitions.Count > 0, moveTransitions.Count > 0);
+			StartRemoveTransitions(removeTransitions);
+			StartMoveTransitions(moveTransitions, removeTransitions.Count > 0);
+		}
+
+		private static void StartAddTransitions(IList<ItemCollectionTransition> transitions, bool hasRemoveTransitions, bool hasMoveTransitions)
+		{
+			foreach (var transition in transitions)
+			{
+				var progress = transition.Start();
+				var visual = ElementCompositionPreview.GetElementVisual(progress.Element);
+				var compositor = visual.Compositor;
+
+				var fadeInAnimation = compositor.CreateScalarKeyFrameAnimation();
+				fadeInAnimation.InsertKeyFrame(0.0f, 0.0f);
+
+				if (hasMoveTransitions && hasRemoveTransitions)
+				{
+					fadeInAnimation.InsertKeyFrame(0.66f, 0.0f);
+				}
+				else if (hasMoveTransitions || hasRemoveTransitions)
+				{
+					fadeInAnimation.InsertKeyFrame(0.5f, 0.0f);
+				}
+
+				fadeInAnimation.InsertKeyFrame(1.0f, 1.0f);
+				fadeInAnimation.Duration = TimeSpan.FromMilliseconds(
+					DefaultAnimationDurationInMs * ((hasRemoveTransitions ? 1 : 0) + (hasMoveTransitions ? 1 : 0) + 1) * AnimationSlowdownFactor);
+
+				var batch = compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+				visual.StartAnimation("Opacity", fadeInAnimation);
+				batch.End();
+				batch.Completed += delegate { progress.Complete(); };
+			}
+		}
+
+		private static void StartRemoveTransitions(IList<ItemCollectionTransition> transitions)
+		{
+			foreach (var transition in transitions)
+			{
+				var progress = transition.Start();
+				var visual = ElementCompositionPreview.GetElementVisual(progress.Element);
+				var compositor = visual.Compositor;
+
+				var fadeOutAnimation = compositor.CreateScalarKeyFrameAnimation();
+				fadeOutAnimation.InsertExpressionKeyFrame(0.0f, "this.CurrentValue");
+				fadeOutAnimation.InsertKeyFrame(1.0f, 0.0f);
+				fadeOutAnimation.Duration = TimeSpan.FromMilliseconds(DefaultAnimationDurationInMs * AnimationSlowdownFactor);
+
+				var batch = compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+				visual.StartAnimation("Opacity", fadeOutAnimation);
+				batch.End();
+				batch.Completed += delegate {
+					visual.Opacity = 1.0f;
+					progress.Complete();
+				};
+			}
+		}
+
+		private static void StartMoveTransitions(IList<ItemCollectionTransition> transitions, bool hasRemoveAnimations)
+		{
+			foreach (var transition in transitions)
+			{
+				var progress = transition.Start();
+				var visual = ElementCompositionPreview.GetElementVisual(progress.Element);
+				var compositor = visual.Compositor;
+				var batch = compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+
+				// Animate offset.
+				if (transition.OldBounds.X != transition.NewBounds.X ||
+					transition.OldBounds.Y != transition.NewBounds.Y)
+				{
+					AnimateOffset(visual, compositor, transition.OldBounds, transition.NewBounds, hasRemoveAnimations);
+				}
+
+				batch.End();
+				batch.Completed += delegate { progress.Complete(); };
+			}
+		}
+
+		private static void AnimateOffset(Visual visual, Compositor compositor, WRect oldBounds, WRect newBounds, bool hasRemoveAnimations)
+		{
+			var offsetAnimation = compositor.CreateVector2KeyFrameAnimation();
+
+			offsetAnimation.SetVector2Parameter("start", new System.Numerics.Vector2(
+				(float)(oldBounds.X - newBounds.X),
+				(float)(oldBounds.Y - newBounds.Y)));
+			offsetAnimation.SetVector2Parameter("end", new System.Numerics.Vector2());
+			offsetAnimation.InsertExpressionKeyFrame(0.0f, "start");
+			offsetAnimation.InsertExpressionKeyFrame(1.0f, "end");
+			offsetAnimation.Duration = TimeSpan.FromMilliseconds(
+				DefaultAnimationDurationInMs * AnimationSlowdownFactor);
+
+			if (hasRemoveAnimations)
+			{
+				offsetAnimation.DelayTime = TimeSpan.FromMilliseconds(100.0 * AnimationSlowdownFactor);
+				offsetAnimation.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
+			}
+
+			visual.StartAnimation("TransformMatrix._41_42", offsetAnimation);
 		}
 	}
 }

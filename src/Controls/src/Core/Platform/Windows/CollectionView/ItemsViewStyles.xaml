@@ -41,16 +41,18 @@
     </DataTemplate>
 
     <DataTemplate x:Key="CarouselItemsViewDefaultTemplate">
-        <local:ItemContentControl
-            x:Name="ItemContentControl" 
-            MauiContext="{Binding MauiContext}" 
-			FormsDataTemplate="{Binding FormsDataTemplate}" 
-            FormsDataContext="{Binding Item}"
-            FormsContainer="{Binding Container}"
-            ItemHeight="{Binding ItemHeight}"
-            ItemWidth="{Binding ItemWidth}"
-            ItemSpacing="{Binding ItemSpacing}">
-        </local:ItemContentControl>
+        <ItemContainer>
+            <local:ItemContentControl
+                x:Name="ItemContentControl" 
+                MauiContext="{Binding MauiContext}" 
+			          FormsDataTemplate="{Binding FormsDataTemplate}" 
+                FormsDataContext="{Binding Item}"
+                FormsContainer="{Binding Container}"
+                ItemHeight="{Binding ItemHeight}"
+                ItemWidth="{Binding ItemWidth}"
+                ItemSpacing="{Binding ItemSpacing}">
+          </local:ItemContentControl>
+        </ItemContainer>
     </DataTemplate>
 
     <Style TargetType="local:ItemContentControl" >

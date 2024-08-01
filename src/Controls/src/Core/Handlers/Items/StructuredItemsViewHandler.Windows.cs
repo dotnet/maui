@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						}
 					};
 				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
-					return new WItemsView()
+					var itemsView = new WItemsView()
 					{
 						Layout = new Microsoft.UI.Xaml.Controls.StackLayout
 						{
@@ -98,6 +98,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							Spacing = listItemsLayout.ItemSpacing
 						}
 					};
+					ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+					ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, UI.Xaml.Controls.ScrollBarVisibility.Visible);
+
+					ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+					ScrollViewer.SetVerticalScrollBarVisibility(itemsView, UI.Xaml.Controls.ScrollBarVisibility.Disabled);
+					return itemsView;
 			}
 			throw new NotImplementedException("The layout is not implemented");
 		}

@@ -152,7 +152,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		WItemsView CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
 		{
-			return new WItemsView();
+			var itemsView = new WItemsView()
+			{
+				Padding = WinUIHelpers.CreateThickness(
+					ItemsView.PeekAreaInsets.Left, ItemsView.PeekAreaInsets.Top,
+					ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom),
+				Layout = layoutOrientation == ItemsLayoutOrientation.Horizontal
+					? new Microsoft.UI.Xaml.Controls.StackLayout() 
+					{ 
+						Orientation = Orientation.Horizontal, 
+						Spacing = CarouselItemsLayout.ItemSpacing 
+					}
+					: new Microsoft.UI.Xaml.Controls.StackLayout() 
+					{ 
+						Orientation = Orientation.Vertical,
+						Spacing = CarouselItemsLayout.ItemSpacing
+					}
+			};
+
+			if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
+			{
+				ScrollViewer.SetHorizontalScrollMode(itemsView, WScrollMode.Enabled);
+				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WScrollBarVisibility.Visible);
+
+				ScrollViewer.SetVerticalScrollMode(itemsView, WScrollMode.Disabled);
+				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WScrollBarVisibility.Disabled);
+			}
+
+			return itemsView;
 			//UI.Xaml.Controls.ListView listView;
 			//
 			//if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
@@ -573,10 +600,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemHeight = GetItemHeight();
 			var itemWidth = GetItemWidth();
 
-			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+			foreach (var item in ListViewBase.GetChildren<ItemContainer>())
 			{
-				item.ItemHeight = itemHeight;
-				item.ItemWidth = itemWidth;
+				item.Height = itemHeight;
+				item.Width = itemWidth;
 
 				item.InvalidateMeasure();
 			}
