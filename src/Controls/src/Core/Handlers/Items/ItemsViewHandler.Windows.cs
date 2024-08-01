@@ -48,7 +48,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override WItemsView CreatePlatformView()
 		{
 			var itemsView = SelectListViewBase();
-			itemsView.ItemTransitionProvider = new DefaultItemCollectionTransitionProvider();
+			if (Layout is LinearItemsLayout)
+			{
+				itemsView.ItemTransitionProvider = new DefaultItemCollectionTransitionProvider();
+			}
 			return itemsView;
 		}
 
@@ -319,6 +322,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
 			UpdateEmptyView();
+
+			if (Layout is LinearItemsLayout layout)
+			{
+				ListViewBase.ItemTransitionProvider = new DefaultItemCollectionTransitionProvider();
+			}
+			else
+			{
+				ListViewBase.ItemTransitionProvider = null;
+			}
 		}
 
 		void FindScrollViewer(WItemsView listView)
@@ -409,7 +421,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ListViewBase.ScrollView.ComputedHorizontalScrollMode == ScrollingScrollMode.Enabled)
 			{
-				ListViewBase.ScrollView.AddScrollVelocity(new(e.GetCurrentPoint(ListViewBase.ScrollView).Properties.MouseWheelDelta / -2.5f, 0), null);
+				ListViewBase.ScrollView.AddScrollVelocity(new(e.GetCurrentPoint(ListViewBase.ScrollView).Properties.MouseWheelDelta, 0), null);
 			}
 		}
 
