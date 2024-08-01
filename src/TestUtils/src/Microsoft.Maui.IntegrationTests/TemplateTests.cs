@@ -38,6 +38,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
 			if (shouldPack)
@@ -237,6 +239,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
 			if (shouldPack)
@@ -270,7 +274,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
 				$"Unable to create template {id}. Check test output for errors.");
 
-			EnableTizen(projectFile);
+			// TODO: fix this as we should be able to build tizen net8
+			// EnableTizen(projectFile);
 
 			if (shouldPack)
 				FileUtilities.ReplaceInFile(projectFile,
@@ -304,7 +309,10 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
+
 			FileUtilities.ReplaceInFile(projectFile,
 				"<UseMaui>true</UseMaui>",
 				"<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
@@ -542,6 +550,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
 			var projectSectionsToReplace = new Dictionary<string, string>()
