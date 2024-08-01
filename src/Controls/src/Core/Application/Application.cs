@@ -455,12 +455,22 @@ namespace Microsoft.Maui.Controls
 		void IApplication.OpenWindow(IWindow window)
 		{
 			if (window is Window cwindow)
+			{
 				OpenWindow(cwindow);
+			}
 		}
 
 		void IApplication.CloseWindow(IWindow window)
 		{
 			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
+		}
+
+		void IApplication.ActivateWindow(IWindow window)
+		{
+			if (window is Window cwindow)
+			{
+				ActivateWindow(cwindow);
+			}
 		}
 
 		internal void RemoveWindow(Window window)
@@ -500,6 +510,11 @@ namespace Microsoft.Maui.Controls
 		public virtual void CloseWindow(Window window)
 		{
 			Handler?.Invoke(nameof(IApplication.CloseWindow), window);
+		}
+
+		public virtual void ActivateWindow(Window window)
+		{
+			Handler?.Invoke(nameof(IApplication.ActivateWindow), window);
 		}
 
 		void IApplication.ThemeChanged()

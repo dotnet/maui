@@ -139,6 +139,7 @@ static readonly Microsoft.Maui.Controls.TitleBar.SubtitleProperty -> Microsoft.M
 static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

@@ -13,6 +13,7 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler
 Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
+Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.ElementHandlerExtensions
@@ -72,6 +73,7 @@ static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Micros
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
+static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
