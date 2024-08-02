@@ -61,6 +61,63 @@
 
   </Target>
 
+  <!--
+    Workaround for the issue where the resource starts with the Resources/ prefix,
+    either in the Identity or Link metadata. The fix is to assume that was not intended
+    since that is how it worked in 8.0.60 and earlier.
+    However, if there is a LogicalName metadata, we will skip processing as that is what
+    was explicitly set (even though the build will fail).
+  -->
+  <PropertyGroup>
+    <CollectBundleResourcesDependsOn>
+      _MauiRemoveResourcesPrefixFromBundleResource;
+      $(CollectBundleResourcesDependsOn);
+    </CollectBundleResourcesDependsOn>
+  </PropertyGroup>
+  <Target Name="_MauiRemoveResourcesPrefixFromBundleResource">
+    <!-- Collect the items into 2 categories: Link or no Link -->
+    <ItemGroup>
+      <_MauiBundleResourceWithLogicalName
+        Include="@(BundleResource->HasMetadata('LogicalName'))" />
+      <_MauiBundleResourceWithLink
+        Include="@(BundleResource->HasMetadata('Link'))"
+        Exclude="@(_MauiBundleResourceWithLogicalName)" />
+      <_MauiBundleResourceWithoutLink
+        Include="@(BundleResource)"
+        Exclude="@(_MauiBundleResourceWithLink);@(_MauiBundleResourceWithLogicalName)" />
+    </ItemGroup>
+    <!-- Set the LogicalName to be a path relative to Resources -->
+    <ItemGroup>
+      <_MauiBundleResourceWithRelativeLogicalName
+        Include="@(_MauiBundleResourceWithLink)"
+        LogicalName="$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)/Resources/', '$(MSBuildProjectDirectory)/%(Link)'))" />
+      <_MauiBundleResourceWithRelativeLogicalName
+        Include="@(_MauiBundleResourceWithoutLink)"
+        LogicalName="$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)/Resources/', '%(FullPath)'))" />
+    </ItemGroup>
+    <!-- Remove all items that are not below the Resources directory -->
+    <ItemGroup>
+      <_MauiBundleResourceWithCorrectLogicalName
+        Include="@(_MauiBundleResourceWithRelativeLogicalName)"
+        Condition="!$([System.String]::new('%(_MauiBundleResourceWithRelativeLogicalName.LogicalName)').StartsWith('..'))" />
+    </ItemGroup>
+    <!-- Replace the items in @(BundleResource) with the ones with a correct LogicalName -->
+    <ItemGroup>
+      <BundleResource Remove="@(_MauiBundleResourceWithCorrectLogicalName)" />
+      <BundleResource Include="@(_MauiBundleResourceWithCorrectLogicalName)" />
+    </ItemGroup>
+    <!-- Clean up items -->
+    <ItemGroup>
+      <_MauiBundleResourceResult Include="@(BundleResource)" />
+      <_MauiBundleResourceWithLogicalName Remove="@(_MauiBundleResourceWithLogicalName)" />
+      <_MauiBundleResourceWithLink Remove="@(_MauiBundleResourceWithLink)" />
+      <_MauiBundleResourceWithoutLink Remove="@(_MauiBundleResourceWithoutLink)" />
+      <_MauiBundleResourceWithRelativeLogicalName Remove="@(_MauiBundleResourceWithRelativeLogicalName)" />
+      <_MauiBundleResourceWithCorrectLogicalName Remove="@(_MauiBundleResourceWithCorrectLogicalName)" />
+      <_MauiBundleResourceResult Remove="@(_MauiBundleResourceResult)" />
+    </ItemGroup>
+  </Target>
+
   <!-- Import Maui Single Project property pages -->
   <PropertyGroup Condition="'$(MauiDesignTimeTargetsPath)' == ''">
     <MauiDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Maui\Maui.DesignTime.targets</MauiDesignTimeTargetsPath>
