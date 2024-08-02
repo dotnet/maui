@@ -235,7 +235,7 @@ extends:
 
     - stage: PublishAssetRegistry
       displayName: Publish to Build Asset Registry
-      dependsOn: Build
+      dependsOn: pack_net
       variables:
       - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
