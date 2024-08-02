@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
+    <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
     <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
@@ -29,8 +30,8 @@
 
   <PropertyGroup>
     <_ProvisionDependsOn>
-      <!-- _DownloadDotNetInstallScript;
-      _InstallDotNet; -->
+      _DownloadDotNetInstallScript;
+      _InstallDotNet;
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
     </_ProvisionDependsOn>
@@ -92,7 +93,8 @@
 
   <Target Name="_DownloadDotNetInstallScript"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetInstallScriptPath)">
+      Outputs="$(DotNetInstallScriptPath)"
+      Condition=" '$(InstallDotNet)' == 'true' ">
     <DownloadFile
         SourceUrl="$(DotNetInstallScriptUrl)"
         DestinationFolder="$(DotNetOutputPath)"
@@ -128,7 +130,9 @@
 
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetDirectory).stamp">
+      Outputs="$(DotNetDirectory).stamp"
+      Condition=" '$(InstallDotNet)' == 'true' ">
+
     <RemoveDir Directories="$(DotNetDirectory)" />
     <Exec Command="$(DotNetInstallCommand)" />
     <Exec Condition=" '$(VersionFromAndroid)' != '' " Command="$(DotNetXARuntimeInstallCommand)" />
