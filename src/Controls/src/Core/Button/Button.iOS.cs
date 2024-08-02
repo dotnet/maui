@@ -241,8 +241,8 @@ namespace Microsoft.Maui.Controls
 		/// <returns>Returns a <see cref="CGRect"/> that contains the title text.</returns>
 		CGRect ComputeTitleRect (UIButton platformButton, Button button, UIImage image,  double widthConstraint, double heightConstraint, Thickness padding, double borderWidth)
 		{
-			var titleWidthConstraint = widthConstraint - (nfloat)padding.Left - (nfloat)padding.Right - ((nfloat)borderWidth * 2);
-			var titleHeightConstraint = heightConstraint - (nfloat)padding.Top - (nfloat)padding.Bottom - ((nfloat)borderWidth * 2);
+			var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
+			var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity)
 			{
