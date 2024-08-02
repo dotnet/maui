@@ -50,12 +50,15 @@ variables:
   - name: _OfficialBuildIdArgs
     value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
   # needed for signing
+  - name: _TeamName
+    value: $(TeamName)
   - name: _SignType
     value: real
   - name: _SignArgs
     value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign)
   - name: _Sign
     value: true
+
 
 parameters:
   - name: pushMauiPackagesToMaestro
