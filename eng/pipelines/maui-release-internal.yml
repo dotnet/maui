@@ -181,21 +181,23 @@ extends:
                 clean: true
 
             steps:
-              - template: /eng/pipelines/common/pack.yml@self
-                parameters:
-                  publishArtifacts: false
-                  platform: ${{ parameters.PackPlatform.name }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  artifact: ${{ parameters.PackPlatform.artifact }}
-                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
-                  artifactsPath: ${{ parameters.PackPlatform.artifactsPath }}
-                  buildConfiguration: $(_BuildConfig)
-                  dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
-                  buildScript: $(_buildScript)
-                  repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
-                  repoLogPath: $(Build.Arcade.LogsPath)
-                  repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-                  officialBuildId: $(_BuildOfficalId)
+              - script: eng\common\CIBuild.cmd -configuration $(_BuildConfig) $(_OfficialBuildIdArgs) $(_PublishArgs) $(_SignArgs)
+                displayName: Build
+              # - template: /eng/pipelines/common/pack.yml@self
+              #   parameters:
+              #     publishArtifacts: false
+              #     platform: ${{ parameters.PackPlatform.name }}
+              #     provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              #     artifact: ${{ parameters.PackPlatform.artifact }}
+              #     artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
+              #     artifactsPath: ${{ parameters.PackPlatform.artifactsPath }}
+              #     buildConfiguration: $(_BuildConfig)
+              #     dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+              #     buildScript: $(_buildScript)
+              #     repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+              #     repoLogPath: $(Build.Arcade.LogsPath)
+              #     repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              #     officialBuildId: $(_BuildOfficalId)
                   # prepareSteps:
                   #   - template: /eng/pipelines/common/provision.yml@self
                   #     parameters:
