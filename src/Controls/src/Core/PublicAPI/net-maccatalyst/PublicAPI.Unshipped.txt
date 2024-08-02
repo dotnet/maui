@@ -345,3 +345,12 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWin
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetPopoverRect(Microsoft.Maui.Controls.BindableObject element) -> System.Drawing.Rectangle
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetPopoverSourceView(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Controls.View
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverRect(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> System.Drawing.Rectangle
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceView(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> Microsoft.Maui.Controls.View
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverRect(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, System.Drawing.Rectangle value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverView(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, Microsoft.Maui.Controls.View value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverRectProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceViewProperty -> Microsoft.Maui.Controls.BindableProperty
