@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
 using Foundation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
