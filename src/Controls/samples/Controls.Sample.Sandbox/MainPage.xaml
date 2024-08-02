@@ -4,4 +4,37 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+
+    <Grid>
+        <CollectionView Background="lightblue"
+                Margin="10"
+                x:Name="vListView"
+                SelectionMode="Multiple">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                    <Grid>
+
+                        <Grid HeightRequest="220" Background="yellow"
+                                RowDefinitions="*,*" 
+                                ColumnDefinitions="*">
+                            <Image Source="dotnet_bot.png"/>
+                            <Label x:Name="recipeName" Grid.Row="1"
+                                Padding="5"
+                                HorizontalOptions="Fill" 
+                                VerticalOptions="End"
+                                VerticalTextAlignment="Start"
+                                HorizontalTextAlignment="Center"
+                                Text="{Binding RecipeName}"
+                                LineBreakMode="WordWrap" 
+                                MaxLines="2"
+                                HeightRequest="80"
+                                FontSize="16"/>
+                        </Grid>
+                    </Grid>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
 </ContentPage>

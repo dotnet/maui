@@ -180,6 +180,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			cell.IndexPath = indexPath;
 			cell.ViewMeasureInvalidated += OnViewMeasureInvalidated;
 
+			cell.AccessibilityTraits |= UIAccessibilityTrait.Button;
+			cell.IsAccessibilityElement = true;
 			return cell;
 		}
 

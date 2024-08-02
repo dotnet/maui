@@ -28,7 +28,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext() ?? shell.FindMauiContext());
 			}
 
-			ContentView.AddSubview(_renderer.PlatformView);
+			var platformView = view.ToPlatform();
+			ContentView.AddSubview(platformView);
+			platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+
+			// ContentView.AddSubview(_renderer.PlatformView);
 			_renderer.PlatformView.ClipsToBounds = true;
 			ContentView.ClipsToBounds = true;
 
@@ -38,6 +42,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bsi.AddLogicalChild(View);
 			else if (shell != null)
 				shell.AddLogicalChild(View);
+
+			// IsAccessibilityElement = true;
 		}
 
 		public UIContainerCell(string cellId, View view) : this(cellId, view, null, null)
