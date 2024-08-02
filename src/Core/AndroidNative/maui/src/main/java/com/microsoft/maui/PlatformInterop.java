@@ -79,7 +79,7 @@ public class PlatformInterop {
     
     public static boolean getGlideClearedTag(View view) {
         Object tag = view.getTag(MAUI_GLIDE_CLEARED_TAG_ID);
-        return tag != null && tag instanceof boolean && (boolean)tag;
+        return tag != null && tag instanceof Boolean && (boolean)tag;
     }
 
     public static void requestLayoutIfNeeded(View view) {

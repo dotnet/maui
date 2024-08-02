@@ -3,7 +3,6 @@ package com.microsoft.maui;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;

@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ImageView platformView)
 		{
+			base.DisconnectHandler(platformView);
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			SourceLoader.Reset();
 		}
