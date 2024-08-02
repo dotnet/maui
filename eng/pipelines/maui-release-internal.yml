@@ -199,7 +199,8 @@ extends:
                   } else {
                     echo "Unable to set JAVA_HOME"
                   }
-                  
+                displayyName: Set JAVA_HOME
+                    
               - script: eng\common\CIBuild.cmd -configuration $(_BuildConfig) $(_SignArgs) $(_PublishArgs) $(_OfficialBuildIdArgs) -warnAsError 0
                 displayName: Build Test and Pack
               # - template: /eng/pipelines/common/pack.yml@self
