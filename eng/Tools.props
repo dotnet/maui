@@ -5,10 +5,9 @@
 
     <!-- <MSBuild Projects="$(RepoRoot)src/DotNet/DotNet.csproj"
         Targets="Build" /> -->
-         <Exec
-        Command="dotnet workload install ios android macos maccatalyst --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(RepoRoot)NuGet.config&quot;"
+     <Exec
+        Command="dotnet build $(RepoRoot)/src/DotNet/DotNet.csproj"
         WorkingDirectory="$(RepoRoot)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0" />
   </Target>
-
 </Project>
