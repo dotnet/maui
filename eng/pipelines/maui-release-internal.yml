@@ -184,13 +184,8 @@ extends:
                 clean: true
 
             steps:
-              - script: eng\common\CIBuild.cmd 
-                  -pack 
-                  -sign $(_SignArgs) 
-                  -publish $(_PublishArgs) 
-                  -configuration $(_BuildConfig) 
-                  $(_OfficialBuildIdArgs)
-                displayName: Build
+              - script: eng\common\CIBuild.cmd  -configuration $(_BuildConfig) $(_SignArgs) $(_PublishArgs) $(_OfficialBuildIdArgs)
+                displayName: Build Test and Pack
               # - template: /eng/pipelines/common/pack.yml@self
               #   parameters:
               #     publishArtifacts: false
