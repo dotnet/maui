@@ -103,10 +103,17 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_control == value)
 					return;
 
-				if (_control != null)
+				if (_control is not null)
 				{
-					_control.Tapped -= HandleTapped;
-					_control.DoubleTapped -= HandleDoubleTapped;
+					if ((_subscriptionFlags & SubscriptionFlags.ControlTapEventSubscribed) != 0)
+					{
+						_control.Tapped -= HandleTapped;
+					}
+
+					if ((_subscriptionFlags & SubscriptionFlags.ControlDoubleTapEventSubscribed) != 0)
+					{
+						_control.DoubleTapped -= HandleDoubleTapped;
+					}
 				}
 
 				_control = value;
@@ -371,30 +378,35 @@ namespace Microsoft.Maui.Controls.Platform
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
 			if (!disposing)
+			{
 				return;
+			}
 
 			ClearContainerEventHandlers();
 
-			if (_element != null)
+			if (_element is View && ElementGestureRecognizers is not null)
 			{
-
-				var view = _element as View;
-				if (view != null)
-				{
-					if (ElementGestureRecognizers != null)
-						ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
-				}
+				ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
 
-			if (_control != null)
+			if (_control is not null)
 			{
-				_control.Tapped -= HandleTapped;
-				_control.DoubleTapped -= HandleDoubleTapped;
+				if ((_subscriptionFlags & SubscriptionFlags.ControlTapEventSubscribed) != 0)
+				{
+					_control.Tapped -= HandleTapped;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ControlDoubleTapEventSubscribed) != 0)
+				{
+					_control.DoubleTapped -= HandleDoubleTapped;
+				}
 			}
 
 			Control = null;
@@ -783,8 +795,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				if (_control != null && PreventGestureBubbling)
+				if (_control is not null && PreventGestureBubbling)
 				{
+					_subscriptionFlags |= SubscriptionFlags.ControlTapEventSubscribed;
 					_control.Tapped += HandleTapped;
 				}
 			}
@@ -798,8 +811,9 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				if (_control != null && PreventGestureBubbling)
+				if (_control is not null && PreventGestureBubbling)
 				{
+					_subscriptionFlags |= SubscriptionFlags.ControlDoubleTapEventSubscribed;
 					_control.DoubleTapped += HandleDoubleTapped;
 				}
 			}
@@ -885,7 +899,9 @@ namespace Microsoft.Maui.Controls.Platform
 			ContainerPgrPointerEventsSubscribed = 1 << 2,
 			ContainerManipulationAndPointerEventsSubscribed = 1 << 3,
 			ContainerTapAndRightTabEventSubscribed = 1 << 4,
-			ContainerDoubleTapEventSubscribed = 1 << 5
+			ContainerDoubleTapEventSubscribed = 1 << 5,
+			ControlTapEventSubscribed = 1 << 6,
+			ControlDoubleTapEventSubscribed = 1 << 7
 		}
 	}
 }
