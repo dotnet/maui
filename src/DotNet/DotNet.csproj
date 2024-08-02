@@ -29,8 +29,8 @@
 
   <PropertyGroup>
     <_ProvisionDependsOn>
-      _DownloadDotNetInstallScript;
-      _InstallDotNet;
+      <!-- _DownloadDotNetInstallScript;
+      _InstallDotNet; -->
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
     </_ProvisionDependsOn>
