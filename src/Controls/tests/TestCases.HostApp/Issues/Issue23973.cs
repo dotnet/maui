@@ -15,12 +15,14 @@ public partial class Issue23973 : ContentPage
             {
                 Text = "Click to show opaque default modal page",
                 Command = new Command(async () => await Navigation.PushModalAsync(new ModalPage())),
+				LineBreakMode = LineBreakMode.WordWrap,
                 AutomationId = "PushModal"
             },
             new Button()
             {
                 Text = "Click to show transparent modal page",
                 Command = new Command(async () => await Navigation.PushModalAsync(new TransparentModalPage())),
+				LineBreakMode = LineBreakMode.WordWrap,
                 AutomationId = "PushTransparentModal"
             },
             new Label(){
@@ -45,6 +47,7 @@ public partial class Issue23973 : ContentPage
 				{
 					AutomationId = "PopModal",
 					Text = "If you do not see through to the underlying page, this test has failed",
+					LineBreakMode = LineBreakMode.WordWrap,
 					Command = new Command(async () => await Navigation.PopModalAsync())
 				}
 			};
@@ -63,6 +66,7 @@ public partial class Issue23973 : ContentPage
 				{
 					AutomationId = "PopModal",
 					Text = "If you see through to the underlying page, this test has failed",
+					LineBreakMode = LineBreakMode.WordWrap,
 					Command = new Command(async () => await Navigation.PopModalAsync())
 				}
 			};
