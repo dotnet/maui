@@ -1,5 +1,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" />
+    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.Packages-mac.slnf" />
   </ItemGroup>
 </Project>
