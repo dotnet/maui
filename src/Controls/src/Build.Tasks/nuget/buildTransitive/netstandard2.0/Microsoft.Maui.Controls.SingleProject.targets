@@ -69,7 +69,7 @@
     was explicitly set (even though the build will fail).
   -->
   <PropertyGroup>
-    <CollectBundleResourcesDependsOn>
+    <CollectBundleResourcesDependsOn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
       _MauiRemoveResourcesPrefixFromBundleResource;
       $(CollectBundleResourcesDependsOn);
     </CollectBundleResourcesDependsOn>
@@ -90,9 +90,11 @@
     <ItemGroup>
       <_MauiBundleResourceWithRelativeLogicalName
         Include="@(_MauiBundleResourceWithLink)"
+        Condition="@(_MauiBundleResourceWithLink->Count()) > 0"
         LogicalName="$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)/Resources/', '$(MSBuildProjectDirectory)/%(Link)'))" />
       <_MauiBundleResourceWithRelativeLogicalName
         Include="@(_MauiBundleResourceWithoutLink)"
+        Condition="@(_MauiBundleResourceWithoutLink->Count()) > 0"
         LogicalName="$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)/Resources/', '%(FullPath)'))" />
     </ItemGroup>
     <!-- Remove all items that are not below the Resources directory -->
