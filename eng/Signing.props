@@ -1,9 +1,5 @@
 <Project>
   <PropertyGroup>
-    <!--
-      Windows arm/arm64 jobs don't have MSIs to sign. Keep it simple: allow not finding any matches
-      here and rely on overall signing validation.
-    -->
     <AllowEmptySignList Condition="'$(SignFinalPackages)' != 'true'">true</AllowEmptySignList>
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
