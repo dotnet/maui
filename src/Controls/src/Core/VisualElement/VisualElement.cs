@@ -1731,6 +1731,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the frame this element resides in on screen.
 		/// </summary>
+		/// <remarks>Setting this property outside of <see cref="ArrangeOverride"/> won't do anything. If you want to influence this property you'll need to override <see cref="ArrangeOverride"/></remarks>
 		public Rect Frame
 		{
 			get => _frame;
