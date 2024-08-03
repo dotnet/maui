@@ -1836,7 +1836,10 @@ namespace Microsoft.Maui.Controls
 		/// Positions child objects and determines a size for an element.
 		/// </summary>
 		/// <param name="bounds">The final size that the parent computes for the child in layout, provided as a <see cref="Rect"/> value.</param>
-		/// <remarks>Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.</remarks>
+		/// <remarks>
+		/// Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.
+		/// Prior to .NET 9, this method simply called <see cref="Layout"/>. If you need to revert to the old behavior, just call <see cref="Layout"/>.
+		/// </remarks>
 		public void Arrange(Rect bounds)
 		{
 			ArrangeOverride(bounds);
