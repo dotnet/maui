@@ -1191,11 +1191,8 @@ namespace Microsoft.Maui.Controls
 		/// <param name="flags">A value that controls whether margins are included in the returned size.</param>
 		/// <returns>The minimum size that an element needs in order to be displayed on the device.</returns>
 		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
-#pragma warning disable RS0016 // Add public types and members to the declared API
-
 		[Obsolete("Use Measure with no flags.")]
 		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
 			Thickness margin = default(Thickness);
@@ -1841,7 +1838,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.</remarks>
 		public void Arrange(Rect bounds)
 		{
-			Layout(bounds);
+			ArrangeOverride(bounds);
 		}
 
 		/// <inheritdoc/>
@@ -1851,8 +1848,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Allows subclasses to override <see cref="Arrange(Rect)"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the old <see cref="Arrange(Rect)"/> method.
+		/// Allows subclasses to implement custom Arrange logic during a controls layout pass.
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this element's frame by the platform.</returns>
@@ -1898,8 +1894,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Provides a way to allow subclasses to override <see cref="Measure(double, double)"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the old Measure method.
+		/// Allows subclasses to implement custom Measure logic during a controls measure pass.
 		/// </summary>
 		/// <param name="widthConstraint">The width constraint to request.</param>
 		/// <param name="heightConstraint">The height constraint to request.</param>
