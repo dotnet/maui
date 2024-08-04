@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue22042 : _IssuesUITest
 	{
@@ -14,10 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void BorderCollorShouldChange()
+		public void BorderColorShouldChange()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
-
 			App.WaitForElement("border");
 
 			//Applies a gradient
