@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Platform
 					_handler.CurrentNavigationEvent = WebNavigationEvent.NewPage;
 				}
 
-				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+				string? spacesEscapedUrl = url?.Replace(" ","%20", StringComparison.InvariantCulture);
+				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(spacesEscapedUrl, UriKind.Absolute))
 				{
 					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
 					url = AssetBaseUrl + url;
