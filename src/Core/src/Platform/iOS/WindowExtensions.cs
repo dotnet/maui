@@ -37,21 +37,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var rectangle = platformWindow.Bounds.ToRectangle();
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13)) 
+			if (OperatingSystem.IsIOSVersionAtLeast(16)) 
 			{
 				var windowScene = platformWindow.WindowScene;
 
 				if (windowScene is not null)
 				{
-					var frame = windowScene.EffectiveGeometry.SystemFrame;
-
-					// frame.X = (float)window.X;
-					// frame.Y = (float)window.Y;
-					// frame.Width = (float)window.Width;
-					// frame.Height = (float)window.Height;
-
-					System.Console.WriteLine($"frame = {frame}, window=[X={window.X},Y={window.Y},Width={window.Width},Height={window.Height}]");
-
 					var preferences = new UIWindowSceneGeometryPreferencesMac
 					{
 						SystemFrame = new CGRect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height)
@@ -62,8 +53,11 @@ namespace Microsoft.Maui.Platform
 					});
 				}
 			}
-
-			//window.FrameChanged(rectangle);
+			else 
+			{
+				// TODO: When should this be called exactly?
+				window.FrameChanged(rectangle);
+			}
 		}
 
 		public static void UpdateMaximumWidth(this UIWindow platformWindow, IWindow window) =>
