@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 		#if ANDROID
 		// This is a temporary workaround for Android so that images don't just keep vanishing
 		// We will have a better fix in the next release that's better integrated with Glide
-		internal bool CheckForImageLoadedOnAttached {get; set;}
+		internal bool CheckForImageLoadedOnAttached { get; set; }
 		#endif
 
 		readonly IImageSourcePartSetter _setter;
@@ -83,12 +83,17 @@ namespace Microsoft.Maui.Platform
 #else
 				await Task.CompletedTask;
 #endif
+
+#if ANDROID
 				CheckForImageLoadedOnAttached = true;
+#endif
 			}
 			else
 			{
 				Setter.SetImageSource(null);
+#if ANDROID
 				CheckForImageLoadedOnAttached = false;
+#endif
 			}
 		}
 	}
