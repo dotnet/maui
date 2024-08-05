@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class Bz39489Map : Map
+	public class Bz39489Map : Microsoft.Maui.Controls.Maps.Map
 	{
 		static int s_count;
 
