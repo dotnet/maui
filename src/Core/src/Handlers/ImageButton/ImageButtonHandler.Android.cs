@@ -94,15 +94,18 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
 		{
-			// Glide will automatically clear out the image if the Fragment or Activity is destroyed
-			// So we want to reload the image here if it's supposed to have an image
-			if (SourceLoader.CheckForImageLoadedOnAttached &&
-				PlatformView.Drawable is null && 
-				VirtualView?.Source is not null)
+			if (sender is not View platformView)
 			{
-				SourceLoader.CheckForImageLoadedOnAttached = false;
-				Mapper.UpdateProperty(this, VirtualView, nameof(IImage.Source));
+				return;
 			}
+
+			if (!this.IsConnected())
+			{
+				platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+				return;
+			}
+
+			ImageHandler.OnPlatformViewAttachedToWindow(this);
 		}
 
 		partial class ImageButtonImageSourcePartSetter

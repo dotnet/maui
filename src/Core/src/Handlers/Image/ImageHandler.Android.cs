@@ -93,17 +93,34 @@ namespace Microsoft.Maui.Handlers
 			base.PlatformArrange(frame);
 		}
 
-		void OnPlatformViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		internal static void OnPlatformViewAttachedToWindow(IImageHandler imageHandler)
 		{
+
 			// Glide will automatically clear out the image if the Fragment or Activity is destroyed
 			// So we want to reload the image here if it's supposed to have an image
-			if (SourceLoader.CheckForImageLoadedOnAttached &&
-				PlatformView.Drawable is null && 
-				VirtualView?.Source is not null)
+			if (imageHandler.SourceLoader.CheckForImageLoadedOnAttached &&
+				imageHandler.PlatformView.Drawable is null && 
+				imageHandler.VirtualView.Source is not null)
 			{
-				SourceLoader.CheckForImageLoadedOnAttached = false;
-				Mapper.UpdateProperty(this, VirtualView, nameof(IImage.Source));
+				imageHandler.SourceLoader.CheckForImageLoadedOnAttached = false;
+				imageHandler.UpdateValue(nameof(IImage.Source));
 			}
+		}
+
+		void OnPlatformViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			if (sender is not View platformView)
+			{
+				return;
+			}
+
+			if (!this.IsConnected())
+			{
+				platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+				return;
+			}
+
+			OnPlatformViewAttachedToWindow(this);
 		}
 
 		partial class ImageImageSourcePartSetter
