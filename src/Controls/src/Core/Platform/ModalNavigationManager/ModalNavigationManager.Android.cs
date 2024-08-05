@@ -16,6 +16,7 @@ using AView = Android.Views.View;
 using AndroidX.AppCompat.App;
 using Microsoft.Maui.LifecycleEvents;
 using AndroidX.Activity;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -241,6 +242,8 @@ namespace Microsoft.Maui.Controls.Platform
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
 				_modal = modal;
+				_modal.PropertyChanged += OnModalPagePropertyChanged;
+				_modal.HandlerChanged += OnPageHandlerChanged;
 				_mauiWindowContext = mauiContext;
 			}
 
@@ -256,6 +259,53 @@ namespace Microsoft.Maui.Controls.Platform
 				return dialog;
 			}
 
+			void OnPageHandlerChanged(object? sender, EventArgs e)
+			{
+				if (sender is Page page)
+				{
+					page.HandlerChanged -= OnPageHandlerChanged;
+				}
+
+				UpdateBackgroundColor();
+			}
+
+			void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+			{
+				if (_modal is null)
+				{
+					if (sender is Page page)
+					{
+						page.PropertyChanged -= OnModalPagePropertyChanged;
+						page.HandlerChanged -= OnPageHandlerChanged;
+					}
+
+					return;
+				}
+
+
+				if (e.IsOneOf(Page.BackgroundColorProperty, Page.BackgroundProperty))
+				{
+					UpdateBackgroundColor();
+				}
+			}
+
+			void UpdateBackgroundColor()
+			{
+				if (_modal is not IView view || view.Handler is not IPlatformViewHandler platformViewHandler)
+				{
+					return;
+				}
+
+				var pageView = platformViewHandler.PlatformView;
+
+				if (pageView is null)
+					return;
+
+				var modalBkgndColor = view.Background;
+				if (modalBkgndColor is null)
+					pageView.SetWindowBackground();
+			}
+
 			public override AView OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
 			{
 				var modalContext = _mauiWindowContext
@@ -263,6 +313,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_navigationRootManager = modalContext.GetNavigationRootManager();
 				_navigationRootManager.Connect(_modal, modalContext);
+
+				UpdateBackgroundColor();
 
 				return _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
@@ -309,6 +361,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public override void OnDismiss(IDialogInterface dialog)
 			{
+				_modal.PropertyChanged -= OnModalPagePropertyChanged;
+				_modal.HandlerChanged -= OnPageHandlerChanged;
+
 				if (_modal.Toolbar?.Handler is not null)
 				{
 					_modal.Toolbar.Handler = null;
