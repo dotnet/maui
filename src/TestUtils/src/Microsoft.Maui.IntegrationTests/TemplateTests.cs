@@ -238,6 +238,37 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui", "ios")]
+		[TestCase("maui", "maccatalyst")]
+		[TestCase("maui-blazor", "ios")]
+		[TestCase("maui-blazor", "maccatalyst")]
+		public void BuildWithCustomBundleResource(string id, bool framework)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			File.WriteAllText(Path.Combine(projectDir, "Resources", "testfile.txt"), "Something here :)");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"""
+				  <ItemGroup>
+				    <BundleResource Include="Resources\testfile.txt" />
+				  </ItemGroup>
+				</Project>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-{framework}");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
