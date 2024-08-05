@@ -347,7 +347,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "maccatalyst")]
 		[TestCase("maui-blazor", "ios")]
 		[TestCase("maui-blazor", "maccatalyst")]
-		public void BuildWithCustomBundleResource(string id, bool framework)
+		public void BuildWithCustomBundleResource(string id, string framework)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
