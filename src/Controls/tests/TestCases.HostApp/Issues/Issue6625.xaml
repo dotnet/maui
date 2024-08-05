@@ -9,10 +9,12 @@
                    Grid.Row="0"
                    LineBreakMode="CharacterWrap"
                    HorizontalOptions="Center"
+                   VerticalOptions="Start"
                    Padding="8,16"/>
             <Image x:Name="Image"
                  Grid.Row="1"
-                 HeightRequest="300"
+                 BackgroundColor="WhiteSmoke"
+                 Aspect="AspectFit"
                  VerticalOptions="Center"
                  HorizontalOptions="Center" />
         </Grid>
