@@ -68,7 +68,7 @@ namespace Maui.Controls.Sample.Issues
                         LineBreakMode = LineBreakMode.WordWrap,
 						Command = new Command(async () =>
 						{
-							await Navigation.PushAsync(new ContentPage(), true);
+							await Navigation.PushAsync(new ContentPage(), false);
                             await Task.Yield();
                             await Navigation.PopAsync(true);
 						})
