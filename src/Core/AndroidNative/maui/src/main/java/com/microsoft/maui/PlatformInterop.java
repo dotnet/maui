@@ -59,7 +59,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import com.microsoft.maui.R;
-import com.microsoft.maui.PlatformAppCompatImageView;
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
 import com.microsoft.maui.glide.font.FontModel;
@@ -376,6 +375,7 @@ public class PlatformInterop {
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
+
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(fontModel)

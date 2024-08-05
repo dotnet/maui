@@ -13,13 +13,11 @@ import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import com.microsoft.maui.ImageLoaderCallback;
-import com.microsoft.maui.PlatformAppCompatImageView;
 import com.microsoft.maui.PlatformInterop;
 import com.microsoft.maui.glide.GlideLogging;
 
 public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> {
     private final ImageLoaderCallback callback;
-    private final PlatformAppCompatImageView platformView;
     private boolean destroyed;
     private boolean failed;
 
@@ -27,21 +25,12 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         super(view);
 
         this.callback = callback;
-        this.platformView = view instanceof PlatformAppCompatImageView ? (PlatformAppCompatImageView) view : null;
     }
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
-        if (destroyed || platformView == null) {
-            GlideLogging.v("onResourceCleared: setImageDrawable(placeholder)");
-            view.setImageDrawable(placeholder);
-        } else if (platformView != null && platformView.getDrawable() != null) {
-            GlideLogging.v("onResourceCleared: freeze()");
-            // if we're switching the image with another one, don't set the empty placeholder (null)
-            // and simply freeze the view to prevent it from accessing the bitmap which is about to be recycled
-            // See more: https://bumptech.github.io/glide/javadocs/4140/library/com.bumptech.glide.request.target/-target/on-load-cleared.html
-            this.platformView.freeze();
-        }
+        GlideLogging.v("onResourceCleared: setImageDrawable(placeholder)");
+        view.setImageDrawable(placeholder);
         
         if (this.destroyed && !this.failed) {
             GlideLogging.v("onResourceCleared: setIsImageRecycled(true)");
