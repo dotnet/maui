@@ -28,7 +28,7 @@ stages:
     displayName: ${{ parameters.dotnetVersion.tfm }} Android Device Tests
     ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
       dependsOn:
-        - android_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+        - android_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
@@ -75,7 +75,7 @@ stages:
     displayName: ${{ parameters.dotnetVersion.tfm }} iOS Device Tests
     ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
       dependsOn:
-        - ios_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+        - ios_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
@@ -122,7 +122,7 @@ stages:
     displayName: ${{ parameters.dotnetVersion.tfm }} macOS Device Tests
     ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
       dependsOn:
-        - catalyst_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+        - catalyst_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
@@ -168,7 +168,7 @@ stages:
     displayName: ${{ parameters.dotnetVersion.tfm }} Windows Device Tests
     ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
       dependsOn:
-        - windows_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+        - windows_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
