@@ -25,15 +25,15 @@ parameters:
 
 stages:
   - stage: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }} Android Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-      dependsOn:
-        - android_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} Android Device Tests ${{ parameters.dotnetVersion.dependsOn }}
+    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+    #   dependsOn:
+    #     - android_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
     - job: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ replace(parameters.dotnetVersion.tfm, '.', '') }}] Android emulator tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] Android emulator tests"
       pool: ${{ parameters.androidPool }}
       timeoutInMinutes: 60
       strategy:
@@ -46,7 +46,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
-                    DOTNET_VERSION: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
                     ${{ if eq(api, 27) }}:
                       DEVICE: android-emulator-32_${{ api }}
                       APIVERSION: ${{ api }}
@@ -70,15 +70,15 @@ stages:
             poolName: ${{ parameters.androidPool.name }}
 
   - stage: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }} iOS Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-      dependsOn:
-        - ios_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} iOS Device Tests
+    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+    #   dependsOn:
+    #     - ios_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
     - job: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ replace(parameters.dotnetVersion.tfm, '.', '') }}] iOS simulator tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] iOS simulator tests"
       pool: ${{ parameters.iosPool }}
       timeoutInMinutes: 120
       strategy:
@@ -91,7 +91,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
-                    DOTNET_VERSION: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
@@ -115,15 +115,15 @@ stages:
             poolName: 'Azure Pipelines'
 
   - stage: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }} macOS Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-      dependsOn:
-        - catalyst_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} macOS Device Tests
+    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+    #   dependsOn:
+    #     - catalyst_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
     - job: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "${{ replace(parameters.dotnetVersion.tfm, '.', '') }} macOS tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] macOS tests"
       pool: ${{ parameters.catalystPool }}
       timeoutInMinutes: 240
       strategy:
@@ -136,7 +136,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.catalyst }}
-                    DOTNET_VERSION: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
                     ${{ if eq(version, 'latest') }}:
                       DEVICE: maccatalyst
                     ${{ else }}:
@@ -159,15 +159,15 @@ stages:
 
 
   - stage: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }} Windows Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-      dependsOn:
-        - windows_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} Windows Device Tests
+    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+    #   dependsOn:
+    #     - windows_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
     - job: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ replace(parameters.dotnetVersion.tfm, '.', '') }}] Windows device tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] Windows device tests"
       pool: ${{ parameters.windowsPool }}
       timeoutInMinutes: 240 # how long to run the job before automatically cancelling
       strategy:
@@ -180,7 +180,7 @@ stages:
                   PROJECT_PATH: ${{ project.windows }}
                   PACKAGE_ID: ${{ project.windowsPackageId }}
                   DEVICE: ${{ version }}
-                  DOTNET_VERSION: ${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+                  DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
       steps:
         - template: device-tests-steps.yml
           parameters:
