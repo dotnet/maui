@@ -29,7 +29,7 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>8.0.72</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <VSToolsNetCoreSDKResolverPackageVersion>9.0.100-preview.7.24402.8</VSToolsNetCoreSDKResolverPackageVersion>
+    <VSToolsNetCoreSDKResolverPackageVersion>9.0.100-preview.7.24406.8</VSToolsNetCoreSDKResolverPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(VSToolsNetCoreSDKResolverPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.7.24401.8</MicrosoftNETCoreAppRefPackageVersion>
