@@ -93,7 +93,6 @@ parameters:
       - tfm: net9.0
         dependsOn: net8.0
       - tfm: net8.0
-        dependsOn: ''
 
 resources:
   repositories:
