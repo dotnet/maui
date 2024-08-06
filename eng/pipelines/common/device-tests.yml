@@ -25,10 +25,12 @@ parameters:
 
 stages:
   - stage: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.dotnetVersion.tfm }} Android Device Tests ${{ parameters.dotnetVersion.dependsOn }}
-    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-    #   dependsOn:
-    #     - android_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} Android Device Tests
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - android_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
     - job: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
@@ -71,9 +73,11 @@ stages:
 
   - stage: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
     displayName: ${{ parameters.dotnetVersion.tfm }} iOS Device Tests
-    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-    #   dependsOn:
-    #     - ios_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - ios_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
     - job: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
@@ -116,9 +120,11 @@ stages:
 
   - stage: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
     displayName: ${{ parameters.dotnetVersion.tfm }} macOS Device Tests
-    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-    #   dependsOn:
-    #     - catalyst_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - catalyst_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
     - job: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
@@ -160,9 +166,11 @@ stages:
 
   - stage: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
     displayName: ${{ parameters.dotnetVersion.tfm }} Windows Device Tests
-    # ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
-    #   dependsOn:
-    #     - windows_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - windows_device_tests_${{ parameters.dotnetVersion.dependsOn }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
     - job: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
