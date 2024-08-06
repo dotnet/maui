@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		public class GetOriginal
 		{
 			[Theory]
-			[InlineData("android", "drawable")]
+			[InlineData("android", "drawable-nodpi")]
 			[InlineData("ios", "Resources")]
 			[InlineData("uwp", "")]
 			[InlineData("wpf", "")]
