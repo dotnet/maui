@@ -58,12 +58,12 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		}
 
-		[TearDown]
-		public override void TearDown()
+		protected override void FixtureTeardown()
 		{
-			RunningApp.SetOrientationPortrait();
+			App.SetOrientationPortrait();
+			App.Back();
 
-			base.TearDown();
+			base.FixtureTeardown();
 		}
 #endif
 
