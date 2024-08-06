@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST // VerifyScreenshot() is not supported on MacCatalyst
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +13,7 @@ public class Issue14471 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Image)]
-	public void Issue14471Test()
+	public void ImageDoesntDisappearWhenNavigatingBack()
 	{
 		App.WaitForElement("image");
 		App.Click("switchToTab2Button");
@@ -24,3 +25,4 @@ public class Issue14471 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
