@@ -13,6 +13,9 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
+  dotnetVersion:
+    - tfm: netX.Y
+      dependsOn: netA.B
   projects:
     - name: name
       desc: Human Description
@@ -21,14 +24,16 @@ parameters:
       catalyst: /optional/path/to/catalyst.csproj
 
 stages:
-  - stage: android_device_tests
-    displayName: Android Device Tests
-    dependsOn: []
+  - stage: android_device_tests_${{ parameters.dotnetVersion.tfm }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} Android Device Tests
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - android_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
-    - job: android_device_tests
+    - job: android_device_tests_${{ parameters.dotnetVersion.tfm }}
       workspace:
         clean: all
-      displayName: "Android emulator tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] Android emulator tests"
       pool: ${{ parameters.androidPool }}
       timeoutInMinutes: 60
       strategy:
@@ -41,6 +46,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
+                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
                     ${{ if eq(api, 27) }}:
                       DEVICE: android-emulator-32_${{ api }}
                       APIVERSION: ${{ api }}
@@ -63,14 +69,16 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: ${{ parameters.androidPool.name }}
 
-  - stage: ios_device_tests
-    displayName: iOS Device Tests
-    dependsOn: []
+  - stage: ios_device_tests_${{ parameters.dotnetVersion.tfm }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} iOS Device Tests
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - ios_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
-    - job: ios_device_tests
+    - job: ios_device_tests_${{ parameters.dotnetVersion.tfm }}
       workspace:
         clean: all
-      displayName: "iOS tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] iOS simulator tests"
       pool: ${{ parameters.iosPool }}
       timeoutInMinutes: 120
       strategy:
@@ -83,6 +91,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
+                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
@@ -105,14 +114,16 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
 
-  - stage: catalyst_device_tests
-    displayName: macOS Device Tests
-    dependsOn: []
+  - stage: catalyst_device_tests_${{ parameters.dotnetVersion.tfm }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} macOS Device Tests
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - catalyst_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
-    - job: catalyst_device_tests
+    - job: catalyst_device_tests_${{ parameters.dotnetVersion.tfm }}
       workspace:
         clean: all
-      displayName: "macOS tests"
+      displayName: "${{ parameters.dotnetVersion.tfm }} macOS tests"
       pool: ${{ parameters.catalystPool }}
       timeoutInMinutes: 240
       strategy:
@@ -125,6 +136,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.catalyst }}
+                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
                     ${{ if eq(version, 'latest') }}:
                       DEVICE: maccatalyst
                     ${{ else }}:
@@ -146,14 +158,16 @@ stages:
             poolName: 'Azure Pipelines'
 
 
-  - stage: windows_device_tests
-    displayName: Windows Device Tests
-    dependsOn: []
+  - stage: windows_device_tests_${{ parameters.dotnetVersion.tfm }}
+    displayName: ${{ parameters.dotnetVersion.tfm }} Windows Device Tests
+    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+      dependsOn:
+        - windows_device_tests_${{ parameters.dotnetVersion.dependsOn }}
     jobs:
-    - job: windows_device_tests
+    - job: windows_device_tests_${{ parameters.dotnetVersion.tfm }}
       workspace:
         clean: all
-      displayName: "Windows device tests"
+      displayName: "[${{ parameters.dotnetVersion.tfm }}] Windows device tests"
       pool: ${{ parameters.windowsPool }}
       timeoutInMinutes: 240 # how long to run the job before automatically cancelling
       strategy:
@@ -166,6 +180,7 @@ stages:
                   PROJECT_PATH: ${{ project.windows }}
                   PACKAGE_ID: ${{ project.windowsPackageId }}
                   DEVICE: ${{ version }}
+                  DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
       steps:
         - template: device-tests-steps.yml
           parameters:
