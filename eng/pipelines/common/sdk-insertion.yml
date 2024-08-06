@@ -41,7 +41,7 @@ jobs:
 
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifactName: DropMetadata-$(Build.BuildId)-nugets-$(System.JobAttempt)
+      artifactName: DropMetadata-$(Build.BuildId)-nugets
       downloadPath: $(Build.StagingDirectory)\metadata
     displayName: Download nugets drop metadata
 
