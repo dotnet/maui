@@ -35,7 +35,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateCoordinates(this UIWindow platformWindow, IWindow window)
 		{
+			var callFrameChanged = true;
 			var rectangle = platformWindow.Bounds.ToRectangle();
+			Console.WriteLine($"UpdateCoordinates: platformWindow={rectangle}, window=[X={window.X}, Y={window.Y}, Width={window.Width}, Height Height={window.Height}]");
 
 			if (OperatingSystem.IsIOSVersionAtLeast(16)) 
 			{
@@ -45,17 +47,19 @@ namespace Microsoft.Maui.Platform
 				{
 					var preferences = new UIWindowSceneGeometryPreferencesMac
 					{
-						SystemFrame = new CGRect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height)
+						SystemFrame = new CGRect(window.X, window.Y, window.Width, window.Height)
 					};
 
 					windowScene.RequestGeometryUpdate(preferences, (error) => {
 						System.Diagnostics.Debug.WriteLine("" + error);
 					});
+
+					callFrameChanged = false;
 				}
 			}
-			else 
+
+			if (callFrameChanged) 
 			{
-				// TODO: When should this be called exactly?
 				window.FrameChanged(rectangle);
 			}
 		}
