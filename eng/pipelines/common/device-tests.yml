@@ -14,8 +14,8 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
   dotnetVersion:
-    - tfm: netX.Y
-      dependsOn: netA.B
+    - tfm: ''
+      dependsOn: ''
   projects:
     - name: name
       desc: Human Description
