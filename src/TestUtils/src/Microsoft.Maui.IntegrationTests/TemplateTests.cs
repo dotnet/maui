@@ -264,7 +264,7 @@ namespace Microsoft.Maui.IntegrationTests
 		//[TestCase("maui-blazor", DotNetPrevious, "Release")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release")]
-		public void BuildUnpackaged(string id, string framework, string config)
+		public void BuildPackaged(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -274,18 +274,23 @@ namespace Microsoft.Maui.IntegrationTests
 
 			EnableTizen(projectFile);
 			FileUtilities.ReplaceInFile(projectFile,
-				"<UseMaui>true</UseMaui>",
-				"<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
+				"<WindowsPackageType>None</WindowsPackageType>",
+				"");
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
 		[Test]
-		[TestCase("maui", true, true)]
-		[TestCase("maui", true, false)]
-		[TestCase("maui", false, true)]
-		public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself)
+		[TestCase("maui", true, true, "None")]
+		[TestCase("maui", true, true, "MSIX")]
+		[TestCase("maui", true, false, "None")]
+		[TestCase("maui", true, false, "MSIX")]
+		[TestCase("maui", false, true, "None")]
+		[TestCase("maui", false, true, "MSIX")]
+		[TestCase("maui", false, false, "None")]
+		[TestCase("maui", false, false, "MSIX")]
+		public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself, string packageType)
 		{
 			if (TestEnvironment.IsMacOS)
 				Assert.Ignore("This test is designed for testing a windows build.");
@@ -297,17 +302,17 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			FileUtilities.ReplaceInFile(projectFile,
-				"<UseMaui>true</UseMaui>",
+				"<WindowsPackageType>None</WindowsPackageType>",
 				$"""
-				<UseMaui>true</UseMaui>
 				<WindowsAppSDKSelfContained>{wasdkself}</WindowsAppSDKSelfContained>
 				<SelfContained>{netself}</SelfContained>
+				<WindowsPackageType>{packageType}</WindowsPackageType>
 				""");
 
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -328,9 +333,8 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			FileUtilities.ReplaceInFile(projectFile,
-				"<UseMaui>true</UseMaui>",
+				"<WindowsPackageType>None</WindowsPackageType>",
 				$"""
-				<UseMaui>true</UseMaui>
 				<UseRidGraph>{useridgraph}</UseRidGraph>
 				<WindowsPackageType>{packageType}</WindowsPackageType>
 				""");
@@ -338,7 +342,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -462,6 +466,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		[TestCase("maui", DotNetCurrent, "Release")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void PublishUnpackaged(string id, string framework, string config)
 		{
 			if (!TestEnvironment.IsWindows)
@@ -485,6 +490,40 @@ namespace Microsoft.Maui.IntegrationTests
 			AssetExists("OpenSans-Regular.ttf");
 			AssetExists("splashSplashScreen.scale-100.png");
 			AssetExists("AboutAssets.txt");
+
+			void AssetExists(string filename)
+			{
+				var fullpath = Path.Combine(assetsRoot!, filename);
+				Assert.IsTrue(File.Exists(fullpath),
+					$"Unable to find expected asset: {fullpath}");
+			}
+		}
+
+		[Test]
+		[TestCase("maui", DotNetCurrent, "Release")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release")]
+		public void PublishPackaged(string id, string framework, string config)
+		{
+			if (!TestEnvironment.IsWindows)
+				Assert.Ignore("Running Windows templates is only supported on Windows.");
+
+			var projectDir = TestDirectory;
+			var name = Path.GetFileName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{name}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<WindowsPackageType>None</WindowsPackageType>",
+				"");
+
+			Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
+
+			AssetExists($"{name}_1.0.0.1_x64.msi");
 
 			void AssetExists(string filename)
 			{
