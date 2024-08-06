@@ -16,11 +16,11 @@
 
     <Border x:Name="border"
             VerticalOptions="Center"
-            AutomationId="border"
             StrokeThickness="2">
-        <Label Text="Hello, World!" />
-        <Border.GestureRecognizers>
-            <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-        </Border.GestureRecognizers>
+        <Label AutomationId="label" Text="Hello, World!">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+            </Label.GestureRecognizers>
+        </Label>
     </Border>
 </ContentPage>

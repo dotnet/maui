@@ -17,13 +17,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Border)]
 		public void BorderColorShouldChange()
 		{
-			App.WaitForElement("border");
+			App.WaitForElement("label");
 
 			//Applies a gradient
-			App.Click("border");
+			App.Click("label");
 
 			//Applies a solid color
-			App.Click("border");
+			App.Click("label");
 
 			VerifyScreenshot();
 		}
