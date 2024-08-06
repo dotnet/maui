@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.LifeCycle)]
 		public void AppThemeShouldChange()
 		{
 			_ = App.WaitForElement("labelVisibleOnlyInLightMode");
