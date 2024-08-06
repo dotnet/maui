@@ -15,7 +15,7 @@ public class Issue10222 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    [FailsOnIOS]
+    [FailsOnIOS("This test is failing, likely due to product issue")]
     public void Issue10222Test()
     {
         try
