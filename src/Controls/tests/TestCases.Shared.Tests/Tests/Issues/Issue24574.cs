@@ -22,10 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TapLabel");
 
 			App.Tap("TapLabel");
-			App.WaitForNoElement("Single");
+			App.WaitForElement("Single", postTimeout: TimeSpan.FromSeconds(1));
 
 			App.DoubleTap("TapLabel");
-			App.WaitForNoElement("Double");
+			App.WaitForElement("Double");
 		}
 	}
 }
