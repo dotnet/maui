@@ -103,6 +103,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
 		{
+			_loopableCollectionView?.CleanUp();
 			_loopableCollectionView = new LoopableCollectionView(base.GetCollectionView(collectionViewSource));
 
 			if (Element is CarouselView cv && cv.Loop)
