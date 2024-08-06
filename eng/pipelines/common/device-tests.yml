@@ -35,7 +35,7 @@ stages:
     - job: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ parameters.dotnetVersion.tfm }}] Android emulator tests"
+      displayName: "Android"
       pool: ${{ parameters.androidPool }}
       timeoutInMinutes: 60
       strategy:
@@ -82,7 +82,7 @@ stages:
     - job: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ parameters.dotnetVersion.tfm }}] iOS simulator tests"
+      displayName: "iOS"
       pool: ${{ parameters.iosPool }}
       timeoutInMinutes: 120
       strategy:
@@ -129,7 +129,7 @@ stages:
     - job: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ parameters.dotnetVersion.tfm }}] macOS tests"
+      displayName: "macOS"
       pool: ${{ parameters.catalystPool }}
       timeoutInMinutes: 240
       strategy:
@@ -175,7 +175,7 @@ stages:
     - job: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "[${{ parameters.dotnetVersion.tfm }}] Windows device tests"
+      displayName: "Windows"
       pool: ${{ parameters.windowsPool }}
       timeoutInMinutes: 240 # how long to run the job before automatically cancelling
       strategy:

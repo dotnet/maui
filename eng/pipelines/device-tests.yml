@@ -90,9 +90,9 @@ parameters:
   - name: targetFrameworks
     type: object
     default:
-      - tfm: net8.0
       - tfm: net9.0
-        dependsOn: net8.0
+      - tfm: net8.0
+        dependsOn: net9.0
 
 resources:
   repositories:
