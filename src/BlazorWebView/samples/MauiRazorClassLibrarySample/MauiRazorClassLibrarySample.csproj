@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(_MauiPreviousDotNetTfm)</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

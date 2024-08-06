@@ -16,12 +16,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams
-		//[TestCase("maui", DotNetPrevious, "Debug", false, "")]
-		//[TestCase("maui", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui", DotNetPrevious, "Debug", false, "")]
+		[TestCase("maui", DotNetPrevious, "Release", false, "")]
 		[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 		[TestCase("maui", DotNetCurrent, "Release", false, "")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false, "")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty")]
@@ -38,6 +38,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
 			if (shouldPack)
@@ -217,12 +219,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		//[TestCase("maui", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui", DotNetPrevious, "Release", false)]
+		[TestCase("maui", DotNetPrevious, "Debug", false)]
+		[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]
 		[TestCase("maui", DotNetCurrent, "Release", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
 		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
 		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
@@ -237,6 +239,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
 			if (shouldPack)
@@ -256,12 +260,51 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		//[TestCase("maui", DotNetPrevious, "Debug")]
-		//[TestCase("maui", DotNetPrevious, "Release")]
+		[TestCase("maui", "Debug", false)]
+		[TestCase("maui", "Release", false)]
+		[TestCase("maui-blazor", "Debug", false)]
+		[TestCase("maui-blazor", "Release", false)]
+		[TestCase("mauilib", "Debug", true)]
+		[TestCase("mauilib", "Release", true)]
+		public void PreviousDotNetCanUseLatestMaui(string id, string config, bool shouldPack)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			// TODO: fix this as we should be able to build tizen net8
+			// EnableTizen(projectFile);
+
+			if (shouldPack)
+				FileUtilities.ReplaceInFile(projectFile,
+					"</Project>",
+					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+
+			// set <MauiVersion> in the csproj as that is the reccommended place
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"""
+				  <PropertyGroup>
+				    <MauiVersion>{MauiPackageVersion}</MauiVersion>
+					<NoWarn>$(NoWarn);CS0618</NoWarn>
+				  </PropertyGroup>
+				</Project>
+				""");
+
+			string target = shouldPack ? "Pack" : "";
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", DotNetPrevious, "Debug")]
+		[TestCase("maui", DotNetPrevious, "Release")]
 		[TestCase("maui", DotNetCurrent, "Debug")]
 		[TestCase("maui", DotNetCurrent, "Release")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		//[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		[TestCase("maui-blazor", DotNetPrevious, "Release")]
 		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
@@ -272,7 +315,10 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
+
 			FileUtilities.ReplaceInFile(projectFile,
 				"<UseMaui>true</UseMaui>",
 				"<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
@@ -510,6 +556,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
+			// TODO: remove this if as we should be able to build tizen net8
+			if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
 			var projectSectionsToReplace = new Dictionary<string, string>()

@@ -93,6 +93,17 @@ jobs:
   - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
     displayName: Move the downloaded artifacts
 
+  - pwsh: |
+      Get-ChildItem artifacts -Filter 'Microsoft.Maui.Controls.*.nupkg' |  Where-Object { $_.Name -match '^Microsoft\.Maui\.Controls\.([\d\.]+.*)\.nupkg$' }
+      $version = $Matches.1
+      if (!$version) {
+          Write-Error "Failed to extract the version from the nupkgs"
+          exit 1
+      }
+      Write-Host "Found .NET MAUI version (MAUI_PACKAGE_VERSION): $version"
+      Write-Host "##vso[task.setvariable variable=MAUI_PACKAGE_VERSION]$version"
+    displayName: Read the .NET MAUI version from the nugets
+
   - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
     displayName: 'Install .NET (Local Workloads)'
     retryCountOnTaskFailure: 3
