@@ -13,7 +13,7 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
-  dotnetVersion:
+  targetFrameworkVersion:
     - tfm: ''
       dependsOn: ''
   projects:
@@ -24,15 +24,15 @@ parameters:
       catalyst: /optional/path/to/catalyst.csproj
 
 stages:
-  - stage: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.dotnetVersion.tfm }} Android Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+  - stage: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn:
-        - android_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
+        - android_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
-    - job: android_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+    - job: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
       displayName: "Android"
@@ -48,7 +48,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
-                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
+                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if eq(api, 27) }}:
                       DEVICE: android-emulator-32_${{ api }}
                       APIVERSION: ${{ api }}
@@ -71,15 +71,15 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: ${{ parameters.androidPool.name }}
 
-  - stage: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.dotnetVersion.tfm }} iOS Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+  - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn:
-        - ios_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
+        - ios_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
-    - job: ios_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+    - job: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
       displayName: "iOS"
@@ -95,7 +95,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
-                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
+                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
@@ -118,15 +118,15 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
 
-  - stage: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.dotnetVersion.tfm }} macOS Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+  - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn:
-        - catalyst_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
+        - catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
-    - job: catalyst_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+    - job: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
       displayName: "macOS"
@@ -142,7 +142,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.catalyst }}
-                    DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
+                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if eq(version, 'latest') }}:
                       DEVICE: maccatalyst
                     ${{ else }}:
@@ -164,15 +164,15 @@ stages:
             poolName: 'Azure Pipelines'
 
 
-  - stage: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.dotnetVersion.tfm }} Windows Device Tests
-    ${{ if ne(parameters.dotnetVersion.dependsOn, '') }}:
+  - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} Windows Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
       dependsOn:
-        - windows_device_tests_${{ replace(parameters.dotnetVersion.dependsOn, '.', '') }}
+        - windows_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
     ${{ else }}:
       dependsOn: []
     jobs:
-    - job: windows_device_tests_${{ replace(parameters.dotnetVersion.tfm, '.', '') }}
+    - job: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
       displayName: "Windows"
@@ -188,7 +188,7 @@ stages:
                   PROJECT_PATH: ${{ project.windows }}
                   PACKAGE_ID: ${{ project.windowsPackageId }}
                   DEVICE: ${{ version }}
-                  DOTNET_VERSION: ${{ parameters.dotnetVersion.tfm }}
+                  TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
       steps:
         - template: device-tests-steps.yml
           parameters:
