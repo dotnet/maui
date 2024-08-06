@@ -82,6 +82,31 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
+		[Test]
+		[TestCase("maui", "Debug")]
+		[TestCase("maui", "Release")]
+		[TestCase("maui-blazor", "Debug")]
+		[TestCase("maui-blazor", "Release")]
+		public void RunOnPreviousTfm(string id, string config)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			BuildProps.Add("MauiVersion=" + MauiPackageVersion);
+
+			AddInstrumentation(projectDir);
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{DotNetPrevious}-android", properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
+
+			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
+			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
+				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
+		}
+
 		void AddInstrumentation(string projectDir)
 		{
 			var androidDir = Path.Combine(projectDir, "Platforms", "Android");

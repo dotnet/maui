@@ -69,5 +69,29 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
+
+		[Test]
+		[TestCase("maui", "Debug", "iossimulator-x64")]
+		[TestCase("maui", "Release", "iossimulator-x64")]
+		[TestCase("maui-blazor", "Debug", "iossimulator-x64")]
+		[TestCase("maui-blazor", "Release", "iossimulator-x64")]
+		public void RunOnPreviousTfm(string id, string config, string runtimeIdentifier)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetPrevious),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			BuildProps.Add("MauiVersion=" + MauiPackageVersion);
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{DotNetPrevious}-ios", properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			var appFile = Path.Combine(projectDir, "bin", config, $"{DotNetPrevious}-ios", runtimeIdentifier, $"{Path.GetFileName(projectDir)}.app");
+
+			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
+				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
+		}
 	}
 }

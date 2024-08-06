@@ -40,6 +40,7 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
+      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AndroidTemplateTests"
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
@@ -47,6 +48,7 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
+      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests"
 
   - name: prepareSteps
     type: stepList
@@ -173,6 +175,17 @@ jobs:
     - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
+    - pwsh: |
+        Get-ChildItem artifacts -Filter 'Microsoft.Maui.Controls.*.nupkg' |  Where-Object { $_.Name -match '^Microsoft\.Maui\.Controls\.([\d\.]+.*)\.nupkg$' }
+        $version = $Matches.1
+        if (!$version) {
+            Write-Error "Failed to extract the version from the nupkgs"
+            exit 1
+        }
+        Write-Host "Found .NET MAUI version (MAUI_PACKAGE_VERSION): $version"
+        Write-Host "##vso[task.setvariable variable=MAUI_PACKAGE_VERSION]$version"
+      displayName: Read the .NET MAUI version from the nugets
+
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 3
@@ -194,7 +207,7 @@ jobs:
     - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
       displayName: Build Microsoft.Maui.IntegrationTests
 
-    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Name=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
+    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="${{ RunPlatform.filter }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run $(PLATFORM_NAME) templates run tests
       continueOnError: true
       # TODO: pass properly device type/version from top-level yml
