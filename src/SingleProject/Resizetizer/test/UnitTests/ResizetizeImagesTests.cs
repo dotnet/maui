@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				$"drawable-mdpi/{file}";
 
 			protected override string GetPlatformCopyOutputFileName(string file) =>
-				$"drawable/{file}";
+				$"drawable-nodpi/{file}";
 
 			[Fact]
 			public void NoItemsSucceed()
@@ -440,8 +440,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileSize("drawable/camera.png", 1792, 1792);
-				AssertFileMatches("drawable/camera.png");
+				AssertFileSize("drawable-nodpi/camera.png", 1792, 1792);
+				AssertFileMatches("drawable-nodpi/camera.png");
 			}
 
 			[Fact]
@@ -459,7 +459,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var success = task.Execute();
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-				AssertFileSize("drawable/camera.png", 1792, 1792);
+				AssertFileSize("drawable-nodpi/camera.png", 1792, 1792);
 			}
 
 			[Theory]
