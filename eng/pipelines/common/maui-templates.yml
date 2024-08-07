@@ -69,7 +69,7 @@ jobs:
   - job: build_maui_templates_${{ category }}
     workspace:
       clean: all
-    displayName: '${{ category }} platform:'
+    displayName: 'Build ${{ category }}: '
     timeoutInMinutes: 240
     condition: ${{ parameters.condition}}
     strategy:
