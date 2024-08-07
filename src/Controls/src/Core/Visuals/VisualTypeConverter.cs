@@ -29,7 +29,13 @@ namespace Microsoft.Maui.Controls
 
 			if (RuntimeFeature.IsIVisualAssemblyScanningEnabled)
 			{
+#if NET8_0
+#pragma warning disable IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
 				ScanAllAssemblies(mappings);
+#if NET8_0
+#pragma warning restore IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
 			}
 			else
 			{

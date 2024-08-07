@@ -37,7 +37,13 @@ namespace Microsoft.Maui.Controls
 
 			if (RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported)
 			{
+#if NET8_0
+#pragma warning disable IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
 				if (TryConvertUsingImplicitCastOperator(value, targetType, out convertedValue))
+#if NET8_0
+#pragma warning restore IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
 				{
 					return true;
 				}

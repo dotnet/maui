@@ -65,7 +65,7 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-<!--
+  <!--
     Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
     Enable this individually in projects that declare/use AndroidResource IDs.
   -->
