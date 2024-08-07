@@ -20,15 +20,6 @@ parameters:
 
   - name: BuildPlatforms
     type: object
-    default:
-    - name: Windows
-      poolName: $(windowsVmPool)
-      vmImage: $(windowsVmImage)
-      artifact: templates-windows
-    - name: macOS
-      poolName: $(macOSXVmPool)
-      vmImage: $(macOSXVmImage)
-      artifact: templates-macos
 
   - name: BuildCategories
     type: object
@@ -42,23 +33,6 @@ parameters:
 
   - name: RunPlatforms
     type: object
-    default:
-    - name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
-      testName: RunOnAndroid
-      artifact: templates-run-android
-      filter: "Category=RunOnAndroid"
-    - name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
-      testName: RunOniOS
-      artifact: templates-run-ios
-      filter: "Category=RunOniOS"
 
   - name: prepareSteps
     type: stepList
@@ -218,7 +192,7 @@ jobs:
     - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
       displayName: Build Microsoft.Maui.IntegrationTests
 
-    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="${{ RunPlatform.filter }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
+    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run $(PLATFORM_NAME) templates run tests
       continueOnError: true
       # TODO: pass properly device type/version from top-level yml
