@@ -70,6 +70,11 @@ namespace Microsoft.Maui.Controls.Platform
 			platformButton.UpdatePadding(padding);
 		}
 
+		internal static void UpdateContentEdgeInsets(this UIButton platformButton, Button button, Thickness thickness)
+		{
+			platformButton.UpdateContentEdgeInsets(thickness);
+		}
+
 		public static void UpdateContentLayout(this UIButton platformButton, Button button)
 		{
 			(button as IView)?.InvalidateMeasure();

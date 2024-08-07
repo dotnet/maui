@@ -49,6 +49,16 @@ namespace Microsoft.Maui.Controls
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
+			// We can use the ContentEdgeInsets to provide space for the border.
+			// If the image is on the left or right, we can also incorporate the padding and spacing in the ContentEdgeInsets so that the title does not try to use that extra space.
+			var contentEdgeInsets = new Thickness(borderWidth);
+			if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+			{
+				contentEdgeInsets.Left += (nfloat)padding.Left + layout.Spacing / 2;
+				contentEdgeInsets.Right += (nfloat)padding.Right + layout.Spacing / 2;
+			}
+			platformButton.UpdateContentEdgeInsets(button, contentEdgeInsets);
+
 			var image = platformButton.CurrentImage;
 
 			if (image is not null)
@@ -60,7 +70,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, padding, borderWidth, widthConstraint, heightConstraint, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint, _originalImageSize))
 				{
 					image = platformButton.CurrentImage;
 				}
@@ -79,11 +89,7 @@ namespace Microsoft.Maui.Controls
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;
 
-			var titleRect = platformButton.TitleLabel.Bounds;
-			if (titleRect.Height == 0 || titleRect.Width == 0)
-			{
-				titleRect = ComputeTitleRect(platformButton, button, image, widthConstraint, heightConstraint, padding, borderWidth);
-			}
+			var titleRect = ComputeTitleRect(platformButton, button, image, widthConstraint, heightConstraint, borderWidth, padding);
 
 			var titleRectWidth = titleRect.Width;
 			var titleRectHeight = titleRect.Height;
@@ -113,6 +119,20 @@ namespace Microsoft.Maui.Controls
 				{
 					buttonContentWidth += spacing;
 					buttonContentWidth += (nfloat)Math.Min(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0);
+				}
+			}
+
+			// if we are in a scenario with unlimited width and the image is on top or bottom, let's make sure the title is not cut off by ensuring we have enough padding for the image and title
+			if (padding == ButtonHandler.DefaultPadding
+				&& (widthConstraint == double.PositiveInfinity || button.HorizontalOptions != LayoutOptions.Fill)
+				&& (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom))
+			{
+				var maxTitleRect = ComputeTitleRect(platformButton, button, image, double.PositiveInfinity, double.PositiveInfinity, borderWidth, padding);
+
+				var smallerWidth = (nfloat)Math.Min(maxTitleRect.Width, platformButton.CurrentImage?.Size.Width ?? 0);
+				if (padding.HorizontalThickness < smallerWidth)
+				{
+					buttonContentWidth += (nfloat)(smallerWidth - padding.HorizontalThickness);
 				}
 			}
 
@@ -153,10 +173,6 @@ namespace Microsoft.Maui.Controls
 			var spacing = (nfloat)layout.Spacing;
 			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
 
-			var padding = button.Padding;
-			if (padding.IsNaN)
-				padding = ButtonHandler.DefaultPadding;
-
 			var imageInsets = new UIEdgeInsets();
 			var titleInsets = new UIEdgeInsets();
 
@@ -164,11 +180,12 @@ namespace Microsoft.Maui.Controls
 
 			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
-				var titleRect = platformButton.TitleLabel.Bounds;
-				if (titleRect.Height == 0 || titleRect.Width == 0)
+				var padding = button.Padding;
+				if (padding.IsNaN)
 				{
-					titleRect = ComputeTitleRect(platformButton, button, image, size.Width, size.Height, padding, borderWidth);
+					padding = ButtonHandler.DefaultPadding;
 				}
+				var titleRect = ComputeTitleRect(platformButton, button, image, size.Width, size.Height, borderWidth, padding);
 
 				var titleWidth = titleRect.Width;
 				var titleHeight = titleRect.Height;
@@ -236,31 +253,42 @@ namespace Microsoft.Maui.Controls
 		/// <param name="image"></param>
 		/// <param name="widthConstraint"></param>
 		/// <param name="heightConstraint"></param>
-		/// <param name="padding"></param>
 		/// <param name="borderWidth"></param>
+		/// <param name="padding"></param>
 		/// <returns>Returns a <see cref="CGRect"/> that contains the title text.</returns>
-		CGRect ComputeTitleRect (UIButton platformButton, Button button, UIImage image,  double widthConstraint, double heightConstraint, Thickness padding, double borderWidth)
+		CGRect ComputeTitleRect (UIButton platformButton, Button button, UIImage image,  double widthConstraint, double heightConstraint, double borderWidth, Thickness padding)
 		{
-			var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
-			var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
+			// Use the current TitleLabel if it is set and valid
+			var titleRect = platformButton.TitleLabel.Bounds;
 
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity)
+			if (titleRect.Height == 0 || titleRect.Width == 0)
 			{
-				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
-				// even when the image is on top or bottom.
-				titleWidthConstraint -= image.Size.Width;
+				var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
+				var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
 
-				// When the image is on top or bottom and the HorizontalOptions is not fill,
-				// the title will only be as large as the borderwidth if there is no explicit width request.
-				// This shouldn't be an issue with Configuration APIs later down the line.
-				if ((button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Top || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Bottom)
-					&& button.WidthRequest == -1 && button.HorizontalOptions != LayoutOptions.Fill)
+				if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity)
 				{
-					titleWidthConstraint = borderWidth * 2;
+					// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
+					// even when the image is on top or bottom.
+					titleWidthConstraint -= image.Size.Width;
 				}
+
+				if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					titleWidthConstraint -= (nfloat)(button.ContentLayout.Spacing + padding.Left + padding.Right);
+				}
+
+				titleRect = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
 			}
 
-			return platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
+			// Measure the width of the sample character string using the same font as the TitleLabel. If a character cannot fit in the titleRect, let's use a zero size.
+			var minimumCharacterWidth = new Foundation.NSString("A").GetSizeUsingAttributes(new UIStringAttributes { Font = platformButton.TitleLabel.Font });
+			if (double.IsNaN(titleRect.Width) || double.IsNaN(titleRect.Height) || titleRect.Width < minimumCharacterWidth.Width)
+			{
+				titleRect = Rect.Zero;
+			}
+
+			return titleRect;
 		}
 
 		/// <summary>
@@ -270,12 +298,13 @@ namespace Microsoft.Maui.Controls
 		/// <param name="button"></param>
 		/// <param name="image"></param>
 		/// <param name="padding"></param>
+		/// <param name="spacing"></param>
 		/// <param name="borderWidth"></param>
 		/// <param name="widthConstraint"></param>
 		/// <param name="heightConstraint"></param>
 		/// <param name="originalImageSize"></param>
 		/// <returns></returns>
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
 		{
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
@@ -285,6 +314,15 @@ namespace Microsoft.Maui.Controls
 
 			var additionalHorizontalSpace = (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
 			var additionalVerticalSpace = (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
+
+			if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
+			{
+				additionalHorizontalSpace += (nfloat)spacing;
+			}
+			else
+			{
+				additionalVerticalSpace += (nfloat)spacing;
+			}
 
 			// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel.
 			var buffer = 0.1;
@@ -380,7 +418,7 @@ namespace Microsoft.Maui.Controls
 
 		private static void MapPadding(IButtonHandler handler, Button button)
 		{
-			handler.PlatformView.UpdatePadding(button);
+			handler.PlatformView.UpdateContentLayout(button);
 		}
 
 		public static void MapText(IButtonHandler handler, Button button)
