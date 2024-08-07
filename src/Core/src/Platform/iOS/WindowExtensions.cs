@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Platform
 		{
 			var callFrameChanged = true;
 			var rectangle = platformWindow.Bounds.ToRectangle();
-			Console.WriteLine($"UpdateCoordinates: platformWindow={rectangle}, window=[X={window.X}, Y={window.Y}, Width={window.Width}, Height Height={window.Height}]");
 
 			if (OperatingSystem.IsIOSVersionAtLeast(16)) 
 			{
@@ -45,15 +44,13 @@ namespace Microsoft.Maui.Platform
 
 				if (windowScene is not null)
 				{
-					var preferences = new UIWindowSceneGeometryPreferencesMac
+					UIWindowSceneGeometryPreferencesMac preferences = new()
 					{
 						SystemFrame = new CGRect(window.X, window.Y, window.Width, window.Height)
 					};
 
-					windowScene.RequestGeometryUpdate(preferences, (error) => {
-						System.Diagnostics.Debug.WriteLine("" + error);
-					});
-
+					// TODO: Log errors.
+					windowScene.RequestGeometryUpdate(preferences, (error) => { });
 					callFrameChanged = false;
 				}
 			}

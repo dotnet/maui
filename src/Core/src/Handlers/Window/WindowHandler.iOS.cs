@@ -1,13 +1,12 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
-		private IDisposable? effectiveGeometryObserver;
+		private IDisposable? _effectiveGeometryObserver;
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
@@ -15,23 +14,20 @@ namespace Microsoft.Maui.Handlers
 
 			UpdateVirtualViewFrame(platformView);
 
-			effectiveGeometryObserver = platformView.WindowScene?.AddObserver("effectiveGeometry", NSKeyValueObservingOptions.OldNew, HandleEffectiveGeometryObserved);
+			_effectiveGeometryObserver = platformView.WindowScene?.AddObserver("effectiveGeometry", NSKeyValueObservingOptions.OldNew, HandleEffectiveGeometryObserved);
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		protected override void DisconnectHandler(UIWindow platformView)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
-			base.DisconnectHandler(platformView);
+			_effectiveGeometryObserver?.Dispose();
 
-			effectiveGeometryObserver?.Dispose();
+			base.DisconnectHandler(platformView);
 		}
 
 		void HandleEffectiveGeometryObserved(NSObservedChange obj)
 		{
-			if (obj is not null && obj.OldValue is UIWindowSceneGeometry oldGeometry && obj.NewValue is UIWindowSceneGeometry newGeometry)
+			if (obj is not null && obj.NewValue is UIWindowSceneGeometry newGeometry)
 			{
-				Console.WriteLine($" oldValue={oldGeometry.SystemFrame}, newValue={newGeometry.SystemFrame}");
 				VirtualView.FrameChanged(newGeometry.SystemFrame.ToRectangle());
 			}
 		}
@@ -105,7 +101,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
+			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
 		}
 
 		void UpdateVirtualViewFrame(UIWindow window)
