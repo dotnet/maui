@@ -1,7 +1,6 @@
-using Microsoft.Maui.IntegrationTests.Apple;
-
 namespace Microsoft.Maui.IntegrationTests;
 
+[Category(Categories.Build)]
 public class ResizetizerTests : BaseBuildTest
 {
 	const string BlankSvgContents =
