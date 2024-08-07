@@ -1,6 +1,9 @@
 UI Testing
 ===
 
+# Note for New Contributors
+Although we have the DeviceTests projects, please prioritize app testing using Appium as these tests are less likely to cause issues with our CI pipeline.
+
 # Introduction
 
 Currently we are using [Appium](https://appium.io/docs/en/2.0/) to facilitate UI automation for Windows, Catalyst, iOS, and Android.
@@ -9,6 +12,8 @@ Appium relies on different implementations called `drivers` for each platform th
 * Catalyst  - [mac2](https://github.com/appium/appium-mac2-driver)
 * iOS       - [XCUITest](https://github.com/appium/appium-xcuitest-driver)
 * Android   - [UIAutomator2](https://github.com/appium/appium-uiautomator2-driver)
+
+
 
 ## Creating a new test
 
