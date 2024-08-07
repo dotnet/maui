@@ -9,16 +9,16 @@ using PlatformWindow = UIKit.UIWindow;
 using PlatformWindow = Microsoft.UI.Xaml.Window;
 #endif
 
-namespace Microsoft.Maui.Embedding;
+namespace Microsoft.Maui;
 
 /// <summary>
-/// A proxy service that provides access to the embedded window and its associated platform window.
+/// A proxy service that provides access to the window and its associated platform window.
 /// </summary>
 /// <remarks>
 /// This is used when embedding but also serves to allow the platform window to be added to the service collection
 /// before it is actually known or instantiated.
 /// </remarks>
-internal class EmbeddedWindowProvider
+internal class WindowProvider
 {
 	WeakReference<PlatformWindow>? _platformWindow;
 	WeakReference<IWindow>? _window;

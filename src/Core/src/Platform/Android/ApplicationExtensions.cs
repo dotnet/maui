@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using AndroidX.AppCompat.App;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.LifecycleEvents;
@@ -55,6 +56,9 @@ namespace Microsoft.Maui.Platform
 					$"to add support for multiple activities https://aka.ms/maui-docs-create-window "  + 
 					$"or set the LaunchMode to SingleTop on {activity.GetType()}.");
 			}
+
+			var wndProvider = mauiContext.Services?.GetRequiredService<WindowProvider>();
+			wndProvider?.SetWindow(activity, window);
 
 			activity.SetWindowHandler(window, mauiContext);
 		}
