@@ -44,6 +44,9 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
+  - pwsh: Get-ChildItem "$(DotNet.Dir)/packs/Microsoft.*.Sdk.*/*/tools/lib/xcsync" | Remove-Item -Recurse
+    displayName: 'Remove xcsync as this is not used and will be fixed later'
+
   - ${{ if eq(parameters.useArtifacts, true) }}:
 
     - task: DownloadBuildArtifacts@0
