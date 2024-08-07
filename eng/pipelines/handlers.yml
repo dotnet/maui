@@ -88,7 +88,7 @@ parameters:
         vmImage: $(macOSXVmImage)
         artifact: nuget-macos
 
-  - name: BuilTemplatePlatforms
+  - name: BuildTemplatePlatforms
     type: object
     default:
       - name: Windows
@@ -110,6 +110,7 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
+      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AndroidTemplateTests"
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
@@ -117,6 +118,7 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
+      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests"
 
   - name: TestTargetFrameworks
     type: object
@@ -295,7 +297,7 @@ stages:
     - template: common/maui-templates.yml
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
-        BuildPlatforms: ${{ parameters.BuilTemplatePlatforms }}
+        BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
 
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
   #   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

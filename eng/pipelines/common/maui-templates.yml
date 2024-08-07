@@ -20,35 +20,9 @@ parameters:
 
   - name: BuildPlatforms
     type: object
-    default:
-    - name: Windows
-      poolName: $(windowsVmPool)
-      vmImage: $(windowsVmImage)
-      artifact: templates-windows
-    - name: macOS
-      poolName: $(macOSXVmPool)
-      vmImage: $(macOSXVmImage)
-      artifact: templates-macos
 
   - name: RunPlatforms
     type: object
-    default:
-    - name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
-      testName: RunOnAndroid
-      artifact: templates-run-android
-      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AndroidTemplateTests"
-    - name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
-      testName: RunOniOS
-      artifact: templates-run-ios
-      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests"
 
   - name: prepareSteps
     type: stepList
