@@ -12,21 +12,21 @@
       <Uri>https://github.com/dotnet/android</Uri>
       <Sha>a9d10b46ae97533f81586279684a9632aeb680cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9230-net9-p7">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9231-net9-p7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>98b628c059185821dc2d5c827377a087aaa8c57f</Sha>
+      <Sha>0e30307e6ba562d79918101752e1a633028222a2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.5" Version="14.5.9230-net9-p7">
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.5" Version="14.5.9231-net9-p7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>98b628c059185821dc2d5c827377a087aaa8c57f</Sha>
+      <Sha>0e30307e6ba562d79918101752e1a633028222a2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net9.0_17.5" Version="17.5.9230-net9-p7">
+    <Dependency Name="Microsoft.iOS.Sdk.net9.0_17.5" Version="17.5.9231-net9-p7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>98b628c059185821dc2d5c827377a087aaa8c57f</Sha>
+      <Sha>0e30307e6ba562d79918101752e1a633028222a2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_17.5" Version="17.5.9230-net9-p7">
+    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_17.5" Version="17.5.9231-net9-p7">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>98b628c059185821dc2d5c827377a087aaa8c57f</Sha>
+      <Sha>0e30307e6ba562d79918101752e1a633028222a2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
