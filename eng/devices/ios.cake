@@ -18,9 +18,6 @@ var platform = testDevice.ToLower().Contains("simulator") ? "iPhoneSimulator" : 
 var runtimeIdentifier = Argument("rid", EnvironmentVariable("IOS_RUNTIME_IDENTIFIER") ?? GetDefaultRuntimeIdentifier(testDevice));
 var deviceCleanupEnabled = Argument("cleanup", true);
 
-// Test where clause
-string testWhere = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? "");
-
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
@@ -47,7 +44,7 @@ var dotnetToolPath = GetDotnetToolPath();
 Setup(context =>
 {
 	LogSetupInfo(dotnetToolPath);
-	PerformCleanupIfNeeded(deviceCleanupEnabled);
+	PerformCleanupIfNeeded(deviceCleanupEnabled, false);
 
 	// Device or simulator setup
 	if (testDevice.Contains("device"))
@@ -61,7 +58,7 @@ Setup(context =>
 	}
 });
 
-Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled));
+Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled, true));
 
 Task("Cleanup");
 
@@ -87,7 +84,6 @@ Task("uitest-build")
 	});
 
 Task("uitest")
-	.IsDependentOn("uitest-build")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
@@ -212,7 +208,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
 	var appiumLog = $"{binDir}/appium_ios.log";
-	var resultsFileName = $"{name}-{config}-ios";
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -311,15 +307,59 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 
 // Helper methods
 
-void PerformCleanupIfNeeded(bool cleanupEnabled)
+void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 {
 	if (cleanupEnabled)
 	{
+		var logDirectory = GetLogDirectory();
 		Information("Cleaning up...");
 		Information("Deleting XHarness simulator if exists...");
 		var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
 		foreach (var sim in sims)
 		{
+			if(createDeviceLogs)
+			{
+				try
+				{
+					var homeDirectory = Environment.GetEnvironmentVariable("HOME");
+					Information("Diagnostics Reports");
+					StartProcess("zip", new ProcessSettings {
+						Arguments = new ProcessArgumentBuilder()
+							.Append("-9r")
+							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}.zip")
+							.AppendQuoted($"{homeDirectory}/Library/Logs/DiagnosticReports/"),
+						RedirectStandardOutput = false
+					});
+
+					Information("CoreSimulator");
+					StartProcess("zip", new ProcessSettings {
+						Arguments = new ProcessArgumentBuilder()
+							.Append("-9r")
+							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}.zip")
+							.AppendQuoted($"{homeDirectory}/Library/Logs/CoreSimulator/{sim.UDID}"),
+						RedirectStandardOutput = false
+					});
+
+					StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_log.logarchive");
+
+					StartProcess("zip", new ProcessSettings {
+						Arguments = new ProcessArgumentBuilder()
+							.Append("-9r")
+							.AppendQuoted($"{logDirectory}/{sim.UDID}_log.logarchive.zip")
+							.AppendQuoted($"{homeDirectory}/{sim.UDID}_log.logarchive"),
+						RedirectStandardOutput = false
+					});
+
+					var screenshotPath = $"{testResultsPath}/{sim.UDID}_screenshot.png";
+					StartProcess("xcrun", $"simctl io {sim.UDID} screenshot {screenshotPath}");
+				}
+				catch(Exception ex)
+				{
+					Information($"Failed to collect logs for simulator {sim.Name} ({sim.UDID}): {ex.Message}");
+					Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_log.logarchive");
+				}
+			}
+
 			Information($"Deleting XHarness simulator {sim.Name} ({sim.UDID})...");
 			StartProcess("xcrun", $"simctl shutdown {sim.UDID}");
 			ExecuteWithRetries(() => StartProcess("xcrun", $"simctl delete {sim.UDID}"), 3);

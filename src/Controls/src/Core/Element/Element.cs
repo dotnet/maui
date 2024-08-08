@@ -386,20 +386,28 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			if (RealParent == value)
+			Element realParent = RealParent;
+
+			if (realParent == value)
+			{
 				return;
+			}
 
 			OnPropertyChanging(nameof(Parent));
 
 			if (_parentOverride == null)
-				OnParentChangingCore(Parent, value);
-
-			if (RealParent != null)
 			{
-				((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
+				OnParentChangingCore(Parent, value);
+			}
 
-				if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
-					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
+			if (realParent is IElementDefinition element)
+			{
+				element.RemoveResourcesChangedListener(OnParentResourcesChanged);
+
+				if (value != null && (element is Layout || element is IControlTemplated))
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+				}
 			}
 
 			RealParent = value;
@@ -422,7 +430,9 @@ namespace Microsoft.Maui.Controls
 			OnParentSet();
 
 			if (_parentOverride == null)
+			{
 				OnParentChangedCore();
+			}
 
 			OnPropertyChanged(nameof(Parent));
 		}

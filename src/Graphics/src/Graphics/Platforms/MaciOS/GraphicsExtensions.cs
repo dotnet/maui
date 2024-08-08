@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static CGRect AsCGRect(this RectF target)
 		{
-			return new CGRect(target.Left, target.Top, Math.Abs(target.Width), Math.Abs(target.Height));
+			return new CGRect(target.Left, target.Top, MathF.Abs(target.Width), MathF.Abs(target.Height));
 		}
 
 		public static CGRect AsCGRect(this Rect target)
@@ -135,12 +135,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 					while (startAngleInRadians < 0)
 					{
-						startAngleInRadians += (float)Math.PI * 2;
+						startAngleInRadians += MathF.PI * 2;
 					}
 
 					while (endAngleInRadians < 0)
 					{
-						endAngleInRadians += (float)Math.PI * 2;
+						endAngleInRadians += MathF.PI * 2;
 					}
 
 					var cx = (bottomRight.X + topLeft.X) / 2;
@@ -224,12 +224,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				while (startAngleInRadians < 0)
 				{
-					startAngleInRadians += (float)Math.PI * 2;
+					startAngleInRadians += MathF.PI * 2;
 				}
 
 				while (endAngleInRadians < 0)
 				{
-					endAngleInRadians += (float)Math.PI * 2;
+					endAngleInRadians += MathF.PI * 2;
 				}
 
 				var cx = (bottomRight.X + topLeft.X) / 2;
@@ -304,12 +304,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 					while (startAngleInRadians < 0)
 					{
-						startAngleInRadians += (float)Math.PI * 2;
+						startAngleInRadians += MathF.PI * 2;
 					}
 
 					while (endAngleInRadians < 0)
 					{
-						endAngleInRadians += (float)Math.PI * 2;
+						endAngleInRadians += MathF.PI * 2;
 					}
 
 					var cx = (bottomRight.X + topLeft.X) / 2;

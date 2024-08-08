@@ -238,6 +238,68 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui", true, "None")]
+		[TestCase("maui", true, "MSIX")]
+		[TestCase("maui", false, "None")]
+		[TestCase("maui", false, "MSIX")]
+		public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+		{
+			if (TestEnvironment.IsMacOS)
+				Assert.Ignore("This test is designed for testing a windows build.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				$"""
+				<UseMaui>true</UseMaui>
+				<UseRidGraph>{useridgraph}</UseRidGraph>
+				<WindowsPackageType>{packageType}</WindowsPackageType>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-windows10.0.19041.0");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", "ios")]
+		[TestCase("maui", "maccatalyst")]
+		[TestCase("maui-blazor", "ios")]
+		[TestCase("maui-blazor", "maccatalyst")]
+		public void BuildWithCustomBundleResource(string id, string framework)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			File.WriteAllText(Path.Combine(projectDir, "Resources", "testfile.txt"), "Something here :)");
+
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"""
+				  <ItemGroup>
+				    <BundleResource Include="Resources\testfile.txt" />
+				  </ItemGroup>
+				</Project>
+				""");
+
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add($"TargetFramework={DotNetCurrent}-{framework}");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: extendedBuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
@@ -440,6 +502,47 @@ namespace Microsoft.Maui.IntegrationTests
 			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		}
+
+		[Test]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
+		[TestCase("maui", "Debug", DotNetCurrent)]
+		[TestCase("maui", "Release", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Debug", DotNetCurrent)]
+		[TestCase("maui-multiproject", "Release", DotNetCurrent)]
+		public void CheckPrivacyManifestForiOS(string id, string config, string framework)
+		{
+			if (TestEnvironment.IsWindows)
+			{
+				Assert.Ignore("Running iOS templates is only supported on Mac.");
+			}
+
+			string projectDir = TestDirectory;
+			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			string appFileName = $"{Path.GetFileName(projectDir)}.app";
+			string appLocation =
+				Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+
+			// Multi-project is in a .iOS subfolder and csproj is *.iOS.csproj
+			if (id.EndsWith("multiproject"))
+			{
+				projectFile = 
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", $"{Path.GetFileName(projectDir)}.iOS.csproj");
+
+				appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";
+
+				appLocation =
+					Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+			}
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");
+
+			Assert.IsTrue(File.Exists(manifestLocation), $"Privacy Manifest not found in {manifestLocation}.");
 		}
 
 		[Test]

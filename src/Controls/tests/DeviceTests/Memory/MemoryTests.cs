@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -30,6 +32,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
+				handlers.AddHandler<Shape, ShapeViewHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
@@ -37,6 +40,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
+				handlers.AddHandler<Layout, LayoutHandler>();
 				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<Polygon, PolygonHandler>();
 				handlers.AddHandler<Polyline, PolylineHandler>();
@@ -45,6 +49,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
 				handlers.AddHandler<ImageCell, ImageCellRenderer>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
+				handlers.AddHandler<RadioButton, RadioButtonHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
 				handlers.AddHandler<SearchBar, SearchBarHandler>();
@@ -76,18 +81,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TabbedPage))]
 	public async Task PagesDoNotLeak(Type type)
 	{
-#if WINDOWS
-		// FIXME: there is still an issue with TabbedPage on Windows
-		if (type == typeof(TabbedPage))
-			return;
-#endif
-
 		SetupBuilder();
 
-		WeakReference viewReference = null;
-		WeakReference handlerReference = null;
-		WeakReference platformViewReference = null;
-
+		var references = new List<WeakReference>();
 		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
@@ -111,16 +107,22 @@ public class MemoryTests : ControlsHandlerTestBase
 			
 			await navPage.Navigation.PushModalAsync(page);
 
-			viewReference = new WeakReference(page);
-			handlerReference = new WeakReference(page.Handler);
-			platformViewReference = new WeakReference(page.Handler.PlatformView);
+			references.Add(new(page));
+			references.Add(new(page.Handler));
+			references.Add(new(page.Handler.PlatformView));
 
-			// Windows requires Loaded event to fire before unloading
 			await OnLoadedAsync(pageToWaitFor);
+			if (pageToWaitFor != page)
+			{
+				references.Add(new(pageToWaitFor));
+				references.Add(new(pageToWaitFor.Handler));
+				references.Add(new(pageToWaitFor.Handler.PlatformView));
+			}
+
 			await navPage.Navigation.PopModalAsync();
 		});
 
-		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
 	[Theory("Handler Does Not Leak")]
@@ -131,19 +133,26 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
 	[InlineData(typeof(DatePicker))]
+	[InlineData(typeof(Ellipse))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
 	[InlineData(typeof(Frame))]
 	[InlineData(typeof(GraphicsView))]
+	[InlineData(typeof(Grid))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
+	[InlineData(typeof(Line))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(ListView))]
+	[InlineData(typeof(Path))]
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
+	[InlineData(typeof(RadioButton))]
+	[InlineData(typeof(Rectangle))]
 	[InlineData(typeof(RefreshView))]
+	[InlineData(typeof(RoundRectangle))]
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
@@ -159,12 +168,8 @@ public class MemoryTests : ControlsHandlerTestBase
 		SetupBuilder();
 
 #if ANDROID
-		// TODO: fixing upstream at https://github.com/xamarin/xamarin-android/pull/8900
-		if (type == typeof(ListView))
-			return;
-
 		// NOTE: skip certain controls on older Android devices
-		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))
+		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
 #endif
 
@@ -185,7 +190,12 @@ public class MemoryTests : ControlsHandlerTestBase
 			var layout = new Grid();
 			var view = (View)Activator.CreateInstance(type);
 			layout.Add(view);
-			if (view is ContentView content)
+			if (view is Border border)
+			{
+				border.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) };
+				border.Content = new Label();
+			}
+			else if (view is ContentView content)
 			{
 				content.Content = new Label();
 			}
@@ -213,6 +223,15 @@ public class MemoryTests : ControlsHandlerTestBase
 			{
 				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
 				await Task.Delay(1000);
+			}
+			else if (view is TemplatedView templated)
+			{
+				templated.ControlTemplate = new ControlTemplate(() =>
+					new Border
+					{
+						StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) },
+						Content = new Grid { Children = { new Ellipse(), new ContentPresenter() } }
+					});
 			}
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
@@ -321,6 +340,128 @@ public class MemoryTests : ControlsHandlerTestBase
 
 			await navPage.Navigation.PopAsync();
 		});
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
+	}
+
+	[Fact("BindableLayout Does Not Leak")]
+	public async Task BindableLayoutDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+		var observable = new ObservableCollection<object>
+		{
+			new { Name = "One" },
+			new { Name = "Two" },
+			new { Name = "Three" },
+		};
+
+		var layout = new VerticalStackLayout();
+
+		{
+			BindableLayout.SetItemsSource(layout, observable);
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() =>
+			{
+				var radio = new RadioButton
+				{
+					ControlTemplate = new ControlTemplate(() =>
+					{
+						var radio = new RadioButton
+						{
+							ControlTemplate = new ControlTemplate(() =>
+							{
+								var ellipse = new Ellipse();
+								references.Add(new(ellipse));
+
+								return new HorizontalStackLayout
+								{
+									Children =
+									{
+										ellipse,
+										new ContentPresenter(),
+									}
+								};
+							})
+						};
+						radio.SetBinding(RadioButton.ContentProperty, "Name");
+						return radio;
+					})
+				};
+				radio.SetBinding(RadioButton.ContentProperty, "Name");
+				return radio;
+			}));
+			var page = new ContentPage { Content = layout };
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(page), async _ =>
+			{
+				await OnLoadedAsync(page);
+				BindableLayout.SetItemsSource(layout, new ObservableCollection<object>(observable));
+				page.Content = null;
+			});
+		}
+
+		// 6 Ellipses total: first 3 should not leak, last 3 should still be in the layout & alive
+		Assert.Equal(6, references.Count);
+		await AssertionExtensions.WaitForGC(references[0], references[1], references[2]);
+	}
+
+	[Fact("Window Does Not Leak")]
+	public async Task WindowDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var references = new List<WeakReference>();
+
+		{
+			var page = new ContentPage();
+			var window = new Window(page);
+			await CreateHandlerAndAddToWindow(window, async () =>
+			{
+				await OnLoadedAsync(page);
+				references.Add(new(window));
+				references.Add(new(window.Handler));
+
+				// NOTE: the PlatformView in this case remains alive in the test application:
+				// Activity on Android, Microsoft.UI.Xaml.Window on Windows, etc.
+				//references.Add(new(window.Handler.PlatformView));
+
+				if (MauiContext.Services.GetService<IApplication>() is ApplicationStub app)
+				{
+					app.SetWindow(null);
+				}
+			});
+		}
+
+		await AssertionExtensions.WaitForGC(references.ToArray());
+	}
+
+	[Fact("VisualDiagnosticsOverlay Does Not Leak"
+#if IOS || MACCATALYST
+		, Skip = "Fails with 'MauiContext should have been set on parent.'"
+#endif
+	)]
+	public async Task VisualDiagnosticsOverlayDoesNotLeak()
+	{
+		SetupBuilder();
+
+		var window = new WindowStub();
+		var overlay = new VisualDiagnosticsOverlay(window);
+		var references = new List<WeakReference>();
+
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var page = new ContentPage();
+				window.Content = page;
+				await CreateHandlerAsync(page);
+				overlay.Initialize();
+				references.Add(new(page));
+				references.Add(new(page.Handler));
+				references.Add(new(page.Handler.PlatformView));
+
+				window.Content = null;
+			});
+		}
 
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
