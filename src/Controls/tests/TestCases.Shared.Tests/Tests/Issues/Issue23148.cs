@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 
-		public async void CollectionViewNullItemsHeight()
+		public async void CollectionViewEmptyItemsHeight()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/23148
 
