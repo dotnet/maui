@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Button : ICrossPlatformLayout
 	{
 		CGSize _originalImageSize = CGSize.Empty;
+		bool _isFirstMeasure = true;
 
 		/// <summary>
 		/// Measure the desired size of the button based on the image and title size taking into account
@@ -49,17 +50,22 @@ namespace Microsoft.Maui.Controls
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
+			var image = platformButton.CurrentImage;
+
 			// We can use the ContentEdgeInsets to provide space for the border.
 			// If the image is on the left or right, we can also incorporate the padding and spacing in the ContentEdgeInsets so that the title does not try to use that extra space.
 			var contentEdgeInsets = new Thickness(borderWidth);
-			if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 			{
 				contentEdgeInsets.Left += (nfloat)padding.Left + layout.Spacing / 2;
 				contentEdgeInsets.Right += (nfloat)padding.Right + layout.Spacing / 2;
 			}
+			else if (image is null || string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
+				contentEdgeInsets.Left += (nfloat)padding.Left;
+				contentEdgeInsets.Right += (nfloat)padding.Right;
+			}
 			platformButton.UpdateContentEdgeInsets(button, contentEdgeInsets);
-
-			var image = platformButton.CurrentImage;
 
 			if (image is not null)
 			{
@@ -124,6 +130,7 @@ namespace Microsoft.Maui.Controls
 
 			// if we are in a scenario with unlimited width and the image is on top or bottom, let's make sure the title is not cut off by ensuring we have enough padding for the image and title
 			if (padding == ButtonHandler.DefaultPadding
+				&& image is not null
 				&& (widthConstraint == double.PositiveInfinity || button.HorizontalOptions != LayoutOptions.Fill)
 				&& (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom))
 			{
@@ -138,6 +145,8 @@ namespace Microsoft.Maui.Controls
 
 			var returnSize = new Size(Math.Min(buttonContentWidth, widthConstraint),
 							Math.Min(buttonContentHeight, heightConstraint));
+
+			_isFirstMeasure = false;
 
 			// Rounding the values up to the nearest whole number to match UIView.SizeThatFits
 			return new Size((int)Math.Ceiling(returnSize.Width), (int)Math.Ceiling(returnSize.Height));
@@ -156,6 +165,8 @@ namespace Microsoft.Maui.Controls
 
 			// Layout the image and title of the button
 			LayoutButton(platformButton, this, bounds);
+
+			_isFirstMeasure = true;
 
 			return new Size(bounds.Width, bounds.Height);
 		}
@@ -258,10 +269,15 @@ namespace Microsoft.Maui.Controls
 		/// <returns>Returns a <see cref="CGRect"/> that contains the title text.</returns>
 		CGRect ComputeTitleRect (UIButton platformButton, Button button, UIImage image,  double widthConstraint, double heightConstraint, double borderWidth, Thickness padding)
 		{
+			if (string.IsNullOrEmpty(platformButton.CurrentTitle))
+			{
+				return CGRect.Empty;
+			}
+
 			// Use the current TitleLabel if it is set and valid
 			var titleRect = platformButton.TitleLabel.Bounds;
 
-			if (titleRect.Height == 0 || titleRect.Width == 0)
+			if (_isFirstMeasure || titleRect.Height == 0 || titleRect.Width == 0)
 			{
 				var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
 				var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
@@ -273,9 +289,14 @@ namespace Microsoft.Maui.Controls
 					titleWidthConstraint -= image.Size.Width;
 				}
 
-				if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
+				if (image is not null && button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
 					titleWidthConstraint -= (nfloat)(button.ContentLayout.Spacing + padding.Left + padding.Right);
+				}
+
+				else if (image is null)
+				{
+					titleWidthConstraint -= (nfloat)(padding.Left + padding.Right);
 				}
 
 				titleRect = platformButton.GetTitleBoundingRect(titleWidthConstraint, titleHeightConstraint);
@@ -315,13 +336,16 @@ namespace Microsoft.Maui.Controls
 			var additionalHorizontalSpace = (nfloat)padding.Left + (nfloat)padding.Right + ((nfloat)borderWidth * 2);
 			var additionalVerticalSpace = (nfloat)padding.Top + (nfloat)padding.Bottom + ((nfloat)borderWidth * 2);
 
-			if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
+			if (!string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
-				additionalHorizontalSpace += (nfloat)spacing;
-			}
-			else
-			{
-				additionalVerticalSpace += (nfloat)spacing;
+				if (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					additionalHorizontalSpace += (nfloat)spacing;
+				}
+				else
+				{
+					additionalVerticalSpace += (nfloat)spacing;
+				}
 			}
 
 			// Apply a small buffer to the image size comparison since iOS can return a size that is off by a fraction of a pixel.
