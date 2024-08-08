@@ -17,15 +17,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.LifeCycle)]
 		public void AppThemeShouldChange()
 		{
-			_ = App.WaitForElement("labelVisibleOnlyInLightMode");
+			try
+			{
+				App.SetLightTheme();
+				_ = App.WaitForElement("labelVisibleOnlyInLightMode");
 
-			App.SetDarkTheme();
-			_ = App.WaitForElement("labelVisibleOnlyInDarkMode");
-			VerifyScreenshot("AppThemeShouldChangeDarkTheme");
+				App.SetDarkTheme();
+				_ = App.WaitForElement("labelVisibleOnlyInDarkMode");
+				VerifyScreenshot("AppThemeShouldChangeDarkTheme");
 
-			App.SetLightTheme();
-			_ = App.WaitForElement("labelVisibleOnlyInLightMode");
-			VerifyScreenshot("AppThemeShouldChangeLightTheme");
+				App.SetLightTheme();
+				_ = App.WaitForElement("labelVisibleOnlyInLightMode");
+				VerifyScreenshot("AppThemeShouldChangeLightTheme");
+			}
+			finally
+			{
+				App.SetLightTheme();
+			}
 		}
 	}
 }
