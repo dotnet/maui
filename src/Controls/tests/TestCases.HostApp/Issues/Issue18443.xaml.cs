@@ -6,11 +6,7 @@
 	{
 		public Issue18443()
 		{
-			InitializeComponent();
-			entry.Focused += (sender, e) =>
-			{
-				entry.SelectionLength = 3;
-			};
+			InitializeComponent();			
 		}
 	}
 }
