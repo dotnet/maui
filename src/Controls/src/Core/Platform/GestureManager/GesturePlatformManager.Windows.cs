@@ -391,9 +391,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 
-			if (_element is View && ElementGestureRecognizers is not null)
+			if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
 			{
-				ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
+				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
 
 			if (_control is not null)
