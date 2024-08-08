@@ -197,6 +197,66 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install ios --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install maccatalyst --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install macos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install tvos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
         Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
