@@ -28,7 +28,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		{
 			// .NET 8 was Packaged by default, so we don't have to do anything
 			FileUtilities.ShouldNotContainInFile(projectFile,
-				"<WindowsPackageType>None</WindowsPackageType>");
+				"<WindowsPackageType>");
 		}
 		else
 		{
@@ -126,12 +126,14 @@ public class WindowsTemplateTest : BaseTemplateTests
 		if (framework == DotNetPrevious)
 		{
 			// .NET 8 was Packaged by default, so we need to say no
+			FileUtilities.ShouldNotContainInFile(projectFile,
+				"<WindowsPackageType>");
 			BuildProps.Add("WindowsPackageType=None");
 		}
 		else
 		{
-			// .NET 9 and later was Unpackaged, so we need to check the line
-			FileUtilities.ShouldNotContainInFile(projectFile,
+			// .NET 9 is Unpackaged by default, so we don't have to do anything
+			FileUtilities.ShouldContainInFile(projectFile,
 				"<WindowsPackageType>None</WindowsPackageType>");
 		}
 
@@ -175,7 +177,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		{
 			// .NET 8 was Packaged by default, so we don't have to do anything
 			FileUtilities.ShouldNotContainInFile(projectFile,
-				"<WindowsPackageType>None</WindowsPackageType>");
+				"<WindowsPackageType>");
 		}
 		else
 		{
