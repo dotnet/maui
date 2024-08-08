@@ -85,3 +85,9 @@ steps:
   - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
     condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())
     artifact: ui-tests-samples-windows_failed_$(System.JobAttempt)
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifacts
+    condition: always()
+    inputs:
+      artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
