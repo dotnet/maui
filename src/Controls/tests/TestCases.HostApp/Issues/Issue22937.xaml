@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.TitleColor="Red"
+    x:Class="Maui.Controls.Sample.Issues.Issue22937">
+
+  <ContentPage.ToolbarItems>
+    <ToolbarItem x:Name="ChangeState" AutomationId="ChangeState" Text="Edit" Clicked="ChangeStateClicked"/>
+    <ToolbarItem x:Name="SaveButton" AutomationId="SaveButton" Text="Save"/>
+  </ContentPage.ToolbarItems>
+
+  <Grid>
+    <Label Text="Issue 22937"
+           HorizontalOptions="Center"
+           VerticalOptions="Center"/>
+  </Grid>
+</ContentPage>
