@@ -8,7 +8,7 @@ namespace Microsoft.Maui.IntegrationTests
 		NativeAOT
 	}
 
-	public class BaseBuildTest
+	public abstract class BaseBuildTest
 	{
 		public const string DotNetCurrent = "net9.0";
 		public const string DotNetPrevious = "net8.0";

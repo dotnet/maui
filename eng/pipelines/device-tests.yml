@@ -87,6 +87,11 @@ parameters:
       name: $(windowsTestsVmPool)
       vmImage: $(windowsTestsVmImage)
 
+  - name: targetFrameworkVersions
+    type: object
+    default:
+      - tfm: net9.0
+
 resources:
   repositories:
     - repository: yaml-templates
@@ -96,7 +101,7 @@ resources:
       ref: refs/heads/main
 
 stages:
-
+- ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
@@ -104,14 +109,15 @@ stages:
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
+      targetFrameworkVersion: ${{ targetFrameworkVersion }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
         iosVersions: [ 'simulator-17.2']
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
-        androidApiLevels: [ 33, 23 ]
+      ${{ else }}:
+        androidApiLevels: [ 33 ]
         iosVersions: [ 'simulator-17.2' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']

@@ -45,6 +45,7 @@ Information("Android SDK Root: {0}", androidSdkRoot);
 Information("Project File: {0}", projectPath);
 Information("Build Binary Log (binlog): {0}", binlogDirectory);
 Information("Build Configuration: {0}", configuration);
+Information("Build Target Framework: {0}", targetFramework);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };

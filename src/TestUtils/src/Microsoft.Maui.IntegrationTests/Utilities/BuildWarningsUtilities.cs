@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
-using static Microsoft.Maui.IntegrationTests.TemplateTests;
 
 namespace Microsoft.Maui.IntegrationTests
 {
