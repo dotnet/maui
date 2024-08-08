@@ -111,8 +111,6 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		BuildProps.Add("WindowsPackageType=None");
-
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
@@ -156,7 +154,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
 
-		AssetExists($"{name}_1.0.0.1_x64.msi");
+		AssetExists($"{name}_1.0.0.1_x64.msix");
 
 		void AssetExists(string filename)
 		{

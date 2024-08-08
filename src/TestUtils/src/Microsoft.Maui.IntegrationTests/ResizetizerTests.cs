@@ -24,6 +24,10 @@ public class ResizetizerTests : BaseBuildTest
 	[TestCase("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
+		// TODO: fix the tests as they have been disabled too long!
+		if (!TestEnvironment.IsWindows)
+			Assert.Ignore("Running Windows templates is only supported on Windows.");
+
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
 		var appFile = Path.Combine(appDir, $"{Path.GetFileName(appDir)}.csproj");
