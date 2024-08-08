@@ -3,6 +3,7 @@ using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
+	[Category(Categories.RunOniOS)]
 	public class AppleTemplateTests : BaseBuildTest
 	{
 		Simulator TestSimulator = new Simulator();

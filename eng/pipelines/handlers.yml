@@ -110,7 +110,6 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
-      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AndroidTemplateTests"
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
@@ -118,7 +117,6 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
-      filter: "FullyQualifiedName=Microsoft.Maui.IntegrationTests.AppleTemplateTests"
 
   - name: TestTargetFrameworks
     type: object
@@ -275,7 +273,7 @@ stages:
                 PRIVATE_BUILD: $(PrivateBuild)
             - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
               displayName: Build Microsoft.Maui.IntegrationTests
-            - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests" --resultsfilename="integration-samples" --verbosity=diagnostic
+            - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=Samples" --resultsfilename="integration-samples" --verbosity=diagnostic
               displayName: Run ${{ BuildPlatform.name }} sample build tests
             - task: PublishTestResults@2
               displayName: Publish the ${{ BuildPlatform.name }} sample build tests

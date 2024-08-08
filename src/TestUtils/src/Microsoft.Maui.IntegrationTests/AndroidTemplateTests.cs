@@ -4,6 +4,7 @@ using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
 {
+	[Category(Categories.RunOnAndroid)]
 	public class AndroidTemplateTests : BaseBuildTest
 	{
 		Emulator TestAvd = new Emulator();
