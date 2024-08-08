@@ -1,14 +1,13 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 const string DefaultVersion = "17.2";
+const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
 
 // Required arguments
 string DEFAULT_IOS_PROJECT = "../../src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? DEFAULT_IOS_PROJECT);
-var testDevice = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{DefaultVersion}");
+var testDevice = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? DefaultTestDevice);
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-ios");
 var binlogArg = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 var testApp = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
@@ -44,6 +43,12 @@ var dotnetToolPath = GetDotnetToolPath();
 Setup(context =>
 {
 	LogSetupInfo(dotnetToolPath);
+
+	if (!deviceBoot)
+	{
+		return;
+	}
+
 	PerformCleanupIfNeeded(deviceCleanupEnabled, false);
 
 	// Device or simulator setup
@@ -58,9 +63,20 @@ Setup(context =>
 	}
 });
 
-Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled, true));
+Teardown(context => 
+{
+	if (!deviceBoot || targetBoot)
+	{
+		return;
+	}
+
+	PerformCleanupIfNeeded(deviceCleanupEnabled, true);
+});
 
 Task("Cleanup");
+
+// Todo this doesn't work for iOS currently
+// Task("boot");
 
 Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
@@ -80,7 +96,6 @@ Task("uitest-build")
 	.Does(() =>
 	{
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
-
 	});
 
 Task("uitest")
@@ -377,7 +392,7 @@ string GetDefaultRuntimeIdentifier(string testDeviceIdentifier)
 
 void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version, string toolPath)
 {
-	Information("Install with xharness: {0}", testApp);
+	Information("Install with xharness: {0} testDevice:{1}", testApp, testDevice);
 	var settings = new DotNetToolSettings
 	{
 		ToolPath = toolPath,
@@ -389,6 +404,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 							$"--targets=\"{testDevice}\" " +
 							$"--output-directory=\"{testResultsDirectory}\" " +
 							$"--verbosity=\"Debug\" ");
+
 			if (testDevice.Contains("device"))
 			{
 				if (string.IsNullOrEmpty(DEVICE_UDID))
@@ -430,9 +446,24 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			var simulatorName = "XHarness";
 			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
 			var sims = ListAppleSimulators();
+
 			var simXH = sims.Where(s => s.Name.Contains(simulatorName) && s.Name.Contains(iosVersionToRun)).FirstOrDefault();
 			if (simXH == null)
-				throw new Exception("No simulator was found to run tests on.");
+			{
+				// if the device is already installed on this system then xharness won't create a new one
+				// Ideally we could just pull this info from xharness but I'm not sure how to convert the 
+				// ios-simulator-64_{DefaultVersion} string to a UDID from xharness
+				// so we are just going to make some assumptions here for local runs				
+				if (DefaultTestDevice == testDevice && !IsCIBuild())
+				{
+					simXH = sims.Where(s => s.Name.Contains("iPhone Xs") && s.Runtime.Contains(DefaultVersion.Replace(".", "-"))).FirstOrDefault();
+				}
+
+				if (simXH == null)
+				{
+					throw new Exception("No simulator was found to run tests on.");
+				}
+			}
 
 			deviceToRun = simXH.UDID;
 			DEVICE_NAME = simXH.Name;
