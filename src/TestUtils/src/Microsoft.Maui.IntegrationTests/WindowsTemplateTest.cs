@@ -157,7 +157,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
 
-		AssetExists($"{name}_1.0.0.1_x64.msi");
+		AssetExists($"{name}_1.0.0.1_x64.msix");
 
 		void AssetExists(string filename)
 		{
