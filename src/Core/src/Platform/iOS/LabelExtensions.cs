@@ -80,7 +80,13 @@ namespace Microsoft.Maui.Platform
 			var attr = new NSAttributedStringDocumentAttributes
 			{
 				DocumentType = NSDocumentType.HTML,
+#if NET9_0_OR_GREATER
 				CharacterEncoding = NSStringEncoding.UTF8
+#else
+#pragma warning disable CS0618 // 'NSAttributedStringDocumentAttributes.StringEncoding' is obsolete: 'Use 'CharacterEncoding' instead.
+				StringEncoding = NSStringEncoding.UTF8
+#pragma warning restore CS0618 // 'NSAttributedStringDocumentAttributes.StringEncoding' is obsolete: 'Use 'CharacterEncoding' instead.
+#endif
 			};
 
 			NSError nsError = new();

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' ">$(TargetFrameworks);$(MauiPreviousPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <Nullable>enable</Nullable>
