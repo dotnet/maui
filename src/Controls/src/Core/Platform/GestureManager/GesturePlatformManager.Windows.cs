@@ -284,26 +284,16 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_element == value)
 					return;
 
-				if (_element != null)
+				if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
 				{
-					var view = _element as View;
-					if (view != null)
-					{
-						if (ElementGestureRecognizers != null)
-							ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
-					}
+					gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 				}
 
 				_element = value;
 
-				if (_element != null)
+				if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
 				{
-					var view = _element as View;
-					if (view != null)
-					{
-						if (ElementGestureRecognizers != null)
-							ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
-					}
+					gestureRecognizers.CollectionChanged += _collectionChangedHandler;
 				}
 			}
 		}
