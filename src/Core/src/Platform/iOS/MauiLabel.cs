@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
 using System;
+using CoreAnimation;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiLabel : UILabel, IUIViewLifeCycleEvents
 	{
 		UIControlContentVerticalAlignment _verticalAlignment = UIControlContentVerticalAlignment.Center;
+		bool _isLimitSize = true;
 
 		public UIEdgeInsets TextInsets { get; set; }
 		internal UIControlContentVerticalAlignment VerticalAlignment
@@ -36,6 +38,7 @@ namespace Microsoft.Maui.Platform
 		public override void DrawText(RectangleF rect)
 		{
 			rect = TextInsets.InsetRect(rect);
+			var clipRect = new RectangleF(rect.X, rect.Y, rect.Width, rect.Height);
 
 			if (_verticalAlignment != UIControlContentVerticalAlignment.Center
 				&& _verticalAlignment != UIControlContentVerticalAlignment.Fill)
@@ -44,23 +47,40 @@ namespace Microsoft.Maui.Platform
 			}
 
 			base.DrawText(rect);
+
+			var maskLayer = new CAShapeLayer() { Frame = Bounds, Path = UIBezierPath.FromRect(clipRect).CGPath };
+			maskLayer.MasksToBounds = true;
+			Layer.Mask = maskLayer;
+		}
+
+		public override RectangleF TextRectForBounds(RectangleF bounds, nint numberOfLines)
+		{
+			var insetRect = TextInsets.InsetRect(bounds);
+			var textRect = base.TextRectForBounds(insetRect, numberOfLines);
+			var invertedInsets = new UIEdgeInsets(-TextInsets.Top, -TextInsets.Left, -TextInsets.Bottom, -TextInsets.Right);
+			return invertedInsets.InsetRect(textRect);
 		}
 
 		RectangleF AlignVertical(RectangleF rect)
 		{
 			var frameSize = Frame.Size;
-			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
 
-			if (height < frameSize.Height)
+			_isLimitSize = false;
+			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
+			_isLimitSize = true;
+
+			if (Lines != 1)
 			{
-				if (_verticalAlignment == UIControlContentVerticalAlignment.Top)
-				{
-					rect.Height = height;
-				}
-				else if (_verticalAlignment == UIControlContentVerticalAlignment.Bottom)
-				{
-					rect = new RectangleF(rect.X, rect.Bottom - height, rect.Width, height);
-				}
+				height -= (TextInsets.Top + TextInsets.Bottom);
+			}
+
+			if (_verticalAlignment == UIControlContentVerticalAlignment.Top)
+			{
+				rect.Height = height;
+			}
+			else if (_verticalAlignment == UIControlContentVerticalAlignment.Bottom)
+			{
+				rect = new RectangleF(rect.X, rect.Bottom - height, rect.Width, height);
 			}
 
 			return rect;
@@ -69,13 +89,20 @@ namespace Microsoft.Maui.Platform
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			var requestedSize = base.SizeThatFits(size);
-
-			// Let's be sure the label is not larger than the container
-			return AddInsets(new Size()
+			
+			if (_isLimitSize)
 			{
-				Width = nfloat.Min(requestedSize.Width, size.Width),
-				Height = nfloat.Min(requestedSize.Height, size.Height),
-			});
+				// Let's be sure the label is not larger than the container
+				return new Size()
+				{
+					Width = nfloat.Min(requestedSize.Width, size.Width),
+					Height = nfloat.Min(requestedSize.Height, size.Height),
+				};
+			}
+			else
+			{
+				return requestedSize;
+			}
 		}
 
 		SizeF AddInsets(SizeF size) => new SizeF(
