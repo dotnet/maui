@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiHybridWebView : WebView2, IHybridPlatformWebView
 	{
 		private readonly WeakReference<HybridWebViewHandler> _handler;
+		internal Task<bool>? WebViewReadyTask { get; set; }
 
 		public MauiHybridWebView(HybridWebViewHandler handler)
 		{
@@ -17,6 +19,16 @@ namespace Microsoft.Maui.Platform
 		public void SendRawMessage(string rawMessage)
 		{
 			CoreWebView2.PostWebMessageAsString(rawMessage);
+		}
+
+		public async void RunAfterInitialize(Action action)
+		{
+			var isWebViewInitialized = await WebViewReadyTask!;
+
+			if (isWebViewInitialized)
+			{
+				action();
+			}
 		}
 	}
 }

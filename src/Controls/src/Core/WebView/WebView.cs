@@ -287,7 +287,7 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		static string EscapeJsString(string js)
+		internal static string EscapeJsString(string js)
 		{
 			if (js == null)
 				return null;
