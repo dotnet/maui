@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Controls
 			// Android not the application level
 			ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
 #endif
+#if IOS
+			ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(nameof(UserAppTheme), MapUserAppTheme);
+#endif
 		}
 	}
 }
