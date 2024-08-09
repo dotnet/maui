@@ -140,7 +140,8 @@ namespace Microsoft.Maui.ApplicationModel
 				try
 				{
 					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+					var windowScene = scenes.ToArray().OfType<UIWindowScene>().FirstOrDefault(scene => 
+						scene.Session.Role == UIWindowSceneSessionRole.Application);
 					return windowScene?.Windows.FirstOrDefault();
 				}
 				catch (InvalidCastException)
@@ -163,7 +164,8 @@ namespace Microsoft.Maui.ApplicationModel
 				try
 				{
 					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-					var windowScene = scenes.ToArray<UIWindowScene>().FirstOrDefault();
+					var windowScene = scenes.ToArray().OfType<UIWindowScene>().FirstOrDefault(scene => 
+						scene.Session.Role == UIWindowSceneSessionRole.Application);
 					return windowScene?.Windows;
 				}
 				catch (InvalidCastException)
