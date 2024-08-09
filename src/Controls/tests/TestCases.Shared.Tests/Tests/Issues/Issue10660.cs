@@ -15,12 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ToolbarItem)]
-		public async void ToolbarTextColorOnInteraction()
+		public void ToolbarTextColorOnInteraction()
 		{
 			App.WaitForElement("ChangeState");
 			App.Tap("ChangeState");
-
-			await Task.Delay(100);
 
 			VerifyScreenshot();
 		}
