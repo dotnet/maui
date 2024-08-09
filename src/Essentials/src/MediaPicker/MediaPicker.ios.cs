@@ -86,8 +86,8 @@ namespace Microsoft.Maui.Media
 			{
 				CompletedHandler = async info =>
 				{
-					GetFileResult(info, tcs);
 					await vc.DismissViewControllerAsync(true);
+					GetFileResult(info, tcs);
 				}
 			};
 
