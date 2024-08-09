@@ -3,7 +3,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Controls.TestCases.HostApp
+namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 23148, "Incorrect height of CollectionView when ItemsSource is empty", PlatformAffected.Android)]
