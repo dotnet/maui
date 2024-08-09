@@ -13,6 +13,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren = new List<IVisualTreeElement>();
 
+		bool IElement.IsPlatformViewNew { get; set; }
+
 		public IElementHandler Handler { get; set; }
 
 		public IElement Parent { get; set; }

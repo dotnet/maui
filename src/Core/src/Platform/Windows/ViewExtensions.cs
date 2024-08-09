@@ -41,29 +41,32 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
 		{
-			double opacity = view.Opacity;
-			var wasCollapsed = platformView.Visibility == UI.Xaml.Visibility.Collapsed;
-
-			switch (view.Visibility)
+			if (!view.IsPlatformViewNew || !(view.Visibility == Visibility.Visible && view.Opacity == 1.0))
 			{
-				case Visibility.Visible:
-					platformView.Opacity = opacity;
-					platformView.Visibility = UI.Xaml.Visibility.Visible;
-					break;
-				case Visibility.Hidden:
-					platformView.Opacity = 0;
-					platformView.Visibility = UI.Xaml.Visibility.Visible;
-					break;
-				case Visibility.Collapsed:
-					platformView.Opacity = opacity;
-					platformView.Visibility = UI.Xaml.Visibility.Collapsed;
-					break;
-			}
+				double opacity = view.Opacity;
+				var wasCollapsed = platformView.Visibility == UI.Xaml.Visibility.Collapsed;
 
-			if (view.Visibility != Visibility.Collapsed && wasCollapsed)
-			{
-				// We may need to force the parent layout (if any) to re-layout to accomodate the new size
-				(platformView.Parent as FrameworkElement)?.InvalidateMeasure();
+				switch (view.Visibility)
+				{
+					case Visibility.Visible:
+						platformView.Opacity = opacity;
+						platformView.Visibility = UI.Xaml.Visibility.Visible;
+						break;
+					case Visibility.Hidden:
+						platformView.Opacity = 0;
+						platformView.Visibility = UI.Xaml.Visibility.Visible;
+						break;
+					case Visibility.Collapsed:
+						platformView.Opacity = opacity;
+						platformView.Visibility = UI.Xaml.Visibility.Collapsed;
+						break;
+				}
+
+				if (view.Visibility != Visibility.Collapsed && wasCollapsed)
+				{
+					// We may need to force the parent layout (if any) to re-layout to accomodate the new size
+					(platformView.Parent as FrameworkElement)?.InvalidateMeasure();
+				}
 			}
 		}
 
@@ -94,7 +97,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
 
-			platformView.UpdateOpacity(opacity);
+			if (!view.IsPlatformViewNew || opacity != 1)
+			{
+				platformView.UpdateOpacity(opacity);
+			}
 		}
 
 		internal static void UpdateOpacity(this FrameworkElement platformView, double opacity) => platformView.Opacity = (float)opacity;
@@ -120,23 +126,31 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateFlowDirection(this FrameworkElement platformView, IView view)
 		{
-			var flowDirection = view.FlowDirection;
-			switch (flowDirection)
+			if (!view.IsPlatformViewNew || view.FlowDirection != FlowDirection.MatchParent)
 			{
-				case FlowDirection.MatchParent:
-					platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
-					break;
-				case FlowDirection.LeftToRight:
-					platformView.FlowDirection = WFlowDirection.LeftToRight;
-					break;
-				case FlowDirection.RightToLeft:
-					platformView.FlowDirection = WFlowDirection.RightToLeft;
-					break;
+				var flowDirection = view.FlowDirection;
+				switch (flowDirection)
+				{
+					case FlowDirection.MatchParent:
+						platformView.ClearValue(FrameworkElement.FlowDirectionProperty);
+						break;
+					case FlowDirection.LeftToRight:
+						platformView.FlowDirection = WFlowDirection.LeftToRight;
+						break;
+					case FlowDirection.RightToLeft:
+						platformView.FlowDirection = WFlowDirection.RightToLeft;
+						break;
+				}
 			}
 		}
 
-		public static void UpdateAutomationId(this FrameworkElement platformView, IView view) =>
-			AutomationProperties.SetAutomationId(platformView, view.AutomationId);
+		public static void UpdateAutomationId(this FrameworkElement platformView, IView view)
+		{
+			if (!view.IsPlatformViewNew || view.AutomationId is not null)
+			{
+				AutomationProperties.SetAutomationId(platformView, view.AutomationId);
+			}
+		}
 
 		public static void UpdateSemantics(this FrameworkElement platformView, IView view)
 		{
@@ -177,16 +191,22 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateWidth(this FrameworkElement platformView, IView view)
 		{
-			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
-			// we can just propagate the value straight through
-			platformView.Width = view.Width;
+			if (!view.IsPlatformViewNew || !double.IsNaN(view.Width)) 
+			{
+				// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+				// we can just propagate the value straight through
+				platformView.Width = view.Width;
+			}
 		}
 
 		public static void UpdateHeight(this FrameworkElement platformView, IView view)
 		{
-			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
-			// we can just propagate the value straight through
-			platformView.Height = view.Height;
+			if (!view.IsPlatformViewNew || !double.IsNaN(view.Height))
+			{
+				// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
+				// we can just propagate the value straight through
+				platformView.Height = view.Height;
+			}
 		}
 
 		public static void UpdateMinimumHeight(this FrameworkElement platformView, IView view)
@@ -205,7 +225,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var minWidth = view.MinimumWidth;
 
-			if (Dimension.IsMinimumSet(minWidth))
+			if (!view.IsPlatformViewNew || Dimension.IsMinimumSet(minWidth))
 			{
 				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
 				// because the platform/theme may have a minimum width for this control
@@ -215,12 +235,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumHeight(this FrameworkElement platformView, IView view)
 		{
-			platformView.MaxHeight = view.MaximumHeight;
+			if (!view.IsPlatformViewNew || !Dimension.IsMaximumSet(view.MaximumHeight))
+			{
+				platformView.MaxHeight = view.MaximumHeight;
+			}
 		}
 
 		public static void UpdateMaximumWidth(this FrameworkElement platformView, IView view)
 		{
-			platformView.MaxWidth = view.MaximumWidth;
+			if (!view.IsPlatformViewNew || !Dimension.IsMaximumSet(view.MaximumWidth))
+			{
+				platformView.MaxWidth = view.MaximumWidth;
+			}
 		}
 
 		internal static void UpdateBorderBackground(this FrameworkElement platformView, IBorderStroke border)
@@ -406,9 +432,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this FrameworkElement nativeView, IViewHandler handler, IView view)
 		{
-			if (nativeView is UIElement element)
-			{
-				element.IsHitTestVisible = !view.InputTransparent;
+			if (!view.IsPlatformViewNew || !view.InputTransparent) {
+
+				if (nativeView is UIElement element)
+				{
+					element.IsHitTestVisible = !view.InputTransparent;
+				}
 			}
 		}
 

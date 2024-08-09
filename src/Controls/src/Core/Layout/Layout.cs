@@ -170,6 +170,28 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
+		/// Adds a child view to the end of this layout.
+		/// </summary>
+		/// <param name="children">The child view to add.</param>
+		public void AddBulk(IView[] children)
+		{
+
+			var index = _children.Count;
+			_children.AddRange(children);
+
+			foreach (IView child in children)
+			{
+				if (child is Element element)
+				{
+					AddLogicalChild(element);
+				}
+			}
+
+
+			OnAddBulk(index, children);
+		}
+
+		/// <summary>
 		/// Clears all child views from this layout.
 		/// </summary>
 		public void Clear()
@@ -293,6 +315,16 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnAdd(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
+		}
+
+		/// <summary>
+		/// Invoked when <see cref="AddBulk(IView[])"/> is called and notifies the handler associated to this layout.
+		/// </summary>
+		/// <param name="index">The index at which the child view was inserted.</param>
+		/// <param name="views">The child view which was inserted.</param>
+		protected virtual void OnAddBulk(int index, IView[] views)
+		{
+			Handler?.Invoke(nameof(ILayoutHandler.AddBulk), new Maui.Handlers.LayoutHandlerBulkUpdate(index, views));
 		}
 
 		/// <summary>

@@ -52,6 +52,8 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
 		}
 
+		public void AddBulk(IView[] views) => throw new NotImplementedException();
+
 		public void Remove(IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");

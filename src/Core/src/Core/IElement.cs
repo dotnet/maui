@@ -11,5 +11,7 @@
 		/// Gets the Parent of the Element.
 		/// </summary>
 		IElement? Parent { get; }
+		
+		bool IsPlatformViewNew { get; set; }
 	}
 }
