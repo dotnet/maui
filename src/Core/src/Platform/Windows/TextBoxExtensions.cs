@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -201,7 +202,10 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
 			// It seems that the TextBox does not limit the CursorPosition to the Text.Length natively
-			entry.CursorPosition = Math.Min(entry.CursorPosition, textBox.Text.Length);
+			var clampedPos = Math.Min(entry.CursorPosition, textBox.Text.Length);
+
+			if (entry.CursorPosition != clampedPos)
+				entry.CursorPosition = clampedPos;
 
 			if (textBox.SelectionStart != entry.CursorPosition)
 				textBox.SelectionStart = entry.CursorPosition;
@@ -210,7 +214,10 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
 			// It seems that the TextBox does not limit the SelectionLength to the Text.Length natively
-			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+			var clampedLen = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+
+			if (entry.SelectionLength != clampedLen)
+				entry.SelectionLength = clampedLen;
 
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;
