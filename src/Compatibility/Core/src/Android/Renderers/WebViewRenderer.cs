@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Webkit;
+using System.Web;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -48,7 +49,24 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (!fireNavigatingCanceled || !SendNavigatingCanceled(url))
 			{
 				_eventState = WebNavigationEvent.NewPage;
-				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(url, UriKind.Absolute))
+				
+				string? encodedUrl = url;
+				if (!string.IsNullOrEmpty(encodedUrl))
+				{
+					int questionMarkIndex = encodedUrl.IndexOf('?', StringComparison.InvariantCulture);
+
+					if (questionMarkIndex != -1)
+					{
+						string baseUrl = encodedUrl.Substring(0, questionMarkIndex + 1);
+						string queryString = encodedUrl.Substring(questionMarkIndex + 1);
+
+						// URI encode the part after the '?'
+						string encodedPart = HttpUtility.UrlEncode(queryString);
+						encodedUrl = baseUrl + encodedPart;
+					}
+				}
+
+				if (url != null && !url.StartsWith('/') && !Uri.IsWellFormedUriString(encodedUrl, UriKind.Absolute))
 				{
 					// URLs like "index.html" can't possibly load, so try "file:///android_asset/index.html"
 					url = AssetBaseUrl + url;
