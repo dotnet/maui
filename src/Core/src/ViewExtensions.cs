@@ -44,8 +44,8 @@ namespace Microsoft.Maui
 
 
 #if PLATFORM
-		async static Task<IScreenshotResult?> CaptureAsync(PlatformView window) =>
-			await Screenshot.Default.CaptureAsync(window);
+		async static Task<IScreenshotResult?> CaptureAsync(PlatformView view) =>
+			await Screenshot.Default.CaptureAsync(view);
 #endif
 
 #if !TIZEN
