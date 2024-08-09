@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="Layout" /> that positions child elements in a single line which can be oriented vertically or horizontally.
 	/// </summary>
 	/// <remarks>
-	/// For better performance look at the specialized <see cref="VerticalStackLayout" /> and <see cref="HorizontalStackLayout" />.
+	/// Also see the specialized <see cref="VerticalStackLayout" /> and <see cref="HorizontalStackLayout" />, which might be more suitable if you do not need to change the orientation at runtime.
 	/// </remarks>
 	public class StackLayout : StackBase, IStackLayout
 	{
