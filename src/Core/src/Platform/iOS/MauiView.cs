@@ -30,6 +30,21 @@ namespace Microsoft.Maui.Platform
 			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
 		}
 
+		CGSize AdjustForSafeArea(CGSize size)
+		{
+			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+
+			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
+			{
+				return size;
+			}
+
+#pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
+			return SafeAreaInsets.InsetRect(new CGRect(0, 0, size.Width, size.Height)).Size;
+#pragma warning restore CA1416
+		}
+
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
@@ -95,6 +110,8 @@ namespace Microsoft.Maui.Platform
 				return base.SizeThatFits(size);
 			}
 
+			size = AdjustForSafeArea(size);
+			
 			var widthConstraint = size.Width;
 			var heightConstraint = size.Height;
 
@@ -122,12 +139,8 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
-			// the window); there's no guarantee that SizeThatFits has been called in that case.
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+			
+			if (!IsMeasureValid(widthConstraint, heightConstraint) /*&& Superview is not MauiView*/)
 			{
 				CrossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
