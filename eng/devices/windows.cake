@@ -1,6 +1,4 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
