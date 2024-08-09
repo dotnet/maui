@@ -7,6 +7,7 @@ Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
+Microsoft.Maui.IFlyoutView.FlyoutIcon.get -> Microsoft.Maui.IImageSource!
 Microsoft.Maui.IKeyboardAccelerator
 Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
