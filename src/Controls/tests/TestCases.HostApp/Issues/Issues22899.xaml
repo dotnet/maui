@@ -10,6 +10,7 @@
                 Clicked="Button_Clicked"/>
             <Label 
                 Text="Button clicked"
+                AutomationId="label"
                 IsVisible="False"
                 x:Name="label"/>
         </VerticalStackLayout>
