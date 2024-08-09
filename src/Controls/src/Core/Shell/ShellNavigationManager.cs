@@ -115,7 +115,11 @@ namespace Microsoft.Maui.Controls
 				modalStackPreBuilt = true;
 
 				bool? isAnimated = (nextActiveSection != currentShellSection) ? false : animate;
-				await nextActiveSection.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, isAnimated, isRelativePopping);
+
+				await _shell.Dispatcher.DispatchAsync(() =>
+				{
+					_ = nextActiveSection.GoToAsync(navigationRequest, parameters, _shell.FindMauiContext()?.Services, isAnimated, isRelativePopping);
+				});
 			}
 
 			if (shellItem != null)
