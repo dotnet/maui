@@ -71,24 +71,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void ConverterIsInvoked()
 		{
-			var xaml = @"
-<ContentPage 							
-xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
-							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
+			var xaml = """
+				<ContentPage 							
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
 
-<ContentPage.Resources>
-<ResourceDictionary>
-<local:SeverityColorConverter x:Key=""SeverityColorConverter"" />
-</ResourceDictionary>
-</ContentPage.Resources>
-				<Label Text=""{Binding value, StringFormat='{0}'}"" 
-					WidthRequest=""50"" 
-					TextColor=""Black""
-					x:Name=""label""
-					BackgroundColor=""{Binding Severity, Converter={StaticResource SeverityColorConverter}}""
-					HorizontalTextAlignment=""Center"" VerticalTextAlignment=""Center""/>
-</ContentPage>";
+					<ContentPage.Resources>
+						<ResourceDictionary>
+							<local:SeverityColorConverter x:Key="SeverityColorConverter" />
+						</ResourceDictionary>
+					</ContentPage.Resources>
+					<Label Text="{Binding value, StringFormat='{0}'}" 
+						WidthRequest="50" 
+						TextColor="Black"
+						x:Name="label"
+						BackgroundColor="{Binding Severity, Converter={StaticResource SeverityColorConverter}}"
+						HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+				</ContentPage>
+				""";
 
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
@@ -100,24 +101,25 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 		[Test]
 		public void ConverterIsInvoked_Escaped()
 		{
-			var xaml = @"
-<ContentPage 							
-xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
-							xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-							xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"">
+			var xaml = """
+				<ContentPage 							
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
 
-<ContentPage.Resources>
-<ResourceDictionary>
-<local:SeverityColorConverter x:Key=""SeverityColorConverter"" />
-</ResourceDictionary>
-</ContentPage.Resources>
-				<Label Text=""{Binding value, StringFormat='{}{0}'}"" 
-					WidthRequest=""50"" 
-					TextColor=""Black""
-					x:Name=""label""
-					BackgroundColor=""{Binding Severity, Converter={StaticResource SeverityColorConverter}}""
-					HorizontalTextAlignment=""Center"" VerticalTextAlignment=""Center""/>
-</ContentPage>";
+					<ContentPage.Resources>
+						<ResourceDictionary>
+							<local:SeverityColorConverter x:Key="SeverityColorConverter" />
+						</ResourceDictionary>
+					</ContentPage.Resources>
+					<Label Text="{Binding value, StringFormat='{}{0}'}" 
+						WidthRequest="50" 
+						TextColor="Black"
+						x:Name="label"
+						BackgroundColor="{Binding Severity, Converter={StaticResource SeverityColorConverter}}"
+						HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+				</ContentPage>
+				""";
 
 			var layout = new ContentPage().LoadFromXaml(xaml);
 			layout.BindingContext = new { Value = "Foo", Severity = "Bar" };
@@ -129,39 +131,39 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 		[Test]
 		public void ResourcesInNonXFBaseClassesAreFound()
 		{
-			var xaml = @"<local:BaseView 
-	xmlns=""http://schemas.microsoft.com/dotnet/2021/maui"" 
-	xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" 
-	xmlns:cmp=""clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls""
-  	xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-	Padding=""0,40,0,0"">
-    <local:BaseView.Resources>
-    <ResourceDictionary>
-     	<local:InvertBoolenConverter x:Key=""cnvInvert""></local:InvertBoolenConverter>
-    </ResourceDictionary>
-    </local:BaseView.Resources>
-	<local:BaseView.Content>
-		<ListView x:Name=""lst"" VerticalOptions=""FillAndExpand""
-        		HorizontalOptions=""FillAndExpand""
-			
-				ItemsSource=""{Binding Items}""
+			var xaml = """
+				<local:BaseView 
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+					xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+				  	xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+					Padding="0,40,0,0">
+				    <local:BaseView.Resources>
+				    <ResourceDictionary>
+				     	<local:InvertBoolenConverter x:Key="cnvInvert"></local:InvertBoolenConverter>
+				    </ResourceDictionary>
+				    </local:BaseView.Resources>
+					<local:BaseView.Content>
+						<ListView x:Name="lst" VerticalOptions="FillAndExpand"
+				        		HorizontalOptions="FillAndExpand"
+								ItemsSource="{Binding Items}">
+						<ListView.ItemTemplate >
+							<DataTemplate> 
+								<ViewCell >
+								<ViewCell.View>
+									<cmp:Grid  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"  >			
+									<Label  IsVisible="{Binding IsLocked}"  Text="Show Is Locked"  />
+									<Label  IsVisible="{Binding IsLocked, Converter={StaticResource cnvInvert}}" Text="Show Is Not locked" />
+								</cmp:Grid>
+								</ViewCell.View>
+								</ViewCell>
+							</DataTemplate>
+						</ListView.ItemTemplate>
+						</ListView>
+					</local:BaseView.Content>
+				</local:BaseView>
+				""";
 
-			>
-		<ListView.ItemTemplate >
-			<DataTemplate> 
-				<ViewCell >
-				<ViewCell.View>
-					<cmp:Grid  VerticalOptions=""FillAndExpand"" HorizontalOptions=""FillAndExpand""  >			
-					<Label  IsVisible=""{Binding IsLocked}""  Text=""Show Is Locked""  />
-					<Label  IsVisible=""{Binding IsLocked, Converter={StaticResource cnvInvert}}"" Text=""Show Is Not locked"" />
-				</cmp:Grid>
-				</ViewCell.View>
-				</ViewCell>
-			</DataTemplate>
-		</ListView.ItemTemplate>
-		</ListView>
-	</local:BaseView.Content>
-</local:BaseView>";
 			var page = new Issue1549Page().LoadFromXaml(xaml);
 			var lst = page.FindByName<ListView>("lst");
 			ObservableCollection<Item> items;
