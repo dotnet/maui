@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 22937, "ToolbarItem font color not updating properly after changing the available state at runtime", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 22937, "[Android] ToolbarItem font color not updating properly after changing the available state at runtime", PlatformAffected.Android)]
 public partial class Issue22937 : ContentPage
 {
 
