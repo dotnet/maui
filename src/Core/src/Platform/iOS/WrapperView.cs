@@ -228,6 +228,8 @@ namespace Microsoft.Maui.Platform
 				shadowLayer.ClearShadow();
 			else
 				shadowLayer.SetShadow(Shadow);
+
+			Layer.Mask = shadowLayer;
 		}
 
 		void DisposeShadow()
