@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 10660, "Inconsistent toolbar text color on interaction", PlatformAffected.Android)]
-public partial class Issue10660 : ContentPage
+public partial class Issue10660 : Shell
 {
 
     public Issue10660()
@@ -18,3 +18,5 @@ public partial class Issue10660 : ContentPage
 		ChangeState.Text = ChangeState.Text == "Close" ? "Open" : "Close";
 	}
 }
+
+public class Issue10660ContentPage : ContentPage { }

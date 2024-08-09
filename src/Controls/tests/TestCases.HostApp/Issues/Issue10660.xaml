@@ -1,17 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Shell.TitleColor="Yellow"
-    x:Class="Maui.Controls.Sample.Issues.Issue10660">
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
+       Shell.TitleColor="Red"
+       x:Class="Maui.Controls.Sample.Issues.Issue10660">
 
-  <ContentPage.ToolbarItems>
+  <Shell.ToolbarItems>
     <ToolbarItem x:Name="ChangeState" AutomationId="ChangeState" Text="Close" Clicked="ChangeStateClicked"/>
-  </ContentPage.ToolbarItems>
+  </Shell.ToolbarItems>
 
-  <Grid>
-    <Label Text="Issue 10660"
-           HorizontalOptions="Center"
-           VerticalOptions="Center"/>
-  </Grid>
-</ContentPage>
+  <ShellContent
+            Title="Home page"
+            ContentTemplate="{DataTemplate ns:Issue10660ContentPage}"
+            Route="MainPage">
+  </ShellContent>
+</Shell>
+  
