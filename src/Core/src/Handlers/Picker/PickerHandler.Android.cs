@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
+			platformView.LayoutChange += PlatformViewLayoutChange;
 
 			base.ConnectHandler(platformView);
 		}
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
+			platformView.LayoutChange -= PlatformViewLayoutChange;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -164,6 +166,15 @@ namespace Microsoft.Maui.Handlers
 		static void Reload(IPickerHandler handler)
 		{
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
+		}
+
+		void PlatformViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
+		{
+			if (PlatformView != null && VirtualView != null)
+			{
+				PlatformView.SetHeight(PlatformView.Height);
+				PlatformView.UpdateVerticalTextAlignment(VirtualView);
+			}
 		}
 	}
 }
