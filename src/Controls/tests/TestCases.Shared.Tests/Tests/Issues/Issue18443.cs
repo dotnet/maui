@@ -1,5 +1,6 @@
 ﻿#if !MACCATALYST && !IOS
 using NUnit.Framework;
+using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
@@ -11,9 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public async Task EntrySelectionLengthRuntimeUpdate()
+		public void EntrySelectionLengthRuntimeUpdate()
 		{
-			await Task.Delay(500);
+			App.WaitForElement("entry");
 			VerifyScreenshot();
 		}
 
