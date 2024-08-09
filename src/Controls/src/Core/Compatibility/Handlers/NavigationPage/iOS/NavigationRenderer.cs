@@ -22,10 +22,11 @@ using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using Microsoft.Maui.Platform;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class NavigationRenderer : UINavigationController, INavigationViewHandler, IPlatformViewHandler
+	public class NavigationRenderer : UINavigationController, INavigationViewHandler, IPlatformViewHandler, IUIViewLifeCycleEvents
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
@@ -151,6 +152,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.ViewDidAppear(animated);
 
 			View.SetNeedsLayout();
+
+			if(View.Window is not null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -171,6 +177,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_appeared = false;
 			PageController.SendDisappearing();
+
+			if(View.Window is null)
+			{
+				_movedToWindow?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -1681,6 +1692,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
+		}
+
+
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
 		}
 
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden =>

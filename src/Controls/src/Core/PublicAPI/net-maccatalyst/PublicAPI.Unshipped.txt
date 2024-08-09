@@ -93,6 +93,8 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHom
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersStatusBarHidden() -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidAppear(bool animated) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidDisappear(bool animated) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidAppear(bool animated) -> void
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?

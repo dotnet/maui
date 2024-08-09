@@ -83,6 +83,8 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PrefersHom
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersHomeIndicatorAutoHidden.get -> bool
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.PrefersStatusBarHidden() -> bool
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidAppear(bool animated) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutRenderer.ViewDidDisappear(bool animated) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidAppear(bool animated) -> void
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -262,4 +264,6 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.get -> double
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void

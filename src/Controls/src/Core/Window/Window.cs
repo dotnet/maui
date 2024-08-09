@@ -565,9 +565,9 @@ namespace Microsoft.Maui.Controls
 		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
 		{
 			base.OnHandlerChangingCore(args);
-			var mauiContext = args?.NewHandler?.MauiContext;
+			var mauiContext = args.NewHandler?.MauiContext;
 
-			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
+			if (FlowDirection == FlowDirection.MatchParent && mauiContext is not null)
 			{
 				var flowDirection = AppInfo.Current.RequestedLayoutDirection.ToFlowDirection();
 				FlowController.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection(true);
@@ -577,12 +577,15 @@ namespace Microsoft.Maui.Controls
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is Page oldPage)
+			{
 				oldPage.SendDisappearing();
+				oldPage.WireUpAsOutgoingPage(newValue as Page);
+			}
 		}
 
 		void OnPageChanged(Page? oldPage, Page? newPage)
 		{
-			if (oldPage != null)
+			if (oldPage is not null)
 			{
 				_menuBarTracker.Target = null;
 				_visualChildren.Remove(oldPage);
@@ -592,31 +595,39 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (oldPage is Shell shell)
+			{
 				shell.PropertyChanged -= ShellPropertyChanged;
+			}
 
-			if (newPage != null)
+			if (newPage is not null)
 			{
 				_visualChildren.Add(newPage);
 				AddLogicalChild(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 
-				if (Parent != null)
+				if (Parent is not null)
 				{
 					SendWindowAppearing();
 				}
 
 				newPage.HandlerChanged += OnPageHandlerChanged;
-				newPage.HandlerChanging += OnPageHandlerChanging;
+				newPage.HandlerChanging += OnPageHandlerChanging;				
 
-				if (newPage.Handler != null)
+				if (newPage.Handler is not null)
+				{
 					OnPageHandlerChanged(newPage, EventArgs.Empty);
+				}
 			}
 
 			if (newPage is Shell newShell)
+			{
 				newShell.PropertyChanged += ShellPropertyChanged;
+			}
 
 			Handler?.UpdateValue(nameof(IWindow.FlowDirection));
+
+			newPage?.WireUpAsIncomingPage(oldPage);
 		}
 
 		void OnPageHandlerChanged(object? sender, EventArgs e)
