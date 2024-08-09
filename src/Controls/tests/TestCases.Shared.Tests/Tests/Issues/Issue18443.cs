@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public Issue18443(TestDevice device) : base(device) { }
 
-		public override string Issue => "[Android] SelectionLength Property Not Applied to Entry at Runtime";
+		public override string Issue => "SelectionLength Property Not Applied to Entry at Runtime";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
