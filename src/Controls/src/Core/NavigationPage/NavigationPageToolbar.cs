@@ -50,6 +50,11 @@ namespace Microsoft.Maui.Controls
 			OnPropertyChanged(sender, e);
 		}
 
+		internal void OnParentResourcesChanged()
+		{
+			ApplyChanges(_currentNavigationPage);
+		}
+
 		void OnPageAppearing(object sender, EventArgs e)
 		{
 			if (sender is not ContentPage cp)
