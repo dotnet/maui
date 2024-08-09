@@ -1,17 +1,37 @@
 ﻿using System;
-using ObjCRuntime;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		private IDisposable? _effectiveGeometryObserver;
+
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
 
 			UpdateVirtualViewFrame(platformView);
+
+			_effectiveGeometryObserver = platformView.WindowScene?.AddObserver("effectiveGeometry", NSKeyValueObservingOptions.OldNew, HandleEffectiveGeometryObserved);
 		}
+
+		protected override void DisconnectHandler(UIWindow platformView)
+		{
+			_effectiveGeometryObserver?.Dispose();
+
+			base.DisconnectHandler(platformView);
+		}
+
+		void HandleEffectiveGeometryObserved(NSObservedChange obj)
+		{
+			if (obj is not null && obj.NewValue is UIWindowSceneGeometry newGeometry)
+			{
+				VirtualView.FrameChanged(newGeometry.SystemFrame.ToRectangle());
+			}
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
 			handler.PlatformView.UpdateTitle(window);
 
@@ -23,8 +43,7 @@ namespace Microsoft.Maui.Handlers
 
 			handler.PlatformView.RootViewController = nativeContent;
 
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -82,7 +101,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
+			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
 		}
 
 		void UpdateVirtualViewFrame(UIWindow window)
