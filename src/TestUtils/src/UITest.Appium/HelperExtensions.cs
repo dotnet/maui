@@ -832,6 +832,34 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Sets light device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetLightTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetLightTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setLightTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sets dark device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetDarkTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetDarkTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setDarkTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Check if element has focused
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>

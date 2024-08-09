@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(_MauiDotNetTfm)-windows10.0.19041</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.UAP.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.UAP.UnitTests</AssemblyName>

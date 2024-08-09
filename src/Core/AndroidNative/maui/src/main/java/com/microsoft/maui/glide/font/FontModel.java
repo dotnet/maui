@@ -4,6 +4,8 @@ import android.graphics.Typeface;
 
 import androidx.annotation.ColorInt;
 
+import java.util.Objects;
+
 import com.bumptech.glide.signature.ObjectKey;
 
 public class FontModel {
@@ -18,6 +20,22 @@ public class FontModel {
         this.glyph = glyph;
         this.textSize = textSize;
         this.typeface = typeface;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FontModel other = (FontModel) o;
+        return color == other.color &&
+            Objects.equals(glyph, other.glyph) &&
+            textSize == other.textSize &&
+            typeface == other.typeface;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(color, glyph, textSize, typeface);
     }
 
     public int getColor() {
