@@ -5,7 +5,7 @@
 
   <ContentPage.Content>
 
-    <VerticalStackLayout Padding="30,0" Spacing="25">
+    <VerticalStackLayout AutomationId="StackLayout" Padding="30,0" Spacing="25">
 
       <Button
 			x:Name="CounterBtn"
