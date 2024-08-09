@@ -27,6 +27,9 @@
       "path": "MauiApp.1.sln"
     },
     {
+      "path": "MauiApp.1/MauiApp.1.csproj"
+    },
+    {
       "condition": "(android)",
       "path": "MauiApp.1.Droid/MauiApp.1.Droid.csproj"
     },
@@ -97,7 +100,12 @@
   ],
   "preferNameDirectory": true,
   "guids": [
-    "87919f9c-abb8-48e5-bae7-eb1b4140f6a8"
+    "1AA5F22B-62F8-414F-AE50-635E99EB3F76",
+    "C2800ABA-8C19-4553-A552-BFF679BEB039",
+    "7C064C71-30BE-4D8D-9B68-E7249ED18FA1",
+    "9E30318E-74DD-491B-9BAF-814DC9E892B8",
+    "E3338D37-FF50-4A34-96BD-2716ED93F1E2",
+    "20E6FD03-9002-4EBA-ABF2-9DDE2C488842"
   ],
   "symbols": {
     "applicationId": {
