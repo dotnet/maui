@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
@@ -19,11 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 
-		public async void CollectionViewEmptyItemsHeight()
+		public void CollectionViewEmptyItemsHeight()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/23148
 
-			await Task.Delay(500);
+			App.WaitForElement("StackLayout");
 			VerifyScreenshot();
 		}
 	}
