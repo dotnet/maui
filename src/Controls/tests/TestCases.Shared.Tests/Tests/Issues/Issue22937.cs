@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue22937 : _IssuesUITest
 	{
-		public override string Issue => "[Android] ToolbarItem font color not updating properly after changing the available state at runtime";
+		public override string Issue => "ToolbarItem font color not updating properly after changing the available state at runtime";
 
 		public Issue22937(TestDevice device)
 		: base(device)

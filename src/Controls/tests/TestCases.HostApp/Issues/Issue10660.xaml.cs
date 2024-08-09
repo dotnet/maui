@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 10660, "[Android] Inconsistent toolbar text color on interaction", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 10660, "Inconsistent toolbar text color on interaction", PlatformAffected.Android)]
 public partial class Issue10660 : ContentPage
 {
 
