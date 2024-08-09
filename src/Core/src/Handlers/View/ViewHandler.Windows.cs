@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (platformView != null)
+			// TextBlock can receive focus if TabStop is set or if text selection is allowed. No such features are available in MAUI at the moment.
+			if (platformView is not null && platformView is not TextBlock)
 			{
 				platformView.GotFocus += OnPlatformViewGotFocus;
 				platformView.LostFocus += OnPlatformViewLostFocus;
@@ -22,10 +23,13 @@ namespace Microsoft.Maui.Handlers
 
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			UpdateIsFocused(false);
+			if (platformView is not TextBlock)
+			{
+				UpdateIsFocused(false);
 
-			platformView.GotFocus -= OnPlatformViewGotFocus;
-			platformView.LostFocus -= OnPlatformViewLostFocus;
+				platformView.GotFocus -= OnPlatformViewGotFocus;
+				platformView.LostFocus -= OnPlatformViewLostFocus;
+			}
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
@@ -145,13 +149,17 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIsFocused(bool isFocused)
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
+			{
 				return;
+			}
 
 			bool updateIsFocused = (isFocused && !VirtualView.IsFocused) || (!isFocused && VirtualView.IsFocused);
 
 			if (updateIsFocused)
+			{
 				VirtualView.IsFocused = isFocused;
+			}
 		}
 	}
 }
