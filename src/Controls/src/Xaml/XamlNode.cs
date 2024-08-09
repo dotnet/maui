@@ -171,6 +171,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public XmlType XmlType { get; }
 		public string NamespaceURI { get; }
 		public NameScopeRef NameScopeRef { get; set; }
+		public bool PreventSetBinding { get; internal set; }
 
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
