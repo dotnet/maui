@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				AutomationId = "collectionview"
 			};
 
-			var generator = new ItemsSourceGenerator(collectionView);
+			var generator = new ItemsSourceGenerator(collectionView, 200000);
 
 			layout.Children.Add(generator);
 
