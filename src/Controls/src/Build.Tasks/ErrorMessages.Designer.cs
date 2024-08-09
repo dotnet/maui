@@ -313,7 +313,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to StyleSheet can not have both a Source and a content..
+        ///   Looks up a localized string similar to StyleSheet cannot have both a Source and a content..
         /// </summary>
         internal static string StyleSheetSourceOrContent {
             get {

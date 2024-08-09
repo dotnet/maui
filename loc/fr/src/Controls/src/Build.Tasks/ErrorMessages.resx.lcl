@@ -239,7 +239,7 @@
       </Item>
       <Item ItemId=";StyleSheetSourceOrContent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[StyleSheet can not have both a Source and a content.]]></Val>
+          <Val><![CDATA[StyleSheet cannot have both a Source and a content.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
