@@ -8,7 +8,7 @@
     <Label Text="hyperlink"
            TextColor="Blue"
            TextDecorations="Underline" />
-    <Label>
+    <Label AutomationId="WaitForLabelControl">
       <Label.FormattedText>
         <FormattedString>
           <Span Text="hyperlink" 

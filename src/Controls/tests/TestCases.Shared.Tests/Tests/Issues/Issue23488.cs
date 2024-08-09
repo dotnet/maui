@@ -1,5 +1,6 @@
 ﻿#if !MACCATALYST
 using NUnit.Framework;
+using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
@@ -14,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		public async Task LabelHyperlinkUnderlineColor()
+		public void LabelHyperlinkUnderlineColor()
 		{
-			await Task.Delay(500);
+			App.WaitForElement("WaitForLabelControl");
 			VerifyScreenshot();
 		}
 	}
