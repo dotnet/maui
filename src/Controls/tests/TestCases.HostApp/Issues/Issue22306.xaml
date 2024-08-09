@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Microsoft.Maui.TestCases.Tests.Issue22306"
+             x:Class="Maui.Controls.Sample.Issues.Issue22306"
              Title="Issue22306">
     <Grid RowSpacing="5" AutomationId="TopGrid">
         <Grid.RowDefinitions>

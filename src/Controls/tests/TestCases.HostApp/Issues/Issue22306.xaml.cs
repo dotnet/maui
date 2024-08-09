@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 22306, "Resizing buttons' parents resolves layout", PlatformAffected.iOS)]
