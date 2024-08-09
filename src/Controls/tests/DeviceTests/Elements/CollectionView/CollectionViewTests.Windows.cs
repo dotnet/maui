@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -48,6 +49,51 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (handler) =>
 			{
+				// Validate that no exceptions are thrown
+				var collectionViewHandler = (IElementHandler)collectionView.Handler;
+				collectionViewHandler.DisconnectHandler();
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Disconnects Correctly with MultiSelection")]
+		public async Task CollectionViewHandlerDisconnectsWithMultiSelect()
+		{
+			SetupBuilder();
+
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3"
+			};
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					return new VerticalStackLayout()
+					{
+						new Label()
+					};
+				}),
+				SelectionMode = SelectionMode.Multiple,
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				collectionView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (handler) =>
+			{
+				collectionView.SelectedItems.Add(data[0]);
+				collectionView.SelectedItems.Add(data[2]);
+
 				// Validate that no exceptions are thrown
 				var collectionViewHandler = (IElementHandler)collectionView.Handler;
 				collectionViewHandler.DisconnectHandler();
@@ -208,7 +254,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var horzScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.HorizontalScrollModeProperty);
 				var vertScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.VerticalScrollModeProperty);
-				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Auto);
+				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Enabled);
 				Assert.True(vertScrollMode == UI.Xaml.Controls.ScrollMode.Disabled);
 			});
 		}
