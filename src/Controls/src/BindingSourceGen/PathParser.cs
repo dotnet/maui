@@ -44,20 +44,21 @@ internal class PathParser
         var typeInfo = Context.SemanticModel.GetTypeInfo(memberAccess).Type;
         var symbol = Context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
 
-		if (symbol is IFieldSymbol fieldSymbol && !BindingGenerationUtilities.IsAccessible(fieldSymbol.DeclaredAccessibility))
+        if (symbol == null || typeInfo == null)
         {
-            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnaccessibleFieldInPath(memberAccess.GetLocation()));
+            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(memberAccess.GetLocation()));
         }
 
-		if (symbol is IPropertySymbol propertySymbol && !BindingGenerationUtilities.IsAccessible(propertySymbol.DeclaredAccessibility))
-        {
-            return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnaccessiblePropertyInPath(memberAccess.GetLocation()));
-        }
+        var isReferenceType = typeInfo.IsReferenceType;
+        var accessorKind = AccessorKindFactory.FromSymbol(symbol);
+        var memberType = BindingGenerationUtilities.CreateTypeDescription(typeInfo, EnabledNullable);
+        var containgType = BindingGenerationUtilities.CreateTypeDescription(symbol.ContainingType, EnabledNullable);
 
-        var isReferenceType = typeInfo?.IsReferenceType ?? false;
-        IPathPart part = new MemberAccess(member, !isReferenceType);
+        IPathPart part = BindingGenerationUtilities.IsAccessible(symbol.DeclaredAccessibility)
+            ? new MemberAccess(member, !isReferenceType)
+            : new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType);
+
         result.Value.Add(part);
-
         return Result<List<IPathPart>>.Success(result.Value);
     }
 

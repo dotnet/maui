@@ -1033,4 +1033,86 @@ public class BindingRepresentationGenTests
 
         AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
     }
+
+    [Fact]
+    public void GeneratesInaccessibleMemberAccessWhenUsingPrivateFields()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+
+        var foo = new Foo();
+        foo.Bar();
+
+        class Foo
+        {
+            private int _value = 0;
+            public void Bar()
+            {
+                var label = new Label();
+                label.SetBinding(Label.RotationProperty, static (Foo f) => f._value);
+            }
+        }
+        """;
+
+        var codeGeneratorResult = SourceGenHelpers.Run(source);
+        var expectedBinding = new BindingInvocationDescription(
+            new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
+            new TypeDescription("global::Foo"),
+            new TypeDescription("int", IsValueType: true),
+            new EquatableArray<IPathPart>([
+                new InaccessibleMemberAccess(
+                    new TypeDescription("global::Foo"),
+                    new TypeDescription("int", IsValueType: true),
+                    AccessorKind.Field,
+                    "_value",
+                    IsValueType: true
+                )
+            ]),
+            SetterOptions: new(IsWritable: true),
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
+
+        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+    }
+
+    [Fact]
+    public void GeneratesInaccessibleMemberAccessWhenUsingPrivateProperties()
+    {
+        var source = """
+        using Microsoft.Maui.Controls;
+
+        var foo = new Foo();
+        foo.Bar();
+
+        class Foo
+        {
+            private int Value { get; set; } = 0;
+            public void Bar()
+            {
+                var label = new Label();
+                label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value);
+            }
+        }
+        """;
+
+        var codeGeneratorResult = SourceGenHelpers.Run(source);
+        var expectedBinding = new BindingInvocationDescription(
+            new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
+            new TypeDescription("global::Foo"),
+            new TypeDescription("int", IsValueType: true),
+            new EquatableArray<IPathPart>([
+                new InaccessibleMemberAccess(
+                    new TypeDescription("global::Foo"),
+                    new TypeDescription("int", IsValueType: true),
+                    AccessorKind.Property,
+                    "Value",
+                    IsValueType: true
+                )
+            ]),
+            SetterOptions: new(IsWritable: true),
+            NullableContextEnabled: true,
+            MethodType: InterceptedMethodType.SetBinding);
+
+        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+    }
 }
