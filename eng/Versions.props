@@ -79,6 +79,22 @@
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.0-rc.1.24408.9</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>9.0.0-rc.1.24408.9</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>9.0.0-rc.1.24408.9</MicrosoftJSInteropPackageVersion>
+
+        <!-- Everything else (previous edition) -->
+    <MicrosoftAspNetCorePackageVersion>8.0.7</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsAnalyzersPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsFormsPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsWebPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyServerPreviousPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreComponentsWebViewPreviousPackageVersion>
+    <MicrosoftAspNetCoreMetadataPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreMetadataPreviousPackageVersion>
+    <MicrosoftJSInteropPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftJSInteropPreviousPackageVersion>
     <!-- Other packages -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview*</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
