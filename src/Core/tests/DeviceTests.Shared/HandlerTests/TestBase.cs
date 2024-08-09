@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected static Task<T> InvokeOnMainThreadAsync<T>(Func<Task<T>> func) =>
 			TestDispatcher.Current.DispatchAsync(func);
 
-		protected static async Task WaitForGC()
+		protected static async Task WaitForGCAsync()
 		{
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
@@ -37,6 +37,14 @@ namespace Microsoft.Maui.DeviceTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			await Task.Delay(10);
+		}
+
+		protected static void WaitForGC()
+		{
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 		}
 	}
 }
