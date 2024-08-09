@@ -1892,7 +1892,7 @@
 ~Microsoft.Maui.Controls.Xaml.IReferenceProvider.FindByName(string name) -> object
 ~Microsoft.Maui.Controls.Xaml.IRootObjectProvider.RootObject.get -> object
 ~Microsoft.Maui.Controls.Xaml.IValueProvider.ProvideValue(System.IServiceProvider serviceProvider) -> object
-~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null) -> System.Type
+~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.TryResolve(string qualifiedTypeName, out System.Type type) -> bool
 ~Microsoft.Maui.Controls.Xaml.IXmlLineInfoProvider.XmlLineInfo.get -> System.Xml.IXmlLineInfo
 ~Microsoft.Maui.Controls.Xaml.XamlParseException.XamlParseException(string message, System.Exception innerException) -> void
