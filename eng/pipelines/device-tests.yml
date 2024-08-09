@@ -91,6 +91,8 @@ parameters:
     type: object
     default:
       - tfm: net9.0
+      - tfm: net8.0
+        dependsOn: net9.0
 
 resources:
   repositories:
