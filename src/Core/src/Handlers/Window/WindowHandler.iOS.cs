@@ -1,17 +1,27 @@
 ﻿using System;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		readonly FrameObserverProxy _proxy = new();
+
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			UpdateVirtualViewFrame(platformView);
+			
+			_proxy.Connect(VirtualView, platformView);
+			_proxy.Update();
 		}
+
+		protected override void DisconnectHandler(UIWindow platformView)
+		{
+			_proxy.Disconnect(platformView);
+
+			base.DisconnectHandler(platformView);
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
 			handler.PlatformView.UpdateTitle(window);
 
@@ -85,9 +95,42 @@ namespace Microsoft.Maui.Handlers
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 		}
 
-		void UpdateVirtualViewFrame(UIWindow window)
+		class FrameObserverProxy
 		{
-			VirtualView.FrameChanged(window.Bounds.ToRectangle());
+			WeakReference<IWindow>? _virtualView;
+			WeakReference<UIWindow>? _platformView;
+
+			IDisposable? _frameObserver;
+
+			IWindow? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			UIWindow? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IWindow virtualView, UIWindow platformView)
+			{
+				_virtualView = new(virtualView);
+				_platformView = new(platformView);
+
+				_frameObserver = platformView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+			}
+
+			public void Disconnect(UIWindow platformView)
+			{
+				_virtualView = null;
+				_platformView = null;
+
+				_frameObserver?.Dispose();
+			}
+
+			public void Update()
+			{
+				if (VirtualView is IWindow virtualView && PlatformView is UIWindow platformView)
+				{
+					virtualView.FrameChanged(platformView.Frame.ToRectangle());
+				}
+			}
+
+			void FrameAction(Foundation.NSObservedChange obj) => Update();
 		}
 	}
 }
