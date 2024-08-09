@@ -71,6 +71,7 @@ override Microsoft.Maui.PlatformAppCompatTextView.JniPeerMembers.get -> Java.Int
 override Microsoft.Maui.PlatformAppCompatTextView.ThresholdClass.get -> nint
 override Microsoft.Maui.PlatformAppCompatTextView.ThresholdType.get -> System.Type!
 override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
+override Microsoft.Maui.Platform.ContentViewGroup.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.get -> int
 override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.set -> void
 override Microsoft.Maui.Platform.MauiScrollView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void

@@ -5,7 +5,6 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 {
-	[Category(TestCategory.ContentView)]
 	public partial class ContentViewTests
 	{
 		[Fact, Category(TestCategory.FlowDirection)]
