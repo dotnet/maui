@@ -58,6 +58,10 @@
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+  </ItemGroup>
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

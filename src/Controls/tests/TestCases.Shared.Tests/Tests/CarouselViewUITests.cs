@@ -21,6 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			base.TestSetup();
 			App.NavigateToGallery(CarouselViewGallery);
+			App.WaitForElement("CarouselViewWithImages");
+			App.Tap("CarouselViewWithImages");
 		}
 
 		[Test]
@@ -135,7 +137,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		void CheckLabelValue(string labelAutomationId, string value)
 		{
-			var result = App.FindElement(labelAutomationId).GetText();
+			var result = App.WaitForElement(labelAutomationId).GetText();
 			ClassicAssert.AreEqual(value, result);
 		}
 	}

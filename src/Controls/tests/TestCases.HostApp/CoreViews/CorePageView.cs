@@ -6,6 +6,7 @@ using Controls.Sample.UITests;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Maui.Controls.Sample.CollectionViewGalleries;
+using Maui.Controls.Sample.CollectionViewGalleries.CarouselViewGalleries;
 
 namespace Maui.Controls.Sample
 {
@@ -56,7 +57,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
-			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
+			new GalleryPageFactory(() => new CarouselViewGallery(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 			new GalleryPageFactory(() => new CollectionViewCoreGalleryPage(), "CollectionView Gallery"),
 			new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "Date Picker Gallery"),
