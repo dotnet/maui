@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="9.0.100-rc.1.24408.2">
+    <Dependency Name="Microsoft.NET.Sdk" Version="9.0.100-rc.1.24409.1">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>196789faffa0e93c86061e44bb9d1852f10d09bc</Sha>
+      <Sha>43360291a50c9c7c471551f8f8363919d38014ea</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.1.24406.14" CoherentParentDependency="Microsoft.NET.Sdk">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.1.24408.12" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>4985021ebfff545de02caa3386e3dd4b21784b95</Sha>
+      <Sha>68511fd27fe4055ce5203742998ba12019dfcbd4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.1.45">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.1.46">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>175f3a0eded6a21ac06536168a3019ffcf4e80e0</Sha>
+      <Sha>99ba8135fc47358702a5918757651d53d7b6fabd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9237-net9-rc1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -31,9 +31,9 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-rc.1.24379.5" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-rc.1.24402.2" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>bdc1e33d5d5ec616dce13320f9ee7189aced17ee</Sha>
+      <Sha>edf3e90fa25b1fc4f7f63ceb45ef70f49c6b121a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-rc.1.24408.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
