@@ -49,11 +49,11 @@ internal static class EmbeddingExtensions
 		// Register the IPlatformApplication for the embedded application.
 		builder.Services.AddSingleton<EmbeddedPlatformApplication>(svc => new EmbeddedPlatformApplication(svc));
 
-		builder.Services.AddScoped<EmbeddedWindowProvider>(svc => new EmbeddedWindowProvider());
+		builder.Services.AddScoped<WindowProvider>(svc => new WindowProvider());
 
 		// Returning null is acceptable here as the platform window is optional.
 		// However, we do not know for sure until we resolve it.
-		builder.Services.AddScoped<PlatformWindow>(svc => svc.GetRequiredService<EmbeddedWindowProvider>().PlatformWindow!);
+		builder.Services.AddScoped<PlatformWindow>(svc => svc.GetRequiredService<WindowProvider>().PlatformWindow!);
 
 		// Register an initializer as we need a platform application to be
 		// instantiated as soon as possible. In a typical app, this would be
@@ -79,7 +79,7 @@ internal static class EmbeddingExtensions
 		var windowContext = embeddedApp.Context.MakeWindowScope(platformWindow, out var windowScope);
 
 		// Add the platform window to the service provider.
-		var wndProvider = windowContext.Services.GetRequiredService<EmbeddedWindowProvider>();
+		var wndProvider = windowContext.Services.GetRequiredService<WindowProvider>();
 		wndProvider.SetWindow(platformWindow, window);
 
 		// Connect the platform window to the MAUI window in order for lifecycle events to work.
