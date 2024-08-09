@@ -184,6 +184,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(0.0, layout.button2.FontSize);
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void OnPlatformInlineWithAppThemeBinding(bool useCompiledXaml)
+			{
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(10, layout.button3.FontSize);
+
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(22, layout.button3.FontSize);
+
+				mockDeviceInfo.Platform = DevicePlatform.WinUI;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(16, layout.button3.FontSize);
+			}
 		}
 	}
 }
