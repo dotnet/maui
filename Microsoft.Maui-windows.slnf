@@ -28,6 +28,7 @@
       "src\\Controls\\tests\\Core.UnitTests\\Controls.Core.UnitTests.csproj",
       "src\\Controls\\tests\\CustomAttributes\\Controls.CustomAttributes.csproj",
       "src\\Controls\\tests\\DeviceTests\\Controls.DeviceTests.csproj",
+      "src\\Controls\\tests\\UITests.BrowserStack\\UITests.BrowserStack.Android\\Controls.AppiumTests.BrowserStack.Android.csproj",
       "src\\Controls\\tests\\SourceGen.UnitTests\\SourceGen.UnitTests.csproj",
       "src\\Controls\\tests\\TestCases.Android.Tests\\Controls.TestCases.Android.Tests.csproj",
       "src\\Controls\\tests\\TestCases.iOS.Tests\\Controls.TestCases.iOS.Tests.csproj",
