@@ -146,5 +146,7 @@ virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
+~override Microsoft.Maui.Platform.WrapperView.OnConfigurationChanged(Android.Content.Res.Configuration newConfig) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path
 *REMOVED*override Microsoft.Maui.Animations.PlatformTicker.SystemEnabled.get -> bool
+
