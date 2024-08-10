@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 22306, "Verify many different button examples", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 22306_3, "Verify many different button examples", PlatformAffected.iOS)]
 public partial class Issue22306_3 : ContentPage
 {
 	public Issue22306_3()
