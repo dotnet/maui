@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Provides a data source for a data theory, with the data coming from inline values.
 	/// </summary>
-	[DataDiscoverer("Microsoft.Maui.InlineDataDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
+	[DataDiscoverer("Microsoft.Maui.InlineDataDiscoverer", "Microsoft.Maui.TestUtils")]
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 	public sealed class InlineDataAttribute : DataAttribute
 	{
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 	/// Caution: the property is completely enumerated by .ToList() before any test is run. Hence it should return independent object sets.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-	[DataDiscoverer("Microsoft.Maui.ClassDataDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
+	[DataDiscoverer("Microsoft.Maui.ClassDataDiscoverer", "Microsoft.Maui.TestUtils")]
 	public class ClassDataAttribute : DataAttribute
 	{
 		/// <summary>
@@ -107,7 +107,7 @@ namespace Microsoft.Maui
 	/// The member must return something compatible with IEnumerable&lt;object[]&gt; with the test data.
 	/// Caution: the property is completely enumerated by .ToList() before any test is run. Hence it should return independent object sets.
 	/// </summary>
-	[DataDiscoverer("Microsoft.Maui.MemberDataDiscoverer", "Microsoft.Maui.TestUtils.DeviceTests")]
+	[DataDiscoverer("Microsoft.Maui.MemberDataDiscoverer", "Microsoft.Maui.TestUtils")]
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 	public sealed class MemberDataAttribute : MemberDataAttributeBase
 	{
