@@ -12,94 +12,94 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage1()
+        public void VerifyButtonPage1()
         {
             App.WaitForElement("Page1Button");
             App.Tap("Page1Button");
             App.WaitForElement("Page1_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page1_NoBorder");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_NoBorder");
 
             App.Tap("Page1_2Button");
             App.WaitForElement("Page1_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page1_Border");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Border");
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage2()
+        public void VerifyButtonPage2()
         {
             App.WaitForElement("Page2Button");
             App.Tap("Page2Button");
             App.WaitForElement("Page2_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page2");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage3()
+        public void VerifyButtonPage3()
         {
             App.WaitForElement("Page3Button");
             App.Tap("Page3Button");
             App.WaitForElement("Page3_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page3");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage4()
+        public void VerifyButtonPage4()
         {
             App.WaitForElement("Page4Button");
             App.Tap("Page4Button");
             App.WaitForElement("Page4_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page4");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage5()
+        public void VerifyButtonPage5()
         {
             App.WaitForElement("Page5Button");
             App.Tap("Page5Button");
             App.WaitForElement("Page5_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page5");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage6()
+        public void VerifyButtonPage6()
         {
             App.WaitForElement("Page6Button");
             App.Tap("Page6Button");
             App.WaitForElement("Page6_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page6");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage7()
+        public void VerifyButtonPage7()
         {
             App.WaitForElement("Page7Button");
             App.Tap("Page7Button");
             App.WaitForElement("Page7_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page7");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
         }
 
         [Test]
         [Category(UITestCategories.Button)]
-        public void VerifyPage8()
+        public void VerifyButtonPage8()
         {
             App.WaitForElement("Page8Button");
             App.Tap("Page8Button");
             App.WaitForElement("Page8_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page8_Start");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Start");
 
             App.Tap("Page8_6Button");
             App.WaitForElement("Page8_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page8_Center");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Center");
 
             App.Tap("Page8_7Button");
             App.WaitForElement("Page8_1");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Page8_End");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_End");
         }
     }
 }
