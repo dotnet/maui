@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("5");
 			App.Click("reloadItemsButton");
 			App.WaitForElement("5last");
+			VerifyScreenshot();
 		}
 	}
 }
