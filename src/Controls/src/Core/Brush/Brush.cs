@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls
 		public static SolidColorBrush Beige => beige ??= new(Colors.Beige);
 
 		static ImmutableBrush darkGrey;
-		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Beige"/>.</summary>
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGrey"/>.</summary>
 		public static SolidColorBrush DarkGrey => darkGrey ??= new(Colors.DarkGrey);
 
 		static ImmutableBrush darkSlateGrey;
