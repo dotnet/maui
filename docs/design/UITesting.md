@@ -48,24 +48,6 @@ The project that hosts the tests is located here: `src\Controls\tests\TestCases.
 
 This project is using [NUnit](https://nunit.org/)
 
-All tests should derive from `UITestBase` and should override `FixtureSetup/FixtureTeardown` to navigate to the specific UI you want to test and navigate back when finished.
-
-```csharp
-protected override void FixtureSetup()
-{
-    base.FixtureSetup();
-    App.NavigateToGallery(DragAndDropGallery);
-}
-```
-
-```csharp
-protected override void FixtureTeardown()
-{
-    base.FixtureTeardown();
-    App.NavigateBack();
-}
-```
-
 ### Screenshots
 Testing against a previously saved screenshot of the simulator can be an important asset when it comes to writing tests. Currently, this is how you can do so when using the CI:
 1. Call VerifyScreenshot() at the end of your test method.
