@@ -6,13 +6,24 @@
        x:Class="Maui.Controls.Sample.Issues.Issue22937">
 
   <Shell.ToolbarItems>
-    <ToolbarItem x:Name="ChangeState" AutomationId="ChangeState" Text="Edit" Clicked="ChangeStateClicked"/>
-    <ToolbarItem x:Name="SaveButton" AutomationId="SaveButton" Text="Save"/>
+    <ToolbarItem x:Name="EditButton" Text="Edit"/>
+    <ToolbarItem x:Name="SaveButton" Text="Save"/>
   </Shell.ToolbarItems>
 
-  <ShellContent
-            Title="Home page"
-            ContentTemplate="{DataTemplate ns:Issue22937ContentPage}"
-            Route="MainPage">
+  <ShellContent Title="Home page"
+                Route="MainPage">
+    <ShellContent.ContentTemplate>
+      <DataTemplate>
+        <ContentPage>
+          <StackLayout>
+            <Button Text="Change State"
+                    AutomationId="ChangeState"
+                    Clicked="ChangeStateClicked"
+                    VerticalOptions="CenterAndExpand"
+                    HorizontalOptions="CenterAndExpand" />
+          </StackLayout>
+        </ContentPage>
+      </DataTemplate>
+    </ShellContent.ContentTemplate>
   </ShellContent>
 </Shell>

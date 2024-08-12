@@ -15,8 +15,6 @@ public partial class Issue22937 : Shell
 
 	private void ChangeStateClicked(object sender, EventArgs e)
 	{
-		SaveButton.IsEnabled = !SaveButton.IsEnabled;
+		EditButton.IsEnabled = !EditButton.IsEnabled;
 	}
 }
-
-public class Issue22937ContentPage : ContentPage { }

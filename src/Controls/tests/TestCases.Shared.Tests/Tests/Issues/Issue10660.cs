@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ToolbarItem)]
 		public void ToolbarTextColorOnInteraction()
 		{
-			App.WaitForElement("ChangeState");
-			App.Tap("ChangeState");
+			App.WaitForElement("ChangeText");
+			App.Tap("ChangeText");
 
 			VerifyScreenshot();
 		}

@@ -13,10 +13,8 @@ public partial class Issue10660 : Shell
         InitializeComponent();
     }
 
-	private void ChangeStateClicked(object sender, EventArgs e)
+	private void ChangeTextClicked(object sender, EventArgs e)
 	{
-		ChangeState.Text = ChangeState.Text == "Close" ? "Open" : "Close";
+		StateButton.Text = StateButton.Text == "Close" ? "Open" : "Close";
 	}
 }
-
-public class Issue10660ContentPage : ContentPage { }
