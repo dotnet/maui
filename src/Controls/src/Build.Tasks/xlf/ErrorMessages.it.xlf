@@ -143,7 +143,7 @@
         <note />
       </trans-unit>
       <trans-unit id="StyleSheetSourceOrContent">
-        <source>StyleSheet can not have both a Source and a content.</source>
+        <source>StyleSheet cannot have both a Source and a content.</source>
         <target state="translated">Un elemento StyleSheet non può includere sia un elemento Source che contenuto.</target>
         <note />
       </trans-unit>
