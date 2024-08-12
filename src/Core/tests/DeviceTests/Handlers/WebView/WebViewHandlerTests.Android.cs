@@ -10,5 +10,10 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WebViewHandlerTests
 	{
+		AWebView GetNativeWebView(WebViewHandler webViewHandler) =>
+			webViewHandler.PlatformView;
+
+		string GetNativeSource(WebViewHandler webViewHandler) =>
+			GetNativeWebView(webViewHandler).Url;
 	}
 }
