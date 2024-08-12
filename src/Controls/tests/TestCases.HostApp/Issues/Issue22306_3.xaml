@@ -6,7 +6,6 @@
     <Grid RowDefinitions="*, 50">
         <ScrollView Grid.Row="0">
             <VerticalStackLayout>
-            
                 <Button HeightRequest="250"
                         Text="BorderWidth Changing with a slightly longer text"
                         ImageSource="dotnet_bot.png"
@@ -19,7 +18,6 @@
 
                 <Button x:Name="Page1_2Button" AutomationId="Page1_2Button" Text="Add Border" Pressed="Page1_2Button_Pressed"/>
 
-                <!-- <Label Text="Image on bottom with spacing of 20" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 1" 
                         ContentLayout="Bottom, 20" 
@@ -27,7 +25,6 @@
                         x:Name="Page1_3"
                         AutomationId="Page1_3"/>
 
-                <!-- <Label Text="Image on top with spacing of 20, padding of 10, long text, HeightRequest of 100, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 2 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Top, 20" 
@@ -39,7 +36,6 @@
                         x:Name="Page1_4"
                         AutomationId="Page1_4"/>
 
-                <!-- <Label Text="Image on left with spacing of 20, long text, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 3 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Left, 20" 
@@ -49,7 +45,6 @@
                         x:Name="Page2_1"
                         AutomationId="Page2_1"/>
 
-                <!-- <Label Text="Image on right with spacing of 20 and padding of 20" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 4" 
                         Padding="20"
@@ -58,7 +53,6 @@
                         x:Name="Page2_2"
                         AutomationId="Page2_2"/>
 
-                <!-- <Label Text="Image on left with spacing of 0 and padding of 0" HorizontalTextAlignment="Center"  LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 5" 
                         Padding="0"
@@ -67,7 +61,6 @@
                         x:Name="Page2_3"
                         AutomationId="Page2_3"/>
 
-                <!-- <Label Text="Small image on bottom with spacing of 20" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 1_1" 
                         ContentLayout="Bottom, 20" 
@@ -75,7 +68,6 @@
                         x:Name="Page3_1"
                         AutomationId="Page3_1"/>
 
-                <!-- <Label Text="Small image on top with spacing of 20, padding of 10, long text, HeightRequest of 100, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 2_1 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Top, 20" 
@@ -87,7 +79,6 @@
                         x:Name="Page3_2"
                         AutomationId="Page3_2"/>
 
-                <!-- <Label Text="Small image on top with spacing of 20, padding of 10, long text, HeightRequest of 100, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 2_1_1" 
                         ContentLayout="Top, 20" 
@@ -99,7 +90,6 @@
                         x:Name="Page3_3"
                         AutomationId="Page3_3"/>
 
-                <!-- <Label Text="Small image on left with spacing of 20, long text, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 3_1 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Left, 20" 
@@ -127,7 +117,6 @@
                         x:Name="Page3_6"
                         AutomationId="Page3_6"/>
 
-                <!-- <Label Text="Small image on right with spacing of 20 and padding of 20" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 4_1" 
                         Padding="20"
@@ -136,7 +125,6 @@
                         x:Name="Page3_7"
                         AutomationId="Page3_7"/>
 
-                <!-- <Label Text="Small image on left with spacing of 0 and padding of 0" HorizontalTextAlignment="Center"  LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 5_1" 
                         Padding="0"
@@ -145,7 +133,6 @@
                         x:Name="Page3_8"
                         AutomationId="Page3_8"/>
 
-                <!-- <Label Text="Image on bottom with spacing of 20, HorizontalOptions Center and BorderWidth 10" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 1_2"
                         BorderWidth="10"
@@ -155,7 +142,6 @@
                         x:Name="Page4_1"
                         AutomationId="Page4_1"/>
 
-                <!-- <Label Text="Image on bottom with spacing of 20, HorizontalOptions Center and BorderWidth 10 with longer text" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2"
                         BorderWidth="10"
@@ -166,7 +152,6 @@
                         x:Name="Page4_2"
                         AutomationId="Page4_2"/>
 
-                <!-- <Label Text="Image on bottom with spacing of 20, HorizontalOptions Center and BorderWidth 10 with longer text tailTruncation" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2"
                         BorderWidth="10"
@@ -177,7 +162,6 @@
                         x:Name="Page4_3"
                         AutomationId="Page4_3"/>
 
-                <!-- <Label Text="Image on bottom with spacing of 20, HorizontalOptions Center with longer text tailTruncation" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot_resized.png" 
                         Text="Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2 Button 1_2"
                         HorizontalOptions="Center"
@@ -187,7 +171,6 @@
                         x:Name="Page4_4"
                         AutomationId="Page4_4"/>
 
-                <!-- <Label Text="Image on top with spacing of 20, padding of 10, long text, HeightRequest of 100, and WidthRequest of 200, HorizontalOptions Start and BorderWidth 5" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 2_2 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Top, 20" 
@@ -201,7 +184,6 @@
                         x:Name="Page4_5"
                         AutomationId="Page4_5"/>
 
-                <!-- <Label Text="Image on left with spacing of 20, long text, and WidthRequest of 200, HorizontalOptions End and BorderWidth 10" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 3_2 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Left, 20" 
@@ -213,7 +195,6 @@
                         x:Name="Page5_1"
                         AutomationId="Page5_1"/>
 
-                <!-- <Label Text="Image on right with spacing of 20 and padding of 20, HorizontalOptions Fill and BorderWidth -5" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 4_2" 
                         Padding="20"
@@ -224,7 +205,6 @@
                         x:Name="Page5_2"
                         AutomationId="Page5_2"/>
 
-                <!-- <Label Text="Image on left with spacing of 0 and padding of 0, HorizontalOptions Center and BorderWidth 20" HorizontalTextAlignment="Center"  LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 5_2" 
                         BorderWidth="20"
@@ -235,7 +215,6 @@
                         x:Name="Page5_3"
                         AutomationId="Page5_3"/>
 
-                <!-- <Label Text="Image on bottom with spacing of 20" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 1" 
                         LineBreakMode="WordWrap"
@@ -244,7 +223,6 @@
                         x:Name="Page6_1"
                         AutomationId="Page6_1"/>
 
-                <!-- <Label Text="Image on top with spacing of 20, padding of 10, long text, HeightRequest of 100, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 2 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Top, 20" 
@@ -256,7 +234,6 @@
                         x:Name="Page6_2"
                         AutomationId="Page6_2"/>
 
-                <!-- <Label Text="Image on left with spacing of 20, long text, and WidthRequest of 200" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 3 with a super duper extremely very long super duper extremely very long super duper extremely very long text box" 
                         ContentLayout="Left, 20" 
@@ -266,7 +243,6 @@
                         x:Name="Page6_3"
                         AutomationId="Page6_3"/>
 
-                <!-- <Label Text="Image on right with spacing of 20 and padding of 20" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 4" 
                         Padding="20"
@@ -276,7 +252,6 @@
                         x:Name="Page7_1"
                         AutomationId="Page7_1"/>
 
-                <!-- <Label Text="Image on left with spacing of 0 and padding of 0" HorizontalTextAlignment="Center"  LineBreakMode="WordWrap" /> -->
                 <Button ImageSource="dotnet_bot.png" 
                         Text="Button 5" 
                         Padding="0"
