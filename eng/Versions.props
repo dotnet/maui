@@ -52,10 +52,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>35.0.0-rc.1.46</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet90_175PackageVersion>17.5.9237-net9-rc1</MicrosoftMacCatalystSdknet90_175PackageVersion>
-    <MicrosoftmacOSSdknet90_145PackageVersion>14.5.9237-net9-rc1</MicrosoftmacOSSdknet90_145PackageVersion>
-    <MicrosoftiOSSdknet90_175PackageVersion>17.5.9237-net9-rc1</MicrosoftiOSSdknet90_175PackageVersion>
-    <MicrosofttvOSSdknet90_175PackageVersion>17.5.9237-net9-rc1</MicrosofttvOSSdknet90_175PackageVersion>
+    <MicrosoftMacCatalystSdknet90_175PackageVersion>17.5.9244-net9-rc1</MicrosoftMacCatalystSdknet90_175PackageVersion>
+    <MicrosoftmacOSSdknet90_145PackageVersion>14.5.9244-net9-rc1</MicrosoftmacOSSdknet90_145PackageVersion>
+    <MicrosoftiOSSdknet90_175PackageVersion>17.5.9244-net9-rc1</MicrosoftiOSSdknet90_175PackageVersion>
+    <MicrosofttvOSSdknet90_175PackageVersion>17.5.9244-net9-rc1</MicrosofttvOSSdknet90_175PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -79,8 +79,7 @@
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.0-rc.1.24408.9</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>9.0.0-rc.1.24408.9</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftJSInteropPackageVersion>9.0.0-rc.1.24408.9</MicrosoftJSInteropPackageVersion>
-
-        <!-- Everything else (previous edition) -->
+    <!-- Everything else (previous edition) -->
     <MicrosoftAspNetCorePackageVersion>8.0.7</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>
