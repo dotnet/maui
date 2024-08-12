@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _isVisible;
 		bool _disposed;
+		bool _isCurrentItemNull;
 
 		List<View> _oldViews;
 		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
@@ -133,12 +134,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (oldItemViewAdapter != null && _initialized)
 			{
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
-				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
 
 			_gotoPosition = -1;
 
 			base.UpdateAdapter();
+
+			// we can set the current item here, if suppose dynamically set itemsource as null and reload again with some items.
+			if (oldItemViewAdapter != null && _initialized && Carousel.Loop && _isCurrentItemNull)
+			{
+				SetCurrentItem(Carousel.Position);
+				_isCurrentItemNull = false;
+			}
+
+			//we can null the CurrentItemProperty only if we don't have any items
+			if (ItemsViewAdapter == null || ItemsViewAdapter?.ItemsSource?.Count == 0)
+			{
+				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
+				_isCurrentItemNull = true;
+			}
 
 			UpdateInitialPosition();
 
