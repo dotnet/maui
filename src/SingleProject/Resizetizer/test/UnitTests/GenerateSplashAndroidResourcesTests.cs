@@ -221,8 +221,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertFileSize("drawable-nodpi/camera.png", 1792, 1792);
-			AssertFileMatches("drawable-nodpi/camera.png");
+			AssertFileSize("drawable-anydpi/camera.png", 1792, 1792);
+			AssertFileMatches("drawable-anydpi/camera.png");
 		}
 
 		[Fact]
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var success = task.Execute();
 			Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
-			AssertFileSize("drawable-nodpi/camera.png", 1792, 1792);
+			AssertFileSize("drawable-anydpi/camera.png", 1792, 1792);
 		}
 
 		[Theory]

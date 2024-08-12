@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Resizetizer
 		public static class Android
 		{
 			public static DpiPath Original =>
-				new DpiPath("drawable-nodpi", 1.0m);
+				new DpiPath("drawable-anydpi", 1.0m);
 
 			public static DpiPath[] Image
 				=> new[]
