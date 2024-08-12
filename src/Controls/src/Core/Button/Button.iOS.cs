@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Controls
 	public partial class Button : ICrossPlatformLayout
 	{
 		CGSize _originalImageSize = CGSize.Empty;
+
+		// _isFirstMeasure is a flag to make sure we manually recalculate the titleRect when there are dynamic changes to the button.
+		// There are times the platformButton.TitleLabel is updated on dynamic changes and reacts to the change by truncating the label when we actually
+		// have space in our constraints. We provide the space to be used in our first measure of the titleRect and then use the newly laid out titleRect in later iterations.
 		bool _isFirstMeasure = true;
 
 		/// <summary>
