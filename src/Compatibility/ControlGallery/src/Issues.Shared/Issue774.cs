@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		{
 			RunningApp.SetOrientationPortrait();
 
-			base.Teardown();
+			base.TearDown();
 		}
 #endif
 
