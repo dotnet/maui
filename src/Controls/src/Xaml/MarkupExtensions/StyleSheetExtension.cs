@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			IXmlLineInfo lineInfo;
 
 			if (!string.IsNullOrEmpty(Style) && Source != null)
-				throw new XamlParseException($"StyleSheet can not have both a Source and a content", serviceProvider);
+				throw new XamlParseException($"StyleSheet cannot have both a Source and a content", serviceProvider);
 
 			if (Source != null)
 			{

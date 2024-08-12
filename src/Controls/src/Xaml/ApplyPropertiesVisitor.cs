@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 				}
 
-				xpe = xpe ?? new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
+				xpe = xpe ?? new XamlParseException($"Cannot set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 				if (Context.ExceptionHandler != null)
 					Context.ExceptionHandler(xpe);
 				else
