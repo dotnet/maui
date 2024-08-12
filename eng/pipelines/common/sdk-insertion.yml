@@ -22,7 +22,7 @@ jobs:
     - output: artifactsDrop
       dropServiceURI: https://devdiv.artifacts.visualstudio.com/DefaultCollection
       buildNumber: $(ReleaseDropPrefix)/symbols
-      dropMetadataContainerName: DropMetadata-$(Build.BuildId)-symbols-$(System.JobAttempt)
+      dropMetadataContainerName: DropMetadata-shipping-symbols
       sourcePath: $(Build.StagingDirectory)\symbols
       retentionDays: ${{ parameters.dropRetentionDays }}
       toLowerCase: false
@@ -41,7 +41,7 @@ jobs:
 
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifactName: DropMetadata-$(Build.BuildId)-nugets-$(System.JobAttempt)
+      artifactName: DropMetadata-shipping-nugets
       downloadPath: $(Build.StagingDirectory)\metadata
     displayName: Download nugets drop metadata
 
