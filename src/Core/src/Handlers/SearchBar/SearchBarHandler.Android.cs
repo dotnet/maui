@@ -141,7 +141,10 @@ namespace Microsoft.Maui.Handlers
 		void OnQueryTextChange(object? sender, QueryTextChangeEventArgs e)
 		{
 			VirtualView.UpdateText(e.NewText);
-			e.Handled = true;
+			// Inside of the android implementations that map events to listeners, the default return value for "Handled" is always true.
++			// This means, just by subscribing to Search button/search icon pressed/etc.. you change the behavior of the control.
++			// So, we are setting handled to false here in order to maintain default behavior.
++			e.Handled = false;
 		}
 
 		class FocusChangeListener : Java.Lang.Object, SearchView.IOnFocusChangeListener
