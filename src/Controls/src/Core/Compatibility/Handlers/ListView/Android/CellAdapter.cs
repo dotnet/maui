@@ -11,11 +11,7 @@ using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 using Microsoft.Maui.Controls.Platform;
-#if NET6_0_OR_GREATER
 using AMenu = Android.Views.IMenu;
-#else
-using AMenu = Android.Views.Menu;
-#endif
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {

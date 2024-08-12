@@ -301,7 +301,7 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{testApp}");
 
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
+	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}";
 	Information("Run UITests project {0}", resultName);
 	RunTestWithLocalDotNet(
 		project,
@@ -324,6 +324,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 		var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
 		foreach (var sim in sims)
 		{
+			var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 			if(createDeviceLogs)
 			{
 				try
@@ -333,7 +334,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}.zip")
+							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}_{timestamp}.zip")
 							.AppendQuoted($"{homeDirectory}/Library/Logs/DiagnosticReports/"),
 						RedirectStandardOutput = false
 					});
@@ -342,28 +343,28 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}.zip")
+							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}_{timestamp}.zip")
 							.AppendQuoted($"{homeDirectory}/Library/Logs/CoreSimulator/{sim.UDID}"),
 						RedirectStandardOutput = false
 					});
 
-					StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_log.logarchive");
+					StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
 
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/{sim.UDID}_log.logarchive.zip")
-							.AppendQuoted($"{homeDirectory}/{sim.UDID}_log.logarchive"),
+							.AppendQuoted($"{logDirectory}/{sim.UDID}_{timestamp}_log.logarchive.zip")
+							.AppendQuoted($"{homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive"),
 						RedirectStandardOutput = false
 					});
 
-					var screenshotPath = $"{testResultsPath}/{sim.UDID}_screenshot.png";
+					var screenshotPath = $"{testResultsPath}/{sim.UDID}_{timestamp}_screenshot.png";
 					StartProcess("xcrun", $"simctl io {sim.UDID} screenshot {screenshotPath}");
 				}
 				catch(Exception ex)
 				{
 					Information($"Failed to collect logs for simulator {sim.Name} ({sim.UDID}): {ex.Message}");
-					Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_log.logarchive");
+					Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
 				}
 			}
 

@@ -65,7 +65,14 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
-				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
+				_strokeShapeChanged ??= (sender, e) =>
+				{
+					if (e.PropertyName != nameof(Window) &&
+						e.PropertyName != nameof(Parent))
+					{
+						OnPropertyChanged(nameof(StrokeShape));
+					}
+				};
 				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
