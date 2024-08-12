@@ -6,7 +6,16 @@
 	{
 		public Issue18443()
 		{
-			InitializeComponent();			
+			InitializeComponent();
 		}
+
+		protected override async void OnAppearing()
+		{
+			base.OnAppearing();
+			await Task.Delay(1000);
+			MauiEntry.Focus();
+		}
+
+		
 	}
 }
