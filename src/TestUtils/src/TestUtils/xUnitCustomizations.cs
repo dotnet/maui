@@ -1,143 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.Maui
 {
-	public class InlineDataDiscoverer : Xunit.Sdk.InlineDataDiscoverer
-	{
-		public InlineDataDiscoverer(IMessageSink diagnosticMessageSink)
-		{
-		}
-	}
-
 	/// <summary>
-	/// Provides a data source for a data theory, with the data coming from inline values.
+	/// This type provides the assembly name for the xUnit attributes specified in
+	/// the linked TestShared\xUnitSharedAttributes.cs file.
 	/// </summary>
-	[DataDiscoverer("Microsoft.Maui.InlineDataDiscoverer", "Microsoft.Maui.TestUtils")]
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-	public sealed class InlineDataAttribute : DataAttribute
+	internal static class XUnitTypeData
 	{
-		readonly object[] data;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="InlineDataAttribute"/> class.
-		/// </summary>
-		/// <param name="data">The data values to pass to the theory.</param>
-		public InlineDataAttribute(params object[] data)
-		{
-			this.data = data;
-		}
-
-		/// <inheritdoc/>
-		public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-		{
-			// This is called by the WPA81 version as it does not have access to attribute ctor params
-			return new[] { data };
-		}
-	}
-
-	public class ClassDataDiscoverer : DataDiscoverer
-	{
-		public ClassDataDiscoverer(IMessageSink diagnosticMessageSink)
-		{
-		}
-	}
-
-	/// <summary>
-	/// Provides a data source for a data theory, with the data coming from a class
-	/// which must implement IEnumerable&lt;object[]&gt;.
-	/// Caution: the property is completely enumerated by .ToList() before any test is run. Hence it should return independent object sets.
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-	[DataDiscoverer("Microsoft.Maui.ClassDataDiscoverer", "Microsoft.Maui.TestUtils")]
-	public class ClassDataAttribute : DataAttribute
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ClassDataAttribute"/> class.
-		/// </summary>
-		/// <param name="class">The class that provides the data.</param>
-		public ClassDataAttribute(Type @class)
-		{
-			Class = @class;
-		}
-
-		/// <summary>
-		/// Gets the type of the class that provides the data.
-		/// </summary>
-		public Type Class { get; private set; }
-
-		/// <inheritdoc/>
-		public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-		{
-			IEnumerable<object[]> data = Activator.CreateInstance(Class) as IEnumerable<object[]>;
-			if (data == null)
-				throw new ArgumentException(
-					string.Format(
-						CultureInfo.CurrentCulture,
-						"{0} must implement IEnumerable<object[]> to be used as ClassData for the test method named '{1}' on {2}",
-						Class.FullName,
-						testMethod.Name,
-						testMethod.DeclaringType!.FullName
-					)
-				);
-
-			return data;
-		}
-	}
-
-	public class MemberDataDiscoverer : DataDiscoverer
-	{
-		public MemberDataDiscoverer(IMessageSink diagnosticMessageSink)
-		{
-		}
-	}
-
-	/// <summary>
-	/// Provides a data source for a data theory, with the data coming from one of the following sources:
-	/// 1. A static property
-	/// 2. A static field
-	/// 3. A static method (with parameters)
-	/// The member must return something compatible with IEnumerable&lt;object[]&gt; with the test data.
-	/// Caution: the property is completely enumerated by .ToList() before any test is run. Hence it should return independent object sets.
-	/// </summary>
-	[DataDiscoverer("Microsoft.Maui.MemberDataDiscoverer", "Microsoft.Maui.TestUtils")]
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-	public sealed class MemberDataAttribute : MemberDataAttributeBase
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="MemberDataAttribute"/> class.
-		/// </summary>
-		/// <param name="memberName">The name of the public static member on the test class that will provide the test data</param>
-		/// <param name="parameters">The parameters for the member (only supported for methods; ignored for everything else)</param>
-		public MemberDataAttribute(string memberName, params object[] parameters)
-			: base(memberName, parameters) { }
-
-		/// <inheritdoc/>
-		protected override object[] ConvertDataItem(MethodInfo testMethod, object item)
-		{
-			if (item == null)
-				return null!;
-
-			var array = item as object[];
-			if (array == null)
-				throw new ArgumentException(
-					string.Format(
-						CultureInfo.CurrentCulture,
-						"Property {0} on {1} yielded an item that is not an object[]",
-						MemberName,
-						MemberType ?? testMethod.DeclaringType
-					)
-				);
-
-			return array;
-		}
+		internal const string XUnitAttributeAssembly = "Microsoft.Maui.TestUtils";
 	}
 
 	public class CategoryDiscoverer : ITraitDiscoverer
@@ -161,7 +37,7 @@ namespace Microsoft.Maui
 	}
 
 	/// <summary>
-	/// Conveninence attribute for setting a Category trait on a test or test class
+	/// Convenience attribute for setting a Category trait on a test or test class
 	/// </summary>
 	[TraitDiscoverer("Microsoft.Maui.CategoryDiscoverer", "Microsoft.Maui.TestUtils")]
 	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
