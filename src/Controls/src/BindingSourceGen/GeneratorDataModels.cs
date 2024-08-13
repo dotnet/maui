@@ -44,7 +44,6 @@ public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, Line
 public enum AccessorKind
 {
 	Field,
-	StaticField,
 	Property,
 }
 
