@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Controls
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 
-		void AddWindow(Window window)
+		internal void AddWindow(Window window)
 		{
 			_windows.Add(window);
 

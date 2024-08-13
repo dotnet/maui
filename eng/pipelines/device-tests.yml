@@ -3,7 +3,8 @@ trigger:
     include:
     - main
     - release/*
-    - loc
+    - net9.0
+    - net8.0
   tags:
     include:
     - '*'
@@ -27,6 +28,8 @@ pr:
     include:
     - main
     - release/*
+    - net9.0
+    - net8.0
   paths:
     include:
     - '*'
