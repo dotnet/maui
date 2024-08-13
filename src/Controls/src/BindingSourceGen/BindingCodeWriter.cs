@@ -254,7 +254,7 @@ public static class BindingCodeWriter
 			Append(binding.MethodType switch
 			{
 				InterceptedMethodType.SetBinding => $"public static void SetBinding{id}",
-				InterceptedMethodType.Create => $"public static TypedBinding<{binding.SourceType}, {binding.PropertyType}> Create{id}",
+				InterceptedMethodType.Create => $"public static BindingBase Create{id}",
 				_ => throw new ArgumentOutOfRangeException(nameof(binding.MethodType))
 			});
 		}
