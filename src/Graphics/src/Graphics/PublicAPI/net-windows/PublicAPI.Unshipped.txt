@@ -1300,13 +1300,6 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~static Microsoft.Maui.Graphics.Text.TextColors.Parse(this string color) -> float[]
 ~static Microsoft.Maui.Graphics.Text.TextColors.ParseAsInts(this string color) -> int[]
 ~static Microsoft.Maui.Graphics.Text.TextColors.StandardColors -> System.Collections.Generic.Dictionary<string, string>
-~static readonly Microsoft.Maui.Graphics.Brush.DarkGrey -> Microsoft.Maui.Controls.SolidColorBrush
-~static readonly Microsoft.Maui.Graphics.Brush.DarkSlateGrey -> Microsoft.Maui.Controls.SolidColorBrush
-~static readonly Microsoft.Maui.Graphics.Brush.DimGrey -> Microsoft.Maui.Controls.SolidColorBrush
-~static readonly Microsoft.Maui.Graphics.Brush.Grey -> Microsoft.Maui.Controls.SolidColorBrush
-~static readonly Microsoft.Maui.Graphics.Brush.LightGrey -> Microsoft.Maui.Controls.SolidColorBrush
-~static readonly Microsoft.Maui.Graphics.Brush.LightSlateGrey -> Microsoft.Maui.Controls.SolidColorBrush
-~static readonly Microsoft.Maui.Graphics.Brush.SlateGrey -> Microsoft.Maui.Controls.SolidColorBrush
 ~static readonly Microsoft.Maui.Graphics.CanvasDefaults.DefaultShadowColor -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.AliceBlue -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.AntiqueWhite -> Microsoft.Maui.Graphics.Color

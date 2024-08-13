@@ -4,4 +4,14 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+    <StackLayout x:Name="greyShades">
+        <Entry Background="Gray" Text="Microsoft Entry"/>
+        <Editor Background="DimGrey" Text="Microsoft Editor"/>
+        <Label Background="SlateGrey" Text="Microsoft Label"/>
+        <Button Background="DarkGrey" Text="Microsoft Button"/>
+        <Slider Background="DarkSlateGrey"/>
+        <Switch Background="LightGrey"/>
+        <CheckBox Background="LightSlateGrey"/>
+        <Entry Background="SlateGrey" Text="Microsoft Entry2"/>
+    </StackLayout>
 </ContentPage>
