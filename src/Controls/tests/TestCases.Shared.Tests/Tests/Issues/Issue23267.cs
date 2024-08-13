@@ -16,11 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ImageButton)]
 		[FailsOnAndroid]
-		public async void WebViewEvalCrashesOnAndroidWithLongString()
+		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
 			App.WaitForElement("ImageButtonId");
 			App.Tap("ImageButtonId");
-			await Task.Delay(500);
 			VerifyScreenshot();
 		}
 	}
