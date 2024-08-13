@@ -45,10 +45,27 @@ public static class BindingCodeWriter
 		private static extern ref {{memberType}} {{CreateUnsafeFieldAccessorMethodName(id, fieldName)}}({{containingType}} source);
 		""";
 
-	private static string GenerateUnsafePropertyAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
+	private static string GenerateUnsafePropertyAccessors(string propertyName, string memberType, string containingType, uint id, bool generateSetter)
+	{
+		var propertyAccessors = new List<string>
+		{
+			GenerateUnsafePropertyGetAccessors(propertyName, memberType, containingType, id)
+		};
+
+		if (generateSetter)
+		{
+			propertyAccessors.Add(GenerateUnsafePropertySetAccessors(propertyName, memberType, containingType, id));
+		}
+
+		return string.Join("\n", propertyAccessors);
+	}
+	
+	private static string GenerateUnsafePropertyGetAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
 		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
 		private static extern {{memberType}} {{CreateUnsafePropertyAccessorGetMethodName(id, propertyName)}}({{containingType}} source);
+		""";
 
+	private static string GenerateUnsafePropertySetAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
 		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
 		private static extern void {{CreateUnsafePropertyAccessorSetMethodName(id, propertyName)}}({{containingType}} source, {{memberType}} value);
 		""";
@@ -124,7 +141,7 @@ public static class BindingCodeWriter
 			var accessor = unsafeAccessor.Kind switch
 			{
 				AccessorKind.Field => GenerateUnsafeFieldAccessor(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id),
-				AccessorKind.Property => GenerateUnsafePropertyAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id),
+				AccessorKind.Property => GenerateUnsafePropertyAccessors(unsafeAccessor.MemberName, unsafeAccessor.memberType.GlobalName, unsafeAccessor.ContainingType.GlobalName, id, binding.SetterOptions.IsWritable),
 				_ => throw new ArgumentException(nameof(unsafeAccessor.Kind))
 			};
 			unsafeAccessorsStrings.Add(accessor);

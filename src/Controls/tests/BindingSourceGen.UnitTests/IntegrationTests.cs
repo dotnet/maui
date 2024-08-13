@@ -1930,9 +1930,6 @@ public class IntegrationTests
 
                     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Text")]
                     private static extern string GetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source);
-
-                    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Text")]
-                    private static extern void SetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source, string value);
                 }
             }
             """,
