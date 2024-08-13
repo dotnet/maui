@@ -190,6 +190,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
