@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Issues
 				Aspect = Aspect.AspectFit
 			});
 			verticalStackLayout.Add(gridLayout);
-
+			scrollView.Content = verticalStackLayout;
 
 			this.Content = scrollView;
 		}
