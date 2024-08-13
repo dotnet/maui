@@ -305,8 +305,8 @@
                         </HorizontalStackLayout>
                 </ScrollView>
 
-                <Button x:Name="Page8_6Button" Text="ScrollToMiddle" Pressed="ScrollToMiddlePressed" />
-                <Button x:Name="Page8_7Button" Text="ScrollToEnd" Pressed="ScrollToEndPressed" />
+                <Button x:Name="Page8_6Button" AutomationId="Page8_6Button" Text="ScrollToMiddle" Pressed="ScrollToMiddlePressed" />
+                <Button x:Name="Page8_7Button" AutomationId="Page8_7Button" Text="ScrollToEnd" Pressed="ScrollToEndPressed" />
 
             </VerticalStackLayout>
         </ScrollView>
