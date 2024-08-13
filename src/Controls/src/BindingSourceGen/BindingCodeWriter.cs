@@ -42,16 +42,20 @@ public static class BindingCodeWriter
 
 	private static string GenerateUnsafeFieldAccessor(string fieldName, string memberType, string containingType, uint id) => $$"""
 		[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "{{fieldName}}")]
-		private static extern ref {{memberType}} GetUnsafeField{{id}}{{fieldName}}({{containingType}} source);
+		private static extern ref {{memberType}} {{CreateUnsafeFieldAccessorMethodName(id, fieldName)}}({{containingType}} source);
 		""";
 
 	private static string GenerateUnsafePropertyAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
 		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
-		private static extern {{memberType}} GetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source);
+		private static extern {{memberType}} {{CreateUnsafePropertyAccessorGetMethodName(id, propertyName)}}({{containingType}} source);
 
 		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
-		private static extern void SetUnsafeProperty{{id}}{{propertyName}}({{containingType}} source, {{memberType}} value);
+		private static extern void {{CreateUnsafePropertyAccessorSetMethodName(id, propertyName)}}({{containingType}} source, {{memberType}} value);
 		""";
+
+	private static string CreateUnsafeFieldAccessorMethodName(uint bindingId, string fieldName) => $"GetUnsafeField{bindingId}{fieldName}";
+	private static string CreateUnsafePropertyAccessorGetMethodName(uint bindingId, string propertyName) => $"GetUnsafeProperty{bindingId}{propertyName}";
+	private static string CreateUnsafePropertyAccessorSetMethodName(uint bindingId, string propertyName) => $"SetUnsafeProperty{bindingId}{propertyName}";
 
 	private static string GenerateBindingCode(string bindingMethodBody, IEnumerable<string> unsafeAccessors) => $$"""
 		//------------------------------------------------------------------------------
