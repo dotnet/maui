@@ -15,9 +15,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ShellTabVisibilityIssue()
 		{
 			App.WaitForElement("Tab1");
+#if ANDROID
 			App.SwipeLeftToRight();
 			App.WaitForElement("FirstButton");
 			App.Tap("FirstButton");
+#elif WINDOWS
+			App.Tap("MenuItem");
+			App.WaitForElement("SecondButton");
+			App.Tap("SecondButton");
+#endif
 			VerifyScreenshot();
 		}
 	}
