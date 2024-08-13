@@ -13,12 +13,11 @@ public class Issue774 : _IssuesUITest
 
     public override string Issue => "ActionSheet won't dismiss after rotation to landscape";
 
-    protected override void FixtureTeardown()
+    [TearDown]
+    protected void Teardown()
     {
         App.SetOrientationPortrait();
         App.Back();
-
-        base.FixtureTeardown();
     }
 
     [Test]
