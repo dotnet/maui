@@ -31,7 +31,7 @@ You can use the example for the sample project [here](https://github.com/dotnet/
 
  All controls you intend to interact with need to set the `AutomationId` property as this will be what you use to query for the element. You can either set it in the xaml as an attribute when you create the element or you can assign it when you create the element progmatically.
 
-Note: AutomationId will not work on layouts on Windows. This is because Appium uses the accessiblity tree to locate elements, and layouts are not visibile in the accessibility tree. You will have to focus on the individual elements such as label, entry, editor, and so on.
+Note: AutomationId will not work on layouts on Windows. This is because Appium uses the accessibility tree to locate elements, and layouts are not visible in the accessibility tree. You will have to focus on the individual elements such as label, entry, editor, and so on.
 
 ### Example
 
@@ -54,7 +54,7 @@ Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
 Testing against a previously saved screenshot of the simulator can be an important asset when it comes to writing tests. Currently, this is how you can do so when using the CI:
 1. Call VerifyScreenshot() at the end of your test method.
 2) Start a pull request, and have it run on the CI.
-3) Navigate to the bottom of the request where there is a list of the various checks on the CI. Scroll down until you see Maui-UITestpublic (will have a required bubble next to it) and click details. At the top of the summary page, you should see a box with Repositories, Time Started and Elapsed, Related, and Tests and Coverage. Click on the link below the related heading. Click on the drop to downlodad it.
+3) Navigate to the bottom of the request where there is a list of the various checks on the CI. Scroll down until you see `Maui-UITestpublic` (will have a required bubble next to it) and click details. At the top of the summary page, you should see a box with Repositories, Time Started and Elapsed, Related, and Tests and Coverage. Click on the link below the related heading. Click on the drop to download it.
 4) When you unzip the archive, navigate to the Controls.TestCases.Shared folder which will have the snap shot. NOTE: in future testing, if this test will have failed, the snapshot will have a -diff attached to its filename, with red outlining to indicate problem areas.
 5) Add the snapshot .png to your test
 6) Commit the change to your PR.
@@ -78,18 +78,18 @@ There may be times when you want to have the test run on some platforms and not 
 
 When you compile `Controls.TestCases.Mac.Tests`, the test will not appear in the list of tests. 
 
-Note: you may see something like `[FailsOnAndroid("This test is failing, likely due to product issue")]` in some tests. This was an attribute created to help with compatability with Xamarin Forms and is not advised to used with tests written in the future.
+Note: you may see something like `[FailsOnAndroid("This test is failing, likely due to product issue")]` in some tests. This was an attribute created to help with compatibility with Xamarin Forms and is not advised to used with tests written in the future.
 
 ## Building and Running tests
 Please see the [wiki](https://github.com/dotnet/maui/wiki/UITests) for setting up/running tests.
 
 ## Logging
 
-Follow the steps above for accessing Screenshots to acess the logs from the drop folder.
+Follow the steps above for accessing Screenshots to access the logs from the drop folder.
 
-IOS - logarchive files from the console output of the simulator (currently there might be logarchives from other simulators so be sure to validate that there are logs from your test run in the log archive).
+IOS - `logarchive` files from the console output of the simulator (currently there might be logarchives from other simulators so be sure to validate that there are logs from your test run in the log archive).
  
-Android - If a test fails or the device crashes, there will be a logcat file in this folder that you can look at for information.
+Android - If a test fails or the device crashes, there will be a `logcat` file in this folder that you can look at for information.
 
 ## Known Issues
 - iOS doesn't support nested accessibility elements which will make some elements unreachable
