@@ -59,6 +59,12 @@ Testing against a previously saved screenshot of the simulator can be an importa
 5) Add the snapshot .png to your test
 6) Commit the change to your PR.
 
+## Adding a GalleryPage
+
+Gallery tests are to make it easier to run the same set of tests on controls, if you are creating a new control you would want to add a new gallery page.
+
+We have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Elements/ContentViewGalleryPage.cs)
+
 ### Restarting the App after a Test
 
 - When multiple tests are run, all methods under one class will be tested in the same instance of the app. The app will then restart as it changes to the next test class. If you would like the app to be be restarted after method in the class, add this override property to your class:
@@ -66,7 +72,7 @@ Testing against a previously saved screenshot of the simulator can be an importa
 protected override bool ResetAfterEachTest => true;
 ```
 
-## Handling different operating systems
+### Handling different operating systems
 
 There may be times when you want to have the test run on some platforms and not others. For example, VerifyScreenshot() does not currently work on MacCatalyst. In this case, you would want to use preprocessor directives:
 
