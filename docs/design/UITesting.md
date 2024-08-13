@@ -3,7 +3,7 @@ UI Testing
 
 # Note for New Contributors
 
-We advise starting out with UI Testing instead of DeviceTests, as they are a bit easier to start writing. Please see here for more information about DeviceTests: [DeviceTests](https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/32195/MAUI#:~:text=%2D%20Device%20tests%20%2D%20These%20are%20tests%20that%20will%20run%20on%20an%20actual%20device%20or%20simulator)
+We advise starting out with UI Testing instead of DeviceTests, as they are a bit easier to start writing, and more for routine, simplistic unit testing. Please see here for more information about DeviceTests: [DeviceTests](https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/32195/MAUI#:~:text=%2D%20Device%20tests%20%2D%20These%20are%20tests%20that%20will%20run%20on%20an%20actual%20device%20or%20simulator)
 
 # Introduction
 
@@ -78,7 +78,9 @@ There may be times when you want to have the test run on some platforms and not 
 
 When you compile `Controls.TestCases.Mac.Tests`, the test will not appear in the list of tests. 
 
-## Running tests
+Note: you may see something like `[FailsOnAndroid("This test is failing, likely due to product issue")]` in some tests. This was an attribute created to help with compatability with Xamarin Forms and is not advised to used with tests written in the future.
+
+## Building and Running tests
 Please see the [wiki](https://github.com/dotnet/maui/wiki/UITests) for setting up/running tests.
 
 ## Logging
