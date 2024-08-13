@@ -276,16 +276,15 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush gray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Gray"/>.</summary>
 		public static SolidColorBrush Gray => gray ??= new(Colors.Gray);
+		static ImmutableBrush grey;
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Grey"/>.</summary>
+		public static SolidColorBrush Grey => grey ??= new(Colors.Grey);
 		static ImmutableBrush green;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Green"/>.</summary>
 		public static SolidColorBrush Green => green ??= new(Colors.Green);
 		static ImmutableBrush greenYellow;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.GreenYellow"/>.</summary>
 		public static SolidColorBrush GreenYellow => greenYellow ??= new(Colors.GreenYellow);
-		static ImmutableBrush grey;
-		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Grey"/>.</summary>
-		public static SolidColorBrush Grey => grey ??= new(Colors.Grey);
-		
 		static ImmutableBrush honeydew;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Honeydew"/>.</summary>
 		public static SolidColorBrush Honeydew => honeydew ??= new(Colors.Honeydew);
