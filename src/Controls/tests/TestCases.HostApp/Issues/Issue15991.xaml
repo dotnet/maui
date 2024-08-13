@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue15991"
+             Title="Issue15991">
+    <ScrollView>
+        <VerticalStackLayout BackgroundColor="AliceBlue">
+            <FlexLayout AutomationId="flexLayout" Direction="Column" Padding="16" BackgroundColor="LightGreen">
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Red"  />
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Blue" />
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Green"  />
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Yellow"/>
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Magenta"  />
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Black"  />
+                <BoxView WidthRequest="40" HeightRequest="20" Color="Orange"  />
+                <BoxView WidthRequest="40" HeightRequest="20" Color="GreenYellow"  />
+            </FlexLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
