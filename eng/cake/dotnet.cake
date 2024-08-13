@@ -13,6 +13,11 @@ string officialBuildId = Argument("officialbuildid", "");
 
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
+var rootFolder = Context.Environment.WorkingDirectory;
+
+if (rootFolder.FullPath.EndsWith("/devices", StringComparison.OrdinalIgnoreCase))
+    rootFolder = rootFolder.Combine("../../").Collapse();
+
 var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
 
 string TestTFM = Argument("testtfm", "");
@@ -47,12 +52,12 @@ Task("dotnet")
         if(!string.IsNullOrEmpty(nugetSource))
         {
             EnsureDirectoryExists(nugetSource);
-            var originalNuget = File("./NuGet.config");
+            var originalNuget = File($"{rootFolder}/NuGet.config");
             ReplaceTextInFiles(originalNuget, "<add key=\"nuget-only\" value=\"true\" />", "");
             ReplaceTextInFiles(originalNuget, "NUGET_ONLY_PLACEHOLDER", nugetSource);
         }
 
-        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
+        DotNetBuild($"{rootFolder}/src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
@@ -101,7 +106,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
+        RunMSBuildWithDotNet($"{rootFolder}/Microsoft.Maui.BuildTasks.slnf");
     })
    .OnError(exception =>
     {

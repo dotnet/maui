@@ -93,6 +93,7 @@ Task("Test")
 	});
 
 Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
@@ -106,6 +107,7 @@ Task("uitest")
 	});
 
 Task("cg-uitest")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
