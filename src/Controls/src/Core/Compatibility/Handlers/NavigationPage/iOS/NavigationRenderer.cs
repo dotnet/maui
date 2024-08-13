@@ -1147,11 +1147,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (child is not null)
 					{
 						child.PropertyChanged -= HandleChildPropertyChanged;
-
-						if(child.Handler is IPlatformViewHandler handler)
-						{
-							handler.ViewController?.View?.RemoveFromSuperview();
-						}
 					}
 
 					if (value is not null)
@@ -1317,6 +1312,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					for (var i = 0; i < ToolbarItems.Length; i++)
 						ToolbarItems[i].Dispose();
 				}
+
+				for (int i = View.Subviews.Length - 1; i >= 0; i--)
+				{
+					View.Subviews[i].RemoveFromSuperview();
+				}
+
+
+				for (int i = ChildViewControllers.Length - 1; i >= 0; i--)
+				{
+					var childViewController = ChildViewControllers[i];
+					childViewController.View.RemoveFromSuperview();
+					childViewController.RemoveFromParentViewController();
+				}
+
 			}
 
 			protected override void Dispose(bool disposing)
@@ -1991,7 +2000,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (_child != null)
 					{
-						_child.PlatformView.RemoveFromSuperview();
+						(_child.ContainerView ?? _child.PlatformView).RemoveFromSuperview();
 						_child.DisconnectHandler();
 						_child = null;
 					}
