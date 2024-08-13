@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void Entry_Completed(object sender, EventArgs e)
 		{
-			EntryStatusLabel.Text = "Editor Completed by UnFocused";
+			EntryStatusLabel.Text = "Entry Completed by UnFocused";
 		}
 	}
 }

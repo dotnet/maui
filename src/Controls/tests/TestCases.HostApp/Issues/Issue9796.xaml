@@ -7,9 +7,9 @@
       <Editor AutomationId="Editor"
                 Placeholder="Enter your note" 
                 HeightRequest="100" Completed="Editor_Completed" />
-      <Label x:Name="EditorStatusLabel" AutomationId="EditorStatusLabel"/>
-      <Entry AutomationId="Entry" Completed="Entry_Completed" />
-      <Label x:Name="EntryStatusLabel" AutomationId="EntryStatusLabel"/>
+      <Label x:Name="EditorStatusLabel" TextColor="Green" AutomationId="EditorStatusLabel"/>
+      <Entry AutomationId="Entry" Completed="Entry_Completed" HeightRequest="100"/>
+      <Label x:Name="EntryStatusLabel" TextColor="Green" AutomationId="EntryStatusLabel"/>
     </VerticalStackLayout>
   </ContentPage.Content>
 </ContentPage>

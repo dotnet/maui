@@ -23,9 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("Stack");
 			App.WaitForElement("Editor");
-			App.WaitForElement("Entry").Click();
 			App.WaitForElement("EditorStatusLabel");
 			VerifyScreenshot();
+			App.WaitForElement("Entry").Click();
 			App.WaitForElement("Editor").Click();
 			App.WaitForElement("EntryStatusLabel");
 			VerifyScreenshot();
