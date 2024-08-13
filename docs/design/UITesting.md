@@ -29,7 +29,7 @@ You can use the example for the sample project [here](https://github.com/dotnet/
 
 ### Interacting with Elements in Tests
 
- All controls you intend to interact with need to set the `AutomationId` property as this will be what you use to query for the element. You can either set it in the xaml as an attribute when you create the element or you can assign it when you create the element progmatically.
+ All controls you intend to interact with need to set the `AutomationId` property as this will be what you use to query for the element. You can either set it in the xaml as an attribute when you create the element or you can assign it when you create the element in the `*.cs` file.
 
 Note: AutomationId will not work on layouts on Windows. This is because Appium uses the accessibility tree to locate elements, and layouts are not visible in the accessibility tree. You will have to focus on the individual elements such as label, entry, editor, and so on.
 
