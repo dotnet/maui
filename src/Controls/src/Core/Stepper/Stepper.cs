@@ -105,7 +105,5 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
-
-		double IStepper.Increment => Increment;
 	}
 }
