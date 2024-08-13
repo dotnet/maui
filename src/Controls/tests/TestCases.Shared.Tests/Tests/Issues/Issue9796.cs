@@ -1,0 +1,34 @@
+﻿using Microsoft.Maui.Platform;
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.TestCases.Tests.Issues
+{
+    internal class Issue9796 : _IssuesUITest
+	{
+		public override string Issue => "[Android]Editor/Entry controls don't raise Completed event consistently";
+
+		public Issue9796(TestDevice device) : base(device)
+		{
+		}
+
+		[Test]
+		[Category(UITestCategories.Editor)]
+		[Category(UITestCategories.Entry)]
+		[Category(UITestCategories.Focus)]
+		public void CollectionViewEmptyItemsHeight()
+		{
+			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796
+
+			App.WaitForElement("Stack");
+			App.WaitForElement("Editor");
+			App.WaitForElement("Entry").Click();
+			App.WaitForElement("EditorStatusLabel");
+			VerifyScreenshot();
+			App.WaitForElement("Editor").Click();
+			App.WaitForElement("EntryStatusLabel");
+			VerifyScreenshot();
+		}
+	}
+}

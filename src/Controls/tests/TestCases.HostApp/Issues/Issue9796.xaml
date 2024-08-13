@@ -3,11 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue9796">
     <ContentPage.Content>
-    <VerticalStackLayout Spacing="10" Margin="5">
+    <VerticalStackLayout Spacing="10" AutomationId="Stack" Margin="5">
       <Editor AutomationId="Editor"
-                Placeholder="Enter your note"
+                Placeholder="Enter your note" 
                 HeightRequest="100" Completed="Editor_Completed" />
+      <Label x:Name="EditorStatusLabel" AutomationId="EditorStatusLabel"/>
       <Entry AutomationId="Entry" Completed="Entry_Completed" />
+      <Label x:Name="EntryStatusLabel" AutomationId="EntryStatusLabel"/>
     </VerticalStackLayout>
   </ContentPage.Content>
 </ContentPage>
