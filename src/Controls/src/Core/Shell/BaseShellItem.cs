@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
-			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisible);
+			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
 
 		public BaseShellItem()
 		{
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls
 			shellItem.FlyoutIcon = (ImageSource)newValue;
 		}
 
-		static void OnFlyoutItemIsVisible(BindableObject bindable, object oldValue, object newValue)
+		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			Shell.SetFlyoutItemIsVisible(bindable, (bool)newValue);
 		}
