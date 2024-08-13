@@ -1,4 +1,5 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
+using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
 {
@@ -55,7 +56,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
     public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, uint bindingId, string assignedValueExpression = "value") =>
         lastPart switch
         {
-            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"SetUnsafeProperty{bindingId}{inaccessibleMemberAccess.MemberName}({accessAccumulator}, {assignedValueExpression});",
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{CreateUnsafePropertyAccessorSetMethodName(bindingId, inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
             _ => $"{accessAccumulator} = {assignedValueExpression};",
         };
 }

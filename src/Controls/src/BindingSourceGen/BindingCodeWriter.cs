@@ -1,5 +1,6 @@
 using System.CodeDom.Compiler;
 using System.Globalization;
+using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
@@ -70,9 +71,7 @@ public static class BindingCodeWriter
 		private static extern void {{CreateUnsafePropertyAccessorSetMethodName(id, propertyName)}}({{containingType}} source, {{memberType}} value);
 		""";
 
-	private static string CreateUnsafeFieldAccessorMethodName(uint bindingId, string fieldName) => $"GetUnsafeField{bindingId}{fieldName}";
-	private static string CreateUnsafePropertyAccessorGetMethodName(uint bindingId, string propertyName) => $"GetUnsafeProperty{bindingId}{propertyName}";
-	private static string CreateUnsafePropertyAccessorSetMethodName(uint bindingId, string propertyName) => $"SetUnsafeProperty{bindingId}{propertyName}";
+
 
 	private static string GenerateBindingCode(string bindingMethodBody, IEnumerable<string> unsafeAccessors) => $$"""
 		//------------------------------------------------------------------------------

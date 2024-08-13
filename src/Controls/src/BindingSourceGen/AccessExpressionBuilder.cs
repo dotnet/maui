@@ -1,4 +1,6 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
+using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
+
 
 public static class AccessExpressionBuilder
 {
@@ -10,8 +12,8 @@ public static class AccessExpressionBuilder
             IndexAccess { Index: int numericIndex } => $"{previousExpression}[{numericIndex}]",
             IndexAccess { Index: string stringIndex } => $"{previousExpression}[\"{stringIndex}\"]",
             MemberAccess memberAccess => $"{previousExpression}.{memberAccess.MemberName}",
-            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Field => $"GetUnsafeField{bindingId}{inaccessibleMemberAccess.MemberName}({previousExpression})",
-            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && !shouldUseUnsafePropertySetter => $"GetUnsafeProperty{bindingId}{inaccessibleMemberAccess.MemberName}({previousExpression})",
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Field => $"{CreateUnsafeFieldAccessorMethodName(bindingId, inaccessibleMemberAccess.MemberName)}({previousExpression})",
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property && !shouldUseUnsafePropertySetter => $"{CreateUnsafePropertyAccessorGetMethodName(bindingId, inaccessibleMemberAccess.MemberName)}({previousExpression})",
             InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => previousExpression, // This case is handled by the caller
             _ => throw new NotSupportedException($"Unsupported path part type: {nextPart.GetType()}"),
         };
