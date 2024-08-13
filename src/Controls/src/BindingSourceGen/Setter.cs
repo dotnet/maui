@@ -4,7 +4,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 {
     public static Setter From(
         IEnumerable<IPathPart> path,
-        uint id,
+        uint bindingId,
         string sourceVariableName = "source",
         string assignedValueExpression = "value")
     {
@@ -39,23 +39,23 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
                     AddPatternMatchingExpression("{}");
                 }
 
-                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart, id: id);
+                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart, bindingId);
             }
             else
             {
-                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, id, part == path.Last());
+                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, bindingId, part == path.Last());
             }
         }
 
         return new Setter(
             patternMatchingExpressions.ToArray(),
-            AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, id, assignedValueExpression));
+            AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, bindingId, assignedValueExpression));
     }
 
-    public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, uint id, string assignedValueExpression = "value") =>
+    public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, uint bindingId, string assignedValueExpression = "value") =>
         lastPart switch
         {
-            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"SetUnsafeProperty{id}{inaccessibleMemberAccess.MemberName}({accessAccumulator}, {assignedValueExpression});",
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"SetUnsafeProperty{bindingId}{inaccessibleMemberAccess.MemberName}({accessAccumulator}, {assignedValueExpression});",
             _ => $"{accessAccumulator} = {assignedValueExpression};",
         };
 }
