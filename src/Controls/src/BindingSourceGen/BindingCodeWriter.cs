@@ -1,11 +1,15 @@
 using System.CodeDom.Compiler;
 using System.Globalization;
+using System.Runtime.InteropServices;
+
 using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public static class BindingCodeWriter
 {
+	private static readonly string NewLine = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n";
+
 	public static string GeneratedCodeAttribute => $"[GeneratedCodeAttribute(\"{typeof(BindingCodeWriter).Assembly.FullName}\", \"{typeof(BindingCodeWriter).Assembly.GetName().Version}\")]";
 
 	public static string GenerateCommonCode() => $$"""
@@ -58,7 +62,7 @@ public static class BindingCodeWriter
 			propertyAccessors.Add(GenerateUnsafePropertySetAccessors(propertyName, memberType, containingType, id));
 		}
 
-		return string.Join("\n", propertyAccessors);
+		return string.Join(NewLine, propertyAccessors);
 	}
 	
 	private static string GenerateUnsafePropertyGetAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
@@ -70,8 +74,6 @@ public static class BindingCodeWriter
 		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
 		private static extern void {{CreateUnsafePropertyAccessorSetMethodName(id, propertyName)}}({{containingType}} source, {{memberType}} value);
 		""";
-
-
 
 	private static string GenerateBindingCode(string bindingMethodBody, IEnumerable<string> unsafeAccessors) => $$"""
 		//------------------------------------------------------------------------------
@@ -116,7 +118,7 @@ public static class BindingCodeWriter
 			internal static partial class GeneratedBindingInterceptors
 			{
 				{{bindingMethodBody}}
-				{{string.Join("\n", unsafeAccessors)}}
+				{{string.Join(NewLine, unsafeAccessors)}}
 			}
 		}
 	""";
