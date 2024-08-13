@@ -47,8 +47,14 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 
+			collectionView.Loaded += CollectionView_Loaded;
+
 			BindingContext = _viewModel = new Issue17865ViewModel();
-			Instance = this;
+		}
+
+		private void CollectionView_Loaded(object sender, EventArgs e)
+		{
+			RevealLastItem();
 		}
 
 		public void RevealLastItem()
@@ -56,8 +62,6 @@ namespace Maui.Controls.Sample.Issues
 			var item = _viewModel.Items.Last();
 			collectionView.ScrollTo(item, null, ScrollToPosition.MakeVisible, false);
 		}
-
-		public static Issue17865 Instance { get; private set; }
 
 		private void OnButtonClicked(object sender, EventArgs e)
 		{

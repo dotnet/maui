@@ -61,11 +61,6 @@ namespace Maui.Controls.Sample
 		{
 			var window = base.CreateWindow(activationState);
 			
-			window.Created += (s, e) =>
-			{
-				Issues.Issue17865.Instance?.RevealLastItem();
-			};
-
 			// For desktop use a fixed window size, so that screenshots are deterministic,
 			// matching (as much as possible) between dev machines and CI. Currently
 			// our Windows CI machines run at 1024x768 resolution and the window size can't
