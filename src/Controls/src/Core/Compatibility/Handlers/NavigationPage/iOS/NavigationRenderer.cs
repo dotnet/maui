@@ -1145,7 +1145,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 
 					if (child is not null)
+					{
 						child.PropertyChanged -= HandleChildPropertyChanged;
+
+						if(child.Handler is IPlatformViewHandler handler)
+						{
+							handler.ViewController?.View?.RemoveFromSuperview();
+						}
+					}
 
 					if (value is not null)
 					{
