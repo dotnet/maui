@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,13 +16,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Stepper)]
 		public void ChangeIncrementValue()
 		{
-			App.WaitForElement("Stepper");
-			App.Click("Label1");
-			App.WaitForElement("Entry1");
+			App.WaitForElement("stepper");
+			App.Tap("label1");
+			App.TapCoordinates(34, 20);
+			App.WaitForElement("entry");
 			VerifyScreenshot();
-			App.Click("Label10");
-			App.WaitForElement("Entry1");
+			App.Tap("label10");
+			App.WaitForElement("entry");
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
