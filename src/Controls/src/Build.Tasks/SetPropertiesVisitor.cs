@@ -300,8 +300,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (bindingExtensionType.HasValue)
 				{
-					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null))
-						yield return instruction;
+					if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null, out var instructions))
+					{
+						foreach (var instruction in instructions)
+							yield return instruction;
+					}
 				}
 
 				var markExt = markupExtension.ResolveCached(context.Cache);
@@ -390,8 +393,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
-		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType, bool isStandaloneBinding)
+		static bool TryCompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType, bool isStandaloneBinding, out IEnumerable<Instruction> instructions)
 		{
+			instructions = null;
+
 			//TODO support casting operators
 			var module = context.Module;
 
@@ -444,7 +449,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 
-				yield break;
+				return false;
 			}
 
 			if (xDataTypeIsInOuterScope)
@@ -458,7 +463,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				&& enode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.NullExtension))
 			{
 				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				yield break;
+				return false;
 			}
 
 			string dataType = (dataTypeNode as ValueNode)?.Value as string;
@@ -479,54 +484,64 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
-				yield break; //throw
+				return false; //throw
 
-			var properties = ParsePath(context, path, tSourceRef, node as IXmlLineInfo, module);
-			TypeReference tPropertyRef = tSourceRef;
-			if (properties != null && properties.Count > 0)
+			if (!TryParsePath(context, path, tSourceRef, node as IXmlLineInfo, module, out var properties))
 			{
-				var lastProp = properties[properties.Count - 1];
-				if (lastProp.property != null)
-					tPropertyRef = lastProp.property.PropertyType.ResolveGenericParameters(lastProp.propDeclTypeRef);
-				else //array type
-					tPropertyRef = lastProp.propDeclTypeRef.ResolveCached(context.Cache);
+				return false;
 			}
-			tPropertyRef = module.ImportReference(tPropertyRef);
-			var valuetupleRef = context.Module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "ValueTuple`2")).MakeGenericInstanceType(new[] { tPropertyRef, module.TypeSystem.Boolean }));
-			var funcRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new[] { tSourceRef, valuetupleRef }));
-			var actionRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Action`2")).MakeGenericInstanceType(new[] { tSourceRef, tPropertyRef }));
-			var funcObjRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new[] { tSourceRef, module.TypeSystem.Object }));
-			var tupleRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Tuple`2")).MakeGenericInstanceType(new[] { funcObjRef, module.TypeSystem.String }));
-			var typedBindingRef = module.ImportReference(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBinding`2")).MakeGenericInstanceType(new[] { tSourceRef, tPropertyRef }));
 
-			//FIXME: make sure the non-deprecated one is used
-			var ctorInfo = module.ImportReference(typedBindingRef.ResolveCached(context.Cache).Methods.FirstOrDefault(md =>
-					  md.IsConstructor
-				   && !md.IsStatic
-				   && md.Parameters.Count == 3
-				   && !md.HasCustomAttributes(module.ImportReference(context.Cache, ("mscorlib", "System", "ObsoleteAttribute")))));
-			var ctorinforef = ctorInfo.MakeGeneric(typedBindingRef, funcRef, actionRef, tupleRef);
+			instructions = GenerateInstructions();
+			return true;
 
-			foreach (var instruction in bindingExt.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, bindingExtensionType), module))
-				yield return instruction;
-			foreach (var instruction in CompiledBindingGetGetter(tSourceRef, tPropertyRef, properties, node, context))
-				yield return instruction;
-			if (declaredmode != BindingMode.OneTime && declaredmode != BindingMode.OneWay)
-			{ //if the mode is explicitly 1w, or 1t, no need for setters
-				foreach (var instruction in CompiledBindingGetSetter(tSourceRef, tPropertyRef, properties, node, context))
+			IEnumerable<Instruction> GenerateInstructions()
+			{
+				TypeReference tPropertyRef = tSourceRef;
+				if (properties != null && properties.Count > 0)
+				{
+					var lastProp = properties[properties.Count - 1];
+					if (lastProp.property != null)
+						tPropertyRef = lastProp.property.PropertyType.ResolveGenericParameters(lastProp.propDeclTypeRef);
+					else //array type
+						tPropertyRef = lastProp.propDeclTypeRef.ResolveCached(context.Cache);
+				}
+				tPropertyRef = module.ImportReference(tPropertyRef);
+				var valuetupleRef = context.Module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "ValueTuple`2")).MakeGenericInstanceType(new[] { tPropertyRef, module.TypeSystem.Boolean }));
+				var funcRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new[] { tSourceRef, valuetupleRef }));
+				var actionRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Action`2")).MakeGenericInstanceType(new[] { tSourceRef, tPropertyRef }));
+				var funcObjRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new[] { tSourceRef, module.TypeSystem.Object }));
+				var tupleRef = module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "Tuple`2")).MakeGenericInstanceType(new[] { funcObjRef, module.TypeSystem.String }));
+				var typedBindingRef = module.ImportReference(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBinding`2")).MakeGenericInstanceType(new[] { tSourceRef, tPropertyRef }));
+
+				//FIXME: make sure the non-deprecated one is used
+				var ctorInfo = module.ImportReference(typedBindingRef.ResolveCached(context.Cache).Methods.FirstOrDefault(md =>
+						md.IsConstructor
+					&& !md.IsStatic
+					&& md.Parameters.Count == 3
+					&& !md.HasCustomAttributes(module.ImportReference(context.Cache, ("mscorlib", "System", "ObsoleteAttribute")))));
+				var ctorinforef = ctorInfo.MakeGeneric(typedBindingRef, funcRef, actionRef, tupleRef);
+
+				foreach (var instruction in bindingExt.LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, bindingExtensionType), module))
 					yield return instruction;
-			}
-			else
-				yield return Create(Ldnull);
-			if (declaredmode != BindingMode.OneTime)
-			{ //if the mode is explicitly 1t, no need for handlers
-				foreach (var instruction in CompiledBindingGetHandlers(tSourceRef, tPropertyRef, properties, node, context))
+				foreach (var instruction in CompiledBindingGetGetter(tSourceRef, tPropertyRef, properties, node, context))
 					yield return instruction;
+				if (declaredmode != BindingMode.OneTime && declaredmode != BindingMode.OneWay)
+				{ //if the mode is explicitly 1w, or 1t, no need for setters
+					foreach (var instruction in CompiledBindingGetSetter(tSourceRef, tPropertyRef, properties, node, context))
+						yield return instruction;
+				}
+				else
+					yield return Create(Ldnull);
+				if (declaredmode != BindingMode.OneTime)
+				{ //if the mode is explicitly 1t, no need for handlers
+					foreach (var instruction in CompiledBindingGetHandlers(tSourceRef, tPropertyRef, properties, node, context))
+						yield return instruction;
+				}
+				else
+					yield return Create(Ldnull);
+				yield return Create(Newobj, module.ImportReference(ctorinforef));
+				yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, bindingExtensionType, propertyName: "TypedBinding"));
 			}
-			else
-				yield return Create(Ldnull);
-			yield return Create(Newobj, module.ImportReference(ctorinforef));
-			yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, bindingExtensionType, propertyName: "TypedBinding"));
 
 			static IElementNode GetParent(IElementNode node)
 			{
@@ -548,10 +563,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		static IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> ParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module)
+		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties)
 		{
+			pathProperties = null;
+
 			if (string.IsNullOrWhiteSpace(path))
-				return null;
+				return true;
+
 			path = path.Trim(' ', '.'); //trim leading or trailing dots
 			var parts = path.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 			var properties = new List<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)>();
@@ -582,8 +600,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (p.Length > 0)
 				{
-					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef)
-						?? throw new BuildException(BuildExceptionCode.BindingPropertyNotFound, lineInfo, null, p, previousPartTypeRef);
+					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef);
+					if (property is null)
+					{
+						context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
+						return false;
+					}
+
 					properties.Add((property, propDeclTypeRef, null));
 					previousPartTypeRef = property.PropertyType.ResolveGenericParameters(propDeclTypeRef);
 				}
@@ -623,7 +646,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				}
 			}
-			return properties;
+			pathProperties = properties;
+			return true;
 		}
 
 		static IEnumerable<Instruction> DigProperties(IEnumerable<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, Dictionary<TypeReference, VariableDefinition> locs, Func<Instruction> fallback, IXmlLineInfo lineInfo, ModuleDefinition module)
