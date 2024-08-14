@@ -12,7 +12,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			UpdateVirtualViewFrame(platformView);
+			// For newer iOS versions, we want to wait until we get effective window dimensions from the platform.
+			if (!OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				UpdateVirtualViewFrame(platformView);
+			}
+
 			_proxy.Connect(VirtualView, platformView);
 		}
 
@@ -123,7 +128,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (obj is not null && VirtualView is IWindow virtualView && obj.NewValue is UIWindowSceneGeometry newGeometry)
 				{
-					virtualView.FrameChanged(newGeometry.SystemFrame.ToRectangle());
+					var newRectangle = newGeometry.SystemFrame.ToRectangle();
+
+					if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height)) 
+					{
+						return;
+					}
+
+					virtualView.FrameChanged(newRectangle);
 				}
 			}
 		}
