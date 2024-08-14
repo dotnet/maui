@@ -37,6 +37,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene)
 			{
+				if (double.IsNaN(window.X) || double.IsNaN(window.Y) || double.IsNaN(window.Width) || double.IsNaN(window.Height)) 
+				{
+					return;
+				}
+
 				var preferences = new UIWindowSceneGeometryPreferencesMac()
 				{
 					SystemFrame = new CGRect(window.X, window.Y, window.Width, window.Height)
