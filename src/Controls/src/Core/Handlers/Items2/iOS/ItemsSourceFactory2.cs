@@ -17,17 +17,13 @@ internal static class ItemsSourceFactory2
             return new EmptySource();
         }
 
-        switch (itemsSource)
-        {
-            case IList _ when itemsSource is INotifyCollectionChanged:
-                return new LoopObservableItemsSource2(itemsSource as IList, collectionViewController, loop);
-            case IEnumerable _ when itemsSource is INotifyCollectionChanged:
-                return new LoopObservableItemsSource2(itemsSource as IEnumerable, collectionViewController, loop);
-            case IEnumerable<object> generic:
-                return new LoopListSource2(generic, loop);
-        }
-
-        return new LoopListSource(itemsSource, loop);
-    }
+		return itemsSource switch
+		{
+			IList _ when itemsSource is INotifyCollectionChanged => new LoopObservableItemsSource2(itemsSource as IList, collectionViewController, loop),
+			IEnumerable _ when itemsSource is INotifyCollectionChanged => new LoopObservableItemsSource2(itemsSource as IEnumerable, collectionViewController, loop),
+			IEnumerable<object> generic => new LoopListSource2(generic, loop),
+			_ => new LoopListSource(itemsSource, loop),
+		};
+	}
 
 }

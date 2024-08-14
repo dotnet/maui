@@ -124,12 +124,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return base.DetermineCellReuseId(itemIndex);
 		}
 
-		protected override void RegisterViewTypes()
-		{
-			CollectionView.RegisterClassForCell(typeof(CarouselTemplatedCell2), CarouselTemplatedCell2.ReuseId);
-			base.RegisterViewTypes();
-		}
-
 		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
 			var itemsSource = Items2.ItemsSourceFactory2.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);

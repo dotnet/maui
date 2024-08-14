@@ -8,6 +8,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	public partial class CarouselViewHandler2 : ItemsViewHandler2<CarouselView>
 	{
+		public static PropertyMapper<CarouselView, CarouselViewHandler2> Mapper = new(ItemsViewMapper)
+		{
+
+			[Controls.CarouselView.IsSwipeEnabledProperty.PropertyName] = MapIsSwipeEnabled,
+			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
+			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
+			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
+			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
+		};
+
 		protected override CarouselViewController2 CreateController(CarouselView newElement, UICollectionViewLayout layout)
 				=> new(newElement, layout);
 
