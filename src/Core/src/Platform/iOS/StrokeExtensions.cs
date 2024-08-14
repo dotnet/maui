@@ -134,6 +134,8 @@ namespace Microsoft.Maui.Platform
 
 			if (backgroundLayer is MauiCALayer mauiCALayer)
 			{
+				CATransaction.Begin();
+				CATransaction.AnimationDuration = 0;
 				backgroundLayer.Frame = platformView.Bounds;
 
 				if (border is IView view)
@@ -153,6 +155,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				mauiCALayer.SetBorderShape(border?.Shape);
+				CATransaction.Commit();
 			}
 
 			if (platformView is ContentView contentView)
