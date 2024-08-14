@@ -56,8 +56,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var layout = new BindingsCompiler(useCompiledXaml)
 				{
-					BindingContext = vm
+					BindingContext = new GlobalViewModel(),
 				};
+				layout.stack.BindingContext = vm;
 				layout.label6.BindingContext = new MockStructViewModel
 				{
 					Model = new MockViewModel
@@ -121,11 +122,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 
 				//testing invalid bindingcontext type
-				layout.BindingContext = new object();
+				layout.stack.BindingContext = new object();
 				Assert.AreEqual(null, layout.label0.Text);
 
 				//testing source
 				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
+
+				//testing binding with path that cannot be statically compiled (we don't support casts in the Path)
+				Assert.That(layout.label13.Text, Is.EqualTo("Global Text"));
 			}
 			
 			[Test] 
@@ -146,6 +150,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public int I { get; set; }
 		public MockViewModel Model { get; set; }
+	}
+
+	class GlobalViewModel
+	{
+		public string GlobalText { get; set; } = "Global Text";
 	}
 
 	class MockViewModel : INotifyPropertyChanged
