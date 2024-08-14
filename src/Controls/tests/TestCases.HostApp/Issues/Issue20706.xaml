@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20706"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+  <ContentPage.BindingContext>
+    <local:ViewModelClass/>
+  </ContentPage.BindingContext>
+  <ContentPage.Content>
+    <VerticalStackLayout>
+      <Stepper AutomationId="stepper" x:Name="stepperValue"
+               Maximum="1000"
+	            Increment="{Binding Increment}" />
+      <Entry AutomationId="entry" 
+	          Text="{Binding Value,Source={x:Reference stepperValue}} "/>
+      <HorizontalStackLayout>
+        <Border x:Name="lbl01"
+	               StrokeShape="RoundRectangle 5,5,5,5"
+	               StrokeThickness="{Binding Stroke01}"
+	            BackgroundColor="Blue"
+	               Padding="5,0,5,0">
+          <Label Text="0,1" AutomationId="label0.1"
+	                  WidthRequest="30"
+	                  HeightRequest="30"
+	                  HorizontalTextAlignment="Center"
+	                  VerticalTextAlignment="Center">
+            <Label.GestureRecognizers>
+              <TapGestureRecognizer Command="{Binding ChangeDecimalExponentCommand}"
+	                                         CommandParameter="0,1" />
+            </Label.GestureRecognizers>
+          </Label>
+        </Border >
+        <Border x:Name="Border"
+	               StrokeShape="RoundRectangle 5,5,5,5"
+	               StrokeThickness="{Binding Stroke1}"
+	       BackgroundColor="Blue"
+	               Padding="5,0,5,0">
+          <Label Text="1"  AutomationId="label1"
+	                              WidthRequest="30"
+	                              HeightRequest="30"
+	                              HorizontalTextAlignment="Center"
+	                              VerticalTextAlignment="Center">
+            <Label.GestureRecognizers>
+              <TapGestureRecognizer Command="{Binding ChangeDecimalExponentCommand}"
+	                                         CommandParameter="1" />
+            </Label.GestureRecognizers>
+          </Label>
+        </Border >
+        <Border x:Name="border1"
+	               StrokeShape="RoundRectangle 5,5,5,5"
+	               StrokeThickness="{Binding Stroke10}"
+	             BackgroundColor="Blue"
+	               Padding="5,0,5,0">
+          <Label Text="10" AutomationId="label10"
+	                              WidthRequest="30"
+	                              HeightRequest="30"
+	                              HorizontalTextAlignment="Center"
+	                              VerticalTextAlignment="Center">
+            <Label.GestureRecognizers>
+              <TapGestureRecognizer Command="{Binding ChangeDecimalExponentCommand}"
+	                                         CommandParameter="10" />
+            </Label.GestureRecognizers>
+          </Label>
+        </Border >
+        <Border x:Name="lbl100"
+	               StrokeShape="RoundRectangle 5,5,5,5"
+	               StrokeThickness="{Binding Stroke100}"
+	           BackgroundColor="Blue"
+	               Padding="5,0,5,0">
+          <Label Text="100" AutomationId="label100"
+	                              WidthRequest="30"
+	                              HeightRequest="30"
+	                              HorizontalTextAlignment="Center"
+	                              VerticalTextAlignment="Center">
+            <Label.GestureRecognizers>
+              <TapGestureRecognizer Command="{Binding ChangeDecimalExponentCommand}"
+	                                         CommandParameter="100" />
+            </Label.GestureRecognizers>
+          </Label>
+        </Border >
+      </HorizontalStackLayout>
+      <HorizontalStackLayout Spacing="5">
+        <Label Text="The choosen increment value is:" />
+        <Label Text="{Binding Source={x:Reference stepperValue}, Path=Increment}"/>
+      </HorizontalStackLayout>
+    </VerticalStackLayout>
+  </ContentPage.Content>
+</ContentPage>
