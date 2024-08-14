@@ -6,8 +6,19 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public partial class CarouselViewHandler2 : ItemsViewHandler2<CarouselView>
+	public partial class CarouselViewHandler2 
 	{
+
+		public CarouselViewHandler2() : base(Mapper)
+		{
+
+
+		}
+		public CarouselViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		{
+
+		}
+
 		public static PropertyMapper<CarouselView, CarouselViewHandler2> Mapper = new(ItemsViewMapper)
 		{
 
@@ -17,7 +28,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
 		};
+	}
 
+	public partial class CarouselViewHandler2 : ItemsViewHandler2<CarouselView>
+	{
 		protected override CarouselViewController2 CreateController(CarouselView newElement, UICollectionViewLayout layout)
 				=> new(newElement, layout);
 
