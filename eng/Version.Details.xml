@@ -24,9 +24,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>62304a6d7085e32672ec988835eab41d89b82e25</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.129">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.130">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>506b716f153750653ed88acb492bcb49f13230d2</Sha>
+      <Sha>3e36f94aa3e9fc231fc2768004d8f159811209b5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="17.5.8020">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
