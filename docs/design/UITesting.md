@@ -3,7 +3,7 @@ UI Testing
 
 # Note for New Contributors
 
-We advise starting out with UI Testing instead of DeviceTests, as they are a bit easier to start writing, and more for routine, simplistic unit testing. Please see here for more information about DeviceTests: [DeviceTests](https://devdiv.visualstudio.com/DevDiv/_wiki/wikis/DevDiv.wiki/32195/MAUI#:~:text=%2D%20Device%20tests%20%2D%20These%20are%20tests%20that%20will%20run%20on%20an%20actual%20device%20or%20simulator)
+We advise starting out with UI Testing instead of DeviceTests, as they are a bit easier to start writing, and more for routine, simplistic unit testing. Please see here for more information about DeviceTests: [DeviceTests](https://github.com/dotnet/maui/wiki/DeviceTests)
 
 # Introduction
 
@@ -23,7 +23,15 @@ This will be the majority of new tests added which will be primarily for testing
 
 You will need to create some kind of UI to test against, which will go in the Controls.TestCases.HostApp project. Create a new class within `src/Controls/tests/TestCases.HostApp/Issues` and attribute it with `[Issue]` and derive from `TestContentPage` (or `TestNavigationPage`, or `TestShellPage`, and so on).
 
-Then in the Controls.TestCases.Shared.Tests project add a new class within this folder: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues`. Have the class derive from `_IssuesUITest` and add your test.
+Then in the Controls.TestCases.Shared.Tests project add a new class within this folder: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues`, or in one of the platform-specific projects. Have the class derive from `_IssuesUITest` and add your test.
+
+Note: An important component that you need in order for Appium to run your test is to add a string with a text description of your class. In the class defined in the HostApp project, add an Issue attribute above the class signature. For example:
+`[Issue(IssueTracker.None, 2680, "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView", PlatformAffected.All)]`
+
+Then in the class defined in the TestsCases project, assign the string to a property called `Issue` as so:
+`public override string Issue => "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView";`
+
+It is <b>imperative</b> that both strings are identical, as Appium will use the `Issue` string in the search box of the app to find the Issue as it is defined by its attribute.
 
 You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/RefreshViewTests.cs).
 
