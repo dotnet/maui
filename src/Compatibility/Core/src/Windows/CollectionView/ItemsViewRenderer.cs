@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				if (CollectionViewSource.Source is ObservableItemTemplateCollection observableItemTemplateCollection)
 				{
-					observableItemTemplateCollection.CleanUp();
+					observableItemTemplateCollection.Dispose();
 				}
 
 				if (CollectionViewSource.Source is INotifyCollectionChanged incc)
