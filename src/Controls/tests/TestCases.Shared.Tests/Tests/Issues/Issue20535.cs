@@ -11,6 +11,7 @@ public class Issue20535 : _IssuesUITest
 	public override string Issue => "Re-enable/move TrackColorInitializesCorrectly/TrackColorUpdatesCorrectly to Appium";
 
 	[Test]
+	[Category(UITestCategories.Switch)]
 	public async Task SwitchTrackColorTest()
 	{
 		App.WaitForElement("WaitForStubControl");
