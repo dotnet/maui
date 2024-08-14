@@ -590,9 +590,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			foreach (var pathFigure in pathFigureCollection)
 			{
 				sb.Append('M')
-				.Append(pathFigure.StartPoint.X.ToString("R"))
+				.Append(pathFigure.StartPoint.X.ToString(CultureInfo.InvariantCulture))
 				.Append(',')
-				.Append(pathFigure.StartPoint.Y.ToString("R"))
+				.Append(pathFigure.StartPoint.Y.ToString(CultureInfo.InvariantCulture))
 				.Append(' ');
 
 				foreach (var pathSegment in pathFigure.Segments)
@@ -600,37 +600,37 @@ namespace Microsoft.Maui.Controls.Shapes
 					if (pathSegment is LineSegment lineSegment)
 					{
 						sb.Append('L')
-						.Append(lineSegment.Point.X.ToString("R"))
+						.Append(lineSegment.Point.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(lineSegment.Point.Y.ToString("R"))
+						.Append(lineSegment.Point.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ');
 					}
 					else if (pathSegment is BezierSegment bezierSegment)
 					{
 						sb.Append('C')
-						.Append(bezierSegment.Point1.X.ToString("R"))
+						.Append(bezierSegment.Point1.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(bezierSegment.Point1.Y.ToString("R"))
+						.Append(bezierSegment.Point1.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ')
-						.Append(bezierSegment.Point2.X.ToString("R"))
+						.Append(bezierSegment.Point2.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(bezierSegment.Point2.Y.ToString("R"))
+						.Append(bezierSegment.Point2.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ')
-						.Append(bezierSegment.Point3.X.ToString("R"))
+						.Append(bezierSegment.Point3.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(bezierSegment.Point3.Y.ToString("R"))
+						.Append(bezierSegment.Point3.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ');
 					}
 					else if (pathSegment is QuadraticBezierSegment quadraticBezierSegment)
 					{
 						sb.Append('Q')
-						.Append(quadraticBezierSegment.Point1.X.ToString("R"))
+						.Append(quadraticBezierSegment.Point1.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(quadraticBezierSegment.Point1.Y.ToString("R"))
+						.Append(quadraticBezierSegment.Point1.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ')
-						.Append(quadraticBezierSegment.Point2.X.ToString("R"))
+						.Append(quadraticBezierSegment.Point2.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(quadraticBezierSegment.Point2.Y.ToString("R"))
+						.Append(quadraticBezierSegment.Point2.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ');
 					}
 					else if (pathSegment is ArcSegment arcSegment)
@@ -646,9 +646,9 @@ namespace Microsoft.Maui.Controls.Shapes
 						.Append(',')
 						.Append(arcSegment.SweepDirection == SweepDirection.Clockwise ? "1" : "0")
 						.Append(' ')
-						.Append(arcSegment.Point.X.ToString("R"))
+						.Append(arcSegment.Point.X.ToString(CultureInfo.InvariantCulture))
 						.Append(',')
-						.Append(arcSegment.Point.Y.ToString("R"))
+						.Append(arcSegment.Point.Y.ToString(CultureInfo.InvariantCulture))
 						.Append(' ');
 					}
 				}

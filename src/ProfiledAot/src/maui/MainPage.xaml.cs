@@ -10,7 +10,7 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 
-		if (Application.Current.MainPage is not AppFlyoutPage)
+		if (Application.Current?.MainPage is not AppFlyoutPage)
 		{
 			Start();
 			this.Loaded += OnMainPageLoaded;
@@ -24,7 +24,7 @@ public partial class MainPage : ContentPage
 		LoadFlyoutPage();
 	}
 
-	void OnMainPageLoaded(object sender, EventArgs e)
+	void OnMainPageLoaded(object? sender, EventArgs e)
 	{
 		_isLoaded = true;
 		LoadFlyoutPage();
@@ -35,7 +35,7 @@ public partial class MainPage : ContentPage
 		if (_isLoaded && _startCompleted)
 		{
 			await Task.Delay(500);
-			Application.Current.MainPage = new AppFlyoutPage();
+			Application.Current!.MainPage = new AppFlyoutPage();
 		}
 	}
 
