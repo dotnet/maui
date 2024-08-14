@@ -16,14 +16,20 @@ namespace Microsoft.Maui.Handlers
 			if (!OperatingSystem.IsIOSVersionAtLeast(16))
 			{
 				UpdateVirtualViewFrame(platformView);
+			} 
+			else 
+			{
+				_proxy.Connect(VirtualView, platformView);
 			}
-
-			_proxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			_proxy.Disconnect();
+			if (OperatingSystem.IsIOSVersionAtLeast(16)) 
+			{
+				_proxy.Disconnect();
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 
