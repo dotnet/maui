@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
-			var itemsSource = Items.ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
+			var itemsSource = Items2.ItemsSourceFactory2.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
 			return itemsSource;
