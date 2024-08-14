@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 14708, "[Bug][Android] Investigate SearchBar presentation in horizontal screen orientation",
+	[Issue(IssueTracker.Github, 14708, "[Android] SearchBar taken whole screen space when it aligns in landscape orientation",
 		PlatformAffected.Android)]
 	public partial class Issue14708 : ContentPage
 	{
