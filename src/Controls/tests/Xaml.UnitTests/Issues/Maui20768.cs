@@ -15,7 +15,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui20768
 {
     public Maui20768()
@@ -43,16 +42,12 @@ public partial class Maui20768
         [Test]
         public void BindingsDoNotResolveStaticProperties([Values(false, true)] bool useCompiledXaml)
         {
-            if (useCompiledXaml)
-            {
-                Assert.Throws(new BuildExceptionConstraint(6, 32), () => MockCompiler.Compile(typeof(Maui20768)));
-            }
-            else
-            {
-                var page = new Maui20768(useCompiledXaml);
-                page.TitleLabel.BindingContext = new ViewModel20768();
-                Assert.Null(page.TitleLabel.Text);
-            }
+			if (useCompiledXaml)
+				MockCompiler.Compile(typeof(Maui20768));
+
+			var page = new Maui20768(useCompiledXaml);
+			page.TitleLabel.BindingContext = new ViewModel20768();
+			Assert.Null(page.TitleLabel.Text);
         }
     }
 }
