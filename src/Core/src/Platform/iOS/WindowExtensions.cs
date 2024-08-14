@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateCoordinates(this UIWindow platformWindow, IWindow window)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene))
+			if (OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene)
 			{
 				var preferences = new UIWindowSceneGeometryPreferencesMac()
 				{
