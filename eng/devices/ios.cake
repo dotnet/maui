@@ -478,7 +478,17 @@ string GetUDID(string testDevice, string tool)
 		SetupProcessSettings = processSettings => 
 		{
 			processSettings.RedirectStandardOutput = true;
-			processSettings.RedirectedStandardOutputHandler = line => result = $"{line}";
+			processSettings.RedirectedStandardOutputHandler = line => 
+			{
+				// The output from this command returns the UDID of the simulator
+				// and NULL so we're filtering out the NULL
+				if (!string.IsNullOrWhiteSpace(line))
+				{
+					result = line;
+				}
+				
+				return line;
+			};
 		}
 	});
 
