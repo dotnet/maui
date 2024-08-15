@@ -252,6 +252,7 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class PostNotifications : BasePlatformPermission
 		{
 			/// <inheritdoc/>
+			#pragma warning disable RS0016 
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				TaskCompletionSource<PermissionStatus> tcs = new();
