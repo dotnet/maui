@@ -8,22 +8,39 @@
 
     <Grid ColumnDefinitions="2*,1*" RowDefinitions="Auto,1*">
 
-        <Label
+      <Editor
           Grid.Row="0"
           Grid.Column="0"
           Text="HybridWebView here"
-          x:Name="statusLabel" />
+          IsReadOnly="True"
+          MinimumHeightRequest="200"
+          x:Name="statusText" />
+
+      <VerticalStackLayout
+          Grid.Row="0"
+          Grid.Column="1">
 
         <Button
-          Grid.Row="0"
-          Grid.Column="1"
+          Margin="10"
           Text="Send message to JS"
           Clicked="SendMessageButton_Clicked" />
 
-        <HybridWebView
+        <Button
+          Margin="10"
+          Text="Invoke JS"
+          Clicked="InvokeJSMethodButton_Clicked" />
+
+        <Button
+          Margin="10"
+          Text="Invoke Async JS"
+          Clicked="InvokeAsyncJSMethodButton_Clicked" />
+
+      </VerticalStackLayout>
+
+      <HybridWebView
           x:Name="hwv"
           Grid.Row="1"
-          Grid.ColumnSpan="2"
+          Grid.ColumnSpan="3"
           HybridRoot="HybridSamplePage"
           RawMessageReceived="hwv_RawMessageReceived"/>
 

@@ -49,7 +49,8 @@ namespace Microsoft.Maui.Handlers
 
         public static CommandMapper<IHybridWebView, IHybridWebViewHandler> CommandMapper = new(ViewCommandMapper)
         {
-            [nameof(IHybridWebView.SendRawMessage)] = MapSendRawMessage,
+			[nameof(IHybridWebView.EvaluateJavaScriptAsync)] = MapEvaluateJavaScriptAsync,
+			[nameof(IHybridWebView.SendRawMessage)] = MapSendRawMessage,
         };
 
         public HybridWebViewHandler() : base(Mapper, CommandMapper)
