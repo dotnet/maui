@@ -445,26 +445,13 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		}
 		else
 		{
-			var simulatorName = "XHarness";
-			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
+			var UDID = GetUDID(testDevice, dotnetToolPath);
 			var sims = ListAppleSimulators();
 
-			var simXH = sims.Where(s => s.Name.Contains(simulatorName) && s.Name.Contains(iosVersionToRun)).FirstOrDefault();
+			var simXH = sims.Where(s => s.UDID == UDID).FirstOrDefault();
 			if (simXH == null)
 			{
-				// if the device is already installed on this system then xharness won't create a new one
-				// Ideally we could just pull this info from xharness but I'm not sure how to convert the 
-				// ios-simulator-64_{DefaultVersion} string to a UDID from xharness
-				// so we are just going to make some assumptions here for local runs				
-				if (DefaultTestDevice == testDevice && !IsCIBuild())
-				{
-					simXH = sims.Where(s => s.Name.Contains("iPhone Xs") && s.Runtime.Contains(DefaultVersion.Replace(".", "-"))).FirstOrDefault();
-				}
-
-				if (simXH == null)
-				{
-					throw new Exception("No simulator was found to run tests on.");
-				}
+				throw new Exception("No simulator was found to run tests on.");
 			}
 
 			deviceToRun = simXH.UDID;
@@ -477,6 +464,30 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
 	}
+}
+
+string GetUDID(string testDevice, string tool)
+{
+	Information("Looking for simulator: {0}", testDevice);
+	string result = string.Empty;
+
+	DotNetTool("tool", new DotNetToolSettings
+	{
+		ToolPath = tool,
+		ArgumentCustomization = args => args.Append($"run xharness apple device {testDevice}"),
+		SetupProcessSettings = processSettings => 
+		{
+			processSettings.RedirectStandardOutput = true;
+			processSettings.RedirectedStandardOutputHandler = line => result = $"{line}";
+		}
+	});
+
+	if(!string.IsNullOrWhiteSpace(result))
+		Information("Yay we found your device: {0}", result);
+	else
+		Information("No device found installed: {0}", testDevice);
+
+	return result;
 }
 
 void GetSimulators(string version, string tool)
