@@ -18,6 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSdk" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

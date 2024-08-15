@@ -134,6 +134,11 @@
         NoWarn="NU1605"
     />
     <PackageReference
+        Update="Microsoft.Web.WebView2"
+        Version="$(MicrosoftWindowsWebView2PackageVersion)"
+        NoWarn="NU1605"
+    />
+    <PackageReference
         Update="Microsoft.Windows.SDK.BuildTools"
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
@@ -249,10 +254,6 @@
     <PackageReference
         Update="Microsoft.Bcl.AsyncInterfaces"
         Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Web.WebView2"
-        Version="$(_MicrosoftWebWebView2Version)"
     />
     <PackageReference
         Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
