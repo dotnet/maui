@@ -1,4 +1,5 @@
-﻿
+﻿using System.Diagnostics;
+
 namespace Microsoft.Maui.IntegrationTests.Apple
 {
 	public class Simulator
