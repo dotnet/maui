@@ -342,6 +342,16 @@ public static class BindingCodeWriter
 				nextExpression = AccessExpressionBuilder.ExtendExpression(previousExpression, MaybeWrapInConditionalAccess(part, forceConditonalAccessToNextPart));
 				forceConditonalAccessToNextPart = part is Cast;
 
+				// Make binding react for PropertyChanged events on indexer itself
+				if (part is IndexAccess indexAccess)
+				{
+					AppendLine($"new(static source => {previousExpression}, \"{indexAccess.DefaultMemberName}\"),");
+				}
+				else if (part is ConditionalAccess conditionalAccess && conditionalAccess.Part is IndexAccess innerIndexAccess)
+				{
+					AppendLine($"new(static source => {previousExpression}, \"{innerIndexAccess.DefaultMemberName}\"),");
+				}
+
 				// Some parts don't have a property name, so we can't generate a handler for them (for example casts)
 				if (part.PropertyName is string propertyName)
 				{
