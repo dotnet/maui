@@ -5,7 +5,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-const string defaultVersion = "10.0.19041";
+const string defaultVersion = "10.0.19041.0";
 
 // required
 string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";

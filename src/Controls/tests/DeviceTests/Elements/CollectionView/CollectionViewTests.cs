@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Handlers.Items;
@@ -167,6 +168,98 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
 
+		[Fact(
+#if IOS || MACCATALYST || WINDOWS
+Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
+#endif
+)]
+		public async Task CollectionScrollToGroupWorks()
+		{
+			SetupBuilder();
+
+			var dataList = new List<TestData>();
+			string letters = "abcdefghijklmnopqrstuvwxyz";
+			for (int i = 0; i < letters.Length; i++)
+			{
+				for (int n = 0; n < 10; n++)
+				{
+					dataList.Add(new TestData
+					{
+						Name = $"{letters[i]}_{n + 1}"
+					});
+				}
+			}
+
+			var grouped =
+				  from p in dataList
+				  orderby p.Name
+				  group p by p.Name[0].ToString()
+				  into groups
+				  select
+					   new TestDataGroup(groups.Key, groups.ToList());
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = grouped.ToList(),
+				ItemTemplate = new DataTemplate(() => 
+				{
+					var name = new Label()
+					{
+						TextColor = Colors.Grey
+					};
+					name.SetBinding(Label.TextProperty, "Name");
+					return name;
+				}),
+				GroupHeaderTemplate = new DataTemplate(() =>
+				{
+					var name = new Label()
+					{
+						TextColor = Colors.White,
+						FontSize = 18,
+						FontAttributes = FontAttributes.Bold
+					};
+					name.SetBinding(Label.TextProperty, "Name");
+					return name;
+				})
+			};
+
+			var desiredItemIndex = 134; // 13th group (letter: N), 4th item
+			var firstVisibleItemIndex = -1;
+			var lastVisibleItemIndex = -1;
+			collectionView.Scrolled += (s, e) =>
+			{
+				firstVisibleItemIndex = e.FirstVisibleItemIndex;
+				lastVisibleItemIndex = e.LastVisibleItemIndex;
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollTo(index: 4, groupIndex: 13, animate: false); // Item "N_4"
+
+				await Task.Delay(500);
+
+				Assert.True(desiredItemIndex >= firstVisibleItemIndex &&
+							desiredItemIndex <= lastVisibleItemIndex);
+			});
+		}
+
+		private class TestData
+		{
+			public string Name { get; set; }
+		}
+
+		private class TestDataGroup : List<TestData>
+		{
+			public string Name { get; set; }
+
+			public TestDataGroup(string name, List<TestData> data)
+				 : base(data)
+			{
+				Name = name;
+			}
+		}
+
 		[Theory]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
@@ -315,7 +408,8 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-
+    
+    
 		[Fact(
 #if IOS || MACCATALYST
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"

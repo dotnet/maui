@@ -89,6 +89,7 @@ Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> WebKit.WKWebView!
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ButtonHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+override Microsoft.Maui.Handlers.ImageButtonHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.RefreshViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(WebKit.WKWebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
