@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = base.CreateWindow(activationState);
-			
+
 			// For desktop use a fixed window size, so that screenshots are deterministic,
 			// matching (as much as possible) between dev machines and CI. Currently
 			// our Windows CI machines run at 1024x768 resolution and the window size can't
