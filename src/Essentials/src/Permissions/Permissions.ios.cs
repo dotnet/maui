@@ -281,11 +281,12 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var (hasPermission, error) = await UNUserNotificationCenter.Current.RequestAuthorizationAsync(UNAuthorizationOptions.Alert | UNAuthorizationOptions.Badge | UNAuthorizationOptions.Sound);
 
-				return error switch
+				if(error is not null)
 				{
-					not null => PermissionStatus.Unknown,
-					_ => hasPermission ? PermissionStatus.Granted : PermissionStatus.Denied
-				};
+					return PermissionStatus.Unknown;
+				}
+
+				return hasPermission ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
 

@@ -29,6 +29,11 @@
     <!--<WindowsPackageType>None</WindowsPackageType>-->
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+    <CodesignKey>Apple Development: Ieuan Walker (R4SVVV33HW)</CodesignKey>
+    <CodesignProvision>VS: WildCard Development</CodesignProvision>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(UseMaui)' != 'true' and $(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
   </ItemGroup>
