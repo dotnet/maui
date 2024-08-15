@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Platform
 
 			var window = application.CreateWindow(activationState);
 
-			winuiWindow.SetWindowHandler(window, mauiContext);
-			winuiWindow.SetWindow(window);
-
 			var wndProvider = mauiContext.Services.GetRequiredService<WindowProvider>();
 			wndProvider?.SetWindow(winuiWindow, window);
+			
+			winuiWindow.SetWindowHandler(window, mauiContext);
+			winuiWindow.SetWindow(window);
 
 			applicationContext.Services.InvokeLifecycleEvents<WindowsLifecycle.OnWindowCreated>(del => del(winuiWindow));
 			winuiWindow.Activate();

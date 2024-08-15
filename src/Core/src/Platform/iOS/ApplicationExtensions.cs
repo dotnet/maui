@@ -118,10 +118,10 @@ namespace Microsoft.Maui.Platform
 
 			var mauiWindow = application.CreateWindow(activationState);
 
-			uiWindow.SetWindowHandler(mauiWindow, mauiContext);
-
 			var wndProvider = mauiContext.Services?.GetRequiredService<WindowProvider>();
 			wndProvider?.SetWindow(uiWindow, mauiWindow);
+			
+			uiWindow.SetWindowHandler(mauiWindow, mauiContext);
 
 			return uiWindow;
 		}
