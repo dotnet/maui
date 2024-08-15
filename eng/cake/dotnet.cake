@@ -163,6 +163,7 @@ Task("dotnet-build")
     });
 
 Task("dotnet-samples")
+    .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
         var tempDir = PrepareSeparateBuildContext("samplesTest");
