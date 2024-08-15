@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MauiApp._1"
              x:Class="MauiApp._1.MainPage"
-             BackgroundColor="{DynamicResource PageBackgroundColor}">
+             Shell.NavBarIsVisible="False">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>

@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:MauiApp._1"
              xmlns:shared="clr-namespace:MauiApp._1.Shared;assembly=XmlEncodedAppName.Shared"
              x:Class="MauiApp._1.MainPage"
-             BackgroundColor="{DynamicResource PageBackgroundColor}">
+             Shell.NavBarIsVisible="False">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
