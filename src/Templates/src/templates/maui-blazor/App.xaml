@@ -7,10 +7,13 @@
         <ResourceDictionary>
 
         <!--
-            For information about styling .NET MAUI pages
+            For more information about styling .NET MAUI pages
             please refer to the documentation:
             https://go.microsoft.com/fwlink/?linkid=2282329
         -->
+
+            <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+            <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
 
         </ResourceDictionary>
     </Application.Resources>
