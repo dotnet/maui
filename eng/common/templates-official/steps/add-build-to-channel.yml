@@ -1,7 +1,13 @@
-steps:
-- template: /eng/common/core-templates/steps/add-build-to-channel.yml
-  parameters:
-    is1ESPipeline: true
+parameters:
+  ChannelId: 0
 
-    ${{ each parameter in parameters }}:
-      ${{ parameter.key }}: ${{ parameter.value }}
+steps:
+- task: PowerShell@2
+  displayName: Add Build to Channel
+  inputs:
+    filePath: $(Build.SourcesDirectory)/eng/common/post-build/add-build-to-channel.ps1
+    arguments: -BuildId $(BARBuildId) 
+      -ChannelId ${{ parameters.ChannelId }}
+      -MaestroApiAccessToken $(MaestroApiAccessToken)
+      -MaestroApiEndPoint $(MaestroApiEndPoint)
+      -MaestroApiVersion $(MaestroApiVersion) 

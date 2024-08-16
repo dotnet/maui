@@ -1,9 +1,8 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 // Argument handling
-var projectPath = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_MAC_PROJECT = "../../src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj";
+var projectPath = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_MAC_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 var dotnetRoot = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-maccatalyst");
@@ -57,7 +56,6 @@ Task("uitest-build")
 	});
 
 Task("uitest")
-	.IsDependentOn("uitest-build")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
@@ -130,21 +128,20 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	}
 
 	// Launch the app so it can be found by the test runner
-	DotNetBuild(app, new DotNetBuildSettings
-	{
-		Configuration = config,
-		Framework = tfm,
-		ToolPath = toolPath,
-		ArgumentCustomization = args => args
-			.Append("/t:Run")
-	});
+	StartProcess("chmod", $"+x {testApp}/Contents/MacOS/Controls.TestCases.HostApp");
+
+	var p = new System.Diagnostics.Process();
+	p.StartInfo.UseShellExecute = true;
+	p.StartInfo.FileName = "open";
+	p.StartInfo.Arguments = testApp;
+	p.Start();
 
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
 	var appiumLog = $"{binDir}/appium_mac.log";
-	var resultsFileName = $"{name}-{config}-catalyst";
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

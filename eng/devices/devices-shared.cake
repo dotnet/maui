@@ -11,7 +11,7 @@ var projectMappings = new Dictionary<string, string>
     ["Graphics.DeviceTests"] = "Graphics.DeviceTests",
     ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
     ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
-    ["Controls.Sample.UITests"] = "Controls.Sample.UITests",
+    ["Controls.TestCases.HostApp"] = "Controls.TestCases.HostApp",
     ["Compatibility.ControlGallery.iOS"] = "Compatibility.ControlGallery.iOS",
     ["Compatibility.ControlGallery.Android"] = "Compatibility.ControlGallery.Android",
 };
@@ -23,14 +23,14 @@ string DEFAULT_APP_PROJECT = "";
 
 if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
 {
-    DEFAULT_PROJECT = "../../src/Controls/tests/UITests/Controls.AppiumTests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
 }
 
 if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
 {
-    DEFAULT_PROJECT = "../../src/Controls/tests/UITests/Controls.AppiumTests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
 }
 
 if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))
@@ -45,7 +45,7 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
     const string artifactsDir = "../../artifacts/bin/";
     bool isAndroid = tfm.Contains("android");
 
-    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
+    var binDir = new DirectoryPath(project).Combine($"{config}/{tfm}/{rid}");
     IEnumerable<string> applications;
 
     if (isAndroid)
@@ -207,7 +207,18 @@ void LogSetupInfo(string toolPath)
 string GetDotnetToolPath()
 {
     var isLocalDotnet = GetBuildVariable("workloads", "local") == "local";
-    var toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    string toolPath;
+    
+    
+    if(IsRunningOnWindows())
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : null;
+    }
+    else
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    }
+
     Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");
     return toolPath;
 }
@@ -221,4 +232,11 @@ void ExecuteWithRetries(Func<int> action, int retries)
         retries--;
         System.Threading.Thread.Sleep(1000);
     }
+}
+
+string SanitizeTestResultsFilename(string input)
+{
+    string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
+
+    return resultFilename;
 }

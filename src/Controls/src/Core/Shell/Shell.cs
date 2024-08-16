@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 		/// This behavior can be changed by setting the <see cref = "FlyoutBehavior" /> property.
 		/// </remarks>
 		public static readonly BindableProperty FlyoutBehaviorProperty =
-			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
+			BindableProperty.CreateAttached(nameof(FlyoutBehavior), typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
 				propertyChanged: OnFlyoutBehaviorChanged);
 
 		/// <summary>
@@ -422,7 +422,7 @@ namespace Microsoft.Maui.Controls
 		/// The backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
-			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
+			BindableProperty.CreateAttached(nameof(FlyoutBackdrop), typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
@@ -430,7 +430,7 @@ namespace Microsoft.Maui.Controls
 		/// This enables scenarios such as expanding the flyout across the entire screen.
 		/// </summary>
 		public static readonly BindableProperty FlyoutWidthProperty =
-			BindableProperty.CreateAttached("FlyoutWidth", typeof(double), typeof(Shell), -1d,
+			BindableProperty.CreateAttached(nameof(FlyoutWidth), typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
@@ -438,7 +438,7 @@ namespace Microsoft.Maui.Controls
 		/// This enables scenarios such as reducing the height of the flyout so that it doesn't obscure the tab bar.
 		/// </summary>
 		public static readonly BindableProperty FlyoutHeightProperty =
-			BindableProperty.CreateAttached("FlyoutHeight", typeof(double), typeof(Shell), -1d,
+			BindableProperty.CreateAttached(nameof(FlyoutHeight), typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>

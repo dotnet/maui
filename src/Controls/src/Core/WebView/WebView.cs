@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
-		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
+		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(Source), typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
 				var source = oldvalue as WebViewSource;
@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
-		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly("CanGoBack", typeof(bool), typeof(WebView), false);
+		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly(nameof(CanGoBack), typeof(bool), typeof(WebView), false);
 
 		/// <summary>Bindable property for <see cref="CanGoBack"/>.</summary>
 		public static readonly BindableProperty CanGoBackProperty = CanGoBackPropertyKey.BindableProperty;
 
-		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly("CanGoForward", typeof(bool), typeof(WebView), false);
+		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly(nameof(CanGoForward), typeof(bool), typeof(WebView), false);
 
 		/// <summary>Bindable property for <see cref="CanGoForward"/>.</summary>
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;

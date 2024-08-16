@@ -103,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var transform = await GetLayerTransformAsync(view);
 
-			var expected = CATransform3D.MakeRotation(rotation * (float)Math.PI / 180.0f, 0, 0, 1);
+			var expected = CATransform3D.MakeRotation(rotation * MathF.PI / 180.0f, 0, 0, 1);
 
 			expected.AssertEqual(transform);
 		}

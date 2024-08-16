@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.Resizetizer.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <DefineConstants Condition="'$(OS)' == 'Windows_NT'">$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
@@ -13,7 +14,7 @@
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.Extended" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
-    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" />
     <PackageReference Include="Svg.Skia" />
   </ItemGroup>
 

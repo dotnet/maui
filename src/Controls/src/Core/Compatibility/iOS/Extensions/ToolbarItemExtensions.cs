@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.ComponentModel;
 using CoreGraphics;
 using ObjCRuntime;
@@ -26,20 +27,20 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		sealed class PrimaryToolbarItem : UIBarButtonItem
 		{
 			readonly bool _forceName;
-			readonly ToolbarItem _item;
+			readonly WeakReference<ToolbarItem> _item;
 
 			public PrimaryToolbarItem(ToolbarItem item, bool forceName)
 			{
 				_forceName = forceName;
-				_item = item;
+				_item = new(item);
 
 				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty && !forceName)
-					UpdateIconAndStyle();
+					UpdateIconAndStyle(item);
 				else
-					UpdateTextAndStyle();
-				UpdateIsEnabled();
+					UpdateTextAndStyle(item);
+				UpdateIsEnabled(item);
 
-				Clicked += (sender, e) => ((IMenuItemController)_item).Activate();
+				Clicked += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
@@ -49,50 +50,61 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
+			void OnClicked (object sender, EventArgs e)
+			{
+				if (_item.TryGetTarget(out var item))
+				{
+					((IMenuItemController)item).Activate();
+				}
+			}
+
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing)
-					_item.PropertyChanged -= OnPropertyChanged;
+				if (disposing && _item.TryGetTarget(out var item))
+					item.PropertyChanged -= OnPropertyChanged;
 				base.Dispose(disposing);
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
+				if (!_item.TryGetTarget(out var item))
+					return;
+
 				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
-					UpdateIsEnabled();
+					UpdateIsEnabled(item);
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 				{
-					if (_item.IconImageSource == null || _item.IconImageSource.IsEmpty || _forceName)
-						UpdateTextAndStyle();
+					if (item.IconImageSource == null || item.IconImageSource.IsEmpty || _forceName)
+						UpdateTextAndStyle(item);
 				}
 				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
 				{
 					if (!_forceName)
 					{
-						if (_item.IconImageSource != null && !_item.IconImageSource.IsEmpty)
-							UpdateIconAndStyle();
+						if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+							UpdateIconAndStyle(item);
 						else
-							UpdateTextAndStyle();
+							UpdateTextAndStyle(item);
 					}
 				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
-					this.SetAccessibilityHint(_item);
+					this.SetAccessibilityHint(item);
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
-					this.SetAccessibilityLabel(_item);
+					this.SetAccessibilityLabel(item);
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			void UpdateIconAndStyle()
+			void UpdateIconAndStyle(ToolbarItem item)
 			{
-				if (_item?.IconImageSource == null)
+				if (item?.IconImageSource == null)
 				{
 					Image = null;
 					Style = UIBarButtonItemStyle.Plain;
 				}
 				else
 				{
-					_item.IconImageSource.LoadImage(_item.FindMauiContext(), result =>
+					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
 					{
 						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
@@ -100,14 +112,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 			}
 
-			void UpdateIsEnabled()
+			void UpdateIsEnabled(ToolbarItem item)
 			{
-				Enabled = _item.IsEnabled;
+				Enabled = item.IsEnabled;
 			}
 
-			void UpdateTextAndStyle()
+			void UpdateTextAndStyle(ToolbarItem item)
 			{
-				Title = _item.Text;
+				Title = item.Text;
 #pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios8.0")]
 				Style = UIBarButtonItemStyle.Bordered;
 #pragma warning restore CA1416, CA1422
@@ -117,16 +129,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
-			readonly ToolbarItem _item;
+			readonly WeakReference<ToolbarItem> _item;
 
 			public SecondaryToolbarItem(ToolbarItem item) : base(new SecondaryToolbarItemContent())
 			{
-				_item = item;
-				UpdateText();
-				UpdateIcon();
-				UpdateIsEnabled();
+				_item = new(item);
+				UpdateText(item);
+				UpdateIcon(item);
+				UpdateIsEnabled(item);
 
-				((SecondaryToolbarItemContent)CustomView).TouchUpInside += (sender, e) => ((IMenuItemController)_item).Activate();
+				((SecondaryToolbarItemContent)CustomView).TouchUpInside += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
@@ -136,34 +148,45 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
+			void OnClicked (object sender, EventArgs e)
+			{
+				if (_item.TryGetTarget(out var item))
+				{
+					((IMenuItemController)item).Activate();
+				}
+			}
+
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing)
-					_item.PropertyChanged -= OnPropertyChanged;
+				if (disposing && _item.TryGetTarget(out var item))
+					item.PropertyChanged -= OnPropertyChanged;
 				base.Dispose(disposing);
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
+				if (!_item.TryGetTarget(out var item))
+					return;
+
 				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
-					UpdateText();
+					UpdateText(item);
 				else if (e.PropertyName == MenuItem.IconImageSourceProperty.PropertyName)
-					UpdateIcon();
+					UpdateIcon(item);
 				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
-					UpdateIsEnabled();
+					UpdateIsEnabled(item);
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
-					this.SetAccessibilityHint(_item);
+					this.SetAccessibilityHint(item);
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
 #pragma warning restore CS0618 // Type or member is obsolete
-					this.SetAccessibilityLabel(_item);
+					this.SetAccessibilityLabel(item);
 			}
 
-			void UpdateIcon()
+			void UpdateIcon(ToolbarItem item)
 			{
-				if (_item.IconImageSource != null && !_item.IconImageSource.IsEmpty)
+				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
 				{
-					_item.IconImageSource.LoadImage(_item.FindMauiContext(), result =>
+					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
 					{
 						((SecondaryToolbarItemContent)CustomView).Image = result?.Value;
 					});
@@ -174,14 +197,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 			}
 
-			void UpdateIsEnabled()
+			void UpdateIsEnabled(ToolbarItem item)
 			{
-				((UIControl)CustomView).Enabled = _item.IsEnabled;
+				((UIControl)CustomView).Enabled = item.IsEnabled;
 			}
 
-			void UpdateText()
+			void UpdateText(ToolbarItem item)
 			{
-				((SecondaryToolbarItemContent)CustomView).Text = _item.Text;
+				((SecondaryToolbarItemContent)CustomView).Text = item.Text;
 			}
 
 			sealed class SecondaryToolbarItemContent : UIControl

@@ -20,14 +20,14 @@ namespace Microsoft.Maui.Controls.Internals
 												where TItem : BindableObject
 	{
 		/// <summary>Bindable property for <see cref="Name"/>.</summary>
-		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
+		public static readonly BindableProperty NameProperty = BindableProperty.Create(nameof(Name), typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
 		/// <summary>Bindable property for <see cref="ShortName"/>.</summary>
-		public static readonly BindableProperty ShortNameProperty = BindableProperty.Create("ShortName", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
+		public static readonly BindableProperty ShortNameProperty = BindableProperty.Create(nameof(ShortName), typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
-		static readonly BindablePropertyKey HeaderContentPropertyKey = BindableProperty.CreateReadOnly("HeaderContent", typeof(TItem), typeof(TemplatedItemsList<TView, TItem>), null);
+		static readonly BindablePropertyKey HeaderContentPropertyKey = BindableProperty.CreateReadOnly(nameof(HeaderContent), typeof(TItem), typeof(TemplatedItemsList<TView, TItem>), null);
 
-		internal static readonly BindablePropertyKey ListProxyPropertyKey = BindableProperty.CreateReadOnly("ListProxy", typeof(ListProxy), typeof(TemplatedItemsList<TView, TItem>), null,
+		internal static readonly BindablePropertyKey ListProxyPropertyKey = BindableProperty.CreateReadOnly(nameof(ListProxy), typeof(ListProxy), typeof(TemplatedItemsList<TView, TItem>), null,
 			propertyChanged: OnListProxyChanged);
 
 		static readonly BindableProperty GroupProperty = BindableProperty.Create("Group", typeof(TemplatedItemsList<TView, TItem>), typeof(TItem), null);
@@ -53,11 +53,11 @@ namespace Microsoft.Maui.Controls.Internals
 		internal TemplatedItemsList(TView itemsView, BindableProperty itemSourceProperty, BindableProperty itemTemplateProperty)
 		{
 			if (itemsView == null)
-				throw new ArgumentNullException("itemsView");
+				throw new ArgumentNullException(nameof(itemsView));
 			if (itemSourceProperty == null)
-				throw new ArgumentNullException("itemSourceProperty");
+				throw new ArgumentNullException(nameof(itemSourceProperty));
 			if (itemTemplateProperty == null)
-				throw new ArgumentNullException("itemTemplateProperty");
+				throw new ArgumentNullException(nameof(itemTemplateProperty));
 
 			_itemsView = itemsView;
 			_itemsView.PropertyChanged += BindableOnPropertyChanged;
@@ -75,9 +75,9 @@ namespace Microsoft.Maui.Controls.Internals
 		internal TemplatedItemsList(TemplatedItemsList<TView, TItem> parent, IEnumerable itemSource, TView itemsView, BindableProperty itemTemplateProperty, int windowSize = int.MaxValue)
 		{
 			if (itemsView == null)
-				throw new ArgumentNullException("itemsView");
+				throw new ArgumentNullException(nameof(itemsView));
 			if (itemTemplateProperty == null)
-				throw new ArgumentNullException("itemTemplateProperty");
+				throw new ArgumentNullException(nameof(itemTemplateProperty));
 
 			Parent = parent;
 
@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
 		{
 			if (group == null)
-				throw new ArgumentNullException("group");
+				throw new ArgumentNullException(nameof(group));
 
 			int groupIndex = _groupedItems.Values.IndexOf(group);
 
@@ -584,7 +584,7 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static TemplatedItemsList<TView, TItem> GetGroup(TItem item)
 		{
 			if (item == null)
-				throw new ArgumentNullException("item");
+				throw new ArgumentNullException(nameof(item));
 
 			return (TemplatedItemsList<TView, TItem>)item.GetValue(GroupProperty);
 		}
@@ -592,7 +592,7 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static int GetIndex(TItem item)
 		{
 			if (item == null)
-				throw new ArgumentNullException("item");
+				throw new ArgumentNullException(nameof(item));
 
 			return (int)item.GetValue(IndexProperty);
 		}
@@ -963,7 +963,7 @@ namespace Microsoft.Maui.Controls.Internals
 		static void OnListProxyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var til = (TemplatedItemsList<TView, TItem>)bindable;
-			til.OnPropertyChanged("ItemsSource");
+			til.OnPropertyChanged(nameof(ItemsSource));
 		}
 
 		void OnProxyCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -1137,7 +1137,7 @@ namespace Microsoft.Maui.Controls.Internals
 		static void SetGroup(TItem item, TemplatedItemsList<TView, TItem> group)
 		{
 			if (item == null)
-				throw new ArgumentNullException("item");
+				throw new ArgumentNullException(nameof(item));
 
 			item.SetValue(GroupProperty, group);
 		}

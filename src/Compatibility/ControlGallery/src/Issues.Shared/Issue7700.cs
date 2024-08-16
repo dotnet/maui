@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+		[MovedToAppium]
 		[Test]
 		[FailsOnMauiAndroid]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
@@ -152,6 +153,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.WaitForElement(Success);
 		}
 
+		[MovedToAppium]
 		[Test]
 		[FailsOnMauiAndroid]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()

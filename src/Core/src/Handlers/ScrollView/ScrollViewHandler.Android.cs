@@ -147,7 +147,13 @@ namespace Microsoft.Maui.Handlers
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
 			handler.PlatformView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
-				request.Instant, () => handler.VirtualView.ScrollFinished());
+				request.Instant, () =>
+				{
+					if (handler.IsConnected())
+					{
+						handler.VirtualView.ScrollFinished();
+					}
+				});
 		}
 
 		/*

@@ -3,7 +3,7 @@
   <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\..\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
+    <TargetFrameworks>$(MauiSamplePlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
     <OutputType Condition="$(TargetFramework.Contains('-'))">Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>
@@ -49,13 +49,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference
-      Include="..\..\..\Controls\src\Core\Controls.SourceGen.csproj"
-      OutputItemType="Analyzer"
-      ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
   <ItemGroup>

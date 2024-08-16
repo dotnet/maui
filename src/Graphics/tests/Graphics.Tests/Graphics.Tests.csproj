@@ -11,7 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
-		<PackageReference Include="coverlet.collector" Version="6.0.0">
+		<PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" >
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>

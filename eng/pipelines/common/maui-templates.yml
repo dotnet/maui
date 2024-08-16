@@ -22,12 +22,12 @@ parameters:
     type: object
     default:
     - name: Windows
-      poolName: $(windowsNet6VmPool)
-      vmImage: $(windowsNet6VmImage)
+      poolName: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
       artifact: templates-windows
     - name: macOS
-      poolName: $(macOSXNet6VmPool)
-      vmImage: $(macOSXNet6VmImage)
+      poolName: $(macOSXVmPool)
+      vmImage: $(macOSXVmImage)
       artifact: templates-macos
 
   - name: RunPlatforms
@@ -36,14 +36,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -71,7 +71,7 @@ jobs:
     name: $(POOL_NAME)
     vmImage: $(POOL_VIMAGE)
     demands:
-      - macOS.Name -equals Ventura
+      - macOS.Name -equals Sonoma
       - macOS.Architecture -equals x64
   steps:
 
@@ -170,14 +170,6 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
-    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
-      - bash: |
-          if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-          if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-        displayName: Delete Old Simulator Logs
-        condition: always()
-        continueOnError: true
-
     # - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "9.0.0-prerelease*" -g
     #   displayName: install xharness
 
@@ -200,11 +192,8 @@ jobs:
             IOS_TEST_DEVICE: ios-simulator-64_17.2
 
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
-      - bash: |
-          suffix=$(date +%Y%m%d%H%M%S)
-          zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-          zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-        displayName: Zip Simulator Logs
+      - pwsh: ./build.ps1 --target=Cleanup -Script eng/devices/ios.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+        displayName: Cleanup and Create Simulator Logs if Test Run Failed To
         condition: always()
         continueOnError: true
 

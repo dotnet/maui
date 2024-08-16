@@ -1,6 +1,4 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -9,7 +7,8 @@ const string defaultVersion = "10.0.19041.0";
 const string dotnetVersion = "net8.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_WINDOWS_PROJECT);
 // Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
@@ -211,7 +210,15 @@ Task("Test")
 	Information("Cleaned directories");
 
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}";
+
+	if (!string.IsNullOrWhiteSpace(testFilter))
+	{
+		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
+	}
+
+	testResultsFile += ".xml";
+
 	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
 
 	Information($"Test Results File: {testResultsFile}");
@@ -431,15 +438,15 @@ Task("SetupTestPaths")
 		}
 
 		var winVersion = $"{dotnetVersion}-windows{windowsVersion}";
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("Controls.TestCases.HostApp").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
 		if (apps.Count() == 0) 
 		{
 			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-			if(TEST_APP_PROJECT.FullPath.Contains("Controls.Sample.UITests"))
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.HostApp"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.Sample.UITests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.HostApp/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
 			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
@@ -463,7 +470,7 @@ Task("SetupTestPaths")
 				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
-			Information("Looking for .app in arcade binDir {0}", binDir);
+			Information("Looking for .exe in arcade binDir {0}", binDir);
 			apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
 			if(apps.Count() == 0 )
 			{

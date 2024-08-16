@@ -43,8 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			root.Add(flexLayout);
 			flexLayout.Add(image as IView);
 
-			var manager = new FlexLayoutManager(flexLayout);
-			_ = manager.Measure(1000, 1000);
+			flexLayout.CrossPlatformMeasure(1000, 1000);
 
 			Assert.True(image.Passed, "Image should be measured unconstrained even if the FlexLayout is constrained.");
 		}
@@ -61,11 +60,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			flexLayout.Add(view as IView);
 			flexLayout.Add(view2 as IView);
 
-			var manager = new FlexLayoutManager(flexLayout);
-
 			// Measure and arrange the layout while the first view is visible
-			var measure = manager.Measure(1000, 1000);
-			manager.ArrangeChildren(new Rect(Point.Zero, measure));
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
 
 			// Keep track of where the second view is arranged
 			var whenVisible = view2.Frame.X;
@@ -73,9 +70,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			// Change the visibility
 			view.IsVisible = false;
 
-			// Measure and arrange againg
-			measure = manager.Measure(1000, 1000);
-			manager.ArrangeChildren(new Rect(Point.Zero, measure));
+			// Measure and arrange again
+			measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
 
 			var whenInvisible = view2.Frame.X;
 

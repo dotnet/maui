@@ -52,32 +52,6 @@ namespace Microsoft.Maui.Platform
 				platformControl.TextDecorations &= ~global::Windows.UI.Text.TextDecorations.Strikethrough;
 			else
 				platformControl.TextDecorations |= global::Windows.UI.Text.TextDecorations.Strikethrough;
-
-			// TextDecorations are not updated in the UI until the text changes
-			if (platformControl.Inlines != null && platformControl.Inlines.Count > 0)
-			{
-				foreach (var inline in platformControl.Inlines)
-				{
-					if (inline is Run run)
-					{
-						run.Text = run.Text;
-					}
-					else if (inline is Span span)
-					{
-						foreach (var inline2 in span.Inlines)
-						{
-							if (inline2 is Run run2)
-							{
-								run2.Text = run2.Text;
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				platformControl.Text = platformControl.Text;
-			}
 		}
 
 		public static void UpdateLineHeight(this TextBlock platformControl, ILabel label)
