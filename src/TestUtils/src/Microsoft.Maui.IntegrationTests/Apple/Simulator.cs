@@ -41,6 +41,7 @@ namespace Microsoft.Maui.IntegrationTests.Apple
 			var simUDID = GetUDID();
 
 			var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+			Console.WriteLine($"Logging simulator {simUDID} to {logDirectory}");
 			StartProcess("zip", $"-9r \"{logDirectory}/DiagnosticReports_{simUDID}_{timestamp}.zip\" \"{homeDirectory}/Library/Logs/DiagnosticReports/\"");
 			StartProcess("zip", $"-9r \"{logDirectory}/CoreSimulator_{simUDID}_{timestamp}.zip\" \"{homeDirectory}/Library/Logs/CoreSimulator/{simUDID}\"");
 			StartProcess("xcrun", $"simctl spawn {simUDID} log collect --output {homeDirectory}/{simUDID}_log_{timestamp}.logarchive");
