@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : Grid, IDisposable
 	{
-		readonly Canvas _shadowCanvas;
+		Canvas? _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
-		UI.Xaml.Shapes.Rectangle? _shadowHost;
+		Rectangle? _shadowHost;
 		WSize _shadowHostSize;
 		Path? _borderPath;
 
@@ -31,11 +31,6 @@ namespace Microsoft.Maui.Platform
 
 		public WrapperView()
 		{
-			_shadowCanvas = new Canvas();
-			_borderPath = new Path();
-
-			Children.Add(_shadowCanvas);
-			Children.Add(_borderPath);
 		}
 
 		long _visibilityDependencyPropertyCallbackToken;
@@ -44,15 +39,17 @@ namespace Microsoft.Maui.Platform
 			get { return _child; }
 			internal set
 			{
-				if (_child != null)
+				if (_child is not null)
 				{
 					_child.SizeChanged -= OnChildSizeChanged;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					Children.Remove(_child);
 				}
 
-				if (value == null)
+				if (value is null)
+				{
 					return;
+				}
 
 				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
@@ -68,6 +65,8 @@ namespace Microsoft.Maui.Platform
 			DisposeClip();
 			DisposeShadow();
 			DisposeBorder();
+
+			GC.SuppressFinalize(this);
 		}
 
 		partial void ClipChanged() => UpdateClip();
@@ -76,19 +75,25 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateClip()
 		{
-			if (Child == null)
+			if (Child is null)
+			{
 				return;
+			}
 
 			var clipGeometry = Clip;
 
-			if (clipGeometry == null)
+			if (clipGeometry is null)
+			{
 				return;
+			}
 
 			double width = Child.ActualWidth;
 			double height = Child.ActualHeight;
 
 			if (height <= 0 && width <= 0)
+			{
 				return;
+			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			var compositor = visual.Compositor;
@@ -118,19 +123,27 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateBorder()
 		{
-			if (Border == null)
+			if (Border is null)
+			{
 				return;
+			}
+
+			if (_borderPath is null)
+			{
+				_borderPath = new();
+				Children.Add(_borderPath);
+			}
 
 			IShape? borderShape = Border.Shape;
-			_borderPath?.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
+			_borderPath.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
 
-			_borderPath?.UpdateStroke(Border.Stroke);
-			_borderPath?.UpdateStrokeThickness(Border.StrokeThickness);
-			_borderPath?.UpdateStrokeDashPattern(Border.StrokeDashPattern);
-			_borderPath?.UpdateBorderDashOffset(Border.StrokeDashOffset);
-			_borderPath?.UpdateStrokeMiterLimit(Border.StrokeMiterLimit);
-			_borderPath?.UpdateStrokeLineCap(Border.StrokeLineCap);
-			_borderPath?.UpdateStrokeLineJoin(Border.StrokeLineJoin);
+			_borderPath.UpdateStroke(Border.Stroke);
+			_borderPath.UpdateStrokeThickness(Border.StrokeThickness);
+			_borderPath.UpdateStrokeDashPattern(Border.StrokeDashPattern);
+			_borderPath.UpdateBorderDashOffset(Border.StrokeDashOffset);
+			_borderPath.UpdateStrokeMiterLimit(Border.StrokeMiterLimit);
+			_borderPath.UpdateStrokeLineCap(Border.StrokeLineCap);
+			_borderPath.UpdateStrokeLineJoin(Border.StrokeLineJoin);
 		}
 
 		partial void ShadowChanged()
@@ -153,7 +166,7 @@ namespace Microsoft.Maui.Platform
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			// OnChildSizeChanged does not fire for Visibility changes to child
-			if (sender is FrameworkElement child && _shadowCanvas.Children.Count > 0)
+			if (sender is FrameworkElement child && _shadowCanvas?.Children.Count > 0)
 			{
 				var shadowHost = _shadowCanvas.Children[0];
 				shadowHost.Visibility = child.Visibility;
@@ -162,8 +175,10 @@ namespace Microsoft.Maui.Platform
 
 		void DisposeShadow()
 		{
-			if (_shadowCanvas == null)
+			if (_shadowCanvas is null)
+			{
 				return;
+			}
 
 			if (_shadowHost is not null)
 				ElementCompositionPreview.SetElementChildVisual(_shadowHost, null);
@@ -187,15 +202,25 @@ namespace Microsoft.Maui.Platform
 		async Task CreateShadowAsync()
 		{
 			if (Child == null || Shadow == null || Shadow.Paint == null)
+			{
 				return;
+			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 
 			if (Clip != null && visual.Clip == null)
+			{
 				return;
+			}
 
 			double width = _shadowHostSize.Width;
 			double height = _shadowHostSize.Height;
+
+			if (_shadowCanvas is null)
+			{
+				_shadowCanvas = new();
+				Children.Add(_shadowCanvas);
+			}
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
