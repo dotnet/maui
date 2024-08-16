@@ -102,7 +102,7 @@ jobs:
         PRIVATE_BUILD: $(PrivateBuild)
 
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ category }}" --resultsfilename="integration-tests" --verbosity=diagnostic
-      displayName: Run ${{ lower(BuildPlatform.name) }} templates build tests
+      displayName: Run ${{ category }} templates build tests
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: CopyFiles@2
@@ -126,12 +126,12 @@ jobs:
         ArtifactName: BuildTemplateBuildLogs
 
     - task: PublishTestResults@2
-      displayName: Publish the ${{ lower(BuildPlatform.name) }} templates build tests
+      displayName: Publish the ${{ category }} templates build tests
       condition: always()
       inputs:
         testRunner: VSTest
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-        testRunTitle: ${{ lower(BuildPlatform.name) }} templates build tests
+        testRunTitle: ${{ category }} templates build tests
 
     - pwsh: |
         Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
