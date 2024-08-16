@@ -1,10 +1,14 @@
-namespace Maui.Controls.Sample.Issues;
-
-[Issue(IssueTracker.Github, 21325, "\"Grey\" cannot be used to set Background property, and doesn't display a preview in the XAML editor", PlatformAffected.All)]
-public partial class Issue21325 : ContentPage
+namespace Maui.Controls.Sample.Issues
 {
-	public Issue21325()
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	[Issue(IssueTracker.Github, 21325, "Grey cannot be used to set Background property, and doesn't display a preview in the XAML editor", PlatformAffected.All)]
+	public partial class Issue21325 : ContentPage
 	{
-		InitializeComponent();
+		public Issue21325()
+		{
+			InitializeComponent();
+		}
 	}
 }
+
+
