@@ -22,7 +22,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void AppleTestTearDown()
 		{
-			TestSimulator.Log(Path.Combine(TestDirectory, "xh-results"));
+			TestSimulator.Log(LogDirectory);
 		}
 
 		[OneTimeTearDown]
