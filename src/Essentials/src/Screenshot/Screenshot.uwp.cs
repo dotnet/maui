@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Media
 		readonly double _dpiY;
 		readonly byte[] _bytes;
 
-		public ScreenshotResult(int width, int height, byte[] bytes, double dpiX, double dpiY)
+		internal ScreenshotResult(int width, int height, byte[] bytes, double dpiX, double dpiY)
 		{
 			Width = width;
 			Height = height;
