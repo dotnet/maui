@@ -1,12 +1,9 @@
-using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 21643, "[iOS] Border has an unexpected background animation", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 21643, "Border has an unexpected background animation", PlatformAffected.iOS)]
 
 public partial class Issue21643 : ContentPage
 {
@@ -17,7 +14,7 @@ public partial class Issue21643 : ContentPage
 		InitializeComponent();
 	}
 
-	private void ButtonClicked(object sender, EventArgs e)
+	private void OnBorderChanged(object sender, EventArgs e)
 	{
 		if (this.isBorderOn)
 		{

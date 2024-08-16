@@ -10,11 +10,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[iOS] Border has an unexpected background animation";
+		public override string Issue => "Border has an unexpected background animation";
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Issue18242Test()
+		public void Issue21643Test()
 		{
 			App.WaitForElement("border");
 			App.Tap("button");
