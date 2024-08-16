@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,11 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ActionSheet)]
 		public void Issue10645Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.iOS }, "Only affects Windows.");
-
 			App.WaitForElement("AspectFillImage", timeout: TimeSpan.FromSeconds(4));
 
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
