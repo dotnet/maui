@@ -59,7 +59,8 @@ namespace Microsoft.Maui.Platform
 			if (attribute != null)
 				mutableParagraphStyle.SetParagraphStyle(attribute);
 
-			mutableParagraphStyle.LineHeightMultiple = new nfloat(lineHeight >= 0 ? lineHeight : -1);
+			// Prevent the text from being cut off from the top when the specified LineHeight is between 0 and 1.
+			mutableParagraphStyle.LineHeightMultiple = new nfloat(lineHeight >= 1 ? lineHeight : -1);
 
 			var mutableAttributedString = new NSMutableAttributedString(attributedString);
 			mutableAttributedString.AddAttribute
