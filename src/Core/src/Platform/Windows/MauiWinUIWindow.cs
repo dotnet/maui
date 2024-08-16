@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 		{
 			_windowManager = WindowMessageManager.Get(this);
 			_viewSettings = new ViewManagement.UISettings();
-
+			
 			Activated += OnActivated;
 			Closed += OnClosedPrivate;
 			VisibilityChanged += OnVisibilityChanged;
@@ -95,6 +95,9 @@ namespace Microsoft.Maui
 		{
 			OnClosed(sender, args);
 
+			Activated -= OnActivated;
+			Closed -= OnClosedPrivate;
+			VisibilityChanged -= OnVisibilityChanged;
 			_viewSettings.ColorValuesChanged -= _viewSettings_ColorValuesChanged;
 
 			if (_windowIcon != IntPtr.Zero)

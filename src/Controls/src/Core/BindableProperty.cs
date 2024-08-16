@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
 			{ typeof(Maui.Graphics.Color), new ColorTypeConverter() },
+			{ typeof(ImageSource), new ImageSourceConverter() }
 		};
 
 		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
@@ -66,6 +67,8 @@ namespace Microsoft.Maui.Controls
 			{ typeof(char), new[] { typeof(string), typeof(ushort), typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(float), typeof(double), typeof(decimal) } },
 			{ typeof(float), new[] { typeof(string), typeof(double) } },
 			{ typeof(ulong), new[] { typeof(string), typeof(float), typeof(double), typeof(decimal) } },
+			{ typeof(double), new[] { typeof(string) } },
+			{ typeof(bool), new[] { typeof(string) } },
 		};
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='UnsetValue']/Docs/*" />
@@ -229,11 +232,24 @@ namespace Microsoft.Maui.Controls
 			if (returnType.IsAssignableFrom(valueType))
 				return true;
 
-			var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType) ?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
-			if (cast != null)
+			// Don't look for implicit conversion operators on BCL-types
+			if (ShouldCheckForImplicitConversionOperator(returnType))
 			{
-				value = cast.Invoke(null, new[] { value });
-				return true;
+				var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+				if (cast != null)
+				{
+					value = cast.Invoke(null, [value]);
+					return true;
+				}
+			}
+			if (ShouldCheckForImplicitConversionOperator(valueType))
+			{
+				var cast = valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
+				if (cast != null)
+				{
+					value = cast.Invoke(null, [value]);
+					return true;
+				}
 			}
 			if (KnownIValueConverters.TryGetValue(returnType, out IValueConverter valueConverter))
 			{
@@ -243,6 +259,9 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		static bool ShouldCheckForImplicitConversionOperator(Type type) =>
+			type != typeof(string) && !SimpleConvertTypes.ContainsKey(type);
 
 		internal delegate void BindablePropertyBindingChanging(BindableObject bindable, BindingBase oldValue, BindingBase newValue);
 	}
