@@ -1,10 +1,7 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 21437, "Removing TapGestureRecognizer with at least 2 taps causes Exception", PlatformAffected.Android)]
 
 public partial class Issue21437 : ContentPage

@@ -14,6 +14,7 @@ public class Issue21437 : _IssuesUITest
 	{ }
 
     [Test]
+	[Category(UITestCategories.Gestures)]
 	public void ExceptionShouldNotBeThrown()
 	{
 		_ = App.WaitForElement("Item2");
