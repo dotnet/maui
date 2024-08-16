@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>68511fd27fe4055ce5203742998ba12019dfcbd4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.1.46">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.1.49">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>99ba8135fc47358702a5918757651d53d7b6fabd</Sha>
+      <Sha>d050fda83a61bb7cd31e0a0686e9047cb01f924d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9237-net9-rc1">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9245-net9-rc1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>49f9973a2f95c9bd1fd3de9dfa97de3a704552f6</Sha>
+      <Sha>ebf969ee407205c3071fe5c5c64cf8f6e1b2794d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.5" Version="14.5.9237-net9-rc1">
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.5" Version="14.5.9245-net9-rc1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>49f9973a2f95c9bd1fd3de9dfa97de3a704552f6</Sha>
+      <Sha>ebf969ee407205c3071fe5c5c64cf8f6e1b2794d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net9.0_17.5" Version="17.5.9237-net9-rc1">
+    <Dependency Name="Microsoft.iOS.Sdk.net9.0_17.5" Version="17.5.9245-net9-rc1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>49f9973a2f95c9bd1fd3de9dfa97de3a704552f6</Sha>
+      <Sha>ebf969ee407205c3071fe5c5c64cf8f6e1b2794d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_17.5" Version="17.5.9237-net9-rc1">
+    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_17.5" Version="17.5.9245-net9-rc1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>49f9973a2f95c9bd1fd3de9dfa97de3a704552f6</Sha>
+      <Sha>ebf969ee407205c3071fe5c5c64cf8f6e1b2794d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
@@ -135,23 +135,23 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>a562a9fe5582dabf601884392d5ce987484ea706</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24379.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24405.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>35965f58a6c3b98aac88b2859eaac36dc6395d1a</Sha>
+      <Sha>9794254fa909ff5adc46326e9b54009793f61dcd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24379.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24405.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>35965f58a6c3b98aac88b2859eaac36dc6395d1a</Sha>
+      <Sha>9794254fa909ff5adc46326e9b54009793f61dcd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24379.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24405.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>35965f58a6c3b98aac88b2859eaac36dc6395d1a</Sha>
+      <Sha>9794254fa909ff5adc46326e9b54009793f61dcd</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.24311.4">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.24408.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>c0a26bebfc5bda84ba691a04014aac41b0296b99</Sha>
+      <Sha>60ae233c3d77f11c5fdb53e570b64d503b13ba59</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24311.4">
       <Uri>https://github.com/dotnet/arcade</Uri>

@@ -15,14 +15,12 @@ jobs:
     name: ${{ parameters.poolName }}
     image: ${{ parameters.vmImage }}
     os: ${{ parameters.os }}
-  variables:
-  - group: Publish-Build-Assets
   templateContext:
     outputs:
     - output: artifactsDrop
       dropServiceURI: https://devdiv.artifacts.visualstudio.com/DefaultCollection
       buildNumber: $(ReleaseDropPrefix)/symbols
-      dropMetadataContainerName: DropMetadata-$(Build.BuildId)-symbols-$(System.JobAttempt)
+      dropMetadataContainerName: DropMetadata-shipping-symbols
       sourcePath: $(Build.StagingDirectory)\symbols
       retentionDays: ${{ parameters.dropRetentionDays }}
       toLowerCase: false
@@ -41,7 +39,7 @@ jobs:
 
   - task: DownloadPipelineArtifact@2
     inputs:
-      artifactName: DropMetadata-$(Build.BuildId)-nugets-$(System.JobAttempt)
+      artifactName: DropMetadata-shipping-nugets
       downloadPath: $(Build.StagingDirectory)\metadata
     displayName: Download nugets drop metadata
 
@@ -66,23 +64,30 @@ jobs:
       version: $(DOTNET_VERSION)
       includePreviewVersions: true
 
-  - task: DotNetCoreCLI@2
+  - task: AzureCLI@2
     displayName: Generate and publish BAR manifest
     inputs:
-      projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
-      arguments: >-
+      azureSubscription: "Darc: Maestro Production"
+      scriptType: ps
+      scriptLocation: inlineScript
+      inlineScript: >-
+        dotnet build $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
         -t:PushManifestToBuildAssetRegistry
         -p:OfficialBuildId=$(_BuildOfficalId)
-        -p:BuildAssetRegistryToken=$(MaestroAccessToken)
         -p:OutputPath=${{ parameters.nugetArtifactPath }}
         -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
 
-  - powershell: |
-      $versionEndpoint = 'https://maestro.dot.net/api/assets/darc-version?api-version=2019-01-16'
-      $darcVersion = $(Invoke-WebRequest -Uri $versionEndpoint -UseBasicParsing).Content
-      $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-      & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
-      & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --publishing-infra-version 3 --password $(MaestroAccessToken) --azdev-pat $(publishing-dnceng-devdiv-code-r-build-re)
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: "Darc: Maestro Production"
+      scriptType: ps
+      scriptLocation: inlineScript
+      inlineScript: |
+        $versionEndpoint = 'https://maestro.dot.net/api/assets/darc-version?api-version=2019-01-16'
+        $darcVersion = $(Invoke-WebRequest -Uri $versionEndpoint -UseBasicParsing).Content
+        $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
+        & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
+        & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --ci --publishing-infra-version 3 --azdev-pat $(System.AccessToken)
     displayName: Add build to default darc channel
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))

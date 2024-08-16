@@ -72,6 +72,9 @@ namespace Microsoft.Maui.Controls
 		private static bool TryGetTypeConverter(Type type, [NotNullWhen(true)] out TypeConverter? converter)
 			=> type.TryGetTypeConverter(out converter);
 
+		private static bool ShouldCheckForImplicitConversionOperator(Type type) =>
+			type != typeof(string) && !BindableProperty.SimpleConvertTypes.ContainsKey(type);
+
 		[RequiresUnreferencedCode("The method uses reflection to find implicit conversion operators. " +
 			"It is not possible to guarantee that trimming does not remove some of the implicit operators. " +
 			"Consider adding a custom TypeConverter that can perform the conversion instead.")]
@@ -95,6 +98,9 @@ namespace Microsoft.Maui.Controls
 				"We cannot guarantee that the method is preserved when the code is trimmed.")]
 			static MethodInfo? GetImplicitConversionOperator(Type onType, Type fromType, Type toType)
 			{
+				if (!ShouldCheckForImplicitConversionOperator(onType))
+					return null;
+
 				const BindingFlags bindingAttr = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
 
 				try
