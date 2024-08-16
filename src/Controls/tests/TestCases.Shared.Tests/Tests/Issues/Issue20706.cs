@@ -16,13 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Stepper)]
 		public void ChangeIncrementValue()
 		{
+			App.WaitForElement("button");
+			App.Click("button");
 			App.WaitForElement("stepper");
-			App.Tap("label1");
-			App.TapCoordinates(34, 20);
-			App.WaitForElement("entry");
-			VerifyScreenshot();
-			App.Tap("label10");
-			App.WaitForElement("entry");
+			App.Tap("+");
 			VerifyScreenshot();
 		}
 	}
