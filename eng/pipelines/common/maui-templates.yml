@@ -210,7 +210,7 @@ jobs:
           IOS_TEST_DEVICE: ios-simulator-64_17.2
 
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
-      displayName: Run $(PLATFORM_NAME) templates run tests
+      displayName: Run ${{ RunPlatform.testName }} templates run tests
       continueOnError: true
       # TODO: pass properly device type/version from top-level yml
       ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
@@ -224,12 +224,12 @@ jobs:
         continueOnError: true
 
     - task: PublishTestResults@2
-      displayName: Publish the $(PLATFORM_NAME) templates run tests
+      displayName: Publish the ${{ RunPlatform.testName }} templates run tests
       condition: always()
       inputs:
         testRunner: VSTest
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-        testRunTitle: $(PLATFORM_NAME) templates run tests
+        testRunTitle: ${{ RunPlatform.testName }} templates run tests
 
     - task: PublishBuildArtifacts@1
       condition: always()
