@@ -19,13 +19,8 @@ public partial class Issue14825 : ContentPage
 			// Intentionally no "using" because ImageSource requires a valid stream.
 			Stream stream = await result.OpenReadAsync(ScreenshotFormat.Png, 100);
 
-			screenshotResult.Add(new Label() { Text = $"Your screenshot ({result.Width}x{result.Height}):" });
-
-			DisplayInfo displayInfo = DeviceDisplay.MainDisplayInfo;
-			double width = result.Width / displayInfo.Density;
-			double height = result.Height / displayInfo.Density;
-
-			screenshotResult.Add(new Image() { Source = ImageSource.FromStream(() => stream), WidthRequest = width, HeightRequest = height });
+			screenshotResult.Add(new Label() { Text = $"Your screenshot ({myWebView.Width}x{myWebView.Height}):" });
+			screenshotResult.Add(new Image() { Source = ImageSource.FromStream(() => stream), WidthRequest = myWebView.Width, HeightRequest = myWebView.Height });
 		}
 	}
 }
