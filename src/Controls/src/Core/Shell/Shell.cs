@@ -121,6 +121,9 @@ namespace Microsoft.Maui.Controls
 				element
 					.FindParentOfType<Shell>()
 					?.SendFlyoutItemsChanged();
+
+			if(bindable is BaseShellItem baseShellItem && baseShellItem.FlyoutItemIsVisible != (bool)newValue)
+				baseShellItem.FlyoutItemIsVisible = (bool)newValue;
 		}
 
 		/// <summary>
