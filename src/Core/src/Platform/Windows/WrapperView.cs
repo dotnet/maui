@@ -65,8 +65,6 @@ namespace Microsoft.Maui.Platform
 			DisposeClip();
 			DisposeShadow();
 			DisposeBorder();
-
-			GC.SuppressFinalize(this);
 		}
 
 		partial void ClipChanged() => UpdateClip();
