@@ -10,6 +10,16 @@
 			InitializeComponent();
 		}
 
+		override async protected void OnAppearing()
+		{
+			base.OnAppearing();
+			Editor.Focus();
+			await Task.Delay(500);
+			Entry.Focus();
+			await Task.Delay(300);
+			Editor.Focus();
+			Entry.Focus();
+		}
 		private void Editor_Completed(object sender, EventArgs e)
 		{
 			EditorStatusLabel.Text = "Editor Completed by UnFocused";	

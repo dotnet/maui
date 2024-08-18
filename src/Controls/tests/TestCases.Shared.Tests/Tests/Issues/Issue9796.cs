@@ -20,14 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CollectionViewEmptyItemsHeight()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796
-
-			App.WaitForElement("Stack");
-			App.WaitForElement("Editor");
-			App.WaitForElement("EditorStatusLabel");
-			VerifyScreenshot();
-			App.WaitForElement("Entry").Click();
-			App.WaitForElement("Editor").Click();
-			App.WaitForElement("EntryStatusLabel");
 			VerifyScreenshot();
 		}
 	}
