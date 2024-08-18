@@ -131,7 +131,9 @@ namespace Microsoft.Maui.Platform
 			if (_borderPath is null)
 			{
 				_borderPath = new();
-				Children.Add(_borderPath);
+
+				int index = _shadowCanvas is not null ? 1 : 0;
+				Children.Insert(index, _borderPath);
 			}
 
 			IShape? borderShape = Border.Shape;
