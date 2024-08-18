@@ -227,7 +227,9 @@ namespace Microsoft.Maui.Platform
 			if (_shadowCanvas is null)
 			{
 				_shadowCanvas = new();
-				Children.Add(_shadowCanvas);
+
+				// Shadow canvas must be the first child. The order of children (i.e. shadow canvas and border path) matters.
+				Children.Insert(0, _shadowCanvas);
 			}
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
