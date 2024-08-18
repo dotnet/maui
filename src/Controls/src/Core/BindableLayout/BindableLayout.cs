@@ -509,7 +509,16 @@ namespace Microsoft.Maui.Controls
 			}
 			
 			e.Apply(
-				insert: (item, index, _) => layout.Insert(CreateItemView(item, SelectTemplate(item, layout)), index),
+				insert: (item, index, _) =>
+				{
+					var layoutChildren = layout.Children;
+					if (layoutChildren.Count == 1 && layoutChildren[0] == _currentEmptyView)
+					{
+						layout.RemoveAt(0);
+					}
+
+					layout.Insert(CreateItemView(item, SelectTemplate(item, layout)), index);
+				},
 				removeAt: (item, index) =>
 				{
 					var child = (View)layout.Children[index]!;

@@ -445,7 +445,48 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			itemsSource.Remove(0);
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
+		
+		[Fact]
+		public void RemovesEmptyViewWhenAddingTheFirstItem()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
 
+			var itemsSource = new ObservableCollection<int>();
+
+			var emptyView = new Label();
+			BindableLayout.SetEmptyView(layout, emptyView);
+
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			Assert.Single(layout.Children);
+			Assert.Equal(emptyView, layout[0]);
+
+			itemsSource.Add(0);
+			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
+		}
+		
+		[Fact]
+		public void AddsEmptyViewWhenRemovingRemainingItem()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 1));
+
+			var emptyView = new Label();
+			BindableLayout.SetEmptyView(layout, emptyView);
+
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
+
+			itemsSource.RemoveAt(0);
+			Assert.Single(layout.Children);
+			Assert.Equal(emptyView, layout[0]);
+		}
 
 		[Fact]
 		public void ValidateBindableProperties()
