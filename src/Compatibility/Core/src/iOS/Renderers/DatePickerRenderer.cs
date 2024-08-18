@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				if (Element.Format?.Equals("D", StringComparison.Ordinal) == true)
 				{
-					dateFormatter.DateStyle = NSDateFormatterStyle.Long;
+					dateFormatter.DateStyle = NSDateFormatterStyle.Full;
 					var strDate = dateFormatter.StringFor(_picker.Date);
 					Control.Text = strDate;
 				}

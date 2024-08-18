@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue23793">
+    <Grid RowDefinitions="*, Auto">
+        <DatePicker x:Name="datePicker" AutomationId="DatePicker" Format="D" />
+        <Button Grid.Row="1" Text="Change date" AutomationId="Button" Clicked="ButtonClicked"/>
+    </Grid>
+</ContentPage>
