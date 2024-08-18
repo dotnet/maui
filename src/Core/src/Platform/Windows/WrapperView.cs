@@ -149,9 +149,13 @@ namespace Microsoft.Maui.Platform
 		partial void ShadowChanged()
 		{
 			if (HasShadow)
+			{
 				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+			}
 			else
+			{
 				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+			}
 		}
 
 		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
@@ -181,10 +185,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (_shadowHost is not null)
+			{
 				ElementCompositionPreview.SetElementChildVisual(_shadowHost, null);
+			}
 
 			if (_shadowCanvas.Children.Count > 0)
+			{
 				_shadowCanvas.Children.RemoveAt(0);
+			}
 
 			if (_shadowVisual != null)
 			{
@@ -254,7 +262,9 @@ namespace Microsoft.Maui.Platform
 		async Task UpdateShadowAsync()
 		{
 			if (_dropShadow != null)
+			{
 				await SetShadowPropertiesAsync(_dropShadow, Shadow);
+			}
 
 			UpdateShadowSize();
 		}
@@ -266,12 +276,16 @@ namespace Microsoft.Maui.Platform
 				float width = (float)_shadowHostSize.Width;
 
 				if (width <= 0)
+				{
 					width = (float)frameworkElement.ActualWidth;
+				}
 
 				float height = (float)_shadowHostSize.Height;
 
 				if (height <= 0)
+				{
 					height = (float)frameworkElement.ActualHeight;
+				}
 
 				if (_shadowVisual is not null)
 				{
@@ -308,7 +322,9 @@ namespace Microsoft.Maui.Platform
 			dropShadow.Opacity = opacity;
 
 			if (shadowColor != null)
+			{
 				dropShadow.Color = shadowColor.ToWindowsColor();
+			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 			dropShadow.Mask = await Child.GetAlphaMaskAsync();
