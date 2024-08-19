@@ -69,7 +69,7 @@ Testing against a previously saved screenshot of the simulator can be an importa
  
     Click on the three dots to the right of "Drop" to download it. ![Drop](../assets/VerifyScreenshotsPart5.png)
 4) When you unzip the archive, navigate to the Controls.TestCases.Shared folder which will have the snap shot. NOTE: in future testing, if this test will have failed, the snapshot will have a -diff attached to its filename, with red outlining to indicate problem areas.
-5) Add the snapshot .png to your test. Each platform has its own TestCases project will have a snapshots folder within it to add your .png. ![Drop](assets/VerifyScreenshotsPart5.png) Please ensure that the file has the same name as the TestMethod that will call VerifyScreenshots(). Note: TestCases.IOS.Tests has two subfolders within its Snapshots folder, ios and ios-iphonex. You only have to submit your screenshot to the ios folder.
+5) Add the snapshot .png to your test. Each platform has its own TestCases project will have a snapshots folder within it to add your .png. ![Drop](../assets/VerifyScreenshotsPart5.png) Please ensure that the file has the same name as the TestMethod that will call VerifyScreenshots(). Note: TestCases.IOS.Tests has two subfolders within its Snapshots folder, ios and ios-iphonex. You only have to submit your screenshot to the ios folder.
 6) Commit the change to your PR.
 
 ## Adding a GalleryPage
