@@ -72,14 +72,12 @@ namespace Microsoft.Maui.Controls.Platform
 				return new NSAttributedString(string.Empty);
 
 			var style = new NSMutableParagraphStyle();
-			var lineHeight = span.LineHeight >= 0
+			var lineHeight = span.LineHeight >= 1
 				? span.LineHeight
 				: defaultLineHeight;
 
-			if (lineHeight >= 0)
-			{
-				style.LineHeightMultiple = new nfloat(lineHeight);
-			}
+			// Prevent the span text from being cut off from the top when the specified LineHeight is between 0 and 1.
+			style.LineHeightMultiple = lineHeight >= 1 ? new nfloat(lineHeight) : -1;
 
 			style.Alignment = defaultHorizontalAlignment switch
 			{
