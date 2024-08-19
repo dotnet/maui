@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -135,23 +136,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
 		{
-			// if (VirtualView?.Loop == true)
-			// {
-			// 	var goToIndexPath = (Controller as CarouselViewController2).GetScrollToIndexPath(args.Index);
+			if (VirtualView?.Loop == true)
+			{
+				var goToIndexPath = (Controller as CarouselViewController2).GetScrollToIndexPath(args.Index);
 
-			// 	if (!IsIndexPathValid(goToIndexPath))
-			// 	{
-			// 		return;
-			// 	}
+				if (!IsIndexPathValid(goToIndexPath))
+				{
+					return;
+				}
 
-			// 	Controller.CollectionView.ScrollToItem(goToIndexPath,
-			// 		args.ScrollToPosition.ToCollectionViewScrollPosition( UICollectionViewScrollDirection.Vertical), // TODO: Fix _layout.ScrollDirection),
-			// 		args.IsAnimated);
-			// }
-			// else
-			// {
+				bool IsHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+				UICollectionViewScrollDirection scrollDirection = IsHorizontal ? UICollectionViewScrollDirection.Horizontal : UICollectionViewScrollDirection.Vertical;
+
+				Controller.CollectionView.ScrollToItem(goToIndexPath,
+					args.ScrollToPosition.ToCollectionViewScrollPosition(scrollDirection), // TODO: Fix _layout.ScrollDirection),
+					args.IsAnimated);
+			}
+			else
+			{
 			base.ScrollToRequested(sender, args);
-			// }
+			}
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
