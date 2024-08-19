@@ -7,7 +7,7 @@
         <VerticalStackLayout
         Padding="30,0"
         Spacing="25">
-            <Entry Background="White" AutomationId="WaitForEntryControl" x:Name="entryControl" TextColor="Blue" Text="Entry Text" ClearButtonVisibility="WhileEditing"/>
+            <Entry Background="White" AutomationId="entryControl" x:Name="entryControl" TextColor="Blue" Text="Entry Text" ClearButtonVisibility="WhileEditing"/>
             <Button AutomationId="buttonControl"
             x:Name="CounterBtn"
             Text="Click me" 
