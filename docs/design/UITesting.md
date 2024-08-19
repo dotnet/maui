@@ -100,11 +100,13 @@ Please see the [wiki](https://github.com/dotnet/maui/wiki/UITests) for setting u
 
 ## Logging
 
-Follow the steps above for accessing Screenshots to access the logs from the drop folder.
+Follow the steps above for accessing Screenshots to access the logs from the drop folder. All platforms will have a log produced by Appium with the name `appium_<platform_name>.log` that can be consulted for Appium output.
 
 IOS - `logarchive` files from the console output of the simulator (currently there might be logarchives from other simulators so be sure to validate that there are logs from your test run in the log archive).
  
 Android - If a test fails or the device crashes, there will be a `logcat` file in this folder that you can look at for information.
+
+Windows & Mac - Log output for these platforms are currently only available in [Device Tests](https://github.com/dotnet/maui/wiki/DeviceTests).
 
 ## Known Issues
 - iOS doesn't support nested accessibility elements which will make some elements unreachable
