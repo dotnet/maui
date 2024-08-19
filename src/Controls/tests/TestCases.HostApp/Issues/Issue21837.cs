@@ -4,8 +4,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 22469, "Crash with specific Font and text in Label", PlatformAffected.iOS)]
-public class Issue22469 : TestContentPage
+[Issue(IssueTracker.Github, 21837, "Crash with specific Font and text in Label", PlatformAffected.iOS)]
+public class Issue21837 : TestContentPage
 {
 	const string kClickCount = "Click Count: ";
 	const string kClickCountAutomationId = "ClickCount";
@@ -14,7 +14,7 @@ public class Issue22469 : TestContentPage
 	protected override void Init()
 	{
 		var label = new Label { Text = kClickCount, AutomationId = kClickCountAutomationId, FontSize = 14 };
-		var layout = new Grid() { WidthRequest = 335};
+		var layout = new Grid() { WidthRequest = 335, RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition()} };
 
 		var formattedString = new FormattedString();
 		formattedString.Spans.Add(new Span { Text = "A culture of continuous learning isn't something you can ignore. 76% of employees are more inclined to stay when their workplace offers learning and development 🤔 Here's a few ways you can foster this:🧠 Create channels to encourage knowledge sharing between team members👏 Provide learning opportunities like job shadowing and rotation for hands-on experiences💬 Integrate routine feedback as a celebrated part of the workflow💻 Encourage your teams to dive into digital learning and live events Take a look at some more methods you can adopt from this recent article in Forbes 👇 🔗 ", 
@@ -31,7 +31,7 @@ public class Issue22469 : TestContentPage
 		});
 		formattedString.Spans.Add(span);
 
-		// Combination of spans, fotnfamily + fontsize and width 335 throws exception on iOS before Issue22469 fixed
+		// Combination of spans, fotnfamily + fontsize and width 335 throws exception on iOS before Issue21837 fixed
 		var topLabel = new Label
 		{
 			AutomationId = kLabelTestAutomationId, FormattedText = formattedString, FontSize = 14

@@ -2,15 +2,15 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue22469 : _IssuesUITest
+public class Issue21837 : _IssuesUITest
 {
 	const string kClickCount = "Click Count: ";
 	const string kClickCountAutomationId = "ClickCount";
 	const string kLabelTestAutomationId = "SpanningLabel";
 
-	public Issue22469(TestDevice device)
+	public Issue21837(TestDevice device)
 		: base(device)
 	{ }
 
