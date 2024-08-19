@@ -7,7 +7,7 @@
                VerticalOptions="Center">
 
     <SearchBar Placeholder="Enter the text" Text="Investigate SearchBar presentation in horizontal screen orientation" 
-               AutomationId="searchBarControl" />
+               AutomationId="searchBar" />
   </StackLayout>
 
 </ContentPage>

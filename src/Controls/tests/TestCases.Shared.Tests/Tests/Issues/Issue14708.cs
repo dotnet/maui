@@ -15,12 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
-		public void shouldAllControlsVisibleInLandscapeWithSearchBar()
+		public void AllControlsVisibleOnSearchBtnClickInSearchBarLandscapeOrientation()
 		{
-			App.WaitForElement("searchBarControl");
+			App.WaitForElement("searchBar");
 			App.SetOrientationLandscape();
 			Task.Delay(1000); // Wait to complete the device rotation animation.
-			var searchBarRect = App.FindElement("searchBarControl").GetRect();
+			var searchBarRect = App.FindElement("searchBar").GetRect();
 			
 			// Set focus
             App.TapCoordinates(searchBarRect.X+10, searchBarRect.Y+10);
