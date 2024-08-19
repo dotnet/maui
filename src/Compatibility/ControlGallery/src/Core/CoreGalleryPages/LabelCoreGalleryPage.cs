@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 			base.Build(stackLayout);
 
-			var namedSizeMediumBoldContainer = new ViewContainer<Label>(Test.Label.FontAttibutesBold, new Label { Text = "Medium Bold Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), FontAttributes = FontAttributes.Bold });
+			var namedSizeMediumBoldContainer = new ViewContainer<Label>(Test.Label.FontAttributesBold, new Label { Text = "Medium Bold Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), FontAttributes = FontAttributes.Bold });
 
 			var namedSizeMediumItalicContainer = new ViewContainer<Label>(Test.Label.FontAttributesItalic, new Label { Text = "Medium Italic Font", FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)), FontAttributes = FontAttributes.Italic });
 

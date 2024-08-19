@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory(DisplayName = "Format Initializes Correctly")]
 		[InlineData("dd/MM/yyyy", "{day.integer(2)}/{month.integer(2)}/{year.full}")]
 		[InlineData("d/M/yy", "{day.integer}/{month.integer(1)}/{year.abbreviated}")]
-		[InlineData("ddd/MMM/yyyy", "{day.integer} {dayofweek.abbreviated}/{month.abbreviated}/{year.full}")]
+		[InlineData("ddd/MMM/yyyy", "{dayofweek.abbreviated}/{month.abbreviated}/{year.full}")]
 		[InlineData("dddd/MMMM/yyyy", "{dayofweek.full}/{month.full}/{year.full}")]
 		public async Task FormatInitializesCorrectly(string format, string nativeFormat)
 		{

@@ -68,6 +68,13 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationProperties(this Microsoft.UI.Xaml.FrameworkElement! frameworkElement, Microsoft.Maui.Controls.Element? element, Microsoft.Maui.IMauiContext? mauiContext, string? defaultName = null) -> void
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesAccessibilityView(this Microsoft.UI.Xaml.FrameworkElement! Control, Microsoft.Maui.Controls.Element? Element, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView? _defaultAutomationPropertiesAccessibilityView = null) -> Microsoft.UI.Xaml.Automation.Peers.AccessibilityView?
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesAutomationId(this Microsoft.UI.Xaml.FrameworkElement! Control, string? id) -> void
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesHelpText(this Microsoft.UI.Xaml.FrameworkElement! Control, Microsoft.Maui.Controls.Element? Element, string? _defaultAutomationPropertiesHelpText = null) -> string?
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesLabeledBy(this Microsoft.UI.Xaml.FrameworkElement! Control, Microsoft.Maui.Controls.Element? Element, Microsoft.Maui.IMauiContext? mauiContext, Microsoft.UI.Xaml.UIElement? _defaultAutomationPropertiesLabeledBy = null) -> Microsoft.UI.Xaml.UIElement?
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetAutomationPropertiesName(this Microsoft.UI.Xaml.FrameworkElement! Control, Microsoft.Maui.Controls.Element? Element, string? _defaultAutomationPropertiesName = null) -> string?
+static Microsoft.Maui.Controls.Platform.AccessibilityExtensions.SetBackButtonTitle(this Microsoft.Maui.Controls.Platform.PageControl! Control, Microsoft.Maui.Controls.Element? Element) -> void
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!

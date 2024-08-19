@@ -5,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.Label)]
 public class LabelUITests : _ViewUITests
 {
 	const string LabelGallery = "Label Gallery";
@@ -23,7 +24,6 @@ public class LabelUITests : _ViewUITests
 	}
 
 	[Test]
-	[Category(UITestCategories.Label)]
 	public void SpanTapped()
 	{
 		if (Device == TestDevice.Mac)
@@ -44,5 +44,18 @@ public class LabelUITests : _ViewUITests
 
 		var textAfterClick = remote.GetEventLabel().GetText();
 		ClassicAssert.AreEqual("Event: SpanTapped (fired 1)", textAfterClick);
+	}
+
+	[Test]
+	public void FontFamily()
+	{
+		var remote = GoToStateRemote();
+		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+
+		remote.TapStateButton();
+		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
+
+		remote.TapStateButton();
+		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
 	}
 }

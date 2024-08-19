@@ -62,7 +62,8 @@ namespace Microsoft.Maui.Controls
 					formattedString.Parent = null;
 					label.RemoveSpans(formattedString.Spans);
 				}
-			}, propertyChanged: (bindable, oldvalue, newvalue) =>
+			},
+			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				var label = ((Label)bindable);
 
@@ -76,7 +77,8 @@ namespace Microsoft.Maui.Controls
 					label.SetupSpans(formattedString.Spans);
 				}
 
-				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				label.InvalidateMeasureIfLabelSizeable();
+
 				if (newvalue != null)
 					label.Text = null;
 			});
@@ -94,26 +96,21 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="LineBreakMode"/>.</summary>
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureIfLabelSizeable());
 
 		/// <summary>Bindable property for <see cref="LineHeight"/>.</summary>
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
 		/// <summary>Bindable property for <see cref="MaxLines"/>.</summary>
-		public static readonly BindableProperty MaxLinesProperty = BindableProperty.Create(nameof(MaxLines), typeof(int), typeof(Label), -1, propertyChanged: (bindable, oldvalue, newvalue) =>
-			{
-				if (bindable != null)
-				{
-					((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				}
-			});
+		public static readonly BindableProperty MaxLinesProperty = BindableProperty.Create(nameof(MaxLines), typeof(int), typeof(Label), -1,
+			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureIfLabelSizeable());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <summary>Bindable property for <see cref="TextType"/>.</summary>
 		public static readonly BindableProperty TextTypeProperty = BindableProperty.Create(nameof(TextType), typeof(TextType), typeof(Label), TextType.Text,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureIfLabelSizeable());
 
 		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
 
@@ -260,24 +257,22 @@ namespace Microsoft.Maui.Controls
 		void HandleFontChanged()
 		{
 			Handler?.UpdateValue(nameof(ITextStyle.Font));
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureIfLabelSizeable();
 		}
 
 		void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-
-		void OnFormattedTextChanging(object sender, PropertyChangingEventArgs e)
-		{
-			OnPropertyChanging(nameof(FormattedText));
-		}
+			InvalidateMeasureIfLabelSizeable();
 
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue) =>
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureIfLabelSizeable();
+
+		void OnFormattedTextChanging(object sender, PropertyChangingEventArgs e) =>
+			OnPropertyChanging(nameof(FormattedText));
 
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(FormattedText));
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureIfLabelSizeable();
 		}
 
 		void SetupSpans(IEnumerable spans)
@@ -357,18 +352,19 @@ namespace Microsoft.Maui.Controls
 
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
+			// This is a no-op since the horizontal text alignment does not affect bounds or
+			// any other property that would require a measure invalidation.
 		}
 
 		static void OnTextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			var label = (Label)bindable;
-			LineBreakMode breakMode = label.LineBreakMode;
-			bool isVerticallyFixed = (label.Constraint & LayoutConstraint.VerticallyFixed) != 0;
-			bool isSingleLine = !(breakMode == LineBreakMode.CharacterWrap || breakMode == LineBreakMode.WordWrap);
-			if (!isVerticallyFixed || !isSingleLine)
-				((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+			if (TextChangedShouldInvalidateMeasure(label))
+				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
 			if (newvalue != null)
-				((Label)bindable).FormattedText = null;
+				label.FormattedText = null;
 		}
 
 		/// <inheritdoc/>
@@ -379,12 +375,12 @@ namespace Microsoft.Maui.Controls
 
 		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
 		{
+			// This is a no-op since the text color does not affect bounds or
+			// any other property that would require a measure invalidation.
 		}
 
-		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue)
-		{
-			InvalidateMeasure();
-		}
+		void ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue) =>
+			InvalidateMeasureIfLabelSizeable();
 
 		internal bool HasFormattedTextSpans
 			=> (FormattedText?.Spans?.Count ?? 0) > 0;
@@ -411,16 +407,75 @@ namespace Microsoft.Maui.Controls
 			return spans;
 		}
 
-		Thickness IPaddingElement.PaddingDefaultValueCreator()
-		{
-			return default(Thickness);
-		}
+		Thickness IPaddingElement.PaddingDefaultValueCreator() => default;
 
-		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
+		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) =>
+			InvalidateMeasureIfLabelSizeable();
+
+		Font ITextStyle.Font => this.ToFont();
+
+		/// <summary>
+		/// This method prevents unnecessary measure invalidations when the label is not
+		/// sizeable. If the label has a fixed width and height, then no matter what the
+		/// text is, the label will never change size.
+		/// </summary>
+		void InvalidateMeasureIfLabelSizeable()
 		{
+			if (!IsLabelSizeable(this))
+				return;
+
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		Font ITextStyle.Font => this.ToFont();
+		/// <summary>
+		/// Determines if the label can grow in any direction based on the constraints. If the
+		/// label cannot grow in any direction, then we usually don't need to do anything.
+		/// </summary>
+		internal static bool IsLabelSizeable(Label label)
+		{
+			// Determine in which direction the label can grow/shrink.
+			var constraint = label.Constraint;
+			var isVerticallySizeable = (constraint & LayoutConstraint.VerticallyFixed) == 0;
+			var isHorizontallySizeable = (constraint & LayoutConstraint.HorizontallyFixed) == 0;
+			var isSizeable = isVerticallySizeable || isHorizontallySizeable;
+
+			// If the label cannot grow in any direction, then we usually don't need to do anything.
+			if (!isSizeable)
+				return false;
+
+			// The label may grow/shrink based on the constraints, so we may need to invalidate.
+			return true;
+		}
+
+		/// <summary>
+		/// Determines if the text has changed in a way that would require a measure invalidation.
+		/// Unlike FormattedText changes, Text changes may not always require invalidation because
+		/// the text size and spacing is all uniform. Formatted text may have a case where even
+		/// though the label is a single line, the font size of a span may cause the label to grow
+		/// vertically.
+		/// </summary>
+		internal static bool TextChangedShouldInvalidateMeasure(Label label)
+		{
+			// If the label cannot grow in any direction, then we don't need to invalidate.
+			var isSizeable = IsLabelSizeable(label);
+			if (!isSizeable)
+				return false;
+
+			// Determine if the label can grow vertically (wrapping means it may grow vertically).
+			var constraint = label.Constraint;
+			var breakMode = label.LineBreakMode;
+			var isHorizontallySizeable = (constraint & LayoutConstraint.HorizontallyFixed) == 0;
+			var isMultiline = breakMode == LineBreakMode.CharacterWrap || breakMode == LineBreakMode.WordWrap;
+			var isSingleLine = !isMultiline;
+
+			// If the label cannot grow horizontally and is only single line,
+			// then we don't need to invalidate since the only direction it can grow in
+			// is vertically but it never will.
+			if (!isHorizontallySizeable && isSingleLine)
+				return false;
+
+			// The label may grow/shrink based on the constraints, so we need to invalidate.
+			return true;
+		}
 	}
 }

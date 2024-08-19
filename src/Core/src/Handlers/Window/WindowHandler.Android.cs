@@ -73,7 +73,12 @@ namespace Microsoft.Maui.Handlers
 		void OnRootViewChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView.VisualDiagnosticsOverlay != null && _rootManager?.RootView is ViewGroup)
+			{
+				if (VirtualView.VisualDiagnosticsOverlay.IsPlatformViewInitialized)
+					VirtualView.VisualDiagnosticsOverlay.Deinitialize();
+
 				VirtualView.VisualDiagnosticsOverlay.Initialize();
+			}
 		}
 
 		// This is here to try and ensure symmetry with disconnect code between test handler

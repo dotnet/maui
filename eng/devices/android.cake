@@ -1,10 +1,10 @@
 #addin nuget:?package=Cake.Android.Adb&version=3.2.0
 #addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 const int DefaultApiLevel = 30;
+
+Information("Local Dotnet: {0}", localDotnet);
 
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
@@ -18,17 +18,11 @@ var testAppInstrumentation = Argument("instrumentation", EnvironmentVariable("AN
 var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? GetTestResultsDirectory()?.FullPath);
 var deviceCleanupEnabled = Argument("cleanup", true);
 
-// Test where clause
-string testWhere = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? "");
-
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 var androidAvd = "DEVICE_TESTS_EMULATOR";
 var androidAvdImage = "";
 var deviceArch = "";
-bool deviceBoot = Argument("boot", true);
-bool deviceBootWait = Argument("wait", true);
-
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
 
 // Directory setup
@@ -61,6 +55,7 @@ var dotnetToolPath = GetDotnetToolPath();
 Setup(context =>
 {
 	LogSetupInfo(dotnetToolPath);
+
 	PerformCleanupIfNeeded(deviceCleanupEnabled);
 
 	DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
@@ -90,19 +85,20 @@ Task("test")
 	});
 
 Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
-
 	});
+
 Task("uitest")
-	.IsDependentOn("uitest-build")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
 	});
 
 Task("cg-uitest")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
@@ -305,7 +301,7 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-{platform}.binlog";
 	var appiumLog = $"{binDir}/appium_{platform}.log";
-	var resultsFileName = $"{name}-{config}-{platform}";
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -464,7 +460,7 @@ void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdMana
 void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdManagerToolSettings avdSettings)
 {
 	// no virtual device was used
-	if (emulatorProcess == null || !deviceBoot || TARGET.ToLower() == "boot")
+	if (emulatorProcess == null || !deviceBoot || targetBoot)
 		return;
 
 	//stop and cleanup the emulator

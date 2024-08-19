@@ -1,3 +1,4 @@
+
 #nullable enable
 using System;
 using Android.App;
@@ -8,11 +9,10 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class GyroscopeImplementation : IGyroscope
 	{
-		static SensorManager? _sensorManager;
 		static Sensor? gyroscope;
 
 		static SensorManager? SensorManager =>
-			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+			Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor? Sensor =>
 			gyroscope ??= SensorManager?.GetDefaultSensor(SensorType.Gyroscope);

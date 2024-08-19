@@ -784,6 +784,10 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
+						if (currentPage.TitleView != null)
+						{
+							currentPage.RemoveLogicalChild(currentPage.TitleView);
+						}
 					},
 					() =>
 					{
