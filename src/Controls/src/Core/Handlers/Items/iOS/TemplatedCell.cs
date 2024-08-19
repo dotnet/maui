@@ -49,13 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		WeakReference<IPlatformViewHandler> _handler;
-
-		internal IPlatformViewHandler PlatformHandler
-		{
-			get => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
-			set => _handler = value == null ? null : new(value);
-		}
+		internal IPlatformViewHandler PlatformHandler { get; private set; }
 
 		public override void ConstrainTo(CGSize constraint)
 		{
