@@ -13,13 +13,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "The CollectionView has a grouped footer template that crashes the application";
+		public override string Issue => "When the CollectionView has a group footer template it should not crash the application";
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOS]
-		public void CollectionViewGroupedFooterTemplateShouldNotCrash()
+		public void CollectionViewGroupFooterTemplateShouldNotCrash()
 		{
 			App.WaitForElement(element);
 			VerifyScreenshot();

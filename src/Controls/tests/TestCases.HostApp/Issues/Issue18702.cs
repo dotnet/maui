@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Maui.Controls.Sample.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 18702, "The CollectionView has a grouped footer template that crashes the application")]
+	[Issue(IssueTracker.Github, 18702, "When the CollectionView has a group footer template it should not crash the application")]
 	public class Issue18702 : TestContentPage
 	{
 		protected override void Init()

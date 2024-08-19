@@ -24,9 +24,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				// If the group items are not an IList, then we'll have to append the footer the hard way
 
-				var groupFooterTemplate = footerItemTemplateContext.Item?.GetType();
+				var groupFooterTemplateItemType = footerItemTemplateContext.Item?.GetType();
 
-				if (groupFooterTemplate is not IList)
+				if (groupFooterTemplateItemType is not IList)
 				{
 					var listPlusFooter = new List<object>();
 
