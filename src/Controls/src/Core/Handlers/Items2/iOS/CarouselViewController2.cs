@@ -149,6 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void TearDown(CarouselView carouselView)
 		{
 			_oldViews = null;
+			InitialPositionSet = false;
 
 			//carouselView.Scrolled -= CarouselViewScrolled;
 
