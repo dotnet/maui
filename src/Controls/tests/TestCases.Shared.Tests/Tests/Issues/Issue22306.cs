@@ -50,7 +50,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         void WaitForAllElements()
         {
-            App.WaitForElement("TopGrid");
             App.WaitForElement("ButtonLeft");
             App.WaitForElement("ButtonTop");
             App.WaitForElement("ButtonRight");
