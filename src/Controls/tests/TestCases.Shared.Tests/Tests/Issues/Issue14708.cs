@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue14708 : _IssuesUITest
 	{
-		public override string Issue => "[Android] SearchBar taken whole screen space when it aligns in landscape orientation";
+		public override string Issue => "[Android] Ensure all controls in Layout with Search Bar are visible in Landscape Mode";
 
 		public Issue14708(TestDevice device) : base(device)
 		{
@@ -15,12 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SearchBar)]
-		public void SearchBarScreenSpaceUpdatingAtLandscape()
+		public void shouldAllControlsVisibleInLandscapeWithSearchBar()
 		{
-			App.WaitForElement("WaitForSearchBarControl");
+			App.WaitForElement("searchBarControl");
 			App.SetOrientationLandscape();
 			Task.Delay(1000); // Wait to complete the device rotation animation.
-			var searchBarRect = App.FindElement("WaitForSearchBarControl").GetRect();
+			var searchBarRect = App.FindElement("searchBarControl").GetRect();
 			
 			// Set focus
             App.TapCoordinates(searchBarRect.X+10, searchBarRect.Y+10);
