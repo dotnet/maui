@@ -4,11 +4,11 @@
              x:Class="Maui.Controls.Sample.Issues.Issue9796">
     <ContentPage.Content>
     <VerticalStackLayout Spacing="10" AutomationId="Stack" Margin="5">
-      <Editor AutomationId="Editor" x:Name="Editor"
+      <Editor AutomationId="EditorControl" x:Name="Editor"
                 Placeholder="Enter your note" 
                 HeightRequest="100" Completed="Editor_Completed" />
       <Label x:Name="EditorStatusLabel"  TextColor="Green" AutomationId="EditorStatusLabel"/>
-      <Entry AutomationId="Entry" x:Name="Entry" Completed="Entry_Completed" HeightRequest="100"/>
+      <Entry AutomationId="EntryControl" x:Name="Entry" Completed="Entry_Completed" HeightRequest="100"/>
       <Label x:Name="EntryStatusLabel" TextColor="Green" AutomationId="EntryStatusLabel"/>
     </VerticalStackLayout>
   </ContentPage.Content>
