@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonColorShouldMatchTextColor()
 		{
-			App.WaitForElement("entryControl");
-			App.Tap("buttonControl");
+			App.WaitForElement("entry");
+			App.Tap("button");
 			VerifyScreenshot();
 		}
 	}

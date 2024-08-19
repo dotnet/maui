@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 		private void OnCounterClicked(object sender, EventArgs e)
 		{
-			entryControl.Focus();
+			entry.Focus();
 		}
 	}
 }
