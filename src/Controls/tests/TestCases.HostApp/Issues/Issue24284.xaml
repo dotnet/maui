@@ -5,7 +5,9 @@
        xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
     <ShellContent Title="Page 1">
         <ContentPage>
-            <Border AutomationId="Border" HeightRequest="30"/>
+            <Border BackgroundColor="Red" AutomationId="Border" HeightRequest="30">
+                <Label Text="Hello, World!"/>
+            </Border>
         </ContentPage>
     </ShellContent>
      <ShellContent Title="Page 2">
