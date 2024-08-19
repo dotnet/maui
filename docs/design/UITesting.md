@@ -62,13 +62,15 @@ Assert.IsTrue(text.StartsWith("Logging in", StringComparison.CurrentCulture));
 Testing against a previously saved screenshot of the simulator can be an important asset when it comes to writing tests. Currently, this is how you can do so when using the CI:
 1. Call VerifyScreenshot() at the end of your test method.
 2) Start a pull request, and have it run on the CI.
-3) Navigate to the bottom of the request where there is a list of the various checks on the CI. Scroll down until you see `Maui-UITestpublic` (will have a required bubble next to it) and and click Details.
-![Details](assets/VerifyScreenshotsPart1.png) Scroll down the page until you see "View More Details on Azure Pipelines" ![More Details](assets/VerifyScreenshotsPart2.png). At the top of the summary page, you should see a box with Repositories, Time Started and Elapsed, Related, and Tests and Coverage.![Top Of Page](assets/VerifyScreenshotsPart3.png) Click on the "Consumed" link below the "Related" heading. [Artifacts](assets/VerifyScreenshotsPart4.png) Click on the three dots to the right of "Drop" to download it. [Drop](assets/VerifyScreenshotsPart5.png)
+3) Navigate to the bottom of the request where there is a list of the various checks on the CI. Scroll down until you see `Maui-UITestpublic` (will have a required bubble next to it) and and click Details.![Details](../assets/VerifyScreenshotsPart1.png)
+ Scroll down the page until you see "View More Details on Azure Pipelines" ![More Details](../assets/VerifyScreenshotsPart2.png).
+ 
+    At the top of the summary page, you should see a box with Repositories, Time Started and Elapsed, Related, and Tests and Coverage.![Top Of Page](../assets/VerifyScreenshotsPart3.png) Click on the "Consumed" link below the "Related" heading. ![Artifacts](../assets/VerifyScreenshotsPart4.png) 
+ 
+    Click on the three dots to the right of "Drop" to download it. ![Drop](../assets/VerifyScreenshotsPart5.png)
 4) When you unzip the archive, navigate to the Controls.TestCases.Shared folder which will have the snap shot. NOTE: in future testing, if this test will have failed, the snapshot will have a -diff attached to its filename, with red outlining to indicate problem areas.
-5) Add the snapshot .png to your test. Each platform has its own TestCases project will have a snapshots folder within it to add your .png. [Drop](assets/VerifyScreenshotsPart5.png) Please ensure that the file has the same name as the TestMethod that will call VerifyScreenshots(). Note: TestCases.IOS.Tests has two subfolders within its Snapshots folder, ios and ios-iphonex. You only have to submit your screenshot to the ios folder.
+5) Add the snapshot .png to your test. Each platform has its own TestCases project will have a snapshots folder within it to add your .png. ![Drop](assets/VerifyScreenshotsPart5.png) Please ensure that the file has the same name as the TestMethod that will call VerifyScreenshots(). Note: TestCases.IOS.Tests has two subfolders within its Snapshots folder, ios and ios-iphonex. You only have to submit your screenshot to the ios folder.
 6) Commit the change to your PR.
-
-![Partial screenshot of the Visual Studio text editor showing comments being edited and changes immediately showing up in the tooltip of the relevant type.](assets/EditingDocumentationVisualStudio.png)
 
 ## Adding a GalleryPage
 
