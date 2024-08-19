@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.Issues.Issue22528"
-    >
-  <Grid Padding="24" AutomationId="labels"          RowDefinitions="Auto,Auto">    <Label BackgroundColor="Green"                FontSize="20"               Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>    <Label Grid.Row="1"                BackgroundColor="Red"                LineHeight="0.8"               FontSize="20"               Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>  </Grid>
+             x:Class="Maui.Controls.Sample.Issues.Issue22528" >
 
+<Grid Padding="24" AutomationId="labels" RowDefinitions="Auto,Auto"><Label BackgroundColor="Green" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/><Label Grid.Row="1" BackgroundColor="Red" LineHeight="0.8" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+</Grid>
 </ContentPage>
