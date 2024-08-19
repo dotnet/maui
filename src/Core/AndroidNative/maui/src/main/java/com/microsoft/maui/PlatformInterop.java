@@ -310,7 +310,7 @@ public class PlatformInterop {
         }
 
         builder
-            .transform(new ResizeTransformation(display.widthPixels)) // clamp the max size of an image
+            .transform(new ResizeTransformation(display)) // clamp the max size of an image
             .into(target);
     }
 

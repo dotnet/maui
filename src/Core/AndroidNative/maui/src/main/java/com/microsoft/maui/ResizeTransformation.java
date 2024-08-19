@@ -11,21 +11,34 @@ import java.security.MessageDigest;
 class ResizeTransformation extends BitmapTransformation {
     private static final String ID = "com.microsoft.maui.ResizeTransformation";
     private static final byte[] ID_BYTES = ID.getBytes(Key.CHARSET);
-    private int maxWidth;
+    private DisplayMetrics displayMetrixs;
 
-    public ResizeTransformation(int maxWidth) {
-        this.maxWidth = maxWidth;
+    public ResizeTransformation(DisplayMetrics display) {
+        this.displayMetrixs = display;
     }
 
     @Override
     protected Bitmap transform(BitmapPool pool, Bitmap toTransform, int outWidth, int outHeight) {
-        if (toTransform.getWidth() <= maxWidth) {
+        int width = toTransform.getWidth();
+        int height = toTransform.getHeight();
+
+        if (width <= display.widthPixels && height <= display.heightPixels) {
             return toTransform;
         }
-        float aspectRatio = (float) toTransform.getHeight() / (float) toTransform.getWidth();
-        int targetHeight = Math.round(maxWidth * aspectRatio);
 
-        return Bitmap.createScaledBitmap(toTransform, maxWidth, targetHeight, false);
+        float aspectRatio = (float) width / (float) height;
+
+        int outWidth, outHeight;
+
+        if (width > height) {
+            outWidth = display.widthPixels;
+            outHeight = Math.round(display.widthPixels / aspectRatio);
+        } else {
+            outHeight = display.heightPixels;
+            outWidth = Math.round(display.heightPixels * aspectRatio);
+        }
+
+        return Bitmap.createScaledBitmap(toTransform, outWidth, outHeight, false);
     }
 
     @Override
