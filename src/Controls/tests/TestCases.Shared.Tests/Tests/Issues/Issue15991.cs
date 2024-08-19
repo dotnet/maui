@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void FlexLayoutPadding()
+		public void FlexLayoutPaddingShouldBeAppliedCorrectly()
 		{
 			App.WaitForElement("flexLayout");
 			VerifyScreenshot();
