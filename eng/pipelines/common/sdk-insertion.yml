@@ -75,6 +75,8 @@ jobs:
         -p:OfficialBuildId=$(_BuildOfficalId)
         -p:OutputPath=${{ parameters.nugetArtifactPath }}
         -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
+    # Execute outside of the source directory to avoid any conflicting global.json file
+      workingDirectory: $(Build.SourcesDirectory)\..
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
 
   - task: AzureCLI@2
