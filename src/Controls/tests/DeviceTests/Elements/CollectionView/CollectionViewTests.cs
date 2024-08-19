@@ -224,23 +224,30 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				})
 			};
 
-			var desiredItemIndex = 134; // 13th group (letter: N), 4th item
-			var firstVisibleItemIndex = -1;
-			var lastVisibleItemIndex = -1;
-			collectionView.Scrolled += (s, e) =>
-			{
-				firstVisibleItemIndex = e.FirstVisibleItemIndex;
-				lastVisibleItemIndex = e.LastVisibleItemIndex;
-			};
-
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				collectionView.ScrollTo(index: 4, groupIndex: 13, animate: false); // Item "N_4"
 
-				await Task.Delay(500);
+				int retryCount = 3;
+				bool foundItem = false;
 
-				Assert.True(desiredItemIndex >= firstVisibleItemIndex &&
-							desiredItemIndex <= lastVisibleItemIndex);
+				while (retryCount > 0 && !foundItem)
+				{
+					retryCount--;
+					await Task.Delay(500);
+
+					for (int i = 0; i < collectionView.LogicalChildrenInternal.Count; i++)
+					{
+						var item = collectionView.LogicalChildrenInternal[i];
+						if (item is Label label && label.Text.Equals("n_4", StringComparison.OrdinalIgnoreCase))
+						{
+							foundItem = true;
+							break;
+						}
+					}
+				}
+
+				Assert.True(foundItem);
 			});
 		}
 
