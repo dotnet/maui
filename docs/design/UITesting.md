@@ -3,7 +3,7 @@ UI Testing
 
 # Note for New Contributors
 
-We advise starting out with UI Testing instead of DeviceTests, as they are a bit easier to start writing, and more for routine, simplistic unit testing. Please see here for more information about DeviceTests: [DeviceTests](https://github.com/dotnet/maui/wiki/DeviceTests)
+We recommend to write a test with Appium, commonly called a UI test. Appium allows for automation to test the app and can be run through the IDE from start to finish like a typical unit test.  For more information, please read about the [types of tests](https://github.com/mattleibow/DeviceRunners/wiki/Types-of-Tests) in the MAUI project.
 
 # Introduction
 
