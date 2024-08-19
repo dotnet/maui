@@ -95,8 +95,6 @@ There may be times when you want to have the test run on some platforms and not 
 
 When you compile `Controls.TestCases.Mac.Tests`, the test will not appear in the list of tests. 
 
-Note: you may see something like `[FailsOnAndroid("This test is failing, likely due to product issue")]` in some tests. This was an attribute created to help with compatibility with Xamarin Forms and is not advised to used with tests written in the future.
-
 ## Building and Running tests
 Please see the [wiki](https://github.com/dotnet/maui/wiki/UITests) for setting up/running tests.
 
