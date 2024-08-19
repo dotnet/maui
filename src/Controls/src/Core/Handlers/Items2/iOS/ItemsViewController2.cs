@@ -104,18 +104,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
 
+			// We need to get the index path that is adjusted for the item source
+			// Some ItemsView like CarouselView have a loop feature that will make the index path different from the item source
+			var indexpathAdjusted = GetAdjustedIndexPathForItemSource(indexPath);
+			
 			if (cell is TemplatedCell2 TemplatedCell2)
 			{
-				//var virtualView = ItemsView.ItemTemplate.CreateContent() as View;
 				TemplatedCell2.ScrollDirection = ScrollDirection;
 
-				//var nativeView = virtualView!.ToPlatform(ItemsView.FindMauiContext()!);
-				var indexpathAdjusted = GetAdjustedIndexPathForItemSource(indexPath);
 				TemplatedCell2.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);	
 			}
 			else if (cell is DefaultCell2 DefaultCell2)
 			{
-				DefaultCell2.Label.Text = ItemsSource[indexPath].ToString();
+				DefaultCell2.Label.Text = ItemsSource[indexpathAdjusted].ToString();
 			}
 			
 			return cell;
