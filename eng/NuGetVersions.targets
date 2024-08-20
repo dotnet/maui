@@ -129,6 +129,10 @@
         Version="$(MicrosoftExtensionsPrimitivesVersion)"
     />
     <PackageReference
+        Update="Microsoft.IO.RecyclableMemoryStream"
+        Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"

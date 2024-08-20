@@ -5,6 +5,7 @@ using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,11 +21,6 @@ using Microsoft.Maui.LifecycleEvents;
 
 #if COMPATIBILITY_ENABLED
 using Microsoft.Maui.Controls.Compatibility.Hosting;
-#endif
-
-
-#if NET6_0_OR_GREATER
-using Microsoft.AspNetCore.Components.WebView.Maui;
 #endif
 
 #if ANDROID
@@ -127,11 +123,9 @@ namespace Maui.Controls.Sample
 						{"Logging:LogLevel:Default", "Warning"}
 					});
 
-#if NET6_0_OR_GREATER
 			services.AddMauiBlazorWebView();
 #if DEBUG
 			services.AddBlazorWebViewDeveloperTools();
-#endif
 #endif
 
 			services.AddLogging(logging =>
@@ -162,12 +156,7 @@ namespace Maui.Controls.Sample
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
 					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
-					PageType.Blazor =>
-#if NET6_0_OR_GREATER
-						typeof(BlazorPage),
-#else
-						throw new NotSupportedException("Blazor requires .NET 6 or higher."),
-#endif
+					PageType.Blazor => typeof(BlazorPage),
 					_ => throw new Exception(),
 				});
 

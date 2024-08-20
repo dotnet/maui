@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Net;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Threading.Tasks;
 using Foundation;
-using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Graphics;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -65,19 +59,33 @@ namespace Microsoft.Maui.Handlers
 			return new MauiHybridWebView(this, RectangleF.Empty, config);
 		}
 
+		public static void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
+		{
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				if (handler.PlatformView is null)
+				{
+					request.SetCanceled();
+					return;
+				}
+
+				handler.PlatformView.EvaluateJavaScript(request);
+			}
+		}
+
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-			if (arg is not string rawMessage || handler.PlatformView is not IHybridPlatformWebView hybridPlatformWebView)
+			if (arg is not HybridWebViewRawMessage hybridWebViewRawMessage || handler.PlatformView is not IHybridPlatformWebView hybridPlatformWebView)
 			{
 				return;
 			}
 
-			hybridPlatformWebView.SendRawMessage(rawMessage);
+			hybridPlatformWebView.SendRawMessage(hybridWebViewRawMessage.Message ?? "");
 		}
 
 		private void MessageReceived(Uri uri, string message)
 		{
-			VirtualView?.RawMessageReceived(message);
+			VirtualView?.MessageReceived(message);
 		}
 
 		protected override void ConnectHandler(WKWebView platformView)
