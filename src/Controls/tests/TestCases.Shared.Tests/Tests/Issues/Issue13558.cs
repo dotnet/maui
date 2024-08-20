@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Picker in ListView works on Windows but not on Android";
+		public override string Issue => "Android | Picker values are not updtaed in ListView";
 
 		[Test]
 		[Category(UITestCategories.ListView)]
