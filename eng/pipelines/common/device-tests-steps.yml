@@ -4,7 +4,7 @@ parameters:
   device: '' # the xharness device to use
   apiversion: '' # the iOS device api version to use
   cakeArgs: '' # additional cake args
-  androidConfiguration: 'debug' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
+  androidConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   artifactName: 'nuget'
