@@ -158,13 +158,29 @@ namespace Microsoft.Maui.Layouts
 
 			var contentSize = Size.Zero;
 
-			if (content != null)
+			if (content is not null)
 			{
-				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
-					heightConstraint - inset.VerticalThickness);
+				var adjustedWidth = Math.Max(widthConstraint - inset.HorizontalThickness, 0);
+				var adjustedHeight = Math.Max(heightConstraint - inset.VerticalThickness, 0);
+
+				contentSize = content.Measure(adjustedWidth, adjustedHeight);
 			}
 
-			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
+			var width = contentSize.Width + inset.HorizontalThickness;
+
+			if (inset.HorizontalThickness > widthConstraint)
+			{
+				width = Math.Min(widthConstraint, width);
+			}
+			
+			var height = contentSize.Height + inset.VerticalThickness;
+
+			if (inset.VerticalThickness > heightConstraint)
+			{
+				height = Math.Min(heightConstraint, height);
+			}
+
+			return new Size(width, height);
 		}
 
 		public static void ArrangeContent(this IContentView contentView, Rect bounds)
