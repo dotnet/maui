@@ -15,10 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void FlyoutHeaderAdaptsToMinimumHeight()
 		{
-			var layout = App.WaitForElement("FlyoutHeader").GetRect();
-			var border = App.WaitForElement("Border").GetRect();
+			var heightReferenceLabel = App.WaitForElement("HeightReferenceLabel").GetRect();
+			var headerLabel = App.WaitForElement("HeaderLabel").GetRect();
 
-			ClassicAssert.True(Math.Abs(border.Height - layout.Height) < 0.2);
+			ClassicAssert.True(Math.Abs(headerLabel.Height - heightReferenceLabel.Height) < 0.2);
 		}
 	}
 }
