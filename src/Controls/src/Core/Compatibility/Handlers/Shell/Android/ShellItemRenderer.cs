@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (newPage is not null)
 			{
 				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
-				if(oldPage is null)
+				if (oldPage is null)
 				{
 					_menuSetup = false;
 				}

@@ -23,8 +23,6 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-
-
 	public partial class MainTabPage : ContentPage
 	{
 		public MainTabPage()
