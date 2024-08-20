@@ -37,10 +37,10 @@ namespace Microsoft.Maui.Controls
 
 		static void OnBackButonBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is BackButtonBehavior oldHandlerBehavior)
-				SetInheritedBindingContext(oldHandlerBehavior, null);
-			if (newValue is BackButtonBehavior newHandlerBehavior)
-				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
+			if (oldValue is BackButtonBehavior oldHandlerProperties)
+				SetInheritedBindingContext(oldHandlerProperties, null);
+			if (newValue is BackButtonBehavior newHandlerProperties)
+				SetInheritedBindingContext(newHandlerProperties, bindable.BindingContext);
 		}
 
 		/// <summary>
@@ -950,14 +950,51 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Application.Current == null)
+				if (Application.Current is null || Application.Current.Windows.Count == 0)
 					return null;
 
-				foreach (var window in Application.Current.Windows)
-					if (window is Window && window.IsActivated && window.Page is Shell shell)
-						return shell;
+				if (Application.Current.Windows.Count == 1)
+				{
+					return Application.Current.Windows[0].Page as Shell;
+				}
 
-				return Application.Current?.MainPage as Shell;
+				// Check if shell is activated
+				Shell currentShell = null;
+				Shell returnIfThereIsJustOneShell = null;
+				bool tooManyShells = false;
+				foreach (var window in Application.Current.Windows)
+				{
+					if (window.Page is Shell shell)
+					{
+						if (window.IsActivated)
+						{
+							if(currentShell is not null)
+							{
+								currentShell = null;
+								break;
+							}
+
+							currentShell = shell;
+						}
+
+						if (returnIfThereIsJustOneShell is not null)
+						{
+							tooManyShells = true;					
+						}
+					}
+				}
+
+				if (currentShell is not null)
+				{
+					return currentShell;
+				}
+
+				if (!tooManyShells &&  returnIfThereIsJustOneShell is not null)
+				{
+					return returnIfThereIsJustOneShell;
+				}
+
+				throw new InvalidOperationException($"Unable to determine the current Shell instance you want to use. Please access Shell via the Windows property on {Application.Current.GetType()}.");
 			}
 		}
 
@@ -1526,7 +1563,34 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			NavigationType navigationType = NavigationType.PageSwap;
+
+			switch(args.Source)
+			{
+				case ShellNavigationSource.Pop:
+					navigationType = NavigationType.Pop;
+					break;
+				case ShellNavigationSource.ShellItemChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.ShellSectionChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.ShellContentChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.Push:
+					navigationType = NavigationType.Push;
+					break;
+				case ShellNavigationSource.PopToRoot:
+					navigationType = NavigationType.PopToRoot;
+					break;
+				case ShellNavigationSource.Insert:
+					navigationType = NavigationType.Insert;
+					break;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
 			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
 
@@ -1570,7 +1634,17 @@ namespace Microsoft.Maui.Controls
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is ShellItem oldShellItem)
+			{
 				oldShellItem.SendDisappearing();
+
+				foreach(var section in oldShellItem.Items)
+				{
+					foreach(var content in section.Items)
+					{
+						content.EvaluateDisconnect();
+					}
+				}
+			}
 
 			if (newValue == null)
 				return;

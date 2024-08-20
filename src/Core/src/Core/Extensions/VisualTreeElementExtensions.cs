@@ -136,7 +136,7 @@ namespace Microsoft.Maui
 			var visualElements = new List<IVisualTreeElement>();
 			if (visualElement is IWindow window)
 			{
-				uiElement = window.Content.ToPlatform();
+				uiElement = window.Content?.ToPlatform();
 			}
 			else if (visualElement is IView view)
 			{

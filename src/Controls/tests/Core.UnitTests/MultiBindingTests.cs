@@ -119,21 +119,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					Bindings = new Collection<BindingBase>
 					{
-						TypedBinding.ForSingleNestingLevel(
-							nameof(Entry.FontFamily),
-							static (Entry entry) => entry.FontFamily,
-							static (entry, value) => entry.FontFamily = value,
-							source: RelativeBindingSource.Self),
-						TypedBinding.ForSingleNestingLevel(
-							nameof(Entry.FontSize),
-							static (Entry entry) => entry.FontSize,
-							static (entry, value) => entry.FontSize = value,
-							source: RelativeBindingSource.Self),
-						TypedBinding.ForSingleNestingLevel(
-							nameof(Entry.FontAttributes),
-							static (Entry entry) => entry.FontAttributes,
-							static (entry, value) => entry.FontAttributes = value,
-							source: RelativeBindingSource.Self),
+						Binding.Create(static (Entry entry) => entry.FontFamily, source: RelativeBindingSource.Self),
+						Binding.Create(static (Entry entry) => entry.FontSize, source: RelativeBindingSource.Self),
+						Binding.Create(static (Entry entry) => entry.FontAttributes, source: RelativeBindingSource.Self),
 					},
 					Converter = new StringConcatenationConverter()
 				});
@@ -254,45 +242,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Bindings = {
 						new MultiBinding {
 							Bindings = {
-								TypedBinding.ForSingleNestingLevel(
-									nameof(PersonViewModel.IsOver16),
-									static (PersonViewModel vm) => vm.IsOver16,
-									static (vm, value) => vm.IsOver16 = value),
-								TypedBinding.ForSingleNestingLevel(
-									nameof(PersonViewModel.HasPassedTest),
-									static (PersonViewModel vm) => vm.HasPassedTest,
-									static (vm, value) => vm.HasPassedTest = value),
-								TypedBinding.ForSingleNestingLevel(
-									nameof(PersonViewModel.IsSuspended),
-									static (PersonViewModel vm) => vm.IsSuspended,
-									static (vm, value) => vm.IsSuspended = value,
-									converter: new Inverter()),
-								TypedBinding.ForSingleNestingLevel(
-									nameof(GroupViewModel.SuspendAll),
-									static (GroupViewModel vm) => vm.SuspendAll,
-									static (vm, value) => vm.SuspendAll = value,
-									converter: new Inverter(),
-									source: new RelativeBindingSource(
-										RelativeBindingSourceMode.FindAncestorBindingContext,
-										ancestorType: typeof(GroupViewModel))),
+								Binding.Create(static (PersonViewModel vm) => vm.IsOver16),
+								Binding.Create(static (PersonViewModel vm) => vm.HasPassedTest),
+								Binding.Create(static (PersonViewModel vm) => vm.IsSuspended, converter: new Inverter()),
+								Binding.Create(static (GroupViewModel vm) => vm.SuspendAll, converter: new Inverter(),
+									source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, ancestorType: typeof(GroupViewModel))),
 							},
 							Converter = new AllTrueMultiConverter()
 						},
-						TypedBinding.ForSingleNestingLevel(
-							nameof(PersonViewModel.IsMonarch),
-							static (PersonViewModel vm) => vm.IsMonarch,
-							static (vm, value) => vm.IsMonarch = value),
-						new TypedBinding<StackLayout, bool>(
-							static (StackLayout stack) => (((GroupViewModel)stack.BindingContext).PardonAllSuspensions, true),
-							static (stack, value) => ((GroupViewModel)stack.BindingContext).PardonAllSuspensions = value,
-							handlers: new Tuple<Func<StackLayout, object>, string>[]
-							{
-								new(static (StackLayout stack) => stack, "BindingContext"),
-								new(static (StackLayout stack) => stack.BindingContext, "PardonAllSuspensions"),
-							})
-						{
-							Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout)),
-						},
+						Binding.Create(static (PersonViewModel vm) => vm.IsMonarch),
+						Binding.Create(static (StackLayout stack) => ((GroupViewModel)stack.BindingContext).PardonAllSuspensions,
+							source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(StackLayout))),
 					},
 					Converter = new AnyTrueMultiConverter(),
 					FallbackValue = "false", //use a string literal here to test xaml conversion
@@ -1052,25 +1012,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				var cp = new ContentPresenter();
 				Grid.SetRow(cp, 1);
-				cp.SetBinding(ContentPresenter.ContentProperty,
-					TypedBinding.ForSingleNestingLevel(
-						nameof(ExpanderControl.Content),
-						static (ExpanderControl c) => c.Content,
-						static (c, v) => c.Content = v,
-						source: RelativeBindingSource.TemplatedParent));
+				cp.SetBinding(ContentPresenter.ContentProperty, static (ExpanderControl c) => c.Content, source: RelativeBindingSource.TemplatedParent);
 				cp.SetBinding(ContentPresenter.IsVisibleProperty, new MultiBinding
 				{
 					Bindings = {
-						TypedBinding.ForSingleNestingLevel(
-							nameof(ExpanderControl.IsEnabled),
-							static (ExpanderControl c) => c.IsEnabled,
-							static (c, v) => c.IsEnabled = v,
-							source: RelativeBindingSource.TemplatedParent),
-						TypedBinding.ForSingleNestingLevel(
-							nameof(ExpanderControl.IsExpanded),
-							static (ExpanderControl c) => c.IsExpanded,
-							static (c, v) => c.IsExpanded = v,
-							source: RelativeBindingSource.TemplatedParent),
+						Binding.Create(static (ExpanderControl c) => c.IsEnabled, source: RelativeBindingSource.TemplatedParent),
+						Binding.Create(static (ExpanderControl c) => c.IsExpanded, source: RelativeBindingSource.TemplatedParent),
 					},
 					Converter = new AllTrueMultiConverter(),
 					FallbackValue = false

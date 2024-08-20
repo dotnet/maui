@@ -14,6 +14,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public class FrameRenderer : CardView, IPlatformViewHandler
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
@@ -176,7 +177,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 			if (Element.Handler is IPlatformViewHandler pvh &&
-				Element is IContentView cv)
+				Element is ICrossPlatformLayout cv)
 			{
 				pvh.LayoutVirtualView(l, t, r, b, cv.CrossPlatformArrange);
 			}

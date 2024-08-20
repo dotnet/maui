@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,15 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ImageButton)]
+		[FailsOnMac("VerifyScreenshot method not implemented")]
 		public async Task GradientImageButtonBackground()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac,
-				TestDevice.iOS,
-				TestDevice.Windows
-			});
-
 			App.WaitForElement("TestImageButton");
 
 			App.Tap("TestRemoveBackgroundButton");
@@ -34,3 +29,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

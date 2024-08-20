@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
-internal static class BindingGenerationUtilities
+public static class BindingGenerationUtilities
 {
     internal static bool IsTypeNullable(ITypeSymbol typeInfo, bool enabledNullable)
     {
@@ -42,4 +42,9 @@ internal static class BindingGenerationUtilities
 
         return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
     }
+
+    internal static bool IsAccessible(Accessibility declaredAccessibility) =>
+        declaredAccessibility == Accessibility.Public
+            || declaredAccessibility == Accessibility.Internal
+            || declaredAccessibility == Accessibility.ProtectedOrInternal;
 }

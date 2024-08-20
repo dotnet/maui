@@ -44,44 +44,34 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		public static IWindow? GetWindow(this UIApplication application) =>
-			application.GetKeyWindow().GetWindow();
+		public static IWindow? GetWindow(this UIApplication application)
+        {
+            // If there's only one window to return then just return that window
+			var windows = IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>();
 
-		public static IWindow? GetWindow(this UIWindow? platformWindow)
-		{
-			if (platformWindow is null)
-				return null;
+			if (windows.Count == 1)
+				return windows[0];
 
-			foreach (var window in IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>())
+			if (OperatingSystem.IsIOSVersionAtLeast(13))
 			{
-				if (window?.Handler?.PlatformView == platformWindow)
-					return window;
+				foreach(var windowScene in application.ConnectedScenes)
+				{
+					if (windowScene is UIWindowScene uiWindowScene)
+					{
+						if(uiWindowScene.Windows.Length == 1 && uiWindowScene.Windows[0].GetWindow() is IWindow window)
+						{
+							return window;
+						}
+					}
+				}
+			}
+			else
+			{
+				if(application.Windows.Length == 1)
+					return application.Windows[0].GetWindow();
 			}
 
-			return null;
-		}
-
-		public static IWindow? GetWindow(this UIWindowScene? windowScene)
-		{
-			if (windowScene is null)
-				return null;
-
-#pragma warning disable CA1416 // TODO: 'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
-			foreach (var window in windowScene.Windows)
-			{
-				var managedWindow = window.GetWindow();
-
-				if (managedWindow is not null)
-					return managedWindow;
-			}
-#pragma warning restore CA1416
-
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				return null;
-			else if (windowScene.Delegate is IUIWindowSceneDelegate sd)
-				return sd.GetWindow().GetWindow();
-
-			return null;
-		}
+            return application.GetKeyWindow().GetWindow();
+        }
 	}
 }

@@ -147,12 +147,8 @@ namespace Microsoft.Maui.Controls
 			//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
 			if (property.CoerceValue != null)
 				property.CoerceValue(this, newValue);
-
-			if (changed)
-			{
-				OnPropertyChanged(property.PropertyName);
-				property.PropertyChanged?.Invoke(this, original.Value, newValue);
-			}
+			
+			OnBindablePropertySet(property, original.Value, newValue, changed, changed);
 		}
 
 		/// <summary>
@@ -644,9 +640,20 @@ namespace Microsoft.Maui.Controls
 					binding.Apply(true);
 					_applying = false;
 				}
+				
+				OnBindablePropertySet(property, original, value, !sameValue, true);
+			}
+			else
+			{
+				OnBindablePropertySet(property, original, value, !sameValue, false);
+			}
+		}
 
+		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)
+		{
+			if(willFirePropertyChanged)
+			{
 				OnPropertyChanged(property.PropertyName);
-
 				property.PropertyChanged?.Invoke(this, original, value);
 			}
 		}

@@ -3,10 +3,8 @@ trigger:
     include:
     - main
     - release/*
-    - net7.0
-    - net8.0
     - net9.0
-    - loc
+    - net8.0
   tags:
     include:
     - '*'
@@ -29,7 +27,7 @@ pr:
     include:
     - main
     - release/*
-    - net7.0
+    - net9.0
     - net8.0
     - net9.0
   paths:
@@ -45,13 +43,6 @@ pr:
     - README.md
     - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
-
-schedules:
-- cron: "0 0 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - main
 
 variables:
   - template: /eng/pipelines/common/variables.yml
@@ -77,25 +68,37 @@ parameters:
     type: object
     default:
       - name: Windows
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
         artifact: build-macos
  
   - name: PackPlatforms
     type: object
     default:
       - name: Windows
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
         artifact: nuget
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
         artifact: nuget-macos
+
+  - name: BuildTemplatePlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
+        artifact: build-windows
+      - name: macOS
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
+        artifact: build-macos
 
   - name: RunTemplatePlatforms
     type: object
@@ -103,14 +106,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -157,7 +160,7 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
               demands:
-                - macOS.Name -equals Ventura
+                - macOS.Name -equals Sonoma
                 - macOS.Architecture -equals x64
             steps:
               - template: common/provision.yml
@@ -199,7 +202,7 @@ stages:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Ventura
+              - macOS.Name -equals Sonoma
               - macOS.Architecture -equals x64
           variables:
             - name: _buildScript
@@ -247,7 +250,7 @@ stages:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Ventura
+              - macOS.Name -equals Sonoma
               - macOS.Architecture -equals x64
           steps:
             - template: common/provision.yml
@@ -270,7 +273,7 @@ stages:
                 PRIVATE_BUILD: $(PrivateBuild)
             - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
               displayName: Build Microsoft.Maui.IntegrationTests
-            - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests" --resultsfilename="integration-samples" --verbosity=diagnostic
+            - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=Samples" --resultsfilename="integration-samples" --verbosity=diagnostic
               displayName: Run ${{ BuildPlatform.name }} sample build tests
             - task: PublishTestResults@2
               displayName: Publish the ${{ BuildPlatform.name }} sample build tests
@@ -292,7 +295,7 @@ stages:
     - template: common/maui-templates.yml
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
-        BuildPlatforms: ${{ parameters.BuildPlatforms }}
+        BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
 
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
   #   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

@@ -5,6 +5,8 @@ namespace Microsoft.Maui
 {
 	static class JavaObjectExtensions
 	{
+		const DynamicallyAccessedMemberTypes Constructors = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
+
 		public static bool IsDisposed(this Java.Lang.Object obj)
 		{
 			return obj.Handle == IntPtr.Zero;

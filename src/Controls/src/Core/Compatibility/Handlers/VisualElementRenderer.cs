@@ -158,12 +158,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return size;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var minSize = MinimumSize();
 			var size = GetDesiredSize(this, widthConstraint, heightConstraint, minSize);
 			return new SizeRequest(size, minSize);
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 #if TIZEN
 		protected new virtual Size MinimumSize()

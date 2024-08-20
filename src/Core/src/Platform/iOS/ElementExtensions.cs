@@ -9,9 +9,11 @@ namespace Microsoft.Maui.Platform
 	{
 		const string UIApplicationSceneManifestKey = "UIApplicationSceneManifest";
 
-		public static UIViewController ToUIViewController(this IElement view, IMauiContext context)
+		public static UIViewController ToUIViewController(this IElement? view, IMauiContext context)
 		{
-			var platformView = view.ToPlatform(context);
+			// The returned value is not used here, but this method is used to set 
+			// up the platform view and handler. So, do not delete!
+			var _ = view?.ToPlatform(context);
 			if (view?.Handler is IPlatformViewHandler nvh && nvh.ViewController != null)
 				return nvh.ViewController;
 

@@ -129,6 +129,10 @@
         Version="$(MicrosoftExtensionsPrimitivesVersion)"
     />
     <PackageReference
+        Update="Microsoft.IO.RecyclableMemoryStream"
+        Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"
@@ -188,6 +192,51 @@
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authorization"
+        Version="$(MicrosoftAspNetCoreAuthorizationPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Google"
+        Version="$(MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Facebook"
+        Version="$(MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount"
+        Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebView"
+        Version="$(MicrosoftAspNetCoreComponentsWebViewPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Web"
+        Version="$(MicrosoftAspNetCoreComponentsWebPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.JSInterop"
+        Version="$(MicrosoftJSInteropPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
         Update="System.Text.Json"

@@ -4,14 +4,15 @@ using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.BindingSourceGen;
+using Xunit;
 
 
 internal record CodeGeneratorResult(
-    string GeneratedCode,
+    Dictionary<string, string> GeneratedFiles,
     ImmutableArray<Diagnostic> SourceCompilationDiagnostics,
     ImmutableArray<Diagnostic> SourceGeneratorDiagnostics,
     ImmutableArray<Diagnostic> GeneratedCodeCompilationDiagnostics,
-    SetBindingInvocationDescription? Binding);
+    BindingInvocationDescription? Binding);
 
 internal static class SourceGenHelpers
 {
@@ -20,37 +21,41 @@ internal static class SourceGenHelpers
 
     internal static List<string> StepsForComparison = [TrackingNames.Bindings, TrackingNames.BindingsWithDiagnostics];
 
-    internal static CSharpGeneratorDriver CreateDriver()
+    internal static CSharpGeneratorDriver CreateDriver(IEnumerable<ISourceGenerator> generators)
     {
-        var generator = new BindingSourceGenerator();
-        var sourceGenerator = generator.AsSourceGenerator();
         return CSharpGeneratorDriver.Create(
-            [sourceGenerator],
+            generators: generators,
             driverOptions: new GeneratorDriverOptions(disabledOutputs: IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
             parseOptions: ParseOptions);
     }
 
     internal static CodeGeneratorResult Run(string source)
     {
+        return Run(source, new[] { new BindingSourceGenerator() });
+    }
+
+    internal static CodeGeneratorResult Run(string source, IEnumerable<IIncrementalGenerator> generators)
+    {
+        // Function assumes the first generator in a list is BindingSourceGenerator
+        Assert.NotEmpty(generators);
+        Assert.IsType<BindingSourceGenerator>(generators.First());
+
         var inputCompilation = CreateCompilation(source);
-        var driver = CreateDriver();
+        var driver = CreateDriver(generators.Select(g => g.AsSourceGenerator()));
 
-        var result = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out Compilation compilation, out _).GetRunResult().Results.Single();
-
-        var generatedCodeDiagnostic = compilation.GetDiagnostics();
-        var generatedCode = result.GeneratedSources.Length == 1 ? result.GeneratedSources.Single().SourceText.ToString() : "";
+        var result = driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out Compilation compilation, out _).GetRunResult().Results.FirstOrDefault();
+        var generatedCode = result.GeneratedSources.FirstOrDefault().SourceText.ToString();
 
         var trackedSteps = result.TrackedSteps;
-
         var resultBinding = trackedSteps.TryGetValue("Bindings", out ImmutableArray<IncrementalGeneratorRunStep> value)
-            ? (SetBindingInvocationDescription)value[0].Outputs[0].Value
+            ? (BindingInvocationDescription)value[0].Outputs[0].Value
             : null;
 
         return new CodeGeneratorResult(
-            GeneratedCode: generatedCode,
+            GeneratedFiles: result.GeneratedSources.ToDictionary(source => source.HintName, source => source.SourceText.ToString()),
             SourceCompilationDiagnostics: inputCompilation.GetDiagnostics(),
             SourceGeneratorDiagnostics: result.Diagnostics,
-            GeneratedCodeCompilationDiagnostics: generatedCodeDiagnostic,
+            GeneratedCodeCompilationDiagnostics: compilation.GetDiagnostics(),
             Binding: resultBinding);
     }
 
@@ -71,9 +76,9 @@ internal static class SourceGenHelpers
         return CreateCompilationFromSyntaxTrees([CSharpSyntaxTree.ParseText(source, ParseOptions, path: @"Path\To\Program.cs")]);
     }
 
-    internal static Compilation CreateCompilation(List<string> sources)
+    internal static Compilation CreateCompilation(Dictionary<string, string> sources)
     {
-        var syntaxTrees = sources.Select(source => CSharpSyntaxTree.ParseText(source, ParseOptions, path: $@"Path\To\Program{sources.IndexOf(source)}.cs")).ToList();
+        var syntaxTrees = sources.Select(s => CSharpSyntaxTree.ParseText(s.Value, ParseOptions, path: s.Key)).ToList();
         return CreateCompilationFromSyntaxTrees(syntaxTrees);
     }
 }

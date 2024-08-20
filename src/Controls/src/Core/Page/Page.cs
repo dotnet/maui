@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 		/// Displays a platform action sheet, allowing the application user to choose from several buttons.
 		/// </summary>
 		/// <param name="title">Title of the displayed action sheet. Can be <see langword="null"/> to hide the title.</param>
-		/// <param name="cancel">Text to be displayed in the 'Cancel' button. Can be null to hide the <see langword="null"/> action.</param>
+		/// <param name="cancel">Text to be displayed in the 'Cancel' button. Can be null to hide the cancel action.</param>
 		/// <param name="destruction">Text to be displayed in the 'Destruct' button. Can be <see langword="null"/> to hide the destructive option.</param>
 		/// <param name="flowDirection">The flow direction to be used by the action sheet.</param>
 		/// <param name="buttons">Text labels for additional buttons.</param>
@@ -847,12 +847,30 @@ namespace Microsoft.Maui.Controls
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
 
-		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
+		internal void SendNavigatedFrom(NavigatedFromEventArgs args, bool disconnectHandlers = true)
 		{
 			HasNavigatedTo = false;
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args, false);
+
+			if (!disconnectHandlers)
+			{
+				return;
+			}
+
+			if (args.NavigationType == NavigationType.Pop || 
+				args.NavigationType == NavigationType.PopToRoot)
+			{
+				if (!this.IsLoaded)
+				{
+					this.DisconnectHandlers();
+				}
+				else
+				{
+					this.OnUnloaded(() => this.DisconnectHandlers());
+				}
+			}
 		}
 
 		/// <summary>

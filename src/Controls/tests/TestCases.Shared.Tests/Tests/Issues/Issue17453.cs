@@ -39,6 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/17453

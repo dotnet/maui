@@ -10,6 +10,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
+| _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -32,3 +33,31 @@ When disabled, MAUI won't look for implicit cast operators when converting value
 If your library or your app defines an implicit operator on a type that can be used in one of the previous scenarios, you should define a custom `TypeConverter` for your type and attach it to the type using the `[TypeConverter(typeof(MyTypeConverter))]` attribute.
 
 _Note: Prefer using the `TypeConverterAttribute` as it can help the trimmer achieve better binary size in certain scenarios._
+
+## _MauiBindingInterceptorsSupport
+
+When enabled, MAUI will enable a source generator which will identify calls to the `SetBinding<TSource, TProperty>(this BindableObject target, BindableProperty property, Func<TSource, TProperty> getter, ...)` methods and generate optimized bindings based on the lambda expression passed as the `getter` parameter.
+
+This feature is a counterpart of [XAML Compiled bindings](https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings).
+
+It is necessary to use this feature instead of the string-based bindings in NativeAOT apps and in apps with full trimming enabled.
+
+### Example use-case
+
+String-based binding in code:
+```c#
+label.BindingContext = new PageViewModel { Customer = new CustomerViewModel { Name = "John" } };
+label.SetBinding(Label.TextProperty, "Customer.Name");
+```
+
+Compiled binding in code:
+```csharp
+label.SetBinding<PageViewModel, string>(Label.TextProperty, static vm => vm.Customer.Name);
+// or with type inference:
+label.SetBinding(Label.TextProperty, static (PageViewModel vm) => vm.Customer.Name);
+```
+
+Compiled binding in XAML:
+```xml
+<Label Text="{Binding Customer.Name}" x:DataType="local:PageViewModel" />
+```

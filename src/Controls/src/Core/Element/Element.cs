@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 	///			</item>
 	///		</list>
 	///</remarks>
-	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement
+	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement, IHandlerDisconnectPolicies
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
@@ -386,20 +386,28 @@ namespace Microsoft.Maui.Controls
 
 		void SetParent(Element value)
 		{
-			if (RealParent == value)
+			Element realParent = RealParent;
+
+			if (realParent == value)
+			{
 				return;
+			}
 
 			OnPropertyChanging(nameof(Parent));
 
 			if (_parentOverride == null)
-				OnParentChangingCore(Parent, value);
-
-			if (RealParent != null)
 			{
-				((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
+				OnParentChangingCore(Parent, value);
+			}
 
-				if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
-					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
+			if (realParent is IElementDefinition element)
+			{
+				element.RemoveResourcesChangedListener(OnParentResourcesChanged);
+
+				if (value != null && (element is Layout || element is IControlTemplated))
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+				}
 			}
 
 			RealParent = value;
@@ -422,7 +430,9 @@ namespace Microsoft.Maui.Controls
 			OnParentSet();
 
 			if (_parentOverride == null)
+			{
 				OnParentChangedCore();
+			}
 
 			OnPropertyChanged(nameof(Parent));
 		}
@@ -617,13 +627,38 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
+		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
+		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		{
+			if(willFirePropertyChanged)
+			{
+				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
+			}
+			
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
+			UpdateHandlerValue(property.PropertyName, changed);
+
+		}
+
 		/// <summary>Method that is called when a bound property is changed.</summary>
 		/// <param name="propertyName">The name of the bound property that changed.</param>
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
-			base.OnPropertyChanged(propertyName);
+			// If OnPropertyChanged is being called from a SetValue call on the BO we want the handler update to happen after
+			// the PropertyChanged Delegate on the BP and this OnPropertyChanged has fired. 
+			// if you look at BO you'll see the order is this
+			//
+			// OnPropertyChanged(property.PropertyName);
+			// property.PropertyChanged?.Invoke(this, original, value);
+			//
+			// It can cause somewhat confusing behavior if the handler update happens between these two calls
+			// And the user has placed reacting code inside the BP.PropertyChanged callback
+			// 
+			// If the OnPropertyChanged is being called from user code, we still want that to propagate to the mapper
+			bool waitForHandlerUpdateToFireFromBP = _pendingHandlerUpdatesFromBPSet.Contains(propertyName);
 
-			UpdateHandlerValue(propertyName);
+			base.OnPropertyChanged(propertyName);
 
 			if (_effects?.Count > 0)
 			{
@@ -633,10 +668,20 @@ namespace Microsoft.Maui.Controls
 					effect?.SendOnElementPropertyChanged(args);
 				}
 			}
+
+			if (!waitForHandlerUpdateToFireFromBP)
+			{
+				UpdateHandlerValue(propertyName, true);
+			}
 		}
 
-		private protected virtual void UpdateHandlerValue(string property) =>
-			Handler?.UpdateValue(property);
+		private protected virtual void UpdateHandlerValue(string property, bool valueChanged)
+		{
+			if (valueChanged)
+			{
+				Handler?.UpdateValue(property);
+			}
+		}
 
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();
@@ -1015,6 +1060,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
+
+		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy 
+		{ 
+			get => HandlerProperties.GetDisconnectPolicy(this);
+			set => HandlerProperties.SetDisconnectPolicy(this, value);
+		}
 
 		class TemporaryWrapper : IList<Element>
 		{

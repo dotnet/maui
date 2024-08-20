@@ -126,7 +126,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="fallbackValue">The value to use instead of the default value for the property, if no specified value exists.</param>
 		/// <param name="targetNullValue">The value to supply for a bound property when the target of the binding is <see langword="null" />.</param>
 		/// <exception cref="ArgumentNullException"></exception>
-		[EditorBrowsable(EditorBrowsableState.Never)] // TODO: remove the attribute once the source generator is enabled by default
 		public static void SetBinding<TSource, TProperty>(
 			this BindableObject self,
 			BindableProperty targetProperty,
@@ -139,6 +138,11 @@ namespace Microsoft.Maui.Controls
 			object? fallbackValue = null,
 			object? targetNullValue = null)
 		{
+			if (!RuntimeFeature.AreBindingInterceptorsSupported)
+			{
+				throw new InvalidOperationException($"Call to SetBinding<{typeof(TSource)}, {typeof(TProperty)}> could not be intercepted because the feature has been disabled. Consider removing the DisableMauiAnalyzers property from your project file or set the _MauiBindingInterceptorsSupport property to true instead.");
+			}
+
 			throw new InvalidOperationException($"Call to SetBinding<{typeof(TSource)}, {typeof(TProperty)}> was not intercepted.");
 		}
 #nullable disable

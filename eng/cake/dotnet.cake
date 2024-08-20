@@ -190,8 +190,10 @@ Task("dotnet-samples")
                 Error(errMsg);
                 throw new Exception(errMsg);
             }
-            projectsToBuild = "./src/Controls/tests/TestCases/Controls.TestCases.App.csproj";
+            projectsToBuild = "./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
             properties["_UseNativeAot"] = "true";
+            properties["RuntimeIdentifier"] = "iossimulator-x64";
+            properties["BuildIpa"] = "true";
         }
         else
         {
@@ -793,13 +795,18 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 {
                     args.Append($"-maxcpucount:{maxCpuCount}");
                 }
+
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
                     {
                         args.Append($"/p:{prop.Key}={prop.Value}");
-                    }
-                }
+                    }        
+                }        
+                    
+                // https://github.com/microsoft/vstest/issues/5112
+                args.Append($"/p:VStestUseMSBuildOutput=false");
+                
                 return args;
             }
         };

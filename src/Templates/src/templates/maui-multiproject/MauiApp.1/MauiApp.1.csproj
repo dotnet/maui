@@ -4,6 +4,7 @@
 		<TargetFramework>DOTNET_TFM</TargetFramework>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>MauiApp._1</RootNamespace>
 		<UseMaui>true</UseMaui>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>

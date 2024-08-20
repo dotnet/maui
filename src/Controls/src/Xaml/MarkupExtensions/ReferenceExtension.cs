@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return value;
 			}
 
-			throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);
+			throw new XamlParseException($"Cannot find the object referenced by `{Name}`", serviceProvider);
 		}
 	}
 }

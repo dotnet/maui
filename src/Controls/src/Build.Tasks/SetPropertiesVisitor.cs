@@ -291,18 +291,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
-				if (bpRef is not null) // do not compile bindings if we're not gonna SetBinding
+				(string, string, string)? bindingExtensionType = vardefref.VariableDefinition.VariableType.FullName switch
 				{
-					if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.BindingExtension")
-					{
-						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension")))
-							yield return instruction;
-					}
-					else if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")
-					{
-						foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension")))
-							yield return instruction;
-					}
+					"Microsoft.Maui.Controls.Xaml.BindingExtension" => ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "BindingExtension"),
+					"Microsoft.Maui.Controls.Xaml.TemplateBindingExtension" => ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml", "TemplateBindingExtension"),
+					_ => null,
+				};
+
+				if (bindingExtensionType.HasValue)
+				{
+					foreach (var instruction in CompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null))
+						yield return instruction;
 				}
 
 				var markExt = markupExtension.ResolveCached(context.Cache);
@@ -391,7 +390,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
-		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType)
+		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType, bool isStandaloneBinding)
 		{
 			//TODO support casting operators
 			var module = context.Module;
@@ -417,11 +416,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				skipNode = GetParent(node);
 			}
 
+			bool xDataTypeIsInOuterScope = false;
 			while (n != null)
 			{
 				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 				{
 					break;
+				}
+				else if (isStandaloneBinding)
+				{
+					// For standalone bindings we don't allow inheriting the x:DataType from its parents.
+					// A standalone binding is a binding instance which is not immediately applied through `SetBinding(...)`
+					// but it is applied later (for example it is applied to items in a collection).
+					break;
+				}
+
+				if (n.XmlType.Name == nameof(Microsoft.Maui.Controls.DataTemplate)
+					&& n.XmlType.NamespaceUri == XamlParser.MauiUri)
+				{
+					xDataTypeIsInOuterScope = true;
 				}
 
 				n = GetParent(n);
@@ -432,6 +445,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 
 				yield break;
+			}
+
+			if (xDataTypeIsInOuterScope)
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				// continue compilation
 			}
 
 			if (dataTypeNode is ElementNode enode

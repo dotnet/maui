@@ -58,3 +58,7 @@ static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForeground() -> v
 *REMOVED*Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 *REMOVED*Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
 *REMOVED*Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void

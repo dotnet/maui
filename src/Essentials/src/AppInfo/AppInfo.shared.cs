@@ -130,7 +130,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <summary>The app is packaged and can be distributed through an MSIX or the store.</summary>
 		Packaged,
 
-		/// <summary>The app is unpcakged and can be distributed as a collection of executable files.</summary>
+		/// <summary>The app is unpackaged and can be distributed as a collection of executable files.</summary>
 		Unpackaged,
 	}
 }

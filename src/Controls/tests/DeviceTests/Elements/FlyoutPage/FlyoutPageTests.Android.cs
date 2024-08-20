@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var flyoutPage = CreateFlyoutPage(
 					typeof(FlyoutPage),
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Controls.Window(flyoutPage), async (handler) =>

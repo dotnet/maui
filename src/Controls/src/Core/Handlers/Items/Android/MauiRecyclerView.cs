@@ -425,13 +425,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
+			var item = args.Item;
 			if (args.Mode == ScrollToMode.Position)
 			{
-				// TODO hartez 2018/08/28 15:40:03 Need to handle group indices here as well	
-				return args.Index;
+				item = FindBoundItem(args);
 			}
 
-			return ItemsViewAdapter.GetPositionForItem(args.Item);
+			return ItemsViewAdapter.GetPositionForItem(item);
+		}
+
+		private object FindBoundItem(ScrollToRequestEventArgs args)
+		{
+			if (args.Index >= ItemsViewAdapter.ItemsSource.Count)
+			{
+				return null;
+			}
+
+			if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource &&
+				args.GroupIndex >= 0 &&
+				args.GroupIndex < groupItemSource.Count)
+			{
+				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
+
+				// NOTE: GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header
+				return group.GetItem(args.Index + 1);
+			}
+			return ItemsViewAdapter.ItemsSource.GetItem(args.Index);
 		}
 
 		protected virtual void UpdateItemSpacing()
@@ -507,7 +526,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
+#pragma warning disable CS0618 // Obsolete
 			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
+#pragma warning restore CS0618 // Obsolete
 
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.

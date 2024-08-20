@@ -629,8 +629,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
-			serviceCollection.AddTransient<PageWithDependency>();
-			serviceCollection.AddTransient<PageWithDependencyAndMultipleConstructors>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
 			var fakeMauiContext = Substitute.For<IMauiContext>();
 			var fakeHandler = Substitute.For<IElementHandler>();

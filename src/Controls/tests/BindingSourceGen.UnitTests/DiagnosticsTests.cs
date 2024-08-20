@@ -1,3 +1,7 @@
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Xunit;
 
 namespace BindingSourceGen.UnitTests;
@@ -16,8 +20,9 @@ public class DiagnosticsTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0002", result.SourceGeneratorDiagnostics[0].Id);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0002", diagnostic.Id);
 	}
 
 	[Fact]
@@ -31,8 +36,8 @@ public class DiagnosticsTests
 
 		var result = SourceGenHelpers.Run(source);
 
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0003", result.SourceGeneratorDiagnostics[0].Id);
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0003", diagnostic.Id);
 	}
 
 	[Fact]
@@ -98,6 +103,40 @@ public class DiagnosticsTests
 	}
 
 	[Fact]
+	public void DoesNotReportWarningWhenUsingOverloadWithNameofInPath()
+	{
+		var source = """
+            using Microsoft.Maui.Controls;
+            var label = new Label();
+            var slider = new Slider();
+
+            label.BindingContext = slider;
+            label.SetBinding(Label.ScaleProperty, nameof(Slider.Value));
+            """;
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.Empty(result.SourceGeneratorDiagnostics);
+	}
+
+	[Fact]
+	public void DoesNotReportWarningWhenUsingOverloadWithMethodCallThatReturnsString()
+	{
+		var source = """
+            using Microsoft.Maui.Controls;
+            var label = new Label();
+            var slider = new Slider();
+
+            label.BindingContext = slider;
+            label.SetBinding(Label.ScaleProperty, GetPath());
+            
+            static string GetPath() => "Value";
+            """;
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.Empty(result.SourceGeneratorDiagnostics);
+	}
+
+	[Fact]
 	public void ReportsUnableToResolvePathWhenUsingMethodCall()
 	{
 		var source = """
@@ -106,29 +145,239 @@ public class DiagnosticsTests
             double GetRotation(Button b) => b.Rotation;
 
             var label = new Label();
-            label.SetBinding(Label.RotationProperty, (Button b) => GetRotation(b));
+            label.SetBinding(Label.RotationProperty, static (Button b) => GetRotation(b));
             """;
 
 		var result = SourceGenHelpers.Run(source);
 
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0001", result.SourceGeneratorDiagnostics[0].Id);
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0001", diagnostic.Id);
 	}
 
 	[Fact]
 	public void ReportsUnableToResolvePathWhenUsingMultidimensionalArray()
 	{
 		var source = """
-            using Microsoft.Maui.Controls;
-            var label = new Label();
+			using Microsoft.Maui.Controls;
+			var label = new Label();
 
-            var array = new int[1, 1];
-            label.SetBinding(Label.RotationProperty, (Button b) => array[0, 0]);
-            """;
+			label.SetBinding(Label.RotationProperty, static (Foo b) => b.array[0, 0]);
+
+			class Foo
+			{
+				int[,] array = new int[1, 1];
+			}
+			""";
 
 		var result = SourceGenHelpers.Run(source);
 
-		Assert.Single(result.SourceGeneratorDiagnostics);
-		Assert.Equal("BSG0001", result.SourceGeneratorDiagnostics[0].Id);
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0001", diagnostic.Id);
+	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23531
+	public void ReportsWarningWhenLambdaParameterIsSourceGeneratedType()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+			using SomeNamespace;
+
+			var label = new Label();
+			label.SetBinding(Label.RotationProperty, static (ClassA a) => a.CounterBtn.Text.Length);
+			""";
+
+		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorA()]);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0005", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	// https://github.com/dotnet/maui/issues/23531
+	public void ReportsWarningWhenPathContainsSourceGeneratedMember()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var a = new SomeNamespace.ClassA();
+			a.Foo();
+
+			namespace SomeNamespace
+			{
+				public partial class ClassA
+				{
+					public void Foo()
+					{
+						var label = new Label();
+						label.SetBinding(Label.RotationProperty, static (ClassA a) => a.CounterBtn.Text.Length);
+					}
+				}
+			}
+
+			""";
+
+		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorA()]);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0006", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Theory]
+	[InlineData("private")]
+	[InlineData("protected")]
+	[InlineData("private protected")]
+	// https://github.com/dotnet/maui/issues/23534
+	public void ReportsWarningWhenSourceTypeIsUnaccessible(string modifier)
+	{
+		var source = $$"""
+			using Microsoft.Maui.Controls;
+
+			var foo = new Foo();
+			foo.Bar();
+
+			public class Foo
+			{
+				public void Bar()
+				{
+					var label = new Label();
+					label.SetBinding(Label.RotationProperty, static (UnaccessibleClass a) => a.Value);
+				}
+
+				{{modifier}} class UnaccessibleClass
+				{
+					public int Value { get; set; }
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0007", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Theory]
+	[InlineData("private")]
+	[InlineData("protected")]
+	[InlineData("private protected")]
+	// https://github.com/dotnet/maui/issues/23535
+	public void ReportsWarningWhenUnaccessibleFieldInPath(string modifier)
+	{
+		var source = $$"""
+			using Microsoft.Maui.Controls;
+
+			var foo = new Foo();
+			foo.Bar();
+
+			public class Foo
+			{
+				{{modifier}} int Value = 0;
+
+				public void Bar()
+				{
+					var label = new Label();
+					label.SetBinding(Label.RotationProperty, static (Foo foo) => foo.Value);
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0008", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Theory]
+	[InlineData("private")]
+	[InlineData("protected")]
+	[InlineData("private protected")]
+
+	// https://github.com/dotnet/maui/issues/23535
+	public void ReportsWarningWhenUnnaccessiblePropertyInPath(string modifier)
+	{
+		var source = $$"""
+			using Microsoft.Maui.Controls;
+
+			var foo = new Foo();
+			foo.Bar();
+
+			public class Foo
+			{
+				{{modifier}} int Value { get; set; }
+
+				public void Bar()
+				{
+					var label = new Label();
+					label.SetBinding(Label.RotationProperty, static (Foo foo) => foo.Value);
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0009", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	public void ReportsWarningWhenLambdaIsNotStatic()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			var label = new Label();
+			var text = "Hello";
+			label.SetBinding(Label.RotationProperty, (Button b) => text.Length);
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0010", diagnostic.Id);
+		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
+	}
+
+	[Fact]
+	public void ReportsWarningWhenLambdaHasNoParameters()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+
+			label.SetBinding(Label.RotationProperty, static () => text.Length);
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+
+		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
+		Assert.Equal("BSG0005", diagnostic.Id);
+	}
+}
+
+internal class IncrementalGeneratorA : IIncrementalGenerator
+{
+	public void Initialize(IncrementalGeneratorInitializationContext context)
+	{
+		context.RegisterSourceOutput(
+			context.CompilationProvider,
+			(ctx, compilation) =>
+			{
+				var source = """
+				using Microsoft.Maui.Controls;
+				namespace SomeNamespace
+				{
+					public partial class ClassA
+					{
+						public Button CounterBtn;
+					}
+				}
+				""";
+				ctx.AddSource("SampleSourceGeneratorOutput.g.cs", SourceText.From(source, Encoding.UTF8));
+			});
 	}
 }

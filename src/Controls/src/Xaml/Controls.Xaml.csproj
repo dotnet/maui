@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+		<TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
 		<AssemblyName>Microsoft.Maui.Controls.Xaml</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Xaml</RootNamespace>
 		<IsTrimmable>false</IsTrimmable>
@@ -41,7 +41,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 
-	<PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
+  <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
 		<TargetsForTfmSpecificBuildOutput>
 			$(TargetsForTfmSpecificBuildOutput);
 			_MauiPackDesignAssemblies

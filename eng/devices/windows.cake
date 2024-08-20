@@ -5,8 +5,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-const string defaultVersion = "10.0.19041";
-const string dotnetVersion = "net9.0";
+const string defaultVersion = "10.0.19041.0";
 
 // required
 string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
@@ -19,7 +18,7 @@ var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
@@ -57,6 +56,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
+Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
 
 Setup(context =>
@@ -205,14 +205,22 @@ Task("Test")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	var waitForResultTimeoutInSeconds = 120;
+	var waitForResultTimeoutInSeconds = 240;
 
 	CleanDirectories(TEST_RESULTS);
 
 	Information("Cleaned directories");
 
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}";
+
+	if (!string.IsNullOrWhiteSpace(testFilter))
+	{
+		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
+	}
+
+	testResultsFile += ".xml";
+
 	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
 
 	Information($"Test Results File: {testResultsFile}");
@@ -431,16 +439,16 @@ Task("SetupTestPaths")
 			throw new Exception("If no app was specified, an app must be provided.");
 		}
 
-		var winVersion = $"{dotnetVersion}-windows{windowsVersion}";
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
+		var winVersion = $"{DotnetVersion}-windows{windowsVersion}";
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("Controls.TestCases.HostApp").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
 		if (apps.Count() == 0) 
 		{
 			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
-			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.App"))
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.HostApp"))
 			{
-				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.App/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.HostApp/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
 			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
@@ -464,7 +472,7 @@ Task("SetupTestPaths")
 				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
 			}
 
-			Information("Looking for .app in arcade binDir {0}", binDir);
+			Information("Looking for .exe in arcade binDir {0}", binDir);
 			apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
 			if(apps.Count() == 0 )
 			{

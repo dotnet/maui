@@ -46,6 +46,8 @@ namespace Microsoft.Maui.Platform
 		internal NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
 
+		internal bool HasNavHost => _navHost is not null;
+
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
 
@@ -204,8 +206,10 @@ namespace Microsoft.Maui.Platform
 
 			// If we end up removing the destination that was initially the StartDestination
 			// The Navigation Graph can get really confused
+#pragma warning disable CS0618 // Obsolete
 			if (NavGraph.StartDestination != startId)
 				NavGraph.StartDestination = startId;
+#pragma warning restore CS0618 // Obsolete
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page

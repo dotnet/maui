@@ -42,7 +42,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported)
 						{
 #pragma warning disable CS0618
+#if NET8_0
+#pragma warning disable IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
 							label.SetBinding(Label.TextProperty, SearchHandler.DisplayMemberName ?? ".");
+#if NET8_0
+#pragma warning restore IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
 #pragma warning restore CS0618
 						}
 						else
@@ -55,7 +61,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							}
 #pragma warning restore CS0618
 
-							label.SetBinding(Label.TextProperty, TypedBinding.ForSingleNestingLevel(string.Empty, static (object o) => o));
+							label.SetBinding(Label.TextProperty, static (object o) => o);
 						}
 
 						label.HorizontalTextAlignment = TextAlignment.Center;

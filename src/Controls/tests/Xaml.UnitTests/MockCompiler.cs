@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public static class MockCompiler
 	{
-		public static void Compile(Type type, string targetFramework = null)
+		public static void Compile(Type type, string targetFramework = null, bool treatWarningsAsErrors = false)
 		{
-			Compile(type, out _, targetFramework);
+			Compile(type, out _, targetFramework, treatWarningsAsErrors);
 		}
 
-		public static void Compile(Type type, out MethodDefinition methodDefinition, string targetFramework = null)
+		public static void Compile(Type type, out MethodDefinition methodDefinition, string targetFramework = null, bool treatWarningsAsErrors = false)
 		{
 			methodDefinition = null;
 			var assembly = type.Assembly.Location;
@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				ValidateOnly = true,
 				Type = type.FullName,
 				TargetFramework = targetFramework,
+				TreatWarningsAsErrors = treatWarningsAsErrors,
 				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine()
 			};
 

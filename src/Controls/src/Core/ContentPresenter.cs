@@ -17,14 +17,12 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ContentPresenter()
 		{
-			SetBinding(
+			this.SetBinding(
 				ContentProperty,
-				TypedBinding.ForSingleNestingLevel(
-					nameof(IContentView.Content),
-					static (IContentView view) => view.Content,
-					source: RelativeBindingSource.TemplatedParent,
-					converter: new ContentConverter(),
-					converterParameter: this));
+				static (IContentView view) => view.Content,
+				source: RelativeBindingSource.TemplatedParent,
+				converter: new ContentConverter(),
+				converterParameter: this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
@@ -48,6 +46,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;

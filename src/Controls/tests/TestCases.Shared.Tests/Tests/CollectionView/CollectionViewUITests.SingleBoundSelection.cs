@@ -14,13 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		/*
 		// SelectionShouldUpdateBinding (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundSingleSelection.cs)
 		[Test]
-		[Ignore("Click does not find CollectionView elements")]
+		[FailsOnAllPlatforms("Click does not find CollectionView elements")]
 		[Description("Single Selection Binding")]
 		public void SelectionShouldUpdateBinding()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
-				"Click does not find CollectionView elements");
-
 			// Navigate to the selection galleries
 			VisitInitialGallery("Selection");
 			

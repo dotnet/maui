@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
@@ -28,10 +29,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Test(bool useCompiledXaml)
+			
+			[Test] 
+			public void TestCompiledBindings([Values(false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(BindingsCompiler));
@@ -109,12 +109,26 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				vm.Model = null;
 				layout.entry1.BindingContext = null;
 
+				//testing standalone bindings
+				if (useCompiledXaml)
+				{
+					var binding = layout.picker0.ItemDisplayBinding;
+					Assert.That(binding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
+				}
+
 				//testing invalid bindingcontext type
 				layout.BindingContext = new object();
 				Assert.AreEqual(null, layout.label0.Text);
 
 				//testing source
 				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
+			}
+			
+			[Test] 
+			public void BindingsNotAppliedWithWrongContext([Values(false, true)]bool useCompiledXaml)
+			{
+				var page = new BindingsCompiler(useCompiledXaml) { BindingContext = new {Text="Foo"} };
+				Assert.AreEqual(null, page.label0.Text);
 			}
 		}
 	}
@@ -203,6 +217,38 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				values[v] = value;
 				OnPropertyChanged("Indexer[" + v + "]");
+			}
+		}
+
+		MockItemViewModel[] _items;
+		public MockItemViewModel[] Items
+		{
+			get { return _items; }
+			set
+			{
+				_items = value;
+				OnPropertyChanged();
+			}
+		}
+
+		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
+	class MockItemViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private string _title { get; set; }
+		public string Title
+		{
+			get => _title;
+			set
+			{
+				_title = value;
+				OnPropertyChanged();
 			}
 		}
 

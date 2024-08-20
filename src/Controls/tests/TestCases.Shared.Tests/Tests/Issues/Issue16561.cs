@@ -23,14 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnMac("https://github.com/dotnet/maui/issues/17435")]
 		public void TapTwoPlacesQuickly()
 		{
-			// https://github.com/dotnet/maui/issues/17435
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac
-			});
-
 			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
 			{
 				throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");

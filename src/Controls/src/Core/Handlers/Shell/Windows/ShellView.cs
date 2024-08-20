@@ -274,6 +274,6 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		void TabSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args) =>
-			Element.Handler.UpdateValue(nameof(Shell.CurrentItem));
+			Element?.Handler?.UpdateValue(nameof(Shell.CurrentItem));
 	}
 }

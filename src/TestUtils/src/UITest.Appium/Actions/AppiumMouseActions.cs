@@ -2,7 +2,9 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -93,22 +95,40 @@ namespace UITest.Appium
 
 		CommandResponse ClickElement(AppiumElement element)
 		{
+			string tagName = string.Empty;
+			
+			// If the click fails on catalyst we need to retrieve the element again
+			if (_appiumApp.Driver is MacDriver)
+				tagName = element.TagName;
+
 			try
 			{
 				element.Click();
 				return CommandResponse.SuccessEmptyResponse;
 			}
-			catch (InvalidOperationException)
+			catch (InvalidOperationException ioe)
 			{
+				Console.WriteLine($"WebDriverException: {ioe}");
 				return ProcessException();
 			}
-			catch (WebDriverException)
+			catch (WebDriverException we)
 			{
+				Console.WriteLine($"WebDriverException: {we}");
 				return ProcessException();
 			}
 
 			CommandResponse ProcessException()
 			{
+				// Appium elements will sometimes become stale
+				// Which appears to happen if click fails, so, we retrieve it here
+				if(!String.IsNullOrWhiteSpace(tagName))
+					element = (AppiumElement)_appiumApp.FindElement(tagName);
+
+				if (element is null)
+				{
+					return CommandResponse.FailedEmptyResponse;
+				}
+
 				// Some elements aren't "clickable" from an automation perspective (e.g., Frame renders as a Border
 				// with content in it; if the content is just a TextBlock, we'll end up here)
 
