@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         x:Class="Maui.Controls.Sample.Issues.Issue8788"
         xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-        Shell.FlyoutBehavior="Flyout">
+        Shell.FlyoutBehavior="Locked"
+        Shell.FlyoutWidth="200">
 
-  <MenuItem x:Name="MenuItem" Text="Click to hide Tab 1" 
+  <MenuItem x:Name="MenuItem" Text="Click to hide Tab1" 
               Clicked="MenuItem_Clicked" AutomationId="FirstButton" />
 
   <TabBar>

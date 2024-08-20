@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellTabItemsShouldUpdateForDynamicChangesInVisibility()
 		{
-			App.SwipeLeftToRight();
 			App.WaitForElement("FirstButton");
 			App.Tap("FirstButton");
 			VerifyScreenshot();
