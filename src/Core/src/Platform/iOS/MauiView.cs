@@ -115,7 +115,9 @@ namespace Microsoft.Maui.Platform
 
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
-			if (RespondsToSafeArea())
+			// If for some reason the upstream measure passes in a negative contraint
+			// Lets just bypass this code
+			if (RespondsToSafeArea() && widthConstraint >= 0 && heightConstraint >= 0)
 			{
 				// During the LayoutSubViews pass, we adjust the Bounds of this view for the safe area and then pass the adjusted result to CrossPlatformArrange.
 				// The CrossPlatformMeasure call does not include the safe area, so we need to add it here to ensure the returned size is correct.
