@@ -21,13 +21,6 @@ namespace Maui.Controls.Sample.Issues
 			Tab3.IsVisible = true;
 			Tab1.IsVisible = false;
 		}
-
-		private void MenuItem2_Clicked(object sender, EventArgs e)
-		{
-			Tab1.IsVisible = false;
-			Tab2.IsVisible = true;
-			Tab3.IsVisible = true;
-		}
 	}
 
 

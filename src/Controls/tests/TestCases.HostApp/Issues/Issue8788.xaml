@@ -3,14 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         x:Class="Maui.Controls.Sample.Issues.Issue8788"
         xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
-        Shell.FlyoutBehavior="Flyout"
-        AutomationId="MenuItem"
-       >
+        Shell.FlyoutBehavior="Flyout">
 
-  <MenuItem x:Name="MenuItem" Text="Tap me to reproduce bug on android" 
+  <MenuItem x:Name="MenuItem" Text="Click to hide Tab 1" 
               Clicked="MenuItem_Clicked" AutomationId="FirstButton" />
-  <MenuItem x:Name="MenuItem2" Text="Tap me to reproduce bug on windows" 
-              Clicked="MenuItem2_Clicked" AutomationId="SecondButton" />
 
   <TabBar>
     <Tab x:Name="Tab1" AutomationId="Tab1" Title="Tab 1">

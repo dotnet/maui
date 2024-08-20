@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,19 +13,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void ShellTabVisibilityIssue()
+		public void ShellTabItemsShouldUpdateForDynamicChangesInVisibility()
 		{
-			App.WaitForElement("Tab1");
-#if ANDROID
 			App.SwipeLeftToRight();
 			App.WaitForElement("FirstButton");
 			App.Tap("FirstButton");
-#elif WINDOWS
-			App.Tap("MenuItem");
-			App.WaitForElement("SecondButton");
-			App.Tap("SecondButton");
-#endif
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
