@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
@@ -210,6 +211,9 @@ namespace Microsoft.Maui.Controls
 			FlyoutPageController.CanChangeIsPresented = true;
 			UpdateFlyoutLayoutBehavior(this);
 			base.OnAppearing();
+#if ANDROID
+			orientationListener.Enable();
+#endif
 		}
 
 		protected override void OnDisappearing()
@@ -218,6 +222,9 @@ namespace Microsoft.Maui.Controls
 			Detail?.SendDisappearing();
 
 			base.OnDisappearing();
+#if ANDROID
+			orientationListener.Disable();
+#endif
 		}
 
 		protected override bool OnBackButtonPressed()
@@ -308,6 +315,9 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
 			(this as IControlsVisualElement).WindowChanged += OnWindowChanged;
 			this.SizeChanged += OnSizeChanged;
+#if ANDROID
+			orientationListener = new OrientationListener(ApplicationModel.Platform.AppContext, OnQueuedMainDisplayInfoChanged);
+#endif
 		}
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
@@ -333,11 +343,19 @@ namespace Microsoft.Maui.Controls
 			{
 				SizeChanged -= OnSizeChanged;
 				SizeChanged += OnSizeChanged;
+#if !ANDROID
 				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+#else
+				QueuedMainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+#endif
 			}
 			else
 			{
+#if !ANDROID
 				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+#else
+				QueuedMainDisplayInfoChanged += OnMainDisplayInfoChanged;
+#endif
 			}
 		}
 
@@ -380,5 +398,41 @@ namespace Microsoft.Maui.Controls
 #else
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
+
+
+#if ANDROID
+
+		event EventHandler<DisplayInfoChangedEventArgs> QueuedMainDisplayInfoChanged;
+		void OnQueuedMainDisplayInfoChanged() => QueuedMainDisplayInfoChanged?.Invoke(this, null);
+
+		readonly OrientationListener orientationListener;
+
+		class OrientationListener : Android.Views.OrientationEventListener
+		{
+			readonly Action onChanged;
+
+			internal OrientationListener(Android.Content.Context context, Action handler)
+				: base(context) => onChanged = handler;
+
+			bool isOrientationChanging;
+			public override async void OnOrientationChanged(int orientation)
+			{
+				if (!isOrientationChanging)
+				{
+					try
+					{
+						isOrientationChanging = true;
+						await Task.Delay(500);
+						onChanged();
+					}
+					finally
+					{
+						isOrientationChanging = false;
+					}
+				}
+			}
+		}
+#endif
+
 	}
 }
