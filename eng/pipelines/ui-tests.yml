@@ -136,7 +136,7 @@ stages:
         androidApiLevels: [ 30 ]
         iosVersions: [ '17.2' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if or(parameters.CompatibilityTests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+      ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
       projects:
         - name: controls
