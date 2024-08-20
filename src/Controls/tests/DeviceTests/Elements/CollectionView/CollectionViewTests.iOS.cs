@@ -98,6 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var labels = new List<WeakReference>();
 			VerticalCell cell = null;
+			WeakReference collectionViewReference = null;
 
 			{
 				var bindingContext = "foo";
@@ -116,12 +117,14 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 				Assert.NotNull(cell);
+				collectionViewReference = new WeakReference(collectionView);
+				collectionView = null;
 			}
 
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
-			await AssertionExtensions.WaitForGC(labels.ToArray());
+			await AssertionExtensions.WaitForGC(collectionViewReference);
 #endif
 		}
 
