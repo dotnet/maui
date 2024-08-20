@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public partial class CarouselViewHandler2 
+	public partial class CarouselViewHandler2
 	{
 
 		public CarouselViewHandler2() : base(Mapper)
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else
 			{
-			base.ScrollToRequested(sender, args);
+				base.ScrollToRequested(sender, args);
 			}
 		}
 

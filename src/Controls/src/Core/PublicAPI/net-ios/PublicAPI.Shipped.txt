@@ -7590,7 +7590,6 @@ override Microsoft.Maui.Controls.ItemsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.ItemsView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.Label.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Layout.InvalidateMeasureOverride() -> void
-override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.LinearGradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.ListView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.ListView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest

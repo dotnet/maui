@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
@@ -21,6 +22,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public SnapPointsType SnapType { get; set; }
 	}
 
+	public partial class CollectionViewHandler2
+	{
+
+		public CollectionViewHandler2() : base(Mapper)
+		{
+
+
+		}
+		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		{
+
+		}
+
+		public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
+		{
+			[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
+			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
+			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
+			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
+			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
+		};
+	}
+
 	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 	{
 		// Reorderable
@@ -31,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			(handler.Controller as ReorderableItemsViewController2<ReorderableItemsView>)?.UpdateCanReorderItems();
 		}
-
 
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
