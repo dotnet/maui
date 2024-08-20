@@ -73,10 +73,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			Context context = mauiContext.Context;
 
-			while (items.Count < menu.Size())
-			{
-				menu.RemoveItem(menu.GetItem(menu.Size() - 1).ItemId);
-			}
+			menu.Clear();
 
 			int numberOfMenuItems = items.Count;
 			bool showMore = numberOfMenuItems > maxBottomItems;
@@ -127,6 +124,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (loadTasks.Count > 0)
 				await Task.WhenAll(loadTasks);
+
+			foreach (var menuItem in menuItems)
+				menuItem.Dispose();
 		}
 
 		internal static void SetMenuItemTitle(IMenuItem menuItem, string title)
