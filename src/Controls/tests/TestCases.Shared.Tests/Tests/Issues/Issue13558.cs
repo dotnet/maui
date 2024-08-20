@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Android | Picker values are not updtaed in ListView";
+		public override string Issue => "Picker values are not displaying when loaded within a ListView";
 
 		[Test]
 		[Category(UITestCategories.ListView)]

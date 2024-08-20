@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 13558, "Android | Picker values are not showing when load picker in ListView", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 13558, "Picker values are not displaying when loaded within a ListView", PlatformAffected.Android)]
 
 public partial class Issue13558 : ContentPage
 {
