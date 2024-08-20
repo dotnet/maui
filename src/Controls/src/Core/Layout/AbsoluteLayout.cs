@@ -6,7 +6,16 @@ using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.AbsoluteLayout']/Docs/*" />
+	/// <summary>Positions child elements at absolute positions.</summary>
+	///	<remarks>
+	///	<para>Application developers can control the placement of child elements by providing proportional coordinates, device coordinates, or a combination of both, 
+	///	depending on the <see cref="T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> values that are passed to 
+	///	<see cref = "M:Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.AbsoluteLayoutFlags)" /> method.
+	///	When one of the proportional <see cref = "T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> enumeration values is provided, the corresponding X, or Y arguments that
+	///	range between 0.0 and 1.0 will always cause the child to be displayed completely on screen. That is, you do not need to subtract or add the height or width of a
+	///	child in order to display it flush with the left, right, top, or bottom of the <see cref = "T:Microsoft.Maui.Controls.AbsoluteLayout" />. For width, height, X, or
+	///	Y values that are not specified proportionally, application developers use device-dependent units to locate and size the child element.</para>
+	///	</remarks>
 	public class AbsoluteLayout : Layout, IAbsoluteLayout
 	{
 		readonly Dictionary<IView, AbsoluteLayoutInfo> _viewInfo = new();
@@ -16,7 +25,10 @@ namespace Microsoft.Maui.Controls
 			return new AbsoluteLayoutManager(this);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='AutoSize']/Docs/*" />
+		/// <summary>A value that indicates that the width or height of the child should be sized to that child's native size.</summary>
+		/// <remarks>
+		/// <para>Application developers can set the width or height of the <see cref="P:Microsoft.Maui.Controls.VisualElement.Bounds" /> property to <see cref="P:Microsoft.Maui.Controls.AbsoluteLayout.AutoSize" /> on a visual element when adding to the layout to cause that element to be measured during the layout pass and sized appropriately.</para>
+		/// </remarks>
 		public static double AutoSize = -1;
 
 		#region Attached Properties
@@ -50,7 +62,21 @@ namespace Microsoft.Maui.Controls
 			return (Rect)bindable.GetValue(LayoutBoundsProperty);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/AbsoluteLayout.xml" path="//Member[@MemberName='SetLayoutFlags'][1]/Docs/*" />
+		/// <summary> Sets the layout flags of a view that will be used to interpret the layout bounds set on it when it is added to the layout.</summary>
+		/// <remarks>
+		/// <para>This method supports the <c>AbsoluteLayout.LayoutFlags</c> XAML attached property. In XAML, Application developers can specify the following <see cref = "T:Microsoft.Maui.Layouts.AbsoluteLayoutFlags" /> enumeration value names for the value of this property on the children of a <see cref = "T:Microsoft.Maui.Controls.AbsoluteLayout" />:</para>
+		/// <list type = "bullet">
+		///  <item><c> All </c></item>
+		///  <item><c> None </c></item>
+		///  <item><c> HeightProportional </c></item>
+		///  <item><c> WidthProportional </c></item>
+		///  <item><c> SizeProportional </c></item>
+		///  <item><c> XProportional </c></item>
+		///  <item><c> YProportional </c></item>
+		///  <item><c> PositionProportional </c></item>
+		/// </list>
+		/// <para> Combine any of the above values by supplying a comma-separated list; call this method again to update the layout flags of a view after it is added.</para>
+		/// </remarks>
 		public static void SetLayoutFlags(BindableObject bindable, AbsoluteLayoutFlags flags)
 		{
 			bindable.SetValue(LayoutFlagsProperty, flags);
