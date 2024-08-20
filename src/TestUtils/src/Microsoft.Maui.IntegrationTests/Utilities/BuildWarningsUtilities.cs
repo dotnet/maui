@@ -125,21 +125,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			new WarningsPerFile
 			{
-				File = "ILC",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"<Module>..cctor(): Using member 'System.Enum.GetValues(Type)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. It might not be possible to create an array of the enum type at runtime. Use the GetValues<TEnum> overload or the GetValuesAsUnderlyingType method instead.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Xaml/XamlParser.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
