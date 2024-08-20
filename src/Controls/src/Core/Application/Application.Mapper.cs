@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 			// There is also a mapper on Window for this property since this property is relevant at the window level for
 			// Android not the application level
 			ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName, MapWindowSoftInputModeAdjust);
+			ApplicationHandler.Mapper.ReplaceMapping<Application, ApplicationHandler>(nameof(UserAppTheme), MapUserAppTheme);
 #endif
 		}
 	}

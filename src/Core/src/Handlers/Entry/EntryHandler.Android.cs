@@ -1,8 +1,15 @@
 ﻿using System;
+using Android.App;
+using Android.Content;
+using Android.Content.Res;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
+using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -17,12 +24,15 @@ namespace Microsoft.Maui.Handlers
 		Drawable? _clearButtonDrawable;
 		bool _clearButtonVisible;
 		bool _set;
+		//BroadcastReceiver? _themeChangeReceiver;
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
 			var nativeEntry = new MauiAppCompatEditText(Context);
 			return nativeEntry;
 		}
+
+		
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
 		protected virtual Drawable? GetClearButtonDrawable() =>
@@ -42,17 +52,44 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
+			ThemeService.ThemeChanged += ThemeService_ThemeChanged;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
 		}
 
+		private void ThemeService_ThemeChanged(UiMode obj)
+		{
+			ApplyTheme(PlatformView, obj);
+		}
+
+		internal static void  ApplyTheme(EditText platformView, UiMode mode)
+		{
+			switch (mode)
+			{
+				case UiMode.NightYes:
+					if (platformView.Background is InsetDrawable insetDrawable)
+					{
+						insetDrawable.SetTint(Color.White);
+					}
+
+					break;
+				case UiMode.NightNo:
+					if (platformView.Background is InsetDrawable insetDrawable1)
+					{
+						insetDrawable1.SetTint(Color.Black);
+					}
+
+					break;
+			}
+		}
+
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-
+			ThemeService.ThemeChanged -= ThemeService_ThemeChanged;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
@@ -218,6 +255,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			e.Handled = handled;
+
 		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
@@ -238,7 +276,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
+			
 			var drawable = GetClearButtonDrawable();
 
 			if (VirtualView?.TextColor is not null)
@@ -246,7 +284,7 @@ namespace Microsoft.Maui.Handlers
 			else
 				drawable?.ClearColorFilter();
 
-			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
+			if (PlatformView.LayoutDirection == Android.Views.LayoutDirection.Rtl)
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 			else
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
@@ -265,4 +303,17 @@ namespace Microsoft.Maui.Handlers
 			_clearButtonVisible = false;
 		}
 	}
+
+	internal static class ThemeService
+	{
+		public static event Action<UiMode>? ThemeChanged;
+
+		public static void NotifyThemeChange(UiMode uiMode)
+		{
+			ThemeChanged?.Invoke(uiMode);
+		}
+	}
+
+
+
 }
