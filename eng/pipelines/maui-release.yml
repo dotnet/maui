@@ -20,6 +20,13 @@ trigger:
     - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
+schedules:
+- cron: "0 5 * * *"
+  displayName: Run daily at 5:00 UTC
+  branches:
+    include:
+    - main
+    - net9.0
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -190,4 +197,12 @@ extends:
             os: ${{ parameters.VM_IMAGE_HOST.os }}     
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
-        
+        - ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
+          - template: /eng/pipelines/common/push-nightly.yml@self
+            parameters:
+              dependsOn: ['sdk_insertion']
+              stageName: 'nightly'
+              displayName: 'Push Nightly'
+              poolName: ${{ parameters.VM_IMAGE_HOST.name }}
+              vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
+              os: ${{ parameters.VM_IMAGE_HOST.os }}  

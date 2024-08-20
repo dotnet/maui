@@ -3,9 +3,8 @@ trigger:
     include:
     - main
     - release/*
-    - net7.0
+    - net9.0
     - net8.0
-    - loc
   tags:
     include:
     - '*'
@@ -28,7 +27,7 @@ pr:
     include:
     - main
     - release/*
-    - net7.0
+    - net9.0
     - net8.0
   paths:
     include:
@@ -43,13 +42,6 @@ pr:
     - README.md
     - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
-
-schedules:
-- cron: "0 0 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - main
 
 variables:
   - template: /eng/pipelines/common/variables.yml
@@ -75,25 +67,37 @@ parameters:
     type: object
     default:
       - name: Windows
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
         artifact: build-macos
  
   - name: PackPlatforms
     type: object
     default:
       - name: Windows
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
         artifact: nuget
       - name: macOS
-        poolName: $(macOSXNet6VmPool)
-        vmImage: $(macOSXNet6VmImage)
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
         artifact: nuget-macos
+
+  - name: BuilTemplatePlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsVmPool)
+        vmImage: $(windowsVmImage)
+        artifact: build-windows
+      - name: macOS
+        poolName: $(macOSXVmPool)
+        vmImage: $(macOSXVmImage)
+        artifact: build-macos
 
   - name: RunTemplatePlatforms
     type: object
@@ -101,14 +105,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -155,7 +159,7 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
               demands:
-                - macOS.Name -equals Ventura
+                - macOS.Name -equals Sonoma
                 - macOS.Architecture -equals x64
             steps:
               - template: common/provision.yml
@@ -197,7 +201,7 @@ stages:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Ventura
+              - macOS.Name -equals Sonoma
               - macOS.Architecture -equals x64
           variables:
             - name: _buildScript
@@ -245,7 +249,7 @@ stages:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Ventura
+              - macOS.Name -equals Sonoma
               - macOS.Architecture -equals x64
           steps:
             - template: common/provision.yml
@@ -285,7 +289,7 @@ stages:
     - template: common/maui-templates.yml
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
-        BuildPlatforms: ${{ parameters.BuildPlatforms }}
+        BuildPlatforms: ${{ parameters.BuilTemplatePlatforms }}
 
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
   #   - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

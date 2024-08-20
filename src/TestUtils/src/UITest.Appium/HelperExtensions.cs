@@ -832,6 +832,34 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Sets light device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetLightTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetLightTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setLightTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sets dark device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetDarkTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetDarkTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setDarkTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Check if element has focused
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -858,6 +886,146 @@ namespace UITest.Appium
 			}
 
 			return element.AppiumElement.Equals(activeElement);
+		}
+
+		/// <summary>
+		/// Lock the screen.
+		/// Functionality that's only available on Android and iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">Lock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Lock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Unlock the screen.
+		/// Functionality that's only available on Android and iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Unlock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Start recording screen.
+		/// Functionality that's only available on Android, iOS and Windows.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">StartRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void StartRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StartRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("startRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Stop recording screen.
+		/// Functionality that's only available on Android, iOS and Windows.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">StopRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void StopRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StopRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("stopRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Toggle airplane mode on device.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleAirplaneMode is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleAirplaneMode(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleAirplaneMode is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleAirplaneMode", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Switch the state of the wifi service.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleWifi(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Simulate the device shaking.
+		/// Functionality that's only available on iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Shake(this IApp app)
+		{
+			if (app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
+			}
+
+			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Gets the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <returns>The information of the system related to the performance.</returns>
+		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			var response = app.CommandExecutor.Execute("getPerformanceData", new Dictionary<string, object>()
+			{
+				{ "performanceDataType", performanceDataType },
+			});
+
+			if (response?.Value != null)
+			{
+				return (IList<object>)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the performance data");
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
