@@ -166,7 +166,7 @@ namespace Microsoft.Maui.Layouts
 				contentSize = content.Measure(adjustedWidth, adjustedHeight);
 			}
 
-			var width = contentSize.Width + inset.HorizontalThickness;
+			/*var width = contentSize.Width + inset.HorizontalThickness;
 
 			if (inset.HorizontalThickness > widthConstraint)
 			{
@@ -178,9 +178,11 @@ namespace Microsoft.Maui.Layouts
 			if (inset.VerticalThickness > heightConstraint)
 			{
 				height = Math.Min(heightConstraint, height);
-			}
+			}*/
 
-			return new Size(width, height);
+			// TODO determine if we need to uncomment the code above.
+			// I'm not sure if the contraints are zero if the upstream code will still want the padding added in here
+			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
 		public static void ArrangeContent(this IContentView contentView, Rect bounds)
