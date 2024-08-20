@@ -136,9 +136,9 @@ namespace Microsoft.Maui
 			var visualElements = new List<IVisualTreeElement>();
 			if (visualElement is IWindow window)
 			{
-				// Get the MauiWinUiWindow so we catch everything in the app window rather than the frame which doesn't include modal content
+				// Get the UI.Xaml.Window so we catch everything in the app window rather than the frame which doesn't include modal content
 				var platformView = window.Handler?.PlatformView;
-				if (platformView is MauiWinUIWindow winUiWindow)
+				if (platformView is UI.Xaml.Window winUiWindow)
 				{
 					uiElement = winUiWindow.Content;
 				}
