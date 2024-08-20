@@ -47,9 +47,6 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
-    displayName: 'Build the MSBuild Tasks'
-
   - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
     displayName: 'Build the samples'
 
@@ -61,9 +58,17 @@ steps:
     continueOnError: true
 
   - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: ne('${{ parameters.platform }}' , 'windows')
+    condition: and(ne('${{ parameters.platform }}' , 'windows'), succeeded())
     artifact: ui-tests-samples
 
   - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
-    condition: eq('${{ parameters.platform }}' , 'windows')
+    condition: and(eq('${{ parameters.platform }}' , 'windows'), succeeded())
     artifact: ui-tests-samples-windows
+
+  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+    condition: and(ne('${{ parameters.platform }}' , 'windows'), failed())
+    artifact: ui-tests-samples_failed_$(System.JobAttempt)
+
+  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+    condition: and(eq('${{ parameters.platform }}' , 'windows'), failed())
+    artifact: ui-tests-samples-windows_failed_$(System.JobAttempt)

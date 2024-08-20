@@ -38,6 +38,7 @@
 
     <PushToAzureDevOpsArtifacts
         ItemsToPush="@(ItemsToPush)"
+        IsStableBuild="$(StabilizePackageVersion)"
         ManifestBuildData="@(ManifestBuildData)"
         ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
         ManifestBranch="$(BUILD_SOURCEBRANCH)"

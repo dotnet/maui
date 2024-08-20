@@ -11,7 +11,44 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// </summary>
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
-		internal const string AppHostAddress = "0.0.0.0";
+		internal static string AppHostAddress { get; } = GetAppHostAddress();
+
+		private const string AppHostAddressAlways0000Switch = "BlazorWebView.AppHostAddressAlways0000";
+
+		private static bool IsAppHostAddressAlways0000Enabled =>
+			AppContext.TryGetSwitch(AppHostAddressAlways0000Switch, out var enabled) && enabled;
+
+		private static string GetAppHostAddress()
+		{
+			if (IsAppHostAddressAlways0000Enabled)
+			{
+				return "0.0.0.0";
+			}
+			else
+			{
+#if IOS || MACCATALYST
+				// On iOS/MacCatalyst 18 and higher the 0.0.0.0 address does not work, so we use localhost instead.
+				// This preserves behavior on older versions of those systems, while defaulting to new behavior on
+				// the new system.
+
+				// Note that pre-release versions of iOS/MacCatalyst have the expected Major/Minor values,
+				// but the Build, MajorRevision, MinorRevision, and Revision values are all -1, so we need
+				// to pass in int.MinValue for those values.
+
+				if (System.OperatingSystem.IsIOSVersionAtLeast(major: 18, minor: int.MinValue, build: int.MinValue) ||
+					System.OperatingSystem.IsMacCatalystVersionAtLeast(major: 18, minor: int.MinValue, build: int.MinValue))
+				{
+					return "localhost";
+				}
+				else
+				{
+					return "0.0.0.0";
+				}
+#else
+				return "0.0.0.0";
+#endif
+			}
+		}
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
 

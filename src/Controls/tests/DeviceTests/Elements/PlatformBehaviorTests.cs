@@ -14,7 +14,7 @@ using PlatformView = AppKit.NSView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
-#elif NET6_0_OR_GREATER || (NETSTANDARD || !PLATFORM)
+#elif NETSTANDARD || !PLATFORM
 using PlatformView = System.Object;
 #endif
 
