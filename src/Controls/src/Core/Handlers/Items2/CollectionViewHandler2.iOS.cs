@@ -44,6 +44,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
 			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
+			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 		};
 	}
 

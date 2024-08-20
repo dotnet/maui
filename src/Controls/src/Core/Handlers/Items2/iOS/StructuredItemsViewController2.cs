@@ -136,11 +136,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				ItemsView.AddLogicalChild(formsElement);
 			}
-
+			
 			if (formsElement != null)
 			{
-				//RemeasureLayout(formsElement);
-				//formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
+				RemeasureLayout(formsElement);
 			}
 			else
 			{
@@ -222,6 +221,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
 				}
+			}
+		}
+
+
+		private protected void RemeasureLayout(VisualElement formsElement)
+		{
+			if (IsHorizontal)
+			{
+				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
+				var bounds = new Microsoft.Maui.Graphics.Rect(0, 0, request.Width, CollectionView.Frame.Height);
+				formsElement.Arrange(bounds);
+				formsElement.Layout(bounds);
+			}
+			else
+			{
+				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
+				var bounds = new Microsoft.Maui.Graphics.Rect(0, 0, CollectionView.Frame.Width, request.Height);
+				formsElement.Arrange(bounds);
+				formsElement.Layout(bounds);
 			}
 		}
 
