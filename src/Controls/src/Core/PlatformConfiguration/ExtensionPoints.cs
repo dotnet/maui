@@ -1,7 +1,12 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls.PlatformConfiguration/Android.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.Android']/Docs/*" />
+	/// <summary>
+	/// Marker class that identifies the Android platform.
+	/// </summary>
+	/// <remarks>
+	/// Developers specifiy the type name of this marker class to the <see cref="M:Microsoft.Maui.Controls.IElementConfiguration`1.On``1" /> method to specify the underlying Android control on which to run a platform-specific effect.
+	/// </remarks>
 	public sealed class Android : IConfigPlatform { }
 	/// <include file="../../../docs/Microsoft.Maui.Controls.PlatformConfiguration/iOS.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOS']/Docs/*" />
 	public sealed class iOS : IConfigPlatform { }
