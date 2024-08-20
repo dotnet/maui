@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
-		bool _allocatedFlag;
 		Rect _containerArea;
 
 		bool _containerAreaSet;
@@ -543,7 +542,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="height">The height allocated to the page.</param>
 		protected override void OnSizeAllocated(double width, double height)
 		{
-			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
 			UpdateChildrenLayout();
 		}
@@ -605,12 +603,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			_allocatedFlag = false;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			if (!_allocatedFlag && Width >= 0 && Height >= 0)
-			{
-				SizeAllocated(Width, Height);
-			}
 		}
 
 		internal void OnAppearing(Action action)

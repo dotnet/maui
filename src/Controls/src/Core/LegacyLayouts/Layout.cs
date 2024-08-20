@@ -511,7 +511,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (child is View view)
 			{
-				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrainted
+				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrained
 				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
 					(trigger == InvalidationTrigger.SizeRequestChanged && view.ComputedConstraint == LayoutConstraint.Fixed))
 				{
