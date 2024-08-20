@@ -436,9 +436,9 @@ namespace Microsoft.Maui.Controls
 
 				var page = child as Page;
 				if (page != null && page.IgnoresContainerArea)
-					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
+					child.Arrange(originalArea);
 				else
-					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
+					child.Arrange(area);
 			}
 		}
 

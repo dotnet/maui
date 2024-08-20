@@ -519,5 +519,24 @@ namespace Microsoft.Maui.Controls
 
 			return window.Handler?.MauiContext;
 		}
+
+		/// <summary>
+		/// TBD
+		/// </summary>
+		/// <param name="view"></param>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public static void InvalidateMeasure(this VisualElement view)
+		{
+			(view as IView)?.InvalidateMeasure();
+		}
+
+		/// <summary>
+		/// TBD
+		/// </summary>
+		public static void InvalidateArrange(this VisualElement view)
+		{
+			(view as IView)?.InvalidateArrange();
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
 	}
 }

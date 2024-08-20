@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			bindable.SetValue(LayoutFlagsProperty, flags);
 		}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0672 // Member overrides obsolete member
 		{
 			foreach (View child in LogicalChildrenInternal)
 			{
