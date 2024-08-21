@@ -84,11 +84,6 @@ namespace Microsoft.Maui.Controls
 					oldCount = 0;
 				}
 
-				if (oldCount > _indicatorView.Count)
-				{
-					return;
-				}
-
 				BindIndicatorItems();
 			}
 			finally
