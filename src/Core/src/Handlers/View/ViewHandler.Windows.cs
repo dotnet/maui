@@ -1,31 +1,39 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+		static Dictionary<PlatformView, ViewHandler>? FocusManagerMapping;
+
 		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			if (platformView != null)
+			if (platformView is not null)
 			{
-				platformView.GotFocus += OnPlatformViewGotFocus;
-				platformView.LostFocus += OnPlatformViewLostFocus;
+				if (FocusManagerMapping is null)
+				{
+					FocusManagerMapping = [];
+
+					FocusManager.GotFocus += FocusManager_GotFocus;
+					FocusManager.LostFocus += FocusManager_LostFocus;
+				}
+
+				FocusManagerMapping.Add(platformView, this);
 			}
 		}
 
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			UpdateIsFocused(false);
+			_ = FocusManagerMapping ?? throw new InvalidOperationException($"{nameof(FocusManagerMapping)} should have been set.");
 
-			platformView.GotFocus -= OnPlatformViewGotFocus;
-			platformView.LostFocus -= OnPlatformViewLostFocus;
+			UpdateIsFocused(false);
+			FocusManagerMapping.Remove(platformView);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view)
@@ -88,7 +96,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapToolbar(IViewHandler handler, IView view)
 		{
 			if (view is IToolbarElement tb)
+			{
 				MapToolbar(handler, tb);
+			}
 		}
 
 		internal static void MapToolbar(IElementHandler handler, IToolbarElement toolbarElement)
@@ -133,25 +143,39 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnPlatformViewGotFocus(object sender, RoutedEventArgs args)
+		static void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
 		{
-			UpdateIsFocused(true);
+			_ = FocusManagerMapping ?? throw new InvalidOperationException($"{nameof(FocusManagerMapping)} should have been set.");
+
+			if (e.NewFocusedElement is PlatformView platformView && FocusManagerMapping.TryGetValue(platformView, out ViewHandler? viewHandler))
+			{
+				viewHandler.UpdateIsFocused(true);
+			}
 		}
 
-		void OnPlatformViewLostFocus(object sender, RoutedEventArgs args)
+		static void FocusManager_LostFocus(object? sender, FocusManagerLostFocusEventArgs e)
 		{
-			UpdateIsFocused(false);
+			_ = FocusManagerMapping ?? throw new InvalidOperationException($"{nameof(FocusManagerMapping)} should have been set.");
+
+			if (e.OldFocusedElement is PlatformView platformView && FocusManagerMapping.TryGetValue(platformView, out ViewHandler? viewHandler))
+			{
+				viewHandler.UpdateIsFocused(false);
+			}
 		}
 
 		void UpdateIsFocused(bool isFocused)
 		{
 			if (VirtualView == null)
+			{
 				return;
+			}
 
 			bool updateIsFocused = (isFocused && !VirtualView.IsFocused) || (!isFocused && VirtualView.IsFocused);
 
 			if (updateIsFocused)
+			{
 				VirtualView.IsFocused = isFocused;
+			}
 		}
 	}
 }
