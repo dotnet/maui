@@ -958,23 +958,35 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//			IL_008e:  newobj instance void class [mscorlib]System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel, object>, string>::'.ctor'(!0, !1)
 			//			IL_0093:  stelem.ref 
 
-			yield return Create(Ldc_I4, properties.Count);
-			yield return Create(Newarr, tupleRef);
-
-			for (var i = 0; i < properties.Count; i++)
+			var handlers = new List<(MethodDefinition PartGetter, string PropertyName)>();
+			for (int i = 0; i < properties.Count; i++)
 			{
 				if (properties[i].property == null)
 					continue;
+
+				var partGetter = partGetters[i];
+				var propertyName = properties[i].Item1.Name;
+
+				handlers.Add((partGetter, propertyName));
+
+				// for indexers add also a handler for the specific index
+				if (properties[i].Item3 is not null)
+				{
+					handlers.Add((partGetter, $"{propertyName}[{properties[i].Item3}]"));
+				}
+			}
+
+			yield return Create(Ldc_I4, handlers.Count);
+			yield return Create(Newarr, tupleRef);
+
+			for (var i = 0; i < handlers.Count; i++)
+			{
 				yield return Create(Dup);
 				yield return Create(Ldc_I4, i);
 				yield return Create(Ldnull);
-				yield return Create(Ldftn, partGetters[i]);
+				yield return Create(Ldftn, handlers[i].PartGetter);
 				yield return Create(Newobj, module.ImportReference(funcCtor));
-				if (properties[i].Item3 == null) //no indexer
-					yield return Create(Ldstr, properties[i].Item1.Name);
-				else
-					yield return Create(Ldstr, $"{properties[i].Item1.Name}[{properties[i].Item3}]");
-
+				yield return Create(Ldstr, handlers[i].PropertyName);
 				yield return Create(Newobj, module.ImportReference(tupleCtor));
 				yield return Create(Stelem_Ref);
 			}
