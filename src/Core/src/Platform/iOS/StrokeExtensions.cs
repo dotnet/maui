@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Platform
 
 			platformView.UpdateMauiCALayer(border);
 		}
-
+		
 		internal static void UpdateMauiCALayer(this UIView platformView, IBorderStroke? border)
 		{
 			CALayer? backgroundLayer = platformView.Layer as MauiCALayer;
@@ -134,8 +134,6 @@ namespace Microsoft.Maui.Platform
 
 			if (backgroundLayer is MauiCALayer mauiCALayer)
 			{
-				backgroundLayer.Frame = platformView.Bounds;
-
 				if (border is IView view)
 					mauiCALayer.SetBackground(view.Background);
 				else
@@ -156,7 +154,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (platformView is ContentView contentView)
+			{
 				contentView.Clip = border;
+			}
 		}
 
 		internal static void UpdateMauiCALayer(this UIView view)
@@ -171,7 +171,11 @@ namespace Microsoft.Maui.Platform
 			{
 				var bounds = view.Bounds;
 				var backgroundLayers = GetBackgroundLayersNeedingUpdate(sublayers, bounds);
-				backgroundLayers.UpdateBackgroundLayers(bounds);
+
+				foreach (CALayer backgroundLayer in backgroundLayers)
+				{
+					backgroundLayer.Frame = bounds;
+				}
 			}
 		}
 
@@ -191,29 +195,6 @@ namespace Microsoft.Maui.Platform
 				{
 					yield return layer;
 				}
-			}
-		}
-		
-		static void UpdateBackgroundLayers(this IEnumerable<CALayer> backgroundLayers, CGRect bounds)
-		{
-			using var backgroundLayerEnumerator = backgroundLayers.GetEnumerator();
-
-			if (backgroundLayerEnumerator.MoveNext())
-			{
-				// iOS by default adds animations to certain actions such as layer resizing (setting the Frame property).
-				// This can result in the background layer not keeping up with animations controlled by MAUI.
-				// To prevent this undesired effect, native animations will be turned off for the duration of the operation.
-				CATransaction.Begin();
-				CATransaction.AnimationDuration = 0;
-				
-				do
-				{
-					var backgroundLayer = backgroundLayerEnumerator.Current;
-					backgroundLayer.Frame = bounds;
-				}
-				while (backgroundLayerEnumerator.MoveNext());
-				
-				CATransaction.Commit();
 			}
 		}
 	}

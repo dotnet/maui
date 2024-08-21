@@ -13,6 +13,10 @@ public partial class Issue18204 : ContentPage
 	public Issue18204()
 	{
 		InitializeComponent();
+		Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(3), () =>
+		{
+			TheOtherButton.IsVisible = true;
+		});
 	}
 
 	private void ButtonClicked(object sender, EventArgs e)
