@@ -498,6 +498,7 @@ public class IntegrationTests
                             handlers: new Tuple<Func<global::MyNamespace.A?, object?>, string>[]
                             {
                                 new(static source => source, "B"),
+                                new(static source => source?.B, "Item"),
                                 new(static source => source?.B, "Item[0]"),
                                 new(static source => source?.B?[0], "C"),
                             })
@@ -1414,8 +1415,11 @@ public class IntegrationTests
                             setter,
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
+                                new(static source => source, "Item"),
                                 new(static source => source, "Item[12]"),
+                                new(static source => source[12], "Indexer"),
                                 new(static source => source[12], "Indexer[Abc]"),
+                                new(static source => source[12]?["Abc"], "Item"),
                                 new(static source => source[12]?["Abc"], "Item[0]"),
                             })
                         {
