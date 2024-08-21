@@ -207,7 +207,18 @@ void LogSetupInfo(string toolPath)
 string GetDotnetToolPath()
 {
     var isLocalDotnet = GetBuildVariable("workloads", "local") == "local";
-    var toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    string toolPath;
+    
+    
+    if(IsRunningOnWindows())
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : null;
+    }
+    else
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    }
+
     Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");
     return toolPath;
 }
