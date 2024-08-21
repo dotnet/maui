@@ -102,8 +102,6 @@
     <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
     <IncludeCompatibilityProjects>false</IncludeCompatibilityProjects>
     <IncludeCompatibilityProjects Condition="'$(SolutionFileName)' == 'Microsoft.Maui.sln'">true</IncludeCompatibilityProjects>
-
-    <WindowsSdkPackageVersion Condition="$([MSBuild]::IsOSPlatform('windows'))">10.0.19041.35-preview</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <!-- this is CI, so everything should be there -->
@@ -127,6 +125,11 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+  </PropertyGroup>
+
+  <!-- Windows specific settings -->
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+    <WindowsSdkPackageVersion>10.0.19041.41</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <!-- version number information -->
