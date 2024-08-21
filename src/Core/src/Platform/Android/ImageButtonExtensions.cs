@@ -36,6 +36,9 @@ namespace Microsoft.Maui.Platform
 			// https://github.com/material-components/material-components-android/issues/2063
 			await Task.Yield();
 
+			if (!platformButton.IsAlive())
+				return;
+
 			// We must re-set all the paddings because the first time was not hard enough.
 			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);
 			platformButton.SetPadding(0, 0, 0, 0);

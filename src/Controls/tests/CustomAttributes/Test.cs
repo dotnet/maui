@@ -393,6 +393,7 @@ public static class Test
 	{
 		Source,
 		Source_FontImageSource,
+		IsAnimationPlaying,
 		Aspect,
 		IsOpaque,
 		IsLoading,
@@ -741,6 +742,16 @@ public static class Test
 		TransLayoutOverlayWithButton,
 		CascadeTransLayoutOverlay,
 		CascadeTransLayoutOverlayWithButton,
+	}
+
+	public enum Alerts
+	{
+		AlertCancel,
+		AlertAcceptCancelClickAccept,
+		AlertAcceptCancelClickCancel,
+		ActionSheetClickItem,
+		ActionSheetClickCancel,
+		ActionSheetClickDestroy,
 	}
 
 	public static class InputTransparencyMatrix

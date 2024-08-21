@@ -23,8 +23,10 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
      * @param hasShadow
      */
     protected final void setHasShadow(boolean hasShadow) {
-        this.hasShadow = hasShadow;
-        postInvalidate();
+        if (this.hasShadow != hasShadow) {
+            this.hasShadow = hasShadow;
+            postInvalidate();
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "https://github.com/dotnet/maui/pull/21801";
 
 		[Test]
+		[Category(UITestCategories.Performance)]
 		public void ReduceInvalidateMeasuresUpdatingLabel()
 		{
 			App.WaitForElement("UpdateTextLabel");

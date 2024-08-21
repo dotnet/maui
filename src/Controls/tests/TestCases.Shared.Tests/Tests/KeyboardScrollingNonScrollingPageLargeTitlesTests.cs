@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+	[Category(UITestCategories.Layout)]
 	public class KeyboardScrollingNonScrollingPageLargeTitlesTests : UITest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles";

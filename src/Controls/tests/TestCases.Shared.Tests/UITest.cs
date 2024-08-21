@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using NUnit.Framework;
+using OpenQA.Selenium.Appium.iOS;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -66,8 +67,8 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
-					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.App");
-					var windowsExe = "Controls.TestCases.App.exe";
+					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
+					var windowsExe = "Controls.TestCases.HostApp.exe";
 					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
 					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
 
@@ -107,6 +108,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+				
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -136,16 +138,21 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.iOS:
-						if (deviceName == "iPhone Xs (iOS 17.2)")
+
+						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
+						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+
+						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
 						{
 							environmentName = "ios";
 						}
-						else if (deviceName == "iPhone X (iOS 16.4)")
+						else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
 						{
 							environmentName = "ios-iphonex";
 						}
 						else
 						{
+
 							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;

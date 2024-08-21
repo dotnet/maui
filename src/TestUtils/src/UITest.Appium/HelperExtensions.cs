@@ -308,6 +308,63 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Return the currently presented alert or action sheet.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static IUIElement? GetAlert(this IApp app)
+		{
+			return app.GetAlerts().FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Return the currently presented alerts or action sheets.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static IReadOnlyCollection<IUIElement> GetAlerts(this IApp app)
+		{
+			var result = app.CommandExecutor.Execute("getAlerts", ImmutableDictionary<string, object>.Empty);
+			return (IReadOnlyCollection<IUIElement>?)result.Value ?? Array.Empty<IUIElement>();
+		}
+
+		/// <summary>
+		/// Dismisses the alert.
+		/// </summary>
+		/// <param name="alertElement">The element that represents the alert or action sheet.</param>
+		public static void DismissAlert(this IUIElement alertElement)
+		{
+			alertElement.Command.Execute("dismissAlert", new Dictionary<string, object>
+			{
+				["element"] = alertElement
+			});
+		}
+
+		/// <summary>
+		/// Return the buttons in the alert or action sheet.
+		/// </summary>
+		/// <param name="alertElement">The element that represents the alert or action sheet.</param>
+		public static IReadOnlyCollection<IUIElement> GetAlertButtons(this IUIElement alertElement)
+		{
+			var result = alertElement.Command.Execute("getAlertButtons", new Dictionary<string, object>
+			{
+				["element"] = alertElement
+			});
+			return (IReadOnlyCollection<IUIElement>?)result.Value ?? Array.Empty<IUIElement>();
+		}
+
+		/// <summary>
+		/// Return the text messages in the alert or action sheet.
+		/// </summary>
+		/// <param name="alertElement">The element that represents the alert or action sheet.</param>
+		public static IReadOnlyCollection<string> GetAlertText(this IUIElement alertElement)
+		{
+			var result = alertElement.Command.Execute("getAlertText", new Dictionary<string, object>
+			{
+				["element"] = alertElement
+			});
+			return (IReadOnlyCollection<string>?)result.Value ?? Array.Empty<string>();
+		}
+
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
@@ -316,10 +373,32 @@ namespace UITest.Appium
 			return results;
 		}
 
+		public static IUIElement WaitForElement(
+			this IApp app,
+			Func<IUIElement?> query,
+			string? timeoutMessage = null,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			var results = Wait(query, i => i != null, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
 		public static void WaitForNoElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
 			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
+		}
+
+		public static void WaitForNoElement(
+			this IApp app,
+			Func<IUIElement?> query,
+			string? timeoutMessage = null,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			Wait(query, i => i is null, timeoutMessage, timeout, retryFrequency);
 		}
 
 		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text)
@@ -753,6 +832,34 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Sets light device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetLightTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetLightTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setLightTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sets dark device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetDarkTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetDarkTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setDarkTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Check if element has focused
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -781,8 +888,148 @@ namespace UITest.Appium
 			return element.AppiumElement.Equals(activeElement);
 		}
 
-		static IUIElement Wait(Func<IUIElement> query,
-			Func<IUIElement, bool> satisfactory,
+		/// <summary>
+		/// Lock the screen.
+		/// Functionality that's only available on Android and iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">Lock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Lock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Unlock the screen.
+		/// Functionality that's only available on Android and iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Unlock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Start recording screen.
+		/// Functionality that's only available on Android, iOS and Windows.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">StartRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void StartRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StartRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("startRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Stop recording screen.
+		/// Functionality that's only available on Android, iOS and Windows.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">StopRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void StopRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StopRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("stopRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Toggle airplane mode on device.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleAirplaneMode is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleAirplaneMode(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleAirplaneMode is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleAirplaneMode", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Switch the state of the wifi service.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleWifi(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Simulate the device shaking.
+		/// Functionality that's only available on iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Shake(this IApp app)
+		{
+			if (app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
+			}
+
+			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Gets the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <returns>The information of the system related to the performance.</returns>
+		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			var response = app.CommandExecutor.Execute("getPerformanceData", new Dictionary<string, object>()
+			{
+				{ "performanceDataType", performanceDataType },
+			});
+
+			if (response?.Value != null)
+			{
+				return (IList<object>)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		static IUIElement Wait(Func<IUIElement?> query,
+			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
@@ -792,7 +1039,7 @@ namespace UITest.Appium
 
 			DateTime start = DateTime.Now;
 
-			IUIElement result = query();
+			IUIElement? result = query();
 
 			while (!satisfactory(result))
 			{
@@ -808,7 +1055,7 @@ namespace UITest.Appium
 				result = query();
 			}
 
-			return result;
+			return result!;
 		}
 
 		static IUIElement WaitForAtLeastOne(Func<IUIElement> query,

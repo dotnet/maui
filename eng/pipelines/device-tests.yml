@@ -3,7 +3,8 @@ trigger:
     include:
     - main
     - release/*
-    - loc
+    - net9.0
+    - net8.0
   tags:
     include:
     - '*'
@@ -27,6 +28,8 @@ pr:
     include:
     - main
     - release/*
+    - net9.0
+    - net8.0
   paths:
     include:
     - '*'
@@ -69,17 +72,14 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: macOS-14
 
   - name: catalystPool
     type: object
     default:
       name: $(macosTestsVmPool)
-      vmImage: $(macosTestsVmImage)
+      vmImage: macOS-14
 
   - name: windowsPool
     type: object
