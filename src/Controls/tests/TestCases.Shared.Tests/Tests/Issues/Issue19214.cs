@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿#if IOS
+using System.Drawing;
 using NUnit.Framework;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
@@ -6,7 +7,7 @@ using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue19214 : _IssuesUITest
 {
     public Issue19214(TestDevice device) : base(device) { }
@@ -17,9 +18,6 @@ public class Issue19214 : _IssuesUITest
     [Category(UITestCategories.Entry)]
     public void TestMultipleScrollViews ()
     {
-        this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-            "This is an iOS Keyboard Scrolling issue.");
-
         var app = App as AppiumApp;
         if (app is null)
         {
@@ -101,3 +99,4 @@ public class Issue19214 : _IssuesUITest
 		app.Driver.PerformActions([scrollSequence]);
     }
 }
+#endif

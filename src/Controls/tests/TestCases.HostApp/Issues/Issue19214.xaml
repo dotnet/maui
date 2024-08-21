@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19214"
              Title="Issue19214">
-    <Grid RowDefinitions="40,*,*,*" Margin="0,0,0,0">
-        <Label Text="ScrollView 1" Grid.Row="0" Background="Red" />
+    <Grid RowDefinitions="40,*,*,*" Margin="20,0">
         <ScrollView Background="LightBlue" Padding="10" Grid.Row="1" AutomationId="ScrollView_1">
             <VerticalStackLayout>
                 <Entry Text="Top Scroll" Background="Lightgray" HeightRequest="40" AutomationId="TopEntry_1"/>
