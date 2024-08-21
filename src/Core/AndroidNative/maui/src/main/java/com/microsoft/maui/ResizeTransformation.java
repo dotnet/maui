@@ -2,6 +2,7 @@ package com.microsoft.maui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.DisplayMetrics;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.Key;
@@ -27,8 +28,6 @@ class ResizeTransformation extends BitmapTransformation {
         }
 
         float aspectRatio = (float) width / (float) height;
-
-        int outWidth, outHeight;
 
         if (width > height) {
             outWidth = display.widthPixels;
