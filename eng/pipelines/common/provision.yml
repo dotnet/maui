@@ -82,7 +82,6 @@ steps:
   - bash: |
       echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_17_X64)"
       echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_17_X64)"
-    #  brew install --cask microsoft-openjdk@17
     displayName: 'Setup JDK Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
  

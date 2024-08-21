@@ -94,26 +94,20 @@ parameters:
   - name: macosPool
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: macOS-14
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
 
   - name: androidCompatibilityPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
 
   - name: iosCompatibilityPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
 
 resources:
   repositories:

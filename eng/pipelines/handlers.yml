@@ -72,8 +72,8 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
+        name: $(macosTestsVmPool)
+        vmImage: $(macosTestsVmImage)
         artifact: build-macos
  
   - name: PackPlatforms
@@ -84,8 +84,8 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: nuget
       - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
+        name: $(macosTestsVmPool)
+        vmImage: $(macosTestsVmImage)
         artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
@@ -96,8 +96,8 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
+        poolName: Azure Pipelines
+        vmImage: macOS-14
         artifact: build-macos
 
   - name: RunTemplatePlatforms
@@ -108,13 +108,12 @@ parameters:
       demands:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
-      testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+    - name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+          macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -159,9 +158,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Sonoma
-                - macOS.Architecture -equals x64
             steps:
               - template: common/provision.yml
                 parameters:
@@ -206,9 +202,6 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Sonoma
-              - macOS.Architecture -equals x64
           variables:
             - name: _buildScript
               value: $(Build.SourcesDirectory)/build.cmd -ci

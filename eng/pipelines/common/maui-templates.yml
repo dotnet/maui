@@ -20,7 +20,28 @@ parameters:
 
   - name: BuildPlatforms
     type: object
+    default:
+    - name: Windows
+      poolName: Azure Pipelines
+      vmImage: macOS-14
+      artifact: templates-windows
+    - name: macOS
+      poolName: Azure Pipelines
+      vmImage: macOS-14
+      artifact: templates-macos
 
+  - name: RunPlatforms
+    type: object
+    default:
+    - name: Azure Pipelines
+      vmImage: macOS-14
+      testName: RunOnAndroid
+      artifact: templates-run-android
+    - name: Azure Pipelines
+      vmImage: macOS-14
+      testName: RunOniOS
+      artifact: templates-run-ios
+  
   - name: BuildCategories
     type: object
     default:
@@ -30,10 +51,7 @@ parameters:
     - Blazor
     - MultiProject
     - AOT
-
-  - name: RunPlatforms
-    type: object
-
+  
   - name: prepareSteps
     type: stepList
     default: []
@@ -57,9 +75,7 @@ jobs:
     pool:
       name: $(POOL_NAME)
       vmImage: $(POOL_VIMAGE)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+    
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:
