@@ -3,16 +3,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.LifecycleEvents;
+using System.Collections.Generic;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace Microsoft.Maui.Hosting
 {
 	/// <summary>
 	/// A builder for .NET MAUI cross-platform applications and services.
 	/// </summary>
-	public sealed class MauiAppBuilder
+	public sealed class MauiAppBuilder : IHostApplicationBuilder
 	{
 		private readonly ServiceCollection _services = new();
 		private Func<IServiceProvider>? _createServiceProvider;
@@ -86,6 +89,8 @@ namespace Microsoft.Maui.Hosting
 		/// </summary>
 		public ConfigurationManager Configuration => _configuration.Value;
 
+		IConfigurationManager IHostApplicationBuilder.Configuration => Configuration;
+
 		/// <summary>
 		/// A collection of logging providers for the application to compose. This is useful for adding new logging providers.
 		/// </summary>
@@ -103,6 +108,12 @@ namespace Microsoft.Maui.Hosting
 				}
 			}
 		}
+
+		IDictionary<object, object> IHostApplicationBuilder.Properties => throw new NotImplementedException();
+
+		IHostEnvironment IHostApplicationBuilder.Environment => throw new NotImplementedException();
+
+		IMetricsBuilder IHostApplicationBuilder.Metrics => throw new NotImplementedException();
 
 		/// <summary>
 		/// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
