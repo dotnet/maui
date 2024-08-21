@@ -10,8 +10,8 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 class ResizeTransformation extends BitmapTransformation {
-    private static final String ID = "com.microsoft.maui.ResizeTransformation";
-    private static final byte[] ID_BYTES = ID.getBytes(Key.CHARSET);
+    //private static final String ID = "com.microsoft.maui.ResizeTransformation";
+   // private static final byte[] ID_BYTES = ID.getBytes(Key.CHARSET);
     private DisplayMetrics displayMetrixs;
 
     public ResizeTransformation(DisplayMetrics display) {
@@ -40,7 +40,7 @@ class ResizeTransformation extends BitmapTransformation {
         return Bitmap.createScaledBitmap(toTransform, outWidth, outHeight, false);
     }
 
-    @Override
+   /*  @Override
     public boolean equals(Object o) {
         if (o instanceof ResizeTransformation) {
             ResizeTransformation other = (ResizeTransformation) o;
@@ -59,5 +59,5 @@ class ResizeTransformation extends BitmapTransformation {
         messageDigest.update(ID_BYTES);
         byte[] maxWidthData = ByteBuffer.allocate(4).putInt(maxWidth).array();
         messageDigest.update(maxWidthData);
-    }
+    }*/
 }
