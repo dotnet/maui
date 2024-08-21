@@ -172,3 +172,5 @@ static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Ma
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void
+Microsoft.Maui.IStepper.Increment.get -> double
+static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void

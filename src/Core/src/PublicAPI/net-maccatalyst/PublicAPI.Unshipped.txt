@@ -227,3 +227,4 @@ static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Ma
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
+Microsoft.Maui.IStepper.Increment.get -> double
