@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
-		static Dictionary<PlatformView, ViewHandler>? FocusManagerMapping;
+		static ConditionalWeakTable<PlatformView, ViewHandler>? FocusManagerMapping;
 
 		partial void ConnectingHandler(PlatformView? platformView)
 		{
