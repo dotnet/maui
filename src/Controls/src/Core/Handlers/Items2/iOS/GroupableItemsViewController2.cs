@@ -73,6 +73,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
 			NSString elementKind, NSIndexPath indexPath)
 		{
+			var struc = base.GetViewForSupplementaryElement(collectionView, elementKind, indexPath);
+			if(struc != null)
+			{
+				return struc;
+			}
+		
 			var reuseId = DetermineViewReuseId(elementKind);
 
 			var view = collectionView.DequeueReusableSupplementaryView(elementKind, reuseId, indexPath) as UICollectionReusableView;

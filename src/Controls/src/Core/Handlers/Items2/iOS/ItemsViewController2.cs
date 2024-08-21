@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -32,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
-		
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
@@ -43,12 +44,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected UICollectionViewScrollDirection ScrollDirection { get; private set; } =
 			UICollectionViewScrollDirection.Vertical;
-		
+
 		protected ItemsViewController2(TItemsView itemsView, UICollectionViewLayout layout) : base(layout)
 		{
 			_itemsView = new(itemsView);
 			ItemsViewLayout = layout;
-			
 		}
 
 		public void UpdateLayout(UICollectionViewLayout newLayout)
@@ -107,18 +107,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// We need to get the index path that is adjusted for the item source
 			// Some ItemsView like CarouselView have a loop feature that will make the index path different from the item source
 			var indexpathAdjusted = GetAdjustedIndexPathForItemSource(indexPath);
-			
+
 			if (cell is TemplatedCell2 TemplatedCell2)
 			{
 				TemplatedCell2.ScrollDirection = ScrollDirection;
 
-				TemplatedCell2.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);	
+				TemplatedCell2.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);
 			}
 			else if (cell is DefaultCell2 DefaultCell2)
 			{
 				DefaultCell2.Label.Text = ItemsSource[indexpathAdjusted].ToString();
 			}
-			
+
 			return cell;
 		}
 
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var wasEmpty = _isEmpty;
 
 			_isEmpty = ItemsSource.ItemCount == 0;
-			
+
 			if (wasEmpty != _isEmpty)
 			{
 				UpdateEmptyViewVisibility(_isEmpty);
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			collectionView.SetCustomDelegate(this);
 			CollectionView = collectionView;
 		}
-		
+
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
@@ -255,17 +255,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// 	}
 		// 	_previousContentSize = contentSize.Value;
 		// }
-		
 
-		// internal Size? GetSize()
-		// {
-		// 	if (_emptyViewDisplayed)
-		// 	{
-		// 		return _emptyUIView.Frame.Size.ToSize();
-		// 	}
-		//
-		// 	return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
-		// }
+		const int HeaderTag = 111;
+
+		internal Size? GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			nfloat headerHeight = 0;
+			var headerView = CollectionView.ViewWithTag(HeaderTag);
+
+			if (headerView != null)
+				headerHeight = headerView.Frame.Height;
+
+			System.Diagnostics.Debug.WriteLine($"headerHeight: {headerHeight}");
+			var sizeColl = CollectionView.CollectionViewLayout.CollectionViewContentSize;
+			return sizeColl.ToSize();
+			//	var attributes = CollectionView.VisibleSize;
+			//	var ss = CollectionView.ContentSize;
+			//	var header =CollectionView.GetSupplementaryView(UICollectionElementKindSectionKey.Header, NSIndexPath.FromItemSection(0, 0));
+			//var ss2 = CollectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header).FirstOrDefault();
+			// var headerSize = ss2?.Frame.Size;
+
+			// return new Size(sizeColl.Width + (headerSize?.Width ?? 0), sizeColl.Height + (headerSize?.Height ?? 0));
+		}
 
 		// void ConstrainItemsToBounds()
 		// {
@@ -282,7 +298,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_initialized = true;
-			
+
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
 
@@ -329,8 +345,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
-		
-		
+
+
 		public virtual NSIndexPath GetIndexForItem(object item)
 		{
 			return ItemsSource.GetIndexForItem(item);
@@ -341,28 +357,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return ItemsSource[index];
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
-		void CellContentSizeChanged(object sender, EventArgs e)
-		{
-			if (_disposed)
-				return;
+		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
+		// void CellContentSizeChanged(object sender, EventArgs e)
+		// {
+		// 	if (_disposed)
+		// 		return;
 
-			if (!(sender is TemplatedCell2 cell))
-			{
-				return;
-			}
+		// 	if (!(sender is TemplatedCell2 cell))
+		// 	{
+		// 		return;
+		// 	}
 
-			var visibleCells = CollectionView.VisibleCells;
+		// 	var visibleCells = CollectionView.VisibleCells;
 
-			for (int n = 0; n < visibleCells.Length; n++)
-			{
-				if (cell == visibleCells[n])
-				{
-					ItemsViewLayout?.InvalidateLayout();
-					return;
-				}
-			}
-		}
+		// 	for (int n = 0; n < visibleCells.Length; n++)
+		// 	{
+		// 		if (cell == visibleCells[n])
+		// 		{
+		// 			ItemsViewLayout?.InvalidateLayout();
+		// 			return;
+		// 		}
+		// 	}
+		// }
 
 		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
 		// void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs2 args)
@@ -390,9 +406,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsView.ItemTemplate != null)
 			{
 				var item = ItemsSource[indexPath];
-				
+
 				var dataTemplate = ItemsView.ItemTemplate.SelectDataTemplate(item, ItemsView);
-				
+
 				var cellType = typeof(TemplatedCell2);
 
 				var orientation = ScrollDirection == UICollectionViewScrollDirection.Horizontal ? "Horizontal" : "Vertical";
@@ -442,7 +458,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Frame.Width, CollectionView.Frame.Height);
 		}
 
-		
 
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
@@ -453,11 +468,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
-		
-		
+
+
 				uiView?.Dispose();
 				uiView = null;
-		
+
 				formsElement = null;
 			}
 			else
@@ -598,7 +613,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
 				_emptyViewFormsElement.Layout(frame.ToRectangle());
 		}
-		
+
 		internal protected virtual void UpdateVisibility()
 		{
 			if (ItemsView.IsVisible)
