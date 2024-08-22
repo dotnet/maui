@@ -1,4 +1,5 @@
-﻿using Android.Widget;
+﻿using System;
+using Android.Widget;
 using AGravityFlags = Android.Views.GravityFlags;
 
 namespace Microsoft.Maui.Platform
@@ -39,6 +40,13 @@ namespace Microsoft.Maui.Platform
 			{
 				view.TextAlignment = horizontal.ToTextAlignment();
 				view.Gravity = vertical.ToVerticalGravityFlags();
+			}
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				view.JustificationMode = horizontal == TextAlignment.Justify
+					? Android.Text.JustificationMode.InterWord
+					: Android.Text.JustificationMode.None;
 			}
 		}
 	}
