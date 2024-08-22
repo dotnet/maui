@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Forces a layout cycle on the element and all of its descendants.
 		/// </summary>
 		/// <remarks>Calling this method frequently can have negative impacts on performance.</remarks>
-		[Obsolete("Call InvalidateMeasure or InvalidateMeasure instead depending on your scenario.")]
+		[Obsolete("Call InvalidateMeasure or InvalidateArrange instead depending on your scenario.")]
 		public void ForceLayout() => SizeAllocated(Width, Height);
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
