@@ -101,7 +101,6 @@ namespace Microsoft.Maui.Platform
 
 			platformView.UpdateMauiCALayer(border);
 		}
-		
 		internal static void UpdateMauiCALayer(this UIView platformView, IBorderStroke? border)
 		{
 			CALayer? backgroundLayer = platformView.Layer as MauiCALayer;
