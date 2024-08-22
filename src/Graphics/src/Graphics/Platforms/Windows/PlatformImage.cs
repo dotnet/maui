@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.IO;
 using Windows.Storage.Streams;
 
 #if MAUI_GRAPHICS_WIN2D
@@ -23,6 +25,8 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private readonly ICanvasResourceCreator _creator;
 		private CanvasBitmap _bitmap;
+
+		private static readonly RecyclableMemoryStreamManager recyclableMemoryStreamManager = new();
 
 #if MAUI_GRAPHICS_WIN2D
 		public W2DImage(
@@ -153,10 +157,29 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
 			var creator = PlatformGraphicsService.Creator;
+			
 			if (creator == null)
+			{
 				throw new Exception("No resource creator has been registered globally or for this thread.");
+			}
 
-			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
+			CanvasBitmap bitmap;
+
+			if (stream.CanSeek)
+			{
+				var bitmapAsync = CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream());
+				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
+			}
+			else
+			{
+				using var memoryStream = recyclableMemoryStreamManager.GetStream();
+				stream.CopyTo(memoryStream);
+				memoryStream.Seek(0, SeekOrigin.Begin);
+
+				var bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
+				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
+			}
+
 			return new PlatformImage(creator, bitmap);
 		}
 	}

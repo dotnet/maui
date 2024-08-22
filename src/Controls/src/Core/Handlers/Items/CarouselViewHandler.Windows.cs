@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,14 +14,13 @@ using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.SnapPointsAlignment;
 using WSnapPointsType = Microsoft.UI.Xaml.Controls.SnapPointsType;
-using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
 		LoopableCollectionView _loopableCollectionView;
-		ScrollViewer _scrollViewer = new();
+		ScrollViewer _scrollViewer;
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize; 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		LinearItemsLayout CarouselItemsLayout => ItemsView?.ItemsLayout;
 		WDataTemplate CarouselItemsViewTemplate => (WDataTemplate)WApp.Current.Resources["CarouselItemsViewDefaultTemplate"];
 
-		protected override void ConnectHandler(WItemsView platformView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			ItemsView.Scrolled += CarouselScrolled;
 			ListViewBase.SizeChanged += OnListViewSizeChanged;
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(WItemsView platformView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselScrolled;
@@ -89,20 +89,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 		}
 
-		//protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
-		//{
-		//	base.OnScrollViewerFound(scrollViewer);
-		//
-		//	_scrollViewer = scrollViewer;
-		//	_scrollViewer.ViewChanging += OnScrollViewChanging;
-		//	_scrollViewer.ViewChanged += OnScrollViewChanged;
-		//	_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
-		//
-		//	UpdateScrollBarVisibilityForLoop();
-		//}
+		protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
+		{
+			base.OnScrollViewerFound(scrollViewer);
+
+			_scrollViewer = scrollViewer;
+			_scrollViewer.ViewChanging += OnScrollViewChanging;
+			_scrollViewer.ViewChanged += OnScrollViewChanged;
+			_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
+
+			UpdateScrollBarVisibilityForLoop();
+		}
 
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
 		{
+			_loopableCollectionView?.CleanUp();
 			_loopableCollectionView = new LoopableCollectionView(base.GetCollectionView(collectionViewSource));
 
 			if (Element is CarouselView cv && cv.Loop)
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return _loopableCollectionView;
 		}
 
-		protected override WItemsView SelectListViewBase()
+		protected override ListViewBase SelectListViewBase()
 		{
 			return CreateCarouselListLayout(CarouselItemsLayout.Orientation);
 		}
@@ -136,9 +137,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			};
 		}
 
-		protected override ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
+		protected override ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
 		{
-			args = base.ComputeVisibleIndexes(args, advancing);
+			args = base.ComputeVisibleIndexes(args, orientation, advancing);
 
 			if (ItemsView.Loop)
 			{
@@ -150,63 +151,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return args;
 		}
 
-		WItemsView CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
+		ListViewBase CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
 		{
-			var itemsView = new WItemsView()
-			{
-				Padding = WinUIHelpers.CreateThickness(
-					ItemsView.PeekAreaInsets.Left, ItemsView.PeekAreaInsets.Top,
-					ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom),
-				Layout = layoutOrientation == ItemsLayoutOrientation.Horizontal
-					? new Microsoft.UI.Xaml.Controls.StackLayout() 
-					{ 
-						Orientation = Orientation.Horizontal, 
-						Spacing = CarouselItemsLayout.ItemSpacing 
-					}
-					: new Microsoft.UI.Xaml.Controls.StackLayout() 
-					{ 
-						Orientation = Orientation.Vertical,
-						Spacing = CarouselItemsLayout.ItemSpacing
-					}
-			};
+			UI.Xaml.Controls.ListView listView;
 
 			if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
 			{
-				ScrollViewer.SetHorizontalScrollMode(itemsView, WScrollMode.Enabled);
-				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WScrollBarVisibility.Visible);
+				listView = new FormsListView()
+				{
+					Style = (UI.Xaml.Style)WApp.Current.Resources["HorizontalCarouselListStyle"],
+					ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"]
+				};
 
-				ScrollViewer.SetVerticalScrollMode(itemsView, WScrollMode.Disabled);
-				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WScrollBarVisibility.Disabled);
+				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
+				ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
+			}
+			else
+			{
+				listView = new FormsListView()
+				{
+					Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"]
+				};
+
+				ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
+				ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
 			}
 
-			return itemsView;
-			//UI.Xaml.Controls.ListView listView;
-			//
-			//if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
-			//{
-			//	listView = new FormsListView()
-			//	{
-			//		Style = (UI.Xaml.Style)WApp.Current.Resources["HorizontalCarouselListStyle"],
-			//		ItemsPanel = (ItemsPanelTemplate)WApp.Current.Resources["HorizontalListItemsPanel"]
-			//	};
-			//
-			//	ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
-			//	ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
-			//}
-			//else
-			//{
-			//	listView = new FormsListView()
-			//	{
-			//		Style = (UI.Xaml.Style)WApp.Current.Resources["VerticalCarouselListStyle"]
-			//	};
-			//
-			//	ScrollViewer.SetHorizontalScrollBarVisibility(listView, WScrollBarVisibility.Disabled);
-			//	ScrollViewer.SetVerticalScrollBarVisibility(listView, WScrollBarVisibility.Auto);
-			//}
-			//
-			//listView.Padding = WinUIHelpers.CreateThickness(ItemsView.PeekAreaInsets.Left, ItemsView.PeekAreaInsets.Top, ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom);
-			//
-			//return listView;
+			listView.Padding = WinUIHelpers.CreateThickness(ItemsView.PeekAreaInsets.Left, ItemsView.PeekAreaInsets.Top, ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom);
+
+			return listView;
 		}
 
 		public static void MapCurrentItem(CarouselViewHandler handler, CarouselView carouselView)
@@ -216,7 +189,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			handler.UpdatePosition();
+			// If the initial position hasn't been set, we have a UpdateInitialPosition call on CarouselViewHandler
+			// that will handle this so we want to skip this mapper call. We need to wait for the LIstView to be ready
+			if (handler.InitialPositionSet)
+			{
+				handler.UpdatePosition();
+			}
+			
 		}
 
 		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
@@ -239,6 +218,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.UpdateLoop();
 		}
 
+		internal bool InitialPositionSet { get; private set; }
+
+
 		void UpdateIsBounceEnabled()
 		{
 			if (_scrollViewer != null)
@@ -247,7 +229,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateIsSwipeEnabled()
 		{
-			//ListViewBase.IsSwipeEnabled = ItemsView.IsSwipeEnabled;
+			ListViewBase.IsSwipeEnabled = ItemsView.IsSwipeEnabled;
 
 			switch (CarouselItemsLayout.Orientation)
 			{
@@ -366,28 +348,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return -1;
 		}
 
-		void UpdateCarouselViewInitialPosition()
+		void UpdateInitialPosition()
 		{
 			if (ListViewBase == null)
 			{
 				return;
 			}
 
-			//if (ListViewBase.Items.Count > 0)
-			//{
-			//	if (Element.Loop)
-			//	{
-			//		var item = ListViewBase.Items[0];
-			//		_loopableCollectionView.CenterMode = true;
-			//		ListViewBase.ScrollIntoView(item);
-			//		_loopableCollectionView.CenterMode = false;
-			//	}
-			//
-			//	if (ItemsView.CurrentItem != null)
-			//		UpdateCurrentItem();
-			//	else
-			//		UpdatePosition();
-			//}
+			if (ListViewBase.Items.Count > 0)
+			{
+				if (Element.Loop)
+				{
+					var item = ItemsView.CurrentItem ?? ListViewBase.Items.FirstOrDefault();
+					_loopableCollectionView.CenterMode = true;
+					ListViewBase.ScrollIntoView(item);
+					_loopableCollectionView.CenterMode = false;
+				}
+
+				if (ItemsView.CurrentItem != null)
+					UpdateCurrentItem();
+				else
+					UpdatePosition();
+
+				InitialPositionSet = true;
+			}
 		}
 
 		void UpdateCurrentItem()
@@ -592,7 +576,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateItemsSource();
 			UpdateSnapPointsType();
 			UpdateSnapPointsAlignment();
-			UpdateCarouselViewInitialPosition();
+			UpdateInitialPosition();
 		}
 
 		void InvalidateItemSize()
@@ -600,10 +584,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemHeight = GetItemHeight();
 			var itemWidth = GetItemWidth();
 
-			foreach (var item in ListViewBase.GetChildren<ItemContainer>())
+			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
 			{
-				item.Height = itemHeight;
-				item.Width = itemWidth;
+				item.ItemHeight = itemHeight;
+				item.ItemWidth = itemWidth;
 
 				item.InvalidateMeasure();
 			}

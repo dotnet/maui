@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
 using WASDKListViewSelectionMode = Microsoft.UI.Xaml.Controls.ListViewSelectionMode;
 using WASDKSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		bool _ignorePlatformSelectionChange;
 
-		protected override void ConnectHandler(WItemsView platformView)
+		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (newListViewBase != null)
 			{
-				newListViewBase.SetBinding(WItemsView.SelectionModeProperty,
+				newListViewBase.SetBinding(ListViewBase.SelectionModeProperty,
 						new Microsoft.UI.Xaml.Data.Binding
 						{
 							Source = ItemsView,
@@ -36,21 +36,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 							Converter = new SelectionModeConvert(),
 							Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay
 						});
-				
+
 				newListViewBase.SelectionChanged += PlatformSelectionChanged;
 			}
 
 			UpdatePlatformSelection();
 		}
 
-		protected override void DisconnectHandler(WItemsView platformView)
+		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			var oldListViewBase = platformView;
 
 			if (oldListViewBase != null)
 			{
-				oldListViewBase.ClearValue(WItemsView.SelectionModeProperty);
 				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
 			}
 
 			if (ItemsView != null)
@@ -77,58 +77,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_ignorePlatformSelectionChange = true;
 
-			var itemList = ListViewBase.ItemsSource as ICollectionView;
-			if (itemList is null)
-				return;
-
 			switch (ListViewBase.SelectionMode)
 			{
-				case ItemsViewSelectionMode.None:
+				case WASDKListViewSelectionMode.None:
 					break;
-				case ItemsViewSelectionMode.Single:
+				case WASDKListViewSelectionMode.Single:
 					if (ItemsView != null)
 					{
 						if (ItemsView.SelectedItem == null)
 						{
-							ListViewBase.DeselectAll();
+							ListViewBase.SelectedItem = null;
 						}
 						else
 						{
-							var selectedItem = itemList.FirstOrDefault(item =>
-							{
-								if (item is ItemTemplateContext itemPair)
+							ListViewBase.SelectedItem =
+								ListViewBase.Items.FirstOrDefault(item =>
 								{
-									return itemPair.Item == ItemsView.SelectedItem;
-								}
-								else
-								{
-									return item == ItemsView.SelectedItem;
-								}
-							});
-							if (selectedItem is not null)
-							{
-								ListViewBase.Select(itemList.IndexOf(selectedItem));
-							}	
+									if (item is ItemTemplateContext itemPair)
+									{
+										return itemPair.Item == ItemsView.SelectedItem;
+									}
+									else
+									{
+										return item == ItemsView.SelectedItem;
+									}
+								});
 						}
 					}
-			
+
 					break;
-				case ItemsViewSelectionMode.Multiple:
-					ListViewBase.DeselectAll();
-					for (int i = 0; i < itemList.Count; i++)
+				case WASDKListViewSelectionMode.Multiple:
+					ListViewBase.SelectedItems.Clear();
+					foreach (var nativeItem in ListViewBase.Items)
 					{
-						var nativeItem = itemList[i];
 						if (nativeItem is ItemTemplateContext itemPair && ItemsView.SelectedItems.Contains(itemPair.Item))
 						{
-							ListViewBase.Select(i);
+							ListViewBase.SelectedItems.Add(nativeItem);
 						}
 						else if (ItemsView.SelectedItems.Contains(nativeItem))
 						{
-							ListViewBase.Select(i);
+							ListViewBase.SelectedItems.Add(nativeItem);
 						}
 					}
 					break;
-				case ItemsViewSelectionMode.Extended:
+				case WASDKListViewSelectionMode.Extended:
 					break;
 				default:
 					break;
@@ -142,7 +134,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdatePlatformSelection();
 		}
 
-		void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
+		void PlatformSelectionChanged(object sender, WASDKSelectionChangedEventArgs args)
 		{
 			UpdateVirtualSelection();
 		}
@@ -156,12 +148,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			switch (ListViewBase.SelectionMode)
 			{
-				case ItemsViewSelectionMode.None:
+				case WASDKListViewSelectionMode.None:
 					break;
-				case ItemsViewSelectionMode.Single:
+				case WASDKListViewSelectionMode.Single:
 					UpdateVirtualSingleSelection();
 					break;
-				case ItemsViewSelectionMode.Multiple:
+				case WASDKListViewSelectionMode.Multiple:
 					UpdateVirtualMultipleSelection();
 					break;
 				default:
@@ -226,11 +218,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (formSelectionMode)
 				{
 					case SelectionMode.None:
-						return ItemsViewSelectionMode.None;
+						return WASDKListViewSelectionMode.None;
 					case SelectionMode.Single:
-						return ItemsViewSelectionMode.Single;
+						return WASDKListViewSelectionMode.Single;
 					case SelectionMode.Multiple:
-						return ItemsViewSelectionMode.Multiple;
+						return WASDKListViewSelectionMode.Multiple;
 					default:
 						return WASDKListViewSelectionMode.None;
 				}
@@ -238,16 +230,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public object ConvertBack(object value, Type targetType, object parameter, string language)
 			{
-				var uwpListViewSelectionMode = (ItemsViewSelectionMode)value;
+				var uwpListViewSelectionMode = (WASDKListViewSelectionMode)value;
 				switch (uwpListViewSelectionMode)
 				{
-					case ItemsViewSelectionMode.None:
+					case WASDKListViewSelectionMode.None:
 						return SelectionMode.None;
-					case ItemsViewSelectionMode.Single:
+					case WASDKListViewSelectionMode.Single:
 						return SelectionMode.Single;
-					case ItemsViewSelectionMode.Multiple:
+					case WASDKListViewSelectionMode.Multiple:
 						return SelectionMode.Multiple;
-					case ItemsViewSelectionMode.Extended:
+					case WASDKListViewSelectionMode.Extended:
 						return SelectionMode.None;
 					default:
 						return SelectionMode.None;
