@@ -650,12 +650,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")));
 				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 
-				if (node.Parent is IElementNode elementNode)
-					foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, module.TypeSystem.Object, module))
+				if (node.Parent is IElementNode elementNode &&
+					context.Variables.TryGetValue(elementNode, out VariableDefinition variableDefinition))
+				{
+					foreach (var instruction in variableDefinition.LoadAs(context.Cache, module.TypeSystem.Object, module))
+					{
 						yield return instruction;
+					}
+				}
 				else
+				{
 					yield return Create(Ldnull);
-				
+				}
+
 				foreach (var instruction in PushTargetProperty(context, bpRef, propertyRef, declaringTypeReference, module))
 					yield return instruction;
 
