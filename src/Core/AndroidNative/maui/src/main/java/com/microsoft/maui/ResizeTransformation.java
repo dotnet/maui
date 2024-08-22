@@ -51,8 +51,7 @@ class ResizeTransformation extends BitmapTransformation {
      }
 
       @Override
-     public void updateDiskCacheKey(MessageDigest messageDigest)
-         throws UnsupportedEncodingException {
+     public void updateDiskCacheKey(MessageDigest messageDigest) {
        messageDigest.update(ID_BYTES);
      }
 }
