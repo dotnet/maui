@@ -451,7 +451,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var handler = view.ToHandler(MauiContext);
 			var platformView = handler.ContainerView ?? handler.PlatformView;
 
-			return platformView as FrameworkElement;
+			return platformView;
 		}
 
 		internal void HandleScroll(ScrollPresenter scrollViewer)
