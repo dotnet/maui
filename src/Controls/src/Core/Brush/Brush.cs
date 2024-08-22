@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSlateGray"/>.</summary>
 		public static SolidColorBrush LightSlateGray => lightSlateGray ??= new(Colors.LightSlateGray);
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSlateGrey"/>.</summary>
-		public static SolidColorBrush LightSlateGrey => LightSlateGrey;
+		public static SolidColorBrush LightSlateGrey => LightSlateGray;
 		static ImmutableBrush lightSteelBlue;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSteelBlue"/>.</summary>
 		public static SolidColorBrush LightSteelBlue => lightSteelBlue ??= new(Colors.LightSteelBlue);
