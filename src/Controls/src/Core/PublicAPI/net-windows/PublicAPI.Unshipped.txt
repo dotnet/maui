@@ -107,6 +107,7 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.CoreWebView2ProcessFailedEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs!

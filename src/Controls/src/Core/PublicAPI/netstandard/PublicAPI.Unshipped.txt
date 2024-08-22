@@ -92,6 +92,7 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
 static readonly Microsoft.Maui.Controls.HandlerProperties.DisconnectPolicyProperty -> Microsoft.Maui.Controls.BindableProperty!

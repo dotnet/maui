@@ -440,6 +440,7 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			// We don't want forcelayout to call the legacy

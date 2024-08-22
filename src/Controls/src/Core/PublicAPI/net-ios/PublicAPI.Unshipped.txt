@@ -86,6 +86,7 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer.PreferredStatusBarUpdateAnimation.get -> UIKit.UIStatusBarAnimation
