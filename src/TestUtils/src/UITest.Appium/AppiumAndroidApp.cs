@@ -11,6 +11,7 @@ namespace UITest.Appium
 			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAndroidThemeChangeAction());
+			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidAlertActions(this));
 		}
