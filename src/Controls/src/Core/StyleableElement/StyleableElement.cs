@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>Represents an <see cref="Element"/> with base functionality for <see cref="Page"/> styling. Does not necessarily render on screen.</summary>
-	public class StyleableElement : Element, IStyleSelectable
+	public abstract class StyleableElement : Element, IStyleSelectable
 	{
 		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty =
