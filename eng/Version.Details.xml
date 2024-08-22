@@ -14,9 +14,9 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.24408.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="8.0.0-beta.24310.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>60ae233c3d77f11c5fdb53e570b64d503b13ba59</Sha>
+      <Sha>9f6799fdc16ae19b3e9478c55b997a6aab839d09</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24310.5">
       <Uri>https://github.com/dotnet/arcade</Uri>

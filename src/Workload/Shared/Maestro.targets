@@ -36,7 +36,7 @@
       <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
     </ItemGroup>
 
-    <PushToBuildStorage
+    <PushToAzureDevOpsArtifacts
         ItemsToPush="@(ItemsToPush)"
         IsStableBuild="$(StabilizePackageVersion)"
         ManifestBuildData="@(ManifestBuildData)"
@@ -47,17 +47,15 @@
         AssetManifestPath="$(AssetManifestPath)"
         PublishingVersion="3" />
 
-    <Message Text="BAR manifest version: $(PackageReferenceVersion)" />
-
     <MSBuild
         Targets="Restore"
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(PackageReferenceVersion)"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(Version)"
     />
 
     <MSBuild
         Projects="$(PkgMicrosoft_DotNet_Arcade_Sdk)\tools\SdkTasks\PublishBuildAssets.proj"
-        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(PackageReferenceVersion);ManifestsPath=$(ArtifactsLogDir)AssetManifest;MaestroApiEndpoint=https://maestro.dot.net"
+        Properties="Configuration=$(Configuration);RepoRoot=$(MauiRootDirectory);VersionPrefix=$(Version);ManifestsPath=$(ArtifactsLogDir)AssetManifest;MaestroApiEndpoint=https://maestro.dot.net"
     />
   </Target>
 
