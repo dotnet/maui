@@ -191,8 +191,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			LayoutEmptyView();
 		}
 
-
-
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
 		{
 			if (CollectionView?.Window != null)
@@ -258,30 +256,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		const int HeaderTag = 111;
 
-		internal Size? GetSize()
-		{
-			if (_emptyViewDisplayed)
-			{
-				return _emptyUIView.Frame.Size.ToSize();
-			}
+		// internal Size? GetSize()
+		// {
+		// 	if (_emptyViewDisplayed)
+		// 	{
+		// 		return _emptyUIView.Frame.Size.ToSize();
+		// 	}
 
-			nfloat headerHeight = 0;
-			var headerView = CollectionView.ViewWithTag(HeaderTag);
+		// 	nfloat headerHeight = 0;
+		// 	var headerView = CollectionView.ViewWithTag(HeaderTag);
 
-			if (headerView != null)
-				headerHeight = headerView.Frame.Height;
+		// 	if (headerView != null)
+		// 		headerHeight = headerView.Frame.Height;
 
-			System.Diagnostics.Debug.WriteLine($"headerHeight: {headerHeight}");
-			var sizeColl = CollectionView.CollectionViewLayout.CollectionViewContentSize;
-			return sizeColl.ToSize();
-			//	var attributes = CollectionView.VisibleSize;
-			//	var ss = CollectionView.ContentSize;
-			//	var header =CollectionView.GetSupplementaryView(UICollectionElementKindSectionKey.Header, NSIndexPath.FromItemSection(0, 0));
-			//var ss2 = CollectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header).FirstOrDefault();
-			// var headerSize = ss2?.Frame.Size;
-
-			// return new Size(sizeColl.Width + (headerSize?.Width ?? 0), sizeColl.Height + (headerSize?.Height ?? 0));
-		}
+		// 	var sizeColl = CollectionView.CollectionViewLayout.CollectionViewContentSize;
+		// 	return sizeColl.ToSize();
+		// }
 
 		// void ConstrainItemsToBounds()
 		// {

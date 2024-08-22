@@ -100,7 +100,6 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.LoadView() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLoad() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewWillLayoutSubviews() -> void
-override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.DetermineEmptyViewFrame() -> CoreGraphics.CGRect
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.Dispose(bool disposing) -> void

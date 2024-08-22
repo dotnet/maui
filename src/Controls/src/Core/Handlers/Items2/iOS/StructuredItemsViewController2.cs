@@ -20,11 +20,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			: base(structuredItemsView, layout)
 		{
 		}
+		
 		protected override void RegisterViewTypes()
 		{
 			base.RegisterViewTypes();
-			// RegisterSupplementaryViews(UICollectionElementKindSection.Header);
-			// RegisterSupplementaryViews(UICollectionElementKindSection.Footer);
 		}
 
 		protected override void Dispose(bool disposing)
