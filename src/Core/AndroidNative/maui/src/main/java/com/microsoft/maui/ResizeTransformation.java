@@ -10,12 +10,10 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 class ResizeTransformation extends BitmapTransformation {
-    //private static final String ID = "com.microsoft.maui.ResizeTransformation";
-   // private static final byte[] ID_BYTES = ID.getBytes(Key.CHARSET);
-    private DisplayMetrics displayMetrixs;
+    private DisplayMetrics displayMetrics;
 
     public ResizeTransformation(DisplayMetrics display) {
-        this.displayMetrixs = display;
+        this.displayMetrics = display;
     }
 
     @Override
@@ -23,41 +21,20 @@ class ResizeTransformation extends BitmapTransformation {
         int width = toTransform.getWidth();
         int height = toTransform.getHeight();
 
-        if (width <= display.widthPixels && height <= display.heightPixels) {
+        if (width <= displayMetrics.widthPixels && height <= displayMetrics.heightPixels) {
             return toTransform;
         }
 
         float aspectRatio = (float) width / (float) height;
 
         if (width > height) {
-            outWidth = display.widthPixels;
-            outHeight = Math.round(display.widthPixels / aspectRatio);
+            outWidth = displayMetrics.widthPixels;
+            outHeight = Math.round(displayMetrics.widthPixels / aspectRatio);
         } else {
-            outHeight = display.heightPixels;
-            outWidth = Math.round(display.heightPixels * aspectRatio);
+            outHeight = displayMetrics.heightPixels;
+            outWidth = Math.round(displayMetrics.heightPixels * aspectRatio);
         }
 
         return Bitmap.createScaledBitmap(toTransform, outWidth, outHeight, false);
     }
-
-   /*  @Override
-    public boolean equals(Object o) {
-        if (o instanceof ResizeTransformation) {
-            ResizeTransformation other = (ResizeTransformation) o;
-            return maxWidth == other.maxWidth;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return ID.hashCode() + maxWidth * 31;
-    }
-
-    @Override
-    public void updateDiskCacheKey(MessageDigest messageDigest) {
-        messageDigest.update(ID_BYTES);
-        byte[] maxWidthData = ByteBuffer.allocate(4).putInt(maxWidth).array();
-        messageDigest.update(maxWidthData);
-    }*/
 }
