@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Editor)]
 		public void TextInEditorShouldScroll()
 		{
 			_ = App.WaitForElement("editor");
