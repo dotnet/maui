@@ -33,7 +33,12 @@ namespace Microsoft.Maui.Controls
 			{
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
-				child?.Arrange(new Rect(x, y, width, height));
+
+				// For now we just leave the old path in place to avoid too much change in behavior
+				// All of our types that inherit from TemplatedView overrides LayoutChildren and replaces
+				// this behavior
+				if (child != null)
+					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
 			}
 		}
 
