@@ -83,10 +83,8 @@ namespace Microsoft.Maui.Storage
 
 		static void DeleteSharedPreferences()
 		{
-			// Get the alias used to store the encrypted values
-			var alias = $"{ApplicationModel.AppInfo.Current.PackageName}.microsoft.maui.essentials.preferences";
-			// Open an editor to the preferences we can clear
-			var editPreferences = Application.Context.GetSharedPreferences(alias, FileCreationMode.Private).Edit();
+			// Open an editor to the preferences we can clear, using the alias for storing encrypted values
+			var editPreferences = Application.Context.GetSharedPreferences(Alias, FileCreationMode.Private).Edit();
 			// Commit is synchronous here so we can be sure it's done before trying to create the encrypted preferences again
 			editPreferences?.Clear()?.Commit();
 		}
