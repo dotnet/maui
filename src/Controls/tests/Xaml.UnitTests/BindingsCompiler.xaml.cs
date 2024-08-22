@@ -97,6 +97,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				vm.Model[3] = "TextIndex2";
 				Assert.AreEqual("TextIndex2", layout.label3.Text);
 
+				//https://github.com/dotnet/maui/issues/23621
+				vm.Model.SetIndexerValueAndCallOnPropertyChangedWithoutIndex(3, "TextIndex3");
+				Assert.AreEqual("TextIndex3", layout.label3.Text);
+
 				//testing 2way
 				Assert.AreEqual("Text2", layout.entry0.Text);
 				((IElementController)layout.entry0).SetValueFromRenderer(Entry.TextProperty, "Text3");
@@ -207,6 +211,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				values[v] = value;
 				OnPropertyChanged("Indexer[" + v + "]");
 			}
+		}
+
+		public void SetIndexerValueAndCallOnPropertyChangedWithoutIndex(int v, string value)
+		{
+			if (values[v] == value)
+				return;
+
+			values[v] = value;
+			OnPropertyChanged("Indexer");
 		}
 
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
