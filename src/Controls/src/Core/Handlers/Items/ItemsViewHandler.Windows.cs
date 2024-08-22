@@ -522,44 +522,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var index = args.Index;
 			if (args.Mode == ScrollToMode.Element)
 			{
-				for (int i = 0; i < ItemCount; i++)
+				index = FindItemIndex(args.Item);
+			}
+
+			if (index >= 0)
+			{
+				float offset = 0.0f;
+				switch (args.ScrollToPosition)
 				{
-					if (CollectionViewSource.View[i] is ItemTemplateContext pair)
+					case ScrollToPosition.Start:
+						offset = 0.0f;
+						break;
+					case ScrollToPosition.Center:
+						offset = 0.5f;
+						break;
+					case ScrollToPosition.End:
+						offset = 1.0f;
+						break;
+				}
+
+				this.ListViewBase.StartBringItemIntoView(index, new BringIntoViewOptions()
+				{
+					AnimationDesired = args.IsAnimated,
+					VerticalAlignmentRatio = offset,
+					HorizontalAlignmentRatio = offset
+				});
+			}
+		}
+
+		internal int FindItemIndex(object item)
+		{
+			for (int n = 0; n < ItemCount; n++)
+			{
+				if (CollectionViewSource.View[n] is ItemTemplateContext pair)
+				{
+					if (pair.Item == item)
 					{
-						if (pair.Item == args.Item)
-						{
-							index = i;
-							break;
-						}
+						return n;
 					}
 				}
 			}
 
-			//if (index >= 0)
-			//{
-			//	float offset = 0.0f;
-			//	switch (args.ScrollToPosition)
-			//	{
-			//		case ScrollToPosition.Start:
-			//			offset = 0.0f;
-			//			break;
-			//		case ScrollToPosition.Center:
-			//			offset = 0.5f;
-			//			break;
-			//		case ScrollToPosition.End:
-			//			offset = 1.0f;
-			//			break;
-			//	}
-			//
-			//	this.ListViewBase.StartBringItemIntoView(index, new BringIntoViewOptions()
-			//	{
-			//		AnimationDesired = args.IsAnimated,
-			//		VerticalAlignmentRatio = offset,
-			//		HorizontalAlignmentRatio = offset
-			//	});
-			//}
+			return -1;
 		}
-
 
 		protected virtual int ItemCount => CollectionViewSource.View.Count;
 

@@ -91,17 +91,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 		}
 
-		//protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
-		//{
-		//	base.OnScrollViewerFound(scrollViewer);
-		//
-		//	_scrollViewer = scrollViewer;
-		//	_scrollViewer.ViewChanging += OnScrollViewChanging;
-		//	_scrollViewer.ViewChanged += OnScrollViewChanged;
-		//	_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
-		//
-		//	UpdateScrollBarVisibilityForLoop();
-		//}
+		protected override void OnScrollViewerFound()
+		{
+			base.OnScrollViewerFound();
+		
+			//_scrollViewer = scrollViewer;
+			//_scrollViewer.ViewChanging += OnScrollViewChanging;
+			//_scrollViewer.ViewChanged += OnScrollViewChanged;
+			//_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
+		
+			UpdateScrollBarVisibilityForLoop();
+		}
 
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)
 		{
@@ -162,16 +162,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ItemsView.PeekAreaInsets.Right, ItemsView.PeekAreaInsets.Bottom),
 				Layout = layoutOrientation == ItemsLayoutOrientation.Horizontal
 					? new Microsoft.UI.Xaml.Controls.StackLayout() 
-				{
+					{
 						Orientation = Orientation.Horizontal, 
 						Spacing = CarouselItemsLayout.ItemSpacing 
-			}
+					}
 					: new Microsoft.UI.Xaml.Controls.StackLayout() 
-			{
+					{
 						Orientation = Orientation.Vertical,
 						Spacing = CarouselItemsLayout.ItemSpacing
 					}
-				};
+			};
 
 			if (layoutOrientation == ItemsLayoutOrientation.Horizontal)
 			{
@@ -381,23 +381,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			//if (ListViewBase.Items.Count > 0)
-			//{
-			//	if (Element.Loop)
-			//	{
-			//		var item = ItemsView.CurrentItem ?? ListViewBase.Items.FirstOrDefault();
-			//		_loopableCollectionView.CenterMode = true;
-			//		ListViewBase.ScrollIntoView(item);
-			//		_loopableCollectionView.CenterMode = false;
-			//	}
-			//
-			//	if (ItemsView.CurrentItem != null)
-			//		UpdateCurrentItem();
-			//	else
-			//		UpdatePosition();
-			//
-			//	InitialPositionSet = true;
-			//}
+			if (ItemCount > 0)
+			{
+				if (Element.Loop)
+				{
+					var item = ItemsView.CurrentItem ?? GetItem(0);
+					_loopableCollectionView.CenterMode = true;
+
+					var index = FindItemIndex(item);
+					ItemsView.ScrollTo(index, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+
+					_loopableCollectionView.CenterMode = false;
+				}
+			
+				if (ItemsView.CurrentItem != null)
+					UpdateCurrentItem();
+				else
+					UpdatePosition();
+			
+				InitialPositionSet = true;
+			}
 		}
 
 		void UpdateCurrentItem()
