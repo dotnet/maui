@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 					$"or set the LaunchMode to SingleTop on {activity.GetType()}.");
 			}
 
-			var wndProvider = mauiContext.Services?.GetRequiredService<WindowProvider>();
+			var wndProvider = mauiContext.Services?.GetRequiredService<WindowCoreServices>();
 			wndProvider?.SetWindow(activity, window);
 
 			activity.SetWindowHandler(window, mauiContext);

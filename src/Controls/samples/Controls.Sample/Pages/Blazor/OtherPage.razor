@@ -1,5 +1,7 @@
 ﻿@page "/other"
 
+@inject Microsoft.Maui.Controls.IWindowsServices WindowServices
+
 <div>
     Navigate: <a href="/">Home</a> | Other
 </div>
@@ -15,6 +17,7 @@
 
     void Increment2()
     {
+        WindowServices.GetWindow()?.Page?.DisplayAlert("Alert", "You clicked me!", "OK");
         count++;
     }
 }

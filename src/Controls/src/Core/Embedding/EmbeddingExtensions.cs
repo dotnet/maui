@@ -96,7 +96,7 @@ public static class EmbeddingExtensions
 	public static PlatformView ToPlatformEmbedded(this IElement element, IMauiContext context)
 	{
 		// If the window is an embedded window, then we need to add the element as a logical child.
-		var wndProvider = context.Services.GetService<WindowProvider>();
+		var wndProvider = context.Services.GetService<WindowCoreServices>();
 		if (wndProvider is not null && wndProvider.Window is EmbeddedWindow wnd && element is VisualElement visual)
 			wnd.AddLogicalChild(visual);
 

@@ -49,8 +49,13 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureDispatching();
 
 #if ANDROID || IOS || MACCATALYST || WINDOWS
-				this.Services.TryAddScoped<WindowProvider>(svc => new WindowProvider());
-				this.Services.TryAddScoped<PlatformWindow>(svc => svc.GetRequiredService<WindowProvider>().PlatformWindow!);
+				this.Services.TryAddScoped<WindowCoreServices>(svc => new WindowCoreServices());
+
+				// This causes ImageConverter to crash on windows
+				/*(this.Services.TryAddScoped<PlatformWindow>(svc =>
+				{
+					return svc.GetRequiredService<WindowCoreServices>().PlatformWindow!;
+				});*/
 
 #endif
 				this.UseEssentials();

@@ -9,6 +9,8 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Controls.Platform;
+
 
 #if ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -176,6 +178,9 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0612, CA1416 // Type or member is obsolete
 #endif
 		builder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
+
+		builder.Services.AddScoped<IWindowsServices, WindowsServices>();
+
 
 		builder.ConfigureImageSourceHandlers();
 
