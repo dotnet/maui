@@ -1,9 +1,11 @@
 namespace Microsoft.Maui.Controls.BindingSourceGen;
+using static Microsoft.Maui.Controls.BindingSourceGen.UnsafeAccessorsMethodName;
 
 public sealed record Setter(string[] PatternMatchingExpressions, string AssignmentStatement)
 {
     public static Setter From(
         IEnumerable<IPathPart> path,
+        uint bindingId,
         string sourceVariableName = "source",
         string assignedValueExpression = "value")
     {
@@ -22,7 +24,7 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
         {
             var skipConditionalAccess = skipNextConditionalAccess;
             skipNextConditionalAccess = false;
-            
+
             if (part is Cast { TargetType: var targetType })
             {
                 AddPatternMatchingExpression(targetType.GlobalName);
@@ -38,16 +40,23 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
                     AddPatternMatchingExpression("{}");
                 }
 
-                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
+                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart, bindingId);
             }
             else
             {
-                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part);
+                accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, bindingId, part == path.Last());
             }
         }
 
         return new Setter(
             patternMatchingExpressions.ToArray(),
-            AssignmentStatement: $"{accessAccumulator} = {assignedValueExpression};");
+            AssignmentStatement: BuildAssignmentStatement(accessAccumulator, path.Any() ? path.Last() : null, bindingId, assignedValueExpression));
     }
+
+    public static string BuildAssignmentStatement(string accessAccumulator, IPathPart? lastPart, uint bindingId, string assignedValueExpression = "value") =>
+        lastPart switch
+        {
+            InaccessibleMemberAccess inaccessibleMemberAccess when inaccessibleMemberAccess.Kind == AccessorKind.Property => $"{CreateUnsafePropertyAccessorSetMethodName(bindingId, inaccessibleMemberAccess.MemberName)}({accessAccumulator}, {assignedValueExpression});",
+            _ => $"{accessAccumulator} = {assignedValueExpression};",
+        };
 }

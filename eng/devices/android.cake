@@ -1,10 +1,10 @@
 #addin nuget:?package=Cake.Android.Adb&version=3.2.0
 #addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 const int DefaultApiLevel = 30;
+
+Information("Local Dotnet: {0}", localDotnet);
 
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
@@ -23,9 +23,6 @@ var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "N
 var androidAvd = "DEVICE_TESTS_EMULATOR";
 var androidAvdImage = "";
 var deviceArch = "";
-bool deviceBoot = Argument("boot", true);
-bool deviceBootWait = Argument("wait", true);
-
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
 
 // Directory setup
@@ -59,6 +56,7 @@ var dotnetToolPath = GetDotnetToolPath();
 Setup(context =>
 {
 	LogSetupInfo(dotnetToolPath);
+
 	PerformCleanupIfNeeded(deviceCleanupEnabled);
 
 	DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
@@ -88,11 +86,12 @@ Task("test")
 	});
 
 Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
-
 	});
+
 Task("uitest")
 	.Does(() =>
 	{
@@ -100,6 +99,7 @@ Task("uitest")
 	});
 
 Task("cg-uitest")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
@@ -461,7 +461,7 @@ void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdMana
 void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdManagerToolSettings avdSettings)
 {
 	// no virtual device was used
-	if (emulatorProcess == null || !deviceBoot || TARGET.ToLower() == "boot")
+	if (emulatorProcess == null || !deviceBoot || targetBoot)
 		return;
 
 	//stop and cleanup the emulator
