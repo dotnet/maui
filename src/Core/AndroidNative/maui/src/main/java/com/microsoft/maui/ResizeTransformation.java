@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 class ResizeTransformation extends BitmapTransformation {
+    private static final String ID = "com.microsoft.maui.ResizeTransformation";
+    private static final byte[] ID_BYTES = ID.getBytes(Key.CHARSET);
     private DisplayMetrics displayMetrics;
 
     public ResizeTransformation(DisplayMetrics display) {
@@ -37,4 +39,20 @@ class ResizeTransformation extends BitmapTransformation {
 
         return Bitmap.createScaledBitmap(toTransform, outWidth, outHeight, false);
     }
+
+    @Override
+     public boolean equals(Object o) {
+       return o instanceof ResizeTransformation;
+     }
+
+      @Override
+     public int hashCode() {
+       return ID.hashCode();
+     }
+
+      @Override
+     public void updateDiskCacheKey(MessageDigest messageDigest)
+         throws UnsupportedEncodingException {
+       messageDigest.update(ID_BYTES);
+     }
 }
