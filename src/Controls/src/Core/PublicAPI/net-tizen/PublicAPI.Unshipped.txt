@@ -205,6 +205,7 @@ Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ShellNavigationQueryParameters
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(string! key, object! value) -> void
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(System.Collections.Generic.KeyValuePair<string!, object!> item) -> void
