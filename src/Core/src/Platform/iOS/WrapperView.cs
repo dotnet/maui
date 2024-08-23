@@ -105,12 +105,19 @@ namespace Microsoft.Maui.Platform
 			SetBorder();
 		}
 
+		internal void Disconnect()
+		{
+			MaskLayer = null;
+			BackgroundMaskLayer = null;
+			ShadowLayer = null;
+			_borderView?.RemoveFromSuperview();
+		}
+
+
+		// TODO obsolete or delete this for NET9
 		public new void Dispose()
 		{
-			DisposeClip();
-			DisposeShadow();
-			DisposeBorder();
-
+			Disconnect();
 			base.Dispose();
 		}
 
@@ -158,7 +165,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.SetNeedsLayout();
 
-			Superview?.SetNeedsLayout();
+			this.GetSuperViewIfWindowSet()?.SetNeedsLayout();
 		}
 
 		partial void ClipChanged()
@@ -200,12 +207,6 @@ namespace Microsoft.Maui.Platform
 			backgroundMask.Path = nativePath;
 		}
 
-		void DisposeClip()
-		{
-			MaskLayer = null;
-			BackgroundMaskLayer = null;
-		}
-
 		void SetShadow()
 		{
 			var shadowLayer = ShadowLayer;
@@ -230,11 +231,6 @@ namespace Microsoft.Maui.Platform
 				shadowLayer.SetShadow(Shadow);
 		}
 
-		void DisposeShadow()
-		{
-			ShadowLayer = null;
-		}
-
 		void SetBorder()
 		{
 			if (Border == null)
@@ -249,11 +245,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderView.UpdateMauiCALayer(Border);
-		}
-
-		void DisposeBorder()
-		{
-			_borderView?.RemoveFromSuperview();
 		}
 
 		CALayer? GetLayer()

@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
+			this.GetSuperViewIfWindowSet()?.SetNeedsLayout();
 		}
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
