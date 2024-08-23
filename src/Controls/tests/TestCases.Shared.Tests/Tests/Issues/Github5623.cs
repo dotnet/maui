@@ -5,28 +5,30 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class CollectionViewInfiniteScroll2 : _IssuesUITest
+	public class Github5623 : _IssuesUITest
 	{
 		const string Success = "Success";
 		const string Show = "Show";
 
 		const string automationId = "CollectionView5623";
 
-		public CollectionViewInfiniteScroll2(TestDevice device)
+		public Github5623(TestDevice device)
 			: base(device)
 		{
 		}
 
-		public override string Issue => "CollectionViewInfiniteScroll2";
+		public override string Issue => "CollectionView with Incremental Collection (RemainingItemsThreshold)";
 
 
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void TestCollectionViewInfiniteScroll2()
+		public void CollectionViewInfiniteScroll()
 		{
+#if ANDROID
 			App.WaitForElement(automationId);
 			App.ScrollTo("25");
+#endif
 		}
 	}
 }

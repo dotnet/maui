@@ -1,28 +1,17 @@
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using System;
-using System.Collections.Generic;
+
 using System.Collections.ObjectModel;
-using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-using System.Linq;
 
 namespace Maui.Controls.Sample.Issues
 {
-	// InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense(src\Compatibility\ControlGallery\src\Issues.Shared\Issue12714.cs)
-	[Issue(IssueTracker.None, 0, "CollectionViewInfiniteScroll2", PlatformAffected.iOS)]
-	public partial class CollectionViewInfiniteScroll2 : ContentPage
+	[Issue(IssueTracker.Github, 5623, "CollectionView with Incremental Collection (RemainingItemsThreshold)", PlatformAffected.All)]
+	public partial class Github5623 : ContentPage
 	{
 		int _itemCount = 10;
 		const int MaximumItemCount = 100;
 		const int PageSize = 10;
 		static readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
-		public CollectionViewInfiniteScroll2()
+		public Github5623()
 		{
 			InitializeComponent();
 			BindingContext = new ViewModel5623();
@@ -65,8 +54,6 @@ namespace Maui.Controls.Sample.Issues
 			});
 		}
 
-		// TODO: needs to be async, I just did that to disable warning message
-		[Obsolete] // TODO remove obsolete, change it to what it needs to be changed
 		async void CollectionView_RemainingItemsThresholdReached(object sender, System.EventArgs e)
 		{
 			await SemaphoreSlim.WaitAsync();
@@ -79,7 +66,7 @@ namespace Maui.Controls.Sample.Issues
 				if (nextSet.Count == 0)
 					return;
 
-				Device.BeginInvokeOnMainThread(() =>
+				Dispatcher.Dispatch(() =>
 				{
 					foreach (var item in nextSet)
 					{
