@@ -140,12 +140,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			base.UpdateAdapter();
 
-			//17283 - We can set the current item to ensure proper calculation in the LoopedPosition method when reloading or dynamically removing items.
-			if (oldItemViewAdapter != null && _initialized && Carousel.Loop)
-			{
-				SetCurrentItem(Carousel.Position);
-			}
-
 			UpdateInitialPosition();
 
 			SubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
@@ -326,7 +320,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Carousel.Position = position;
 			}
 			else
+			{
 				position = Carousel.Position;
+				if (Carousel.Loop && position == 0 && ItemsView.ItemsSource != null)
+				{
+					var carouselEnumerator = ItemsView.ItemsSource.GetEnumerator();
+					while (carouselEnumerator.MoveNext())
+					{
+						itemCount++;
+					}
+				}
+			}
 
 			_oldPosition = position;
 
