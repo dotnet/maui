@@ -1,3 +1,4 @@
+#if !MACCATALYST && !IOS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -20,10 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInfiniteScroll()
 		{
-#if ! IOSCATALYST
 			App.WaitForElement(automationId);
 			App.ScrollTo("20");
-#endif
 		}
 	}
 }
+#endif
