@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
-		/// <summary>Bindable property for <see cref="NavigableElement.Style"/>.</summary>
+		/// <inheritdoc/>
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
 		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;

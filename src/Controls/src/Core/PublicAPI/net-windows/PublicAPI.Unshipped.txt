@@ -384,3 +384,9 @@ Microsoft.Maui.Controls.StyleableElement.class.set -> void
 *REMOVED*~Microsoft.Maui.Controls.MenuItem.class.set -> void
 *REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.get -> Microsoft.Maui.Controls.Style
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
