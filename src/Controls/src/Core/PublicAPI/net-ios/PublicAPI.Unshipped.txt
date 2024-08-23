@@ -20,6 +20,7 @@ Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewCon
 Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ItemsViewHandler2() -> void
 Microsoft.Maui.Controls.Handlers.Items2.LayoutAttributesChangedEventArgs2
 Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.UpdateCanReorderItems() -> void
+Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.RegisterSupplementaryViews(UIKit.UICollectionElementKindSection kind) -> void
 Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2
 Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ConstrainedDimension -> System.Runtime.InteropServices.NFloat
 Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.ConstrainedSize -> CoreGraphics.CGSize
@@ -331,6 +332,7 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>
 ~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.StructuredItemsViewController2(TItemsView structuredItemsView, UIKit.UICollectionViewLayout layout) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Bind(Microsoft.Maui.Controls.DataTemplate template, object bindingContext, Microsoft.Maui.Controls.ItemsView itemsView) -> void
+~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Bind(Microsoft.Maui.Controls.View virtualView, Microsoft.Maui.Controls.ItemsView itemsView) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.CurrentTemplate.get -> Microsoft.Maui.Controls.DataTemplate
 ~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.OnLayoutAttributesChanged(UIKit.UICollectionViewLayoutAttributes newAttributes) -> void
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
@@ -339,6 +341,7 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
+~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.DetermineViewReuseId(Foundation.NSString elementKind) -> string
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DraggingEnded(UIKit.UIScrollView scrollView, bool willDecelerate) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DraggingStarted(UIKit.UIScrollView scrollView) -> void
@@ -595,3 +598,4 @@ Microsoft.Maui.Controls.StyleableElement.class.set -> void
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
+~virtual Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.DetermineViewReuseId(Foundation.NSString elementKind) -> string

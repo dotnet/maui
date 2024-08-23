@@ -58,16 +58,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			RegisterSupplementaryViews(UICollectionElementKindSection.Footer);
 		}
 
-		void RegisterSupplementaryViews(UICollectionElementKindSection kind)
+		protected override string DetermineViewReuseId(NSString elementKind)
 		{
-			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
-				kind, HorizontalSupplementaryView2.ReuseId);
-			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
-				kind, VerticalSupplementaryView2.ReuseId);
-			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
-				kind, HorizontalDefaultSupplementalView2.ReuseId);
-			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
-				kind, VerticalDefaultSupplementalView2.ReuseId);
+			var struc = base.DetermineViewReuseId(elementKind);
+			if(struc != null)
+			{
+				return struc;
+			}
+			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
+				? ItemsView.GroupHeaderTemplate
+				: ItemsView.GroupFooterTemplate);
 		}
 
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
@@ -122,12 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// }
 		}
 
-		string DetermineViewReuseId(NSString elementKind)
-		{
-			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
-				? ItemsView.GroupHeaderTemplate
-				: ItemsView.GroupFooterTemplate);
-		}
+	
 
 		string DetermineViewReuseId(DataTemplate template)
 		{

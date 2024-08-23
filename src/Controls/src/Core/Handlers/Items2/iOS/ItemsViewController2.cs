@@ -8,6 +8,7 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using PassKit;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
@@ -347,50 +348,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return ItemsSource[index];
 		}
 
-		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
-		// void CellContentSizeChanged(object sender, EventArgs e)
-		// {
-		// 	if (_disposed)
-		// 		return;
-
-		// 	if (!(sender is TemplatedCell2 cell))
-		// 	{
-		// 		return;
-		// 	}
-
-		// 	var visibleCells = CollectionView.VisibleCells;
-
-		// 	for (int n = 0; n < visibleCells.Length; n++)
-		// 	{
-		// 		if (cell == visibleCells[n])
-		// 		{
-		// 			ItemsViewLayout?.InvalidateLayout();
-		// 			return;
-		// 		}
-		// 	}
-		// }
-
-		// [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
-		// void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs2 args)
-		// {
-		// 	CacheCellAttributes(args.NewAttributes.IndexPath, args.NewAttributes.Size);
-		// }
-		//
-		// protected virtual void CacheCellAttributes(NSIndexPath indexPath, CGSize size)
-		// {
-		// 	if (!ItemsSource.IsIndexPathValid(indexPath))
-		// 	{
-		// 		// The upate might be coming from a cell that's being removed; don't cache it.
-		// 		return;
-		// 	}
-		//
-		// 	var item = ItemsSource[indexPath];
-		// 	if (item != null)
-		// 	{
-		// 		ItemsViewLayout.CacheCellSize(item, size);
-		// 	}
-		// }
-
 		protected virtual string DetermineCellReuseId(NSIndexPath indexPath)
 		{
 			if (ItemsView.ItemTemplate != null)
@@ -416,21 +373,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return ScrollDirection == UICollectionViewScrollDirection.Horizontal ? HorizontalDefaultCell2.ReuseId : VerticalDefaultCell2.ReuseId;
 		}
-
-		//[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
-		//protected virtual string DetermineCellReuseId()
-		//{
-		//	if (ItemsView.ItemTemplate != null)
-		//	{
-		//		return ScrollDirection == UICollectionViewScrollDirection.Horizontal
-		//			? HorizontalCell2.ReuseId
-		//			: VerticalCell2.ReuseId;
-		//	}
-
-		//	return ScrollDirection == UICollectionViewScrollDirection.Horizontal
-		//		? HorizontalDefaultCell2.ReuseId
-		//		: VerticalDefaultCell2.ReuseId;
-		//}
 
 		protected virtual void RegisterViewTypes()
 		{

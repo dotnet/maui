@@ -20,10 +20,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			: base(structuredItemsView, layout)
 		{
 		}
-		
+
 		protected override void RegisterViewTypes()
 		{
 			base.RegisterViewTypes();
+
+			RegisterSupplementaryViews(UICollectionElementKindSection.Header);
+			RegisterSupplementaryViews(UICollectionElementKindSection.Footer);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -43,9 +46,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.Dispose(disposing);
 		}
 
+		protected virtual string DetermineViewReuseId(NSString elementKind)
+		{
+			if (elementKind == UICollectionElementKindSectionKey.Header)
+			{
+				return DetermineViewReuseId(ItemsView.HeaderTemplate, ItemsView.Header);
+			}
+			else
+			{
+				return DetermineViewReuseId(ItemsView.FooterTemplate, ItemsView.Footer);
+			}
+		}
+
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
-		
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
 			NSString elementKind, NSIndexPath indexPath)
 		{
@@ -56,50 +70,87 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (view)
 			{
 				case DefaultCell2 defaultCell:
-					UpdateDefaultSupplementaryView(defaultCell, elementKind, indexPath);
+					UpdateDefaultSupplementaryView(defaultCell, elementKind);
 					break;
 				case TemplatedCell2 templatedCell:
-					UpdateTemplatedSupplementaryView(templatedCell, elementKind, indexPath);
+					UpdateTemplatedSupplementaryView(templatedCell, elementKind);
 					break;
 			}
 
 			return view;
 		}
 
-		void UpdateDefaultSupplementaryView(DefaultCell2 cell, NSString elementKind, NSIndexPath indexPath)
+		protected void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
-			var obj = elementKind == UICollectionElementKindSectionKey.Header
+			if (IsHorizontal)
+			{
+				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
+					kind, HorizontalSupplementaryView2.ReuseId);
+				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
+					kind, HorizontalDefaultSupplementalView2.ReuseId);
+			}
+			else
+			{
+				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
+					kind, VerticalSupplementaryView2.ReuseId);
+				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
+					kind, VerticalDefaultSupplementalView2.ReuseId);
+			}
+		}
+
+
+		void UpdateDefaultSupplementaryView(DefaultCell2 cell, NSString elementKind)
+		{
+			var obj = elementKind == UICollectionElementKindGlobalKey.Header
 				? ItemsView.Header
 				: ItemsView.Footer;
 
 			cell.Label.Text = obj?.ToString();
 		}
 
-		void UpdateTemplatedSupplementaryView(TemplatedCell2 cell, NSString elementKind, NSIndexPath indexPath)
+		void UpdateTemplatedSupplementaryView(TemplatedCell2 cell, NSString elementKind)
 		{
-			DataTemplate template = elementKind == UICollectionElementKindSectionKey.Header
-				? ItemsView.HeaderTemplate
-				: ItemsView.FooterTemplate;
+			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
 
-			var bindingContext = ItemsView.Header;
-
-			cell.Bind(template, bindingContext, ItemsView);
-			cell.Tag = elementKind == UICollectionElementKindSectionKey.Header ? HeaderTag : FooterTag;
+			if(isHeader)
+			{
+				if(ItemsView.Header is View headerView)
+				{
+					cell.Bind(headerView, ItemsView);
+				}
+				else if(ItemsView.HeaderTemplate is not null)
+				{
+					cell.Bind(ItemsView.HeaderTemplate, ItemsView.Header, ItemsView);
+				}
+				cell.Tag = HeaderTag;
+			}
+			else
+			{
+				if(ItemsView.Footer is View footerView)
+				{
+					cell.Bind(footerView, ItemsView);
+				}
+				else if(ItemsView.FooterTemplate is not null)
+				{
+					cell.Bind(ItemsView.FooterTemplate, ItemsView.Footer, ItemsView);
+				}
+				cell.Tag = FooterTag;
+			}
 		}
 
-		string DetermineViewReuseId(NSString elementKind)
+		string DetermineViewReuseId(DataTemplate template, object item)
 		{
-			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
-				? ItemsView.HeaderTemplate
-				: ItemsView.FooterTemplate);
-		}
-
-		string DetermineViewReuseId(DataTemplate template)
-		{		
 			if (template == null)
 			{
-				// No template, fall back the the default supplemental views
-				return  IsHorizontal
+				if (item is View)
+				{
+					// No template, but we can fall back to the view
+					return IsHorizontal
+						? HorizontalSupplementaryView2.ReuseId
+						: VerticalSupplementaryView2.ReuseId;
+				}
+				// No template, no item, fall back to the default supplemental views
+				return IsHorizontal
 					? HorizontalDefaultSupplementalView2.ReuseId
 					: VerticalDefaultSupplementalView2.ReuseId;
 			}
@@ -130,19 +181,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			
-		}
-
-		internal void UpdateFooterView()
-		{
-			//UpdateLayout();
-		}
-
-		internal void UpdateHeaderView()
-		{
-			// UpdateSubview(ItemsView?.Header, ItemsView?.HeaderTemplate, HeaderTag,
-			// 	ref _headerUIView, ref _headerViewFormsElement);
-			// UpdateHeaderFooterPosition();
 		}
 	}
 }
