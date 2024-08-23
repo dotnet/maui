@@ -173,6 +173,65 @@ namespace Microsoft.Maui.DeviceTests
 Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 #endif
 )]
+		public async Task CollectionScrollToUngroupedWorks()
+		{
+			SetupBuilder();
+
+			var dataList = new List<TestData>();
+			string letters = "abcdefghijklmnopqrstuvwxyz";
+			for (int i = 0; i < letters.Length; i++)
+			{
+				dataList.Add(new TestData
+				{
+					Name = $"{letters[i]}"
+				});
+			}
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = false,
+				ItemsSource = dataList,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var name = new Label()
+					{
+						TextColor = Colors.Grey,
+						HeightRequest = 64
+					};
+					name.SetBinding(Label.TextProperty, "Name");
+					return name;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollTo(index: 24, animate: false); // Item "x"
+
+				int retryCount = 3;
+				bool foundItem = false;
+				while (retryCount > 0 && !foundItem)
+				{
+					retryCount--;
+					await Task.Delay(500);
+					for (int i = 0; i < collectionView.LogicalChildrenInternal.Count; i++)
+					{
+						var item = collectionView.LogicalChildrenInternal[i];
+						if (item is Label label && label.Text.Equals("x", StringComparison.OrdinalIgnoreCase))
+						{
+							foundItem = true;
+							break;
+						}
+					}
+				}
+				Assert.True(foundItem);
+			});
+		}
+
+		[Fact(
+#if IOS || MACCATALYST
+Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
+#endif
+)]
 		public async Task CollectionScrollToGroupWorks()
 		{
 			SetupBuilder();
