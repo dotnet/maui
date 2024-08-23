@@ -26,7 +26,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
-    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
 
   <ItemGroup>

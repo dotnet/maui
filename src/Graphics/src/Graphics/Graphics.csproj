@@ -37,7 +37,6 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
-    <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
   </ItemGroup>
 
