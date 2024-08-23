@@ -33,6 +33,6 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <!--<BoxView Grid.Row="1" HorizontalOptions="FillAndExpand" VerticalOptions="Center" BackgroundColor="Red" HeightRequest="5"/>-->
+        <BoxView Grid.Row="1" HorizontalOptions="FillAndExpand" VerticalOptions="Center" BackgroundColor="Red" HeightRequest="5"/>
     </Grid>
 </ContentPage>

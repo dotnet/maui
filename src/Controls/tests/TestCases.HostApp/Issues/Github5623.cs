@@ -116,7 +116,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)] //TODO Is this worth bringing over?
+	[Preserve(AllMembers = true)] 
 	public class Model5623
 	{
 		Random random = new Random();

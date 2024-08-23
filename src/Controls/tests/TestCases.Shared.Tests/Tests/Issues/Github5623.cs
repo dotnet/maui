@@ -7,9 +7,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Github5623 : _IssuesUITest
 	{
-		const string Success = "Success";
-		const string Show = "Show";
-
 		const string automationId = "CollectionView5623";
 
 		public Github5623(TestDevice device)
@@ -19,15 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView with Incremental Collection (RemainingItemsThreshold)";
 
-
-
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInfiniteScroll()
 		{
-#if ANDROID
+#if ! IOS
 			App.WaitForElement(automationId);
-			App.ScrollTo("25");
+			App.ScrollTo("20");
 #endif
 		}
 	}
