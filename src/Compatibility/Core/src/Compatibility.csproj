@@ -50,10 +50,6 @@
         <Link>Windows\BootstrapHelper.cs</Link>
     </Compile>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <PackageReference Include="Microsoft.Web.WebView2" />
-  </ItemGroup>
-
   <PropertyGroup>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
     <!-- https://github.com/dotnet/msbuild/issues/9785 -->
