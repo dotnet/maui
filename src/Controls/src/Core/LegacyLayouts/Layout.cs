@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Forces a layout cycle on the element and all of its descendants.
 		/// </summary>
 		/// <remarks>Calling this method frequently can have negative impacts on performance.</remarks>
-		[Obsolete("Call InvalidateMeasure or InvalidateArrange instead depending on your scenario.")]
+		[Obsolete("Call InvalidateMeasure instead depending on your scenario.")]
 		public void ForceLayout() => SizeAllocated(Width, Height);
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Invalidates the current layout.
 		/// </summary>
 		/// <remarks>Calling this method will invalidate the measure and triggers a new layout cycle.</remarks>
-		[Obsolete("Use InvalidateMeasure or InvalidateArrange depending on your scenario")]
+		[Obsolete("Use InvalidateMeasure depending on your scenario")]
 		protected virtual void InvalidateLayout()
 		{
 			_hasDoneLayout = false;
@@ -406,7 +406,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// Instructs the layout to relayout all of its children.
 		/// </summary>
 		/// <remarks>This method starts a new layout cycle for the layout. Invoking this method frequently can negatively impact performance.</remarks>
-		[Obsolete("Use InvalidateMeasure or InvalidateArrange depending on your scenario")]
+		[Obsolete("Use InvalidateMeasure depending on your scenario")]
 		protected void UpdateChildrenLayout()
 		{
 			_hasDoneLayout = true;

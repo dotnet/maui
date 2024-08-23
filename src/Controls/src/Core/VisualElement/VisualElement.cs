@@ -1365,6 +1365,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use InvalidateMeasure instead.")]
 		public void InvalidateMeasureNonVirtual(InvalidationTrigger trigger)
 		{
 			InvalidateMeasureInternal(trigger);
