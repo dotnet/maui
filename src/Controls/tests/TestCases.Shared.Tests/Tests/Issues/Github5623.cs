@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInfiniteScroll()
 		{
-#if ! IOS
+#if ! IOSCATALYST
 			App.WaitForElement(automationId);
 			App.ScrollTo("20");
 #endif
