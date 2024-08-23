@@ -130,3 +130,4 @@ virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.IStepper.Increment.get -> double

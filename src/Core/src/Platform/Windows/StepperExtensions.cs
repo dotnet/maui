@@ -14,9 +14,9 @@ namespace Microsoft.Maui.Platform
 			platformStepper.Maximum = stepper.Maximum;
 		}
 
-		public static void UpdateInterval(this MauiStepper platformStepper, IStepper stepper)
+		public static void UpdateIncrement(this MauiStepper platformStepper, IStepper stepper)
 		{
-			platformStepper.Increment = stepper.Interval;
+			platformStepper.Increment = stepper.Increment;
 		}
 
 		public static void UpdateValue(this MauiStepper platformStepper, IStepper stepper)
