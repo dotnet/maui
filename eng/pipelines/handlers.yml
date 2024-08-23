@@ -171,7 +171,7 @@ stages:
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
                 env:
-                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token-base64)
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                   PRIVATE_BUILD: $(PrivateBuild)
               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Build .NET Maui'

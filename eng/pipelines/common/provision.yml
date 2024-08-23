@@ -13,9 +13,9 @@ parameters:
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
   certPass: $(pass--components-mac-ios-certificate-p12)
   federatedServiceConnection: 'dotnetbuilds-internal-read'
-  outputVariableName: 'dotnetbuilds-internal-container-read-token-base64'
+  outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
-  base64Encode: true
+  base64Encode: false
   is1ESPipeline: false
 
 
