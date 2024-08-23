@@ -149,15 +149,11 @@ steps:
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
 
-    - task: PowerShell@2
-      condition: eq(variables['PrivateBuild'], 'true')
-      displayName: Setup Private Feeds Credentials
-      inputs:
-        filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-        arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-      env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw) 
-
+    - template: /eng/common/core-templates/steps/enable-internal-sources.yml
+      parameters:
+        federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        
     - template: /eng/common/core-templates/steps/get-delegation-sas.yml
       parameters:
         federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
