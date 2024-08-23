@@ -428,29 +428,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var item = args.Item;
 			if (args.Mode == ScrollToMode.Position)
 			{
-				item = FindBoundItem(args);
+				// Do not use `IGroupableItemsViewSource` since `UngroupedItemsSource` also implements that interface
+				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource)
+				{
+					return args.Index;
+				}
+				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
+				{
+					item = FindBoundItemInGroup(args, groupItemSource);
+				}
 			}
 
 			return ItemsViewAdapter.GetPositionForItem(item);
 		}
 
-		private object FindBoundItem(ScrollToRequestEventArgs args)
+		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
 		{
-			if (args.Index >= ItemsViewAdapter.ItemsSource.Count)
-			{
-				return null;
-			}
-
-			if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource &&
-				args.GroupIndex >= 0 &&
+			if (args.GroupIndex >= 0 &&
 				args.GroupIndex < groupItemSource.Count)
 			{
 				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
 
-				// NOTE: GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header
-				return group.GetItem(args.Index + 1);
+				if (group is not null)
+				{
+					// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header (UngroupedItemsSource does not do this)
+					return group.GetItem(args.Index + 1);
+				}
 			}
-			return ItemsViewAdapter.ItemsSource.GetItem(args.Index);
+			return groupItemSource.GetItem(args.Index);
 		}
 
 		protected virtual void UpdateItemSpacing()
