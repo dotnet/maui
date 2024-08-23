@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue13558"
+             Title="Issue13558">
+  <VerticalStackLayout>
+    <ListView AutomationId="ListViewId" ItemsSource="{Binding Patients}" RowHeight="65">
+      <ListView.ItemTemplate>
+        <DataTemplate>
+          <ViewCell>
+            <HorizontalStackLayout>
+              <VerticalStackLayout WidthRequest="200">
+                <Label Text="{Binding Name}" />
+                <Label Text="{Binding MedicalHistory}" />
+              </VerticalStackLayout>
+              <VerticalStackLayout WidthRequest="150">
+                <Label Text="Bloodwork status :" />
+                <Picker ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type local:MainViewModel}}, Path=BloodworkStatuses}" SelectedItem="{Binding BloodworkStatus, Mode=TwoWay}" />
+              </VerticalStackLayout>
+            </HorizontalStackLayout>
+          </ViewCell>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
+  </VerticalStackLayout>
+</ContentPage>
