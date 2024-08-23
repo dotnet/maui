@@ -9,19 +9,29 @@
       <Color x:Key="TealFadeStartHover">#2aab88</Color>
       <Color x:Key="TealFadeEndHover">#026875</Color>
     </ContentPage.Resources>
-    <VerticalStackLayout Padding="24">
+    <VerticalStackLayout Padding="24" Spacing="30">
+      <Button AutomationId="ChangeSize"
+              Clicked="ChangeSizeClicked"
+              Text="Change Size"
+              BackgroundColor="WhiteSmoke"
+              WidthRequest="200" />
+      <Button AutomationId="ShowHide"
+              Clicked="ShowHideClicked"
+              Text="Show/Hide"
+              BackgroundColor="WhiteSmoke"
+              WidthRequest="200" />
       <Border
         HorizontalOptions="Center"
-        x:Name="TheBorder"
         BackgroundColor="LightBlue"
-        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=2, Opacity=0.20}"
+        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=24, Opacity=0.2}"
         StrokeShape="{RoundRectangle CornerRadius=20}">
-        <Button x:Name="TheButton" Clicked="ButtonClicked" BackgroundColor="LightGreen" WidthRequest="200" HeightRequest="500" />
+        <Button x:Name="TheButton" BackgroundColor="LightGreen" WidthRequest="200" HeightRequest="400" />
       </Border>
       <Border x:Name="TheOtherButton"
               BackgroundColor="Transparent"
               StrokeShape="{RoundRectangle CornerRadius=20}"
               StrokeThickness="0"
+              Shadow="{Shadow Brush=Black, Offset='0,2', Radius=24, Opacity=0.5}"
               IsVisible="False"
               Stroke="Transparent">
         <Border.Background>

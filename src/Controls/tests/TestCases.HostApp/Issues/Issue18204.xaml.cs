@@ -13,17 +13,19 @@ public partial class Issue18204 : ContentPage
 	public Issue18204()
 	{
 		InitializeComponent();
-		Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(3), () =>
-		{
-			TheOtherButton.IsVisible = true;
-		});
 	}
 
-	private void ButtonClicked(object sender, EventArgs e)
+	private void ChangeSizeClicked(object sender, EventArgs e)
 	{
-		var button = (Button)sender;
+		var button = TheButton;
 		button.CancelAnimations();
-		var targetHeight = button.HeightRequest == 200.0 ? 500.0 : 200.0;
+		var targetHeight = button.HeightRequest == 200.0 ? 400.0 : 200.0;
 		button.Animate("Height", new Animation(v => button.HeightRequest = v, button.Height, targetHeight, Easing.Linear));
+	}
+	
+	private void ShowHideClicked(object sender, EventArgs e)
+	{
+		var button = TheOtherButton;
+		button.IsVisible = !button.IsVisible;
 	}
 }
