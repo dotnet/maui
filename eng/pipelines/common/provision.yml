@@ -150,10 +150,7 @@ steps:
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
 
     - template: /eng/common/core-templates/steps/enable-internal-sources.yml
-      parameters:
-        federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
-        is1ESPipeline: ${{ parameters.is1ESPipeline }}
-        
+
     - template: /eng/common/core-templates/steps/get-delegation-sas.yml
       parameters:
         federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
