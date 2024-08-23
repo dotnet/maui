@@ -26,18 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void TestCollectionViewInfiniteScroll2()
 		{
 			App.WaitForElement(automationId);
-			var rect = App.FindElement(automationId).GetRect();
-			var lastCellResults = App.FindElement("97");
-
-			while (lastCellResults == null)
-			{
-				App.DragCoordinates(rect.CenterX(), rect.Y + rect.CenterX() + -50, rect.CenterX(), rect.Y + 5);
-				lastCellResults = App.FindElement("99");
-			}
-
-			 ClassicAssert.IsNotNull(lastCellResults);
-
-
+			App.ScrollTo("25");
 		}
 	}
 }

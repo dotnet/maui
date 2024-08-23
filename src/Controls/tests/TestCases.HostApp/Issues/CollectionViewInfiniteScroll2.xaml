@@ -20,12 +20,12 @@
             <Label x:Name="Label7" LineBreakMode="WordWrap" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </StackLayout>
 
-        <CollectionView Grid.Row="1" ItemSizingStrategy="{Binding ItemSizingStrategy}" ItemsSource="{Binding Items}" Scrolled="CollectionView_OnScrolled" RemainingItemsThreshold="25" RemainingItemsThresholdReached="CollectionView_RemainingItemsThresholdReached" RemainingItemsThresholdReachedCommand="{Binding RemainingItemsThresholdReachedCommand}">
+        <CollectionView Grid.Row="1" AutomationId="CollectionView5623" ItemSizingStrategy="{Binding ItemSizingStrategy}"  ItemsSource="{Binding Items}" Scrolled="CollectionView_OnScrolled" RemainingItemsThreshold="25" RemainingItemsThresholdReached="CollectionView_RemainingItemsThresholdReached" RemainingItemsThresholdReachedCommand="{Binding RemainingItemsThresholdReachedCommand}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid HeightRequest="{Binding Height}" BackgroundColor="{Binding BackgroundColor}">
                         <StackLayout Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
-                            <Label Text="{Binding Text}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                            <Label Text="{Binding Text}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="{Binding AutomationId}"/>
                             <Label Text="{Binding HeightText}" FontSize="Micro" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
                         </StackLayout>
                     </Grid>

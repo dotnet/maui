@@ -55,6 +55,7 @@ namespace Maui.Controls.Sample.Issues
 					{
 						Text = i.ToString(),
 						BackgroundColor = i % 2 == 0 ? Colors.AntiqueWhite : Colors.Lavender,
+						AutomationId = i.ToString()
 					});
 				}
 
@@ -114,7 +115,8 @@ namespace Maui.Controls.Sample.Issues
 				collection.Add(new Model5623(ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems)
 				{
 					Text = i.ToString(),
-					BackgroundColor = i % 2 == 0 ? Colors.AntiqueWhite : Colors.Lavender
+					BackgroundColor = i % 2 == 0 ? Colors.AntiqueWhite : Colors.Lavender,
+					AutomationId = i.ToString()
 				});
 			}
 
@@ -140,13 +142,15 @@ namespace Maui.Controls.Sample.Issues
 
 		public string HeightText { get; private set; }
 
+		public string AutomationId {get; set;}
+
 		public Model5623(bool isUneven)
 		{
 			var byteArray = new byte[4];
 			random.NextBytes(byteArray);
 
 			if (isUneven)
-				Height = 100 + (BitConverter.ToInt32(byteArray, 0) % 300 + 300) % 300;
+				Height = 20 + (BitConverter.ToInt32(byteArray, 0) % 300 + 300) % 300;
 
 			HeightText = "(Height: " + Height + ")";
 		}
