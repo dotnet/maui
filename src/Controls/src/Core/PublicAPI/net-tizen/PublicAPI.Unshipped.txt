@@ -337,3 +337,7 @@ Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
 static readonly Microsoft.Maui.Controls.StyleableElement.StyleProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.StyleableElement.class.get -> System.Collections.Generic.IList<string!>!
 Microsoft.Maui.Controls.StyleableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.set -> void

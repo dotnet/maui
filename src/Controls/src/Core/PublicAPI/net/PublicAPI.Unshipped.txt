@@ -334,3 +334,7 @@ Microsoft.Maui.Controls.StyleableElement.Style.set -> void
 Microsoft.Maui.Controls.StyleableElement.StyleableElement() -> void
 Microsoft.Maui.Controls.StyleableElement.StyleClass.get -> System.Collections.Generic.IList<string!>!
 Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.set -> void
