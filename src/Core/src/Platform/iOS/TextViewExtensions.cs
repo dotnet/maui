@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Platform
 			
 			// If the input accessory view is set, we need to hide it when the editor is read-only
 			// otherwise it will appear when the editor recieves focus.
-			if (TextView.InputAccessoryView is {} view)
+			if (textView.InputAccessoryView is {} view)
 				view.Hidden = !isEditable;
 		}
 
