@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
+			this.GetSuperViewIfWindowSet()?.SetNeedsLayout();
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
