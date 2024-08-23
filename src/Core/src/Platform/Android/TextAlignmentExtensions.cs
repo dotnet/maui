@@ -1,5 +1,4 @@
-﻿using System;
-using Android.Widget;
+﻿using Android.Widget;
 using AGravityFlags = Android.Views.GravityFlags;
 
 namespace Microsoft.Maui.Platform
@@ -30,6 +29,7 @@ namespace Microsoft.Maui.Platform
 			view.Gravity = (view.Gravity & ~VerticalGravityMask) | alignment.ToVerticalGravityFlags() | orMask;
 		}
 
+		[Obssolete("Use UpdateHorizontalAlignment and/or UpdateVerticalAlignment instead")] // Nothing currently calls this method in our code
 		public static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
 		{
 			if (view.Context != null && !Rtl.IsSupported)
@@ -40,13 +40,6 @@ namespace Microsoft.Maui.Platform
 			{
 				view.TextAlignment = horizontal.ToTextAlignment();
 				view.Gravity = vertical.ToVerticalGravityFlags();
-			}
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(26))
-			{
-				view.JustificationMode = horizontal == TextAlignment.Justify
-					? Android.Text.JustificationMode.InterWord
-					: Android.Text.JustificationMode.None;
 			}
 		}
 	}
