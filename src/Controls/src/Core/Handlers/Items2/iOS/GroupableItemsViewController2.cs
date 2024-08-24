@@ -58,13 +58,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			RegisterSupplementaryViews(UICollectionElementKindSection.Footer);
 		}
 
-		protected override string DetermineViewReuseId(NSString elementKind)
+		string DetermineViewReuseId(NSString elementKind)
 		{
-			var struc = base.DetermineViewReuseId(elementKind);
-			if(struc != null)
-			{
-				return struc;
-			}
 			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
 				? ItemsView.GroupHeaderTemplate
 				: ItemsView.GroupFooterTemplate);

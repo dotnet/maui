@@ -323,7 +323,6 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>
 ~Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>.SelectableItemsViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>
-~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.RegisterSupplementaryViews(Foundation.NSString kind) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.StructuredItemsViewController2(TItemsView structuredItemsView, UIKit.UICollectionViewLayout layout) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Bind(Microsoft.Maui.Controls.DataTemplate template, object bindingContext, Microsoft.Maui.Controls.ItemsView itemsView) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.Bind(Microsoft.Maui.Controls.View virtualView, Microsoft.Maui.Controls.ItemsView itemsView) -> void
@@ -353,7 +352,6 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.SelectLayout() -> UIKit.UICollectionViewLayout
 ~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
-~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.DetermineViewReuseId(Foundation.NSString elementKind) -> string
 ~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.GetViewForSupplementaryElement(UIKit.UICollectionView collectionView, Foundation.NSString elementKind, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionReusableView
 ~override Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewDelegator2<TItemsView, TViewController>.ScrollAnimationEnded(UIKit.UIScrollView scrollView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetCell(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionViewCell

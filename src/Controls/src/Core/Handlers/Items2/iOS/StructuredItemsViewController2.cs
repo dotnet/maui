@@ -46,18 +46,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			base.Dispose(disposing);
 		}
 
-		protected virtual string DetermineViewReuseId(NSString elementKind)
-		{
-			if (elementKind == UICollectionElementKindSectionKey.Header)
-			{
-				return DetermineViewReuseId(ItemsView.HeaderTemplate, ItemsView.Header);
-			}
-			else
-			{
-				return DetermineViewReuseId(ItemsView.FooterTemplate, ItemsView.Footer);
-			}
-		}
-
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
@@ -80,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return view;
 		}
 
-		protected void RegisterSupplementaryViews(UICollectionElementKindSection kind)
+		private protected void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
 			if (IsHorizontal)
 			{
@@ -98,10 +86,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-
+		string DetermineViewReuseId(NSString elementKind)
+		{
+			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
+				? ItemsView.GroupHeaderTemplate
+				: ItemsView.GroupFooterTemplate);
+		}
 		void UpdateDefaultSupplementaryView(DefaultCell2 cell, NSString elementKind)
 		{
-			var obj = elementKind == UICollectionElementKindGlobalKey.Header
+			var obj = elementKind == UICollectionElementKindSectionKey.Header
 				? ItemsView.Header
 				: ItemsView.Footer;
 
