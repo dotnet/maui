@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class WindowsTests : BaseTestFixture
 	{
 		[Fact]
-		public void WindowIsStyleable()
+		public void WindowIsStyleableWithImplicitStyle()
 		{
 			var style = new Style(typeof(Window))
 			{
@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				},
 			};
 
-			var app = new TestApp();
-			app.Resources = new ResourceDictionary { style };
+			var app = new TestApp(new Window(new ContentPage()));
+			app.Resources.Add(style);
 
 			var window = app.CreateWindow();
 
@@ -43,8 +43,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Class = "fooClass",
 			};
 
-			var app = new TestApp();
-			app.Resources = new ResourceDictionary { style };
+			var app = new TestApp(new Window(new ContentPage()));
+			app.Resources.Add(style);
 
 			var window = app.CreateWindow();
 			window.StyleClass = new[] { "fooClass" };
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void WindowIsStyleableWithStyle()
+		public void WindowIsStyleableWithStyleProperty()
 		{
 			var style = new Style(typeof(Window))
 			{
