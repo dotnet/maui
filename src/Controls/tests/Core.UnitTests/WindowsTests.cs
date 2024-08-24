@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				},
 			};
 
-			var app = new TestApp(new Window(new ContentPage()));
+			var app = new TestApp();
 			app.Resources.Add(style);
 
 			var window = app.CreateWindow();
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Class = "fooClass",
 			};
 
-			var app = new TestApp(new Window(new ContentPage()));
+			var app = new TestApp();
 			app.Resources.Add(style);
 
 			var window = app.CreateWindow();

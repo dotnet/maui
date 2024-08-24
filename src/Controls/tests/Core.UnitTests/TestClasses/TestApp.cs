@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			return _window ?? new TestWindow(_withPage ?? new ContentPage());
+			return _window ?? new Window(_withPage ?? new ContentPage());
 		}
 
 		public Window CreateWindow(Page withPage)
