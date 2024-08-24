@@ -107,6 +107,7 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.CoreWebView2ProcessFailedEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs!
@@ -292,6 +293,7 @@ Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Cont
 Microsoft.Maui.Controls.PlatformPointerEventArgs
 Microsoft.Maui.Controls.PlatformPointerEventArgs.PointerRoutedEventArgs.get -> Microsoft.UI.Xaml.Input.PointerRoutedEventArgs!
 Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml.FrameworkElement!
+static Microsoft.Maui.Controls.ViewExtensions.InvalidateMeasure(this Microsoft.Maui.Controls.VisualElement! view) -> void
 *REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool

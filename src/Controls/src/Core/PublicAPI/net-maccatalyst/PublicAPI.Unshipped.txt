@@ -85,6 +85,7 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
@@ -523,6 +524,7 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+static Microsoft.Maui.Controls.ViewExtensions.InvalidateMeasure(this Microsoft.Maui.Controls.VisualElement! view) -> void
 Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
@@ -566,3 +568,9 @@ static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndexPath() -> (bool VisibleItems, Foundation.NSIndexPath First, Foundation.NSIndexPath Center, Foundation.NSIndexPath Last)
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
 *REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
+*REMOVED*~Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.ShellScrollViewTracker(Microsoft.Maui.IPlatformViewHandler renderer) -> void
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose() -> void
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.OnLayoutSubviews() -> void
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Reset() -> bool
+*REMOVED*virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose(bool disposing) -> void
