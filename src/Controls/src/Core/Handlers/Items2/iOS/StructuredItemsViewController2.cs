@@ -89,9 +89,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		string DetermineViewReuseId(NSString elementKind)
 		{
 			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
-				? ItemsView.GroupHeaderTemplate
-				: ItemsView.GroupFooterTemplate);
+				? ItemsView.HeaderTemplate 
+				: ItemsView.FooterTemplate, elementKind == UICollectionElementKindSectionKey.Header
+				? ItemsView.Header 
+				: ItemsView.Footer);
 		}
+
 		void UpdateDefaultSupplementaryView(DefaultCell2 cell, NSString elementKind)
 		{
 			var obj = elementKind == UICollectionElementKindSectionKey.Header
