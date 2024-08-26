@@ -264,10 +264,18 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static UIView? GetSuperViewIfWindowSet(this UIView? view)
+		{
+			if (view?.Window is null)
+				return null;
+
+			return view.Superview;
+		}
+
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
 			platformView.SetNeedsLayout();
-			platformView.Superview?.SetNeedsLayout();
+			platformView.GetSuperViewIfWindowSet()?.SetNeedsLayout();
 		}
 
 		public static void UpdateWidth(this UIView platformView, IView view)
@@ -504,7 +512,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
 		{
-			if (view is ITextInput textInput)
+			// Interaction should not be disabled for an editor if it is set as read-only
+			// because this prevents users from scrolling the content inside an editor.
+			if (view is not IEditor && view is ITextInput textInput)
 			{
 				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
 				return;
