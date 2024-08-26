@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				platformButton.ImageEdgeInsets = imageInsets;
 				platformButton.TitleEdgeInsets = titleInsets;
-				platformButton.GetSuperViewIfWindowSet()?.SetNeedsLayout();
+				platformButton.Superview?.SetNeedsLayout();
 			}
 #pragma warning restore CA1416, CA1422
 		}
