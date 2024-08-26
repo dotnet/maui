@@ -5,11 +5,9 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
-using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
-using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -24,15 +22,12 @@ namespace Microsoft.Maui.Handlers
 		Drawable? _clearButtonDrawable;
 		bool _clearButtonVisible;
 		bool _set;
-		//BroadcastReceiver? _themeChangeReceiver;
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
 			var nativeEntry = new MauiAppCompatEditText(Context);
 			return nativeEntry;
 		}
-
-		
 
 		// Returns the default 'X' char drawable in the AppCompatEditText.
 		protected virtual Drawable? GetClearButtonDrawable() =>
@@ -284,7 +279,7 @@ namespace Microsoft.Maui.Handlers
 			else
 				drawable?.ClearColorFilter();
 
-			if (PlatformView.LayoutDirection == Android.Views.LayoutDirection.Rtl)
+			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
 			else
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
@@ -313,7 +308,4 @@ namespace Microsoft.Maui.Handlers
 			ThemeChanged?.Invoke(uiMode);
 		}
 	}
-
-
-
 }
