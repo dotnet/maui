@@ -250,7 +250,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			e.Handled = handled;
-
 		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
