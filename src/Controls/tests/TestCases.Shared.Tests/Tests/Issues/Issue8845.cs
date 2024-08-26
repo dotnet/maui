@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Picker)]
 		public void PickerShouldDisplayValueFromItemDisplayBinding()
 		{
-			App.WaitForElement("MauiPicker");
 			App.WaitForElement("UpdateButton");
 			
 			App.Tap("UpdateButton");
