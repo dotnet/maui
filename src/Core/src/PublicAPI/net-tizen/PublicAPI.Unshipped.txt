@@ -132,5 +132,6 @@ static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
-Microsoft.Maui.IStepper.Increment.get -> double
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.IStepper.Increment.get -> double
+
