@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewShouldScrollToRightPosition()
 		{
-			_ = App.WaitForElement("goToLastItemButton");
+			App.WaitForElement("goToLastItemButton");
 			App.Click("goToLastItemButton");
 			App.WaitForElement("5");
 			App.Click("reloadItemsButton");
