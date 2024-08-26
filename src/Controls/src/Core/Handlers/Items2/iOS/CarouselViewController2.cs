@@ -136,6 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
+			UpdateInitialPosition();
 		}
 
 		private protected override void DetachingFromWindow()
