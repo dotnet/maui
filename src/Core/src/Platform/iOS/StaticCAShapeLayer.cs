@@ -2,7 +2,7 @@ using CoreAnimation;
 
 namespace Microsoft.Maui.Platform;
 
-class MauiCAClipLayer : CAShapeLayer
+class StaticCAShapeLayer : CAShapeLayer
 {
 	public override void AddAnimation(CAAnimation animation, string? key)
 	{

@@ -157,44 +157,5 @@ namespace Microsoft.Maui.Platform
 				contentView.Clip = border;
 			}
 		}
-
-		internal static void UpdateMauiCALayer(this UIView view)
-		{
-			if (view.Frame.IsEmpty)
-			{
-				return;
-			}
-
-			var layer = view.Layer;
-			if (layer?.Sublayers is { Length: > 0 } sublayers)
-			{
-				var bounds = view.Bounds;
-				var backgroundLayers = GetBackgroundLayersNeedingUpdate(sublayers, bounds);
-
-				foreach (CALayer backgroundLayer in backgroundLayers)
-				{
-					backgroundLayer.Frame = bounds;
-				}
-			}
-		}
-
-		static IEnumerable<CALayer> GetBackgroundLayersNeedingUpdate(this CALayer[] layers, CGRect bounds)
-		{
-			foreach (var layer in layers)
-			{
-				if (layer.Sublayers is { Length: > 0 } sublayers)
-				{
-					foreach (var sublayer in GetBackgroundLayersNeedingUpdate(sublayers, bounds))
-					{
-						yield return sublayer;
-					}
-				}
-
-				if (layer.Name == ViewExtensions.BackgroundLayerName && layer.Frame != bounds)
-				{
-					yield return layer;
-				}
-			}
-		}
 	}
 }

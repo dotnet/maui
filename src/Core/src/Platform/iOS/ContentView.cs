@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			UpdateClip();
-			this.UpdateMauiCALayer();
+			this.UpdateBackgroundLayerFrame();
 		}
 
 		internal IBorderStroke? Clip
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			_contentMask ??= new MauiCAClipLayer();
+			_contentMask ??= new StaticCAShapeLayer();
 
 			var bounds = Bounds;
 
