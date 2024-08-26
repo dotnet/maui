@@ -20,15 +20,5 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Constraint.Priority = (float)UILayoutPriority.DefaultHigh;
 			Constraint.Active = true;
 		}
-
-		// public override void ConstrainTo(CGSize constraint)
-		// {
-		// 	Constraint.Constant = constraint.Width;
-		// }
-		//
-		// public override CGSize Measure()
-		// {
-		// 	return new CGSize(Constraint.Constant, Label.IntrinsicContentSize.Height);
-		// }
 	}
 }
