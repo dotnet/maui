@@ -87,11 +87,18 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+Microsoft.Maui.Controls.StyleableElement
+Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style!
+Microsoft.Maui.Controls.StyleableElement.Style.set -> void
+Microsoft.Maui.Controls.StyleableElement.StyleableElement() -> void
+Microsoft.Maui.Controls.StyleableElement.StyleClass.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.TimeChangedEventArgs
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
 static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
 static readonly Microsoft.Maui.Controls.HandlerProperties.DisconnectPolicyProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -134,6 +141,7 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedC
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void
+static readonly Microsoft.Maui.Controls.StyleableElement.StyleProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.ContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.ForegroundColorProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.TitleBar.IconProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -221,6 +229,7 @@ Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -229,6 +238,7 @@ Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.SelectionLengthProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.ViewExtensions.InvalidateMeasure(this Microsoft.Maui.Controls.VisualElement! view) -> void
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.set -> void
@@ -322,3 +332,15 @@ static Microsoft.Maui.Controls.BindingBase.Create<TSource, TProperty>(System.Fun
 Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 *REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
+Microsoft.Maui.Controls.StyleableElement.class.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.StyleableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.get -> Microsoft.Maui.Controls.Style
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void

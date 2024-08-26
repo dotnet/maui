@@ -420,8 +420,11 @@ public class BindingCodeWriterTests
                     setter,
                     handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
+                        new(static source => source, "Item"),
                         new(static source => source, "Item[12]"),
+                        new(static source => source[12], "Indexer"),
                         new(static source => source[12], "Indexer[Abc]"),
+                        new(static source => source[12]?["Abc"], "Item"),
                         new(static source => source[12]?["Abc"], "Item[0]"),
                     })
                 {

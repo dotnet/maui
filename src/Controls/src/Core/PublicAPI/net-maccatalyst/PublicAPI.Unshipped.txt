@@ -85,6 +85,7 @@ Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.Invoke(string! command, object? args) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.UpdateValue(string! property) -> void
 override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
@@ -418,6 +419,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapItemTemplate(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapVerticalScrollBarVisibility(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> handler, Microsoft.Maui.Controls.ItemsView itemsView) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -522,6 +524,7 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+static Microsoft.Maui.Controls.ViewExtensions.InvalidateMeasure(this Microsoft.Maui.Controls.VisualElement! view) -> void
 Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
@@ -565,3 +568,28 @@ static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndexPath() -> (bool VisibleItems, Foundation.NSIndexPath First, Foundation.NSIndexPath Center, Foundation.NSIndexPath Last)
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
 *REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
+*REMOVED*~Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.ShellScrollViewTracker(Microsoft.Maui.IPlatformViewHandler renderer) -> void
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose() -> void
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.OnLayoutSubviews() -> void
+*REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Reset() -> bool
+*REMOVED*virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose(bool disposing) -> void
+Microsoft.Maui.Controls.StyleableElement
+Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style!
+Microsoft.Maui.Controls.StyleableElement.Style.set -> void
+Microsoft.Maui.Controls.StyleableElement.StyleableElement() -> void
+Microsoft.Maui.Controls.StyleableElement.StyleClass.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
+static readonly Microsoft.Maui.Controls.StyleableElement.StyleProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.StyleableElement.class.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.StyleableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.get -> Microsoft.Maui.Controls.Style
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void

@@ -13,6 +13,11 @@ string officialBuildId = Argument("officialbuildid", "");
 
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
+var rootFolder = Context.Environment.WorkingDirectory;
+
+if (rootFolder.FullPath.EndsWith("/devices", StringComparison.OrdinalIgnoreCase))
+    rootFolder = rootFolder.Combine("../../").Collapse();
+
 var arcadeBin = MakeAbsolute(new DirectoryPath("./artifacts/bin/"));
 
 string TestTFM = Argument("testtfm", "");
@@ -55,12 +60,12 @@ Task("dotnet")
         if(!string.IsNullOrEmpty(nugetSource))
         {
             EnsureDirectoryExists(nugetSource);
-            var originalNuget = File("./NuGet.config");
+            var originalNuget = File($"{rootFolder}/NuGet.config");
             ReplaceTextInFiles(originalNuget, "<add key=\"nuget-only\" value=\"true\" />", "");
             ReplaceTextInFiles(originalNuget, "NUGET_ONLY_PLACEHOLDER", nugetSource);
         }
 
-        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
+        DotNetBuild($"{rootFolder}/src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
@@ -109,7 +114,7 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
+        RunMSBuildWithDotNet($"{rootFolder}/Microsoft.Maui.BuildTasks.slnf");
     })
    .OnError(exception =>
     {
@@ -166,6 +171,7 @@ Task("dotnet-build")
     });
 
 Task("dotnet-samples")
+    .IsDependentOn("dotnet-buildtasks")
     .Does(() =>
     {
         var tempDir = PrepareSeparateBuildContext("samplesTest");
@@ -201,6 +207,26 @@ Task("dotnet-samples")
         }
 
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
+    });
+
+// Builds the host app for the UI Tests
+Task("uitests-apphost")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        var tempDir = PrepareSeparateBuildContext("samplesTest");
+
+        var properties = new Dictionary<string, string>();
+
+        if(useNuget)
+        {
+            properties = new Dictionary<string, string> {
+                ["UseWorkload"] = "true",
+                // ["GenerateAppxPackageOnBuild"] = "true",
+                ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+            };
+        }
+        RunMSBuildWithDotNet("./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj", properties, binlogPrefix: "uitests-apphost-");
     });
 
 Task("dotnet-legacy-controlgallery")

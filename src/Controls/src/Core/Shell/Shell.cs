@@ -121,6 +121,9 @@ namespace Microsoft.Maui.Controls
 				element
 					.FindParentOfType<Shell>()
 					?.SendFlyoutItemsChanged();
+
+			if(bindable is BaseShellItem baseShellItem && baseShellItem.FlyoutItemIsVisible != (bool)newValue)
+				baseShellItem.FlyoutItemIsVisible = (bool)newValue;
 		}
 
 		/// <summary>
@@ -1969,6 +1972,7 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			// Page by default tries to layout all logical children
