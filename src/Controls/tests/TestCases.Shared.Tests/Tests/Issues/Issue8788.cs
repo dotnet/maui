@@ -15,8 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellTabItemsShouldUpdateForDynamicChangesInVisibility()
 		{
+#if WINDOWS
+			App.TapCoordinates(100, 57);
+#else
 			App.WaitForElement("FirstButton");
 			App.Tap("FirstButton");
+#endif
 			VerifyScreenshot();
 		}
 	}
