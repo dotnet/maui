@@ -322,13 +322,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				position = Carousel.Position;
-				if (Carousel.Loop && position == 0 && ItemsView.ItemsSource != null)
+				if (Carousel.Loop && position == 0)
 				{
-					var carouselEnumerator = ItemsView.ItemsSource.GetEnumerator();
-					while (carouselEnumerator.MoveNext())
-					{
-						itemCount++;
-					}
+					itemCount = ItemsViewAdapter.ItemsSource.Count;
 				}
 			}
 

@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
@@ -15,6 +14,7 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = new Issue17283ViewModel();
 		}
 	}
+
 	public class Issue17283ViewModel : INotifyPropertyChanged
 	{
 		ObservableCollection<string> _items;
@@ -41,7 +41,6 @@ namespace Maui.Controls.Sample.Issues
 
 		public Command ReloadItemsCommand { get; set; }
 		public Command GoToLastItemCommand { get; set; }
-
 
 		public Issue17283ViewModel()
 		{
