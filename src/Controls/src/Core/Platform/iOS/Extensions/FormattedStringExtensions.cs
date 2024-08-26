@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using System;
-using System.Linq;
 
 #if !MACOS
 using ObjCRuntime;
@@ -249,10 +248,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (span is ISpatialElement spatialElement)
 				{
-					spatialElement.Region =
-						Region.FromRectangles(spanRects.Select(r => new Rect(r.X, r.Y, r.Width, r.Height)));
+					var rects = new List<Rect>();
+					foreach (var r in spanRects)
+					{
+						rects.Add(new Rect(r.X, r.Y, r.Width, r.Height));
+					}
+					spatialElement.Region = Region.FromRectangles(rects);
 				}
-
 				currentLocation += span.Text.Length;
 			}
 		}

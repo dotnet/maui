@@ -4,8 +4,8 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 21837, "Crash with specific Font and text in Label", PlatformAffected.iOS)]
-public class Issue21837 : TestContentPage
+[Issue(IssueTracker.Github, 22469, "Crash with specific Font and text in Label", PlatformAffected.iOS)]
+public class Issue22469 : TestContentPage
 {
 	const string kClickCount = "Click Count: ";
 	const string kClickCountAutomationId = "ClickCount";
@@ -31,7 +31,7 @@ public class Issue21837 : TestContentPage
 		});
 		formattedString.Spans.Add(span);
 
-		// Combination of spans, fotnfamily + fontsize and width 335 throws exception on iOS before Issue21837 fixed
+		// Combination of spans, fotnfamily + fontsize and width 335 throws exception on iOS before Issue22469 fixed
 		var topLabel = new Label
 		{
 			AutomationId = kLabelTestAutomationId, FormattedText = formattedString, FontSize = 14

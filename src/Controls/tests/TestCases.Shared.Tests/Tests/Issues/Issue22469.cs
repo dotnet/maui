@@ -4,13 +4,13 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue21837 : _IssuesUITest
+public class Issue22469 : _IssuesUITest
 {
 	const string kClickCount = "Click Count: ";
 	const string kClickCountAutomationId = "ClickCount";
 	const string kLabelTestAutomationId = "SpanningLabel";
 
-	public Issue21837(TestDevice device)
+	public Issue22469(TestDevice device)
 		: base(device)
 	{ }
 
