@@ -784,7 +784,8 @@ namespace Microsoft.Maui.Controls
 		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			base.OnSetDynamicResource(property, key, specificity);
-			DynamicResources[property] = (key, specificity);
+			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 < specificity)
+				DynamicResources[property] = (key, specificity);
 			if (this.TryGetResource(key, out var value))
 				OnResourceChanged(property, value, specificity);
 		}

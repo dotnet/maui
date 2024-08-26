@@ -8,7 +8,9 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPresenter']/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class ContentPresenter : Compatibility.Layout, IContentView
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
@@ -35,14 +37,14 @@ namespace Microsoft.Maui.Controls
 		object IContentView.Content => Content;
 		IView IContentView.PresentedContent => Content;
 
+		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
-				if (child != null)
-					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
+				child?.Arrange(new Rect(x, y, width, height));
 			}
 		}
 
