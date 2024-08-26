@@ -33,6 +33,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			}
 		}
 
+		class TestBoxView : BoxView
+		{
+			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+			{
+				return new Size(40, 20);
+			}
+		}
+
 		[Fact]
 		public void FlexLayoutMeasuresImagesUnconstrained()
 		{
@@ -131,6 +139,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var flexFrame = flexLayout.GetFlexFrame(view);
 
 			Assert.Equal(100, flexFrame.Width);
+		}
+
+		[Fact]
+		public void FlexLayoutPaddingShouldBeAppliedCorrectly()
+		{
+			var padding = 16;
+			var root = new VerticalStackLayout();
+			
+			var boxView = new TestBoxView
+			{
+				Color = Colors.Red
+			};
+
+			var layout = new FlexLayout
+			{
+				Direction = FlexDirection.Column, 
+				BackgroundColor = Colors.LightGreen,
+				Padding = new Thickness(padding),
+				HeightRequest = 500,
+				WidthRequest = 500,
+				Children = { boxView }
+			};
+			root.Add(layout);
+			var measure = layout.CrossPlatformMeasure(500, 500);
+			layout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var frame = layout.Children[0].Frame;
+			Assert.Equal(padding, frame.X);
 		}
 
 		[Theory]
