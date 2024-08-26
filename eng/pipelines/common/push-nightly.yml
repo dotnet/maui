@@ -55,7 +55,7 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: vs-msi-nugets
-              downloadPath: $(Build.StagingDirectory)\nuget-signed
+              downloadPath: $(Build.StagingDirectory)\PackageArtifacts
             displayName: Download vs-msi-nugets
 
           - powershell: |
