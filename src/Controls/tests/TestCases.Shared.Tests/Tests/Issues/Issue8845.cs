@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("MauiPicker");
 			App.WaitForElement("UpdateButton");
+			
 			App.Tap("UpdateButton");
 			VerifyScreenshot();
 		}
