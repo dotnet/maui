@@ -320,7 +320,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Carousel.Position = position;
 			}
 			else
+			{
 				position = Carousel.Position;
+				if (Carousel.Loop && position == 0 && ItemsView.ItemsSource != null)
+				{
+					var carouselEnumerator = ItemsView.ItemsSource.GetEnumerator();
+					while (carouselEnumerator.MoveNext())
+					{
+						itemCount++;
+					}
+				}
+			}
 
 			_oldPosition = position;
 
