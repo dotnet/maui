@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization.Metadata;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
@@ -17,7 +18,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		string? HybridRoot { get; }
 
-		void MessageReceived(string rawMessage);
+		void RawMessageReceived(string rawMessage);
 
 		void SendRawMessage(string rawMessage);
 
@@ -27,5 +28,15 @@ namespace Microsoft.Maui
 		/// <param name="script">The JavaScript code to run.</param>
 		/// <returns>The return value (if any) of running the script.</returns>
 		Task<string?> EvaluateJavaScriptAsync(string script);
+
+		/// <summary>
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values
+		/// specified by <paramref name="paramValues"/>.
+		/// </summary>
+		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method.</param>
+		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
+		/// <returns>A string containing the return value of the called method.</returns>
+		public Task<string?> InvokeJavaScriptAsync(string methodName, object?[]? paramValues, JsonTypeInfo?[]? paramJsonTypeInfos = null);
 	}
 }
