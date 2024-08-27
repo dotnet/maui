@@ -50,7 +50,7 @@ internal class PathParser
 		}
 
 		var isReferenceType = typeInfo.IsReferenceType;
-		var accessorKind = AccessorKindFactory.FromSymbol(symbol);
+		var accessorKind = symbol.ToAccessorKind();
 		var memberType = typeInfo.CreateTypeDescription(EnabledNullable);
 		var containgType = symbol.ContainingType.CreateTypeDescription(EnabledNullable);
 

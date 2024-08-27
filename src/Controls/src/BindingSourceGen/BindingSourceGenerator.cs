@@ -4,6 +4,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+public class TrackingNames
+{
+	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
+	public const string Bindings = nameof(Bindings);
+}
+
 [Generator(LanguageNames.CSharp)]
 public class BindingSourceGenerator : IIncrementalGenerator
 {
