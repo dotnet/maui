@@ -234,6 +234,11 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	}
 	finally
 	{
+		if (testsFailed)
+		{
+			// uncomment if you want to copy the test app to the results directory for any reason
+			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
+		}
 
 		HandleTestResults(resultsDir, testsFailed, false);
 	}
