@@ -18,7 +18,19 @@ namespace Microsoft.Maui.Controls
 				this.SetDynamicResource(AppThemeProperty, AppThemeResource);
 				((IElementDefinition)parent)?.AddResourcesChangedListener(OnParentResourcesChanged);
 			}
+			
+			public AppThemeProxy(AppThemeBinding binding)
+			{
+				Binding = binding;
 
+				if (Application.Current is not null)
+				{
+					Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+
+					
+				}
+			}
+			
 			public static BindableProperty AppThemeProperty = BindableProperty.Create("AppTheme", typeof(AppTheme), typeof(AppThemeBinding), AppTheme.Unspecified,
 				propertyChanged: (bindable, oldValue, newValue) => ((AppThemeProxy)bindable).OnAppThemeChanged());
 			readonly Element _parent;
@@ -28,11 +40,26 @@ namespace Microsoft.Maui.Controls
 				Binding.Apply(false);
 			}
 			
+			void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+			{
+				OnAppThemeChanged();
+			}
+			
 			public AppThemeBinding Binding { get; }
 
 			public void Unsubscribe()
 			{
-				((IElementDefinition)_parent)?.RemoveResourcesChangedListener(OnParentResourcesChanged);
+				if (_parent is not null)
+				{
+					((IElementDefinition)_parent)?.RemoveResourcesChangedListener(OnParentResourcesChanged);
+				}
+				else
+				{
+					if (Application.Current is not null)
+					{
+						Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+					}
+				}
 			}
 		}
 
@@ -71,8 +98,16 @@ namespace Microsoft.Maui.Controls
 			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged, specificity);
 			this.specificity = specificity;
 			ApplyCore(false);
-			_appThemeProxy = new AppThemeProxy(bindObj as Element, this);
 
+			if (bindObj is Element element)
+			{
+				_appThemeProxy = new AppThemeProxy(element, this);
+			}
+			else
+			{
+				// Fallback in case target is not element ie. PlatformBehavior
+				_appThemeProxy = new AppThemeProxy(this);
+			}
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
