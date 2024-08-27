@@ -14,10 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException";
 
-		// Issue10300 (src\ControlGallery\src\Issues.Shared\Issue10300.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
 		public void Issue10300Test()
 		{
 			App.Click("Add");
