@@ -57,6 +57,10 @@
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
   <ItemGroup>
     <AndroidEnvironment Include="Platforms\Android\environment.txt" />
   </ItemGroup>

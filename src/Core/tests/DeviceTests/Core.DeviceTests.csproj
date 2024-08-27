@@ -66,6 +66,10 @@
     <AndroidEnvironment Include="Platforms\Android\environment.txt" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />
