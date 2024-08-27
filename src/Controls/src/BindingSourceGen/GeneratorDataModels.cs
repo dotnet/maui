@@ -14,6 +14,7 @@ public class TrackingNames
 	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
 	public const string Bindings = nameof(Bindings);
 }
+
 public sealed record BindingInvocationDescription(
 	InterceptorLocation Location,
 	TypeDescription SourceType,
