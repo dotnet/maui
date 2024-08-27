@@ -7,8 +7,6 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! Please make sure to add as much detail as you can, preferably with a [reproduction](https://github.com/dotnet/maui/blob/main/.github/repro.md). This will help us diagnose the issue faster and thus resolve it quicker.
-        
-        If this is a bug in Xamarin.Forms, please [open the issue in the Xamarin.Forms repo](https://github.com/xamarin/Xamarin.Forms/issues/new?assignees=&labels=s%2Funverified%2C+t%2Fbug+%3Abug%3A&template=bug_report.md&title=[Bug]+).
   - type: textarea
     id: description
     attributes:
