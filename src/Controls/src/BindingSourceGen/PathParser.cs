@@ -187,50 +187,10 @@ internal class PathParser
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(indexExpression.GetLocation()));
 		}
 
-		var name = GetIndexerName(elementAccessSymbol);
+		var name = elementAccessSymbol.GetIndexerName();
 		var isReferenceType = typeSymbol?.IsReferenceType ?? false;
 		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
-	}
-
-	private string GetIndexerName(ISymbol? elementAccessSymbol)
-	{
-		const string defaultName = "Item";
-
-		if (elementAccessSymbol is not IPropertySymbol propertySymbol)
-		{
-			return defaultName;
-		}
-
-		var containgType = propertySymbol.ContainingType;
-		if (containgType == null)
-		{
-			return defaultName;
-		}
-
-		var defaultMemberAttribute = GetAttribute(containgType, "DefaultMemberAttribute");
-		if (defaultMemberAttribute != null)
-		{
-			return GetAttributeValue(defaultMemberAttribute);
-		}
-
-		var indexerNameAttr = GetAttribute(propertySymbol, "IndexerNameAttribute");
-		if (indexerNameAttr != null)
-		{
-			return GetAttributeValue(indexerNameAttr);
-		}
-
-		return defaultName;
-
-		AttributeData? GetAttribute(ISymbol symbol, string attributeName)
-		{
-			return symbol.GetAttributes().FirstOrDefault(attr => attr.AttributeClass?.Name == attributeName);
-		}
-
-		string GetAttributeValue(AttributeData attribute)
-		{
-			return (attribute.ConstructorArguments.Length > 0 ? attribute.ConstructorArguments[0].Value as string : null) ?? defaultName;
-		}
 	}
 }
