@@ -50,11 +50,11 @@ internal class PathParser
 		}
 
 		var isReferenceType = typeInfo.IsReferenceType;
-		var accessorKind = AccessorKindFactory.FromSymbol(symbol);
-		var memberType = BindingGenerationUtilities.CreateTypeDescription(typeInfo, EnabledNullable);
-		var containgType = BindingGenerationUtilities.CreateTypeDescription(symbol.ContainingType, EnabledNullable);
+		var accessorKind = symbol.ToAccessorKind();
+		var memberType = typeInfo.CreateTypeDescription(EnabledNullable);
+		var containgType = symbol.ContainingType.CreateTypeDescription(EnabledNullable);
 
-		IPathPart part = BindingGenerationUtilities.IsAccessible(symbol.DeclaredAccessibility)
+		IPathPart part = symbol.IsAccessible()
 			? new MemberAccess(member, !isReferenceType)
 			: new InaccessibleMemberAccess(containgType, memberType, accessorKind, member, !isReferenceType);
 
@@ -144,7 +144,7 @@ internal class PathParser
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castTo.GetLocation()));
 		};
 
-		leftResult.Value.Add(new Cast(BindingGenerationUtilities.CreateTypeDescription(typeInfo, EnabledNullable)));
+		leftResult.Value.Add(new Cast(typeInfo.CreateTypeDescription(EnabledNullable)));
 
 		return Result<List<IPathPart>>.Success(leftResult.Value);
 	}
@@ -163,7 +163,7 @@ internal class PathParser
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castExpression.GetLocation()));
 		};
 
-		result.Value.Add(new Cast(BindingGenerationUtilities.CreateTypeDescription(typeInfo, EnabledNullable)));
+		result.Value.Add(new Cast(typeInfo.CreateTypeDescription(EnabledNullable)));
 
 		return Result<List<IPathPart>>.Success(result.Value);
 	}

@@ -4,6 +4,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
+public class TrackingNames
+{
+	public const string BindingsWithDiagnostics = nameof(BindingsWithDiagnostics);
+	public const string Bindings = nameof(Bindings);
+}
+
 [Generator(LanguageNames.CSharp)]
 public class BindingSourceGenerator : IIncrementalGenerator
 {
@@ -124,7 +130,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
 		}
 
-		if (!BindingGenerationUtilities.IsAccessible(lambdaParamType.DeclaredAccessibility))
+		if (!lambdaParamType.IsAccessible())
 		{
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
 		}
@@ -138,8 +144,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var binding = new BindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
-			SourceType: BindingGenerationUtilities.CreateTypeDescription(lambdaParamType, enabledNullable),
-			PropertyType: BindingGenerationUtilities.CreateTypeDescription(lambdaResultType, enabledNullable),
+			SourceType: lambdaParamType.CreateTypeDescription(enabledNullable),
+			PropertyType: lambdaResultType.CreateTypeDescription(enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
 			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable,
@@ -325,8 +331,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		static bool AcceptsNullValue(ISymbol? symbol, bool enabledNullable)
 			=> symbol switch
 			{
-				IPropertySymbol propertySymbol => BindingGenerationUtilities.IsTypeNullable(propertySymbol.Type, enabledNullable),
-				IFieldSymbol fieldSymbol => BindingGenerationUtilities.IsTypeNullable(fieldSymbol.Type, enabledNullable),
+				IPropertySymbol propertySymbol => propertySymbol.Type.IsTypeNullable(enabledNullable),
+				IFieldSymbol fieldSymbol => fieldSymbol.Type.IsTypeNullable(enabledNullable),
 				_ => false,
 			};
 	}
