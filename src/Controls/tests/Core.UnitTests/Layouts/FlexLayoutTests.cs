@@ -33,14 +33,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			}
 		}
 
-		class TestBoxView : BoxView
-		{
-			protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-			{
-				return new Size(40, 20);
-			}
-		}
-
 		[Fact]
 		public void FlexLayoutMeasuresImagesUnconstrained()
 		{
@@ -142,31 +134,61 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		}
 
 		[Fact]
-		public void FlexLayoutPaddingShouldBeAppliedCorrectly()
+		public void FlexLayoutPaddingShouldBeAppliedCorrectly_RowDirection()
 		{
+			// Arrange
 			var padding = 16;
-			var root = new VerticalStackLayout();
-			
-			var boxView = new TestBoxView
-			{
-				Color = Colors.Red
-			};
+			var root = new Grid();
+			var flexLayout = new FlexLayout { Padding = padding };
+			var view1 = new TestLabel();
+			var view2 = new TestLabel();
 
-			var layout = new FlexLayout
-			{
-				Direction = FlexDirection.Column, 
-				BackgroundColor = Colors.LightGreen,
-				Padding = new Thickness(padding),
-				HeightRequest = 500,
-				WidthRequest = 500,
-				Children = { boxView }
-			};
-			root.Add(layout);
-			var measure = layout.CrossPlatformMeasure(500, 500);
-			layout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+			root.Add(flexLayout);
+			flexLayout.Add(view1 as IView);
+			flexLayout.Add(view2 as IView);
 
-			var frame = layout.Children[0].Frame;
-			Assert.Equal(padding, frame.X);
+			// Act
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var view1Frame = flexLayout.Children[0].Frame;
+			var view2Frame = flexLayout.Children[1].Frame;
+
+			var leftPadding = view1Frame.X;
+			var topPadding = view1Frame.Y;
+			var rightPadding = measure.Width - view2Frame.Right;
+
+			// Assert
+			Assert.Equal(padding, leftPadding);
+			Assert.Equal(padding, rightPadding);
+			Assert.Equal(padding, topPadding);
+			Assert.Equal(view1.Width, view1Frame.Width);
+		}
+
+		[Fact]
+		public void FlexLayoutPaddingShouldBeAppliedCorrectly_ColumnDirection()
+		{
+			// Arrange
+			var padding = 16;
+			var root = new Grid();
+			var flexLayout = new FlexLayout { Padding = padding, Direction = FlexDirection.Column };
+			var view1 = new TestLabel();
+			var view2 = new TestLabel();
+
+			root.Add(flexLayout);
+			flexLayout.Add(view1 as IView);
+			flexLayout.Add(view2 as IView);
+
+			// Act
+			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
+			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
+
+			var view2Frame = flexLayout.Children[1].Frame;
+			var bottomPadding = measure.Height - view2Frame.Bottom;
+
+			// Assert
+			Assert.Equal(padding, bottomPadding);
+			Assert.Equal(view2.Height, view2Frame.Height);
 		}
 
 		[Theory]
