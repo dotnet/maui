@@ -127,14 +127,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				switch (_testDevice)
 				{
 					case TestDevice.Android:
-						if (deviceName == "Nexus 5X")
-						{
-							environmentName = "android";
-						}
-						else
-						{
-							Assert.Fail($"Android visual tests should be run on an Nexus 5X (API 30) emulator image, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
-						}
+						environmentName = "android";
 						break;
 
 					case TestDevice.iOS:
@@ -152,7 +145,6 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-
 							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
@@ -209,6 +201,11 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
+
+					if (width != 1080 || height != 2400)
+					{
+						Assert.Fail($"Android visual tests should be run on an Nexus 5X (API 30) emulator image (1080x2400 screen), but the current device has the wrong screen size ({width}x{height}). Follow the steps on the MAUI UI testing wiki to launch the android emulator with the right image, running the script there.");
+					}
 
 					imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
 
