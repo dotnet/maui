@@ -179,4 +179,6 @@ virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.
 static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.IStepper.Increment.get -> double
+*REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
+*REMOVED*static Microsoft.Maui.Platform.StepperExtensions.UpdateInterval(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 

@@ -132,4 +132,5 @@ virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Mic
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.IStepper.Increment.get -> double
+*REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
 

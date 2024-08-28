@@ -212,4 +212,4 @@ static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Ma
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.IStepper.Increment.get -> double
-
+*REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
