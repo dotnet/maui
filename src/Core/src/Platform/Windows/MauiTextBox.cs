@@ -69,9 +69,7 @@ namespace Microsoft.Maui.Platform
 
 			if (deleteButton?.Parent is Grid rootGrid)
 			{
-				var isEnabled = GetIsDeleteButtonEnabled(element);
-
-				if (isEnabled)
+				if (GetIsDeleteButtonEnabled(element))
 				{
 					deleteButton.RenderTransform = null;
 
@@ -87,6 +85,7 @@ namespace Microsoft.Maui.Platform
 					if (rootGrid.ColumnDefinitions.Count > 1)
 	                {
 						rootGrid.ColumnDefinitions.RemoveAt(1);
+						// This is a workaround to move the button to be effectively invisible. It is not perfect.
 						deleteButton.RenderTransform = new TranslateTransform() { X = -int.MaxValue, Y = -int.MaxValue };
 					}
 				}
