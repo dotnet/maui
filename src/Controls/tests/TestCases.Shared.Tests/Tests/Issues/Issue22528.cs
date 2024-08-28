@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Label)]
 		public void PreventLabelTextCrop()
 		{
-			App.WaitForElement("labels");
+			App.WaitForElement("label");
 
 			VerifyScreenshot();
 		}

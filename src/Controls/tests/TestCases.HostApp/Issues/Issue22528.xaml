@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue22528" >
 
-    <Grid Padding="24" AutomationId="labels" RowDefinitions="Auto,Auto">
+    <Grid Padding="24" RowDefinitions="Auto,Auto">
         <Label BackgroundColor="Green" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
-        <Label Grid.Row="1" BackgroundColor="Red" LineHeight="0.8" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
+        <Label Grid.Row="1" AutomationId="label" BackgroundColor="Red" LineHeight="0.8" FontSize="20" Text="ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ"/>
     </Grid>
 </ContentPage>
