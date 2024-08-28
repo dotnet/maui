@@ -21,19 +21,25 @@ Appium relies on different implementations called `drivers` for each platform th
 
 This will be the majority of new tests added which will be primarily for testing functionality and adding regression tests.
 
-You will need to create some kind of UI to test against, which will go in the Controls.TestCases.HostApp project. Create a new class within `src/Controls/tests/TestCases.HostApp/Issues` and attribute it with `[Issue]` and derive from `TestContentPage` (or `TestNavigationPage`, or `TestShellPage`, and so on).
+## Adding a Reproduction to the Test App
 
-Then in the Controls.TestCases.Shared.Tests project add a new class within this folder: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues`, or in one of the platform-specific projects. Have the class derive from `_IssuesUITest` and add your test.
+You will need to create some kind of UI to test against, which will go in the Controls.TestCases.HostApp project. This will be an actual MAUI app under test and has no dependency on Appium. Create a new class within `src/Controls/tests/TestCases.HostApp/Issues` and attribute it with `[Issue]`. Create it like any normal page you would make in app to reproduce the issue. This could be just in XAML or just code, along with a screenshot.
 
-Note: An important component that you need in order for Appium to run your test is to add a string with a text description of your class. In the class defined in the HostApp project, add an Issue attribute above the class signature. For example:
-`[Issue(IssueTracker.None, 2680, "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView", PlatformAffected.All)]`
+## Adding a Test to Interact with the Reproduction
+
+Next you will need to create the appium test in the `Controls.TestCases.Shared.Tests` project, which is a library project that runs NUnit tests via Appium. Add a new class with the same name as the Reproduction within this folder: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues`. Have the class derive from `_IssuesUITest` and add your test(s) as methods.
+
+## Link them together with the Issue String
+
+An important component that you need in order for Appium to run your test is to add a string with a text description of your class. In the class defined in the HostApp project, add an Issue attribute above the class signature. For example:
+`[Issue(IssueTracker.Github, 2680, "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView", PlatformAffected.All)]`
 
 Then in the class defined in the TestsCases project, assign the string to a property called `Issue` as so:
 `public override string Issue => "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView";`
 
 It is <b>imperative</b> that both strings are identical, as Appium will use the `Issue` string in the search box of the app to find the Issue as it is defined by its attribute.
 
-You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/RefreshViewTests.cs).
+You can use the example for the sample project: here is the  [xaml](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/Issue11969.xaml) and the [xaml.cs](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/Issue11969.xaml.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue11969.cs).
 
 ### Interacting with Elements in Tests
 
