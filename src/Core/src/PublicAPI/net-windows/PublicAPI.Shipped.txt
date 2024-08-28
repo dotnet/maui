@@ -1127,6 +1127,7 @@ Microsoft.Maui.IStackNavigation.NavigationFinished(System.Collections.Generic.IR
 Microsoft.Maui.IStackNavigation.RequestNavigation(Microsoft.Maui.NavigationRequest! eventArgs) -> void
 Microsoft.Maui.IStackNavigationView
 Microsoft.Maui.IStepper
+Microsoft.Maui.IStepper.Interval.get -> double
 Microsoft.Maui.IStreamImageSource
 Microsoft.Maui.IStreamImageSource.GetStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.IStroke
@@ -2775,6 +2776,7 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this Mic
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this Microsoft.UI.Xaml.Controls.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Microsoft.UI.Xaml.Controls.Slider! nativeSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateBackground(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
+static Microsoft.Maui.Platform.StepperExtensions.UpdateInterval(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateMaximum(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateMinimum(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateValue(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void

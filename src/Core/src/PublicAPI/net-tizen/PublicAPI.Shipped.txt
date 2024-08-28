@@ -1107,6 +1107,7 @@ Microsoft.Maui.IStackNavigation.NavigationFinished(System.Collections.Generic.IR
 Microsoft.Maui.IStackNavigation.RequestNavigation(Microsoft.Maui.NavigationRequest! eventArgs) -> void
 Microsoft.Maui.IStackNavigationView
 Microsoft.Maui.IStepper
+Microsoft.Maui.IStepper.Interval.get -> double
 Microsoft.Maui.IStreamImageSource
 Microsoft.Maui.IStreamImageSource.GetStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.IO.Stream!>!
 Microsoft.Maui.IStroke
