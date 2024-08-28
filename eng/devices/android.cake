@@ -91,7 +91,14 @@ Task("uitest-build")
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
 	});
 
+Task("uitest-prepare")
+	.Does(() =>
+	{
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
+	});
+
 Task("uitest")
+	.IsDependentOn("uitest-prepare")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
@@ -265,10 +272,11 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 	Information("UI Test app build completed.");
 }
 
-void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
 	string platform = "android";
-	Information("Starting UI Tests...");
+	Information("Preparing UI Tests...");
+
 	var testApp = GetTestApplications(app, device, config, tfm, "").FirstOrDefault();
 
 	if (string.IsNullOrEmpty(testApp))
@@ -295,7 +303,11 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	Information($"Results Directory: {resultsDir}");
 
 	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+}
 
+void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+{
+	string platform = "android";
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
