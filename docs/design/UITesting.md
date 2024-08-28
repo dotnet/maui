@@ -78,6 +78,9 @@ Testing against a previously saved screenshot of the simulator can be an importa
 5) Add the snapshot .png to your test. Each platform has its own TestCases project will have a snapshots folder within it to add your .png. ![Drop](../assets/VerifyScreenshotsPart5.png) Please ensure that the file has the same name as the TestMethod that will call `VerifyScreenshots()`. Note: TestCases.IOS.Tests has two sub-folders within its `snapshots` folder, `ios` and `ios-iphonex`. You only have to submit your screenshot to the ios folder.
 6) Commit the change to your PR.
 
+Once everything is committed, you will be able to see screenshots produced by CI whenever you access failed tests:
+![Pic of CI](../assets/FailedTestScreenshot.png)
+
 ## Adding a GalleryPage
 
 Gallery tests are to make it easier to run the same set of tests on controls, if you are creating a new control you would want to add a new gallery page.
