@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void TapThenDoubleTap()
+		public void ModifyingANonVisibleLayoutWorks()
 		{
 			App.WaitForElement("ClickMe");
 			App.Tap("ClickMe");
