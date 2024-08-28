@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnWindows("Currently fails on Windows; see https://github.com/dotnet/maui/issues/24482")]
 		public void CarouselViewShouldScrollToRightPosition()
 		{
 			App.WaitForElement("goToLastItemButton");
