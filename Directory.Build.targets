@@ -55,8 +55,8 @@
     <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!-- 
-    NOTE: The Contains('-windows10') is a bit of a hack 
+  <!--
+    NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...
     There's probably a better way we should find to infer this
   -->
@@ -81,7 +81,7 @@
 
   <!-- Until we get a new enough dotnet -->
   <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.31" TargetingPackVersion="10.0.19041.31" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.38" TargetingPackVersion="10.0.19041.38" />
   </ItemGroup>
 
   <!--
