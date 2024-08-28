@@ -39,7 +39,7 @@ Then in the class defined in the TestsCases project, assign the string to a prop
 
 It is <b>imperative</b> that both strings are identical, as Appium will use the `Issue` string in the search box of the app to find the Issue as it is defined by its attribute.
 
-You can use the example for the sample project: here is the  [xaml](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/Issue11969.xaml) and the [xaml.cs](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Issues/Issue11969.xaml.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue11969.cs).
+You can use the example for the sample project: here is the  [xaml](https://github.com/dotnet/maui/pull/24165/files#diff-6bbe6730a6964c64dc513d2b6f9fa207f65518dec40077c3d217394fcb7f09fbR36) and the [xaml.cs](https://github.com/dotnet/maui/blob/443afb7d07cdd42e9b0091b17d00f76d92b3c3b7/src/Controls/tests/TestCases.HostApp/Issues/Issue11969.xaml.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/blob/443afb7d07cdd42e9b0091b17d00f76d92b3c3b7/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue11969.cs).
 
 ### Interacting with Elements in Tests
 
