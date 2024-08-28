@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity
 	{
-		private UiMode currentNightMode = UiMode.NightUndefined;
+		UiMode currentNightMode = UiMode.NightUndefined;
 
 		protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
 		{

@@ -46,12 +46,12 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			ThemeService.ThemeChanged += ThemeService_ThemeChanged;
+			ThemeService.ThemeChanged += OnThemeChanged;
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 		}
 
-		private void ThemeService_ThemeChanged(Android.Content.Res.UiMode obj)
+		private void OnThemeChanged(Android.Content.Res.UiMode obj)
 		{
 			ApplyTheme(PlatformView, obj);
 		}
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
-			ThemeService.ThemeChanged -= ThemeService_ThemeChanged;
+			ThemeService.ThemeChanged -= OnThemeChanged;
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 

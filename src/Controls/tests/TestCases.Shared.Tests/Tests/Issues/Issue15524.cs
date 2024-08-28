@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public void VerifyGreyShades()
+		public void VerifyEntryBorderVisibilityOnThemeChange()
 		{
 			App.WaitForElement("entry");
 			App.Tap("changeTheme");

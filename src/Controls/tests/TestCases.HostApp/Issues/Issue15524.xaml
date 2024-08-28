@@ -5,7 +5,7 @@
 
     <StackLayout>
         <Entry Text="Microsoft" AutomationId="entry" HorizontalOptions="center" VerticalOptions="center"/>
-        <Button Text="ChangeTheme" Clicked="Button_Clicked"/>
+        <Button Text="ChangeTheme" AutomationId="changeTheme" Clicked="Button_Clicked"/>
     </StackLayout>
     
 </ContentPage>

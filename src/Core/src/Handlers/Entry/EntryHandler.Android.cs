@@ -47,14 +47,14 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			ThemeService.ThemeChanged += ThemeService_ThemeChanged;
+			ThemeService.ThemeChanged += OnThemeChanged;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		private void ThemeService_ThemeChanged(UiMode obj)
+		private void OnThemeChanged(UiMode obj)
 		{
 			ApplyTheme(PlatformView, obj);
 		}
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-			ThemeService.ThemeChanged -= ThemeService_ThemeChanged;
+			ThemeService.ThemeChanged -= OnThemeChanged;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
@@ -295,16 +295,6 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 			_clearButtonVisible = false;
-		}
-	}
-
-	internal static class ThemeService
-	{
-		public static event Action<UiMode>? ThemeChanged;
-
-		public static void NotifyThemeChange(UiMode uiMode)
-		{
-			ThemeChanged?.Invoke(uiMode);
 		}
 	}
 }
