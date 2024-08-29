@@ -75,12 +75,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var invocation = (InvocationExpressionSyntax)context.Node;
 		var method = (MemberAccessExpressionSyntax)invocation.Expression;
 
-		var interceptedMethodType = method.Name.Identifier.Text switch
+		var invocationParser = new InvocationParser(context);
+		var interceptedMethodTypeResult = invocationParser.ParseInvocation(invocation, t);
+
+		if (interceptedMethodTypeResult.HasDiagnostics)
 		{
-			"SetBinding" => InterceptedMethodType.SetBinding,
-			"Create" => InterceptedMethodType.Create,
-			_ => throw new NotSupportedException()
-		};
+			return Result<BindingInvocationDescription>.Failure(interceptedMethodTypeResult.Diagnostics);
+		}
 
 		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
 		if (sourceCodeLocation == null)
@@ -88,13 +89,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
 
-		var overloadDiagnostics = VerifyCorrectOverload(invocation, interceptedMethodType, context, t);
-		if (overloadDiagnostics.Length > 0)
-		{
-			return Result<BindingInvocationDescription>.Failure(new EquatableArray<DiagnosticInfo>(overloadDiagnostics));
-		}
-
-		var lambdaResult = ExtractLambda(invocation, interceptedMethodType);
+		var lambdaResult = ExtractLambda(invocation, interceptedMethodTypeResult.Value);
 		if (lambdaResult.HasDiagnostics)
 		{
 			return Result<BindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
@@ -149,7 +144,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
 			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable,
-			MethodType: interceptedMethodType);
+			MethodType: interceptedMethodTypeResult.Value);
 		return Result<BindingInvocationDescription>.Success(binding);
 	}
 
@@ -157,94 +152,6 @@ public class BindingSourceGenerator : IIncrementalGenerator
 	{
 		NullableContext nullableContext = context.SemanticModel.GetNullableContext(context.Node.Span.Start);
 		return (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
-	}
-
-	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, InterceptedMethodType methodType, GeneratorSyntaxContext context, CancellationToken t) =>
-		methodType switch
-		{
-			InterceptedMethodType.SetBinding => VerifyCorrectOverloadSetBinding(invocation, context, t),
-			InterceptedMethodType.Create => VerifyCorrectOverloadBindingCreate(invocation, context, t),
-			_ => throw new NotSupportedException()
-		};
-
-
-	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
-	{
-		var argumentList = invocation.ArgumentList.Arguments;
-
-		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if ((symbol?.ContainingType?.Name != "Binding" && symbol?.ContainingType?.Name != "BindingBase")
-			|| symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
-		{
-			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
-		}
-
-		if (argumentList.Count == 0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(invocation));
-		}
-
-		var firstArgument = argumentList[0].Expression;
-		if (firstArgument is IdentifierNameSyntax)
-		{
-			var type = context.SemanticModel.GetTypeInfo(firstArgument, cancellationToken: t).Type;
-			if (type != null && type.Name == "Func")
-			{
-				return [DiagnosticsFactory.GetterIsNotLambda(firstArgument.GetLocation())];
-			}
-			else // String and Binding
-			{
-				return [DiagnosticsFactory.SuboptimalSetBindingOverload(firstArgument.GetLocation())];
-			}
-		}
-
-		return [];
-	}
-
-	private static DiagnosticInfo[] VerifyCorrectOverloadSetBinding(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
-	{
-		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if (symbol is not null)
-		{
-			if (symbol is not IMethodSymbol methodSymbol
-				|| methodSymbol.Kind != SymbolKind.Method
-				|| methodSymbol.Name != "SetBinding"
-				|| !methodSymbol.IsGenericMethod
-				|| methodSymbol.TypeParameters.Length != 2
-				|| methodSymbol.Parameters.Length != 9
-				|| methodSymbol.ContainingType?.Name != "BindableObjectExtensions"
-				|| methodSymbol.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
-			{
-				// ignore this method invocation
-				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
-			}
-		}
-		else
-		{
-			// It is not possible to resolve the method symbol when the bindable object (the first argument or the object that the extension method
-			// is called on) is referenced by a field that will be generated via XamlG based on the x:Name attributes. In that case, this source generator
-			// cannot see the outputs of the other source generator and we have incomplete information about the method invocation and we can only work with
-			// the syntax tree and not the semantic model.
-
-			var argumentsList = invocation.ArgumentList.Arguments;
-			if (argumentsList.Count < 2)
-			{
-				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
-			}
-
-			var secondArgument = argumentsList[1].Expression;
-			if (secondArgument is not LambdaExpressionSyntax)
-			{
-				var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
-				return secondArgumentType switch
-				{
-					{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
-					_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
-				};
-			}
-		}
-
-		return [];
 	}
 
 	private static Result<LambdaExpressionSyntax> ExtractLambda(InvocationExpressionSyntax invocation, InterceptedMethodType methodType)
