@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.SetNeedsLayout();
 
-			this.GetSuperViewIfWindowSet()?.SetNeedsLayout();
+			this.Superview?.SetNeedsLayout();
 		}
 
 		partial void ClipChanged()
