@@ -6,6 +6,11 @@ const int DefaultApiLevel = 30;
 
 Information("Local Dotnet: {0}", localDotnet);
 
+if (EnvironmentVariable("JAVA_HOME") == null)
+{
+	throw new Exception("JAVA_HOME environment variable isn't set. Set it to your JDK installation (e.g. \"C:\\Program Files (x86)\\Android\\openjdk\\jdk-17.0.8.101-hotspot\\bin\").");
+}
+
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
@@ -65,7 +70,12 @@ Setup(context =>
 
 Teardown(context =>
 {
-	CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	// For the uitest-prepare target, just leave the virtual device running
+	if (! string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
+	{
+		CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	}
+
 });
 
 Task("boot");
@@ -454,7 +464,7 @@ void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdMana
 		catch { }
 
 		// create the new AVD
-		Information("Creating AVD: {0}...", avdName);
+		Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 		AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
 
 		// start the emulator
