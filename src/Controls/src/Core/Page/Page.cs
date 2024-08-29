@@ -613,10 +613,10 @@ namespace Microsoft.Maui.Controls
 				action();
 			else
 			{
-				_onAppearingEventHandler = null;
 				_onAppearingEventHandler = (_, __) =>
 				{
 					this.Appearing -= _onAppearingEventHandler;
+					_onAppearingEventHandler = null;
 					action();
 				};
 
