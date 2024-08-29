@@ -71,7 +71,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override MapView CreatePlatformView()
 		{
-			MapView mapView = new MapView(Context);
+			GoogleMapOptions options = new GoogleMapOptions();
+			
+			string? mapId = GetMapId();
+			if (mapId != null)
+				options.InvokeMapId(mapId);
+  
+			MapView mapView = new MapView(Context, options);
 			mapView.OnCreate(s_bundle);
 			mapView.OnResume();
 			return mapView;
@@ -405,6 +411,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void OnMapClick(object? sender, GoogleMap.MapClickEventArgs e) =>
 			VirtualView.Clicked(new Devices.Sensors.Location(e.Point.Latitude, e.Point.Longitude));
+
+		string? GetMapId()
+		{
+			int resourceId = Context.Resources?.GetIdentifier("map_id", "string", Context.PackageName) ?? 0;
+			
+			return resourceId != 0 ? Context.GetString(resourceId) : null;
+		}
 
 		void AddPins(IList pins)
 		{
