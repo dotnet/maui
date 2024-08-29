@@ -157,12 +157,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var leftPadding = view1Frame.X;
 			var topPadding = view1Frame.Y;
 			var rightPadding = measure.Width - view2Frame.Right;
+			var expectedView1Width = measure.Width - (leftPadding + rightPadding + view2.Width);
+			var expectedView2Width = measure.Width - (leftPadding + rightPadding + view1.Width);
 
 			// Assert
 			Assert.Equal(padding, leftPadding);
 			Assert.Equal(padding, rightPadding);
 			Assert.Equal(padding, topPadding);
-			Assert.Equal(view1.Width, view1Frame.Width);
+			Assert.Equal(expectedView1Width, view1Frame.Width);
+			Assert.Equal(expectedView2Width, view2Frame.Width);
 		}
 
 		[Fact]
@@ -183,12 +186,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var measure = flexLayout.CrossPlatformMeasure(1000, 1000);
 			flexLayout.CrossPlatformArrange(new Rect(Point.Zero, measure));
 
+			var view1Frame = flexLayout.Children[0].Frame;
 			var view2Frame = flexLayout.Children[1].Frame;
+
 			var bottomPadding = measure.Height - view2Frame.Bottom;
+			var topPadding = view1Frame.Y;
+			var expectedView1Height = measure.Height - (topPadding + bottomPadding + view2.Height);
+			var expectedView2Height = measure.Height - (topPadding + bottomPadding + view1.Height);
 
 			// Assert
 			Assert.Equal(padding, bottomPadding);
 			Assert.Equal(view2.Height, view2Frame.Height);
+			Assert.Equal(expectedView1Height, view1Frame.Height);
+			Assert.Equal(expectedView2Height, view2Frame.Height);
 		}
 
 		[Theory]
