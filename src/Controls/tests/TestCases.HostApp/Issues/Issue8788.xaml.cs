@@ -17,14 +17,14 @@ namespace Maui.Controls.Sample.Issues
 
 		private void MenuItem_Clicked(object sender, EventArgs e)
 		{
-#if WINDOWS
-		    Tab1.IsVisible = false;
-			Tab2.IsVisible = true;
-			Tab3.IsVisible = true;
-#else
+#if ANDROID
 			Tab2.IsVisible = true;
 			Tab3.IsVisible = true;
 			Tab1.IsVisible = false;
+#else
+			Tab1.IsVisible = false;
+			Tab2.IsVisible = true;
+			Tab3.IsVisible = true;
 #endif
 		}
 	}
