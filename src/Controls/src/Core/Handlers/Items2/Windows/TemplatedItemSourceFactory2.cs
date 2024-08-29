@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			switch (itemsSource)
 			{
 				case IList observable when itemsSource is INotifyCollectionChanged:
-					return new ObservableItemTemplateCollection(observable, itemTemplate, container, itemHeight, itemWidth, itemSpacing, mauiContext);
+					return new ObservableItemTemplateCollection2(observable, itemTemplate, container, itemHeight, itemWidth, itemSpacing, mauiContext);
 				case IList list:
 					return new ItemTemplateContextList2(list, itemTemplate, container, itemHeight, itemWidth, itemSpacing, mauiContext);
 			}

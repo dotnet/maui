@@ -2,23 +2,22 @@
 #pragma warning disable RS0016 // Add public types and members to the declared API
 
 using System;
+using System.Collections;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
-using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
-using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
-using WVisibility = Microsoft.UI.Xaml.Visibility;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using WASDKApp = Microsoft.UI.Xaml.Application;
 using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
+using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Internals;
-using System.ComponentModel;
-using System.Collections.Specialized;
-using System.Collections;
-using Microsoft.UI.Xaml.Input;
+using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -139,6 +138,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_layoutPropertyChangedProxy.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
+
+			VirtualView.ScrollToRequested += ScrollToRequested;
+			FindScrollViewer();
 		}
 
 		protected override void DisconnectHandler(WItemsView platformView)
@@ -150,6 +152,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				_layoutPropertyChangedProxy.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
+
+			VirtualView.ScrollToRequested -= ScrollToRequested;
 		}
 
 		CollectionViewSource CreateCollectionViewSource()
@@ -165,8 +169,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						Source = TemplatedItemSourceFactory2.CreateGrouped(itemsSource, itemTemplate,
 							groupableItemsView.GroupHeaderTemplate, groupableItemsView.GroupFooterTemplate,
-							Element, mauiContext: MauiContext),
-						IsSourceGrouped = true
+							Element, mauiContext: MauiContext)
 					};
 				}
 				else
@@ -197,7 +200,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			UpdateItemsSource();
 		}
-		void UpdateItemsSource()
+
+		protected virtual void UpdateItemsSource()
 		{
 			if (PlatformView is null)
 			{
@@ -264,7 +268,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateEmptyViewVisibility();
 
 			if (_itemsSource is null)
+			{
 				return;
+			}
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
@@ -329,7 +335,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			};
 		}
 
-		protected virtual void UpdateItemsLayout()
+		void UpdateItemsLayout()
 		{
 			FindScrollViewer();
 
@@ -361,7 +367,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			PlatformView.Loaded += ListViewLoaded;
 		}
 
-		protected virtual void OnScrollViewerFound()
+		void OnScrollViewerFound()
 		{
 			if (PlatformView.ScrollView != null)
 			{
@@ -407,7 +413,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		protected void UpdateEmptyView()
+		void UpdateEmptyView()
 		{
 			if (Element is null || PlatformView is null)
 			{
@@ -466,7 +472,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return platformView;
 		}
 
-		protected void UpdateEmptyViewVisibility()
+		void UpdateEmptyViewVisibility()
 		{
 			bool isEmpty = (_collectionViewSource?.View?.Count ?? 0) == 0;
 
@@ -571,7 +577,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			HandleScroll(PlatformView.ScrollView.ScrollPresenter);
 		}
 
-		internal void HandleScroll(WScrollPresenter scrollViewer)
+		void HandleScroll(WScrollPresenter scrollViewer)
 		{
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
@@ -609,7 +615,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
+		ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, bool advancing)
 		{
 			var (firstVisibleItemIndex, lastVisibleItemIndex, centerItemIndex) = GetVisibleIndexes(advancing);
 
@@ -667,7 +673,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		internal int FindItemIndex(object item)
+		int FindItemIndex(object item)
 		{
 			for (int n = 0; n < _collectionViewSource.View.Count; n++)
 			{

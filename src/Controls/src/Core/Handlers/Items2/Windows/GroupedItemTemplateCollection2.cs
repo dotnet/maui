@@ -3,12 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext>
+	internal class GroupedItemTemplateCollection2 : ObservableCollection<ItemTemplateContext2>
 	{
 		readonly IEnumerable _itemsSource;
 		readonly DataTemplate _itemTemplate;
@@ -37,19 +35,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private void AddItems(IEnumerable items)
 		{
-			var newItems = new List<ItemTemplateContext>();
+			var newItems = new List<ItemTemplateContext2>();
 			int index = Items.Count;
 			foreach (var group in items)
 			{
 				if (group is IList itemsList)
 				{
-					var newItem = new ItemTemplateContext(_groupHeaderTemplate, group, _container, mauiContext: _mauiContext);
-					newItems.Add(newItem);
-					Items.Add(newItem);
+					if (_groupHeaderTemplate is not null)
+					{
+						var newItem = new ItemTemplateContext2(_groupHeaderTemplate, group, _container, null,
+							null, null, true, false, mauiContext: _mauiContext);
+						newItems.Add(newItem);
+						Items.Add(newItem);
+					}
 
 					foreach (var item in itemsList)
 					{
-						newItem = new ItemTemplateContext(_itemTemplate, item, _container, mauiContext: _mauiContext);
+						var newItem = new ItemTemplateContext2(_itemTemplate, item, _container, mauiContext: _mauiContext);
+						newItems.Add(newItem);
+						Items.Add(newItem);
+					}
+
+					if (_groupFooterTemplate is not null)
+					{
+						var newItem = new ItemTemplateContext2(_groupFooterTemplate, group, _container, null,
+							null, null, isHeader: false, isFooter: true, mauiContext: _mauiContext);
 						newItems.Add(newItem);
 						Items.Add(newItem);
 					}
@@ -91,10 +101,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 							if (item is IList itemsList)
 							{
-								foreach (var childItem in itemsList)
-								{
-									count++;
-								}
+								count += itemsList.Count;
 							}
 						}
 
@@ -119,11 +126,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				if (group is IList itemsList)
 				{
-					Items.Add(new ItemTemplateContext(_groupHeaderTemplate, group, _container, mauiContext: _mauiContext));
+					if (_groupHeaderTemplate is not null)
+					{
+						Items.Add(new ItemTemplateContext2(_groupHeaderTemplate, group, _container, null,
+							null, null, isHeader: true, isFooter: false, mauiContext: _mauiContext));
+					}
+
 					foreach (var item in itemsList)
 					{
-						Items.Add(new ItemTemplateContext(_itemTemplate, item, _container, mauiContext: _mauiContext));
+						Items.Add(new ItemTemplateContext2(_itemTemplate, item, _container, mauiContext: _mauiContext));
 					}
+
+					if (_groupFooterTemplate is not null)
+					{
+						Items.Add(new ItemTemplateContext2(_groupFooterTemplate, group, _container, null,
+							null, null, isHeader: false, isFooter: true, mauiContext: _mauiContext));
+					}
+
 				}
 			}
 

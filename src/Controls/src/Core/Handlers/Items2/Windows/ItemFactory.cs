@@ -1,8 +1,5 @@
 ﻿#nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,7 +9,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	internal class ItemFactory(ItemsView view) : IElementFactory
 	{
 		private readonly ItemsView _view = view;
-		private readonly RecyclePool _recyclePool = new();
 
 		public UIElement GetElement(ElementFactoryGetArgs args)
 		{
@@ -60,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
-					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter
+					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter,
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 				return container;
