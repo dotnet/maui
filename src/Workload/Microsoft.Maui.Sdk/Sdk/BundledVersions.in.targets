@@ -20,6 +20,36 @@
     <DisableMauiImplicitPackageReferences Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(DisableMauiImplicitPackageReferences)' == '' ">true</DisableMauiImplicitPackageReferences>
   </PropertyGroup>
 
+  <!--
+    These versions are the minimum supported versions for .NET MAUI. If the user specifies a lower version,
+    it will be increased to the minimum supported version.
+  -->
+  <PropertyGroup>
+    <!-- Minimum versions that will warn -->
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.14</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">10.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</_MauiMinimumSupportedOSPlatformVersion>
+    <!-- Default versions that will be injected if it is missing -->
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.14</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">10.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</_MauiDefaultSupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UsingMicrosoftAspNetCoreComponentsWebViewMaui)' == 'true'">
+    <!-- .NET MAUI Blazor Hybrid -->
+    <!-- Also update: src\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props -->
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</_MauiMinimumSupportedOSPlatformVersion>
+  </PropertyGroup>
+
   <!-- .NET MAUI version for telemetry: this is the installed workload in use, not the final version in the app -->
   <ItemGroup>
     <ProjectCapability Include="Microsoft.Maui.Workload.Version.@VERSION@" />

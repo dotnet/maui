@@ -1,5 +1,16 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <StaticWebAssetsEnabled Condition="'$(_OuterIntermediateOutputPath)' != ''">false</StaticWebAssetsEnabled>
+    <UsingMicrosoftAspNetCoreComponentsWebViewMaui>true</UsingMicrosoftAspNetCoreComponentsWebViewMaui>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- .NET MAUI Blazor Hybrid -->
+    <!-- Also update: src\Workload\Microsoft.Maui.Sdk\Sdk\BundledVersions.in.targets -->
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</_MauiMinimumSupportedOSPlatformVersion>
+  </PropertyGroup>
+
 </Project>
