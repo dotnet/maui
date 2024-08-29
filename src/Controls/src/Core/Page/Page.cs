@@ -676,6 +676,7 @@ namespace Microsoft.Maui.Controls
 			// its only subscribed to when OnAppearing(Action) is called and _hasAppeared is false
 			// meaning we can get in here and _hasAppeared is still false but there's now an event attached to this.Appearing
 			this.Appearing -= _onAppearingEventHandler;
+			_onAppearingEventHandler = null;
 			
 			if (!_hasAppeared)
 				return;
