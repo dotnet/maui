@@ -128,10 +128,17 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					case TestDevice.Android:
 						environmentName = "android";
+						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
+						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
+						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+
+						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						{
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+						}
 						break;
 
 					case TestDevice.iOS:
-
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
@@ -201,11 +208,6 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
-
-					if (width != 1080 || height != 2400)
-					{
-						Assert.Fail($"Android visual tests should be run on an Nexus 5X (API 30) emulator image (1080x2400 screen), but the current device has the wrong screen size ({width}x{height}). Follow the steps on the MAUI UI testing wiki to launch the android emulator with the right image, running the script there.");
-					}
 
 					imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
 
