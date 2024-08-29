@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue == null)
 			{
-			shellItem.CurrentItem = (ShellSection)newValue;
+				shellItem.CurrentItem = null;
 				return;
 			}
 

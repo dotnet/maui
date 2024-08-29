@@ -33,15 +33,16 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public MainTabPage()
 		{
-			Content = new VerticalStackLayout(){
-					new Label(){
-						Text = "Page Loaded in first Tab",
-						VerticalOptions = LayoutOptions.Center,
-						HorizontalOptions = LayoutOptions.Center,
-						TextDecorations = TextDecorations.Underline,
-					
-					},
-				};
+			Content = new VerticalStackLayout()
+			{
+				new Label(){
+					Text = "Page Loaded in first Tab",
+					VerticalOptions = LayoutOptions.Center,
+					HorizontalOptions = LayoutOptions.Center,
+					TextDecorations = TextDecorations.Underline,
+
+				},
+			};
 		}
 	}
 
@@ -50,7 +51,7 @@ namespace Maui.Controls.Sample.Issues
 		public SecondTabPage()
 		{
 			Content = new VerticalStackLayout()
-				{
+			{
 				new Label(){
 						Text = "Page Loaded in Second Tab",
 						VerticalOptions = LayoutOptions.Center,
@@ -58,16 +59,15 @@ namespace Maui.Controls.Sample.Issues
 						TextDecorations = TextDecorations.Underline,
 
 					},
-				};
+			};
 		}
 	}
-
 	public partial class ThirdTabPage : ContentPage
 	{
 		public ThirdTabPage()
 		{
 			Content = new VerticalStackLayout()
-				{
+			{
 				new Label(){
 						Text = "Page Loaded in Third Tab",
 						VerticalOptions = LayoutOptions.Center,
@@ -75,7 +75,7 @@ namespace Maui.Controls.Sample.Issues
 						TextDecorations = TextDecorations.Underline,
 
 					},
-				};
+			};
 		}
 	}
 }

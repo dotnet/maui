@@ -6,27 +6,20 @@
         Shell.FlyoutBehavior="Locked"
         Shell.FlyoutWidth="200">
 
-  <MenuItem x:Name="MenuItem" Text="Click to hide Tab1" 
-              Clicked="MenuItem_Clicked" AutomationId="FirstButton" />
+  <MenuItem x:Name="MenuItem" Text="Click to hide Tab1" Clicked="MenuItem_Clicked" AutomationId="FirstButton" />
 
   <TabBar>
     <Tab x:Name="Tab1" AutomationId="Tab1" Title="Tab 1">
-      <ShellContent Title="Tab 1" 
-                          ContentTemplate="{DataTemplate local:MainTabPage}"
-                          Route="MainPage" />
+      <ShellContent Title="Tab 1" ContentTemplate="{DataTemplate local:MainTabPage}" Route="MainPage" />
     </Tab>
 
     <Tab x:Name="Tab2" AutomationId="Tab2" Title="Tab 2" IsVisible="false">
-      <ShellContent Title="Tab 2"
-                          ContentTemplate="{DataTemplate local:SecondTabPage}"
-                          Route="Tab2Page" />
+      <ShellContent Title="Tab 2" ContentTemplate="{DataTemplate local:SecondTabPage}" Route="Tab2Page" />
     </Tab>
 
     <Tab x:Name="Tab3" Title="Tab 3" AutomationId="Tab3" IsVisible="false">
-      <ShellContent Title="Tab 3"
-                          ContentTemplate="{DataTemplate local:ThirdTabPage}"
-                          Route="Tab3Page" />
+      <ShellContent Title="Tab 3"  ContentTemplate="{DataTemplate local:ThirdTabPage}" Route="Tab3Page" />
     </Tab>
   </TabBar>
-
+  
 </Shell>
