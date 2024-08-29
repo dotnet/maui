@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,13 +14,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		
 		[Test]
 		[Category(UITestCategories.Picker)]
+		[FailsOnMac]
 		public void PickerShouldDisplayValueFromItemDisplayBinding()
 		{
-			App.WaitForElement("UpdateButton");
-			
+			App.WaitForElement("UpdateButton");			
 			App.Tap("UpdateButton");
+			
 			VerifyScreenshot();
 		}
 	}
 }
-#endif

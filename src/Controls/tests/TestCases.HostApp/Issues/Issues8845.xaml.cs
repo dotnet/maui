@@ -10,17 +10,19 @@ namespace Maui.Controls.Sample.Issues
 		public Issue8845()
 		{
 			InitializeComponent();
-			picker.ItemsSource =
-				new List<object>
+			var items = new List<object>
 				{
 					new { DisplayName = (string)null!},
 					new { DisplayName = "Not null"},
 				};
+			picker1.ItemsSource = items;
+			picker2.ItemsSource = items;
 		}
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			picker.SelectedIndex = 0;
+			picker1.SelectedIndex = 0;
+			picker2.SelectedIndex = 1;
 		}
 
 	}

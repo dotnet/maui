@@ -5,7 +5,8 @@
              x:Class="Maui.Controls.Sample.Issues.Issue8845">
 
   <VerticalStackLayout>
-    <Picker AutomationId="MauiPicker" x:Name="picker" ItemDisplayBinding="{Binding DisplayName}"/>
+    <Picker AutomationId="MauiPicker1" x:Name="picker1" ItemDisplayBinding="{Binding DisplayName}"/>
+    <Picker AutomationId="MauiPicker2" x:Name="picker2" ItemDisplayBinding="{Binding DisplayName}"/>
     <Button AutomationId="UpdateButton" Text="Update" Clicked="Button_Clicked"/>
   </VerticalStackLayout>
 
