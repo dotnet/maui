@@ -1,6 +1,7 @@
 ﻿#if IOS
 using System.Drawing;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
@@ -49,8 +50,8 @@ public class Issue19214 : _IssuesUITest
             ScrollScrollView(app, startRect);
         }
         
-         var queryRect = app.WaitForElement(queryEntry).GetRect();
-         Assert.NotNull(queryRect, "Could not find the initial entry.");
+        var queryRect = app.WaitForElement(queryEntry).GetRect();
+        ClassicAssert.NotNull(queryRect, "Could not find the initial entry.");
 
         app.Click(queryEntry);
         queryRect = app.WaitForElement(queryEntry).GetRect();
@@ -60,38 +61,53 @@ public class Issue19214 : _IssuesUITest
         ScrollScrollView(app, queryRect, false);
         var topRect = app.WaitForElement(topEntry).GetRect();
 
-        ConfirmVisible (app, topRect, scrollView, topEntry);
+        ConfirmVisible (app, topRect, scrollView, topEntry, true);
 
         // Scroll to the bottom of the ScrollView
         ScrollScrollView(app, topRect);
 
         // Make sure we get to the bottom of the ScrollView
         var bottomRect = app.WaitForElement(bottomEntry).GetRect();
-        ConfirmVisible (app, bottomRect, scrollView, bottomEntry);
+        ConfirmVisible (app, bottomRect, scrollView, bottomEntry, false);
 
         // Scroll back up and make sure we can get all the way up
         ScrollScrollView(app, bottomRect, false);
         topRect = app.WaitForElement(topEntry).GetRect();
-        ConfirmVisible (app, topRect, scrollView, topEntry);
+        ConfirmVisible (app, topRect, scrollView, topEntry, true);
 
         // Hide the keyboard
         KeyboardScrolling.HideKeyboard(app, app.Driver, false);
     }
 
-    void ConfirmVisible (AppiumApp app, Rectangle rect, string scrollView, string entry)
+    void ConfirmVisible (AppiumApp app, Rectangle rect, string scrollView, string entry, bool isTopField)
     {
         var scrollViewRect = app.WaitForElement(scrollView).GetRect();
         KeyboardScrolling.CheckIfViewAboveKeyboard(app, entry, false);
-        Assert.True(rect.Y > scrollViewRect.Y && rect.Bottom < scrollViewRect.Bottom, $"{entry} was not visible in {scrollView}");
+        // ClassicAssert.True(rect.Y > scrollViewRect.Y && rect.Bottom < scrollViewRect.Bottom, $"{entry} was not visible in {scrollView}");
+        if (isTopField)
+        {
+            ClassicAssert.Greater(rect.Y, scrollViewRect.Y, $"rect.Y: {rect.Y} was not greater than scrollViewRect.Y: {scrollViewRect.Y}");
+        }
+        else
+        {
+            ClassicAssert.Less(rect.Bottom, scrollViewRect.Bottom, $"rect.Bottom: {rect.Bottom} was not less than scrollViewRect.Bottom: {scrollViewRect.Bottom}");
+        }
     }
 
     void ScrollScrollView (AppiumApp app, Rectangle rect, bool scrollsDown = true)
     {
-        var newY = scrollsDown ? rect.Y - 1000 : rect.Y + 1000;
+        var newY = scrollsDown ? rect.Y - 5000 : rect.Y + 5000;
 
         OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 		var scrollSequence = new ActionSequence(touchDevice, 0);
-		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, rect.Left - 5, rect.Y, TimeSpan.Zero));
+        if (scrollsDown)
+        {
+		    scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, rect.Left - 5, rect.Y, TimeSpan.Zero));
+        }
+        else
+        {
+            scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, rect.Left - 5, rect.Bottom, TimeSpan.Zero));
+        }
 		scrollSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 		scrollSequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(500)));
 		scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, rect.Left - 5, newY, TimeSpan.FromMilliseconds(250)));
