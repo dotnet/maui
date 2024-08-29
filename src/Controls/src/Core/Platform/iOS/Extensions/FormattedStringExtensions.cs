@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static NSAttributedString ToNSAttributedString(
 			this Span span,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for NET8
+			double defaultLineHeight = 0d,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 				: defaultLineHeight;
 
 			// Prevent the span text from being cut off from the top when the specified LineHeight is between 0 and 1.
-			style.LineHeightMultiple = lineHeight >= 1 ? new nfloat(lineHeight) : -1;
+			style.LineHeightMultiple = lineHeight >= 1 ? new nfloat(lineHeight) : 0;
 
 			style.Alignment = defaultHorizontalAlignment switch
 			{

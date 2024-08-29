@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnAndroid("Currently fails on Android; see https://github.com/dotnet/maui/issues/24504")]
 		public void PreventLabelTextCrop()
 		{
 			App.WaitForElement("label");
