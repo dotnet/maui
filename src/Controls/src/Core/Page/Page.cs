@@ -606,20 +606,21 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
+		EventHandler _onAppearingEventHandler;
 		internal void OnAppearing(Action action)
 		{
 			if (_hasAppeared)
 				action();
 			else
 			{
-				EventHandler eventHandler = null;
-				eventHandler = (_, __) =>
+				_onAppearingEventHandler = null;
+				_onAppearingEventHandler = (_, __) =>
 				{
-					this.Appearing -= eventHandler;
+					this.Appearing -= _onAppearingEventHandler;
 					action();
 				};
 
-				this.Appearing += eventHandler;
+				this.Appearing += _onAppearingEventHandler;
 			}
 		}
 
@@ -671,6 +672,11 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDisappearing()
 		{
+			// Unsubscribe the Appearing event handler here
+			// its only subscribed to when OnAppearing(Action) is called and _hasAppeared is false
+			// meaning we can get in here and _hasAppeared is still false but there's now an event attached to this.Appearing
+			this.Appearing -= _onAppearingEventHandler;
+			
 			if (!_hasAppeared)
 				return;
 
