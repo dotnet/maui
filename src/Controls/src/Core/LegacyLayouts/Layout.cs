@@ -319,6 +319,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// It is suggested to still call the base method and modify its calculated results.</remarks>
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+		}
+
 		/// <summary>
 		/// Invoked whenever a child of the layout has emitted <see cref="VisualElement.MeasureInvalidated" />.
 		/// Implement this method to add class handling for this event.
@@ -505,7 +511,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			if (child is View view)
 			{
-				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrainted
+				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrained
 				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
 					(trigger == InvalidationTrigger.SizeRequestChanged && view.ComputedConstraint == LayoutConstraint.Fixed))
 				{
@@ -603,14 +609,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				InvalidateLayout();
 			}
-
-			view.MeasureInvalidated += OnChildMeasureInvalidated;
 		}
 
 		void OnInternalRemoved(View view, int oldIndex)
 		{
-			view.MeasureInvalidated -= OnChildMeasureInvalidated;
-
 			OnChildRemoved(view, oldIndex);
 			if (ShouldInvalidateOnChildRemoved(view))
 			{
