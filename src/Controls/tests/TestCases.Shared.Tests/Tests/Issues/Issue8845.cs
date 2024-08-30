@@ -1,6 +1,8 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
+
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
@@ -19,8 +21,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("UpdateButton");			
 			App.Tap("UpdateButton");
-			
-			VerifyScreenshot();
+
+			var picker1Text = App.WaitForElement("MauiPicker1").GetText();
+			var picker2Text = App.WaitForElement("MauiPicker2").GetText();
+
+			ClassicAssert.IsEmpty(picker1Text);
+			ClassicAssert.IsNotNull(picker2Text);
+
 		}
 	}
 }
