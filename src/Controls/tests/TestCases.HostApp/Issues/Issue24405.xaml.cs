@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			button.Text = "Hello";
+			entry.Text = "Hello";
 		}
 	}
 }
