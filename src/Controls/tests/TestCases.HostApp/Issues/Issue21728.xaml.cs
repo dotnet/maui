@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 21728, "CollectionView item alignment issue when a single item is present with a footer", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 21728, "CollectionView item alignment issue when a single item is present with a footer", PlatformAffected.iOS)]
 public partial class Issue21728 : ContentPage
 {
 	public IList<TestItem> Items { get; set; }
