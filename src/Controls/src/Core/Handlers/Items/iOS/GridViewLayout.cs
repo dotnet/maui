@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
-			if (layoutAttributesForRectElements[0].Frame.Top != CollectionView.Frame.Top + CollectionView.ContentInset.Bottom)
+			if (layoutAttributesForRectElements[0].Frame.Top != CollectionView.Frame.Top)
 			{
 				return false;
 			}
