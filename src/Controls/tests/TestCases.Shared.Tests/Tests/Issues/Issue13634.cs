@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollEditor()
 		{
-			App.WaitForElement("EditorControl");
-			App.ScrollDown("EditorControl", ScrollStrategy.Auto);
-			var result = App.WaitForElement("EditorControl");
+			App.WaitForElement("Editor");
+			App.ScrollDown("Editor", ScrollStrategy.Auto);
+			var result = App.WaitForElement("Editor");
 			ClassicAssert.AreNotEqual(result.GetRect().Y, 0);
 			VerifyScreenshot();
 		}
