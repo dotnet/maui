@@ -1,0 +1,37 @@
+<Project>
+  <PropertyGroup>
+    <_RecordDependsOnTargets>
+      Clean;
+      Build;
+      Install;
+      _ProfileApp;
+      Uninstall;
+    </_RecordDependsOnTargets>
+    <_ProfileAppDependsOnTargets>
+      _ResolveMonoAndroidSdks; <!-- _ResolveMonoAndroidSdks resolves AdbToolPath -->
+      _SetupDiagnosticsTracingProperties;
+      StartAndroidActivity;
+      _StartTracing;
+      StopAndroidPackage;
+    </_ProfileAppDependsOnTargets>
+    <StartProfilingScript>$(MSBuildThisFileDirectory)recordTrace.sh</StartProfilingScript>
+  </PropertyGroup>
+
+  <Target Name="_SetupDiagnosticsTracingProperties">
+    <Exec Command="$(AdbToolPath)adb reverse tcp:9000 tcp:9001" />
+    <Exec Command="$(AdbToolPath)adb shell setprop debug.mono.profile '127.0.0.1:9000,suspend,connect'" />
+  </Target>
+
+  <Target Name="_StartTracing" DependsOnTargets="$(_ResolveAndroidTooling)">
+    <PropertyGroup>
+      <AndroidSdkRoot Condition="'$(AndroidSdkPath)' != ''">ANDROID_SDK_ROOT=$(AndroidSdkPath)</AndroidSdkRoot>
+    </PropertyGroup>
+    <Exec Command="$(StartProfilingScript) $(DotNetToolPath)" EnvironmentVariables="$(AndroidSdkRoot)" />
+  </Target>
+
+  <Target Name="_ProfileApp" DependsOnTargets="$(_ProfileAppDependsOnTargets)" />
+
+  <Target Name="Record" DependsOnTargets="$(_RecordDependsOnTargets)">
+    <Message Importance="High" Text="Success! See changes in: $(_MauiAOTProfileLocation)$(App).aotprofile" />
+  </Target>
+</Project>
