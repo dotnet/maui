@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
+			platformView.SetOnTouchListener(new EditorTouchListener());
 		}
 
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
@@ -52,6 +53,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
+			platformView.SetOnTouchListener(null);
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
@@ -157,6 +159,33 @@ namespace Microsoft.Maui.Handlers
 		{
 			this.PrepareForTextViewArrange(frame);
 			base.PlatformArrange(frame);
+		}
+	}
+
+	class EditorTouchListener : Java.Lang.Object, Android.Views.View.IOnTouchListener
+	{
+		public bool OnTouch(View? v, MotionEvent? e)
+		{
+			if (e == null || v == null)
+				return false;
+
+			switch (e.Action)
+			{
+				case MotionEventActions.Down:
+					v.Parent?.RequestDisallowInterceptTouchEvent(true);
+					break;
+				case MotionEventActions.Move:
+					v.Parent?.RequestDisallowInterceptTouchEvent(true);
+					break;
+				case MotionEventActions.Up:
+					v.Parent?.RequestDisallowInterceptTouchEvent(false);
+					break;
+				case MotionEventActions.Cancel:
+					v.Parent?.RequestDisallowInterceptTouchEvent(false);
+					break;
+			}
+
+			return false;
 		}
 	}
 }
