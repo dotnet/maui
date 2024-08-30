@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					var child = GetChildAt(0);
 					child?.RemoveFromParent();
-					child?.Dispose();
+					child = null;
 				}
 
 				Element?.Handler?.DisconnectHandler();
