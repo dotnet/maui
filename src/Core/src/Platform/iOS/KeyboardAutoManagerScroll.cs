@@ -152,6 +152,7 @@ public static class KeyboardAutoManagerScroll
 	static async void WillKeyboardShow(NSNotification notification)
 	{
 		var userInfo = notification.UserInfo;
+		var oldKeyboardFrame = KeyboardFrame;
 
 		if (userInfo is not null)
 		{
@@ -168,6 +169,11 @@ public static class KeyboardAutoManagerScroll
 		if (!IsKeyboardShowing)
 		{
 			IsKeyboardShowing = true;
+			await AdjustPositionDebounce();
+		}
+		else if (oldKeyboardFrame != KeyboardFrame && IsKeyboardShowing)
+		{
+			// this could be the case if the keyboard is already showing but type of keyboard changes
 			await AdjustPositionDebounce();
 		}
 	}
@@ -374,6 +380,13 @@ public static class KeyboardAutoManagerScroll
 		// give a small offset of 20 plus the cursor.Height for the distance
 		// between the selected text and the keyboard
 		var bottomBuffer = (int)cursorRect.Height + TextViewDistanceFromBottom;
+
+		// since the cursorRect does not have a height for Pickers, we can assign the height of the picker as the cursor height
+		if (cursorRect.Height == 0)
+		{
+			cursorRect.Height = View.Bounds.Height;
+			bottomBuffer = TextViewDistanceFromBottom;
+		}
 
 		var keyboardYPosition = window.Frame.Height - kbSize.Height - bottomBuffer;
 
