@@ -62,6 +62,7 @@ public static partial class AppHostBuilderExtensions
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+		handlersCollection.AddHandler<ReorderableItemsView, ReorderableItemsViewHandler<ReorderableItemsView>>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
