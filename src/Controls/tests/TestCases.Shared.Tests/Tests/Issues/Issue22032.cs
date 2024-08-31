@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shell FlyoutItem Tab Selected Icon Color not changing if using Font icons";
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
+		[Category(UITestCategories.TabbedPage)]
 		public async Task SelectedTabIconShouldChangeColor()
 		{
 			App.WaitForElement("button");
