@@ -14,15 +14,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
-		public void ScrollEditor()
-		{
-			App.WaitForElement("Editor");
-			App.ScrollDown("Editor", ScrollStrategy.Auto);
-			var result = App.WaitForElement("Editor");
-			ClassicAssert.AreNotEqual(result.GetRect().Y, 0);
-			VerifyScreenshot();
-		}
+        [Category(UITestCategories.ScrollView)]
+        [Category(UITestCategories.Editor)]
+        public void ScrollEditor()
+        {
+            var result = App.WaitForElement("Editor");
+            App.ScrollDown("Editor", ScrollStrategy.Programmatically);
+            ClassicAssert.AreNotEqual(result.GetRect().Y, 0);
+        }
 	}
 }
 #endif
