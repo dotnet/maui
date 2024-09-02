@@ -44,27 +44,3 @@ internal static class ITypeSymbolExtensions
 		return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 	}
 }
-
-internal static class ISymbolExtensions
-{
-	internal static bool IsAccessible(this ISymbol symbol) =>
-		symbol.DeclaredAccessibility == Accessibility.Public
-		|| symbol.DeclaredAccessibility == Accessibility.Internal
-		|| symbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal;
-
-	internal static AccessorKind ToAccessorKind(this ISymbol symbol)
-	{
-		return symbol switch
-		{
-			IFieldSymbol _ => AccessorKind.Field,
-			IPropertySymbol _ => AccessorKind.Property,
-			_ => throw new ArgumentException("Symbol is not a field or property.", nameof(symbol))
-		};
-	}
-}
-
-public enum AccessorKind
-{
-	Field,
-	Property,
-}

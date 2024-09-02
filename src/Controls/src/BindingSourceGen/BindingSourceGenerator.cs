@@ -75,12 +75,13 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		var invocation = (InvocationExpressionSyntax)context.Node;
 		var method = (MemberAccessExpressionSyntax)invocation.Expression;
 
-		var interceptedMethodType = method.Name.Identifier.Text switch
+		var invocationParser = new InvocationParser(context);
+		var interceptedMethodTypeResult = invocationParser.ParseInvocation(invocation, t);
+
+		if (interceptedMethodTypeResult.HasDiagnostics)
 		{
-			"SetBinding" => InterceptedMethodType.SetBinding,
-			"Create" => InterceptedMethodType.Create,
-			_ => throw new NotSupportedException()
-		};
+			return Result<BindingInvocationDescription>.Failure(interceptedMethodTypeResult.Diagnostics);
+		}
 
 		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
 		if (sourceCodeLocation == null)
@@ -88,55 +89,26 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
 
-		var overloadDiagnostics = VerifyCorrectOverload(invocation, interceptedMethodType, context, t);
-		if (overloadDiagnostics.Length > 0)
-		{
-			return Result<BindingInvocationDescription>.Failure(new EquatableArray<DiagnosticInfo>(overloadDiagnostics));
-		}
-
-		var lambdaResult = ExtractLambda(invocation, interceptedMethodType);
+		var lambdaResult = GetLambda(invocation, interceptedMethodTypeResult.Value);
 		if (lambdaResult.HasDiagnostics)
 		{
 			return Result<BindingInvocationDescription>.Failure(lambdaResult.Diagnostics);
 		}
 
-		if (!lambdaResult.Value.Modifiers.Any(SyntaxKind.StaticKeyword))
+		var lambdaParamTypeResult = GetLambdaParameterType(lambdaResult.Value, context.SemanticModel, t);
+		if (lambdaParamTypeResult.HasDiagnostics)
 		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaIsNotStatic(lambdaResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(lambdaParamTypeResult.Diagnostics);
 		}
 
-		var lambdaBodyResult = ExtractLambdaBody(lambdaResult.Value);
-		if (lambdaBodyResult.HasDiagnostics)
+		var lambdaReturnTypeResult = GetLambdaReturnType(lambdaResult.Value, context.SemanticModel, t);
+		if (lambdaReturnTypeResult.HasDiagnostics)
 		{
-			return Result<BindingInvocationDescription>.Failure(lambdaBodyResult.Diagnostics);
-		}
-
-		var lambdaSymbolResult = GetLambdaSymbol(lambdaResult.Value, context.SemanticModel);
-		if (lambdaSymbolResult.HasDiagnostics)
-		{
-			return Result<BindingInvocationDescription>.Failure(lambdaSymbolResult.Diagnostics);
-		}
-
-		var lambdaParams = lambdaSymbolResult.Value.Parameters;
-		if (lambdaParams.Length == 0 || lambdaParams[0].Type is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
-		}
-		var lambdaParamType = lambdaParams[0].Type;
-
-		var lambdaResultType = context.SemanticModel.GetTypeInfo(lambdaBodyResult.Value, t).Type;
-		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBodyResult.Value.GetLocation()));
-		}
-
-		if (!lambdaParamType.IsAccessible())
-		{
-			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambdaBodyResult.Value.GetLocation()));
+			return Result<BindingInvocationDescription>.Failure(lambdaReturnTypeResult.Diagnostics);
 		}
 
 		var pathParser = new PathParser(context, enabledNullable);
-		var pathParseResult = pathParser.ParsePath(lambdaBodyResult.Value);
+		var pathParseResult = pathParser.ParsePath(lambdaResult.Value.ExpressionBody);
 		if (pathParseResult.HasDiagnostics)
 		{
 			return Result<BindingInvocationDescription>.Failure(pathParseResult.Diagnostics);
@@ -144,12 +116,12 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		var binding = new BindingInvocationDescription(
 			Location: sourceCodeLocation.ToInterceptorLocation(),
-			SourceType: lambdaParamType.CreateTypeDescription(enabledNullable),
-			PropertyType: lambdaResultType.CreateTypeDescription(enabledNullable),
+			SourceType: lambdaParamTypeResult.Value.CreateTypeDescription(enabledNullable),
+			PropertyType: lambdaReturnTypeResult.Value.CreateTypeDescription(enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
-			SetterOptions: DeriveSetterOptions(lambdaBodyResult.Value, context.SemanticModel, enabledNullable),
+			SetterOptions: DeriveSetterOptions(lambdaResult.Value.ExpressionBody, context.SemanticModel, enabledNullable),
 			NullableContextEnabled: enabledNullable,
-			MethodType: interceptedMethodType);
+			MethodType: interceptedMethodTypeResult.Value);
 		return Result<BindingInvocationDescription>.Success(binding);
 	}
 
@@ -159,130 +131,66 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		return (nullableContext & NullableContext.Enabled) == NullableContext.Enabled;
 	}
 
-	private static DiagnosticInfo[] VerifyCorrectOverload(InvocationExpressionSyntax invocation, InterceptedMethodType methodType, GeneratorSyntaxContext context, CancellationToken t) =>
-		methodType switch
-		{
-			InterceptedMethodType.SetBinding => VerifyCorrectOverloadSetBinding(invocation, context, t),
-			InterceptedMethodType.Create => VerifyCorrectOverloadBindingCreate(invocation, context, t),
-			_ => throw new NotSupportedException()
-		};
-
-
-	private static DiagnosticInfo[] VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
+	private static Result<LambdaExpressionSyntax> GetLambda(InvocationExpressionSyntax invocation, InterceptedMethodType methodType)
 	{
 		var argumentList = invocation.ArgumentList.Arguments;
-
-		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if ((symbol?.ContainingType?.Name != "Binding" && symbol?.ContainingType?.Name != "BindingBase")
-			|| symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
-		{
-			return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
-		}
-
-		if (argumentList.Count == 0)
-		{
-			throw new ArgumentOutOfRangeException(nameof(invocation));
-		}
-
-		var firstArgument = argumentList[0].Expression;
-		if (firstArgument is IdentifierNameSyntax)
-		{
-			var type = context.SemanticModel.GetTypeInfo(firstArgument, cancellationToken: t).Type;
-			if (type != null && type.Name == "Func")
-			{
-				return [DiagnosticsFactory.GetterIsNotLambda(firstArgument.GetLocation())];
-			}
-			else // String and Binding
-			{
-				return [DiagnosticsFactory.SuboptimalSetBindingOverload(firstArgument.GetLocation())];
-			}
-		}
-
-		return [];
-	}
-
-	private static DiagnosticInfo[] VerifyCorrectOverloadSetBinding(InvocationExpressionSyntax invocation, GeneratorSyntaxContext context, CancellationToken t)
-	{
-		var symbol = context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if (symbol is not null)
-		{
-			if (symbol is not IMethodSymbol methodSymbol
-				|| methodSymbol.Kind != SymbolKind.Method
-				|| methodSymbol.Name != "SetBinding"
-				|| !methodSymbol.IsGenericMethod
-				|| methodSymbol.TypeParameters.Length != 2
-				|| methodSymbol.Parameters.Length != 9
-				|| methodSymbol.ContainingType?.Name != "BindableObjectExtensions"
-				|| methodSymbol.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
-			{
-				// ignore this method invocation
-				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
-			}
-		}
-		else
-		{
-			// It is not possible to resolve the method symbol when the bindable object (the first argument or the object that the extension method
-			// is called on) is referenced by a field that will be generated via XamlG based on the x:Name attributes. In that case, this source generator
-			// cannot see the outputs of the other source generator and we have incomplete information about the method invocation and we can only work with
-			// the syntax tree and not the semantic model.
-
-			var argumentsList = invocation.ArgumentList.Arguments;
-			if (argumentsList.Count < 2)
-			{
-				return [DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation())];
-			}
-
-			var secondArgument = argumentsList[1].Expression;
-			if (secondArgument is not LambdaExpressionSyntax)
-			{
-				var secondArgumentType = context.SemanticModel.GetTypeInfo(secondArgument, cancellationToken: t).Type;
-				return secondArgumentType switch
-				{
-					{ Name: "Func", ContainingNamespace.Name: "System" } => [DiagnosticsFactory.GetterIsNotLambda(secondArgument.GetLocation())],
-					_ => [DiagnosticsFactory.SuboptimalSetBindingOverload(secondArgument.GetLocation())],
-				};
-			}
-		}
-
-		return [];
-	}
-
-	private static Result<LambdaExpressionSyntax> ExtractLambda(InvocationExpressionSyntax invocation, InterceptedMethodType methodType)
-	{
-		var argumentList = invocation.ArgumentList.Arguments;
-		var lambda = methodType switch
+		var expression = methodType switch
 		{
 			InterceptedMethodType.SetBinding => argumentList[1].Expression,
 			InterceptedMethodType.Create => argumentList[0].Expression,
 			_ => throw new NotSupportedException()
 		};
 
-		if (lambda is not LambdaExpressionSyntax lambdaExpression)
+		if (expression is not LambdaExpressionSyntax lambda)
 		{
-			return Result<LambdaExpressionSyntax>.Failure(DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation()));
+			return Result<LambdaExpressionSyntax>.Failure(DiagnosticsFactory.GetterIsNotLambda(expression.GetLocation()));
 		}
 
-		return Result<LambdaExpressionSyntax>.Success(lambdaExpression);
+		// We only support static lambdas
+		if (!lambda.Modifiers.Any(SyntaxKind.StaticKeyword))
+		{
+			return Result<LambdaExpressionSyntax>.Failure(DiagnosticsFactory.LambdaIsNotStatic(lambda.GetLocation()));
+		}
+
+		return Result<LambdaExpressionSyntax>.Success(lambda);
 	}
 
-	private static Result<ExpressionSyntax> ExtractLambdaBody(LambdaExpressionSyntax lambdaExpression)
+	private static Result<ITypeSymbol> GetLambdaReturnType(LambdaExpressionSyntax lambda, SemanticModel semanticModel, CancellationToken t)
 	{
-		if (lambdaExpression.Body is not ExpressionSyntax lambdaBody)
+		if (lambda.Body is not ExpressionSyntax lambdaBody)
 		{
-			return Result<ExpressionSyntax>.Failure(DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambdaExpression.Body.GetLocation()));
+			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.GetterLambdaBodyIsNotExpression(lambda.Body.GetLocation()));
 		}
 
-		return Result<ExpressionSyntax>.Success(lambdaBody);
+		var lambdaResultType = semanticModel.GetTypeInfo(lambdaBody, t).Type;
+		if (lambdaResultType == null || lambdaResultType is IErrorTypeSymbol)
+		{
+			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.LambdaResultCannotBeResolved(lambdaBody.GetLocation()));
+		}
+
+		return Result<ITypeSymbol>.Success(lambdaResultType);
 	}
 
-	private static Result<IMethodSymbol> GetLambdaSymbol(LambdaExpressionSyntax lambda, SemanticModel semanticModel)
+	private static Result<ITypeSymbol> GetLambdaParameterType(LambdaExpressionSyntax lambda, SemanticModel semanticModel, CancellationToken t)
 	{
-		if (semanticModel.GetSymbolInfo(lambda).Symbol is not IMethodSymbol lambdaSymbol)
+		if (semanticModel.GetSymbolInfo(lambda, t).Symbol is not IMethodSymbol lambdaSymbol)
 		{
-			return Result<IMethodSymbol>.Failure(DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation()));
+			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.GetterIsNotLambda(lambda.GetLocation()));
 		}
 
-		return Result<IMethodSymbol>.Success(lambdaSymbol);
+		var parameters = lambdaSymbol.Parameters;
+		if (parameters.Length == 0 || parameters[0].Type is IErrorTypeSymbol)
+		{
+			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.LambdaParameterCannotBeResolved(lambda.GetLocation()));
+		}
+
+		var lambdaParamType = parameters[0].Type;
+		if (!lambdaParamType.IsAccessible())
+		{
+			return Result<ITypeSymbol>.Failure(DiagnosticsFactory.UnaccessibleTypeUsedAsLambdaParameter(lambda.GetLocation()));
+		}
+
+		return Result<ITypeSymbol>.Success(lambdaParamType);
 	}
 
 	private static SetterOptions DeriveSetterOptions(ExpressionSyntax? lambdaBodyExpression, SemanticModel semanticModel, bool enabledNullable)

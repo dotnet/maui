@@ -6,14 +6,14 @@ namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 internal class PathParser
 {
+	private readonly GeneratorSyntaxContext _context;
+	private readonly bool _enabledNullable;
+
 	internal PathParser(GeneratorSyntaxContext context, bool enabledNullable)
 	{
-		Context = context;
-		EnabledNullable = enabledNullable;
+		_context = context;
+		_enabledNullable = enabledNullable;
 	}
-
-	private GeneratorSyntaxContext Context { get; }
-	private bool EnabledNullable { get; }
 
 	internal Result<List<IPathPart>> ParsePath(CSharpSyntaxNode? expressionSyntax)
 	{
@@ -41,8 +41,8 @@ internal class PathParser
 		}
 
 		var member = memberAccess.Name.Identifier.Text;
-		var typeInfo = Context.SemanticModel.GetTypeInfo(memberAccess).Type;
-		var symbol = Context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
+		var typeInfo = _context.SemanticModel.GetTypeInfo(memberAccess).Type;
+		var symbol = _context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
 
 		if (symbol == null || typeInfo == null)
 		{
@@ -51,8 +51,8 @@ internal class PathParser
 
 		var isReferenceType = typeInfo.IsReferenceType;
 		var accessorKind = symbol.ToAccessorKind();
-		var memberType = typeInfo.CreateTypeDescription(EnabledNullable);
-		var containgType = symbol.ContainingType.CreateTypeDescription(EnabledNullable);
+		var memberType = typeInfo.CreateTypeDescription(_enabledNullable);
+		var containgType = symbol.ContainingType.CreateTypeDescription(_enabledNullable);
 
 		IPathPart part = symbol.IsAccessible()
 			? new MemberAccess(member, !isReferenceType)
@@ -70,8 +70,8 @@ internal class PathParser
 			return result;
 		}
 
-		var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementAccess).Symbol;
-		var elementType = Context.SemanticModel.GetTypeInfo(elementAccess).Type;
+		var elementAccessSymbol = _context.SemanticModel.GetSymbolInfo(elementAccess).Symbol;
+		var elementType = _context.SemanticModel.GetTypeInfo(elementAccess).Type;
 
 		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementAccess.ArgumentList.Arguments, elementAccess.GetLocation());
 		if (elementAccessResult.HasDiagnostics)
@@ -105,7 +105,7 @@ internal class PathParser
 	private Result<List<IPathPart>> HandleMemberBindingExpression(MemberBindingExpressionSyntax memberBinding)
 	{
 		var member = memberBinding.Name.Identifier.Text;
-		var typeInfo = Context.SemanticModel.GetTypeInfo(memberBinding).Type;
+		var typeInfo = _context.SemanticModel.GetTypeInfo(memberBinding).Type;
 		var isReferenceType = typeInfo?.IsReferenceType ?? false;
 		IPathPart part = new MemberAccess(member, !isReferenceType);
 		part = new ConditionalAccess(part);
@@ -115,8 +115,8 @@ internal class PathParser
 
 	private Result<List<IPathPart>> HandleElementBindingExpression(ElementBindingExpressionSyntax elementBinding)
 	{
-		var elementAccessSymbol = Context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
-		var elementType = Context.SemanticModel.GetTypeInfo(elementBinding).Type;
+		var elementAccessSymbol = _context.SemanticModel.GetSymbolInfo(elementBinding).Symbol;
+		var elementType = _context.SemanticModel.GetTypeInfo(elementBinding).Type;
 
 		var elementAccessResult = CreateIndexAccess(elementAccessSymbol, elementType, elementBinding.ArgumentList.Arguments, elementBinding.GetLocation());
 		if (elementAccessResult.HasDiagnostics)
@@ -138,13 +138,13 @@ internal class PathParser
 		}
 
 		var castTo = asExpression.Right;
-		var typeInfo = Context.SemanticModel.GetTypeInfo(castTo).Type;
+		var typeInfo = _context.SemanticModel.GetTypeInfo(castTo).Type;
 		if (typeInfo == null)
 		{
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castTo.GetLocation()));
 		};
 
-		leftResult.Value.Add(new Cast(typeInfo.CreateTypeDescription(EnabledNullable)));
+		leftResult.Value.Add(new Cast(typeInfo.CreateTypeDescription(_enabledNullable)));
 
 		return Result<List<IPathPart>>.Success(leftResult.Value);
 	}
@@ -157,20 +157,20 @@ internal class PathParser
 			return result;
 		}
 
-		var typeInfo = Context.SemanticModel.GetTypeInfo(castExpression.Type).Type;
+		var typeInfo = _context.SemanticModel.GetTypeInfo(castExpression.Type).Type;
 		if (typeInfo == null)
 		{
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(castExpression.GetLocation()));
 		};
 
-		result.Value.Add(new Cast(typeInfo.CreateTypeDescription(EnabledNullable)));
+		result.Value.Add(new Cast(typeInfo.CreateTypeDescription(_enabledNullable)));
 
 		return Result<List<IPathPart>>.Success(result.Value);
 	}
 
 	private Result<List<IPathPart>> HandleDefaultCase()
 	{
-		return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(Context.Node.GetLocation()));
+		return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(_context.Node.GetLocation()));
 	}
 
 	private Result<List<IPathPart>> CreateIndexAccess(ISymbol? elementAccessSymbol, ITypeSymbol? typeSymbol, SeparatedSyntaxList<ArgumentSyntax> argumentList, Location location)
@@ -181,56 +181,16 @@ internal class PathParser
 		}
 
 		var indexExpression = argumentList[0].Expression;
-		object? indexValue = Context.SemanticModel.GetConstantValue(indexExpression).Value;
+		object? indexValue = _context.SemanticModel.GetConstantValue(indexExpression).Value;
 		if (indexValue is null)
 		{
 			return Result<List<IPathPart>>.Failure(DiagnosticsFactory.UnableToResolvePath(indexExpression.GetLocation()));
 		}
 
-		var name = GetIndexerName(elementAccessSymbol);
+		var name = elementAccessSymbol.GetIndexerName();
 		var isReferenceType = typeSymbol?.IsReferenceType ?? false;
 		IPathPart part = new IndexAccess(name, indexValue, !isReferenceType);
 
 		return Result<List<IPathPart>>.Success(new List<IPathPart>([part]));
-	}
-
-	private string GetIndexerName(ISymbol? elementAccessSymbol)
-	{
-		const string defaultName = "Item";
-
-		if (elementAccessSymbol is not IPropertySymbol propertySymbol)
-		{
-			return defaultName;
-		}
-
-		var containgType = propertySymbol.ContainingType;
-		if (containgType == null)
-		{
-			return defaultName;
-		}
-
-		var defaultMemberAttribute = GetAttribute(containgType, "DefaultMemberAttribute");
-		if (defaultMemberAttribute != null)
-		{
-			return GetAttributeValue(defaultMemberAttribute);
-		}
-
-		var indexerNameAttr = GetAttribute(propertySymbol, "IndexerNameAttribute");
-		if (indexerNameAttr != null)
-		{
-			return GetAttributeValue(indexerNameAttr);
-		}
-
-		return defaultName;
-
-		AttributeData? GetAttribute(ISymbol symbol, string attributeName)
-		{
-			return symbol.GetAttributes().FirstOrDefault(attr => attr.AttributeClass?.Name == attributeName);
-		}
-
-		string GetAttributeValue(AttributeData attribute)
-		{
-			return (attribute.ConstructorArguments.Length > 0 ? attribute.ConstructorArguments[0].Value as string : null) ?? defaultName;
-		}
 	}
 }
