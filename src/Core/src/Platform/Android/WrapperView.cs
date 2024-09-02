@@ -23,9 +23,6 @@ namespace Microsoft.Maui.Platform
 		Android.Graphics.Paint _shadowPaint;
 		bool _invalidateShadow;
 
-		int _currentViewWidth;
-		int _currentViewHeight;
-
 		AView _borderView;
 
 		public bool InputTransparent { get; set; }
@@ -58,6 +55,7 @@ namespace Microsoft.Maui.Platform
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
 			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
 
+			_invalidateShadow = true;
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
@@ -151,13 +149,11 @@ namespace Microsoft.Maui.Platform
 			Graphics.Color solidColor = null;
 
 			// If need to redraw shadow
-			if (_invalidateShadow || DidViewSizeChange(viewWidth, viewHeight))
+			if (_invalidateShadow)
 			{
 				// If bounds is zero
 				if (viewHeight != 0 && viewWidth != 0)
 				{
-					_currentViewWidth = viewWidth;
-					_currentViewHeight = viewHeight;
 					var bitmapHeight = viewHeight + MaximumRadius;
 					var bitmapWidth = viewWidth + MaximumRadius;
 
@@ -249,11 +245,6 @@ namespace Microsoft.Maui.Platform
 			// Draw shadow bitmap
 			if (_shadowCanvas != null && _shadowBitmap != null && !_shadowBitmap.IsRecycled)
 				canvas.DrawBitmap(_shadowBitmap, 0.0F, 0.0F, _shadowPaint);
-		}
-
-		bool DidViewSizeChange(int viewWidth, int viewHeight)
-		{
-			return _currentViewWidth != viewWidth || _currentViewHeight != viewHeight; 
 		}
 
 		void ClearShadowResources()
