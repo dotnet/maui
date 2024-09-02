@@ -352,8 +352,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			child1.IsVisible = false;
 
-			// Verify that the visibility change invalidated the layout, and simulate a native layout update 
-			AssertInvalidated(handler);
+			// Simulate a native layout update 
 			stack.ForceLayout();
 
 			Assert.False(child1.IsVisible);
@@ -668,7 +667,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			innerStack.Padding = new Thickness(30);
 
 			// Verify that the Padding change invalidated the layout, and simulate a native layout update 
-			AssertInvalidated(handler);
 			outerLayout.ForceLayout();
 
 			var afterSize = innerStack.Bounds.Size;

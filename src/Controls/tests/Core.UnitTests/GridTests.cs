@@ -1329,7 +1329,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestDefaultRowSpacing()
 		{
-			var layout = new Grid();
+			var layout = new Grid { IsPlatformEnabled = true };
 
 			bool preferredSizeChanged = false;
 			layout.MeasureInvalidated += (sender, args) =>
@@ -1349,7 +1349,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestDefaultColumnSpacing()
 		{
-			var layout = new Grid();
+			var layout = new Grid { IsPlatformEnabled = true };
 
 			bool preferredSizeChanged = false;
 			layout.MeasureInvalidated += (sender, args) =>
@@ -1369,7 +1369,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAddCell()
 		{
-			var layout = new Grid();
+			var layout = new Grid { IsPlatformEnabled = true };
 			bool preferredSizeChanged = false;
 			layout.MeasureInvalidated += (sender, args) => preferredSizeChanged = true;
 
@@ -1383,7 +1383,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMoveCell()
 		{
-			var layout = new Grid();
+			var layout = new Grid { IsPlatformEnabled = true };
 			var label = new Label();
 			layout.Children.Add(label, 0, 0);
 

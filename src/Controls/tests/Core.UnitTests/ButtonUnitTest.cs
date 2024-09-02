@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void MeasureInvalidatedOnTextChange()
 		{
-			var button = new Button();
+			var button = new Button { IsPlatformEnabled = true };
 
 			bool fired = false;
 			button.MeasureInvalidated += (sender, args) => fired = true;
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new FileImageSource();
-			var button = new Button { ImageSource = source };
+			var button = new Button { ImageSource = source, IsPlatformEnabled = true };
 			bool fired = false;
 			button.MeasureInvalidated += (sender, e) => fired = true;
 			Assert.Null(source.File);
