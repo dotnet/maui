@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,22 +11,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Picker on windows shows \"Microsoft.Maui.Controls.Picker\" if ItemsSource has an empty string"; 
-		
+		public override string Issue => "Picker on windows shows \"Microsoft.Maui.Controls.Picker\" if ItemsSource has an empty string";
+
 		[Test]
 		[Category(UITestCategories.Picker)]
-		[FailsOnMac]
 		public void PickerShouldDisplayValueFromItemDisplayBinding()
 		{
-			App.WaitForElement("UpdateButton");			
+			App.WaitForElement("UpdateButton");
 			App.Tap("UpdateButton");
 
 			var picker1Text = App.WaitForElement("MauiPicker1").GetText();
 			var picker2Text = App.WaitForElement("MauiPicker2").GetText();
 
-			ClassicAssert.IsEmpty(picker1Text);
-			ClassicAssert.IsNotNull(picker2Text);
-
+			Assert.That(picker1Text, Is.Empty);
+			Assert.That(picker2Text, Is.EqualTo("Not null"));
 		}
 	}
 }
