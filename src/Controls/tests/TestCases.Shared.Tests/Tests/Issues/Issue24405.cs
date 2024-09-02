@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public void VerifyEndHorizontalTextAlignmentPosition()
+		public void VerifyHorizontalEndTextAlignmentPosition()
 		{
 			App.WaitForElement("entry");
 			App.Tap("button");
