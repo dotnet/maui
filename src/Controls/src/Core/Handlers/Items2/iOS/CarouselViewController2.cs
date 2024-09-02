@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
 		CarouselViewLoopManager _carouselViewLoopManager;
-		
+
 		// We need to keep track of the old views to update the visual states
 		// if this is null we are not attached to the window
 		List<View> _oldViews;
 		Items.ILoopItemsViewSource LoopItemsSource => ItemsSource as Items.ILoopItemsViewSource;
-		
+
 		public CarouselViewController2(CarouselView itemsView, UICollectionViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
@@ -231,14 +231,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			var count = ItemsSource.ItemCount;
+
+			if (count == 0)
+			{
+				_positionAfterUpdate = -1;
+				return;
+			}
+
 			int carouselPosition = carousel.Position;
 			_positionAfterUpdate = carouselPosition;
 			var currentItemPosition = ItemsSource.GetIndexForItem(carousel.CurrentItem).Row;
-			var count = ItemsSource.ItemCount;
 
 			if (e.Action == NotifyCollectionChangedAction.Remove)
 			{
+				System.Diagnostics.Debug.WriteLine($"Removing CarouselPosition: {carouselPosition} CurrentItemPosition: {currentItemPosition}");
+
 				_positionAfterUpdate = GetPositionWhenRemovingItems(e.OldStartingIndex, carouselPosition, currentItemPosition, count);
+
+				System.Diagnostics.Debug.WriteLine($"Position to update : {_positionAfterUpdate}");
 			}
 
 			if (e.Action == NotifyCollectionChangedAction.Reset)
@@ -265,8 +276,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var targetPosition = _positionAfterUpdate;
 			_positionAfterUpdate = -1;
 
+			System.Diagnostics.Debug.WriteLine($"CollectionViewUpdated SetPosition: {targetPosition}");
 			SetPosition(targetPosition);
 			SetCurrentItem(targetPosition);
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+
+			}
+			else
+			{
+				//Since we can be removing the item that is already created next to the current item we need to update the visible cells
+				if (ItemsView.Loop)
+				{
+					CollectionView.ReloadItems(new NSIndexPath[] { GetScrollToIndexPath(targetPosition) });
+				}
+			}
+
+
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
@@ -413,7 +440,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdateFromPosition()
 		{
-			if(!InitialPositionSet)
+			if (!InitialPositionSet)
 				return;
 
 			if (ItemsView is not CarouselView carousel)
@@ -429,7 +456,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
 			var carouselPosition = carousel.Position;
-		
+
 			ScrollToPosition(carouselPosition, currentItemPosition, carousel.AnimatePositionChanges);
 
 			// SetCurrentItem(carouselPosition);
