@@ -571,6 +571,13 @@ static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndexPath() -> (bool VisibleItems, Foundation.NSIndexPath First, Foundation.NSIndexPath Center, Foundation.NSIndexPath Last)
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.ScrollToRequested(object sender, Microsoft.Maui.Controls.ScrollToRequestEventArgs args) -> void
 *REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
+~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.DarkSlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.DimGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.Grey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.LightGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.LightSlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.SlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
 *REMOVED*~Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.ShellScrollViewTracker(Microsoft.Maui.IPlatformViewHandler renderer) -> void
 *REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker
 *REMOVED*Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose() -> void
