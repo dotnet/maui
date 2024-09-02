@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestSizeChanged()
 		{
-			var image = new ImageButton { Source = "File0.png" };
+			var image = new ImageButton { Source = "File0.png", IsPlatformEnabled = true };
 			Assert.Equal("File0.png", ((FileImageSource)image.Source).File);
 
 			var preferredSizeChanged = false;
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestFileImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new FileImageSource();
-			var image = new ImageButton { Source = source };
+			var image = new ImageButton { Source = source, IsPlatformEnabled = true };
 			bool fired = false;
 			image.MeasureInvalidated += (sender, e) => fired = true;
 			Assert.Null(source.File);
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestStreamImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new StreamImageSource();
-			var image = new ImageButton { Source = source };
+			var image = new ImageButton { Source = source, IsPlatformEnabled = true };
 			bool fired = false;
 			EventHandler eventHandler = (sender, e) => fired = true;
 			image.MeasureInvalidated += eventHandler;
@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestImageSourcePropertiesChangedTriggerResize()
 		{
 			var source = new FileImageSource();
-			var button = new ImageButton { Source = source };
+			var button = new ImageButton { Source = source, IsPlatformEnabled = true };
 			bool fired = false;
 			button.MeasureInvalidated += (sender, e) => fired = true;
 			Assert.Null(source.File);

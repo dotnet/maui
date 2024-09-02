@@ -502,7 +502,32 @@ namespace Microsoft.Maui.Controls
 		
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
-			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
+			// This time we won't propagate MeasureInvalidated up to the parent
+			// considering the page is the top level element for this feature
+			switch (trigger)
+			{
+				case InvalidationTrigger.VerticalOptionsChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+					// When a child changes its HorizontalOptions or VerticalOptions
+					// the size of the parent won't change, so we don't have to invalidate the measure
+					break;
+				case InvalidationTrigger.RendererReady:
+				// Undefined happens in many cases, including when `IsVisible` changes
+				case InvalidationTrigger.Undefined:
+					InvokeMeasureInvalidated(trigger);
+					break;
+				default:
+					// When visibility changes `InvalidationTrigger.Undefined` is used,
+					// so here we're sure that visibility didn't change
+					if (child.IsVisible)
+					{
+						// We need to invalidate measures only if child is actually visible
+						InvokeMeasureInvalidated(trigger);
+					}
+					break;
+			}
+
+			// We still need to call the legacy OnChildMeasureInvalidated to keep the compatibility.
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
 		}
 
@@ -513,8 +538,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="e">The event arguments.</param>
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
+			// Nothing to do here: platform will take care of arranging the children if needed on the next layout pass
 		}
 
 		/// <summary>
@@ -591,29 +615,6 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-		}
-
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
-		{
-			var container = this as IPageContainer<Page>;
-			if (container != null)
-			{
-				Page page = container.CurrentPage;
-				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
-					return;
-			}
-			else
-			{
-				var logicalChildren = this.InternalChildren;
-				for (var i = 0; i < logicalChildren.Count; i++)
-				{
-					var v = logicalChildren[i] as VisualElement;
-					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-						return;
-				}
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		internal void OnAppearing(Action action)

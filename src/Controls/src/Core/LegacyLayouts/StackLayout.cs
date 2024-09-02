@@ -97,9 +97,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 			ComputeConstraintForView(view, false);
 		}
 
+		internal override void InvalidateLayoutInternal()
+		{
+			base.InvalidateLayoutInternal();
+			_layoutInformation = new LayoutInformation();
+		}
+
 		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
-			_layoutInformation = new LayoutInformation();
+			InvalidateLayoutInternal();
 			base.InvalidateMeasureInternal(trigger);
 		}
 

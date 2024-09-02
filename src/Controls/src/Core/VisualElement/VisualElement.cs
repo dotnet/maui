@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -993,7 +994,7 @@ namespace Microsoft.Maui.Controls
 		internal event EventHandler PlatformEnabledChanged;
 
 		/// <summary>
-		/// Gets or sets a value that indicates whether this elements's platform equivalent element is enabled.
+		/// Gets or sets a value that indicates whether this element's platform equivalent element is enabled.
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1358,6 +1359,25 @@ namespace Microsoft.Maui.Controls
 			FocusChangeRequested?.Invoke(this, args);
 		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
+		internal override void ApplyBindings(bool fromBindingContextChanged)
+		{
+			try
+			{
+				_isApplyingBindings = true;
+				base.ApplyBindings(fromBindingContextChanged);
+			}
+			finally
+			{
+				_isApplyingBindings = false;
+
+				if (_applyingBindingsInvalidationTrigger is {} invalidationTrigger)
+				{
+					_applyingBindingsInvalidationTrigger = null;
+					InvalidateMeasureInternal(invalidationTrigger);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Invalidates the measure of an element.
 		/// </summary>
@@ -1368,10 +1388,38 @@ namespace Microsoft.Maui.Controls
 		{
 			InvalidateMeasureInternal(trigger);
 		}
+		
+		internal void InvokeMeasureInvalidated(InvalidationTrigger trigger)
+		{
+			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+		}
 
+		bool _isApplyingBindings;
+		InvalidationTrigger? _applyingBindingsInvalidationTrigger;
+		
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
-			_measureCache.Clear();
+			if (!IsPlatformEnabled)
+			{
+				// No need to invalidate measure if there's no platform view
+				return;
+			}
+
+			if (_isApplyingBindings)
+			{
+				if (_applyingBindingsInvalidationTrigger == null &&
+				    trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
+				{
+					_applyingBindingsInvalidationTrigger = trigger;
+				}
+				else
+				{
+					_applyingBindingsInvalidationTrigger = InvalidationTrigger.Undefined;
+				}
+				return;
+			}
+			
+			InvalidateMeasureCacheInternal();
 
 			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
 			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
@@ -1388,10 +1436,18 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			InvokeMeasureInvalidated(trigger);
 			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 		}
-		
+
+		/// <summary>
+		/// Clears the measure cache of a visual element.
+		/// </summary>
+		internal void InvalidateMeasureCacheInternal()
+		{
+			_measureCache.Clear();
+		}
+
 		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			switch (trigger)
@@ -1404,7 +1460,7 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.RendererReady:
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
-					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+					InvokeMeasureInvalidated(trigger);
 					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 					return;
 				default:
@@ -1413,7 +1469,7 @@ namespace Microsoft.Maui.Controls
 					if (child.IsVisible)
 					{
 						// We need to invalidate measures only if child is actually visible
-						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
+						InvokeMeasureInvalidated(trigger);
 						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
 					}
 					return;

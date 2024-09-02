@@ -201,9 +201,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 			SizeRequest size = base.Measure(widthConstraint - Padding.HorizontalThickness, heightConstraint - Padding.VerticalThickness, flags);
 #pragma warning restore CS0618 // Type or member is obsolete
+			var request = new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness);
+			var minimum = new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness);
 #pragma warning disable CS0618 // Type or member is obsolete
-			return new SizeRequest(new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness),
-				new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness));
+			DesiredSize = request;
+			return new SizeRequest(request, minimum);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
@@ -313,6 +315,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			OnChildrenReordered();
 		}
 
+		internal virtual void InvalidateLayoutInternal()
+		{
+			_hasDoneLayout = false;
+			InvalidateMeasureCacheInternal();
+		}
+
 		/// <summary>
 		/// Invalidates the current layout.
 		/// </summary>
@@ -320,7 +328,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use InvalidateMeasure depending on your scenario")]
 		protected virtual void InvalidateLayout()
 		{
-			_hasDoneLayout = false;
+			InvalidateLayoutInternal();
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
 			{
@@ -343,8 +351,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
-			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			base.OnChildMeasureInvalidatedInternal(child, trigger);
 		}
 
 		/// <summary>
@@ -537,7 +545,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			int count = children.Count;
 			for (var index = 0; index < count; index++)
 			{
-				if (LogicalChildrenInternal[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
+				if (LogicalChildrenInternal[index] is VisualElement { IsVisible: true } v && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 				{
 					return;
 				}
@@ -551,20 +559,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 				{
 					return;
 				}
-				if (trigger == InvalidationTrigger.HorizontalOptionsChanged || trigger == InvalidationTrigger.VerticalOptionsChanged)
+				if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
 				{
 					ComputeConstraintForView(view);
 				}
 			}
 
-			if (trigger == InvalidationTrigger.RendererReady)
-			{
-				InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
-			}
-			else
-			{
-				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			}
+			InvalidateLayoutInternal();
 		}
 
 		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
