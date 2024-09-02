@@ -8,7 +8,7 @@
       <Grid Grid.Row="1" BackgroundColor="Yellow" />
       <Grid Grid.Row="2" BackgroundColor="Green" />
       <Grid Grid.Row="3" BackgroundColor="Blue" />
-      <Editor Grid.Row="4" x:Name="txtTest" HeightRequest="150" WidthRequest="250" AutomationId="Editor"
+      <Editor Grid.Row="4" HeightRequest="150" WidthRequest="250" AutomationId="Editor"
                   VerticalOptions="Start" HorizontalOptions="Start" 
                   Text="1&#xa;2&#xa;3&#xa;4&#xa;5&#xa;6&#xa;7&#xa;8&#xa;9&#xa;10&#xa;11&#xa;12&#xa;13&#xa;14&#xa;15&#xa;16&#xa;17&#xa;18&#xa;19&#xa;20" />
       <Grid Grid.Row="5" BackgroundColor="Purple" />
