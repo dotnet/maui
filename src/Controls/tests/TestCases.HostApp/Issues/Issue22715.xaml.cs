@@ -17,4 +17,16 @@ public partial class Issue22715 : ContentPage
 	{
 		EntNumber.Focus();
 	}
+
+	void EntNumber_Focused(object sender, FocusEventArgs e)
+	{
+#if IOS
+		var entry = (Entry)sender;
+		var field = entry.Handler?.PlatformView as UITextField;
+		if (field is not null)
+		{
+			field.TintColor = UIColor.Clear;
+		}
+#endif
+	}
 }
