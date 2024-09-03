@@ -5,6 +5,7 @@ using Foundation;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls.Handlers.Items;
+using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -27,6 +28,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				startIndex = 0;
 			}
 			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count);
+		}
+
+		private protected override bool ShouldReload(NotifyCollectionChangedEventArgs args)
+		{
+			if (args.Action == NotifyCollectionChangedAction.Reset)
+			{
+				return true;
+			}
+			if (args.Action == NotifyCollectionChangedAction.Add)
+			{
+				if (ItemCount == 0)
+				{
+					return true;
+				}
+			}
+			if (args.Action == NotifyCollectionChangedAction.Remove)
+			{
+				if (ItemCount < 1)
+				{
+					return true;
+				}
+			}
+			return base.ShouldReload(args);
 		}
 
 		//We are going to add 2 items since we are inserting 1 item at the beginning and 1 item at the end
