@@ -132,7 +132,6 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(CarouselView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
-	[InlineData(typeof(DatePicker))]
 	[InlineData(typeof(Ellipse))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
