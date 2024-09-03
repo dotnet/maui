@@ -166,20 +166,15 @@ namespace Microsoft.Maui.Handlers
 	{
 		public bool OnTouch(View? v, MotionEvent? e)
 		{
-			if (e == null || v == null)
-				return false;
+			if (e == null || v == null) { }
 
 			switch (e.Action)
 			{
 				case MotionEventActions.Down:
-					v.Parent?.RequestDisallowInterceptTouchEvent(true);
-					break;
 				case MotionEventActions.Move:
 					v.Parent?.RequestDisallowInterceptTouchEvent(true);
 					break;
 				case MotionEventActions.Up:
-					v.Parent?.RequestDisallowInterceptTouchEvent(false);
-					break;
 				case MotionEventActions.Cancel:
 					v.Parent?.RequestDisallowInterceptTouchEvent(false);
 					break;
