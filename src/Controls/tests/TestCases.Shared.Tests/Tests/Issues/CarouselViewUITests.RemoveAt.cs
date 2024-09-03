@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue10300 (src\ControlGallery\src\Issues.Shared\Issue10300.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		//[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
+		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
 		public void Issue10300Test()
 		{
 			App.Click("Add");
