@@ -1,10 +1,32 @@
-﻿using Microsoft.Maui;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
 	internal class TemplateCodeCollectionViewGridGallery : ContentPage
 	{
+
+		protected override async void OnNavigatedFrom(NavigatedFromEventArgs args)
+		{
+			base.OnNavigatedFrom(args);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			await Task.Yield();
+
+			var result = GC.GetTotalMemory(forceFullCollection: true);
+			System.Diagnostics.Debug.WriteLine($"Memory: {result}");
+		}
+		
 		public TemplateCodeCollectionViewGridGallery(ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Vertical)
 		{
 			var layout = new Grid

@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="White"
+    x:Class="CollectionViewMemoryLeaks.Views.CollectionViewSamplePage"
+    Title="CollectionViewSamplePage">
+    <VerticalStackLayout>
+        <Button
+            Command="{Binding GoBackCommand}"
+            Text="Go back"/>
+        <CollectionView
+            ItemsSource="{Binding RandomItems}"
+            VerticalOptions="Fill"
+            HorizontalOptions="Fill">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid
+                        RowDefinitions="Auto,Auto,Auto,Auto"
+                        ColumnDefinitions="Auto"
+                        HorizontalOptions="Center"
+                        Padding="20,20,0,0">
+
+                        <Border
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Padding="5"
+                            HorizontalOptions="Center"
+                            HeightRequest="140"
+                            WidthRequest="110">
+
+                            <Grid>
+                                <Image
+                                    HorizontalOptions="Center"
+                                    HeightRequest="130"
+                                    WidthRequest="100"
+                                    Aspect="AspectFit"
+                                    Source="dotnet_bot.png"/>
+
+                                <Image
+                                    VerticalOptions="End"
+                                    HorizontalOptions="End"
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    HeightRequest="30"
+                                    WidthRequest="30"
+                                    Source="circular_check_icon">
+                                </Image>
+                            </Grid>
+                        </Border>
+
+                        <Image
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            HorizontalOptions="End"
+                            VerticalOptions="Start"
+                            Source="download_icon.png">
+                        </Image>
+
+                        <ProgressBar
+                            Grid.Row="1"
+                            Grid.Column="0"/>
+                        <StackLayout
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Orientation="Horizontal">
+                            <Image
+                                HeightRequest="14"
+                                WidthRequest="14"
+                                Source="favorite_filled_icon.png"
+                                Margin="0,0,5,0">
+                            </Image>
+                            <Label
+                                MaximumWidthRequest="160"
+                                HorizontalOptions="CenterAndExpand"
+                                HorizontalTextAlignment="Center"
+                                Text="{Binding Name}"
+                                LineBreakMode="MiddleTruncation"/>
+                        </StackLayout>
+
+                        <Label
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            MaximumWidthRequest="160"
+                            HorizontalOptions="Center"
+                            Text="{Binding Name}"
+                            LineBreakMode="MiddleTruncation"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

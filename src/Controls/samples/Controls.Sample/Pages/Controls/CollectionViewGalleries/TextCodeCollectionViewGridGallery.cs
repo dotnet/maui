@@ -1,10 +1,13 @@
-﻿using Microsoft.Maui;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
 	internal class TextCodeCollectionViewGridGallery : ContentPage
 	{
+
 		public TextCodeCollectionViewGridGallery(ItemsLayoutOrientation orientation = ItemsLayoutOrientation.Vertical)
 		{
 			var layout = new Grid

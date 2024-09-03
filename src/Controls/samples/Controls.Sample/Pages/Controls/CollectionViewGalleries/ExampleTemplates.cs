@@ -10,6 +10,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
 	internal class ExampleTemplates
 	{
+		class TEstImage : Image
+		{
+			~TEstImage()
+			{
+				Console.WriteLine("TEstImage Finalized");
+			}
+		}
+
 		public static DataTemplate PhotoTemplate()
 		{
 			return new DataTemplate(() =>
@@ -21,7 +29,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 					HeightRequest = 100,
 				};
 
-				var image = new Image
+				var image = new TEstImage
 				{
 					WidthRequest = 100,
 					HorizontalOptions = LayoutOptions.Center,
