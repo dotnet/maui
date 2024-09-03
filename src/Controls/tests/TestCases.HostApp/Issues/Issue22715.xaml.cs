@@ -22,10 +22,10 @@ public partial class Issue22715 : ContentPage
 	{
 #if IOS
 		var entry = (Entry)sender;
-		var field = entry.Handler?.PlatformView as UITextField;
+		var field = entry.Handler?.PlatformView as UIKit.UITextField;
 		if (field is not null)
 		{
-			field.TintColor = UIColor.Clear;
+			field.TintColor = UIKit.UIColor.Clear;
 		}
 #endif
 	}
