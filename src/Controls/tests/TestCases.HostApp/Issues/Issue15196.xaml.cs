@@ -24,10 +24,9 @@ namespace Maui.Controls.Sample.Issues
 				stackLayout.Children.Remove(frame);
 			}
 
-#if ANDROID
 		frame?.Handler?.DisconnectHandler();
 		entry?.Handler?.DisconnectHandler();
-#endif
+
 		}
 	}
 }
