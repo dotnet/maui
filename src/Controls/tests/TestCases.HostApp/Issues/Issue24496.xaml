@@ -77,7 +77,7 @@
                 <Picker BackgroundColor="LightGreen" ItemsSource="{x:StaticResource pickerInputs}"/>
                 <Entry BackgroundColor="LightPink" Placeholder="Entry"/> 
                 <Picker BackgroundColor="LightGreen" ItemsSource="{x:StaticResource pickerInputs}" AutomationId="Picker6"/>
-                <Entry BackgroundColor="LightPink" Placeholder="Entry" AutomationId="Entry7"/> 
+                <Entry BackgroundColor="LightPink" Placeholder="Entry" AutomationId="Entry7" Focused="Entry_Focused"/>
                 <Picker BackgroundColor="LightGreen" ItemsSource="{x:StaticResource pickerInputs}"/>
                 <Entry BackgroundColor="LightPink" Placeholder="Entry"/> 
                 <Picker BackgroundColor="LightGreen" ItemsSource="{x:StaticResource pickerInputs}"/>

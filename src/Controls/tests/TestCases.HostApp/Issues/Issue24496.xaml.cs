@@ -12,5 +12,17 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
+
+		void Entry_Focused(object sender, FocusEventArgs e)
+		{
+#if IOS
+			var entry = (Entry)sender;
+			var field = entry.Handler?.PlatformView as UIKit.UITextField;
+			if (field is not null)
+			{
+				field.TintColor = UIKit.UIColor.Clear;
+			}
+#endif
+		}
 	}
 }
