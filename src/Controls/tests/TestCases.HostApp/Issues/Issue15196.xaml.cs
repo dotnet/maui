@@ -23,10 +23,9 @@ namespace Maui.Controls.Sample.Issues
 				// Remove the frame from the stackLayout
 				stackLayout.Children.Remove(frame);
 			}
-
+			
 		frame?.Handler?.DisconnectHandler();
 		entry?.Handler?.DisconnectHandler();
-
 		}
 	}
 }
