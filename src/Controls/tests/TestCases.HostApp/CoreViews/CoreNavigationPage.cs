@@ -36,6 +36,15 @@ namespace Maui.Controls.Sample
 			navigationPage.BarTextColor = Colors.Yellow;
 			navigationPage.BackgroundColor =
 					Application.Current.RequestedTheme == Microsoft.Maui.ApplicationModel.AppTheme.Dark ? Colors.Black : Colors.White;
+
+#if WINDOWS
+			navigationPage.Resources.Add(new Style(typeof(Button))
+			{
+				Setters = {
+					new Setter { Property = Button.HeightRequestProperty, Value = 32 },
+				}
+			});
+#endif
 		}
 	}
 }

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.InteropServices;
 using NUnit.Framework;
 using OpenQA.Selenium.Appium.iOS;
 using UITest.Appium;
@@ -7,7 +6,6 @@ using UITest.Appium.NUnit;
 using UITest.Core;
 using VisualTestUtils;
 using VisualTestUtils.MagickNet;
-using static Microsoft.Maui.TestCases.Tests.NativeMethods;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
@@ -216,17 +214,6 @@ namespace Microsoft.Maui.TestCases.Tests
 					actualImage = imageEditor.GetUpdatedImage();
 				}
 
-#if WINDOWS
-				var monitor = NativeMethods.MonitorFromPoint(new NativeMethods.POINT(100, 100), NativeMethods.MONITOR_DEFAULTTOPRIMERTY);
-				var monitorInfo = new NativeMonitorInfo();
-				NativeMethods.GetMonitorInfo(monitor, monitorInfo);
-
-				var monitorWidth = (monitorInfo.Monitor.Right - monitorInfo.Monitor.Left);
-				var monitorHeight = (monitorInfo.Monitor.Bottom - monitorInfo.Monitor.Top);
-				var sysDpi = NativeMethods.GetDpiForSystem();
-
-				TestContext.WriteLine($"Monitor info: Width: {monitorWidth}, Height: {monitorHeight}, DPI: {sysDpi}");
-#endif
 				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
 			}
 		}
@@ -241,84 +228,4 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 	}
-
-#if WINDOWS
-	public static class NativeMethods
-	{
-		public const Int32 MONITOR_DEFAULTTOPRIMERTY = 0x00000001;
-		public const Int32 MONITOR_DEFAULTTONEAREST = 0x00000002;
-
-
-		[DllImport("user32.dll")]
-		public static extern IntPtr MonitorFromPoint(POINT point, Int32 flags);
-
-
-		[DllImport("user32.dll")]
-		public static extern Boolean GetMonitorInfo(IntPtr hMonitor, NativeMonitorInfo lpmi);
-
-		[DllImport("user32.dll")]
-		public static extern uint GetDpiForSystem();
-
-
-		[Serializable, StructLayout(LayoutKind.Sequential)]
-#pragma warning disable CA1815 // Override equals and operator equals on value types
-		public struct NativeRectangle
-#pragma warning restore CA1815 // Override equals and operator equals on value types
-		{
-			public Int32 Left;
-			public Int32 Top;
-			public Int32 Right;
-			public Int32 Bottom;
-
-
-			public NativeRectangle(Int32 left, Int32 top, Int32 right, Int32 bottom)
-			{
-				this.Left = left;
-				this.Top = top;
-				this.Right = right;
-				this.Bottom = bottom;
-			}
-		}
-
-		[StructLayout(LayoutKind.Sequential)]
-#pragma warning disable CA1815 // Override equals and operator equals on value types
-		public struct POINT
-#pragma warning restore CA1815 // Override equals and operator equals on value types
-		{
-			public int X;
-			public int Y;
-
-			public POINT(int x, int y)
-			{
-				this.X = x;
-				this.Y = y;
-			}
-
-			public static implicit operator System.Drawing.Point(POINT p)
-			{
-				return new System.Drawing.Point(p.X, p.Y);
-			}
-
-			public static implicit operator POINT(System.Drawing.Point p)
-			{
-				return new POINT(p.X, p.Y);
-			}
-
-			public override string ToString()
-			{
-				return $"X: {X}, Y: {Y}";
-			}
-		}
-
-
-		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-		public sealed class NativeMonitorInfo
-		{
-			public Int32 Size = Marshal.SizeOf(typeof(NativeMonitorInfo));
-			public NativeRectangle Monitor;
-			public NativeRectangle Work;
-			public Int32 Flags;
-		}
-	}
-#endif
 }
