@@ -454,6 +454,30 @@ namespace Microsoft.Maui.IntegrationTests
 					},
 				}
 			},
+			new WarningsPerFile
+			{
+				File = "src/Controls/src/Xaml/XamlServiceProvider.cs",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "IL2026",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(IElementNode,HydrationContext)' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. XamlDataTypeProvider is not trim and AOT-compatible.",
+						}
+					},
+					new WarningsPerCode
+					{
+						Code = "IL3050",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
+						}
+					},
+					
+				}
+			},
 		};
 
 		#region Utility methods for generating the list of expected warnings
