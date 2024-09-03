@@ -38,6 +38,14 @@ namespace Maui.Controls.Sample
 
 		public App()
 		{
+#if WINDOWS
+			this.Resources.Add(new Style(typeof(Button))
+			{
+				Setters = {
+					new Setter { Property = Button.HeightRequestProperty, Value = 32 },
+				}
+			});
+#endif
 		}
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
