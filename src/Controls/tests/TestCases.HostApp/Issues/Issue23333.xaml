@@ -14,7 +14,7 @@
            IsClippedToBounds="True"
            BackgroundColor="Red">
       <Frame.Content>
-        <Image Source="dotnet_bot_resized.png"
+        <Image Source="dotnet_bot.png"
                Background="Tan" />
       </Frame.Content>
     </Frame>
@@ -30,7 +30,7 @@
            IsClippedToBounds="True"
            BackgroundColor="Red">
       <Frame.Content>
-        <Image Source="dotnet_bot_resized.png"
+        <Image Source="dotnet_bot.png"
                Background="Tan" />
       </Frame.Content>
     </Frame>
