@@ -166,7 +166,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		public bool OnTouch(View? v, MotionEvent? e)
 		{
-			if (e == null || v == null) { }
+			if (e is null || v is null)
+				return false;
 
 			switch (e.Action)
 			{
