@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			IValueConverterProvider = defaultValueConverterProvider;
 
 			if (node is IElementNode elementNode)
-				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode));
+				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode, context));
 		}
 
 		public XamlServiceProvider() => IValueConverterProvider = defaultValueConverterProvider;
@@ -295,8 +296,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 	class XamlDataTypeProvider : IXamlDataTypeProvider
 	{
-		public XamlDataTypeProvider(IElementNode node)
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
+		public XamlDataTypeProvider(IElementNode node, HydrationContext context)
 		{
+			Context = context;
+			
+
 			static IElementNode GetParent(IElementNode node)
 			{
 				return node switch
@@ -316,6 +324,21 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				return false;
 			}
 
+			static bool IsBindingBaseProperty(IElementNode node, HydrationContext context)
+			{
+				if (   node.TryGetPropertyName(node.Parent, out XmlName name)
+					&& node.Parent is IElementNode parent
+					&& XamlParser.GetElementType(parent.XmlType, 
+												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition), 
+												 context.RootElement.GetType().Assembly, out var xpe) is Type parentType
+					&& parentType.GetRuntimeProperties().FirstOrDefault(p => p.Name == name.LocalName) is PropertyInfo propertyInfo
+					&& propertyInfo.PropertyType == typeof(BindingBase))
+				{								
+						return true;
+				}
+				return false;
+			}
+
 			INode dataTypeNode = null;
 			IElementNode n = node as IElementNode;
 
@@ -332,17 +355,21 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			while (n != null)
 			{
+				
 				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 				{
 					break;
 				}
-
+				if (IsBindingBaseProperty(n, context))
+				{					
+					break;
+				}
 				n = GetParent(n);
 			}
 			if (dataTypeNode is ValueNode valueNode)
 				BindingDataType = valueNode.Value as string;
-
 		}
 		public string BindingDataType { get; }
+		public HydrationContext Context { get; }
 	}
 }
