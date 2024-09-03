@@ -285,10 +285,7 @@ namespace Microsoft.Maui.Controls
 			var shellItem = (ShellItem)bindable;
 
 			if (newValue == null)
-			{
-				shellItem.CurrentItem = null;
 				return;
-			}
 
 			if (shellItem.Parent is Shell)
 			{
