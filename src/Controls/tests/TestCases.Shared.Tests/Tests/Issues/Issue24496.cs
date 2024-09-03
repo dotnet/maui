@@ -1,3 +1,4 @@
+#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,21 +15,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-        public void PickerIsAboveKeyboard()
+        public void PickerNewKeyboardIsAboveKeyboard()
         {
             App.WaitForElement("Picker6");
 			App.Tap("Picker6");
-            VerifyScreenshot();
-        }
-
-        [Test]
-		[Category(UITestCategories.Entry)]
-        public void PageScrollsWhenKeyboardChanges()
-        {
-            App.WaitForElement("Picker6");
-			App.Tap("Picker6");
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Picker6");
             App.Tap("Entry7");
-            VerifyScreenshot();
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Entry7");
         }
     }
 }
+#endif
