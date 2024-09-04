@@ -202,7 +202,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				int cropFromBottom = _testDevice switch
 				{
 					TestDevice.Android => 125,
-					TestDevice.iOS => 34,
+					TestDevice.iOS => 36,
 					_ => 0,
 				};
 
