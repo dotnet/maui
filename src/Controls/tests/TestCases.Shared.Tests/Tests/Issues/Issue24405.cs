@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[FailsOnMac]
 		public void VerifyHorizontalEndTextAlignmentPosition()
 		{
-			App.WaitForElement("entry");
+			App.WaitForElement("button");
 			App.Tap("button");
 			VerifyScreenshot();
 		}
