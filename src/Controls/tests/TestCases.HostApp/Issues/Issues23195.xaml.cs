@@ -12,7 +12,7 @@
 
 		public void Button_Clicked(object sender, EventArgs eventArgs)
 		{
-			Application.Current!.UserAppTheme= AppTheme.Dark;
+			Application.Current!.UserAppTheme = AppTheme.Dark;
 		}
 	}
 }
