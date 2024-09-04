@@ -9,10 +9,10 @@
         <Button Text="Focus" AutomationId="FocusButton" Clicked="Button_Clicked" Grid.Column="0"/>
         <Button Text="Unfocus" Clicked="UnFocusButton_Clicked" AutomationId="UnfocusButton" Grid.Column="1"/>
       </Grid>
-      <Editor AutomationId="Editor9796" x:Name="Editor"  Grid.Row="1"
+      <Editor x:Name="Editor"  Grid.Row="1"
                   Placeholder="Enter your note" 
                   HeightRequest="100" Completed="Editor_Completed" />
-      <Label x:Name="EditorStatusLabel" Grid.Row="2" Text="NotTriggered"  TextColor="Green" AutomationId="EditorStatusLabel"/>
+      <Label x:Name="Label" Grid.Row="2" Text="NotTriggered"  TextColor="Green" AutomationId="Label"/>
     </Grid>
   </ContentPage.Content>
 </ContentPage>

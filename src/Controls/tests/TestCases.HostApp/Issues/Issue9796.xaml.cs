@@ -12,7 +12,7 @@
 
 		private void Editor_Completed(object sender, EventArgs e)
 		{
-			EditorStatusLabel.Text = "Triggered";	
+			Label.Text = "Triggered";	
 		}
 
 		private void Button_Clicked(object sender, EventArgs e)

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             App.Click("FocusButton");
 			App.WaitForElement("UnfocusButton");
             App.Click("UnfocusButton");
-			ClassicAssert.AreEqual("Triggered", App.WaitForElement("EditorStatusLabel").GetText());
+			ClassicAssert.AreEqual("Triggered", App.WaitForElement("Label").GetText());
 		}
 	}
 }
