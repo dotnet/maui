@@ -52,12 +52,6 @@ stages:
               downloadPath: $(Build.StagingDirectory)\nuget-signed
             displayName: Download nuget-signed
 
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifactName: vs-msi-nugets
-              downloadPath: $(Build.StagingDirectory)\nuget-signed
-            displayName: Download vs-msi-nugets
-
           - powershell: |
                   $feed = "$env:NUGET_FEED_MAUI_NIGHTLY"
                   # Signed maui packages except manifest

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("Delete");
 			App.WaitForElement("Close");
 			App.Click("Close");
-			App.WaitForNoElement("2");
+			App.WaitForElement("2");
 		}
 	}
 }

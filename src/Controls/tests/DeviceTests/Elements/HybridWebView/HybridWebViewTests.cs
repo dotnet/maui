@@ -335,13 +335,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		private async Task WaitForHybridWebViewLoaded(HybridWebView hybridWebView)
 		{
-			const int NumRetries = 10;
+			const int NumRetries = 40;
 			const int RetryDelay = 500;
 			for (var i = 0; i < NumRetries; i++)
 			{
 				// 1. Check that the window.HybridWebView object exists (as set by HybridWebView.js)
 				// 2. Check that the test page's HTML is loaded by checking for the HTML element defined in the Resources\Raw\HybridTestRoot\index.html test page
-				var loaded = await hybridWebView.EvaluateJavaScriptAsync("Object.hasOwn(window, 'HybridWebView') && (document.getElementById('htmlLoaded') !== null)");
+
+				var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
 				if (loaded == "true")
 				{
 					return;

@@ -47,6 +47,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 						// SelectionShouldUpdateBinding (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundSingleSelection.cs)
 						// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
 						TestBuilder.NavButton("Selection Galleries", () => new SelectionGallery(), Navigation),
+						TestBuilder.NavButton("Item Size Galleries", () => new ItemsSizeGallery(), Navigation),
 					}
 					}
 				};

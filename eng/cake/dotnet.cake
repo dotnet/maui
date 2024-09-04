@@ -209,6 +209,26 @@ Task("dotnet-samples")
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
     });
 
+// Builds the host app for the UI Tests
+Task("uitests-apphost")
+    .IsDependentOn("dotnet-buildtasks")
+    .Does(() =>
+    {
+        var tempDir = PrepareSeparateBuildContext("samplesTest");
+
+        var properties = new Dictionary<string, string>();
+
+        if(useNuget)
+        {
+            properties = new Dictionary<string, string> {
+                ["UseWorkload"] = "true",
+                // ["GenerateAppxPackageOnBuild"] = "true",
+                ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+            };
+        }
+        RunMSBuildWithDotNet("./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj", properties, binlogPrefix: "uitests-apphost-");
+    });
+
 Task("dotnet-legacy-controlgallery")
     .IsDependentOn("dotnet-legacy-controlgallery-android")
     .IsDependentOn("dotnet-legacy-controlgallery-ios");

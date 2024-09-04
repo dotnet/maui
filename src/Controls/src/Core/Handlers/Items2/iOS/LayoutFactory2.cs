@@ -9,20 +9,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 internal static class LayoutFactory2
 {
 	public static UICollectionViewLayout CreateList(LinearItemsLayout linearItemsLayout,
-		LayoutGroupingInfo groupingInfo)
+		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
 		=> linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
-			? CreateVerticalList(linearItemsLayout, groupingInfo)
-			: CreateHorizontalList(linearItemsLayout, groupingInfo);
+			? CreateVerticalList(linearItemsLayout, groupingInfo, headerFooterInfo)
+			: CreateHorizontalList(linearItemsLayout, groupingInfo, headerFooterInfo);
 
 	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout, LayoutGroupingInfo groupingInfo)
 		=> gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
 			? CreateVerticalGrid(gridItemsLayout, groupingInfo)
 			: CreateHorizontalGrid(gridItemsLayout, groupingInfo);
 
-	static NSCollectionLayoutBoundarySupplementaryItem[] CreateSupplementaryItems(LayoutGroupingInfo groupingInfo,
+	static NSCollectionLayoutBoundarySupplementaryItem[] CreateSupplementaryItems(LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? layoutHeaderFooterInfo,
 		UICollectionViewScrollDirection scrollDirection, NSCollectionLayoutDimension width, NSCollectionLayoutDimension height)
 	{
-		if (groupingInfo.IsGrouped)
+		if (groupingInfo is not null && groupingInfo.IsGrouped)
 		{
 			var items = new List<NSCollectionLayoutBoundarySupplementaryItem>();
 
@@ -49,13 +49,43 @@ internal static class LayoutFactory2
 			return items.ToArray();
 		}
 
+		if (layoutHeaderFooterInfo is not null)
+		{
+			var items = new List<NSCollectionLayoutBoundarySupplementaryItem>();
+
+			if (layoutHeaderFooterInfo.HasHeader)
+			{
+				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
+					NSCollectionLayoutSize.Create(width, height),
+					UICollectionElementKindSectionKey.Header.ToString(),
+					scrollDirection == UICollectionViewScrollDirection.Vertical
+						? NSRectAlignment.Top
+						: NSRectAlignment.Leading));
+			};
+
+			if (layoutHeaderFooterInfo.HasFooter)
+			{
+				items.Add(NSCollectionLayoutBoundarySupplementaryItem.Create(
+					NSCollectionLayoutSize.Create(width, height),
+					UICollectionElementKindSectionKey.Footer.ToString(),
+					scrollDirection == UICollectionViewScrollDirection.Vertical
+						? NSRectAlignment.Bottom
+						: NSRectAlignment.Trailing));
+			}
+
+			return items.ToArray();
+		}
+
 		return [];
 	}
 
-	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc)
+	static UICollectionViewLayout CreateListLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo layoutHeaderFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double itemSpacing, Func<Thickness>? peekAreaInsetsFunc)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
+
+		//create global header and footer
+		layoutConfiguration.BoundarySupplementaryItems = CreateSupplementaryItems(null, layoutHeaderFooterInfo, scrollDirection, groupWidth, groupHeight);
 
 		var layout = new CustomUICollectionViewCompositionalLayout(snapInfo, (sectionIndex, environment) =>
 		{
@@ -94,8 +124,10 @@ internal static class LayoutFactory2
 			var section = NSCollectionLayoutSection.Create(group: group);
 			section.InterGroupSpacing = new NFloat(itemSpacing);
 
+			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
+				null,
 				scrollDirection,
 				groupWidth,
 				groupHeight);
@@ -147,6 +179,7 @@ internal static class LayoutFactory2
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
+				null,   // No header/footer in grid
 				scrollDirection,
 				groupWidth,
 				groupHeight);
@@ -158,9 +191,10 @@ internal static class LayoutFactory2
 	}
 
 	public static UICollectionViewLayout CreateVerticalList(LinearItemsLayout linearItemsLayout,
-		LayoutGroupingInfo groupingInfo)
+		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
 		=> CreateListLayout(UICollectionViewScrollDirection.Vertical,
 			groupingInfo,
+			headerFooterInfo,
 			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
 			// Fill the width
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
@@ -173,9 +207,10 @@ internal static class LayoutFactory2
 
 
 	public static UICollectionViewLayout CreateHorizontalList(LinearItemsLayout linearItemsLayout,
-		LayoutGroupingInfo groupingInfo)
+		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
 		=> CreateListLayout(UICollectionViewScrollDirection.Horizontal,
 			groupingInfo,
+			headerFooterInfo,
 			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
 			// Dynamic, estimated width
 			NSCollectionLayoutDimension.CreateEstimated(30f),
@@ -185,29 +220,6 @@ internal static class LayoutFactory2
 			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
 			linearItemsLayout.ItemSpacing,
 			null);
-
-	public static UICollectionViewLayout CreateVerticalCarousel(LinearItemsLayout linearItemsLayout, Func<Thickness> peekAreaInsets)
-		=> CreateListLayout(UICollectionViewScrollDirection.Vertical,
-			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
-			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
-			// Fill the width and height
-			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			0d, peekAreaInsets);
-
-
-	public static UICollectionViewLayout CreateHorizontalCarousel(LinearItemsLayout linearItemsLayout, Func<Thickness> peekAreaInsets)
-		=> CreateListLayout(UICollectionViewScrollDirection.Horizontal,
-			new LayoutGroupingInfo { IsGrouped = false, HasHeader = false, HasFooter = false },
-			new LayoutSnapInfo { SnapType = linearItemsLayout.SnapPointsType, SnapAligment = linearItemsLayout.SnapPointsAlignment },
-			// Fill the width and height
-			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			NSCollectionLayoutDimension.CreateFractionalWidth(1f),
-			NSCollectionLayoutDimension.CreateFractionalHeight(1f),
-			0d, peekAreaInsets);
 
 	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
 		LayoutGroupingInfo groupingInfo)

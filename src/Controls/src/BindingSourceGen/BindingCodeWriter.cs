@@ -64,7 +64,7 @@ public static class BindingCodeWriter
 
 		return string.Join(NewLine, propertyAccessors);
 	}
-	
+
 	private static string GenerateUnsafePropertyGetAccessors(string propertyName, string memberType, string containingType, uint id) => $$"""
 		[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
 		private static extern {{memberType}} {{CreateUnsafePropertyAccessorGetMethodName(id, propertyName)}}({{containingType}} source);
