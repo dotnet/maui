@@ -521,14 +521,75 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class StorageRead : BasePlatformPermission
 		{
-			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-				new (string, bool)[] { (Manifest.Permission.ReadExternalStorage, true) };
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
+				{
+					if (OperatingSystem.IsAndroidVersionAtLeast(33))
+					{
+						return [];
+					}
+					
+					return new (string, bool)[] { (Manifest.Permission.ReadExternalStorage, true) };
+				}
+			}
+
+			public override Task<PermissionStatus> RequestAsync()
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				{
+					return Task.FromResult(PermissionStatus.Granted);
+				}
+
+				return base.RequestAsync();
+			}
+
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				{
+					return Task.FromResult(PermissionStatus.Granted);
+				}
+				
+				return base.CheckStatusAsync();
+			}
 		}
 
 		public partial class StorageWrite : BasePlatformPermission
 		{
-			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-				new (string, bool)[] { (Manifest.Permission.WriteExternalStorage, true) };
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+
+				get 
+				{
+					if (OperatingSystem.IsAndroidVersionAtLeast(33))
+					{
+						return [];
+					}
+					
+					return new (string, bool)[] { (Manifest.Permission.WriteExternalStorage, true) };
+				}
+			}
+				
+			public override Task<PermissionStatus> RequestAsync()
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				{
+					return Task.FromResult(PermissionStatus.Granted);
+				}
+
+				return base.RequestAsync();
+			}
+
+			public override Task<PermissionStatus> CheckStatusAsync()
+			{
+				if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				{
+					return Task.FromResult(PermissionStatus.Granted);
+				}
+
+				return base.CheckStatusAsync();
+			}
 		}
 
 		public partial class Vibrate : BasePlatformPermission
