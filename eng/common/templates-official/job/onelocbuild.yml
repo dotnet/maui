@@ -27,10 +27,9 @@ parameters:
 
 jobs:
 - job: OneLocBuild${{ parameters.JobNameSuffix }}
-  
-  dependsOn: ${{ parameters.dependsOn }}
-
   displayName: OneLocBuild${{ parameters.JobNameSuffix }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
 
   variables:
     - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
@@ -43,17 +42,15 @@ jobs:
         value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
     - template: /eng/common/templates-official/variables/pool-providers.yml
 
-  ${{ if ne(parameters.pool, '') }}:
-    pool: ${{ parameters.pool }}
-  ${{ if eq(parameters.pool, '') }}:
-    pool:
-      # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+  pool:
+    ${{ if ne(parameters.pool, '') }}:
+      name: ${{ parameters.pool }}
+    ${{ if eq(parameters.pool, '') }}:
       ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
         name: AzurePipelines-EO
         image: 1ESPT-Windows2022
         demands: Cmd
         os: windows
-      # If it's not devdiv, it's dnceng
       ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
