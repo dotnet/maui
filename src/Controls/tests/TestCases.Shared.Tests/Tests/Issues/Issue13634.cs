@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,13 +12,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-        [Category(UITestCategories.ScrollView)]
-        [Category(UITestCategories.Editor)]
-        public void ScrollEditor()
-        {
-            var result = App.WaitForElement("Editor");
-            App.ScrollDown("Editor", ScrollStrategy.Programmatically);
-            ClassicAssert.AreNotEqual(result.GetRect().Y, 0);
-        }
+		[Category(UITestCategories.ScrollView)]
+		[Category(UITestCategories.Editor)]
+		public void ScrollEditor()
+		{
+			App.WaitForElement("Editor");
+			App.ScrollDown("Editor", ScrollStrategy.Programmatically);
+			VerifyScreenshot();
+		}
 	}
 }
