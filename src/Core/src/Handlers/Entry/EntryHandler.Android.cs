@@ -181,6 +181,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
+
 			MapClearButtonVisibility(this, VirtualView);
 		}
 
