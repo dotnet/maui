@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 9796, "[Android]Editor/Entry controls don't raise Completed event consistently",
+	[Issue(IssueTracker.Github, 9796, "[Android]Editor controls don't raise Completed event consistently",
 		PlatformAffected.Android)]
 	public partial class Issue9796 : ContentPage
 	{
@@ -12,12 +12,27 @@
 
 		private void Editor_Completed(object sender, EventArgs e)
 		{
-			EditorStatusLabel.Text = "Editor Completed by UnFocused";	
+			EditorStatusLabel.Text = "Triggered";	
 		}
 
-		private void Entry_Completed(object sender, EventArgs e)
+		private void Button_Clicked(object sender, EventArgs e)
 		{
-			EntryStatusLabel.Text = "Entry Completed by UnFocused";
+			var Button = (Button)sender;
+			if(Button.Text == "Focus")
+			{
+				Editor.Focus();
+			}
+			
+		}
+
+		private void UnFocusButton_Clicked(object sender, EventArgs e)
+		{
+			var Button = (Button)sender;
+		    if (Button.Text == "Unfocus")
+			{
+				Editor.Unfocus();
+			}
+
 		}
 	}
 }

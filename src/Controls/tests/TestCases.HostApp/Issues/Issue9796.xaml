@@ -2,14 +2,17 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue9796">
-    <ContentPage.Content>
-    <VerticalStackLayout Spacing="10" AutomationId="Stack" Margin="5">
-      <Editor AutomationId="EditorControl" x:Name="Editor"
-                Placeholder="Enter your note" 
-                HeightRequest="100" Completed="Editor_Completed" />
-      <Label x:Name="EditorStatusLabel"  TextColor="Green" AutomationId="EditorStatusLabel"/>
-      <Entry AutomationId="EntryControl" x:Name="Entry" Completed="Entry_Completed" HeightRequest="100"/>
-      <Label x:Name="EntryStatusLabel" TextColor="Green" AutomationId="EntryStatusLabel"/>
-    </VerticalStackLayout>
+
+  <ContentPage.Content>
+    <Grid RowDefinitions="100,100,*">
+      <Grid Grid.Row="0" ColumnDefinitions="*,*">
+        <Button Text="Focus" AutomationId="FocusButton" Clicked="Button_Clicked" Grid.Column="0"/>
+        <Button Text="Unfocus" Clicked="UnFocusButton_Clicked" AutomationId="UnfocusButton" Grid.Column="1"/>
+      </Grid>
+      <Editor AutomationId="Editor9796" x:Name="Editor"  Grid.Row="1"
+                  Placeholder="Enter your note" 
+                  HeightRequest="100" Completed="Editor_Completed" />
+      <Label x:Name="EditorStatusLabel" Grid.Row="2" Text="NotTriggered"  TextColor="Green" AutomationId="EditorStatusLabel"/>
+    </Grid>
   </ContentPage.Content>
 </ContentPage>

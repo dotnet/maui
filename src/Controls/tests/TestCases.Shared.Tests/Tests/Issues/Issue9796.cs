@@ -1,5 +1,5 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
     internal class Issue9796 : _IssuesUITest
 	{
-		public override string Issue => "[Android]Editor/Entry controls don't raise Completed event consistently";
+		public override string Issue => "[Android]Editor controls don't raise Completed event consistently";
 
 		public Issue9796(TestDevice device) : base(device)
 		{
@@ -15,17 +15,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Focus)]
-		public void EntryAndEditorCompletedEventShouldTriggerOnFocusLost()
+		public void EditorCompletedEventShouldTriggerOnFocusLost()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796
-			App.WaitForElement("EditorControl");
-            App.Tap("EntryControl");
-            App.Tap("EditorControl");
-            App.Tap("EntryControl");
-			VerifyScreenshot();
+            App.Click("FocusButton");
+            App.Click("UnfocusButton");
+			ClassicAssert.AreEqual("Triggered", App.WaitForElement("EditorStatusLabel").GetText());
 		}
 	}
 }
-#endif

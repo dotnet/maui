@@ -181,12 +181,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-
-			if (!e.HasFocus)
-			{
-				VirtualView.Completed();
-			}
-
 			MapClearButtonVisibility(this, VirtualView);
 		}
 
