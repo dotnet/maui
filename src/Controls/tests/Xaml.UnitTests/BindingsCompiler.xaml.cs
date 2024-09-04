@@ -56,8 +56,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var layout = new BindingsCompiler(useCompiledXaml)
 				{
-					BindingContext = vm
+					BindingContext = new GlobalViewModel(),
 				};
+				layout.stack.BindingContext = vm;
 				layout.label6.BindingContext = new MockStructViewModel
 				{
 					Model = new MockViewModel
@@ -98,6 +99,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				vm.Model[3] = "TextIndex2";
 				Assert.AreEqual("TextIndex2", layout.label3.Text);
 
+				//https://github.com/dotnet/maui/issues/23621
+				vm.Model.SetIndexerValueAndCallOnPropertyChangedWithoutIndex(3, "TextIndex3");
+				Assert.AreEqual("TextIndex3", layout.label3.Text);
+
 				//testing 2way
 				Assert.AreEqual("Text2", layout.entry0.Text);
 				((IElementController)layout.entry0).SetValueFromRenderer(Entry.TextProperty, "Text3");
@@ -117,11 +122,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				}
 
 				//testing invalid bindingcontext type
-				layout.BindingContext = new object();
+				layout.stack.BindingContext = new object();
 				Assert.AreEqual(null, layout.label0.Text);
 
 				//testing source
 				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
+
+				//testing binding with path that cannot be statically compiled (we don't support casts in the Path)
+				Assert.That(layout.label13.Text, Is.EqualTo("Global Text"));
 			}
 			
 			[Test] 
@@ -142,6 +150,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public int I { get; set; }
 		public MockViewModel Model { get; set; }
+	}
+
+	class GlobalViewModel
+	{
+		public string GlobalText { get; set; } = "Global Text";
 	}
 
 	class MockViewModel : INotifyPropertyChanged
@@ -234,6 +247,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		public void SetIndexerValueAndCallOnPropertyChangedWithoutIndex(int v, string value)
+		{
+			if (values[v] == value)
+				return;
+
+			values[v] = value;
+			OnPropertyChanged("Indexer");
 		}
 	}
 

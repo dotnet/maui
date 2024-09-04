@@ -191,6 +191,7 @@ namespace Microsoft.Maui.Controls
 			return behavior != FlyoutLayoutBehavior.Split && !isSplitOnLandscape && !isSplitOnPortrait;
 		}
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			if (Flyout == null || Detail == null)

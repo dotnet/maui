@@ -8,7 +8,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
+	// related to https://github.com/dotnet/maui/issues/23711
 	public partial class Gh3606 : ContentPage
 	{
 		public Gh3606()
@@ -30,17 +30,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TestCase(true)]
 			[TestCase(false)]
-			public void BindingsWithSourceAreCompiled(bool useCompiledXaml)
+			public void BindingsWithSourceAndInvalidPathAreNotCompiled(bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
-				{
-					// The XAML file contains a mismatch between the source the x:DataType attribute so the compilation of the binding will fail
-					Assert.Throws(new BuildExceptionConstraint(4, 16), () => MockCompiler.Compile(typeof(Gh3606)));
-				}
-				else
-				{
-					Assert.DoesNotThrow(() => new Gh3606(useCompiledXaml: false));
-				}
+					MockCompiler.Compile(typeof(Gh3606));
+
+				var view = new Gh3606(useCompiledXaml);
+
+				var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
+				Assert.That(binding, Is.TypeOf<Binding>());
 			}
 		}
 	}

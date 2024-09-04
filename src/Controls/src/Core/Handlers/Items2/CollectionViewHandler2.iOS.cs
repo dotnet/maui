@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
@@ -8,6 +9,16 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
+	internal class LayoutHeaderFooterInfo
+	{
+		public IView FooterView { get; set; }
+		public IView HeaderView { get; set; }	
+		public DataTemplate FooterTemplate  { get; set; }
+		public DataTemplate HeaderTemplate  { get; set; }
+		public bool HasHeader { get; set; }
+		public bool HasFooter { get; set; }
+	}
+
 	internal class LayoutGroupingInfo
 	{
 		public bool IsGrouped { get; set; }
@@ -21,6 +32,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public SnapPointsType SnapType { get; set; }
 	}
 
+	public partial class CollectionViewHandler2
+	{
+
+		public CollectionViewHandler2() : base(Mapper)
+		{
+
+
+		}
+		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		{
+
+		}
+
+		public static PropertyMapper<CollectionView, CollectionViewHandler2> Mapper = new(ItemsViewMapper)
+		{
+			[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
+			[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+			[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
+			[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
+			[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
+			[StructuredItemsView.HeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
+			[StructuredItemsView.FooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeaderTemplate,
+			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
+		};
+	}
+
 	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
 	{
 		// Reorderable
@@ -31,7 +69,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			(handler.Controller as ReorderableItemsViewController2<ReorderableItemsView>)?.UpdateCanReorderItems();
 		}
-
 
 		// Groupable
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
@@ -90,6 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// Structured
 		protected override UICollectionViewLayout SelectLayout()
 		{
+			var headerFooterInfo = new LayoutHeaderFooterInfo();
 			var groupInfo = new LayoutGroupingInfo();
 
 			if (ItemsView is GroupableItemsView groupableItemsView && groupableItemsView.IsGrouped)
@@ -97,6 +135,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				groupInfo.IsGrouped = groupableItemsView.IsGrouped;
 				groupInfo.HasHeader = groupableItemsView.GroupHeaderTemplate is not null;
 				groupInfo.HasFooter = groupableItemsView.GroupFooterTemplate is not null;
+			}
+
+			if (ItemsView is StructuredItemsView structuredItemsView)
+			{
+				headerFooterInfo.HeaderTemplate = structuredItemsView.HeaderTemplate;
+				headerFooterInfo.FooterTemplate = structuredItemsView.FooterTemplate;
+				if (structuredItemsView.Header is View headerView)
+				{
+					headerFooterInfo.HeaderView = headerView;
+				}
+				if (structuredItemsView.Footer is View footerView)
+				{
+					headerFooterInfo.FooterView = footerView;
+				}
+				headerFooterInfo.HasHeader = structuredItemsView.Header is not null;
+				headerFooterInfo.HasFooter = structuredItemsView.Footer is not null;
 			}
 
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
@@ -124,21 +178,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (itemsLayout is LinearItemsLayout listItemsLayout)
 			{
-				return LayoutFactory2.CreateList(listItemsLayout, groupInfo);
+				return LayoutFactory2.CreateList(listItemsLayout, groupInfo, headerFooterInfo);
 			}
 
 			// Fall back to vertical list
-			return LayoutFactory2.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), groupInfo);
+			return LayoutFactory2.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), groupInfo, headerFooterInfo);
 		}
 
 		public static void MapHeaderTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
-			(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
+			handler.UpdateLayout();
+		//	(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
 		}
 
 		public static void MapFooterTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
-			(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateFooterView();
+			handler.UpdateLayout();
+			//(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateFooterView();
 		}
 
 		public static void MapItemsLayout(CollectionViewHandler2 handler, StructuredItemsView itemsView)

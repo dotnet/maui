@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
-		/// <summary>Bindable property for <see cref="NavigableElement.Style"/>.</summary>
+		/// <inheritdoc/>
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
 		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
@@ -1270,9 +1270,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnChildAdded(child);
 
-			var view = child as View;
-
-			if (view != null)
+			if (child is View view)
 			{
 				ComputeConstraintForView(view);
 			}
@@ -1365,6 +1363,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use InvalidateMeasure instead.")]
 		public void InvalidateMeasureNonVirtual(InvalidationTrigger trigger)
 		{
 			InvalidateMeasureInternal(trigger);
@@ -1390,6 +1389,35 @@ namespace Microsoft.Maui.Controls
 			}
 
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+		}
+		
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			switch (trigger)
+			{
+				case InvalidationTrigger.VerticalOptionsChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+					// When a child changes its HorizontalOptions or VerticalOptions
+					// the size of the parent won't change, so we don't have to invalidate the measure
+					return;
+				case InvalidationTrigger.RendererReady:
+				// Undefined happens in many cases, including when `IsVisible` changes
+				case InvalidationTrigger.Undefined:
+					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					return;
+				default:
+					// When visibility changes `InvalidationTrigger.Undefined` is used,
+					// so here we're sure that visibility didn't change
+					if (child.IsVisible)
+					{
+						// We need to invalidate measures only if child is actually visible
+						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
+						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+					}
+					return;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -1881,8 +1909,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Provides a way to allow subclasses (e.g., Layout) to override <see cref="InvalidateMeasure"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the <see cref="InvalidateMeasure"/> method.
+		/// Provides a way to allow subclasses (e.g., Layout) to override <see cref="InvalidateMeasure"/>
 		/// </summary>
 		protected virtual void InvalidateMeasureOverride() => Handler?.Invoke(nameof(IView.InvalidateMeasure));
 

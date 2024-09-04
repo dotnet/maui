@@ -124,15 +124,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return base.DetermineCellReuseId(itemIndex);
 		}
 
-		protected override void RegisterViewTypes()
-		{
-			CollectionView.RegisterClassForCell(typeof(CarouselTemplatedCell2), CarouselTemplatedCell2.ReuseId);
-			base.RegisterViewTypes();
-		}
-
 		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
-			var itemsSource = Items.ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
+			var itemsSource = Items2.ItemsSourceFactory2.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
 			return itemsSource;
@@ -142,6 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
+			UpdateInitialPosition();
 		}
 
 		private protected override void DetachingFromWindow()
@@ -155,6 +150,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void TearDown(CarouselView carouselView)
 		{
 			_oldViews = null;
+			InitialPositionSet = false;
 
 			//carouselView.Scrolled -= CarouselViewScrolled;
 

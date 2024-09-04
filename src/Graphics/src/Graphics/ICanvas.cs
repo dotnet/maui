@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Graphics
 		public void SubtractFromClip(float x, float y, float width, float height);
 
 		/// <summary>
-		/// Clips an object so that only the area outside of a <see cref="PathF"/> object will be visible.
+		/// Clips an object so that only the area that's within the region of a <see cref="PathF"/> object will be visible.
 		/// </summary>
 		/// <param name="path">The path used to clip the object</param>
 		/// <param name="windingMode">Fill algorithm used for the path. Default is <see cref="WindingMode.NonZero"/>.</param>
