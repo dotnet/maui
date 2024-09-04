@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Platform
 	{
 		const int MaximumRadius = 100;
 
+		static readonly BlurMaskFilter.Blur BlurFilter = BlurMaskFilter.Blur.Normal;
+
 		APath _currentPath;
 		SizeF _lastPathSize;
 		bool _invalidateClip;
@@ -173,7 +175,7 @@ namespace Microsoft.Maui.Platform
 					// Get the alpha bounds of bitmap
 					Bitmap extractAlpha = _shadowBitmap.ExtractAlpha();
 
-					// Clear past content content to draw shadow
+					// Clear past content to draw shadow
 					_shadowCanvas.DrawColor(Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
 
 					var shadowOpacity = (float)Shadow.Opacity;
@@ -196,7 +198,7 @@ namespace Microsoft.Maui.Platform
 #pragma warning restore CA1416
 					}
 
-					// Apply the shadow radius 
+					// Apply the shadow radius
 					var radius = Shadow.Radius;
 
 					if (radius <= 0)
@@ -205,10 +207,11 @@ namespace Microsoft.Maui.Platform
 					if (radius > 100)
 						radius = MaximumRadius;
 
-					_shadowPaint.SetMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.Normal));
+					var context = Context;
+					_shadowPaint.SetMaskFilter(new BlurMaskFilter(context.ToPixels(radius), BlurFilter));
 
-					float shadowOffsetX = (float)Shadow.Offset.X;
-					float shadowOffsetY = (float)Shadow.Offset.Y;
+					float shadowOffsetX = context.ToPixels(Shadow.Offset.X);
+					float shadowOffsetY = context.ToPixels(Shadow.Offset.Y);
 
 					if (Clip == null)
 					{
@@ -217,7 +220,7 @@ namespace Microsoft.Maui.Platform
 					else
 					{
 						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
-						var density = Context.GetDisplayDensity();
+						var density = context.GetDisplayDensity();
 						var path = Clip.PathForBounds(bounds)?.AsAndroidPath(scaleX: density, scaleY: density);
 
 						path.Offset(shadowOffsetX, shadowOffsetY);
