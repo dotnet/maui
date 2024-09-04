@@ -2,7 +2,7 @@ stages:
   - stage: localization_handoff
     displayName: Localization Handoff
     dependsOn: []
-    # condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
+    condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
 
     jobs:
       - job : generate_lci
@@ -10,26 +10,15 @@ stages:
         pool:  $(HostedWinVS2019)
         steps:
 
-          # - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
-          #   displayName: 'Localization Build'
-          #   env:
-          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
-          #   inputs:
-          #     locProj: 'eng/automation/LocProject.json'
-          #     outDir: '$(Build.ArtifactStagingDirectory)'
-          #     packageSourceAuth: patAuth
-          #     patVariable: "$(AzDO.OneLocBuildToken)"
-          #     gitHubPatVariable: '$(GitHub.Token)'
-
-          # - ${{ if and( notin( variables['Build.Reason'], 'PullRequest' ), eq( variables['Build.SourceBranch'], 'refs/heads/main' ) ) }}:
-          - template: /eng/common/templates-official/job/onelocbuild.yml@self
-            parameters:
-              # LclSource: lclFilesfromPackage
-              # LclPackageId: 'LCL-JUNO-PROD-XCSYNC'
-              LclSource: lclFilesInRepo
-              # SkipLocProjectJsonGeneration: true
-              # MirrorRepo: xcsync
-              # MirrorBranch: main
+          - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+            displayName: 'Localization Build'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+            inputs:
+              locProj: 'eng/automation/LocProject.json'
+              outDir: '$(Build.ArtifactStagingDirectory)'
+              packageSourceAuth: patAuth
+              patVariable: "$(OneLocBuildPAT)"
 
           - task: PublishBuildArtifacts@1
             inputs:

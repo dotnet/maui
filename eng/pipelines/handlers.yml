@@ -296,6 +296,15 @@ stages:
   #   - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
   #   - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
   
-  - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+  # - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
   # - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
   # - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+
+  - template: /eng/common/templates-official/job/onelocbuild.yml@self
+    parameters:
+      # LclSource: lclFilesfromPackage
+      # LclPackageId: 'LCL-JUNO-PROD-XCSYNC'
+      LclSource: lclFilesInRepo
+      # SkipLocProjectJsonGeneration: true
+      # MirrorRepo: xcsync
+      # MirrorBranch: main
