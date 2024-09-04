@@ -18,7 +18,8 @@ stages:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
-              patVariable: "$(OneLocBuildPAT)"
+              patVariable: "$(AzDO.OneLocBuildToken)"
+              gitHubPatVariable: '$(GitHub.Token)'
 
           - task: PublishBuildArtifacts@1
             inputs:
