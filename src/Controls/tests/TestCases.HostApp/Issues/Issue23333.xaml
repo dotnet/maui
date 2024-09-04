@@ -19,20 +19,5 @@
       </Frame.Content>
     </Frame>
 
-    <Frame AutomationId="FrameWithBorder"
-           Margin="10"
-           CornerRadius="100"
-           BorderColor="Blue"
-           VerticalOptions="Start"
-           HorizontalOptions="Start"
-           HeightRequest="200"
-           WidthRequest="200"
-           IsClippedToBounds="True"
-           BackgroundColor="Red">
-      <Frame.Content>
-        <Image Source="dotnet_bot.png"
-               Background="Tan" />
-      </Frame.Content>
-    </Frame>
   </VerticalStackLayout>
 </ContentPage>
