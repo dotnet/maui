@@ -266,18 +266,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static UIView? GetSuperViewIfWindowSet(this UIView? view)
-		{
-			if (view?.Window is null)
-				return null;
-
-			return view.Superview;
-		}
-
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
 			platformView.SetNeedsLayout();
-			platformView.GetSuperViewIfWindowSet()?.SetNeedsLayout();
+			platformView.Superview?.SetNeedsLayout();
 		}
 
 		public static void UpdateWidth(this UIView platformView, IView view)
