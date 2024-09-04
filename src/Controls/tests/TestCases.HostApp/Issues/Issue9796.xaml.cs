@@ -22,7 +22,6 @@
 			{
 				Editor.Focus();
 			}
-			
 		}
 
 		private void UnFocusButton_Clicked(object sender, EventArgs e)
@@ -32,7 +31,6 @@
 			{
 				Editor.Unfocus();
 			}
-
 		}
 	}
 }
