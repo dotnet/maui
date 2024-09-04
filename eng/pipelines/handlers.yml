@@ -301,13 +301,13 @@ stages:
   # - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
 
   - template: /eng/common/templates-official/job/onelocbuild.yml@self
-    parameters:
+    # parameters:
       # LclSource: lclFilesfromPackage
       # LclPackageId: 'LCL-JUNO-PROD-XCSYNC'
-      LclSource: lclFilesInRepo
-      SkipLocProjectJsonGeneration: false
-      MirrorRepo: ''
-      MirrorBranch: main
+      # LclSource: lclFilesInRepo
+      # SkipLocProjectJsonGeneration: false
+      # MirrorRepo: ''
+      # MirrorBranch: main
       # SkipLocProjectJsonGeneration: true
       # MirrorRepo: xcsync
       # MirrorBranch: main
