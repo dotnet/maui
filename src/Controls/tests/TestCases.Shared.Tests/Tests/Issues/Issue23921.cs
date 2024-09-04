@@ -38,8 +38,6 @@ public class Issue23921(TestDevice device) : _IssuesUITest(device)
 
         button.Clicked += (s, e) => buttonWasClicked = true;
 
-        App.SwipeLeftToRight("swipe");
-
         App.Click("swipe");
 
         Assert.That(buttonWasClicked, Is.True);
