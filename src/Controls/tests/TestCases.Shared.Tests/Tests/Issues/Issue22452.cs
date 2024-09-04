@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Diagnostics;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,12 +13,11 @@ public class Issue22452 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[FailsOnMac]
-	public void NavigatingBetweenFlyoutItems()
+	public void NavigationBetweenFlyoutItems()
 	{
-		App.WaitForElement("TapTwoPage");
+		App.WaitForElement("FlyoutItem1");
 		App.Tap("FlyoutItem1");
-		App.Tap("FlyoutItem2");
+		App.WaitForElement("TapOnePage");
 		VerifyScreenshot();
 	}
 }

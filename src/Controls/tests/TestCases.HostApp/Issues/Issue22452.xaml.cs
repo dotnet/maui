@@ -21,16 +21,4 @@
 			};
 		}
 	}
-
-	public class Issue22452Tab2Content : ContentPage
-	{
-		public Issue22452Tab2Content()
-		{
-			Content = new Label()
-			{
-				AutomationId = "TapTwoPage",
-				Text = "Tap two page",
-			};
-		}
-	}
 }
