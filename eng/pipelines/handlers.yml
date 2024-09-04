@@ -305,6 +305,9 @@ stages:
       # LclSource: lclFilesfromPackage
       # LclPackageId: 'LCL-JUNO-PROD-XCSYNC'
       LclSource: lclFilesInRepo
+      SkipLocProjectJsonGeneration: false
+      MirrorRepo: ''
+      MirrorBranch: main
       # SkipLocProjectJsonGeneration: true
       # MirrorRepo: xcsync
       # MirrorBranch: main
