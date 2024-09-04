@@ -5,5 +5,16 @@
     xmlns:maui="using:Microsoft.Maui"
     RequestedTheme="Light"
     xmlns:local="using:Maui.Controls.Sample.Platform">
-
+  <maui:MauiWinUIApplication.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+      </ResourceDictionary.MergedDictionaries>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI</FontFamily>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </maui:MauiWinUIApplication.Resources>
 </maui:MauiWinUIApplication>
