@@ -19,7 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EditorCompletedEventShouldTriggerOnFocusLost()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796
+			App.WaitForElement("FocusButton");
             App.Click("FocusButton");
+			App.WaitForElement("UnfocusButton");
             App.Click("UnfocusButton");
 			ClassicAssert.AreEqual("Triggered", App.WaitForElement("EditorStatusLabel").GetText());
 		}
