@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         [Test]
 		[Category(UITestCategories.Frame)]
-		public void ImageShouldBePortrait()
+		public void ValidateFrameOffsets()
         {
 			App.WaitForElement("FrameWithoutBorder");
 			VerifyScreenshot();
