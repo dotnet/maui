@@ -95,18 +95,38 @@ jobs:
           mirrorBranch: ${{ parameters.MirrorBranch }}
       condition: ${{ parameters.condition }}
 
-    - task: 1ES.PublishBuildArtifacts@1
-      displayName: Publish Localization Files
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
-        PublishLocation: Container
-        ArtifactName: Loc
-      condition: ${{ parameters.condition }}
+    # - task: 1ES.PublishBuildArtifacts@1
+    #   displayName: Publish Localization Files
+    #   inputs:
+    #     PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
+    #     PublishLocation: Container
+    #     ArtifactName: Loc
+    #   condition: ${{ parameters.condition }}
 
-    - task: 1ES.PublishBuildArtifacts@1
-      displayName: Publish LocProject.json
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/eng/Localize/'
-        PublishLocation: Container
-        ArtifactName: Loc
-      condition: ${{ parameters.condition }}
+    # - task: 1ES.PublishBuildArtifacts@1
+    #   displayName: Publish LocProject.json
+    #   inputs:
+    #     PathtoPublish: '$(Build.SourcesDirectory)/eng/Localize/'
+    #     PublishLocation: Container
+    #     ArtifactName: Loc
+    #   condition: ${{ parameters.condition }}
+
+    # - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+    #   parameters:
+    #     is1ESPipeline: ${{ parameters.is1ESPipeline }}
+    #     args:
+    #       displayName: Publish Localization Files
+    #       pathToPublish: '$(Build.ArtifactStagingDirectory)/loc'
+    #       publishLocation: Container
+    #       artifactName: Loc
+    #       condition: ${{ parameters.condition }}
+
+    # - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+    #   parameters:
+    #     is1ESPipeline: ${{ parameters.is1ESPipeline }}
+    #     args:
+    #       displayName: Publish LocProject.json
+    #       pathToPublish: '$(Build.SourcesDirectory)/eng/Localize/'
+    #       publishLocation: Container
+    #       artifactName: Loc
+    #       condition: ${{ parameters.condition }}
