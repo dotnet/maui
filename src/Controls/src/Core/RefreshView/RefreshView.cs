@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls
 		
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
-			if((bool)GetValue(IsRefreshingProperty))
+			if (IsRefreshing)
 				return;
 
 			RefreshIsEnabledProperty();
