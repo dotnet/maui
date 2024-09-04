@@ -24,12 +24,13 @@ parameters:
   MirrorBranch: main
   condition: ''
   JobNameSuffix: ''
-
+  is1ESPipeline: ''
 jobs:
 - job: OneLocBuild${{ parameters.JobNameSuffix }}
-  displayName: OneLocBuild${{ parameters.JobNameSuffix }}
+  
   dependsOn: ${{ parameters.dependsOn }}
-  condition: ${{ parameters.condition }}
+
+  displayName: OneLocBuild${{ parameters.JobNameSuffix }}
 
   variables:
     - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
@@ -40,23 +41,30 @@ jobs:
     - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
       - name: _GenerateLocProjectArguments
         value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
-    - template: /eng/common/templates-official/variables/pool-providers.yml
+    - template: /eng/common/core-templates/variables/pool-providers.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
 
-  pool:
-    ${{ if ne(parameters.pool, '') }}:
-      name: ${{ parameters.pool }}
-    ${{ if eq(parameters.pool, '') }}:
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.pool, '') }}:
+    pool:
+      # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
       ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
         name: AzurePipelines-EO
         image: 1ESPT-Windows2022
         demands: Cmd
         os: windows
+      # If it's not devdiv, it's dnceng
       ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
 
   steps:
+    - ${{ if eq(parameters.is1ESPipeline, '') }}:
+      - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+
     - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
       - task: Powershell@2
         inputs:
@@ -92,18 +100,22 @@ jobs:
           mirrorBranch: ${{ parameters.MirrorBranch }}
       condition: ${{ parameters.condition }}
 
-    - task: 1ES.PublishBuildArtifacts@1
-      displayName: Publish Localization Files
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
-        PublishLocation: Container
-        ArtifactName: Loc
-      condition: ${{ parameters.condition }}
+    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        args:
+          displayName: Publish Localization Files
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/loc'
+          publishLocation: Container
+          artifactName: Loc
+          condition: ${{ parameters.condition }}
 
-    - task: 1ES.PublishBuildArtifacts@1
-      displayName: Publish LocProject.json
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/eng/Localize/'
-        PublishLocation: Container
-        ArtifactName: Loc
-      condition: ${{ parameters.condition }}
+    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+      parameters:
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        args:
+          displayName: Publish LocProject.json
+          pathToPublish: '$(Build.SourcesDirectory)/eng/Localize/'
+          publishLocation: Container
+          artifactName: Loc
+          condition: ${{ parameters.condition }}
