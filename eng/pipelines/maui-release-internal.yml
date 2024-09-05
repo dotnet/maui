@@ -189,7 +189,7 @@ extends:
             steps:
               - template: /eng/pipelines/common/buildandtest.yml@self
                 parameters:
-                  dotnetScript: $(Build.SourcesDirectory)/build.cmd
+                  dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
                   buildConfig: $(_BuildConfig)
                   repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
