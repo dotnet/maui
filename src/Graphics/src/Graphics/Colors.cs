@@ -299,6 +299,8 @@ namespace Microsoft.Maui.Graphics
 		public static readonly Color White = Color.FromUint(0xFFFFFFFF);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FFF5F5F5</c>.</summary>
 		public static readonly Color WhiteSmoke = Color.FromUint(0xFFF5F5F5);
+		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF5596D8</c>.</summary>
+		public static readonly Color XamarinBlue2011 = Color.FromUint(0xFF5596D8);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FFFFFF00</c>.</summary>
 		public static readonly Color Yellow = Color.FromUint(0xFFFFFF00);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF9ACD32</c>.</summary>
