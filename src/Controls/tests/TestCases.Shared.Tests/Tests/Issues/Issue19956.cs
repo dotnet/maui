@@ -69,6 +69,10 @@ public class Issue19956: _IssuesUITest
 
         ScrollToBottom(app);
         CheckForBottomEntry(app);
+
+        //Reset the app so other UITest is in a clean state
+        Reset();
+        FixtureSetup();
     }
 
     static void ScrollToBottom(AppiumApp app)
