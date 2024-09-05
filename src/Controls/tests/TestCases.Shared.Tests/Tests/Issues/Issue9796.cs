@@ -21,9 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796
 			App.WaitForElement("FocusButton");
             App.Click("FocusButton");
-			App.WaitForElement("UnfocusButton");
             App.Click("UnfocusButton");
-			ClassicAssert.AreEqual("Triggered", App.WaitForElement("Label").GetText());
+			ClassicAssert.AreEqual("Triggered", App.FindElement("EditorStatusLabel").GetText());
 		}
 	}
 }
