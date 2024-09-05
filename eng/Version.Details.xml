@@ -1,26 +1,26 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.24454.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="8.0.0-prerelease.24452.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>ab056567a15664fe3430a18cd0d97077831f2bb8</Sha>
+      <Sha>c2c79961da93101b0ab76c95e3b817165d36e9fe</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="10.0.0-prerelease.24454.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="8.0.0-prerelease.24452.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>ab056567a15664fe3430a18cd0d97077831f2bb8</Sha>
+      <Sha>c2c79961da93101b0ab76c95e3b817165d36e9fe</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="10.0.0-prerelease.24454.2">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="8.0.0-prerelease.24452.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>ab056567a15664fe3430a18cd0d97077831f2bb8</Sha>
+      <Sha>c2c79961da93101b0ab76c95e3b817165d36e9fe</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.24430.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="8.0.0-beta.24426.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>0ed1d3dc15420cd41c252b0c5d9474f197a29e06</Sha>
+      <Sha>80264e60280e2815e7d65871081ccac04a32445c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.24430.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24426.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>0ed1d3dc15420cd41c252b0c5d9474f197a29e06</Sha>
+      <Sha>80264e60280e2815e7d65871081ccac04a32445c</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
