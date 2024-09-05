@@ -6,12 +6,10 @@
   <ContentPage.Content>
     <Grid RowDefinitions="100,100,*">
       <Grid Grid.Row="0" ColumnDefinitions="*,*">
-        <Button Text="Focus" AutomationId="FocusButton" Clicked="Button_Clicked" Grid.Column="0"/>
-        <Button Text="Unfocus" Clicked="UnFocusButton_Clicked" AutomationId="UnfocusButton" Grid.Column="1"/>
+        <Button Text="Focus" AutomationId="FocusButton" Clicked="OnFocusButtonClicked" Grid.Column="0"/>
+        <Button Text="Unfocus" Clicked="UnFocusButtonClicked" AutomationId="UnfocusButton" Grid.Column="1"/>
       </Grid>
-      <Editor x:Name="Editor"  Grid.Row="1"
-                  Placeholder="Enter your note" 
-                  HeightRequest="100" Completed="Editor_Completed" />
+      <Editor x:Name="Editor"  Grid.Row="1" Placeholder="Enter your note" HeightRequest="100" Completed="OnEditorCompleted" />
       <Label x:Name="Label" Grid.Row="2" Text="NotTriggered"  TextColor="Green" AutomationId="Label"/>
     </Grid>
   </ContentPage.Content>

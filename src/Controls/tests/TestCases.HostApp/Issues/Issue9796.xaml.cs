@@ -10,27 +10,19 @@
 			InitializeComponent();
 		}
 
-		private void Editor_Completed(object sender, EventArgs e)
+		private void OnEditorCompleted(object sender, EventArgs e)
 		{
 			Label.Text = "Triggered";	
 		}
 
-		private void Button_Clicked(object sender, EventArgs e)
+		private void OnFocusButtonClicked(object sender, EventArgs e)
 		{
-			var Button = (Button)sender;
-			if(Button.Text == "Focus")
-			{
-				Editor.Focus();
-			}
+			Editor.Focus();
 		}
 
-		private void UnFocusButton_Clicked(object sender, EventArgs e)
+		private void UnFocusButtonClicked(object sender, EventArgs e)
 		{
-			var Button = (Button)sender;
-		    if (Button.Text == "Unfocus")
-			{
-				Editor.Unfocus();
-			}
+			Editor.Unfocus();
 		}
 	}
 }
