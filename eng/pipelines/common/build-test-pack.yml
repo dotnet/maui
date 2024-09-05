@@ -61,6 +61,7 @@ steps:
               -restore -build
               -configuration ${{ parameters.buildConfig }}
               /p:ArchiveTests=true
+              /p:TreatWarningsAsErrors=false
               /bl:${{ parameters.repoLogPath }}build.binlog
               $(_OfficialBuildIdArgs)
       displayName: 🛠️ Build
@@ -128,5 +129,5 @@ steps:
               -configuration ${{ parameters.buildConfig }}
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
-              $(_OfficialBuildArgs)
+              $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
