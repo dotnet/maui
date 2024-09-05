@@ -11,6 +11,17 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+
+		internal ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
+			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+
+		double _lastMeasureHeight = double.NaN;
+		double _lastMeasureWidth = double.NaN;
+
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
@@ -24,6 +35,19 @@ namespace Microsoft.Maui.Platform
 		public WrapperView(CGRect frame)
 			: base(frame)
 		{
+		}
+
+		internal bool IsMeasureValid(double widthConstraint, double heightConstraint)
+		{
+			// Check the last constraints this View was measured with; if they're the same,
+			// then the current measure info is already correct and we don't need to repeat it
+			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
+		}
+
+		internal void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
+		{
+			_lastMeasureWidth = widthConstraint;
+			_lastMeasureHeight = heightConstraint;
 		}
 
 		CAShapeLayer? MaskLayer
@@ -103,6 +127,17 @@ namespace Microsoft.Maui.Platform
 			SetClip();
 			SetShadow();
 			SetBorder();
+
+			var boundWidth = Bounds.Width;
+			var boundHeight = Bounds.Height;
+
+			if (!IsMeasureValid(boundWidth, boundHeight))
+			{
+				CrossPlatformLayout?.CrossPlatformMeasure(boundWidth, boundHeight);
+				CacheMeasureConstraints(boundWidth, boundHeight);
+			}
+
+			CrossPlatformLayout?.CrossPlatformArrange(Bounds.ToRectangle());
 		}
 
 		internal void Disconnect()
@@ -124,48 +159,88 @@ namespace Microsoft.Maui.Platform
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			var subviews = Subviews;
+			CGSize returnSize;
+
 			if (subviews.Length == 0)
-				return base.SizeThatFits(size);
-
-			var child = subviews[0];
-
-			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
-			// This also affects ImageButtons
-			if (child is UIImageView imageView)
 			{
-				return imageView.SizeThatFitsImage(size);
-			}
-			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
-			{
-				return imageButton.ImageView.SizeThatFitsImage(size);
+				returnSize = base.SizeThatFits(size);
 			}
 
-			return child.SizeThatFits(size);
+			else
+			{
+				var child = subviews[0];
+
+				// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+				// This also affects ImageButtons
+				if (child is UIImageView imageView)
+				{
+					returnSize = imageView.SizeThatFitsImage(size);
+				}
+				else if (CrossPlatformLayout is not null)
+				{
+					returnSize = CrossPlatformLayout.CrossPlatformMeasure(size.Width, size.Height).ToCGSize();
+				}
+				else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
+				{
+					returnSize = imageButton.ImageView.SizeThatFitsImage(size);
+				}
+				else
+				{
+					returnSize = child.SizeThatFits(size);
+				}
+			}
+
+			CacheMeasureConstraints(size.Width, size.Height);
+			return returnSize;
 		}
 
-		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
+		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight, IView view)
 		{
 			var subviews = Subviews;
+			CGSize returnSize;
+			var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
+			var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
+
 			if (subviews.Length == 0)
-				return base.SizeThatFits(originalSpec);
-
-			var child = subviews[0];
-
-			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 			{
-				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
-				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
-				return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+				returnSize = base.SizeThatFits(originalSpec);
 			}
 
-			return SizeThatFits(originalSpec);
+			else
+			{
+				var child = subviews[0];
+
+				if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
+				{
+					if(CrossPlatformLayout is not null)
+					{
+						returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+					}
+					else
+					{
+						returnSize = SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+					}
+				}
+
+				else if (CrossPlatformLayout is not null)
+				{
+					returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				}
+				else
+				{
+					returnSize = SizeThatFits(originalSpec);
+				}
+			}
+
+			CacheMeasureConstraints(widthConstraint, heightConstraint);
+			return returnSize;
 		}
 
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
 
-			this.GetSuperViewIfWindowSet()?.SetNeedsLayout();
+			this.Superview?.SetNeedsLayout();
 		}
 
 		partial void ClipChanged()

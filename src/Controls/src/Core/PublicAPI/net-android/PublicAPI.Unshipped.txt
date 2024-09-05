@@ -124,6 +124,7 @@ static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls
 virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
+override Microsoft.Maui.Controls.RefreshView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
