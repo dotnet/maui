@@ -310,6 +310,11 @@ stages:
           SkipLocProjectJsonGeneration: false
           MirrorRepo: ''
           MirrorBranch: main
+          pool:
+            name: AzurePipelines-EO
+            image: 1ESPT-Windows2022
+            demands: Cmd
+            os: windows
       # SkipLocProjectJsonGeneration: true
       # MirrorRepo: xcsync
       # MirrorBranch: main
