@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="view">The associated <see cref="Image"/> instance.</param>
-		public static void MapHeight(IImageHandler handler, IImage view)
+		internal static void MapHeight(IImageHandler handler, IImage view)
 		{
 			// VerticalAlignment only works when the container's Height is set and the child's Height is Auto. The child's Height
 			// is set to Auto when the container is introduced.
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="view">The associated <see cref="Image"/> instance.</param>
-		public static void MapWidth(IImageHandler handler, IImage view)
+		internal static void MapWidth(IImageHandler handler, IImage view)
 		{
 			if (handler.ContainerView is FrameworkElement container)
 			{
