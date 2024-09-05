@@ -145,13 +145,7 @@ extends:
           - job: pack_net_${{ parameters.PackPlatform.name }}
             displayName: ${{ parameters.PackPlatform.name }}
             
-            
             timeoutInMinutes: 240
-
-            pool:
-              name: NetCore1ESPool-Internal
-              image: windows.vs2022preview.amd64
-              os: windows
            
             templateContext:
                outputs:
