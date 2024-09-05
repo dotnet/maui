@@ -58,7 +58,7 @@ variables:
     value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign)
   - name: _Sign
     value: true
-
+  - template: /eng/common/templates-official/variables/pool-providers.yml@self
 
 parameters:
   - name: pushMauiPackagesToMaestro
@@ -119,28 +119,38 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-    - stage: pack_net
+    - stage: Pack
       displayName: Pack .NET MAUI
       dependsOn: []
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
+          enableMicrobuild: true
           helixRepo: dotnet/maui
           pool: ${{ parameters.VM_IMAGE_HOST }}
           enablePublishUsingPipelines: true
           enablePublishBuildAssets: true
           enableTelemetry: true
+          enableSourceBuild: false
           enableSourceIndex: false
-          # Publish build logs
+          publishAssetsImmediately: true
+           # Publish build logs
           enablePublishBuildArtifacts: true
           # Publish test logs
-          enablePublishTestResults: false
+          enablePublishTestResults: true
           workspace:
             clean: all
           jobs:
           - job: pack_net_${{ parameters.PackPlatform.name }}
             displayName: ${{ parameters.PackPlatform.name }}
+            
+            
             timeoutInMinutes: 240
+
+            pool:
+              name: NetCore1ESPool-Internal
+              image: windows.vs2022preview.amd64
+              os: windows
            
             templateContext:
                outputs:
@@ -261,6 +271,15 @@ extends:
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
         publishingInfraVersion: 3
+        enableSymbolValidation: true
+        enableSigningValidation: true
+        # It's a private repo in github so this won't pass until we create an internal mirror
+        enableSourceLinkValidation: false
         validateDependsOn:
-          - pack_net
+        - Pack
+        publishDependsOn:
+        - Validate
         enableSourceLinkValidation: true
+        # This is to enable SDL runs part of Post-Build Validation Stage
+        SDLValidationParameters:
+          enable: false
