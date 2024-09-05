@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue21728"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
-    <CollectionView x:Name="collectionview" ItemsLayout="VerticalGrid, 2">
+  <CollectionView x:Name="collectionview" AutomationId="collectionview" ItemsLayout="VerticalGrid, 2">
 		<CollectionView.ItemTemplate>
 			<DataTemplate>
 				<Label Text="{Binding Name}" BackgroundColor="Red" HeightRequest="200" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
