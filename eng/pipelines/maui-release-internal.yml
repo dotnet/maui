@@ -187,7 +187,7 @@ extends:
                 clean: true
 
             steps:
-              - template: /eng/pipelines/templates/buildandtest.yml
+              - template: /eng/pipelines/common/buildandtest.yml@self
                 parameters:
                   dotnetScript: $(Build.SourcesDirectory)/build.cmd
                   buildScript: $(_buildScript)
