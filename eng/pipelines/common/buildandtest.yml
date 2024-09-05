@@ -50,6 +50,7 @@ steps:
     - script: ${{ parameters.buildScript }}
               -restore -build
               -configuration ${{ parameters.buildConfig }}
+              -warnAsError 0 
               /p:ArchiveTests=true
               /bl:${{ parameters.repoLogPath }}build.binlog
               $(_OfficialBuildIdArgs)
@@ -60,6 +61,7 @@ steps:
     - script: ${{ parameters.buildScript }}
               -restore -build
               -configuration ${{ parameters.buildConfig }}
+              -warnAsError 0 
               /p:ArchiveTests=true
               /p:TreatWarningsAsErrors=false
               /bl:${{ parameters.repoLogPath }}build.binlog
@@ -127,6 +129,7 @@ steps:
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration ${{ parameters.buildConfig }}
+              -warnAsError 0 
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
               $(_OfficialBuildArgs)
