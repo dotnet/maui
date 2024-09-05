@@ -105,7 +105,7 @@ jobs:
           mirrorBranch: ${{ parameters.MirrorBranch }}
       condition: ${{ parameters.condition }}
 
-    - task: 1ES.PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1
       displayName: Publish Localization Files
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/loc'
@@ -113,7 +113,7 @@ jobs:
         ArtifactName: Loc
       condition: ${{ parameters.condition }}
 
-    - task: 1ES.PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1
       displayName: Publish LocProject.json
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/eng/Localize/'
