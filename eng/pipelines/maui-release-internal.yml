@@ -282,13 +282,12 @@ extends:
         publishingInfraVersion: 3
         enableSymbolValidation: true
         enableSigningValidation: true
-        # It's a private repo in github so this won't pass until we create an internal mirror
+        # Disable for now as we test the new signing process
         enableSourceLinkValidation: false
         validateDependsOn:
         - Pack
         publishDependsOn:
         - Validate
-        enableSourceLinkValidation: true
         # This is to enable SDL runs part of Post-Build Validation Stage
         SDLValidationParameters:
           enable: false
