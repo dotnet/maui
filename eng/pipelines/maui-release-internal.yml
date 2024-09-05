@@ -146,32 +146,32 @@ extends:
             
             timeoutInMinutes: 240
            
-            templateContext:
-               outputs:
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/nuget'
+            # templateContext:
+            #    outputs:
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.artifact }}
+            #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/nuget'
                 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
-                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+            #       targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
-                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+            #       targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
-                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/metadata'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
+            #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/metadata'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.logsArtifact }}
-                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.logsArtifact }}
+            #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
         
             variables:
               - name: _buildScript
