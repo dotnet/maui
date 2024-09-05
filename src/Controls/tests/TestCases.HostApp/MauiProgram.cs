@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample
 
 		public Page CreateDefaultMainPage()
 		{
-			return new CoreNavigationPage();
+			return new Bugzilla28570();
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
