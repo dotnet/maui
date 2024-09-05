@@ -335,6 +335,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = new EmptySource();
+			CollectionView.ReloadData();
 		}
 
 		public virtual void UpdateFlowDirection()
