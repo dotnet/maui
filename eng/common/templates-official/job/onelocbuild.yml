@@ -43,19 +43,19 @@ jobs:
         value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
     - template: /eng/common/templates-official/variables/pool-providers.yml
 
-    pool:
-      ${{ if ne(parameters.pool, '') }}:
-        name: ${{ parameters.pool }}
-      ${{ if eq(parameters.pool, '') }}:
-        ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-          name: AzurePipelines-EO
-          image: 1ESPT-Windows2022
-          demands: Cmd
-          os: windows
-        ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-          name: $(DncEngInternalBuildPool)
-          image: 1es-windows-2022
-          os: windows
+  pool:
+    ${{ if ne(parameters.pool, '') }}:
+      name: ${{ parameters.pool }}
+    ${{ if eq(parameters.pool, '') }}:
+      ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+        name: AzurePipelines-EO
+        image: 1ESPT-Windows2022
+        demands: Cmd
+        os: windows
+      ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
 
   steps:
     - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
