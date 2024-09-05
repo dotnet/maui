@@ -4,14 +4,14 @@
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <FileExtensionSignInfo Update=".dll" CertificateName="MicrosoftDotNet500" />
     <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
     <FileExtensionSignInfo Update=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
-  </ItemGroup>
+  </ItemGroup> -->
 
-  <ItemGroup>
+  <ItemGroup abel="Third Party Assemblies">
     <FileSignInfo Include="GMap.NET.Core.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="GMap.NET.GTK.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="webkit-sharp.dll" CertificateName="3PartySHA2" />
