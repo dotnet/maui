@@ -47,8 +47,8 @@ variables:
   - name: _PublishArgs
     value: >-
           /p:DotNetPublishUsingPipelines=true
-  - name: _OfficialBuildIdArgs
-    value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+  # - name: _OfficialBuildIdArgs
+  #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
   # needed for signing
   - name: _TeamName
     value: $(TeamName)
@@ -182,6 +182,8 @@ extends:
                 value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
               - name: TreatWarningsAsErrors
                 value: false
+              - name: _OfficialBuildIdArgs
+                value: /p:OfficialBuildId=$(_BuildOfficalId)
             
             preSteps:
               - checkout: self
@@ -189,7 +191,7 @@ extends:
                 clean: true
 
             steps:
-              - template: /eng/pipelines/common/buildandtest.yml@self
+              - template: /eng/pipelines/common/build-test-pack.yml@self
                 parameters:
                   dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
