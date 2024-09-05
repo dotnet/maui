@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
+			CleanUpCollectionViewSource();
 			base.DisconnectHandler(platformView);
 		}
 
