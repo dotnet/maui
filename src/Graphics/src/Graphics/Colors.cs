@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FF1E90FF</c>.</summary>
 		public static readonly Color DodgerBlue = Color.FromUint(0xFF1E90FF);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#0xFF512BD4</c>.</summary>
-		public static readonly Color DotNetPurple = Color.FromUint(0xFF512BD4);
+		public static readonly Color DotNetPurple2024 = Color.FromUint(0xFF512BD4);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FFB22222</c>.</summary>
 		public static readonly Color Firebrick = Color.FromUint(0xFFB22222);
 		/// <summary>Gets the system-defined color that has an ARGB value of <c>#FFFFFAF0</c>.</summary>
