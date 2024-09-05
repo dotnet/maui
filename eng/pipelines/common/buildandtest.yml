@@ -48,7 +48,7 @@ steps:
 
   - ${{ if ne(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
-              -restore -build
+              -build
               -configuration ${{ parameters.buildConfig }}
               /p:ArchiveTests=true
               /bl:${{ parameters.repoLogPath }}build.binlog
@@ -58,7 +58,7 @@ steps:
   
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
-              -restore -build
+              -build
               -configuration ${{ parameters.buildConfig }}
               /p:ArchiveTests=true
               /bl:${{ parameters.repoLogPath }}build.binlog
