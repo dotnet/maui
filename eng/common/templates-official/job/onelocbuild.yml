@@ -42,6 +42,22 @@ jobs:
       name: NetCore1ESPool-Publishing-Internal
       demands: ImageOverride -equals windows.vs2019.amd64
 
+  # ${{ if ne(parameters.pool, '') }}:
+  #   pool: ${{ parameters.pool }}
+  # ${{ if eq(parameters.pool, '') }}:
+  #   pool:
+  #     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
+  #     ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+  #       name: AzurePipelines-EO
+  #       image: 1ESPT-Windows2022
+  #       demands: Cmd
+  #       os: windows
+  #     # If it's not devdiv, it's dnceng
+  #     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
+  #       name: $(DncEngInternalBuildPool)
+  #       image: 1es-windows-2022
+  #       os: windows
+
   variables:
     - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
     - name: _GenerateLocProjectArguments
@@ -105,22 +121,20 @@ jobs:
     #     ArtifactName: Loc
     #   condition: ${{ parameters.condition }}
 
-    # - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
-    #   parameters:
-    #     is1ESPipeline: ${{ parameters.is1ESPipeline }}
-    #     args:
-    #       displayName: Publish Localization Files
-    #       pathToPublish: '$(Build.ArtifactStagingDirectory)/loc'
-    #       publishLocation: Container
-    #       artifactName: Loc
-    #       condition: ${{ parameters.condition }}
+    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+      parameters:
+        args:
+          displayName: Publish Localization Files
+          pathToPublish: '$(Build.ArtifactStagingDirectory)/loc'
+          publishLocation: Container
+          artifactName: Loc
+          condition: ${{ parameters.condition }}
 
-    # - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
-    #   parameters:
-    #     is1ESPipeline: ${{ parameters.is1ESPipeline }}
-    #     args:
-    #       displayName: Publish LocProject.json
-    #       pathToPublish: '$(Build.SourcesDirectory)/eng/Localize/'
-    #       publishLocation: Container
-    #       artifactName: Loc
-    #       condition: ${{ parameters.condition }}
+    - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+      parameters:
+        args:
+          displayName: Publish LocProject.json
+          pathToPublish: '$(Build.SourcesDirectory)/eng/Localize/'
+          publishLocation: Container
+          artifactName: Loc
+          condition: ${{ parameters.condition }}
