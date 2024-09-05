@@ -11,7 +11,7 @@
     <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
   </ItemGroup> -->
 
-  <ItemGroup abel="Third Party Assemblies">
+  <ItemGroup Label="Third Party Assemblies">
     <FileSignInfo Include="GMap.NET.Core.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="GMap.NET.GTK.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="webkit-sharp.dll" CertificateName="3PartySHA2" />
