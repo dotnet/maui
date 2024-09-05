@@ -1,8 +1,8 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Knihovna tříd .NET MAUI",
-  "description": "Projekt pro vytvoření knihovny tříd .NET MAUI",
-  "postActions/openInEditor/description": "Otevře soubor Class1.cs v editoru.",
+  "name": ".NET MAUI Class Library",
+  "description": "A project for creating a .NET MAUI class library",
+  "postActions/openInEditor/description": "Opens Class1.cs in the editor.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }

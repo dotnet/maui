@@ -1,8 +1,8 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": ".NET MAUI 類別庫",
-  "description": "用於建立 .NET MAUI 類別庫的專案",
-  "postActions/openInEditor/description": "在編輯器中開啟 Class1.cs。",
+  "name": ".NET MAUI Class Library",
+  "description": "A project for creating a .NET MAUI class library",
+  "postActions/openInEditor/description": "Opens Class1.cs in the editor.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }

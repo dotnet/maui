@@ -1,9 +1,9 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": ".NET MAUI 應用程式",
-  "description": "此專案可用於建立適用於 iOS、Android、Mac Catalyst、Tizen 和 WinUI 的 .NET MAUI 應用程式",
-  "postActions/openInEditor/description": "在編輯器中開啟 MainPage.xaml。",
-  "symbols/applicationId/description": "覆寫專案中的 $(ApplicationId)",
+  "name": ".NET MAUI App",
+  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI and Tizen",
+  "postActions/openInEditor/description": "Opens MainPage.xaml in the editor.",
+  "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
 }
