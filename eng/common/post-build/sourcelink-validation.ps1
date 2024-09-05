@@ -6,15 +6,7 @@ param(
   [Parameter(Mandatory=$true)][string] $SourcelinkCliVersion    # Version of SourceLink CLI to use
 )
 
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version 2.0
-
-# `tools.ps1` checks $ci to perform some actions. Since the post-build
-# scripts don't necessarily execute in the same agent that run the
-# build.ps1/sh script this variable isn't automatically set.
-$ci = $true
-$disableConfigureToolsetImport = $true
-. $PSScriptRoot\..\tools.ps1
+. $PSScriptRoot\post-build-utils.ps1
 
 # Cache/HashMap (File -> Exist flag) used to consult whether a file exist 
 # in the repository at a specific commit point. This is populated by inserting
