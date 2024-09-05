@@ -1,7 +1,7 @@
-{
+﻿{
   "author": "Microsoft",
   "name": ".NET MAUI ContentPage (C#)",
   "description": "A page for displaying content using C#.",
-  "postActions/openInEditor/description": "Abre NewPage1.cs en el editor.",
-  "symbols/namespace/description": "Espacio de nombres para el código generado."
+  "postActions/openInEditor/description": "Opens NewPage1.cs in the editor.",
+  "symbols/namespace/description": "Namespace for the generated code."
 }
