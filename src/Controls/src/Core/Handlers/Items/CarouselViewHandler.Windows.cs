@@ -355,11 +355,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (ListViewBase.Items.Count > 0)
+			// Workaround for https://github.com/microsoft/CsWinRT/issues/1733
+			var itemsList = ListViewBase.Items.ToList();
+
+			if (itemsList.Count > 0)
 			{
 				if (Element.Loop)
 				{
-					var item = ItemsView.CurrentItem ?? ListViewBase.Items.FirstOrDefault();
+					var item = ItemsView.CurrentItem ?? itemsList.FirstOrDefault();
 					_loopableCollectionView.CenterMode = true;
 					ListViewBase.ScrollIntoView(item);
 					_loopableCollectionView.CenterMode = false;
