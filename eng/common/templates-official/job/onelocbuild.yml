@@ -32,17 +32,6 @@ jobs:
 
   displayName: OneLocBuild${{ parameters.JobNameSuffix }}
 
-  variables:
-    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
-    - name: _GenerateLocProjectArguments
-      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
-        -LanguageSet "${{ parameters.LanguageSet }}"
-        -CreateNeutralXlfs
-    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
-      - name: _GenerateLocProjectArguments
-        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
-    - template: /eng/common/templates-official/variables/pool-providers.yml
-
   pool:
     ${{ if ne(parameters.pool, '') }}:
       name: ${{ parameters.pool }}
@@ -56,6 +45,17 @@ jobs:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
+
+  variables:
+    - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+    - name: _GenerateLocProjectArguments
+      value: -SourcesDirectory ${{ parameters.SourcesDirectory }}
+        -LanguageSet "${{ parameters.LanguageSet }}"
+        -CreateNeutralXlfs
+    - ${{ if eq(parameters.UseCheckedInLocProjectJson, 'true') }}:
+      - name: _GenerateLocProjectArguments
+        value: ${{ variables._GenerateLocProjectArguments }} -UseCheckedInLocProjectJson
+    - template: /eng/common/templates-official/variables/pool-providers.yml
 
   steps:
     - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
