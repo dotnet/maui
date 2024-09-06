@@ -30,6 +30,9 @@ stages:
               } elseif ("$srcBranch".StartsWith("refs/heads/loc-")) {
                 $baseBranchName = "$srcBranch".SubString("refs/heads/loc-".Length)
                 $locBranchName = "loc-$baseBranchName"
+              } elseif ("$srcBranch".StartsWith("refs/heads/dev/TJ")) {
+                $baseBranchName = "dev/TJ/RestoreLocalization"
+                $locBranchName = "testing-loc"
               } else {
                 throw "Invalid branch name $srcBranch."
               }
