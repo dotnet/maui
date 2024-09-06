@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
-			CleanUpCollectionViewSource();
+			CleanUpCollectionViewSource(platformView);
 			base.DisconnectHandler(platformView);
 		}
 
@@ -156,6 +156,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void CleanUpCollectionViewSource()
 		{
+			CleanUpCollectionViewSource(platformView);
+		}
+
+		private void CleanUpCollectionViewSource(ListViewBase platformView)
+		{
 			if (CollectionViewSource is not null)
 			{
 				if (CollectionViewSource.Source is ObservableItemTemplateCollection observableItemTemplateCollection)
@@ -175,7 +180,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Remove all children inside the ItemsSource
 			if (VirtualView is not null)
 			{
-				foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+				foreach (var item in platformView.GetChildren<ItemContentControl>())
 				{
 					var element = item.GetVisualElement();
 					VirtualView.RemoveLogicalChild(element);
@@ -184,7 +189,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (VirtualView?.ItemsSource is null)
 			{
-				ListViewBase.ItemsSource = null;
+				platformView.ItemsSource = null;
 				return;
 			}
 		}
