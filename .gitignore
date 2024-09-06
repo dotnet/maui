@@ -381,3 +381,4 @@ snapshots-diff/
 /.dotnet
 .dotnet
 temp
+.packages
