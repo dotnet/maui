@@ -495,5 +495,49 @@ namespace Microsoft.Maui.DeviceTests
 				await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
 			});
 		}
+
+		[Fact]
+		public async Task MinimumSizeRequestsCanBeCleared()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var button = new Button()
+			{
+				Text = "X",
+				MinimumWidthRequest = 400,
+				MinimumHeightRequest = 500,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Start,
+			};
+
+			var grid = new Grid { button };
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await AttachAndRun(grid, _ =>
+				{
+					// The size should be the minimum requested size, since that will easily hold the "X" text
+					Assert.Equal(400, button.Width, 0.5);
+					Assert.Equal(500, button.Height, 0.5);
+
+					button.ClearValue(VisualElement.MinimumWidthRequestProperty);
+					button.ClearValue(VisualElement.MinimumHeightRequestProperty);
+				});
+
+				await AttachAndRun(grid, _ =>
+				{
+					// The new size should just be enough to hold the "X" text
+					Assert.True(button.Width < 100);
+					Assert.True(button.Height < 100);
+				});
+			});
+		}
 	}
 }
