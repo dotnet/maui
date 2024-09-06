@@ -25,13 +25,20 @@ namespace Maui.Controls.Sample.Issues
 					Command = new Command(async () =>
 					{
 						TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
-						vsl.Unloaded += (_, _) =>
+
+						var secondPage = new ContentPage() { Content = new Label() { Text = "I should just disappear" } };
+						secondPage.Unloaded += (_, _) =>
 						{
+							if (taskCompletionSource.Task.IsCompleted)
+							{
+								return;
+							}
+
 							vsl.Add(new Label { Text = "Hello, World!", AutomationId = "Success" });
 							taskCompletionSource.TrySetResult();
 						};
 
-						await Navigation.PushAsync(new ContentPage() { Content = new Label() { Text = "I should just disappear" } });
+						await Navigation.PushAsync(secondPage);
 						await Navigation.PushModalAsync(new ContentPage() { Content = new Label() { Text = "I should just disappear" } });
 
 						await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));

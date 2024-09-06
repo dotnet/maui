@@ -267,7 +267,12 @@ namespace Microsoft.Maui.Platform
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
 			platformView.SetNeedsLayout();
-			platformView.Superview?.SetNeedsLayout();
+
+			// MauiView/WrapperView already propagates the SetNeedsLayout to the parent
+			if (platformView is not MauiView && platformView is not WrapperView)
+			{
+				platformView.Superview?.SetNeedsLayout();
+			}
 		}
 
 		public static void UpdateWidth(this UIView platformView, IView view)
