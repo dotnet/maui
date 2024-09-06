@@ -212,11 +212,11 @@ string GetDotnetToolPath()
     
     if(IsRunningOnWindows())
     {
-        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : null;
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet" : null;
     }
     else
     {
-        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
     }
 
     Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");

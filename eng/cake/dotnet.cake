@@ -3,7 +3,7 @@
 // Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
-var dotnetPath = $"./bin/dotnet/dotnet{ext}";
+var dotnetPath = $"./.dotnet/dotnet{ext}";
 string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
@@ -549,7 +549,7 @@ bool RunPackTarget()
 Dictionary<string, string> GetDotNetEnvironmentVariables()
 {
     Dictionary<string, string> envVariables = new Dictionary<string, string>();
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = MakeAbsolute(Directory("./.dotnet/")).ToString();
 
     envVariables.Add("DOTNET_INSTALL_DIR", dotnet);
     envVariables.Add("DOTNET_ROOT", dotnet);
@@ -570,7 +570,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 
 void SetDotNetEnvironmentVariables()
 {
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = MakeAbsolute(Directory("./dotnet/")).ToString();
     
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
