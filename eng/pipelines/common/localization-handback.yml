@@ -1,36 +1,12 @@
+parameters:
+      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
 stages:
   - stage: localization_handback
     displayName: Localization Handback
     dependsOn: []
-    condition: and(succeeded(), eq(variables.isLocBranch, true))
-
-    parameters:
-      # # Optional: dependencies of the job
-      # dependsOn: ''
-
-      # # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
-      # pool: ''
-        
-      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
-      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
-
-      SourcesDirectory: $(Build.SourcesDirectory)
-      CreatePr: true
-      AutoCompletePr: false
-      ReusePr: true
-      UseLfLineEndings: true
-      UseCheckedInLocProjectJson: false
-      SkipLocProjectJsonGeneration: false
-      LanguageSet: VS_Main_Languages
-      LclSource: lclFilesInRepo
-      LclPackageId: ''
-      RepoType: gitHub
-      GitHubOrg: dotnet
-      MirrorRepo: ''
-      MirrorBranch: main
-      condition: ''
-      JobNameSuffix: ''
+    # condition: and(succeeded(), eq(variables.isLocBranch, true))
 
     jobs:
       - job : generate_resx
@@ -92,21 +68,22 @@ stages:
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
-              locProj: eng/Localize/LocProject.json
+              locProj: 'eng/automation/LocProject.json'
               outDir: $(Build.ArtifactStagingDirectory)
-              lclSource: ${{ parameters.LclSource }}
-              lclPackageId: ${{ parameters.LclPackageId }}
-              isCreatePrSelected: ${{ parameters.CreatePr }}
-              isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
-              ${{ if eq(parameters.CreatePr, true) }}:
-                isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
-                ${{ if eq(parameters.RepoType, 'gitHub') }}:
-                  isShouldReusePrSelected: ${{ parameters.ReusePr }}
+              # lclSource: ${{ parameters.LclSource }}
+              # lclPackageId: ${{ parameters.LclPackageId }}
+              isCreatePrSelected: false
+              # isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
+              # ${{ if eq(parameters.CreatePr, true) }}:
+              #   isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
+              #   ${{ if eq(parameters.RepoType, 'gitHub') }}:
+              #     isShouldReusePrSelected: ${{ parameters.ReusePr }}
               packageSourceAuth: patAuth
               patVariable: ${{ parameters.CeapexPat }}
-              ${{ if eq(parameters.RepoType, 'gitHub') }}:
-                repoType: ${{ parameters.RepoType }}
-                gitHubPatVariable: "${{ parameters.GithubPat }}"
+              repoType: gitHub
+              prSourceBranchPrefix: $(LocBranchPrefix)
+              gitHubPatVariable: "${{ parameters.GithubPat }}"
+              gitHubPrMergeMethod: merge
 
           - powershell: |
               #-- Import Invoke-Git Module function
