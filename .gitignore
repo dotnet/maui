@@ -378,3 +378,4 @@ Directory.Build.Override.props
 snapshots-diff/
 .dotnet
 temp
+.packages
