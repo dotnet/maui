@@ -13,6 +13,7 @@
     <ProductFamilyVersion Condition="$(ProductFamilyVersion) == ''">42.42.42</ProductFamilyVersion>
     <ComputeRelativeUrls>true</ComputeRelativeUrls>
     <OutputPath>$(ManifestOutputPath)</OutputPath>
+    <WorkloadMsiGenProps>$(ArtifactsShippingPackagesDir)/vs-workload.props</WorkloadMsiGenProps>
   </PropertyGroup>
 
   <Import Project="$(WorkloadMsiGenProps)" />
