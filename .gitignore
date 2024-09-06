@@ -380,3 +380,4 @@ snapshots-diff/
 #install of dotnet version
 /.dotnet
 .dotnet
+temp
