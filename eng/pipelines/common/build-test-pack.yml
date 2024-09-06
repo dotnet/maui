@@ -122,12 +122,38 @@ steps:
 
   # Run on windows, for internal pipeline, or public+non-helix-tests job
   - ${{ if and(eq(parameters.isWindows, 'true'), or(ne(parameters.runAsPublic, 'true'), ne(parameters.runHelixTests, 'true'))) }}:
+
     - script: ${{ parameters.buildScript }}
               -pack 
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
-              -configuration ${{ parameters.buildConfig }}
+              -configuration $(_BuildConfig)
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
+    
+    - script: ${{ parameters.buildScript }}
+        -restore -build
+        -sign $(_SignArgs)
+        -publish $(_PublishArgs)
+        -configuration $(_BuildConfig)
+        /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
+        -projects eng\workloads\workloads.csproj
+        $(_OfficialBuildIdArgs)
+      displayName: Build Workloads
+
+    - ${{ if eq(parameters.runAsPublic, 'true') }}:
+      - task: PublishPipelineArtifact@1
+        displayName: Publish VSDrop MSIs
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+          artifactName: VSDropInsertion
+          publishLocation: 'pipeline'
+
+    - ${{ if ne(parameters.runAsPublic, 'true') }}:
+      - task: 1ES.PublishPipelineArtifact@1
+        displayName: Publish VSDrop MSIs
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+          artifactName: VSDropInsertion
