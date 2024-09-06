@@ -1,12 +1,12 @@
+parameters:
+  CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+  GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+
 stages:
   - stage: localization_handoff
     displayName: Localization Handoff
     dependsOn: []
     condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
-
-    parameters:
-      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
-      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
     jobs:
       - job : generate_lci
