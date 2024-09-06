@@ -47,10 +47,10 @@ variables:
   value: 'eng/provisioning/provisioning.csx'
 - name: provisionator.extraArguments
   value: '-vvvv'
-# - name: DotNet.Dir
-#   value: $(System.DefaultWorkingDirectory)/bin/dotnet
-# - name: DotNet.Path
-#   value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+- name: DotNet.Dir
+  value: $(System.DefaultWorkingDirectory)/.dotnet
+- name: DotNet.Path
+  value: $(System.DefaultWorkingDirectory)/.dotnet/dotnet
 - name: TeamName
   value: Maui
 - name: POWERSHELL_VERSION
