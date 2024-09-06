@@ -212,7 +212,7 @@ string GetDotnetToolPath()
     
     if(IsRunningOnWindows())
     {
-        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet" : null;
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet.exe" : null;
     }
     else
     {
