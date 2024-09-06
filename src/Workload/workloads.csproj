@@ -8,12 +8,12 @@
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <_RootDir Condition=" '$(BUILD_STAGINGDIRECTORY)' != '' ">$([MSBuild]::EnsureTrailingSlash($(BUILD_STAGINGDIRECTORY)))</_RootDir>
-    <_RootDir Condition=" '$(_RootDir)' == '' ">$(MSBuildThisFileDirectory)</_RootDir>
-    <OutputPath>$(_RootDir)bin\</OutputPath>
+    <_RootDir Condition=" '$(_RootDir)' == '' ">$(MauiRootDirectory)</_RootDir>
+    <OutputPath>$(_RootDir)\artifacts\</OutputPath>
     <ManifestOutputPath>$(OutputPath)manifests</ManifestOutputPath>
     <PreviewManifestOutputPath>$(OutputPath)manifests-pre</PreviewManifestOutputPath>
     <PackManifestOutputPath>$(OutputPath)manifests-packs</PackManifestOutputPath>
-    <MsiNuGetOutputPath>$(OutputPath)msi-nupkgs</MsiNuGetOutputPath>
+    <MsiNuGetOutputPath>$(ArtifactsShippingPackagesDir)</MsiNuGetOutputPath>
     <NuGetPackagePath Condition=" '$(NuGetPackagePath)' == '' ">$(ArtifactsShippingPackagesDir)</NuGetPackagePath>
     <WorkloadMsiGenProps Condition=" '$(WorkloadMsiGenProps)' == '' ">$(ArtifactsShippingPackagesDir)/vs-workload.props</WorkloadMsiGenProps>
     <DropBuildNumber Condition=" '$(DropBuildNumber)' == '' ">$(BUILD_BUILDID)</DropBuildNumber>
