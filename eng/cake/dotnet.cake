@@ -600,7 +600,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 
 void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
-    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./dotnet/")).ToString();
+    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
     
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
