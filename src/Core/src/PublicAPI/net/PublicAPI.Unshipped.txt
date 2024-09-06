@@ -1,5 +1,4 @@
 #nullable enable
-*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
@@ -28,6 +27,7 @@ Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.I
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
 Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
+*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
