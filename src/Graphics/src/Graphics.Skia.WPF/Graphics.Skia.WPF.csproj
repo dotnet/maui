@@ -18,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="SkiaSharp.Views.WPF" />
   </ItemGroup>
 
