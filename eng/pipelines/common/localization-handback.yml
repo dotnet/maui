@@ -22,15 +22,15 @@ stages:
             clean: true
 
           - powershell: |
-              $srcBranch = $(Build.SourceBranch)
+              $srcBranch = "$(Build.SourceBranch)"
               Write-Host "Extracting branch name from $srcBranch..."
-              if ("$srcBranch" -eq "refs/heads/loc") {
+              if ($srcBranch -eq "refs/heads/loc") {
                 $baseBranchName = "main"
                 $locBranchName = "loc"
-              } elseif ("$srcBranch".StartsWith("refs/heads/loc-")) {
-                $baseBranchName = "$srcBranch".SubString("refs/heads/loc-".Length)
+              } elseif ($srcBranch.StartsWith("refs/heads/loc-")) {
+                $baseBranchName = $srcBranch.SubString("refs/heads/loc-".Length)
                 $locBranchName = "loc-$baseBranchName"
-              } elseif ("$srcBranch".StartsWith("refs/heads/dev/TJ")) {
+              } elseif ($srcBranch.StartsWith("refs/heads/dev/TJ")) {
                 $baseBranchName = "dev/TJ/RestoreLocalization"
                 $locBranchName = "testing-loc"
               } else {
