@@ -135,7 +135,7 @@ if ($BaselineBranch) {
         # calculate the changes between the branches
         $added = $current | Where-Object { -not $baseline.Contains($_) }
         $removed = $baseline | Where-Object { -not $current.Contains($_) }
-        $both = $added + $removed
+        $both = $added + $removed | Sort-Object -Unique
 
         # generate the unshipped file contents
         $unshipped = @()
