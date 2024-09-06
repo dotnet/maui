@@ -129,7 +129,6 @@ steps:
               -publish $(_PublishArgs)
               -configuration $(_BuildConfig)
               /bl:${{ parameters.repoLogPath }}/pack.binlog
-              # /p:Restore=false /p:Build=false
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
     
