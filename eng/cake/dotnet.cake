@@ -570,7 +570,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 
 void SetDotNetEnvironmentVariables()
 {
-    var dotnet = MakeAbsolute(Directory("./dotnet/")).ToString();
+    var dotnet = MakeAbsolute(Directory("./.dotnet/")).ToString();
     
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
