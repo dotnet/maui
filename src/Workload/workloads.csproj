@@ -6,20 +6,25 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
-    <WorkloadIntermediateOutputPath>$(ArtifactsObjDir)workloads/</WorkloadIntermediateOutputPath>
-    <VSTemp>$(WorkloadIntermediateOutputPath)VS/</VSTemp>
-    <WorkloadOutputPath>$(ArtifactsBinDir)workloads/</WorkloadOutputPath>
-    <WorkloadOutputPath Condition="'$(workloadArtifactsPath)' != ''">$(workloadArtifactsPath)/</WorkloadOutputPath>
-    <RunAnalyzers>false</RunAnalyzers>
-    <WorkloadMsiGenProps>$(ArtifactsShippingPackagesDir)/vs-workload.props</WorkloadMsiGenProps>
-    <NuGetPackagePath>$(ArtifactsShippingPackagesDir)</NuGetPackagePath>
-
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <_RootDir Condition=" '$(BUILD_STAGINGDIRECTORY)' != '' ">$([MSBuild]::EnsureTrailingSlash($(BUILD_STAGINGDIRECTORY)))</_RootDir>
+    <_RootDir Condition=" '$(_RootDir)' == '' ">$(MSBuildThisFileDirectory)</_RootDir>
+    <OutputPath>$(_RootDir)bin\</OutputPath>
+    <ManifestOutputPath>$(OutputPath)manifests</ManifestOutputPath>
+    <PreviewManifestOutputPath>$(OutputPath)manifests-pre</PreviewManifestOutputPath>
+    <PackManifestOutputPath>$(OutputPath)manifests-packs</PackManifestOutputPath>
+    <MsiNuGetOutputPath>$(OutputPath)msi-nupkgs</MsiNuGetOutputPath>
+    <NuGetPackagePath Condition=" '$(NuGetPackagePath)' == '' ">$(ArtifactsShippingPackagesDir)</NuGetPackagePath>
+    <WorkloadMsiGenProps Condition=" '$(WorkloadMsiGenProps)' == '' ">$(ArtifactsShippingPackagesDir)/vs-workload.props</WorkloadMsiGenProps>
+    <DropBuildNumber Condition=" '$(DropBuildNumber)' == '' ">$(BUILD_BUILDID)</DropBuildNumber>
+    <DropBuildNumber Condition=" '$(BUILD_SOURCEVERSIONSHORT)' != '' ">$(BUILD_SOURCEVERSIONSHORT)/$(DropBuildNumber)</DropBuildNumber>
   </PropertyGroup>
 
   <PropertyGroup>
     <WixToolsetPath>$(PkgMicrosoft_Signed_Wix)\tools</WixToolsetPath>
     <SwixPluginPath>$(PkgMicroBuild_Plugins_SwixBuild_Dotnet)</SwixPluginPath>
     <SwixBuildTargets>$(SwixPluginPath)\build\MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
+    <SwixTargetsPath>$(PkgMicroBuild_Plugins_SwixBuild_Dotnet)\build\MicroBuild.Plugins.SwixBuild.targets</SwixTargetsPath>
   </PropertyGroup>
 
   <Import Project="$(WorkloadMsiGenProps)" />
