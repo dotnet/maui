@@ -12,6 +12,7 @@
     <WorkloadOutputPath Condition="'$(workloadArtifactsPath)' != ''">$(workloadArtifactsPath)/</WorkloadOutputPath>
     <RunAnalyzers>false</RunAnalyzers>
     <WorkloadMsiGenProps>$(ArtifactsShippingPackagesDir)/vs-workload.props</WorkloadMsiGenProps>
+    <NuGetPackagePath>$(ArtifactsShippingPackagesDir)</NuGetPackagePath>
 
   </PropertyGroup>
 
