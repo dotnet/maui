@@ -54,7 +54,7 @@ stages:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
             inputs:
               locProj: 'eng/automation/LocProject.json'
-              outDir: $(Build.ArtifactStagingDirectory)
+              outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
               patVariable: ${{ parameters.CeapexPat }}
               isCreatePrSelected: false
