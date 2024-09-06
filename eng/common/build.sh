@@ -22,9 +22,6 @@ usage()
   echo "  --sourceBuild              Source-build the solution (short: -sb)"
   echo "                             Will additionally trigger the following actions: --restore, --build, --pack"
   echo "                             If --configuration is not set explicitly, will also set it to 'Release'"
-  echo "  --productBuild             Build the solution in the way it will be built in the full .NET product (VMR) build (short: -pb)"
-  echo "                             Will additionally trigger the following actions: --restore, --build, --pack"
-  echo "                             If --configuration is not set explicitly, will also set it to 'Release'"
   echo "  --rebuild                  Rebuild solution"
   echo "  --test                     Run all unit tests in the solution (short: -t)"
   echo "  --integrationTest          Run all integration tests in the solution"
@@ -62,7 +59,6 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 restore=false
 build=false
 source_build=false
-product_build=false
 rebuild=false
 test=false
 integration_test=false
@@ -109,7 +105,7 @@ while [[ $# > 0 ]]; do
     -binarylog|-bl)
       binary_log=true
       ;;
-    -excludecibinarylog|-nobl)
+    -excludeCIBinarylog|-nobl)
       exclude_ci_binary_log=true
       ;;
     -pipelineslog|-pl)
@@ -130,13 +126,6 @@ while [[ $# > 0 ]]; do
     -sourcebuild|-sb)
       build=true
       source_build=true
-      product_build=true
-      restore=true
-      pack=true
-      ;;
-    -productBuild|-pb)
-      build=true
-      product_build=true
       restore=true
       pack=true
       ;;
@@ -230,9 +219,7 @@ function Build {
     /p:RepoRoot="$repo_root" \
     /p:Restore=$restore \
     /p:Build=$build \
-    /p:DotNetBuildRepo=$product_build \
     /p:ArcadeBuildFromSource=$source_build \
-    /p:DotNetBuildSourceOnly=$source_build \
     /p:Rebuild=$rebuild \
     /p:Test=$test \
     /p:Pack=$pack \
