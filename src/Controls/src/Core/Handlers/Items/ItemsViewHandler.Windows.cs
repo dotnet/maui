@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void CleanUpCollectionViewSource()
 		{
-			CleanUpCollectionViewSource(platformView);
+			CleanUpCollectionViewSource(ListViewBase);
 		}
 
 		private void CleanUpCollectionViewSource(ListViewBase platformView)
