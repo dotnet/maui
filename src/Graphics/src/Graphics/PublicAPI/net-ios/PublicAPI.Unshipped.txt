@@ -1517,6 +1517,7 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~static readonly Microsoft.Maui.Graphics.Colors.DimGray -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.DimGrey -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.DodgerBlue -> Microsoft.Maui.Graphics.Color
+~static readonly Microsoft.Maui.Graphics.Colors.DotNetPurple2024 -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.Firebrick -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.FloralWhite -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.ForestGreen -> Microsoft.Maui.Graphics.Color
@@ -1618,6 +1619,7 @@ virtual Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PatternPhase.get -
 ~static readonly Microsoft.Maui.Graphics.Colors.Wheat -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.White -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.WhiteSmoke -> Microsoft.Maui.Graphics.Color
+~static readonly Microsoft.Maui.Graphics.Colors.XamarinBlue2011 -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.Yellow -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Colors.YellowGreen -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Text.AttributedTextRunComparer.Instance -> Microsoft.Maui.Graphics.Text.AttributedTextRunComparer
