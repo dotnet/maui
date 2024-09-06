@@ -1,5 +1,4 @@
 ﻿#nullable disable
-
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// NOTE: 1.6: replace w/ RecyclePool
 			if (args.Data is ItemTemplateContext2 templateContext)
 			{
-				Microsoft.Maui.Controls.DataTemplate template = templateContext.FormsDataTemplate;
+				Microsoft.Maui.Controls.DataTemplate template = templateContext.MauiDataTemplate;
 				if (template is Microsoft.Maui.Controls.DataTemplateSelector selector)
 				{
 					template = selector.SelectTemplate(templateContext.Item, _view);
@@ -57,6 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					Child = wrapper,
 					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter,
+					CanDrag = true
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 				return container;

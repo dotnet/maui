@@ -52,11 +52,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapFooterTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 		}
-
-		public static void MapItemsLayout(CollectionViewHandler2 handler, StructuredItemsView itemsView)
-		{
-		}
-
 		public static void MapItemSizingStrategy(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 		}

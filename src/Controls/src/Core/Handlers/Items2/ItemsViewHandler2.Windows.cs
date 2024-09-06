@@ -65,7 +65,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
+			[Controls.StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 		};
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -142,6 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			VirtualView.ScrollToRequested += ScrollToRequested;
 			FindScrollViewer();
 		}
+
 
 		protected override void DisconnectHandler(WItemsView platformView)
 		{
@@ -223,13 +225,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				incc.CollectionChanged += ItemsChanged;
 			}
 
+			PlatformView.AllowDrop = true;
 			PlatformView.ItemsSource = _collectionViewSource.View;
 			PlatformView.ItemTemplate = new ItemFactory(Element);
+			PlatformView.Drop += PlatformView_Drop;
 
 			UpdateEmptyViewVisibility();
 		}
 
-		protected virtual void CleanUpCollectionViewSource()
+		private void PlatformView_Drop(object sender, UI.Xaml.DragEventArgs e)
+		{
+			
+		}
+
+		void CleanUpCollectionViewSource()
 		{
 			if (_collectionViewSource is not null)
 			{
@@ -284,58 +293,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		WItemsView SelectListViewBase()
+		MauiItemsView SelectListViewBase()
 		{
-			switch (Layout)
+			var itemsView = new MauiItemsView()
 			{
-				case GridItemsLayout gridItemsLayout:
-					return CreateGridView(gridItemsLayout);
-				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Vertical:
-					return new WItemsView()
-					{
-						Layout = new UI.Xaml.Controls.StackLayout
-						{
-							Orientation = Orientation.Vertical,
-							Spacing = listItemsLayout.ItemSpacing
-						}
-					};
-				case LinearItemsLayout listItemsLayout when listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal:
-					var itemsView = new WItemsView()
-					{
-						Layout = new Microsoft.UI.Xaml.Controls.StackLayout
-						{
-							Orientation = Orientation.Horizontal,
-							Spacing = listItemsLayout.ItemSpacing
-						}
-					};
-					ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
-					ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
-
-					ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
-					ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
-					return itemsView;
-			}
-			throw new NotImplementedException("The layout is not implemented");
-		}
-
-		static WItemsView CreateGridView(GridItemsLayout gridItemsLayout)
-		{
-			return new WItemsView()
-			{
-				Layout = new UniformGridLayout()
-				{
-					Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-						? Orientation.Vertical : Orientation.Horizontal,
-					MaximumRowsOrColumns = gridItemsLayout.Span,
-					MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
-					MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
-					ItemsStretch = UniformGridLayoutItemsStretch.Fill,
-					ItemsJustification = UniformGridLayoutItemsJustification.Start,
-				}
+				Layout = CreateItemsLayout()
 			};
+
+			if (Layout is LinearItemsLayout listItemsLayout && 
+				listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+			{
+				ScrollViewer.SetHorizontalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Enabled);
+				ScrollViewer.SetHorizontalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Visible);
+
+				ScrollViewer.SetVerticalScrollMode(itemsView, UI.Xaml.Controls.ScrollMode.Disabled);
+				ScrollViewer.SetVerticalScrollBarVisibility(itemsView, WASDKScrollBarVisibility.Disabled);
+			}
+			return itemsView;
 		}
 
-		void UpdateItemsLayout()
+		protected void UpdateItemsLayout()
 		{
 			FindScrollViewer();
 
@@ -344,9 +321,52 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			UpdateItemTemplate();
 			UpdateItemsSource();
+
+			PlatformView.CanDrag = true;
+			PlatformView.Layout = CreateItemsLayout();
+
 			UpdateVerticalScrollBarVisibility();
 			UpdateHorizontalScrollBarVisibility();
 			UpdateEmptyView();
+		}
+
+		UI.Xaml.Controls.Layout CreateItemsLayout()
+		{
+			switch (Layout)
+			{
+				case GridItemsLayout gridItemsLayout:
+					return CreateGridView(gridItemsLayout);
+				case LinearItemsLayout listItemsLayout:
+					return CreateStackLayout(listItemsLayout);
+				default:
+					break;
+			}
+
+			throw new NotImplementedException("The layout is not implemented");
+		}
+
+		static UI.Xaml.Controls.Layout CreateStackLayout(LinearItemsLayout listItemsLayout)
+		{
+			return new UI.Xaml.Controls.StackLayout()
+			{
+				Orientation = listItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Horizontal : Orientation.Vertical,
+				Spacing = listItemsLayout.ItemSpacing
+			};
+		}
+
+		static UI.Xaml.Controls.Layout CreateGridView(GridItemsLayout gridItemsLayout)
+		{
+			return new UniformGridLayout()
+			{
+				Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Vertical : Orientation.Horizontal,
+				MaximumRowsOrColumns = gridItemsLayout.Span,
+				MinColumnSpacing = gridItemsLayout.HorizontalItemSpacing,
+				MinRowSpacing = gridItemsLayout.VerticalItemSpacing,
+				ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+				ItemsJustification = UniformGridLayoutItemsJustification.Start,
+			};
 		}
 
 		void FindScrollViewer()
@@ -435,8 +455,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
 					Text = text
 				},
-				View view => (FrameworkElement)RealizeEmptyView(view),
-				_ => (FrameworkElement)RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate),
+				View view => RealizeEmptyView(view),
+				_ => RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate),
 			};
 			(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
 

@@ -1,9 +1,10 @@
-<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.Maui.Controls.Platform" xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="using:Microsoft.Maui.Controls.Platform"
+                    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+                    xmlns:local2="using:Microsoft.Maui.Controls.Handlers.Items2">
 
-    <local:ViewToHandlerConverter x:Key="ViewToRenderer" />
+  <local:ViewToHandlerConverter x:Key="ViewToRenderer" />
     <local:ViewToHandlerConverter x:Key="ViewToHandler" />
     
     <ItemsPanelTemplate x:Key="HorizontalListItemsPanel">
@@ -12,13 +13,13 @@
 
     <ItemsPanelTemplate x:Key="HorizontalGridItemsPanel">
         <!-- Yes, this is counterintuitive. Orientation here means "direction we lay out the items until we hit the 
-		edge and then wrap around". -->
+    edge and then wrap around". -->
         <ItemsWrapGrid Orientation="Vertical" />
     </ItemsPanelTemplate>
 
     <ItemsPanelTemplate x:Key="VerticalGridItemsPanel">
         <!-- Yes, this is counterintuitive. Orientation here means "direction we lay out the items until we hit the 
-		edge and then wrap around". -->
+    edge and then wrap around". -->
         <ItemsWrapGrid Orientation="Horizontal" />
     </ItemsPanelTemplate>
 
@@ -26,7 +27,7 @@
         <local:ItemContentControl 
             x:Name="ItemContentControl" 
             MauiContext="{Binding MauiContext}" 
-			FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
+      FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}">
         </local:ItemContentControl>
     </DataTemplate>
@@ -35,7 +36,7 @@
         <local:ItemContentControl 
             x:Name="ItemContentControl" DataContext="{Binding HeaderItemTemplateContext}"
             MauiContext="{Binding MauiContext}" 
-			FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
+      FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}">
         </local:ItemContentControl>
     </DataTemplate>
@@ -44,7 +45,7 @@
         <local:ItemContentControl
             x:Name="ItemContentControl" 
             MauiContext="{Binding MauiContext}" 
-			FormsDataTemplate="{Binding FormsDataTemplate}" 
+      FormsDataTemplate="{Binding FormsDataTemplate}" 
             FormsDataContext="{Binding Item}"
             FormsContainer="{Binding Container}"
             ItemHeight="{Binding ItemHeight}"
@@ -62,6 +63,34 @@
             </Setter.Value>
         </Setter>
     </Style>
+  
+    <ControlTemplate x:Key="MauiItemsViewTemplate" TargetType="local2:MauiItemsView">
+        <Grid>
+            <controls:ScrollView x:Name="PART_ScrollView"
+                              Background="{TemplateBinding Background}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              CornerRadius="{TemplateBinding CornerRadius}"
+                              HorizontalAnchorRatio="NaN"
+                              TabNavigation="{TemplateBinding TabNavigation}"
+                              XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}">
+                <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
+                                        ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
+                                        HorizontalCacheLength="0"
+                                        ItemsSource="{TemplateBinding ItemsSource}"
+                                        ItemTemplate="{TemplateBinding ItemTemplate}"
+                                        Layout="{TemplateBinding Layout}"
+                                        Margin="{TemplateBinding Padding}"
+                                        VerticalAlignment="Top"
+                                        XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}" />
+            </controls:ScrollView>
+            <ContentControl 
+                x:Name="EmptyViewContentControl" 
+                HorizontalContentAlignment="Stretch" 
+                VerticalAlignment="Stretch"/>
+        </Grid>
+      </ControlTemplate>
+
 
     <ControlTemplate x:Key="FormsListViewTemplate" TargetType="local:FormsListView">
         <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}">

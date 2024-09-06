@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	{
 		readonly WeakReference<BindableObject> _container;
 
-		public DataTemplate FormsDataTemplate { get; }
+		public DataTemplate MauiDataTemplate { get; }
 		public IMauiContext MauiContext { get; }
 		public object Item { get; }
 		public BindableObject Container => _container.TryGetTarget(out var c) ? c : null;
@@ -18,11 +18,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public bool IsHeader { get; }
 		public bool IsFooter { get; }
 
-		public ItemTemplateContext2(DataTemplate formsDataTemplate, object item, BindableObject container,
+		public ItemTemplateContext2(DataTemplate mauiDataTemplate, object item, BindableObject container,
 			double? height = null, double? width = null, Thickness? itemSpacing = null,
 			bool isHeader = false, bool isFooter = false, IMauiContext mauiContext = null)
 		{
-			FormsDataTemplate = formsDataTemplate;
+			MauiDataTemplate = mauiDataTemplate;
 			Item = item;
 			_container = new(container);
 			MauiContext = mauiContext;
