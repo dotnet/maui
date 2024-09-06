@@ -191,8 +191,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DotNetOutputPath>$(MSBuildThisFileDirectory)bin/</DotNetOutputPath>
-    <DotNetTempDirectory>$(DotNetOutputPath)temp/</DotNetTempDirectory>
+    <DotNetTempDirectory>$(RepoRoot)/temp/</DotNetTempDirectory>
     <DotNetDirectory>$(RepoRoot)/.dotnet/</DotNetDirectory>
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
