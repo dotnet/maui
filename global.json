@@ -9,7 +9,7 @@
   },
   "sdk": {
     "version": "8.0.108",
-    "rollForward": "major",
-    "allowPrerelease": false
+    "rollForward": "latestFeature",
+    "allowPrerelease": true
   }
 }
