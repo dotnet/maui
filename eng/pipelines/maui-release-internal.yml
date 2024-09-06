@@ -73,7 +73,7 @@ variables:
     - name: _SignType
       value: real
     - name: _SignArgs
-      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
+      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
     - name: _Sign
       value: true
 
