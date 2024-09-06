@@ -39,6 +39,8 @@ bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
 
+var dotnetToolPath = GetDotnetToolPath();
+
 // Uninstall the deployed app
 var uninstallPS = new Action(() =>
 {
@@ -139,7 +141,7 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	var localDotnetRoot = GetDotnetToolPath();
 	Information("new dotnet root: {0}", localDotnetRoot);
 
 	DOTNET_ROOT = localDotnetRoot.ToString();
