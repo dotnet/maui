@@ -30,11 +30,11 @@ schedules:
     
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  - template: /eng/common/templates-official/variables/pool-providers.yml@self
+
   - group: DotNetBuilds storage account read tokens
   - group: AzureDevOps-Artifact-Feeds-Pats
-  - name: _InternalRuntimeDownloadArgs
-    value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal
-           /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+           
   # needed for darc (dependency flow) publishing
   - name: _BuildConfig
     value: Release
@@ -44,21 +44,38 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-  - name: _PublishArgs
-    value: >-
-          /p:DotNetPublishUsingPipelines=true
-  # - name: _OfficialBuildIdArgs
-  #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-  # needed for signing
-  - name: _TeamName
-    value: $(TeamName)
-  - name: _SignType
-    value: real
-  - name: _SignArgs
-    value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign)
-  - name: _Sign
-    value: true
-  - template: /eng/common/templates-official/variables/pool-providers.yml@self
+ 
+  # Produce test-signed build for PR and Public builds
+  - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: ''
+    - name: _OfficialBuildIdArgs
+      value: ''
+    # needed for signing
+    - name: _SignType
+      value: test
+    - name: _SignArgs
+      value: ''
+    - name: _Sign
+      value: false
+
+  # Set up non-PR build from internal project
+  - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: >-
+            /p:DotNetPublishUsingPipelines=true
+    # - name: _OfficialBuildIdArgs
+    #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+    # needed for signing
+    - name: _SignType
+      value: real
+    - name: _SignArgs
+      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
+    - name: _Sign
+      value: true
+
 
 parameters:
   - name: pushMauiPackagesToMaestro
@@ -176,8 +193,6 @@ extends:
             variables:
               - name: _buildScript
                 value: $(Build.SourcesDirectory)/build.cmd -ci
-              - name: _BuildConfig
-                value: Release
               - name: _BuildOfficalId
                 value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
               - name: TreatWarningsAsErrors
@@ -193,7 +208,6 @@ extends:
             steps:
               - template: /eng/pipelines/common/build-test-pack.yml@self
                 parameters:
-                  dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
                   buildConfig: $(_BuildConfig)
                   repoArtifactsPath: $(Build.Arcade.ArtifactsPath)

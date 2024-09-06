@@ -58,11 +58,21 @@ variables:
 - name: Codeql.Enabled
   value: false
 - group: Xamarin-Secrets
+
 # Variable groups required for private builds
-# - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
-#   - name: PrivateBuild
-#     value: true
-#   # For eng/common/SetupNugetSources.ps1
-#   - group: DotNetBuilds storage account read tokens
-#   - group: AzureDevOps-Artifact-Feeds-Pats
+- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    - name: _RunAsPublic
+      value: False
+    - name: _RunAsInternal
+      value: True
+    - name: _SignType
+      value: real
+    # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+    # DotNet-HelixApi-Access provides: HelixApiAccessToken
+    - group: Publish-Build-Assets
+    - group: DotNet-HelixApi-Access
+    - group: SDL_Settings
+    - name: PostBuildSign
+      value: true
 
