@@ -1,7 +1,10 @@
 ﻿#nullable disable
+using System;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -55,8 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
-					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter,
-					CanDrag = true
+					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 				return container;
@@ -87,8 +89,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 	internal class ElementWrapper(IMauiContext context) : UserControl
 	{
-		private IMauiContext _context = context;
 		public IView VirtualView { get; private set; }
+		
+		private IMauiContext _context = context;
 
 		public void SetContent(IView view)
 		{

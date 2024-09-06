@@ -12,8 +12,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
-using WASDKApp = Microsoft.UI.Xaml.Application;
-using WASDKDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WASDKScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 using WItemsView = Microsoft.UI.Xaml.Controls.ItemsView;
 using WScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
@@ -40,8 +38,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
-
-		protected WASDKDataTemplate ItemsViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["ItemsViewDefaultTemplate"];
 
 		protected abstract IItemsLayout Layout { get; }
 
@@ -86,7 +82,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.UpdateItemTemplate();
+			handler.UpdateItemsSource();
 		}
 
 		public static void MapEmptyView(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -191,18 +187,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			};
 		}
 
-		void UpdateItemTemplate()
-		{
-			if (Element == null || PlatformView == null)
-			{
-				return;
-			}
-
-			PlatformView.ItemTemplate = Element.ItemTemplate == null ? null : ItemsViewTemplate;
-
-			UpdateItemsSource();
-		}
-
 		protected virtual void UpdateItemsSource()
 		{
 			if (PlatformView is null)
@@ -225,17 +209,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				incc.CollectionChanged += ItemsChanged;
 			}
 
-			PlatformView.AllowDrop = true;
 			PlatformView.ItemsSource = _collectionViewSource.View;
 			PlatformView.ItemTemplate = new ItemFactory(Element);
-			PlatformView.Drop += PlatformView_Drop;
 
 			UpdateEmptyViewVisibility();
-		}
-
-		private void PlatformView_Drop(object sender, UI.Xaml.DragEventArgs e)
-		{
-			
 		}
 
 		void CleanUpCollectionViewSource()
@@ -319,10 +296,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_defaultHorizontalScrollVisibility = null;
 			_defaultVerticalScrollVisibility = null;
 
-			UpdateItemTemplate();
 			UpdateItemsSource();
 
-			PlatformView.CanDrag = true;
 			PlatformView.Layout = CreateItemsLayout();
 
 			UpdateVerticalScrollBarVisibility();
@@ -345,7 +320,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			throw new NotImplementedException("The layout is not implemented");
 		}
 
-		static UI.Xaml.Controls.Layout CreateStackLayout(LinearItemsLayout listItemsLayout)
+		static UI.Xaml.Controls.StackLayout CreateStackLayout(LinearItemsLayout listItemsLayout)
 		{
 			return new UI.Xaml.Controls.StackLayout()
 			{
@@ -355,7 +330,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			};
 		}
 
-		static UI.Xaml.Controls.Layout CreateGridView(GridItemsLayout gridItemsLayout)
+		static UI.Xaml.Controls.UniformGridLayout CreateGridView(GridItemsLayout gridItemsLayout)
 		{
 			return new UniformGridLayout()
 			{
@@ -402,11 +377,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
+			{
 				UpdateItemsLayoutSpan();
+			}
 			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
 			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
 		}
 
 		void UpdateItemsLayoutSpan()
