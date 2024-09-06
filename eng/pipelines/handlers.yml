@@ -302,14 +302,17 @@ stages:
 
   - stage: Localization
     jobs:
-      - template: /eng/common/templates-official/job/onelocbuild.yml@self
-        parameters:
-          # LclSource: lclFilesfromPackage
-          # LclPackageId: 'LCL-JUNO-PROD-XCSYNC'
-          LclSource: lclFilesInRepo
-          SkipLocProjectJsonGeneration: false
-          MirrorRepo: ''
-          MirrorBranch: main
+      # - template: /eng/common/templates-official/job/onelocbuild.yml@self
+      #   parameters:
+      #     # LclSource: lclFilesfromPackage
+      #     # LclPackageId: 'LCL-JUNO-PROD-XCSYNC'
+      #     LclSource: lclFilesInRepo
+      #     SkipLocProjectJsonGeneration: false
+      #     MirrorRepo: ''
+      #     MirrorBranch: main
+
+      - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+
 
       # SkipLocProjectJsonGeneration: true
       # MirrorRepo: xcsync
