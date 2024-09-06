@@ -141,7 +141,6 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var localDotnetRoot = GetDotnetToolPath();
 	Information("new dotnet root: {0}", localDotnetRoot);
 
 	DOTNET_ROOT = localDotnetRoot.ToString();
@@ -525,7 +524,6 @@ Task("uitest")
 	Information("old dotnet root: {0}", DOTNET_ROOT);
 	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var localDotnetRoot = dotnetToolPath;
 	Information("new dotnet root: {0}", localDotnetRoot);
 
 	DOTNET_ROOT = localDotnetRoot.ToString();
