@@ -10,11 +10,13 @@ namespace Maui.Controls.Sample.Issues
             {
                 entryText = new Entry
                 {
+                    AutomationId = "DataTypeEntry",
                     Placeholder = "Enter the data type of the Handler you want to test",
                 };
 
                 var runMemoryTestButton = new Button
                 {
+                    AutomationId = "RunMemoryTestButton",
                     Text = "Run Memory Test"
                 };
                 runMemoryTestButton.Clicked += OnRunMemoryTestClicked;
