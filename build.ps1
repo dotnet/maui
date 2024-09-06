@@ -21,3 +21,4 @@ if ($Target) { $cakeArguments += "--target=$Target" }
 $cakeArguments += $ScriptArgs
 
 & dotnet tool run dotnet-cake -- $cakeArguments
+exit $LASTEXITCODE
