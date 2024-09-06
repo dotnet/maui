@@ -4,21 +4,50 @@ stages:
     dependsOn: []
     condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
 
+    parameters:
+      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+
     jobs:
       - job : generate_lci
         displayName: 'Process outgoing strings'
         pool:  $(HostedWinVS2019)
+
+        variables:
+          - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+
         steps:
 
-          - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+          # - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+          #   displayName: 'Localization Build'
+          #   env:
+          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+          #   inputs:
+          #     locProj: 'eng/automation/LocProject.json'
+          #     outDir: '$(Build.ArtifactStagingDirectory)'
+          #     packageSourceAuth: patAuth
+          #     patVariable: "$(OneLocBuildPAT)"
+
+          - task: OneLocBuild@2
             displayName: 'Localization Build'
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
-              locProj: 'eng/automation/LocProject.json'
-              outDir: '$(Build.ArtifactStagingDirectory)'
+              locProj: eng/automation/LocProject.json
+              outDir: $(Build.ArtifactStagingDirectory)
+              # lclSource: ${{ parameters.LclSource }}
+              # lclPackageId: ${{ parameters.LclPackageId }}
+              # isCreatePrSelected: ${{ parameters.CreatePr }}
+              # isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
+              # ${{ if eq(parameters.CreatePr, true) }}:
+              #   isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
+              #   ${{ if eq(parameters.RepoType, 'gitHub') }}:
+              #     isShouldReusePrSelected: ${{ parameters.ReusePr }}
               packageSourceAuth: patAuth
-              patVariable: "$(OneLocBuildPAT)"
+              patVariable: ${{ parameters.CeapexPat }}
+              # ${{ if eq(parameters.RepoType, 'gitHub') }}:
+              #   repoType: ${{ parameters.RepoType }}
+              #   gitHubPatVariable: "${{ parameters.GithubPat }}"
 
           - task: PublishBuildArtifacts@1
             inputs:
