@@ -38,12 +38,12 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
-  <!-- Build target provisions ./bin/dotnet/ -->
+  <!-- Build target provisions ./.dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
   <!--
     Install target takes artifacts/*.nupkg and installs them to the current 'dotnet'.
-    Running this with ./bin/dotnet/dotnet will work without elevation.
+    Running this with ./.dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
   <Target Name="Install">
@@ -85,7 +85,7 @@
   </Target>
 
   <PropertyGroup>
-    <!-- These files should invalidate ./bin/dotnet completely -->
+    <!-- These files should invalidate ./.dotnet/ completely -->
     <_Inputs>
       $(MSBuildThisFile);
       ../../eng/Versions.props;
