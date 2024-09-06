@@ -27,6 +27,7 @@ Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.I
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
 Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
+*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, Android.Content.Context! context) -> void
@@ -61,4 +62,3 @@ static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
-*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!

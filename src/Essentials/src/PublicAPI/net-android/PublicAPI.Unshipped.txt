@@ -1,9 +1,9 @@
 #nullable enable
-static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
-static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.StorageRead.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.StorageRead.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.StorageWrite.CheckStatusAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 *REMOVED*~override Microsoft.Maui.ApplicationModel.Permissions.StorageWrite.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
+static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void

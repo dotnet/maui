@@ -27,6 +27,7 @@ Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.I
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
 Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
+*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.IWindow.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Platform.MauiHybridWebView
@@ -57,6 +58,5 @@ static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
-virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void
-*REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
+virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void
