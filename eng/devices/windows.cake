@@ -141,6 +141,8 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
+	var localDotnetRoot = dotnetToolPath;
+
 	Information("new dotnet root: {0}", localDotnetRoot);
 
 	DOTNET_ROOT = localDotnetRoot.ToString();
@@ -524,7 +526,18 @@ Task("uitest")
 	Information("old dotnet root: {0}", DOTNET_ROOT);
 	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var buildSettings = new DotNetBuildSettings {
+	var localDotnetRoot = dotnetToolPath;
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
+
+	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+	Information("new dotnet toolPath: {0}", localToolPath);
+
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
@@ -537,7 +550,7 @@ Task("uitest")
 
 	if (localDotnet)
 	{
-		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
 		Information("new dotnet root: {0}", localDotnetRoot);
 
 		DOTNET_ROOT = localDotnetRoot.ToString();
