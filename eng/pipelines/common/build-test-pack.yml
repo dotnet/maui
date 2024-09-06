@@ -139,7 +139,7 @@ steps:
         -publish $(_PublishArgs)
         -configuration $(_BuildConfig)
         /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
-        -projects eng\workloads\workloads.csproj
+        -projects src/Workload/workloads.csproj
         $(_OfficialBuildIdArgs)
       displayName: Build Workloads
 
