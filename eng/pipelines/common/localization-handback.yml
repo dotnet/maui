@@ -49,15 +49,15 @@ stages:
             displayName: 'Merge loc Branch'
 
           - task: OneLocBuild@2
-            displayName: OneLocBuild
+            displayName: 'Localization Build'
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
             inputs:
               locProj: 'eng/automation/LocProject.json'
               outDir: $(Build.ArtifactStagingDirectory)
-              isCreatePrSelected: false
               packageSourceAuth: patAuth
               patVariable: ${{ parameters.CeapexPat }}
+              isCreatePrSelected: false
               repoType: gitHub
               prSourceBranchPrefix: $(LocBranchPrefix)
               gitHubPatVariable: "${{ parameters.GithubPat }}"
