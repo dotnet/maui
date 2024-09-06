@@ -6,7 +6,7 @@ stages:
   - stage: localization_handback
     displayName: Localization Handback
     dependsOn: []
-    # condition: and(succeeded(), eq(variables.isLocBranch, true))
+    condition: and(succeeded(), eq(variables.isLocBranch, true))
 
     jobs:
       - job : generate_resx
@@ -30,9 +30,6 @@ stages:
               } elseif ($srcBranch.StartsWith("refs/heads/loc-")) {
                 $baseBranchName = $srcBranch.SubString("refs/heads/loc-".Length)
                 $locBranchName = "loc-$baseBranchName"
-              } elseif ($srcBranch.StartsWith("refs/heads/dev/TJ")) {
-                $baseBranchName = "dev/TJ/RestoreLocalization"
-                $locBranchName = "testing-loc"
               } else {
                 throw "Invalid branch name $srcBranch."
               }
@@ -51,21 +48,6 @@ stages:
               Invoke-Git merge origin/$(LOC_BRANCH_NAME) --no-commit
             displayName: 'Merge loc Branch'
 
-          # - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
-          #   displayName: 'Localization Build'
-          #   env:
-          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
-          #   inputs:
-          #     locProj: 'eng/automation/LocProject.json'
-          #     outDir: '$(Build.ArtifactStagingDirectory)'
-          #     packageSourceAuth: patAuth
-          #     patVariable: "$(OneLocBuildPAT)"
-          #     isCreatePrSelected: false
-          #     repoType: gitHub
-          #     prSourceBranchPrefix: $(LocBranchPrefix)
-          #     gitHubPatVariable: '$(GitHub.Token)'
-          #     gitHubPrMergeMethod: merge
-
           - task: OneLocBuild@2
             displayName: OneLocBuild
             env:
@@ -73,14 +55,7 @@ stages:
             inputs:
               locProj: 'eng/automation/LocProject.json'
               outDir: $(Build.ArtifactStagingDirectory)
-              # lclSource: ${{ parameters.LclSource }}
-              # lclPackageId: ${{ parameters.LclPackageId }}
               isCreatePrSelected: false
-              # isAutoCompletePrSelected: ${{ parameters.AutoCompletePr }}
-              # ${{ if eq(parameters.CreatePr, true) }}:
-              #   isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
-              #   ${{ if eq(parameters.RepoType, 'gitHub') }}:
-              #     isShouldReusePrSelected: ${{ parameters.ReusePr }}
               packageSourceAuth: patAuth
               patVariable: ${{ parameters.CeapexPat }}
               repoType: gitHub
