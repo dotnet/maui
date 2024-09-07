@@ -511,8 +511,8 @@ namespace Microsoft.Maui.DeviceTests
 			var button = new Button()
 			{
 				Text = "X",
-				MinimumWidthRequest = 400,
-				MinimumHeightRequest = 500,
+				MinimumWidthRequest = 300,
+				MinimumHeightRequest = 200,
 				HorizontalOptions = LayoutOptions.Start,
 				VerticalOptions = LayoutOptions.Start,
 			};
@@ -524,8 +524,8 @@ namespace Microsoft.Maui.DeviceTests
 				await AttachAndRun(grid, _ =>
 				{
 					// The size should be the minimum requested size, since that will easily hold the "X" text
-					Assert.Equal(400, button.Width, 0.5);
-					Assert.Equal(500, button.Height, 0.5);
+					Assert.Equal(300, button.Width, 0.5);
+					Assert.Equal(200, button.Height, 0.5);
 
 					button.ClearValue(VisualElement.MinimumWidthRequestProperty);
 					button.ClearValue(VisualElement.MinimumHeightRequestProperty);
