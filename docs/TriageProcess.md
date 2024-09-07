@@ -17,7 +17,7 @@ The goals of these rules are listed below in priority order:
 
 ## Triage Process Details
 
-The feature teams should be able look through every single issue filed against this repository and be able to make a quick call regarding the nature of the issue.
+The feature teams should be able to look through every single issue filed against this repository and be able to make a quick call regarding the nature of the issue.
 We will first categorize the issues and further handle these depending on the category the issue is in. The subsections below represent these categories and the rules we apply for them during our triage meeting.
 
 ### Information Gathering
