@@ -28,45 +28,72 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var platformView = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			var virtualView = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			var mauiContext = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			PlatformView.CrossPlatformLayout = VirtualView;
+			platformView.CrossPlatformLayout = virtualView;
 
-			PlatformView.RemoveAllViews();
+			platformView.RemoveAllViews();
 
-			foreach (var child in VirtualView.OrderByZIndex())
+			var targetIndex = platformView.ChildCount;
+			foreach (var child in virtualView.OrderByZIndex())
 			{
-				PlatformView.AddView(child.ToPlatform(MauiContext));
+				var childHandler = ((IElement)child).ToHandler(mauiContext);
+
+				if (childHandler is IHeadlessLayoutHandler headlessLayoutHandler)
+				{
+					headlessLayoutHandler.CreateSubviews(ref targetIndex);
+					continue;
+				}
+
+				platformView.AddView(childHandler.ToPlatform());
+				++targetIndex;
 			}
 		}
 
 		public void Add(IView child)
 		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var mauiContext = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var platformView = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			var virtualView = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
+			var childHandler = ((IElement)child).ToHandler(mauiContext);
+
+			var targetIndex = virtualView.GetLayoutHandlerIndex(child);
+			if (childHandler is IHeadlessLayoutHandler headlessLayoutHandler)
+			{
+				headlessLayoutHandler.CreateSubviews(ref targetIndex);
+				return;
+			}
+
+			var childPlatformView = childHandler.ToPlatform();
+			platformView.AddView(childPlatformView, targetIndex);
 		}
 
 		public void Remove(IView child)
 		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			var mauiContext = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var platformView = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (child?.ToPlatform() is View view)
+			var childHandler = ((IElement)child).ToHandler(mauiContext);
+
+			if (childHandler is IHeadlessLayoutHandler headlessLayoutHandler)
 			{
-				PlatformView.RemoveView(view);
+				headlessLayoutHandler.Clear();
+				return;
 			}
+
+			platformView.RemoveView(childHandler.ToPlatform());
 		}
 
 		static void Clear(LayoutViewGroup platformView)
 		{
-			if (platformView != null && !platformView.IsDisposed())
+			if (platformView.IsDisposed() == false)
+			{
 				platformView.RemoveAllViews();
+			}
 		}
 
 		public void Clear()
@@ -76,23 +103,41 @@ namespace Microsoft.Maui.Handlers
 
 		public void Insert(int index, IView child)
 		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var mauiContext = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var platformView = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			var virtualView = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
+			var targetIndex = virtualView.GetLayoutHandlerIndex(child);
+			
+			var childHandler = ((IElement)child).ToHandler(mauiContext);
+
+			if (childHandler is IHeadlessLayoutHandler headlessLayoutHandler)
+			{
+				headlessLayoutHandler.CreateSubviews(ref targetIndex);
+				return;
+			}
+
+			var childPlatformView = childHandler.ToPlatform();
+			platformView.AddView(childPlatformView, targetIndex);
 		}
 
 		public void Update(int index, IView child)
 		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var mauiContext = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			var virtualView = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			var platformView = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			
+			var childHandler = ((IElement)child).ToHandler(mauiContext);
 
-			PlatformView.RemoveViewAt(index);
-			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.AddView(child.ToPlatform(MauiContext), targetIndex);
+			var targetIndex = virtualView.GetLayoutHandlerIndex(child);
+			if (childHandler is IHeadlessLayoutHandler headlessLayoutHandler)
+			{
+				headlessLayoutHandler.MoveSubviews(targetIndex);
+				return;
+			}
+
+			platformView.RemoveView(child.ToPlatform(mauiContext));
+			platformView.AddView(child.ToPlatform(mauiContext), targetIndex);
 		}
 
 		public void UpdateZIndex(IView child)
@@ -113,25 +158,34 @@ namespace Microsoft.Maui.Handlers
 
 		void EnsureZIndexOrder(IView child)
 		{
-			if (PlatformView.ChildCount == 0)
+			var platformView = PlatformView;
+			if (platformView.ChildCount == 0)
 			{
 				return;
 			}
 
-			AView platformChildView = child.ToPlatform(MauiContext!);
-			var currentIndex = PlatformView.IndexOfChild(platformChildView);
+			var mauiContext = MauiContext!;
+			var childHandler = ((IElement)child).ToHandler(mauiContext);
+			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
+
+			if (childHandler is IHeadlessLayoutHandler headlessLayoutHandler)
+			{
+				headlessLayoutHandler.MoveSubviews(targetIndex);
+				return;
+			}
+
+			AView platformChildView = child.ToPlatform(mauiContext);
+			var currentIndex = platformView.IndexOfChild(platformChildView);
 
 			if (currentIndex == -1)
 			{
 				return;
 			}
 
-			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-
 			if (currentIndex != targetIndex)
 			{
-				PlatformView.RemoveViewAt(currentIndex);
-				PlatformView.AddView(platformChildView, targetIndex);
+				platformView.RemoveViewAt(currentIndex);
+				platformView.AddView(platformChildView, targetIndex);
 			}
 		}
 
