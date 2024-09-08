@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Platform
 			var widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(right - left);
 			var heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(bottom - top);
 
+			_invalidateShadow = true;
 			child.Measure(widthMeasureSpec, heightMeasureSpec);
 			child.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
