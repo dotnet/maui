@@ -521,7 +521,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await AttachAndRun(grid, _ =>
+				await AttachAndRun(grid, async _ =>
 				{
 					// The size should be the minimum requested size, since that will easily hold the "X" text
 					Assert.Equal(300, button.Width, 0.5);
@@ -529,13 +529,9 @@ namespace Microsoft.Maui.DeviceTests
 
 					button.ClearValue(VisualElement.MinimumWidthRequestProperty);
 					button.ClearValue(VisualElement.MinimumHeightRequestProperty);
-				});
 
-				await AttachAndRun(grid, _ =>
-				{
 					// The new size should just be enough to hold the "X" text
-					Assert.True(button.Width < 100);
-					Assert.True(button.Height < 100);
+					await AssertionExtensions.AssertEventually(() => button.Width < 100 && button.Height < 100);
 				});
 			});
 		}
