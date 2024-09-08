@@ -191,8 +191,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// Use 0 if the NavBar is hidden or will be hidden
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
-
-			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
 		public override void ViewDidLoad()
@@ -1230,6 +1228,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						newAdditionalSafeArea.Top = offset;
 						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
 					}
+				}
+			}
+
+			public override void ViewWillLayoutSubviews()
+			{
+				base.ViewWillLayoutSubviews();
+
+				var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
+
+				if (childView is not null)
+				{
+					childView.Frame = View.Bounds;
 				}
 			}
 
