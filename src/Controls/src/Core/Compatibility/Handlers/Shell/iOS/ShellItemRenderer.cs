@@ -357,10 +357,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (shellSection == null || _currentSection == shellSection)
 				return;
 			var renderer = RendererForShellContent(shellSection);
-			
-			if (renderer == null)
-				return;
-
 			if (renderer?.ViewController != SelectedViewController)
 				SelectedViewController = renderer.ViewController;
 			CurrentRenderer = renderer;
