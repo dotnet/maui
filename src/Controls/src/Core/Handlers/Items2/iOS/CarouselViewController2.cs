@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
