@@ -33,9 +33,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource),
 		 propertyChanged: (bindable, oldValue, newValue) => {
-				var menuItem = (MenuItem)bindable;
-				var icon = (ImageSource)newValue;
-				icon.Parent = menuItem;
+				if (bindable is MenuItem menuItem && newValue is ImageSource icon)
+				{
+					icon.Parent = menuItem;
+				}
 		 } );
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
