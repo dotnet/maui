@@ -139,10 +139,10 @@ public static class KeyboardAutoManagerScroll
 	internal static CGRect? FindCursorPosition()
 	{
 		var localCursor = FindLocalCursorPosition();
-		if (localCursor is CGRect local)
+		if (localCursor is CGRect local && ContainerView is not null)
 		{
-			var cursorInContainer = ContainerView!.ConvertRectFromView(local, View);
-			var cursorInWindow = ContainerView!.ConvertRectToView(cursorInContainer, null);
+			var cursorInContainer = ContainerView.ConvertRectFromView(local, View);
+			var cursorInWindow = ContainerView.ConvertRectToView(cursorInContainer, null);
 			return cursorInWindow;
 		}
 
@@ -377,18 +377,13 @@ public static class KeyboardAutoManagerScroll
 
 		var viewRectInWindow = View.ConvertRectToView(View.Bounds, window);
 
-		// give a small offset of 20 plus the cursor.Height for the distance
-		// between the selected text and the keyboard
-		var bottomBuffer = (int)cursorRect.Height + TextViewDistanceFromBottom;
-
 		// since the cursorRect does not have a height for Pickers, we can assign the height of the picker as the cursor height
 		if (cursorRect.Height == 0)
 		{
 			cursorRect.Height = View.Bounds.Height;
-			bottomBuffer = TextViewDistanceFromBottom;
 		}
 
-		var keyboardYPosition = window.Frame.Height - kbSize.Height - bottomBuffer;
+		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewDistanceFromBottom;
 
 		// readjust contentInset when the textView height is too large for the screen
 		var rootSuperViewFrameInWindow = window.Frame;
@@ -662,7 +657,7 @@ public static class KeyboardAutoManagerScroll
 
 		if (move >= 0)
 		{
-			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move, Math.Min(0, -kbSize.Height - bottomBuffer));
+			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move, Math.Min(0, -kbSize.Height - TextViewDistanceFromBottom));
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
@@ -745,12 +740,12 @@ public static class KeyboardAutoManagerScroll
 			return;
 		}
 
-		var frameInContainer = ContainerView!.ConvertRectFromView(scrolledView.Frame, scrolledView.Superview);
-		var frameInWindow = ContainerView!.ConvertRectToView(frameInContainer, null);
+		var frameInContainer = ContainerView.ConvertRectFromView(scrolledView.Frame, scrolledView.Superview);
+		var frameInWindow = ContainerView.ConvertRectToView(frameInContainer, null);
 
 		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
 
-		var bottomInset = keyboardIntersect.Height + TextViewDistanceFromBottom;
+		var bottomInset = keyboardIntersect.Height;
 		var bottomScrollIndicatorInset = bottomInset;
 
 		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
