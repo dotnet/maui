@@ -27,8 +27,6 @@
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.TargetNullValue.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.TypedBinding.set -> void
-~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
-~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.UpdateSourceEventName.get -> string
 ~Microsoft.Maui.Controls.Xaml.BindingExtension.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.Xaml.DataTemplateExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.DataTemplate
@@ -46,6 +44,7 @@
 ~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.FindByName(string name) -> object
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope scope) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, bool notused) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.Add(System.Type type, object service) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.GetService(System.Type serviceType) -> object
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver.XamlTypeResolver(System.Xml.IXmlNamespaceResolver namespaceResolver, System.Reflection.Assembly currentAssembly) -> void
