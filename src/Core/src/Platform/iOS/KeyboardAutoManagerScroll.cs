@@ -409,7 +409,7 @@ public static class KeyboardAutoManagerScroll
 		{
 			superScrollViewRect = superScrollView.ConvertRectToView(superScrollView.Bounds, window);
 			topBoundary = Math.Max(topBoundary, superScrollViewRect.Value.Top);
-			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom);
+			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom);
 		}
 
 		bool forceSetContentInsets = true;
