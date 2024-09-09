@@ -10,25 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!--
-      Set one of these if you want to test a particular set of renderers
-      <ANDROID_RENDERERS>FAST</ANDROID_RENDERERS>
-      <ANDROID_RENDERERS>LEGACY</ANDROID_RENDERERS>
-    -->
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(CI)' == 'true'">
-    <_XamarinFormsVersion>$(BUILD_BUILDNUMBER.Split(`+`)[0])</_XamarinFormsVersion>
-    <XamarinFormsVersion Condition="Exists('$(BUILD_SOURCESDIRECTORY)/Nuget/Xamarin.Forms.$(_XamarinFormsVersion).nupkg')" >$(_XamarinFormsVersion)</XamarinFormsVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <FromSource Condition="'$(XamarinFormsVersion)' != '' AND '$(FromSource)' == ''">false</FromSource>
-    <FromSource Condition="'$(FromSource)' == ''">true</FromSource>
-  </PropertyGroup>
-  
-  <PropertyGroup>
-    <LangVersion>preview</LangVersion>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true' OR '$(TF_BUILD)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <!-- This is used by the libraries -->

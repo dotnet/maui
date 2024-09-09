@@ -16,7 +16,7 @@
         {
             "label": "Build Platform Sample",
             "type": "shell",
-            "command": "./bin/dotnet/dotnet build ${input:project} -c ${input:configuration}",
+            "command": "${input:debugbuildtasks} ./bin/dotnet/dotnet build ${input:project} -c ${input:configuration}",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -58,6 +58,16 @@
             "options": [
                 "net7.0-android",
                 "net7.0-ios",
+            ]
+        },
+        {
+            "id": "debugbuildtasks",
+            "type": "pickString",
+            "default": "",
+            "description": "Debug Build Tasks?",
+            "options": [
+                "",
+                "MSBUILDDEBUGONSTART=2"
             ]
         },
         {

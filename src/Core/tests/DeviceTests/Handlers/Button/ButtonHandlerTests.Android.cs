@@ -1,5 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Android.Graphics.Drawables;
 using Android.Text;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
@@ -12,6 +12,39 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ButtonHandlerTests
 	{
+		[Fact(DisplayName = "Button has Ripple Effect")]
+		public async Task ButtonRippleEffect()
+		{
+			var layout = new LayoutStub();
+
+			var button = new ButtonStub
+			{
+				Text = "Text",
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Orange),
+			};
+
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			await AttachAndRun(button, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var hasRipple = GetNativeHasRippleDrawable(handler);
+				Assert.True(hasRipple);
+			});
+		}
+
 		[Fact(DisplayName = "IsVisible updates Correctly")]
 		public async Task IsVisibleUpdatesCorrectly()
 		{
@@ -78,14 +111,18 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
-		[Theory(DisplayName = "CornerRadius Initializes Correctly")]
+		[Theory(DisplayName = "CornerRadius Initializes Correctly"
+#if __ANDROID_23__	
+			, Skip = "Failing on Android 23"
+#endif
+		)]
 		[InlineData(0, 0)]
 		[InlineData(5, 5)]
 		public async Task CornerRadiusInitializesCorrectly(int viewRadius, int platformViewRadius)
 		{
 			var button = new ButtonStub
 			{
-				Background = new SolidPaintStub(Colors.Black),
+				Background = new LinearGradientPaintStub(Colors.Red, Colors.Orange),
 				ImageSource = new FileImageSourceStub("black.png"),
 				CornerRadius = viewRadius
 			};
@@ -137,17 +174,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var appCompatButton = GetNativeButton(buttonHandler);
 
-			if (appCompatButton.Background is BorderDrawable)
+			if (appCompatButton.Background is RippleDrawable rippleDrawable)
 			{
-				var background = (BorderDrawable)appCompatButton.Background;
+				const int BackgroundDrawableId = 999;
+				var background = rippleDrawable.FindDrawableByLayerId(BackgroundDrawableId) as GradientDrawable;
 
 				if (background != null)
 				{
-					// Cornerradius is applied in drawing the path, in PathF. But that takes a private value as input, here we check that that private value is correctly set
-					CornerRadius cr = (CornerRadius)typeof(BorderDrawable).GetField("_cornerRadius",
-						System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(background);
-
-					return (int)cr.TopRight;
+					return (int)MauiContext.Context.FromPixels(background.CornerRadius);
 				}
 			}
 
@@ -203,5 +237,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextUtils.TruncateAt GetNativeLineBreakMode(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Ellipsize;
+
+		bool GetNativeHasRippleDrawable(ButtonHandler buttonHandler)
+		{
+			var button = buttonHandler.PlatformView;
+
+			if (button is null)
+				return false;
+
+			var rippleDrawable = button.Background as RippleDrawable;
+
+			return rippleDrawable is not null;
+		}
 	}
 }

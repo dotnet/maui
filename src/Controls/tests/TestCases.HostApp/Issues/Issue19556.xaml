@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19556"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:NavigationPage.PrefersLargeTitles="false"
+             Title="Issue19556">
+    <StackLayout Padding="30,0" Spacing="0">
+        <Label Text="NET Multi-platform App UI monospace"
+                FontFamily="monospace"
+                AutomationId="label"
+                SemanticProperties.HeadingLevel="Level1" />
+        <Label Text=".NET Multi-platform App UI sans-serif-condensed"
+                FontFamily="sans-serif-condensed"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I sans-serif-condensed" />
+        <Label Text=".NET Multi-platform App UI sans-serif-condensed-light"
+                FontFamily="sans-serif-condensed-light"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I sans-serif-condensed-light" />
+        <Label Text=".NET Multi-platform App UI serif"
+                FontFamily="serif"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I serif " />
+        <Label Text=".NET Multi-platform App UI sans-serif"
+                FontFamily="sans-serif"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I sans-serif" />
+        <Label Text=".NET Multi-platform App UI sans-serif-black"
+                FontFamily="sans-serif-black"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I sans-serif-black" />
+        <Label Text=".NET Multi-platform App UI sans-serif-light"
+                FontFamily="sans-serif-light"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I sans-serif-light" />
+        <Label Text=".NET Multi-platform App UI sans-serif-medium"
+                FontFamily="sans-serif-medium"
+                SemanticProperties.HeadingLevel="Level2"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I sans-serif-medium" />
+    </StackLayout>
+</ContentPage>

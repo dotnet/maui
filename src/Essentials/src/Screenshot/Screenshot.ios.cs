@@ -137,10 +137,11 @@ namespace Microsoft.Maui.Media
 
 		static void HideSublayers(CALayer layer, Dictionary<CALayer, bool> visibilitySnapshot)
 		{
-			if (layer.Sublayers == null)
+			var sublayers = layer?.Sublayers;
+			if (sublayers is null)
 				return;
 
-			foreach (var sublayer in layer.Sublayers)
+			foreach (var sublayer in sublayers)
 			{
 				HideSublayers(sublayer, visibilitySnapshot);
 

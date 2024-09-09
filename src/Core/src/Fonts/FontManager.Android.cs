@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using Android.Graphics;
 using Android.Graphics.Fonts;
@@ -16,6 +17,14 @@ namespace Microsoft.Maui
 		{
 			"Fonts/",
 			"fonts/",
+		};
+
+		static readonly Dictionary<string, FontWeight> FontWeightMap = new(StringComparer.OrdinalIgnoreCase)
+		{
+			{ "-light", FontWeight.Light },
+			{ "-medium", FontWeight.Medium },
+			{ "-black", FontWeight.Black }
+			// Add more styles as needed
 		};
 
 		readonly ConcurrentDictionary<(string? fontFamilyName, FontWeight weight, bool italic), Typeface?> _typefaces = new();
@@ -171,7 +180,20 @@ namespace Microsoft.Maui
 			}
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(28))
+			{
+				if (!string.IsNullOrWhiteSpace(fontFamily))
+				{
+					foreach (var fontWeight in FontWeightMap)
+					{
+						if (fontFamily.EndsWith(fontWeight.Key, StringComparison.OrdinalIgnoreCase))
+						{
+							return Typeface.Create(result, (int)fontWeight.Value, italic);
+						}
+					}
+				}
+
 				result = Typeface.Create(result, (int)weight, italic);
+			}
 			else
 				result = Typeface.Create(result, style);
 

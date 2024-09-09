@@ -16,13 +16,13 @@ namespace Microsoft.Maui.Controls
 	public abstract class MultiPage<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] T> : Page, IViewContainer<T>, IPageContainer<T>, IItemsView<T>, IMultiPageController<T> where T : Page
 	{
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
-		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create("ItemsSource", typeof(IEnumerable), typeof(MultiPage<>), null);
+		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(MultiPage<>), null);
 
 		/// <summary>Bindable property for <see cref="ItemTemplate"/>.</summary>
-		public static readonly BindableProperty ItemTemplateProperty = BindableProperty.Create("ItemTemplate", typeof(DataTemplate), typeof(MultiPage<>), null);
+		public static readonly BindableProperty ItemTemplateProperty = BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(MultiPage<>), null);
 
 		/// <summary>Bindable property for <see cref="SelectedItem"/>.</summary>
-		public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create("SelectedItem", typeof(object), typeof(MultiPage<>), null, BindingMode.TwoWay);
+		public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(MultiPage<>), null, BindingMode.TwoWay);
 
 		internal static readonly BindableProperty IndexProperty = BindableProperty.Create("Index", typeof(int), typeof(Page), -1);
 
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 		public static int GetIndex(T page)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 
 			return (int)page.GetValue(IndexProperty);
 		}
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetIndex(Page page, int index)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 
 			page.SetValue(IndexProperty, index);
 		}

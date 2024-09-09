@@ -26,11 +26,12 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.CrossPlatformLayout = VirtualView;
 
-			PlatformView.Children.Clear();
+			var children = PlatformView.Children;
+			children.Clear();
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				PlatformView.Children.Add(child.ToPlatform(MauiContext));
+				children.Add(child.ToPlatform(MauiContext));
 			}
 		}
 
@@ -108,7 +109,8 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			var currentIndex = PlatformView.Children.IndexOf(child.ToPlatform(MauiContext!));
+			var children = PlatformView.Children;
+			var currentIndex = children.IndexOf(child.ToPlatform(MauiContext!));
 
 			if (currentIndex == -1)
 			{
@@ -119,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentIndex != targetIndex)
 			{
-				PlatformView.Children.Move((uint)currentIndex, (uint)targetIndex);
+				children.Move((uint)currentIndex, (uint)targetIndex);
 			}
 		}
 

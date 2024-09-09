@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 	{
 		PassthroughView? _passthroughView;
 		IDisposable? _frameObserver;
-		PlatformGraphicsView? _graphicsView;
+		OverlayGraphicsView? _graphicsView;
 
 		public virtual bool Initialize()
 		{
@@ -27,8 +27,9 @@ namespace Microsoft.Maui
 
 			// Create a passthrough view for holding the canvas and other diagnostics tools.
 			_passthroughView = new PassthroughView(this, platformWindow.RootViewController.View.Frame);
+			_passthroughView.AutoresizingMask = UIViewAutoresizing.All;
 
-			_graphicsView = new PlatformGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
+			_graphicsView = new OverlayGraphicsView(_passthroughView.Frame, this, new DirectRenderer());
 			_graphicsView.AutoresizingMask = UIViewAutoresizing.All;
 
 			_passthroughView.AddSubview(_graphicsView);
@@ -77,6 +78,17 @@ namespace Microsoft.Maui
 		{
 			HandleUIChange();
 			Invalidate();
+		}
+
+		class OverlayGraphicsView : PlatformGraphicsView
+		{
+			public OverlayGraphicsView(CGRect frame, IDrawable drawable, IGraphicsRenderer renderer)
+			: base(frame, drawable, renderer)
+			{
+
+			}
+
+			public override bool IsTransparentFocusItem => true;
 		}
 
 		class PassthroughView : UIView

@@ -319,7 +319,19 @@ namespace Microsoft.Maui.Controls
 			set => _internalList[index] = value;
 		}
 
-		internal VisualElement VisualElement { get; set; }
+		WeakReference<VisualElement> _visualElement;
+		internal VisualElement VisualElement {
+			get {
+				if (_visualElement == null)
+					return null;
+				_visualElement.TryGetTarget(out var ve);
+				return ve;
+			} 
+			set {
+				_visualElement = new WeakReference<VisualElement>(value);
+			}
+		}
+
 		internal SetterSpecificity Specificity { get; set; }
 
 		void OnStatesChanged()
@@ -378,7 +390,18 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateGroup.xml" path="//Member[@MemberName='CurrentState']/Docs/*" />
 		public VisualState CurrentState { get; internal set; }
 
-		internal VisualElement VisualElement { get; set; }
+		WeakReference<VisualElement> _visualElement;
+		internal VisualElement VisualElement {
+			get {
+				if (_visualElement == null)
+					return null;
+				_visualElement.TryGetTarget(out var ve);
+				return ve;
+			} 
+			set {
+				_visualElement = new WeakReference<VisualElement>(value);
+			}
+		}
 
 		internal VisualState GetState(string name)
 		{
@@ -485,7 +508,7 @@ namespace Microsoft.Maui.Controls
 				clone.States.Add(state.Clone());
 			}
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;
@@ -599,7 +622,7 @@ namespace Microsoft.Maui.Controls
 				clone.StateTriggers.Add(stateTrigger);
 			}
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;
@@ -666,7 +689,7 @@ namespace Microsoft.Maui.Controls
 				clone.Add(group.Clone());
 			}
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;

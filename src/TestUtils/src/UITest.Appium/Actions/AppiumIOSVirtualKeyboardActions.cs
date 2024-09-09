@@ -27,6 +27,23 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
+		protected override CommandResponse PressEnter(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				if (_app.Driver.IsKeyboardShown())
+				{
+					_app.Driver.SwitchTo().ActiveElement().SendKeys(Keys.Return);
+				}
+			}
+			catch (InvalidElementStateException)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
 		protected override CommandResponse PressVolumeDown(IDictionary<string, object> parameters)
 		{
 			try

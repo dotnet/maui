@@ -22,6 +22,10 @@
                 Style="{StaticResource Headline}"/>
             <Button Text="Toggle Flyout Background" x:Name="flyoutBackgroundColor" Clicked="OnToggleFlyoutBackgroundColor" />
             <Label
+                Text="Toggle Navbar Shadow"
+                Style="{StaticResource Headline}"/>
+            <Button Text="Toggle Navbar HasShadow" Clicked="OnToggleNavBarHasShadow" />
+            <Label
                 Text="Toggle Navbar Visibility"
                 Style="{StaticResource Headline}"/>
             <Button Text="Toggle Navbar Visibility" Clicked="OnToggleNavBarIsVisible" />

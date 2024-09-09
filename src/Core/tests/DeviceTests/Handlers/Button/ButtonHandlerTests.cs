@@ -65,11 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-		[Theory(
-#if WINDOWS
-			Skip = "Fails on Windows"
-#endif
-		)]
+		[Theory(DisplayName = "ImageSource Initializes Correctly")]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
 		[InlineData("black.png", "#000000")]
@@ -81,10 +77,8 @@ namespace Microsoft.Maui.DeviceTests
 				ImageSource = new FileImageSourceStub(filename),
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(image, async (handler) =>
 			{
-				var handler = CreateHandler(image);
-
 				await AssertEventually(() => ImageSourceLoaded(handler));
 
 				var expectedColor = Color.FromArgb(colorHex);

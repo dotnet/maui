@@ -121,7 +121,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.Appearing += (_, __) =>
 			{
 				if (page.Parent == null || !parentSet)
+				{
 					throw new Exception("Appearing firing before parent set is called");
+				}
 
 				pageAppearing = true;
 			};
@@ -185,7 +187,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			Shell shell = new TestShell();
 			shell.Items.Add(CreateShellItem());
-			shell.Navigation.PushAsync(new LifeCyclePage());
+			await shell.Navigation.PushAsync(new LifeCyclePage());
 			var page = (LifeCyclePage)shell.GetVisiblePage();
 			Assert.True(page.Appearing);
 			Assert.True(page.ParentSet);

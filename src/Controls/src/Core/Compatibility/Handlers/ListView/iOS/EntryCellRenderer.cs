@@ -28,10 +28,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var tvc = reusableCell as EntryCellTableViewCell;
 			if (tvc == null)
+			{
 				tvc = new EntryCellTableViewCell(item.GetType().FullName);
+			}
 			else
 			{
-				tvc.PropertyChanged -= HandlePropertyChanged;
+				CellPropertyChanged -= HandlePropertyChanged;
 				tvc.TextFieldTextChanged -= OnTextFieldTextChanged;
 				tvc.KeyboardDoneButtonPressed -= OnKeyBoardDoneButtonPressed;
 			}
@@ -39,11 +41,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetRealCell(item, tvc);
 
 			tvc.Cell = item;
-			tvc.PropertyChanged += HandlePropertyChanged;
+			CellPropertyChanged += HandlePropertyChanged;
 			tvc.TextFieldTextChanged += OnTextFieldTextChanged;
 			tvc.KeyboardDoneButtonPressed += OnKeyBoardDoneButtonPressed;
-
-			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
 			UpdateBackground(tvc, entryCell);
 			UpdateLabel(tvc, entryCell);

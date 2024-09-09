@@ -20,9 +20,8 @@ namespace Microsoft.Maui
 
 			if (nativeScroll != null && nativeScroll is ScrollViewer viewer)
 			{
-				if (!_scrollViews.ContainsKey(scrollBar))
+				if (_scrollViews.TryAdd(scrollBar, viewer))
 				{
-					_scrollViews.Add(scrollBar, viewer);
 					viewer.ViewChanging += OnViewChanging;
 				}
 			}

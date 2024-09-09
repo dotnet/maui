@@ -42,6 +42,36 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task SettingJustSelectedATabColorOnBottomTabsDoesntCrash()
+		{
+			SetupBuilder();
+			var tabbedPage = new TabbedPage
+            {
+                Children =
+                {
+                    new ContentPage() { Title = "Page1"}
+                    ,new ContentPage() { Title = "Page2"}
+                    ,new ContentPage() { Title = "Page3"}
+                
+                },
+				SelectedTabColor = Colors.Red,
+            };
+
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage
+				.SetToolbarPlacement(tabbedPage, Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+				
+			tabbedPage.SelectedTabColor = Colors.Red;
+
+			bool success = false;
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				success = true;
+			});
+
+			Assert.True(success);
+		}
+
+		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{
 			SetupBuilder();

@@ -270,6 +270,68 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.Equal(SKColors.Empty, pixmap.GetPixelColor(2, 2));
 				Assert.Equal(0xFF71559B, pixmap.GetPixelColor(2, 6));
 			}
+
+			[Fact]
+			public void SvgImageWithDecodingIssue_15442()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/find_icon.svg";
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(200, resultImage.Width);
+				Assert.Equal(200, resultImage.Height);
+
+				using (var image = SKImage.FromBitmap(resultImage))
+				using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+				using (var stream = File.OpenWrite("images/find_icon.svg.png"))
+				{
+					data.SaveTo(stream);
+				}
+
+				using var pixmap = resultImage.PeekPixels();
+
+				Assert.Equal((SKColor)0x00000000, pixmap.GetPixelColor(10, 10));
+				Assert.Equal((SKColor)0xFFA5ADF6, pixmap.GetPixelColor(81, 137));
+				Assert.Equal((SKColor)0xFF635DF7, pixmap.GetPixelColor(125, 137));
+
+				Assert.Equal((SKColor)0xFFA5ADF6, pixmap.GetPixelColor(22, 62));
+				Assert.Equal((SKColor)0xFFA5ADF6, pixmap.GetPixelColor(72, 109));
+				Assert.Equal((SKColor)0xFFA5ADF6, pixmap.GetPixelColor(131, 23));
+				Assert.Equal((SKColor)0xFFA5ADF6, pixmap.GetPixelColor(178, 153));
+				Assert.Equal((SKColor)0xFFA5ADF6, pixmap.GetPixelColor(124, 180));
+			}
+
+			[Fact]
+			public void SvgImageWithDecodingIssue_12109()
+			{
+				var info = new ResizeImageInfo();
+				info.Filename = "images/warning.svg";
+				var tools = new SkiaSharpSvgTools(info, Logger);
+				var dpiPath = new DpiPath("", 1);
+
+				tools.Resize(dpiPath, DestinationFilename);
+
+				using var resultImage = SKBitmap.Decode(DestinationFilename);
+				Assert.Equal(42, resultImage.Width);
+				Assert.Equal(37, resultImage.Height);
+
+				using (var image = SKImage.FromBitmap(resultImage))
+				using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+				using (var stream = File.OpenWrite("images/warning.svg.png"))
+				{
+					data.SaveTo(stream);
+				}
+
+				using var pixmap = resultImage.PeekPixels();
+
+				Assert.Equal((SKColor)0x00000000, pixmap.GetPixelColor(10, 10));
+				Assert.Equal((SKColor)0xffe26b00, pixmap.GetPixelColor(20, 3));
+				Assert.Equal((SKColor)0xffe26b00, pixmap.GetPixelColor(20, 34));
+			}
 		}
 	}
 }

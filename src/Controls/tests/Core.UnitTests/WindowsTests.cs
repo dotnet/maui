@@ -450,6 +450,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void MovingWindowDoNotTriggerSizeChanged()
+		{
+			var sizeChangedCount = 0;
+
+			var window = new TestWindow();
+			window.SizeChanged += (sender, e) => sizeChangedCount++;
+
+			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
+			((IWindow)window).FrameChanged(new Rect(200, 300, 300, 400));
+
+			Assert.Equal(1, sizeChangedCount);
+		}
+
+		[Fact]
 		public void SettingSameCoreFrameDoesNothing()
 		{
 			var sizeChangedCount = 0;
@@ -486,7 +500,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
 
-			Assert.Equal(1, sizeChangedCount);
+			Assert.Equal(0, sizeChangedCount);
 			Assert.Equal(new[] { "Y" }, changingProperties);
 			Assert.Equal(new[] { "Y" }, changedProperties);
 		}

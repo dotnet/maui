@@ -19,7 +19,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
+	public partial class ControlsHandlerTestBase : HandlerTestBase
 	{
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
 		// that way all the lifecycle events related to being attached to the window will fire

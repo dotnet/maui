@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			}
 			else
 			{
-				appRootDir = Environment.CurrentDirectory;
+				appRootDir = AppContext.BaseDirectory;
 			}
 			var hostPageFullPath = Path.GetFullPath(Path.Combine(appRootDir, HostPage));
 			var contentRootDirFullPath = Path.GetDirectoryName(hostPageFullPath)!;

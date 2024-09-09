@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Drawing;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
@@ -17,10 +18,30 @@ namespace UITest.Appium
 		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="element">Target Element</param>
+		/// <param name="element">Target Element.</param>
+		public static void Tap(this IApp app, string element)
+		{
+			app.FindElement(element).Click();
+		}
+
+		/// <summary>
+		/// Performs a mouse click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
+		}
+
+		public static void RightClick(this IApp app, string element)
+		{
+			var uiElement = app.FindElement(element);
+			uiElement.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", uiElement },
+				{ "button", "right" }
+			});
 		}
 
 		public static string? GetText(this IUIElement element)
@@ -57,6 +78,12 @@ namespace UITest.Appium
 			throw new InvalidOperationException($"Could not get Rect of element");
 		}
 
+		/// <summary>
+		/// Enters text into the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		/// <param name="text">The text to enter.</param>
 		public static void EnterText(this IApp app, string element, string text)
 		{
 			var appElement = app.FindElement(element);
@@ -64,11 +91,20 @@ namespace UITest.Appium
 			app.DismissKeyboard();
 		}
 
+		/// <summary>
+		/// Hides soft keyboard if present.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void DismissKeyboard(this IApp app)
 		{
 			app.CommandExecutor.Execute("dismissKeyboard", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Whether or not the soft keyboard is shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>true if the soft keyboard is shown; otherwise, false.</returns>
 		public static bool IsKeyboardShown(this IApp app)
 		{
 			var response = app.CommandExecutor.Execute("isKeyboardShown", ImmutableDictionary<string, object>.Empty);
@@ -95,13 +131,30 @@ namespace UITest.Appium
 				ske.PressKeyCode(keyCode, metastate);
 				return;
 			}
-			
+
 			throw new InvalidOperationException($"SendKeys is not supported on {aaa.Driver}");
 		}
 
+		/// <summary>
+		/// Clears text from the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void ClearText(this IApp app, string element)
 		{
 			app.FindElement(element).Clear();
+		}
+
+		/// <summary>
+		/// Performs a mouse click on the matched element.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		public static void Click(this IUIElement element)
+		{
+			element.Command.Execute("click", new Dictionary<string, object>()
+			{
+				{ "element", element }
+			});
 		}
 
 		/// <summary>
@@ -110,10 +163,10 @@ namespace UITest.Appium
 		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
 		/// https://github.com/dotnet/maui/issues/19754
 		/// </summary>
-		/// <param name="element">Target Element</param>
-		public static void Click(this IUIElement element)
+		/// <param name="element">Target Element.</param>
+		public static void Tap(this IUIElement element)
 		{
-			element.Command.Execute("click", new Dictionary<string, object>()
+			element.Command.Execute("tap", new Dictionary<string, object>()
 			{
 				{ "element", element }
 			});
@@ -136,15 +189,98 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Performs a mouse double click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void DoubleClick(this IApp app, string element)
 		{
-			var elementToClick = app.FindElement(element);
+			var elementToDoubleClick = app.FindElement(element);
 			app.CommandExecutor.Execute("doubleClick", new Dictionary<string, object>
 			{
-				{ "element", elementToClick },
+				{ "element", elementToDoubleClick },
 			});
 		}
 
+		/// <summary>
+		/// Performs a mouse double click on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to double click.</param>
+		/// <param name="y">The y coordinate to double click.</param>
+		public static void DoubleClickCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("doubleClickCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Performs two quick tap / touch gestures on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void DoubleTap(this IApp app, string element)
+		{
+			var elementToDoubleTap = app.FindElement(element);
+			app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
+			{
+				{ "element", elementToDoubleTap },
+			});
+		}
+
+		/// <summary>
+		/// Performs two quick tap / touch gestures on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to double tap.</param>
+		/// <param name="y">The y coordinate to double tap.</param>
+		public static void DoubleTapCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("doubleTapCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Performs a long mouse click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void LongPress(this IApp app, string element)
+		{
+			var elementToLongPress = app.FindElement(element);
+			app.CommandExecutor.Execute("longPress", new Dictionary<string, object>
+			{
+				{ "element", elementToLongPress },
+			});
+		}
+
+		/// <summary>
+		/// Performs a continuous touch gesture on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void TouchAndHold(this IApp app, string element)
+		{
+			var elementToTouchAndHold = app.FindElement(element);
+			app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
+			{
+				{ "element", elementToTouchAndHold },
+			});
+		}
+
+		/// <summary>
+		/// Performs a long touch on an item, followed by dragging the item to a second item and dropping it.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="dragSource">Element to be dragged.</param>
+		/// <param name="dragTarget">Element to be dropped.</param>
 		public static void DragAndDrop(this IApp app, string dragSource, string dragTarget)
 		{
 			var dragSourceElement = app.FindElement(dragSource);
@@ -157,6 +293,12 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Scroll until an element that matches the toElementId is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toElementId">Specify what element to scroll within.</param>
+		/// <param name="down">Whether scrolls should be down or up.</param>
 		public static void ScrollTo(this IApp app, string toElementId, bool down = true)
 		{
 			app.CommandExecutor.Execute("scrollTo", new Dictionary<string, object>
@@ -164,6 +306,63 @@ namespace UITest.Appium
 				{ "elementId", toElementId},
 				{ "down", down }
 			});
+		}
+
+		/// <summary>
+		/// Return the currently presented alert or action sheet.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static IUIElement? GetAlert(this IApp app)
+		{
+			return app.GetAlerts().FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Return the currently presented alerts or action sheets.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static IReadOnlyCollection<IUIElement> GetAlerts(this IApp app)
+		{
+			var result = app.CommandExecutor.Execute("getAlerts", ImmutableDictionary<string, object>.Empty);
+			return (IReadOnlyCollection<IUIElement>?)result.Value ?? Array.Empty<IUIElement>();
+		}
+
+		/// <summary>
+		/// Dismisses the alert.
+		/// </summary>
+		/// <param name="alertElement">The element that represents the alert or action sheet.</param>
+		public static void DismissAlert(this IUIElement alertElement)
+		{
+			alertElement.Command.Execute("dismissAlert", new Dictionary<string, object>
+			{
+				["element"] = alertElement
+			});
+		}
+
+		/// <summary>
+		/// Return the buttons in the alert or action sheet.
+		/// </summary>
+		/// <param name="alertElement">The element that represents the alert or action sheet.</param>
+		public static IReadOnlyCollection<IUIElement> GetAlertButtons(this IUIElement alertElement)
+		{
+			var result = alertElement.Command.Execute("getAlertButtons", new Dictionary<string, object>
+			{
+				["element"] = alertElement
+			});
+			return (IReadOnlyCollection<IUIElement>?)result.Value ?? Array.Empty<IUIElement>();
+		}
+
+		/// <summary>
+		/// Return the text messages in the alert or action sheet.
+		/// </summary>
+		/// <param name="alertElement">The element that represents the alert or action sheet.</param>
+		public static IReadOnlyCollection<string> GetAlertText(this IUIElement alertElement)
+		{
+			var result = alertElement.Command.Execute("getAlertText", new Dictionary<string, object>
+			{
+				["element"] = alertElement
+			});
+			return (IReadOnlyCollection<string>?)result.Value ?? Array.Empty<string>();
 		}
 
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
@@ -174,10 +373,32 @@ namespace UITest.Appium
 			return results;
 		}
 
+		public static IUIElement WaitForElement(
+			this IApp app,
+			Func<IUIElement?> query,
+			string? timeoutMessage = null,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			var results = Wait(query, i => i != null, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
 		public static void WaitForNoElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
 			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
+		}
+
+		public static void WaitForNoElement(
+			this IApp app,
+			Func<IUIElement?> query,
+			string? timeoutMessage = null,
+			TimeSpan? timeout = null,
+			TimeSpan? retryFrequency = null)
+		{
+			Wait(query, i => i is null, timeoutMessage, timeout, retryFrequency);
 		}
 
 		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text)
@@ -224,6 +445,15 @@ namespace UITest.Appium
 		public static void PressVolumeDown(this IApp app)
 		{
 			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Presses the enter key in the app.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PressEnter(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressEnter", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -415,6 +645,21 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a mouse click on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to click.</param>
+		/// <param name="y">The y coordinate to click.</param>
+		public static void ClickCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("clickCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
 		/// Performs a tap / touch gesture on the given coordinates.
 		/// This API currently doesn't work on Catalyst https://github.com/dotnet/maui/issues/19754
 		/// For Catalyst you'll currently need to use Click instead. 
@@ -450,6 +695,15 @@ namespace UITest.Appium
 		public static void BackgroundApp(this IApp app)
 		{
 			app.CommandExecutor.Execute("backgroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ForegroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("foregroundApp", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -541,8 +795,241 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
 		}
 
-		static IUIElement Wait(Func<IUIElement> query,
-			Func<IUIElement, bool> satisfactory,
+		/// <summary>
+		/// Return the AppId of the running app. This is used inside any appium command that want the app id
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static string GetAppId(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetAppId is only supported on AppiumApp");
+			}
+
+			var appId = aaa.Config.GetProperty<string>("AppId");
+			if (appId is not null)
+			{
+				return appId;
+			}
+
+			throw new InvalidOperationException("AppId not found");
+		}
+
+		/// <summary>
+		/// Retrieve the target device this test is running against
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns></returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static TestDevice GetTestDevice(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"GetTestDevice is only supported on AppiumApp");
+			}
+
+			return aaa.Config.GetProperty<TestDevice>("TestDevice");
+		}
+
+		/// <summary>
+		/// Sets light device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetLightTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetLightTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setLightTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sets dark device's theme
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetDarkTheme(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetDarkTheme is not supported");
+			}
+
+			app.CommandExecutor.Execute("setDarkTheme", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Check if element has focused
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="id">Target element</param>
+		/// <returns>Returns <see langword="true"/> if focused</returns>
+		/// <exception cref="InvalidOperationException"></exception>
+		public static bool IsFocused(this IApp app, string id)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"IsFocused is only supported on AppiumApp");
+			}
+
+			var activeElement = aaa.Driver.SwitchTo().ActiveElement();
+			var element = (AppiumDriverElement)app.WaitForElement(id);
+
+			if (app.GetTestDevice() == TestDevice.Mac && activeElement is AppiumElement activeAppiumElement)
+			{
+				// For some reason on catalyst the ActiveElement returns an AppiumElement with a different id
+				// The TagName (AutomationId) and the location all match, so, other than the Id it walks and talks
+				// like the same element
+				return element.AppiumElement.TagName.Equals(activeAppiumElement.TagName, StringComparison.OrdinalIgnoreCase) &&
+					element.AppiumElement.Location.Equals(activeAppiumElement.Location);
+			}
+
+			return element.AppiumElement.Equals(activeElement);
+		}
+
+		/// <summary>
+		/// Lock the screen.
+		/// Functionality that's only available on Android and iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">Lock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Lock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Unlock the screen.
+		/// Functionality that's only available on Android and iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Unlock(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Start recording screen.
+		/// Functionality that's only available on Android, iOS and Windows.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">StartRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void StartRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StartRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("startRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Stop recording screen.
+		/// Functionality that's only available on Android, iOS and Windows.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">StopRecordingScreen is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void StopRecordingScreen(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"StopRecordingScreen is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("stopRecordingScreen", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Toggle airplane mode on device.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleAirplaneMode is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleAirplaneMode(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleAirplaneMode is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleAirplaneMode", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Switch the state of the wifi service.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleWifi(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Simulate the device shaking.
+		/// Functionality that's only available on iOS.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void Shake(this IApp app)
+		{
+			if (app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
+			}
+
+			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Gets the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
+		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <returns>The information of the system related to the performance.</returns>
+		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+			}
+
+			var response = app.CommandExecutor.Execute("getPerformanceData", new Dictionary<string, object>()
+			{
+				{ "performanceDataType", performanceDataType },
+			});
+
+			if (response?.Value != null)
+			{
+				return (IList<object>)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		static IUIElement Wait(Func<IUIElement?> query,
+			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
@@ -552,7 +1039,7 @@ namespace UITest.Appium
 
 			DateTime start = DateTime.Now;
 
-			IUIElement result = query();
+			IUIElement? result = query();
 
 			while (!satisfactory(result))
 			{
@@ -568,7 +1055,7 @@ namespace UITest.Appium
 				result = query();
 			}
 
-			return result;
+			return result!;
 		}
 
 		static IUIElement WaitForAtLeastOne(Func<IUIElement> query,

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			RunInfo = runInfo;
 
 			RunAllTestsCommand = new Command(RunAllTestsExecute, () => !_isBusy);
-			RunFilteredTestsCommand = new Command(RunFilteredTestsExecute, () => !_isBusy);
+			RunFilteredTestsCommand = new Command(RunFilteredTestsExecute, () => !_isBusy && (_filteredTests != null && _filteredTests.Any()));
 			NavigateToResultCommand = new Command<TestCaseViewModel?>(NavigateToResultExecute, tc => !_isBusy);
 
 			DisplayName = Path.GetFileNameWithoutExtension(runInfo.AssemblyFileName);
@@ -170,6 +170,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			set => Set(ref _skipped, value);
 		}
 
+		public string RunFilteredText => (_filteredTests == null || !_filteredTests.Any()) ? $"Run Filtered" : $"Run {_filteredTests.Count()} Filtered";
+
 		void FilterAfterDelay()
 		{
 			_filterCancellationTokenSource?.Cancel();
@@ -179,7 +181,12 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			Task.Delay(500, token)
 				.ContinueWith(
-					x => { _filteredTests.FilterArgument = new FilterArgs(SearchQuery, ResultFilter); },
+					x =>
+					{
+						_filteredTests.FilterArgument = new FilterArgs(SearchQuery, ResultFilter);
+						RunFilteredTestsCommand.ChangeCanExecute();
+						RaisePropertyChanged(nameof(RunFilteredText));
+					},
 					token,
 					TaskContinuationOptions.None,
 					TaskScheduler.FromCurrentSynchronizationContext());

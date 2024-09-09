@@ -260,8 +260,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ClearSizeEstimate();
 				ReloadData();
 			}
-
-			Element.Dispatcher.DispatchIfRequired(() => List?.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

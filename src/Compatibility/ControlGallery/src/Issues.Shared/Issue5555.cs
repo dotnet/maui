@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5555, "Memory leak when SwitchCell or EntryCell", PlatformAffected.iOS)]
+	#if UITEST
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
+	#endif
 	public class Issue5555 : TestContentPage
 	{
 		[Preserve(AllMembers = true)]
@@ -102,6 +105,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
+#if ANDROID
+		[Compatibility.UITests.MovedToAppium]
+#endif
 		public void Issue5555Test()
 		{
 			RunningApp.Tap(q => q.Marked("Push page"));

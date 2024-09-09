@@ -44,6 +44,12 @@ namespace Microsoft.Maui.Controls
 							resources[res.Key] = mergedClassStyles;
 						}
 				}
+				if (app != null)
+				{
+					resources = resources ?? new(StringComparer.Ordinal);
+					resources[AppThemeBinding.AppThemeResource] = app.RequestedTheme;
+				}
+
 				element = element.Parent;
 			}
 			return resources;

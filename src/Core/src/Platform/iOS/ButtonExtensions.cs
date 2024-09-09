@@ -73,6 +73,32 @@ namespace Microsoft.Maui.Platform
 			if (bottom == 0.0)
 				bottom = AlmostZero;
 
+			// The downside of using the ContentEdgeInsets is that in non-UIButtonConfiguration instances, it will truncate the title for buttons with images on top or bottom more than necessary.
+#pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
+#pragma warning disable CA1422 // Validate platform compatibility
+			platformButton.ContentEdgeInsets = new UIEdgeInsets(
+				(float)top,
+				(float)padding.Left,
+				(float)bottom,
+				(float)padding.Right);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416
+		}
+
+		internal static void UpdateContentEdgeInsets(this UIButton platformButton, IButton button, Thickness? defaultPadding = null) =>
+			UpdateContentEdgeInsets(platformButton, button.Padding, defaultPadding);
+
+		internal static void UpdateContentEdgeInsets(this UIButton platformButton, Thickness padding, Thickness? defaultPadding = null)
+		{
+			// top and bottom insets reset to a "default" if they are exactly 0
+			// however, internally they are floor-ed, so there is no actual fractions
+			var top = padding.Top;
+			if (top == 0.0)
+				top = AlmostZero;
+			var bottom = padding.Bottom;
+			if (bottom == 0.0)
+				bottom = AlmostZero;
+
 #pragma warning disable CA1416 // TODO: 'UIButton.ContentEdgeInsets' is unsupported on: 'ios' 15.0 and later.
 #pragma warning disable CA1422 // Validate platform compatibility
 			platformButton.ContentEdgeInsets = new UIEdgeInsets(

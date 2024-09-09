@@ -1,25 +1,29 @@
 #nullable disable
 using System;
+using System.ComponentModel;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
+using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
+using APaint = Android.Graphics.Paint;
+using GPaint = Microsoft.Maui.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	public class GradientStrokeDrawable : PaintDrawable
 	{
-		readonly Paint _strokePaint;
+		readonly APaint _strokePaint;
 		AColor? _backgroundColor;
 
 		public GradientStrokeDrawable()
 		{
-			_strokePaint = new Paint
+			_strokePaint = new APaint
 			{
 				Dither = true,
 				AntiAlias = true
 			};
-			_strokePaint.SetStyle(Paint.Style.Stroke);
+			_strokePaint.SetStyle(APaint.Style.Stroke);
 		}
 
 		public void SetColor(AColor backgroundColor)
@@ -31,66 +35,66 @@ namespace Microsoft.Maui.Controls.Platform
 		public void SetStroke(int strokeWidth, AColor strokeColor)
 		{
 			_strokePaint.StrokeWidth = strokeWidth;
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
 			_strokePaint.Color = strokeColor;
-#pragma warning restore CA1416
 			InvalidateSelf();
 		}
 
 		public void SetGradient(Brush brush)
 		{
-			if (brush is LinearGradientBrush linearGradientBrush)
+			var paint = (GPaint)brush;
+			if (paint is LinearGradientPaint linearGradientBrush)
 			{
-				var p1 = linearGradientBrush.StartPoint;
-				var x1 = (float)p1.X;
-				var y1 = (float)p1.Y;
-
-				var p2 = linearGradientBrush.EndPoint;
-				var x2 = (float)p2.X;
-				var y2 = (float)p2.Y;
-
-				var gradientBrushData = linearGradientBrush.GetGradientBrushData();
-				var colors = gradientBrushData.Item1;
-				var offsets = gradientBrushData.Item2;
-
-				var linearGradientShader = new LinearGradientShader(colors, offsets, x1, y1, x2, y2);
-				SetShaderFactory(new GradientShaderFactory(linearGradientShader));
+				var factory = linearGradientBrush.GetGradientShaderFactory(null);
+				SetShaderFactory(factory);
 			}
-
-			if (brush is RadialGradientBrush radialGradientBrush)
+			else if (paint is RadialGradientPaint radialGradientBrush)
 			{
-				var center = radialGradientBrush.Center;
-				float centerX = (float)center.X;
-				float centerY = (float)center.Y;
-				float radius = (float)radialGradientBrush.Radius;
-
-				var gradientBrushData = radialGradientBrush.GetGradientBrushData();
-				var colors = gradientBrushData.Item1;
-				var offsets = gradientBrushData.Item2;
-
-				var radialGradientShader = new RadialGradientShader(colors, offsets, centerX, centerY, radius);
-				SetShaderFactory(new GradientShaderFactory(radialGradientShader));
+				var factory = radialGradientBrush.GetGradientShaderFactory(null);
+				SetShaderFactory(factory);
 			}
 		}
 
-		protected override void OnDraw(Shape shape, Canvas canvas, Paint paint)
+		internal void SetBrush(Brush brush)
+		{
+			if (brush is SolidColorBrush solidColorBrush)
+			{
+				var color = solidColorBrush.Color ?? Colors.Transparent;
+				SetColor(color.ToPlatform());
+			}
+			else if (brush is GradientBrush gradientBrush)
+			{
+				SetGradient(gradientBrush);
+			}
+		}
+
+		protected override void OnDraw(Shape shape, Canvas canvas, APaint paint)
 		{
 			base.OnDraw(shape, canvas, paint);
 
-			if (_backgroundColor != null)
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+			if (_backgroundColor is not null)
 				paint.Color = _backgroundColor.Value;
-#pragma warning restore CA1416
 
 			shape.Draw(canvas, _strokePaint);
 		}
 
+		/// <summary>
+		/// Represents a gradient.
+		/// This type is not meant to be used anywhere and is for internal use only. This type will be removed in the future.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use Microsoft.Maui.Graphics.GradientData instead.")]
 		public abstract class GradientShader
 		{
 			public int[] Colors { get; set; }
 			public float[] Offsets { get; set; }
 		}
 
+		/// <summary>
+		/// Represents a linear gradient.
+		/// This type is not meant to be used anywhere and is for internal use only. This type will be removed in the future.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use Microsoft.Maui.Graphics.LinearGradientData instead.")]
 		public class LinearGradientShader : GradientShader
 		{
 			public LinearGradientShader()
@@ -114,6 +118,12 @@ namespace Microsoft.Maui.Controls.Platform
 			public float Y2 { get; set; }
 		}
 
+		/// <summary>
+		/// Represents a radial gradient.
+		/// This type is not meant to be used anywhere and is for internal use only. This type will be removed in the future.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use Microsoft.Maui.Graphics.RadialGradientData instead.")]
 		public class RadialGradientShader : GradientShader
 		{
 			public RadialGradientShader()
@@ -133,52 +143,6 @@ namespace Microsoft.Maui.Controls.Platform
 			public float CenterX { get; set; }
 			public float CenterY { get; set; }
 			public float Radius { get; set; }
-		}
-
-		internal class GradientShaderFactory : ShaderFactory
-		{
-			readonly GradientShader _gradientShader;
-
-			public GradientShaderFactory(GradientShader gradientShader)
-			{
-				_gradientShader = gradientShader;
-			}
-
-			public override Shader Resize(int width, int height)
-			{
-				if (width == 0 && height == 0)
-					return null;
-
-				if (_gradientShader is LinearGradientShader linearGradientShader)
-				{
-					if (linearGradientShader.Colors.Length < 2)
-						return null;
-
-					return new LinearGradient(
-						width * linearGradientShader.X1,
-						height * linearGradientShader.Y1,
-						width * linearGradientShader.X2,
-						height * linearGradientShader.Y2,
-						linearGradientShader.Colors,
-						linearGradientShader.Offsets,
-						Shader.TileMode.Clamp);
-				}
-
-				if (_gradientShader is RadialGradientShader radialGradientShader)
-				{
-					if (radialGradientShader.Colors.Length < 2)
-						return null;
-
-					return new RadialGradient(
-						width * radialGradientShader.CenterX,
-						height * radialGradientShader.CenterY,
-						Math.Max(height, width) * radialGradientShader.Radius,
-						radialGradientShader.Colors,
-						radialGradientShader.Offsets,
-						Shader.TileMode.Clamp);
-				}
-				return null;
-			}
 		}
 	}
 }

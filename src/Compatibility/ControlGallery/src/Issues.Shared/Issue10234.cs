@@ -149,6 +149,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST && __IOS__
 
 		[Test]
+		[MovedToAppium]
 		public void ScrollCarouselViewAfterDispose()
 		{
 			RunningApp.WaitForElement("goToShow");

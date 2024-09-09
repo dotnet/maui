@@ -55,6 +55,15 @@ namespace Maui.Controls.Sample.Pages
 		{
 			SetRandomBackgroundColor(Link3);
 		}
+		void OnLink4Tapped(object sender, EventArgs e)
+		{
+			SetRandomBackgroundColor(Link4);
+		}
+
+		void OnLink5Tapped(object sender, EventArgs e)
+		{
+			SetRandomBackgroundColor(Link5);
+		}
 
 		void SetRandomBackgroundColor(Span span)
 		{

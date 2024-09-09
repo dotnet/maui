@@ -5,12 +5,14 @@
   <!-- Make all classes internal by default -->
   <attr path="//class[@visibility='public']" name="visibility">internal</attr>
   <!-- Public classes -->
+  <attr path="//class[@name='PlatformAppCompatTextView']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformContentViewGroup']" name="visibility">public</attr>
   <attr path="//class[@name='PlatformWrapperView']" name="visibility">public</attr>
+  <attr path="//class[@name='MauiViewGroup']" name="visibility">public</attr>
+  <!-- Internal methods & constructors -->
+  <attr path="//class[@name='PlatformAppCompatTextView']/method" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformAppCompatTextView']/constructor" name="visibility">internal</attr>
 
-  <!-- We subclass this so it needs to be public -->
-  <attr path="//package[@name='com.microsoft.maui']/class[@name='MauiViewGroup']" name="visibility">public</attr>
-  
   <remove-node path="//package[@name='com.bumptech.glide']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide']" />
   <remove-node path="//package[@name='com.microsoft.maui.glide.font']" />

@@ -51,6 +51,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+		[MovedToAppium]
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CollectionViewItemsSourceTypesDisplayAndDontCrash()

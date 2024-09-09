@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -245,22 +246,36 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
-		public static void UpdateBackgroundLayerFrame(this UIView view)
+		public static void UpdateBackgroundLayerFrame(this UIView view) =>
+			view.UpdateBackgroundLayerFrame(BackgroundLayerName);
+
+		internal static void UpdateBackgroundLayerFrame(this UIView view, string layerName)
 		{
-			if (view == null || view.Frame.IsEmpty)
+			if (view.Frame.IsEmpty)
+			{
 				return;
+			}
 
 			var layer = view.Layer;
-
-			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
-				return;
-
-			foreach (var sublayer in layer.Sublayers)
+			if (layer?.Sublayers is { Length: > 0 } sublayers)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
+				var bounds = view.Bounds;
+				UpdateBackgroundLayers(sublayers, layerName, bounds);
+			}
+		}
+
+		static void UpdateBackgroundLayers(this CALayer[] layers, string layerName, CGRect bounds)
+		{
+			foreach (var layer in layers)
+			{
+				if (layer.Sublayers is { Length: > 0 } sublayers)
 				{
-					sublayer.Frame = view.Bounds;
-					break;
+					UpdateBackgroundLayers(sublayers, layerName, bounds);
+				}
+
+				if (layer.Name == layerName && layer.Frame != bounds)
+				{
+					layer.Frame = bounds;
 				}
 			}
 		}
@@ -505,7 +520,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this UIView platformView, IViewHandler handler, IView view)
 		{
-			if (view is ITextInput textInput)
+			// Interaction should not be disabled for an editor if it is set as read-only
+			// because this prevents users from scrolling the content inside an editor.
+			if (view is not IEditor && view is ITextInput textInput)
 			{
 				platformView.UpdateInputTransparent(textInput.IsReadOnly, view.InputTransparent);
 				return;
@@ -826,7 +843,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var sibling = siblings[i];
 
-				if (sibling.Subviews is not null && sibling.Subviews.Length > 0)
+				if (!sibling.Hidden && sibling.Subviews?.Length > 0)
 				{
 					var childVal = sibling.Subviews[0].FindNextView(0, isValidType);
 					if (childVal is not null)

@@ -34,10 +34,11 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (layer.Sublayers == null || layer.Sublayers.Length == 0)
+			var sublayers = layer.Sublayers;
+			if (sublayers is null || sublayers.Length == 0)
 				return;
 
-			foreach (var subLayer in layer.Sublayers)
+			foreach (var subLayer in sublayers)
 			{
 				if (subLayer.Name == ViewExtensions.BackgroundLayerName)
 				{

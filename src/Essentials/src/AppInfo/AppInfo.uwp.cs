@@ -18,7 +18,7 @@ namespace Microsoft.Maui.ApplicationModel
 		readonly ActiveWindowTracker _activeWindowTracker;
 
 		/// <summary>
-		/// Intializes a new <see cref="AppInfoImplementation"/> object with default values.
+		/// Initializes a new <see cref="AppInfoImplementation"/> object with default values.
 		/// </summary>
 		public AppInfoImplementation()
 		{
@@ -113,6 +113,18 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Gets if this app is a packaged app.
 		/// </summary>
 		public static bool IsPackagedApp => _isPackagedAppLazy.Value;
+
+		static readonly Lazy<string> platformGetFullAppPackageFilePath = new Lazy<string>(() =>
+		{
+			return IsPackagedApp
+				? Package.Current.InstalledLocation.Path
+				: AppContext.BaseDirectory;
+		});
+
+		/// <summary>
+		/// Gets full application path.
+		/// </summary>
+		public static string PlatformGetFullAppPackageFilePath => platformGetFullAppPackageFilePath.Value;
 
 		/// <summary>
 		/// Converts a <see cref="PackageVersion"/> object to a <see cref="Version"/> object.

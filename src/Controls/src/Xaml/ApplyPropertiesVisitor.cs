@@ -326,26 +326,15 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 
-		static BindableProperty GetBindableProperty(Type elementType, string localName, IXmlLineInfo lineInfo,
-			bool throwOnError = false)
+		static BindableProperty GetBindableProperty(Type elementType, string localName, IXmlLineInfo lineInfo)
 		{
 			// F# does not support public fields, so allow internal (Assembly) as well as public
 			const BindingFlags supportedFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
-			var bindableFieldInfo = elementType.GetFields(supportedFlags)
-												.FirstOrDefault(fi => (fi.IsAssembly || fi.IsPublic) && fi.Name == localName + "Property");
-
-			Exception exception = null;
-			if (exception == null && bindableFieldInfo == null)
+			var bindableFieldInfo = elementType.GetField(localName + "Property", supportedFlags);
+			if (bindableFieldInfo is not null && (bindableFieldInfo.IsAssembly || bindableFieldInfo.IsPublic))
 			{
-				exception =
-					new XamlParseException(
-						Format("BindableProperty {0} not found on {1}", localName + "Property", elementType.Name), lineInfo);
-			}
-
-			if (exception == null)
 				return bindableFieldInfo.GetValue(null) as BindableProperty;
-			if (throwOnError)
-				throw exception;
+			}
 			return null;
 		}
 
@@ -355,7 +344,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = xamlelement.GetType();
 			GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
-			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			if (property != null)
 				return property;
@@ -397,7 +386,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = element.GetType();
 			var attached = GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
-			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			//If the target is an event, connect
 			if (xpe == null && TryConnectEvent(element, localName, attached, value, rootElement, lineInfo, out xpe))
@@ -452,7 +441,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = xamlElement.GetType();
 			var attached = GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, rootElement, lineInfo);
-			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo);
 
 			//If it's a BindableProberty, GetValue
 			if (xpe == null && TryGetValue(xamlElement, property, attached, out var value, lineInfo, out xpe, out targetProperty))

@@ -8,6 +8,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 260, "Layout issue for TableView", PlatformAffected.WinPhone)]
+#if UITEST
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
+#endif
 	public class Issue260 : ContentPage
 	{
 		public Issue260()

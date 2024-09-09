@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -100,11 +101,11 @@ namespace Microsoft.Maui.Platform
 
 			platformView.UpdateMauiCALayer(border);
 		}
-
 		internal static void UpdateMauiCALayer(this UIView platformView, IBorderStroke? border)
 		{
 			CALayer? backgroundLayer = platformView.Layer as MauiCALayer;
 
+			var initialRender = false;
 			if (backgroundLayer == null)
 			{
 				backgroundLayer = platformView.Layer?.Sublayers?
@@ -112,6 +113,7 @@ namespace Microsoft.Maui.Platform
 
 				if (backgroundLayer == null)
 				{
+					initialRender = true;
 					backgroundLayer = new MauiCALayer
 					{
 						Name = ViewExtensions.BackgroundLayerName
@@ -122,10 +124,15 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			// While we're in the process of connecting the handler properties will not change
+			// So it's useless to update the layer many times with the same value
+			if (platformView is ContentView { View: null } && !initialRender)
+			{
+				return;
+			}
+
 			if (backgroundLayer is MauiCALayer mauiCALayer)
 			{
-				backgroundLayer.Frame = platformView.Bounds;
-
 				if (border is IView view)
 					mauiCALayer.SetBackground(view.Background);
 				else
@@ -146,30 +153,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			if (platformView is ContentView contentView)
-				contentView.Clip = border;
-		}
-
-		internal static void UpdateMauiCALayer(this UIView view)
-		{
-			if (view == null || view.Frame.IsEmpty)
-				return;
-
-			var layer = view.Layer;
-
-			UpdateBackgroundLayer(layer, view.Bounds);
-		}
-
-		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
-		{
-			if (layer != null && layer.Sublayers != null)
 			{
-				foreach (var sublayer in layer.Sublayers)
-				{
-					UpdateBackgroundLayer(sublayer, bounds);
-
-					if (sublayer.Name == ViewExtensions.BackgroundLayerName && sublayer.Frame != bounds)
-						sublayer.Frame = bounds;
-				}
+				contentView.Clip = border;
 			}
 		}
 	}

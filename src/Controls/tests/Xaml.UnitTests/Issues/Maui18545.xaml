@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui18545">
+
+    <Label x:Name="label" Text="Label" >
+        <Label.Background>
+            <LinearGradientBrush EndPoint="0,1">
+                <GradientStop Offset="0.1" Color="{DynamicResource GradientColorStart}" />
+                <GradientStop Offset="1.0" Color="{DynamicResource GradientColorEnd}" />
+            </LinearGradientBrush>
+        </Label.Background>
+    </Label>
+</ContentPage>

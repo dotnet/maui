@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
+#if IOS
+	,IiOSPageSpecifics
+#endif
 	{
 		/// <summary>
 		/// The identifier used by the internal messaging system to set <see cref="IsBusy"/>.
@@ -44,26 +47,25 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
-		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
+		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), false);
 
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
-		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
+		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
-		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Page), null);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
-		bool _allocatedFlag;
 		Rect _containerArea;
 
 		bool _containerAreaSet;
@@ -71,7 +73,7 @@ namespace Microsoft.Maui.Controls
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
 
-		View _titleView;
+		internal View TitleView;
 
 		List<Action> _pendingActions = new List<Action>();
 
@@ -207,6 +209,44 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
+#if IOS
+		/// <inheritdoc/>
+		bool IiOSPageSpecifics.IsHomeIndicatorAutoHidden
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return page.On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+
+				return On<PlatformConfiguration.iOS>().PrefersHomeIndicatorAutoHidden();
+			}
+		}
+
+		/// <inheritdoc/>
+		int IiOSPageSpecifics.PrefersStatusBarHiddenMode
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return (int)page.On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+
+				return (int)On<PlatformConfiguration.iOS>().PrefersStatusBarHidden();
+			}
+		}
+
+		/// <inheritdoc/>
+		int IiOSPageSpecifics.PreferredStatusBarUpdateAnimationMode
+		{
+			get
+			{
+				if (Parent is Page page && page.IsSet(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty))
+					return (int)page.On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+
+				return (int)On<PlatformConfiguration.iOS>().PreferredStatusBarUpdateAnimation();
+			}
+		}
+#endif
+
 		/// <inheritdoc/>
 		Thickness ISafeAreaView2.SafeAreaInsets
 		{
@@ -241,7 +281,7 @@ namespace Microsoft.Maui.Controls
 		/// Displays a platform action sheet, allowing the application user to choose from several buttons.
 		/// </summary>
 		/// <param name="title">Title of the displayed action sheet. Can be <see langword="null"/> to hide the title.</param>
-		/// <param name="cancel">Text to be displayed in the 'Cancel' button. Can be null to hide the <see langword="null"/> action.</param>
+		/// <param name="cancel">Text to be displayed in the 'Cancel' button. Can be null to hide the cancel action.</param>
 		/// <param name="destruction">Text to be displayed in the 'Destruct' button. Can be <see langword="null"/> to hide the destructive option.</param>
 		/// <param name="flowDirection">The flow direction to be used by the action sheet.</param>
 		/// <param name="buttons">Text labels for additional buttons.</param>
@@ -453,8 +493,14 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(menubarItem, BindingContext);
 			}
 
-			if (_titleView != null)
-				SetInheritedBindingContext(_titleView, BindingContext);
+			if (TitleView != null)
+				SetInheritedBindingContext(TitleView, BindingContext);
+		}
+		
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
 		}
 
 		/// <summary>
@@ -496,7 +542,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="height">The height allocated to the page.</param>
 		protected override void OnSizeAllocated(double width, double height)
 		{
-			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
 			UpdateChildrenLayout();
 		}
@@ -558,12 +603,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			_allocatedFlag = false;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			if (!_allocatedFlag && Width >= 0 && Height >= 0)
-			{
-				SizeAllocated(Width, Height);
-			}
 		}
 
 		internal void OnAppearing(Action action)
@@ -665,9 +705,6 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var item = (Element)e.OldItems[i];
-					if (item is VisualElement visual)
-						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
-
 					RemoveLogicalChild(item);
 				}
 			}
@@ -680,20 +717,21 @@ namespace Microsoft.Maui.Controls
 				{
 					int insertIndex = index;
 					if (insertIndex < 0)
-						insertIndex = InternalChildren.IndexOf(item);
-
-					if (item is VisualElement visual)
 					{
-						visual.MeasureInvalidated += OnChildMeasureInvalidated;
+						insertIndex = InternalChildren.IndexOf(item);
+					}
 
-						InsertLogicalChild(insertIndex, visual);
+					InsertLogicalChild(insertIndex, item);
+					
+					if (item is VisualElement)
+					{
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
-					else
-						InsertLogicalChild(insertIndex, item);
-
+					
 					if (index >= 0)
+					{
 						index++;
+					}
 				}
 			}
 		}
@@ -757,7 +795,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
-			_titleView = newTitleView;
+			TitleView = newTitleView;
 		}
 
 		internal bool HasNavigatedTo { get; private set; }

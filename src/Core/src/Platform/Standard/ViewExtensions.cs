@@ -69,6 +69,8 @@ namespace Microsoft.Maui.Platform
 
 		internal static System.Numerics.Matrix4x4 GetViewTransform(this IView view) => new System.Numerics.Matrix4x4();
 
+		// Used by MAUI XAML Hot Reload.
+		// Consult XET if updating!
 		internal static Graphics.Rect GetBoundingBox(this IView view) => view.Frame;
 
 		internal static object? GetParent(this object? view)

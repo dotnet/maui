@@ -5,6 +5,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, UIButton>
 	{
+		// Because we can't inherit from Button we use the container to handle
+		// Life cycle events and things like monitoring focus changed
+		public override bool NeedsContainer => true;
+		
 		readonly ImageButtonProxy _proxy = new();
 
 		protected override UIButton CreatePlatformView()
@@ -59,6 +63,9 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (Handler?.PlatformView is not UIButton button)
 					return;
+
+				if (platformImage?.Images is not null && platformImage.Images.Length > 0)
+					platformImage = platformImage.Images[0];
 
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 

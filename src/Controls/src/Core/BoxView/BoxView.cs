@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == BackgroundColorProperty.PropertyName ||
 				propertyName == ColorProperty.PropertyName ||
+				propertyName == BackgroundProperty.PropertyName ||
 				propertyName == CornerRadiusProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls
 
 		PathAspect IShapeView.Aspect => PathAspect.None;
 
-		Paint? IShapeView.Fill => Color?.AsPaint() ?? ((IView)this).Background;
+		Paint? IShapeView.Fill => Color?.AsPaint();
 
 		Paint? IStroke.Stroke => null;
 

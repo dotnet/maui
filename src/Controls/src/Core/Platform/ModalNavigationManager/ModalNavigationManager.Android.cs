@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowInsets = ViewCompat.GetRootWindowInsets(decorView);
 					if (windowInsets is not null)
 					{
-						var barInsets = windowInsets.GetInsetsIgnoringVisibility(WindowInsetsCompat.Type.SystemBars());
+						var barInsets = windowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
 
 						if (mlp.TopMargin != barInsets.Top)
 							mlp.TopMargin = barInsets.Top;
@@ -414,10 +414,17 @@ namespace Microsoft.Maui.Controls.Platform
 				_rootViewLayoutListener?.Invalidate();
 				_rootViewLayoutListener = null;
 
-				_fragmentManager
-					.BeginTransaction()
-					.Remove(_modalFragment)
-					.Commit();
+				if (_windowMauiContext.Context is not null)
+				{
+					_fragmentManager.RunOrWaitForResume(_windowMauiContext.Context, fm =>
+					{
+						fm
+							.BeginTransaction()
+							.Remove(_modalFragment)
+							.SetReorderingAllowed(true)
+							.Commit();
+					});
+				}
 
 				Modal = null;
 				_windowMauiContext = null;

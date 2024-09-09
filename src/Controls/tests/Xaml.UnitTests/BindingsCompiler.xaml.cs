@@ -28,13 +28,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Test(bool useCompiledXaml)
+			
+			[Test] 
+			public void TestCompiledBindings([Values(false, true)]bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 					MockCompiler.Compile(typeof(BindingsCompiler));
+
 				var vm = new MockViewModel
 				{
 					Text = "Text0",
@@ -53,8 +53,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 				vm.Model[3] = "TextIndex";
 
-				var layout = new BindingsCompiler(useCompiledXaml);
-				layout.BindingContext = vm;
+				var layout = new BindingsCompiler(useCompiledXaml)
+				{
+					BindingContext = vm
+				};
 				layout.label6.BindingContext = new MockStructViewModel
 				{
 					Model = new MockViewModel
@@ -90,6 +92,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				GC.Collect();
 				vm.Text = "Text2";
 				Assert.AreEqual("Text2", layout.label0.Text);
+				
+				//https://github.com/dotnet/maui/issues/21181
+				vm.Model[3] = "TextIndex2";
+				Assert.AreEqual("TextIndex2", layout.label3.Text);
+
+				//https://github.com/dotnet/maui/issues/23621
+				vm.Model.SetIndexerValueAndCallOnPropertyChangedWithoutIndex(3, "TextIndex3");
+				Assert.AreEqual("TextIndex3", layout.label3.Text);
 
 				//testing 2way
 				Assert.AreEqual("Text2", layout.entry0.Text);
@@ -105,6 +115,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				//testing invalid bindingcontext type
 				layout.BindingContext = new object();
 				Assert.AreEqual(null, layout.label0.Text);
+			}
+			
+			[Test] 
+			public void BindingsNotAppliedWithWrongContext([Values(false, true)]bool useCompiledXaml)
+			{
+				var page = new BindingsCompiler(useCompiledXaml) { BindingContext = new {Text="Foo"} };
+				Assert.AreEqual(null, page.label0.Text);
 			}
 		}
 	}
@@ -194,6 +211,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				values[v] = value;
 				OnPropertyChanged("Indexer[" + v + "]");
 			}
+		}
+
+		public void SetIndexerValueAndCallOnPropertyChangedWithoutIndex(int v, string value)
+		{
+			if (values[v] == value)
+				return;
+
+			values[v] = value;
+			OnPropertyChanged("Indexer");
 		}
 
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -19,6 +19,19 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
+		protected override CommandResponse PressEnter(IDictionary<string, object> parameters)
+		{
+			if (_app.Driver is AndroidDriver android)
+			{
+				// 66 - KEYCODE_ENTER
+				// More information: https://developer.android.com/reference/android/view/KeyEvent.html
+				android.PressKeyCode(66);
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
 		protected override CommandResponse PressVolumeDown(IDictionary<string, object> parameters)
 		{
 			if (_app.Driver is AndroidDriver android)

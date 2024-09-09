@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	{
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiAndroid]
 		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue3319Test()
 		{

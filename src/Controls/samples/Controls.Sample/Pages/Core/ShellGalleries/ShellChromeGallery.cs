@@ -101,6 +101,11 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			flyoutBackgroundColor.Background = AppShell.FlyoutBackground;
 		}
 
+		void OnToggleNavBarHasShadow(object sender, EventArgs e)
+		{
+			Shell.SetNavBarHasShadow(this, !Shell.GetNavBarHasShadow(this));
+		}
+
 		void OnToggleNavBarIsVisible(object sender, EventArgs e)
 		{
 			Shell.SetNavBarIsVisible(this, !Shell.GetNavBarIsVisible(this));

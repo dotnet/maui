@@ -1,5 +1,10 @@
-﻿using Android.Content;
+﻿using System;
+using System.Linq;
+using Android.Content;
+using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AOrientation = Android.Graphics.Drawables.GradientDrawable.Orientation;
+using APaint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Graphics
 {
@@ -71,19 +76,23 @@ namespace Microsoft.Maui.Graphics
 			return drawable;
 		}
 
-		static bool IsValid(this GradientPaint? gradientPaint) =>
+		internal static bool IsValid(this GradientPaint? gradientPaint) =>
 			gradientPaint?.GradientStops?.Length > 0;
 
-		internal static GradientData GetGradientPaintData(GradientPaint gradientPaint, float alpha = 1.0f)
+		internal static GradientData GetGradientData(this GradientPaint gradientPaint, float? alphaOverride)
 		{
 			var orderStops = gradientPaint.GradientStops;
 
 			var data = new GradientData(orderStops.Length);
 
 			int count = 0;
-			foreach (var orderStop in orderStops)
+			foreach (var orderStop in orderStops.OrderBy(s => s.Offset))
 			{
-				data.Colors[count] = orderStop.Color.WithAlpha(alpha).ToPlatform().ToArgb();
+				var color = orderStop.Color ?? Colors.Transparent;
+				if (alphaOverride.HasValue)
+					color = color.WithAlpha(alphaOverride.Value);
+
+				data.Colors[count] = color.ToPlatform().ToArgb();
 				data.Offsets[count] = orderStop.Offset;
 				count++;
 			}
@@ -91,7 +100,7 @@ namespace Microsoft.Maui.Graphics
 			return data;
 		}
 
-		internal static LinearGradientShaderFactory GetLinearGradientShaderFactory(LinearGradientPaint linearGradientPaint, float alpha = 1.0f)
+		internal static LinearGradientData GetGradientData(this LinearGradientPaint linearGradientPaint, float? alphaOverride)
 		{
 			var p1 = linearGradientPaint.StartPoint;
 			var x1 = (float)p1.X;
@@ -100,24 +109,139 @@ namespace Microsoft.Maui.Graphics
 			var p2 = linearGradientPaint.EndPoint;
 			var x2 = (float)p2.X;
 			var y2 = (float)p2.Y;
-			var data = GetGradientPaintData(linearGradientPaint, alpha);
-			var linearGradientShaderFactory = new LinearGradientShaderFactory(new LinearGradientData(data.Colors, data.Offsets, x1, y1, x2, y2));
 
-			return linearGradientShaderFactory;
+			var data = ((GradientPaint)linearGradientPaint).GetGradientData(alphaOverride);
+			var linearData = new LinearGradientData(data, x1, y1, x2, y2);
+
+			return linearData;
 		}
 
-		internal static RadialGradientShaderFactory GetRadialGradientShaderFactory(RadialGradientPaint radialGradientPaint, float alpha = 1.0f)
+		internal static RadialGradientData GetGradientData(this RadialGradientPaint radialGradientPaint, float? alphaOverride)
 		{
 			var center = radialGradientPaint.Center;
 			float centerX = (float)center.X;
 			float centerY = (float)center.Y;
+
 			float radius = (float)radialGradientPaint.Radius;
 
-			var data = GetGradientPaintData(radialGradientPaint, alpha);
-			var shader = new RadialGradientData(data.Colors, data.Offsets, centerX, centerY, radius);
+			var data = ((GradientPaint)radialGradientPaint).GetGradientData(alphaOverride);
+			var radialData = new RadialGradientData(data.Colors, data.Offsets, centerX, centerY, radius);
 
-			var radialGradientShaderFactory = new RadialGradientShaderFactory(shader);
-			return radialGradientShaderFactory;
+			return radialData;
+		}
+
+		internal static LinearGradientShaderFactory GetGradientShaderFactory(this LinearGradientPaint linearGradientPaint, float? alphaOverride) =>
+			new LinearGradientShaderFactory(linearGradientPaint.GetGradientData(alphaOverride));
+
+		internal static RadialGradientShaderFactory GetGradientShaderFactory(this RadialGradientPaint radialGradientPaint, float? alphaOverride) =>
+			new RadialGradientShaderFactory(radialGradientPaint.GetGradientData(alphaOverride));
+
+		internal static void ApplyTo(this Paint? paint, APaint? nativePaint, int height, int width)
+		{
+			if (paint.IsNullOrEmpty() || nativePaint is null)
+				return;
+
+			if (paint is SolidPaint solidColorPaint)
+			{
+				var bgColor = solidColorPaint.Color ?? Colors.Transparent;
+				nativePaint.Color = bgColor.ToPlatform();
+			}
+			else if (paint is LinearGradientPaint linearGradientPaint)
+			{
+				var data = linearGradientPaint.GetGradientData(null);
+				var shader = data.ToShader(width, height);
+				nativePaint.SetShader(shader);
+			}
+			else if (paint is RadialGradientPaint radialGradientPaint)
+			{
+				var data = radialGradientPaint.GetGradientData(null);
+				var shader = data.ToShader(width, height);
+				nativePaint.SetShader(shader);
+			}
+		}
+
+		internal static void ApplyTo(this Paint paint, GradientDrawable gradientDrawable, int height, int width)
+		{
+			if (paint.IsNullOrEmpty() || gradientDrawable is null)
+				return;
+
+			if (paint is SolidPaint solidColorBrush)
+			{
+				var bgColor = solidColorBrush.Color ?? Colors.Transparent;
+				gradientDrawable.SetColor(bgColor.ToPlatform());
+			}
+			else if (paint is LinearGradientPaint linearGradientBrush)
+			{
+				var data = linearGradientBrush.GetGradientData(null);
+				var angle = data.GetGradientNearestAngle();
+				gradientDrawable.SetGradientType(GradientType.LinearGradient);
+				gradientDrawable.SetGradientOrientation(angle);
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+					gradientDrawable.SetColors(data.Colors, data.Offsets);
+				else
+					gradientDrawable.SetColors(data.Colors);
+			}
+			else if (paint is RadialGradientPaint radialGradientBrush)
+			{
+				var data = radialGradientBrush.GetGradientData(null);
+				gradientDrawable.SetGradientType(GradientType.RadialGradient);
+				gradientDrawable.SetGradientCenter(data.CenterX, data.CenterY);
+				gradientDrawable.SetGradientRadius(Math.Max(height, width) * data.Radius);
+				if (OperatingSystem.IsAndroidVersionAtLeast(29))
+					gradientDrawable.SetColors(data.Colors, data.Offsets);
+				else
+					gradientDrawable.SetColors(data.Colors);
+			}
+		}
+
+		private static double GetGradientNearestAngle(this LinearGradientData data)
+		{
+			const double Rad2Deg = 180.0 / Math.PI;
+
+			float xDiff = data.X2 - data.X1;
+			float yDiff = data.Y2 - data.Y1;
+
+			double angle = Math.Atan2(yDiff, xDiff) * Rad2Deg;
+
+			if (angle < 0)
+				angle += 360;
+
+			return angle;
+		}
+
+		internal static void SetGradientOrientation(this GradientDrawable drawable, double angle)
+		{
+			AOrientation? orientation = AOrientation.LeftRight;
+
+			switch (angle)
+			{
+				case 0:
+					orientation = AOrientation.LeftRight;
+					break;
+				case 45:
+					orientation = AOrientation.TlBr;
+					break;
+				case 90:
+					orientation = AOrientation.TopBottom;
+					break;
+				case 135:
+					orientation = AOrientation.TrBl;
+					break;
+				case 180:
+					orientation = AOrientation.RightLeft;
+					break;
+				case 225:
+					orientation = AOrientation.BrTl;
+					break;
+				case 270:
+					orientation = AOrientation.BottomTop;
+					break;
+				case 315:
+					orientation = AOrientation.BlTr;
+					break;
+			}
+
+			drawable.SetOrientation(orientation);
 		}
 	}
 }

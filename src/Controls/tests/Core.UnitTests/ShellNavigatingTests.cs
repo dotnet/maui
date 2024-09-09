@@ -682,7 +682,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Routing.RegisterRoute("catdetails", typeof(ContentPage));
 
-			Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"//catdetails"));
+			await Assert.ThrowsAnyAsync<Exception>(async () => await shell.GoToAsync($"//catdetails"));
 		}
 
 		[Fact]

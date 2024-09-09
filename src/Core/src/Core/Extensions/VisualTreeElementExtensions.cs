@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
@@ -136,7 +136,12 @@ namespace Microsoft.Maui
 			var visualElements = new List<IVisualTreeElement>();
 			if (visualElement is IWindow window)
 			{
-				uiElement = window.Content.ToPlatform();
+				// Get the UI.Xaml.Window so we catch everything in the app window rather than the frame which doesn't include modal content
+				var platformView = window.Handler?.PlatformView;
+				if (platformView is UI.Xaml.Window winUiWindow)
+				{
+					uiElement = winUiWindow.Content;
+				}
 			}
 			else if (visualElement is IView view)
 			{
@@ -145,14 +150,27 @@ namespace Microsoft.Maui
 
 			if (uiElement != null)
 			{
-				var uniqueElements = findChildren(uiElement).Distinct();
-				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView view && view.Handler is not null).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).ToPlatform()));
-				var testList = viewTree.Where(n => uniqueElements.Contains(n.Item2)).Select(n => n.Item1);
-				if (testList != null && testList.Any())
-					visualElements.AddRange(testList.Select(n => (IVisualTreeElement)n));
+				var uniqueElements = findChildren(uiElement).ToHashSet();
+
+				var descendants = visualElement.GetVisualTreeDescendants();
+
+				// Add in reverse order
+				for (int i = descendants.Count - 1; i >= 0; i--)
+				{
+					var descendant = descendants[i];
+
+					if (descendant is not IView view || view.Handler is null)
+					{
+						continue;
+					}
+					
+					if (uniqueElements.Contains(view.ToPlatform()))
+					{
+						visualElements.Add(descendant);
+					}
+				}
 			}
 
-			visualElements.Reverse();
 			return visualElements;
 		}
 #endif

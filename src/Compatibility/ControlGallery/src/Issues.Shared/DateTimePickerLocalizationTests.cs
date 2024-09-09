@@ -101,7 +101,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
 		[Category(UITestCategories.UwpIgnore)]
-		[FailsOnMauiAndroid]
 		[FailsOnMauiIOS]
 		public void DatePickerDMY()
 		{
@@ -122,7 +121,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
 		[Category(UITestCategories.UwpIgnore)]
-		[FailsOnMauiAndroid]
 		[FailsOnMauiIOS]
 		public void DatePickerMissing()
 		{
@@ -140,7 +138,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if !WINDOWS
 		[Test]
-		[FailsOnMauiAndroid]
 		[FailsOnMauiIOS]
 		public void DatePickerLetters()
 		{
