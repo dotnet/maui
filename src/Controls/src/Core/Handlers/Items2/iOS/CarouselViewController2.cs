@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
-			//UpdateInitialPosition();
+			UpdateInitialPosition();
 		}
 
 		private protected override void DetachingFromWindow()
@@ -139,8 +139,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_oldViews = null;
 			InitialPositionSet = false;
 
-			//carouselView.Scrolled -= CarouselViewScrolled;
-
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 
 			_carouselViewLoopManager?.Dispose();
@@ -152,8 +150,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			InitializeCarouselViewLoopManager();
 
 			_oldViews = new List<View>();
-
-			//carouselView.Scrolled += CarouselViewScrolled;
 
 			SubscribeCollectionItemsSourceChanged(ItemsSource);
 		}
