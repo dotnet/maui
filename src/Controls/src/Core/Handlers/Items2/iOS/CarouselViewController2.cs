@@ -69,10 +69,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateVisualStates();
 		}
 
-		public override void ViewDidLayoutSubviews()
+
+		public override async void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			UpdateInitialPosition();
+			await UpdateInitialPosition();
 		}
 
 		public override void DraggingStarted(UIScrollView scrollView)
@@ -119,11 +120,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return itemsSource;
 		}
 
-		private protected override void AttachingToWindow()
+		private protected override async void AttachingToWindow()
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
-			UpdateInitialPosition();
+			// if we navigate back on NavigationController LayoutSubviews might not fire.
+			await UpdateInitialPosition();
 		}
 
 		private protected override void DetachingFromWindow()
@@ -452,14 +454,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// SetCurrentItem(carouselPosition);
 		}
 
-		void UpdateInitialPosition()
+		async Task UpdateInitialPosition()
 		{
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
 			}
 
-			if (ItemsSource is null || ItemsSource.ItemCount == 0)
+			if (ItemsSource is null)
 			{
 				return;
 			}
@@ -485,12 +487,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 
+			await Task.Delay(100).ContinueWith((t) =>
+			{
+				MainThread.BeginInvokeOnMainThread(() =>
+				{
+					if (!IsViewLoaded)
+					{
+						return;
+					}
 			CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
+				
 			InitialPositionSet = true;
 			//Set the position on VirtualView to update the CurrentItem also
 			SetPosition(position);
 
 			UpdateVisualStates();
+				});
+
+			});
+
 		}
 
 		void UpdateVisualStates()
