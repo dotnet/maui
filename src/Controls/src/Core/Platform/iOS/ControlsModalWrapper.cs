@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using Foundation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -144,6 +145,17 @@ namespace Microsoft.Maui.Controls.Platform
 				UpdateBackgroundColor();
 
 			base.ViewWillAppear(animated);
+		}
+
+		public override void ViewWillLayoutSubviews()
+		{
+			base.ViewWillLayoutSubviews();
+			
+			Debug.Assert(_modal is not null);
+			
+			var childView = _modal.ViewController?.View;
+
+			UIViewExtensions.AdjustBounds(childView, View);
 		}
 
 		protected override void Dispose(bool disposing)
