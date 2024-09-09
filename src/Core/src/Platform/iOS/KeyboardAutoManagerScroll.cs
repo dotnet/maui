@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Platform;
 
@@ -39,6 +40,14 @@ public static class KeyboardAutoManagerScroll
 	internal static bool ShouldDisconnectLifecycle;
 	internal static bool ShouldIgnoreSafeAreaAdjustment;
 	internal static bool ShouldScrollAgain;
+	internal static ContentResizeSizeState ResizedState;
+	internal static bool ShouldResizeContent = true;
+
+	internal enum ContentResizeSizeState {
+		None,
+		Resized,
+		ResizedWithScrollView,
+	}
 
 	/// <summary>
 	/// Enables automatic scrolling with keyboard interactions on iOS devices.
@@ -166,6 +175,21 @@ public static class KeyboardAutoManagerScroll
 			userInfo.SetAnimationDuration();
 		}
 
+		
+
+		UIView.Animate(
+			duration: AnimationDuration,
+			delay: 0,
+			options: UIViewAnimationOptions.CurveEaseOut,
+			animation: () =>
+			{
+				AnimateContentResize();
+			},
+			completion: () =>
+			{
+			}
+		);
+
 		if (!IsKeyboardShowing)
 		{
 			IsKeyboardShowing = true;
@@ -178,6 +202,116 @@ public static class KeyboardAutoManagerScroll
 		}
 	}
 
+	static List<int> IndicesOfSubview(MauiView parentView, UIView subview)
+    {
+        var indices = new List<int>();
+        FindSubviewIndices(parentView, subview, indices);
+        return indices;
+    }
+
+    static bool FindSubviewIndices(UIView parentView, UIView subview, List<int> indices)
+    {
+        if (parentView.Subviews is UIView[] subviews)
+        {
+            for (int i = 0; i < subviews.Length; i++)
+            {
+                if (subviews[i] == subview)
+                {
+                    indices.Add(i);
+                    return true;
+                }
+                if (FindSubviewIndices(subviews[i], subview, indices))
+                {
+                    // indices.Insert(0, i);
+                    // return true;
+                }
+            }
+        }
+        return false;
+    }
+
+	static void AnimateContentResize()
+	{
+		if (ShouldResizeContent && ContainerView?.Subviews?[0] is MauiView mauiView)
+		{
+			var viewIndexPath = IndicesOfSubview(mauiView, View!);
+			Console.WriteLine(viewIndexPath);
+
+			var child = mauiView.Subviews[0];
+
+			// the child is a UIScrollView
+			if (child is UIScrollView scrollView && ResizedState == ContentResizeSizeState.None)
+			{
+				ContainerView.Frame = new CGRect(0, 0, ContainerView.Frame.Width, ContainerView.Frame.Height - KeyboardFrame.Height);
+				ResizedState = ContentResizeSizeState.Resized;
+			}
+ 
+			// the child is another layout that does not inherit from UIScrollView
+			else if (child is not null && ResizedState == ContentResizeSizeState.None)
+			{
+				// Set up the new UIScrollView
+				var tempScrollView = new UIScrollView();
+				tempScrollView.ContentSize = new CoreGraphics.CGSize(child.Frame.Width, child.Frame.Height);
+				tempScrollView.LayoutMargins = new UIEdgeInsets(0, 0, 0, 0);
+				tempScrollView.ScrollEnabled = true;
+				tempScrollView.Frame = new CGRect(0, 0, ContainerView.Frame.Width, ContainerView.Frame.Height - KeyboardFrame.Height);
+
+				var originalSubviews = mauiView.Subviews;
+				var numberOfOriginalSubviews = originalSubviews.Length;
+
+				// Ensure this code runs on the main thread
+                // UIApplication.SharedApplication.InvokeOnMainThread(() =>
+                // {
+                    try
+                    {
+						foreach (var subview in originalSubviews)
+                        {
+                            if (subview.Superview != null)
+                            {
+                                Console.WriteLine($"Subview {subview} already has a superview: {subview.Superview}");
+								subview.RemoveFromSuperview();
+							}
+                        }
+
+						// Exchange the contents of the ContainerView with the new UIScrollView
+						tempScrollView.AddSubviews(originalSubviews);
+
+						mauiView.AddSubview(tempScrollView);
+
+						// Find the view that was focused and assign the FirstResponder to it
+						foreach (var view in tempScrollView.Subviews)
+						{
+							if (view is not MauiView)
+								continue;
+
+							var currentView = view;
+
+							foreach (var index in viewIndexPath!){
+								if (currentView.Subviews[index] is UIView subview)
+									currentView = subview;
+
+								else 
+									break;
+							}
+
+							if (currentView is UIView foundView)
+							{
+								foundView.BecomeFirstResponder();
+								break;
+							}
+						}
+
+						ResizedState = ContentResizeSizeState.ResizedWithScrollView;
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine(e);
+					}
+				// });
+			}
+		}
+	}
+
 	static void WillHideKeyboard(NSNotification notification)
 	{
 		notification.UserInfo?.SetAnimationDuration();
@@ -185,6 +319,60 @@ public static class KeyboardAutoManagerScroll
 		if (LastScrollView is not null)
 		{
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateHidingKeyboard, () => { });
+		}
+
+		if (ShouldResizeContent && ResizedState != ContentResizeSizeState.None && ContainerView?.Subviews?[0] is MauiView mauiView)
+		{
+			var child = mauiView.Subviews[0];
+
+			if (ResizedState == ContentResizeSizeState.Resized)
+			{
+				// Animate the transition
+				UIView.Transition(
+					withView: mauiView,
+					duration: AnimationDuration,
+					options: UIViewAnimationOptions.CurveEaseOut,
+					animation: () =>
+					{
+						ContainerView.Frame = new CGRect(0, 0, ContainerView.Frame.Width, ContainerView.Frame.Height + KeyboardFrame.Height);
+					},
+					completion: () =>
+					{
+						ResizedState = ContentResizeSizeState.None;
+					});
+				// ContainerView.Frame = new CGRect(0, 0, ContainerView.Frame.Width, ContainerView.Frame.Height + KeyboardFrame.Height);
+				// ResizedState = ContentResizeSizeState.None;
+			}
+ 
+			// else if (ResizedState == ContentResizeSizeState.ResizedWithScrollView)
+			// {
+			// 	// Remove the UIScrollView and replace it with the original layout
+			// 	var orginalLayout = child.Subviews;
+
+			// 	mauiView.ClearSubviews();
+			// 	mauiView.AddSubviews(orginalLayout);
+			// 	ResizedState = ContentResizeSizeState.None;
+			// }
+			else if (ResizedState == ContentResizeSizeState.ResizedWithScrollView)
+			{
+				// Remove the UIScrollView and replace it with the original layout
+				var originalLayout = child.Subviews;
+
+				// Animate the transition
+				UIView.Transition(
+					withView: mauiView,
+					duration: AnimationDuration,
+					options: UIViewAnimationOptions.CurveEaseOut,
+					animation: () =>
+					{
+						mauiView.ClearSubviews();
+						mauiView.AddSubviews(originalLayout);
+					},
+					completion: () =>
+					{
+						ResizedState = ContentResizeSizeState.None;
+					});
+			}
 		}
 
 		if (IsKeyboardShowing)

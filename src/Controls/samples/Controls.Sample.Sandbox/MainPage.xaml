@@ -4,4 +4,10 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+    <Grid RowDefinitions="100,*,200">
+        <Label Text="TopLabel" Grid.Row="0"/>
+        <BoxView Grid.Row="1"/>
+        <Editor Grid.Row="2" Background="LightGray"/>
+    </Grid>
+
 </ContentPage>
