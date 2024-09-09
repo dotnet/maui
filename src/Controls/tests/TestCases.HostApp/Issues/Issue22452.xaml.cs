@@ -14,10 +14,18 @@
 	{
 		public Issue22452Tab1Content()
 		{
-			Content = new Label()
+			Content = new StackLayout
 			{
-				AutomationId= "TapOnePage",
-				Text = "Tap one page",
+				Children =
+				{
+					new Label
+					{
+						AutomationId="TapOnePage",
+						Text = "Tap one page"
+					}
+				},
+
+				IgnoreSafeArea = false
 			};
 		}
 	}
