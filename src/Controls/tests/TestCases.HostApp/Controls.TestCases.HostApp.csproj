@@ -36,6 +36,10 @@
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
+  
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.Web.WebView2" />
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
