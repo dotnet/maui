@@ -133,7 +133,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(CarouselView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
-	[InlineData(typeof(DatePicker))]
+	// [InlineData(typeof(DatePicker))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(Ellipse))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
@@ -162,7 +162,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
 	[InlineData(typeof(TableView))]
-	[InlineData(typeof(WebView))]
+	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(CollectionView))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
