@@ -191,6 +191,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// Use 0 if the NavBar is hidden or will be hidden
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
+
+			// TODO .NET 10
+			// This is required in order to set the "Frame" property on NavigationPage
+			// It'd be good to see if we can optimize this a bit better.
+			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
 		public override void ViewDidLoad()
