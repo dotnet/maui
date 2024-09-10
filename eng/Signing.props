@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <AllowEmptySignList Condition="'$(SignFinalPackages)' != 'true'">true</AllowEmptySignList>
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
