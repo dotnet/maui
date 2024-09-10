@@ -62,6 +62,8 @@ variables:
 # Variable groups required for private builds
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    - name: PrivateBuild
+      value: false
     - name: _RunAsPublic
       value: False
     - name: _RunAsInternal
@@ -75,9 +77,12 @@ variables:
     - group: SDL_Settings
     # - name: PostBuildSign
     #   value: true
-    - name: PrivateBuild
-      value: false
     # For eng/common/SetupNugetSources.ps1
     - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats
+    - name: _InternalBuildArgs
+      value: /p:DotNetSignType=$(_SignType)
+        /p:TeamName=$(_TeamName)
+        /p:DotNetPublishUsingPipelines=true
+        /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
