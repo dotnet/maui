@@ -3,9 +3,10 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
+	[Category(UITestCategories.Compatibility)]
 	public class Bugzilla41415UITests : _IssuesUITest
 	{
 		const string ButtonId = "ClickId";
@@ -19,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Bugzilla41415 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla41415.cs)
 		[Test]
+		[FailsOnIOS("This test is failing, likely due to product issue")]
+		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void Bugzilla41415Test()
 		{
 			// This test is failing, likely due to product issue

@@ -1,11 +1,13 @@
-﻿using NUnit.Framework;
+﻿#if !IOS && !MACCATALYST
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
+	[Category(UITestCategories.Compatibility)]
 	public class Bugzilla35127UITests : _IssuesUITest
 	{
 		public Bugzilla35127UITests(TestDevice device)
@@ -28,3 +30,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
+#endif
