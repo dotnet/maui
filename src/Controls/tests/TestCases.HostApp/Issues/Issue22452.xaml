@@ -5,10 +5,9 @@
     xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
     Shell.FlyoutBehavior="Locked">
 
-  <FlyoutItem Title="Tab1"
-              AutomationId="FlyoutItem1">
+  <FlyoutItem Title="FlyoutItem">
     <Tab>
-      <ShellContent ContentTemplate="{DataTemplate ns:Issue22452Tab1Content}" />
+      <ShellContent ContentTemplate="{DataTemplate ns:Issue22452Content}" />
     </Tab>
   </FlyoutItem>
 </Shell>

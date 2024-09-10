@@ -10,9 +10,9 @@
 		}
 	}
 
-	public class Issue22452Tab1Content : ContentPage
+	public class Issue22452Content : ContentPage
 	{
-		public Issue22452Tab1Content()
+		public Issue22452Content()
 		{
 			Content = new StackLayout
 			{
@@ -20,8 +20,8 @@
 				{
 					new Label
 					{
-						AutomationId="TapOnePage",
-						Text = "Tap one page"
+						AutomationId="TapContent",
+						Text = "TapContent"
 					}
 				},
 
