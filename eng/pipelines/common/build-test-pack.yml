@@ -46,25 +46,25 @@ steps:
     displayName: Set JAVA_HOME
 
 
-  # - ${{ if ne(parameters.isWindows, 'true') }}:
-  #   - script: ${{ parameters.buildScript }}
-  #             -restore -build
-  #             -configuration ${{ parameters.buildConfig }}
-  #             /p:ArchiveTests=true
-  #             /bl:${{ parameters.repoLogPath }}build.binlog
-  #             $(_OfficialBuildIdArgs)
-  #             -p:Platform=`uname -m`
-  #     displayName: 🛠️ Build
+  - ${{ if ne(parameters.isWindows, 'true') }}:
+    - script: ${{ parameters.buildScript }}
+              -restore -build
+              -configuration ${{ parameters.buildConfig }}
+              /p:ArchiveTests=true
+              /bl:${{ parameters.repoLogPath }}build.binlog
+              $(_OfficialBuildIdArgs)
+              -p:Platform=`uname -m`
+      displayName: 🛠️ Build
   
-  # - ${{ if eq(parameters.isWindows, 'true') }}:
-  #   - script: ${{ parameters.buildScript }}
-  #             -restore -build
-  #             -configuration ${{ parameters.buildConfig }}
-  #             /p:ArchiveTests=true
-  #             /p:TreatWarningsAsErrors=false
-  #             /bl:${{ parameters.repoLogPath }}build.binlog
-  #             $(_OfficialBuildIdArgs)
-  #     displayName: 🛠️ Build
+  - ${{ if eq(parameters.isWindows, 'true') }}:
+    - script: ${{ parameters.buildScript }}
+              -restore -build
+              -configuration ${{ parameters.buildConfig }}
+              /p:ArchiveTests=true
+              /p:TreatWarningsAsErrors=false
+              /bl:${{ parameters.repoLogPath }}build.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: 🛠️ Build
 
   # - ${{ if or(ne(parameters.runAsPublic, 'true'), ne(parameters.runHelixTests, 'true')) }}:
   #   - ${{ if ne(parameters.isWindows, 'true') }}:
@@ -124,7 +124,7 @@ steps:
   - ${{ if and(eq(parameters.isWindows, 'true'), or(ne(parameters.runAsPublic, 'true'), ne(parameters.runHelixTests, 'true'))) }}:
 
     - script: ${{ parameters.buildScript }}
-              -restore -build -pack 
+              -pack 
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration $(_BuildConfig)
