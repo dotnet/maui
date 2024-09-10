@@ -375,7 +375,8 @@ public static class KeyboardAutoManagerScroll
 
 		var cursorRect = (CGRect)CursorRect;
 
-		var viewRectInWindow = View.ConvertRectToView(View.Bounds, window);
+		var viewRectInContainer = ContainerView.ConvertRectFromView(View.Frame, View.Superview);
+		var viewRectInWindow = ContainerView.ConvertRectToView(viewRectInContainer, null);
 
 		// since the cursorRect does not have a height for Pickers, we can assign the height of the picker as the cursor height
 		if (cursorRect.Height == 0)
@@ -407,7 +408,8 @@ public static class KeyboardAutoManagerScroll
 
 		if (superScrollView is not null)
 		{
-			superScrollViewRect = superScrollView.ConvertRectToView(superScrollView.Bounds, window);
+			var superScrollInContainer = ContainerView.ConvertRectFromView(superScrollView.Frame, superScrollView.Superview);
+			superScrollViewRect = ContainerView.ConvertRectToView(superScrollInContainer, null);
 			topBoundary = Math.Max(topBoundary, superScrollViewRect.Value.Top);
 			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom);
 		}
@@ -418,18 +420,14 @@ public static class KeyboardAutoManagerScroll
 		// but the cursor location on the editor is scrolled below the visible section
 		if (View is UITextView && IsKeyboardShowing && cursorRect.Bottom >= viewRectInWindow.GetMaxY())
 		{
-			cursorNotInViewScroll = viewRectInWindow.GetMaxY() - cursorRect.GetMaxY();
-			move = cursorRect.Y - (nfloat)bottomBoundary + cursorNotInViewScroll;
-			cursorTooLow = true;
+			move = viewRectInWindow.Bottom - (nfloat)bottomBoundary;
 		}
 
 		// scenario where we go into an editor with the "Next" keyboard button,
 		// but the cursor location on the editor is scrolled above the visible section
 		else if (View is UITextView && IsKeyboardShowing && cursorRect.Y < viewRectInWindow.GetMinY())
 		{
-			cursorNotInViewScroll = viewRectInWindow.GetMinY() - cursorRect.Y;
-			move = cursorRect.Y - (nfloat)bottomBoundary + cursorNotInViewScroll;
-			cursorTooHigh = true;
+			move = viewRectInWindow.Top - (nfloat)bottomBoundary;
 
 			// no need to move the screen down if we can already see the view
 			if (move < 0)
@@ -446,6 +444,13 @@ public static class KeyboardAutoManagerScroll
 		else if (cursorRect.Y <= topBoundary && cursorRect.Bottom <= bottomBoundary)
 		{
 			move = cursorRect.Y - (nfloat)topBoundary;
+		}
+
+		else if (cursorRect.Y <= topBoundary && cursorRect.Bottom >= bottomBoundary)
+		{
+			cursorNotInViewScroll = viewRectInWindow.GetMinY() - cursorRect.Y;
+			move = cursorRect.Bottom - (nfloat)bottomBoundary - cursorNotInViewScroll;
+			cursorTooHigh = true;
 		}
 
 		// This is the case when the keyboard is already showing and we click another editor/entry
@@ -494,13 +499,26 @@ public static class KeyboardAutoManagerScroll
 			var lastView = View;
 			superScrollView = LastScrollView;
 			nfloat innerScrollValue = 0;
+			nfloat tempMove = 0;
 
 			while (superScrollView is not null)
 			{
 				var shouldContinue = false;
 
-				if (move > 0)
+				// if we have an innerScrollValue, let's move with this value first and then do the move
+				if (cursorNotInViewScroll != 0)
 				{
+					tempMove = move;
+					move = cursorNotInViewScroll;
+					shouldContinue = true;
+				}
+
+				else if (move > 0 || tempMove > 0)
+				{
+					if (move == 0)
+					{
+						move = tempMove;
+					}
 					shouldContinue = move > -superScrollView.ContentOffset.Y - superScrollView.ContentInset.Top;
 				}
 
@@ -544,7 +562,7 @@ public static class KeyboardAutoManagerScroll
 				{
 					shouldContinue = !(innerScrollValue == 0
 						&& cursorRect.Y + cursorNotInViewScroll >= topBoundary
-						&& cursorRect.Y + cursorNotInViewScroll <= bottomBoundary);
+						&& cursorRect.Bottom + cursorNotInViewScroll <= bottomBoundary);
 
 					if (cursorRect.Y - innerScrollValue < topBoundary && !cursorTooHigh)
 					{
@@ -584,7 +602,8 @@ public static class KeyboardAutoManagerScroll
 
 					if ((!superScrollView.ContentOffset.Equals(newContentOffset) || innerScrollValue != 0) && superScrollViewRect is not null)
 					{
-						if (nextScrollView is null && superScrollViewRect.Value.Y < bottomBoundary)
+						if ((nextScrollView is null && superScrollViewRect.Value.Y + cursorRect.Height + TextViewDistanceFromBottom < bottomBoundary) ||
+							cursorNotInViewScroll != 0)
 						{
 							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 							{
@@ -620,8 +639,16 @@ public static class KeyboardAutoManagerScroll
 						}
 					}
 
-					lastView = superScrollView;
-					superScrollView = nextScrollView;
+					// if we needed to scroll for cursorNotInViewScroll first, use the same superScrollView and handle the move now
+					if (cursorNotInViewScroll != 0)
+					{
+						cursorNotInViewScroll = 0;
+					}
+					else
+					{
+						lastView = superScrollView;
+						superScrollView = nextScrollView;
+					}
 				}
 
 				else
@@ -745,7 +772,7 @@ public static class KeyboardAutoManagerScroll
 
 		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
 
-		var bottomInset = keyboardIntersect.Height + TextViewDistanceFromBottom;
+		var bottomInset = keyboardIntersect.Height;
 		var bottomScrollIndicatorInset = bottomInset;
 
 		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
