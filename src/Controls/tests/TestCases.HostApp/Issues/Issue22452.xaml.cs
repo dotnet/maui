@@ -20,8 +20,8 @@
 				{
 					new Label
 					{
-						AutomationId="TapContent",
-						Text = "TapContent"
+						AutomationId="TabContent",
+						Text = "TabContent"
 					}
 				},
 
