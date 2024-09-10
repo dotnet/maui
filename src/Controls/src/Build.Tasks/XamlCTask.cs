@@ -414,6 +414,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					XamlFilePath = xamlFilePath,
 					LoggingHelper = loggingHelper,
+					ValidateOnly = ValidateOnly,
 				};
 
 
