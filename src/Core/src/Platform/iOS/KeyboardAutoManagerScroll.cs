@@ -107,7 +107,7 @@ public static class KeyboardAutoManagerScroll
 		IsKeyboardAutoScrollHandling = false;
 	}
 
-	static async void DidUITextBeginEditing(NSNotification notification)
+	static void DidUITextBeginEditing(NSNotification notification)
 	{
 		IsKeyboardAutoScrollHandling = true;
 
@@ -125,7 +125,7 @@ public static class KeyboardAutoManagerScroll
 
 			ContainerView = View.GetContainerView();
 
-			await AdjustPositionDebounce();
+			AdjustPositionDebounce().FireAndForget();
 		}
 	}
 
@@ -149,7 +149,7 @@ public static class KeyboardAutoManagerScroll
 		return null;
 	}
 
-	static async void WillKeyboardShow(NSNotification notification)
+	static void WillKeyboardShow(NSNotification notification)
 	{
 		var userInfo = notification.UserInfo;
 		var oldKeyboardFrame = KeyboardFrame;
@@ -169,12 +169,12 @@ public static class KeyboardAutoManagerScroll
 		if (!IsKeyboardShowing)
 		{
 			IsKeyboardShowing = true;
-			await AdjustPositionDebounce();
+			AdjustPositionDebounce().FireAndForget();
 		}
 		else if (oldKeyboardFrame != KeyboardFrame && IsKeyboardShowing)
 		{
 			// this could be the case if the keyboard is already showing but type of keyboard changes
-			await AdjustPositionDebounce();
+			AdjustPositionDebounce().FireAndForget();
 		}
 	}
 
