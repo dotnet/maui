@@ -8,10 +8,37 @@ namespace Maui.Controls.Sample.Issues
             Entry entryText;
             public MemoryTestPage()
             {
+                Label label = new Label()
+                {
+                    Text = "Choose a Handler to Test:",
+                    HorizontalOptions = LayoutOptions.Start,
+                    VerticalOptions = LayoutOptions.Start
+                };
+
+                Picker picker = new Picker
+                {
+                    Title = "Choose a Handler",
+                    VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.Center
+                };
+
+                picker.Items.Add("DatePicker");
+                picker.Items.Add("WebView");
+
+                // Handle the selection change
+                picker.SelectedIndexChanged += (sender, args) =>
+                {
+                    if (picker.SelectedIndex != -1)
+                    {
+                        string selectedItem = picker.Items[picker.SelectedIndex];
+                        RunMemoryTest(selectedItem);
+                    }
+                };
+
                 entryText = new Entry
                 {
                     AutomationId = "DataTypeEntry",
-                    Placeholder = "Enter the data type of the Handler you want to test",
+                    Placeholder = "This Entry is for Appium to navigate with only.",
                 };
 
                 var runMemoryTestButton = new Button
@@ -24,7 +51,7 @@ namespace Maui.Controls.Sample.Issues
                 var stackLayout = new StackLayout
                 {
                     Padding = 10,
-                    Children = { entryText, runMemoryTestButton }
+                    Children = { label, picker, entryText, runMemoryTestButton }
                 };
 
                 Content = stackLayout;
