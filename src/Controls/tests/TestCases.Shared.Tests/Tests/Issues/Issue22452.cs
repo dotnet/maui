@@ -15,8 +15,6 @@ public class Issue22452 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void NavigationBetweenFlyoutItems()
 	{
-		App.WaitForElement("FlyoutItem1");
-		App.Tap("FlyoutItem1");
 		App.WaitForElement("TapOnePage");
 		VerifyScreenshot();
 	}
