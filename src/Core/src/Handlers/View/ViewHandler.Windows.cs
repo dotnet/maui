@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ViewHandler
 	{
+		readonly static ConditionalWeakTable<PlatformView, ViewHandler> FocusManagerMapping = new();
+
 		static ViewHandler()
 		{
 			FocusManager.GotFocus += FocusManager_GotFocus;
@@ -17,12 +20,15 @@ namespace Microsoft.Maui.Handlers
 
 		partial void ConnectingHandler(PlatformView? platformView)
 		{
-			platformView?.SetMauiHandler(this);
+			if (platformView is not null)
+			{
+				FocusManagerMapping.Add(platformView, this);
+			}
 		}
 
 		partial void DisconnectingHandler(PlatformView platformView)
 		{
-			platformView.SetMauiHandler(null);
+			FocusManagerMapping.Remove(platformView);
 			UpdateIsFocused(false);
 		}
 
@@ -135,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
 		{
-			if (e.NewFocusedElement is PlatformView platformView && platformView.GetMauiHandler() is { } handler)
+			if (e.NewFocusedElement is PlatformView platformView && FocusManagerMapping.TryGetValue(platformView, out ViewHandler? handler))
 			{
 				handler.UpdateIsFocused(true);
 			}
@@ -143,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 
 		static void FocusManager_LostFocus(object? sender, FocusManagerLostFocusEventArgs e)
 		{
-			if (e.OldFocusedElement is PlatformView platformView && platformView.GetMauiHandler() is { } handler)
+			if (e.OldFocusedElement is PlatformView platformView && FocusManagerMapping.TryGetValue(platformView, out ViewHandler? handler))
 			{
 				handler.UpdateIsFocused(false);
 			}
