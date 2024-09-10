@@ -7,7 +7,7 @@
     <Frame x:Name="frame" HeightRequest="200">
       <Entry x:Name="entry" Text="This is entry inside the frame"/>
     </Frame>
-    <Button Text="Remove the frame" AutomationId="RemoveButton" Clicked="Button_Clicked"/>
+    <Button Text="Remove the frame" AutomationId="RemoveButton" Clicked="OnButtonClicked"/>
   </StackLayout>
 
 </ContentPage>

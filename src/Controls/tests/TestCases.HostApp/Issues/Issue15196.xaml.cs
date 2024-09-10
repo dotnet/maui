@@ -16,11 +16,10 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		private void Button_Clicked(object sender, EventArgs e)
+		private void OnButtonClicked(object sender, EventArgs e)
 		{
 			if (stackLayout.Children.Contains(frame))
 			{
-				// Remove the frame from the stackLayout
 				stackLayout.Children.Remove(frame);
 			}
 			

@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Entry)]
 		public void NestedEntryViewInFrameShouldNotCrash()
 		{
-			//Validate the crash is fixed
 			App.WaitForElement("RemoveButton");
 			App.Click("RemoveButton");
 		}
