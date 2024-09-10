@@ -13,22 +13,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 		public override string Issue => "Test Handlers for Memory Leaks";
 
-		[Test]
-		[Category(UITestCategories.DatePicker)]
-		public void DatePickerDoesNotLeak()
+		[TestCase("DatePicker")]
+		[TestCase("WebView")]
+		public void HandlerDoesNotLeak(string handler)
 		{
 			App.WaitForElement("DataTypeEntry");
-			App.EnterText("DataTypeEntry", "DatePicker");
-			App.Tap("RunMemoryTestButton");
-			App.AssertMemoryTest();
-		}
-
-		[Test]
-		[Category(UITestCategories.WebView)]
-		public void WebViewDoesNotLeak()
-		{
-			App.WaitForElement("DataTypeEntry");
-			App.EnterText("DataTypeEntry", "WebView");
+			App.EnterText("DataTypeEntry", handler);
 			App.Tap("RunMemoryTestButton");
 			App.AssertMemoryTest();
 		}
