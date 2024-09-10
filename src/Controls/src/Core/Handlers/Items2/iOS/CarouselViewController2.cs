@@ -641,7 +641,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (indexPath.Row == 0)
 			{
-				return _itemsSource.ItemCount - 1;
+				return Math.Max(0, _itemsSource.ItemCount - 1);
 			}
 			else if (indexPath.Row == _itemsSource.ItemCount + 1)
 			{
@@ -649,7 +649,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else
 			{
-				return indexPath.Row - 1;
+				return  Math.Max(0, indexPath.Row - 1);
 			}
 		}
 
