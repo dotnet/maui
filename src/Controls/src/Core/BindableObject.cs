@@ -676,7 +676,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual void ApplyBindings(bool fromBindingContextChanged)
+		void ApplyBindings(bool fromBindingContextChanged)
 		{
 			var prop = _properties.Values.ToArray();
 

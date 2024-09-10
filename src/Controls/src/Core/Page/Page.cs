@@ -506,11 +506,6 @@ namespace Microsoft.Maui.Controls
 			// considering the page is the top level element for this feature
 			switch (trigger)
 			{
-				case InvalidationTrigger.VerticalOptionsChanged:
-				case InvalidationTrigger.HorizontalOptionsChanged:
-					// When a child changes its HorizontalOptions or VerticalOptions
-					// the size of the parent won't change, so we don't have to invalidate the measure
-					break;
 				case InvalidationTrigger.RendererReady:
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:

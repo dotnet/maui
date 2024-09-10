@@ -1359,25 +1359,6 @@ namespace Microsoft.Maui.Controls
 			FocusChangeRequested?.Invoke(this, args);
 		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
-		internal override void ApplyBindings(bool fromBindingContextChanged)
-		{
-			try
-			{
-				_isApplyingBindings = true;
-				base.ApplyBindings(fromBindingContextChanged);
-			}
-			finally
-			{
-				_isApplyingBindings = false;
-
-				if (_applyingBindingsInvalidationTrigger is {} invalidationTrigger)
-				{
-					_applyingBindingsInvalidationTrigger = null;
-					InvalidateMeasureInternal(invalidationTrigger);
-				}
-			}
-		}
-
 		/// <summary>
 		/// Invalidates the measure of an element.
 		/// </summary>
@@ -1393,29 +1374,12 @@ namespace Microsoft.Maui.Controls
 		{
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
-
-		bool _isApplyingBindings;
-		InvalidationTrigger? _applyingBindingsInvalidationTrigger;
 		
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			if (!IsPlatformEnabled)
 			{
 				// No need to invalidate measure if there's no platform view
-				return;
-			}
-
-			if (_isApplyingBindings)
-			{
-				if (_applyingBindingsInvalidationTrigger == null &&
-				    trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
-				{
-					_applyingBindingsInvalidationTrigger = trigger;
-				}
-				else
-				{
-					_applyingBindingsInvalidationTrigger = InvalidationTrigger.Undefined;
-				}
 				return;
 			}
 			
@@ -1437,6 +1401,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			InvokeMeasureInvalidated(trigger);
+
+			// Changing child position shouldn't invalidate parent's layout measure
+			if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
+			{
+				return;
+			}
+
+			// Notify parent chain that a child's measure has been invalidated
 			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 		}
 
@@ -1452,11 +1424,6 @@ namespace Microsoft.Maui.Controls
 		{
 			switch (trigger)
 			{
-				case InvalidationTrigger.VerticalOptionsChanged:
-				case InvalidationTrigger.HorizontalOptionsChanged:
-					// When a child changes its HorizontalOptions or VerticalOptions
-					// the size of the parent won't change, so we don't have to invalidate the measure
-					return;
 				case InvalidationTrigger.RendererReady:
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
