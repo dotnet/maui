@@ -732,7 +732,7 @@ public static class KeyboardAutoManagerScroll
 		}
 	}
 
-	// Adjusts the ContentInset of our view that Scrolled so that we can still scroll to the top with the keyboard showing.
+	// Adjusts the ContentInset of our view that Scrolled so that we can still scroll to the top and bottom with the keyboard showing.
 	static void ApplyContentInset(UIScrollView? scrolledView, UIScrollView? lastScrollView, bool didMove, bool isInnerEditor)
 	{
 		if (scrolledView is null || lastScrollView is null || ContainerView is null)
@@ -745,7 +745,7 @@ public static class KeyboardAutoManagerScroll
 
 		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
 
-		var bottomInset = keyboardIntersect.Height;
+		var bottomInset = keyboardIntersect.Height + TextViewDistanceFromBottom;
 		var bottomScrollIndicatorInset = bottomInset;
 
 		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
