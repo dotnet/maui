@@ -33,7 +33,7 @@ public partial class Issue24532 : ContentPage
 			{
 				new() { Content = automationId, Header = automationId, AutomationId = automationId }
 			},
-			..Enumerable.Range(0, 250).Select(i => new Model { Content = $"Content {i}", Header = $"Header {i}" })
+			..Enumerable.Range(0, 40).Select(i => new Model { Content = $"Content {i}", Header = $"Header {i}" })
 		];
 	}
 	
