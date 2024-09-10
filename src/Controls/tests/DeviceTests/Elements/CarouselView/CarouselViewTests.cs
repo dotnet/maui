@@ -151,8 +151,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(data.IsCollectionChangedEventEmpty);
 		}
+		#endif
 	}
-	#endif
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector
 	{
