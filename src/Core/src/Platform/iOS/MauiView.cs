@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
 	{
+		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		static bool? _respondsToSafeArea;
 
 		double _lastMeasureHeight = double.NaN;
@@ -25,16 +26,9 @@ namespace Microsoft.Maui.Platform
 
 		bool RespondsToSafeArea()
 		{
-			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
-			{
-				return false;
-			}
-
 			if (_respondsToSafeArea.HasValue)
 				return _respondsToSafeArea.Value;
-
 			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
-
 		}
 
 		protected CGRect AdjustForSafeArea(CGRect bounds)
@@ -42,7 +36,7 @@ namespace Microsoft.Maui.Platform
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
 
-			if (!RespondsToSafeArea())
+			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
 				return bounds;
 			}
@@ -95,12 +89,6 @@ namespace Microsoft.Maui.Platform
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Size.Zero;
 		}
 
-		// SizeThatFits does not take into account the constraints set on the view.
-		// For example, if the user has set a width and height on this view, those constraints
-		// will not be reflected in the value returned from this method. This method purely returns
-		// a measure based on the size that is passed in.
-		// The constraints are all applied by ViewHandlerExtensions.GetDesiredSizeFromHandler
-		// after it calls this method.
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (_crossPlatformLayoutReference == null)
@@ -114,25 +102,6 @@ namespace Microsoft.Maui.Platform
 			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
-
-			// If for some reason the upstream measure passes in a negative contraint
-			// Lets just bypass this code
-			if (RespondsToSafeArea() && widthConstraint >= 0 && heightConstraint >= 0)
-			{
-				// During the LayoutSubViews pass, we adjust the Bounds of this view for the safe area and then pass the adjusted result to CrossPlatformArrange.
-				// The CrossPlatformMeasure call does not include the safe area, so we need to add it here to ensure the returned size is correct.
-				//
-				// For example, if this is a layout with an Entry of height 20, CrossPlatformMeasure will return a height of 20.
-				// This means the bounds will be set to a height of 20, causing AdjustForSafeArea(Bounds) to return a negative bounds once it has
-				// subtracted the safe area insets. Therefore, we need to add the safe area insets to the CrossPlatformMeasure result to ensure correct arrangement.
-				var widthSafeAreaOffset = SafeAreaInsets.Left + SafeAreaInsets.Right;
-				var heightSafeAreaOffset = SafeAreaInsets.Top + SafeAreaInsets.Bottom;
-
-				var width = double.Clamp(crossPlatformSize.Width + widthSafeAreaOffset, 0, widthConstraint);
-				var height = double.Clamp(crossPlatformSize.Height + heightSafeAreaOffset, 0, heightConstraint);
-
-				return new CGSize(width, height);
-			}
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -172,7 +141,27 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
-			this.Superview?.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
+		}
+
+		private protected void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
+		{
+			if (shouldOnlyInvalidateIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				return;
+			}
+
+			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+			// To a SuperView that's been disposed which will cause a crash when trying to access it
+			if (Window is not null)
+			{
+				this.Superview?.SetNeedsLayout();
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+			}
+			else
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
+			}
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
@@ -205,6 +194,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			TryToInvalidateSuperView(true);
 		}
 	}
 }
