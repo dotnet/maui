@@ -11,5 +11,13 @@
                                                         Dark={StaticResource White}}" />
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
+        <ToolbarItem Text="23195">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="SegoeFluentIcons"
+                                Glyph="&#xE721;"
+                                Color="{AppThemeBinding Light=Black,
+                                                        Dark=White}" />
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
     </ContentPage.ToolbarItems>
 </ContentPage>

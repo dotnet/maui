@@ -44,9 +44,11 @@ public partial class Maui23201
             Application.Current.MainPage = page;
 
             Assert.That(((FontImageSource)(page.ToolbarItems[0].IconImageSource)).Color, Is.EqualTo(Colors.DarkGray));
+            Assert.That(((FontImageSource)(page.ToolbarItems[1].IconImageSource)).Color, Is.EqualTo(Colors.Black));
             
             Application.Current.UserAppTheme = AppTheme.Dark;
             Assert.That(((FontImageSource)(page.ToolbarItems[0].IconImageSource)).Color, Is.EqualTo(Colors.LightGray));
+            Assert.That(((FontImageSource)(page.ToolbarItems[1].IconImageSource)).Color, Is.EqualTo(Colors.White));
             
         }
     }
