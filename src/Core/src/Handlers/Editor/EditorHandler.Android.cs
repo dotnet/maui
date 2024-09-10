@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
+			platformView.FocusChange += OnFocusChange;
 			platformView.Touch += OnTouch;
 		}
 
@@ -53,6 +54,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
+			platformView.FocusChange -= OnFocusChange;
 			platformView.Touch -= OnTouch;
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
@@ -153,6 +155,14 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
+		}
+
+		private void OnFocusChange(object? sender, FocusChangeEventArgs e)
+		{
+			if (!e.HasFocus)
+			{
+			  VirtualView?.Completed();
+			}
 		}
 
 		private void OnTouch(object? sender, TouchEventArgs e)
