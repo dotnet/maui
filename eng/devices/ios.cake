@@ -66,7 +66,7 @@ Setup(context =>
 
 Teardown(context => 
 {
-	if (!deviceBoot || targetBoot)
+	if (!deviceBoot || targetBoot || string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
 	{
 		return;
 	}
@@ -100,11 +100,17 @@ Task("uitest-build")
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
 
+Task("uitest-prepare")
+	.Does(() =>
+	{
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
+	});
+
 Task("uitest")
+	.IsDependentOn("uitest-prepare")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
-
 	});
 
 Task("cg-uitest")
@@ -201,15 +207,14 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 	Information("Testing completed.");
 }
 
-void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
+void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
 {
-	Information("Starting UI Tests...");
+	Information("Preparing UI Tests...");
+	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+
 	Information($"Testing Device: {device}");
 	Information($"Testing App Project: {app}");
-	Information($"Results Directory: {resultsDir}");
-	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
-	
-	string testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
+	Information($"Testing App: {testApp}");
 
 	Information($"Testing App found: {testApp}");
 	
@@ -219,6 +224,11 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 	}
 
 	InstallIpa(testApp, "", device, resultsDir, ver, toolPath);
+}
+
+void ExecuteUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
+{
+	Information($"Results Directory: {resultsDir}");
 
 	Information("Build UITests project {0}", project);
 

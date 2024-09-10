@@ -5,7 +5,6 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -36,6 +35,11 @@ namespace Microsoft.Maui.Platform
 			_bounds = new CGRect();
 
 			ContentsScale = UIScreen.MainScreen.Scale;
+		}
+
+		public override void AddAnimation(CAAnimation animation, string? key)
+		{
+			// Do nothing, we don't want animations here
 		}
 
 		public override void LayoutSublayers()

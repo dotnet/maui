@@ -250,17 +250,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					invalidate = true;
 				}
-
-				if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
+				else if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
 				{
 					invalidate = true;
 				}
 
 				if (invalidate)
 				{
-					(ItemsView as IView)?.InvalidateMeasure();
+					ItemsView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				}
 			}
+
 			_previousContentSize = contentSize.Value;
 		}
 		
