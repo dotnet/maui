@@ -52,9 +52,6 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
-			if (platformView is null || platformView.Handle == IntPtr.Zero)
-				return;
-
 			_clearButtonDrawable = null;
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
