@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewTopVerticalOffset > 0 && _headerOffset < 0)
 				{
 					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithMargin + _headerOffset);
-					CAShapeLayer shapeLayer = new CAShapeLayer();
+					CAShapeLayer shapeLayer = new StaticCAShapeLayer();
 					CGRect rect = new CGRect(0, _headerOffset * -1, parentFrame.Width, headerHeight);
 					var path = CGPath.FromRect(rect);
 					shapeLayer.Path = path;

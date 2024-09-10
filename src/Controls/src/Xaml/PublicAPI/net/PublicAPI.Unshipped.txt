@@ -1,2 +1,1 @@
 #nullable enable
-~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, bool notused) -> void

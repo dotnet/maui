@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls;
@@ -375,8 +376,13 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			var frame = collectionView.Frame;
 
+			var measureInvalidatedCount = 0;
+			void OnCollectionViewOnMeasureInvalidated(object s, EventArgs e) => Interlocked.Increment(ref measureInvalidatedCount);
+
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
+				collectionView.MeasureInvalidated += OnCollectionViewOnMeasureInvalidated;
+
 				for (int n = 0; n < itemCounts.Length; n++)
 				{
 					int itemsCount = itemCounts[n];
@@ -402,6 +408,13 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 					double expectedHeight = layoutOptions == LayoutOptions.Fill
 						? containerHeight
 						: Math.Min(itemsCount * templateHeight, containerHeight);
+
+#if IOS
+					if (layoutOptions != LayoutOptions.Fill)
+					{
+						Assert.Equal(n + 1, measureInvalidatedCount);
+					}
+#endif
 
 					if (itemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 					{

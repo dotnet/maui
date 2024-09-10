@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST && !IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
 	public class ScrollViewDelayedContentUITests : _IssuesUITest
@@ -29,3 +30,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
+#endif
