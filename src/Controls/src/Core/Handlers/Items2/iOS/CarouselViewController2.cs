@@ -316,6 +316,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void SubscribeCollectionItemsSourceChanged(Items.IItemsViewSource itemsSource)
 		{
+			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
+
 			if (itemsSource is Items.ObservableItemsSource newItemsSource)
 			{
 				newItemsSource.CollectionViewUpdating += CollectionViewUpdating;
