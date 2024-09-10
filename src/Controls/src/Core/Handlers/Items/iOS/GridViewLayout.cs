@@ -243,7 +243,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
-			if (layoutAttributesForRectElements[0].Frame.Top != CollectionView.Frame.Top + CollectionView.ContentInset.Bottom)
+			// We need to determine whether this 'if' statement is needed, as its relevance is currently uncertain.
+			if (layoutAttributesForRectElements[0].Frame.Top != CollectionView.Frame.Top)
 			{
 				return false;
 			}
