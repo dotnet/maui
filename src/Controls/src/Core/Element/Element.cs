@@ -280,6 +280,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool Owned { get; set; }
 
+		Element _strongParentOverrideReference;
 		internal Element ParentOverride
 		{
 			get 
@@ -320,9 +321,17 @@ namespace Microsoft.Maui.Controls
 				}
 
 				if (value == null)
+				{
 					_parentOverride = null;
+					_strongParentOverrideReference = null;
+				}
 				else
+				{
 					_parentOverride = new WeakReference<Element>(value);
+					
+					// Maintain a strong reference to prevent unwanted garbage collections (#24507)
+					_strongParentOverrideReference = value;
+				}
 
 				if (emitChange)
 				{
@@ -333,6 +342,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<Element> _realParent;
+		Element _strongRealParentReference;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent 
@@ -360,9 +370,17 @@ namespace Microsoft.Maui.Controls
 			private set
 			{
 				if (value is null)
+				{
 					_realParent = null;
+					_strongRealParentReference = null;
+				}
 				else
+				{
 					_realParent = new WeakReference<Element>(value);
+					
+					// Maintain a strong reference to prevent unwanted garbage collections (#24507)
+					_strongRealParentReference = value;
+				}
 			}
 		}
 
