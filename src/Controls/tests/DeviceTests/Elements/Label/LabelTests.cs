@@ -335,6 +335,35 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task SetBackgroundToNullAffectsRendering()
+		{
+			SetupBuilder();
+
+			Label label;
+			var layout = new VerticalStackLayout
+			{
+				(label = new Label
+				{
+					WidthRequest = 200,
+					HeightRequest = 100,
+					Text = "Label",
+					TextColor = Colors.Red,
+					Background = new SolidColorBrush(Colors.Blue),
+				})
+			};
+
+			await AttachAndRun(layout, async (handler) =>
+			{
+				var platformView = handler.ToPlatform();
+				await platformView.AssertContainsColor(Colors.Blue, MauiContext);
+
+				label.Background = null;
+
+				await platformView.AssertDoesNotContainColor(Colors.Blue, MauiContext);
+			});
+		}
+
 		[Theory(
 #if WINDOWS
 		Skip = "Fails on Windows"

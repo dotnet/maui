@@ -77,14 +77,9 @@ namespace Microsoft.Maui.Platform
 
 			if (paint.IsNullOrEmpty())
 			{
-				if (platformView is LayoutView)
-					platformView.BackgroundColor = null;
-				else
-					return;
+				platformView.BackgroundColor = null;
 			}
-
-
-			if (paint is SolidPaint solidPaint)
+			else if (paint is SolidPaint solidPaint)
 			{
 				Color backgroundColor = solidPaint.Color;
 
@@ -92,8 +87,6 @@ namespace Microsoft.Maui.Platform
 					platformView.BackgroundColor = ColorExtensions.BackgroundColor;
 				else
 					platformView.BackgroundColor = backgroundColor.ToPlatform();
-
-				return;
 			}
 			else if (paint is GradientPaint gradientPaint)
 			{
