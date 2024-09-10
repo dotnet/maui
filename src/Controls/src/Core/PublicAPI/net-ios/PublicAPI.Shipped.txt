@@ -7605,6 +7605,7 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.FormsRefreshControl.Hidd
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.Draw(CoreGraphics.CGRect rect) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.LayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.Dispose(bool disposing) -> void
