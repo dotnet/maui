@@ -77,6 +77,20 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
+		public override bool NeedsContainer
+		{
+			get
+			{
+				// If we are wrapped by a BorderView, we need a container
+				// to handle masks and clip shapes effectively.
+				if (VirtualView?.Parent is IBorderView)
+				{
+					return true;
+				}
+				return base.NeedsContainer;
+			}
+		}
+
 		public static void MapText(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdateText(editor);
@@ -156,20 +170,10 @@ namespace Microsoft.Maui.Handlers
 				platformView.Started += OnStarted;
 				platformView.Ended += OnEnded;
 				platformView.TextSetOrChanged += OnTextPropertySet;
-
-				if (virtualView.Parent?.Handler is BorderHandler)
-				{
-					platformView.Scrolled += OnScrolled;
-				}
 			}
 
 			public void Disconnect(MauiTextView platformView)
 			{
-				if (VirtualView?.Parent?.Handler is BorderHandler)
-				{
-					platformView.Scrolled -= OnScrolled;
-				}
-
 				_virtualView = null;
 
 				platformView.ShouldChangeText -= OnShouldChangeText;
@@ -227,23 +231,6 @@ namespace Microsoft.Maui.Handlers
 				if (sender is MauiTextView platformView)
 				{
 					VirtualView?.UpdateText(platformView.Text);
-				}
-			}
-
-			private void OnScrolled(object? sender, EventArgs e)
-			{
-				if (sender is UIScrollView && VirtualView is IEditor virtualView)
-				{
-					var view = virtualView.Parent?.ToPlatform();
-
-					if (view != null && view is ContentView contentView)
-					{
-						// On iOS, when the Editor control is enclosed in a Border, the border ContentMask causes the Editor's initial content alone to be masked.
-						// If the Editor is scrollable, the offset does not update correctly during vertical scrolling.
-						// As a result, only the initial content is visible when scrolling, while the rest of the view remains hidden.
-						// To address this, we update the border contentmask path with the current values to ensure proper masking throughout the scrolling process.
-						contentView.UpdateContentMaskPath();
-					}
 				}
 			}
 		}

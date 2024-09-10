@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Platform
 	{
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _contentMask;
-		UIOffset? _contentBounds;
 
 		// When the BorderHandler sets the content UIView, it tags it with this so we can 
 		// verify we're using the correct subview for masking (and any other purposes)
@@ -63,16 +62,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// Updates the content mask path by recalculating the bounds and applying the clip.
-		internal void UpdateContentMaskPath()
-		{
-			if (PlatformContent is MauiTextView mauiTextView)
-			{
-				_contentBounds = new UIOffset(mauiTextView.ContentOffset.X, mauiTextView.ContentOffset.Y);
-				UpdateClip();
-			}
-		}
-
 		void RemoveContentMask()
 		{
 			_contentMask?.RemoveFromSuperLayer();
@@ -101,16 +90,7 @@ namespace Microsoft.Maui.Platform
 			var clipWidth = (float)bounds.Width - strokeInset;
 			var clipHeight = (float)bounds.Height - strokeInset;
 
-			float resolvedX = 0;
-			float resolvedY = 0;
-
-			if (_contentBounds.HasValue)
-			{
-				resolvedX = (float)_contentBounds.Value.Horizontal;
-				resolvedY = (float)_contentBounds.Value.Vertical;
-			}
-
-			var clipBounds = new RectF(resolvedX, resolvedY, clipWidth, clipHeight);
+			var clipBounds = new RectF(0, 0, clipWidth, clipHeight);
 			_contentMask.Path = GetClipPath(clipBounds, strokeThickness);
 
 			// Since the mask is on the content's CALayer, it's anchored to the content. But we need it to be
