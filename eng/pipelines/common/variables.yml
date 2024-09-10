@@ -73,8 +73,8 @@ variables:
     - group: Publish-Build-Assets
     - group: DotNet-HelixApi-Access
     - group: SDL_Settings
-    - name: PostBuildSign
-      value: true
+    # - name: PostBuildSign
+    #   value: true
     - name: PrivateBuild
       value: false
     # For eng/common/SetupNugetSources.ps1
