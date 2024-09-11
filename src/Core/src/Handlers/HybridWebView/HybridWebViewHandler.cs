@@ -146,11 +146,11 @@ namespace Microsoft.Maui.Handlers
 
 			var script = request.Script;
 			// Make all the platforms mimic Android's implementation, which is by far the most complete.
-			if (DeviceInfo.Platform != DevicePlatform.Android)
+			if (!OperatingSystem.IsAndroid())
 			{
 				script = EscapeJsString(script);
 
-				if (DeviceInfo.Platform != DevicePlatform.WinUI)
+				if (!OperatingSystem.IsWindows())
 				{
 					// Use JSON.stringify() method to converts a JavaScript value to a JSON string
 					script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
