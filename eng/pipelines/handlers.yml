@@ -168,14 +168,14 @@ stages:
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: |
+                  if ($IsMacOS) {
+                    Remove-Item -Recurse -Force "$($env:HOME)/*.logarchive"
+                  }
+                displayName: 'Clean logfiles'
+              - pwsh: |
                   Get-PSDrive -PSProvider FileSystem
                   if ($IsMacOS) {
                     df -h
-                    echo "List Applications."
-                    ls /Applications
-                    sudo du -hs /Applications
-                    echo "List home"
-                    ls -R ~
                   }
                 displayName: 'List drives'
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -268,14 +268,14 @@ stages:
               parameters:
                 poolName: ${{ BuildPlatform.poolName }}
             - pwsh: |
+                if ($IsMacOS) {
+                  Remove-Item -Recurse -Force "$($env:HOME)/*.logarchive"
+                }
+              displayName: 'Clean logfiles'
+            - pwsh: |
                 Get-PSDrive -PSProvider FileSystem
                 if ($IsMacOS) {
                   df -h
-                  echo "List Applications."
-                  ls /Applications
-                  sudo du -hs /Applications
-                  echo "List home"
-                  ls -R ~
                 }
               displayName: 'List drives'
 

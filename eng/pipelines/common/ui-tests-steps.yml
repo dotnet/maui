@@ -52,16 +52,17 @@ steps:
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
     displayName: "Modify defaults"
     continueOnError: true
-  
+
+  - pwsh: |
+      if ($IsMacOS) {
+        Remove-Item -Recurse -Force "$($env:HOME)/*.logarchive"
+      }
+    displayName: 'Clean logfiles'
+
   - pwsh: |
       Get-PSDrive -PSProvider FileSystem
       if ($IsMacOS) {
         df -h
-        echo "List Applications."
-        ls /Applications
-        sudo du -hs /Applications
-        echo "List home"
-        ls -R ~
       }
     displayName: 'List drives'
 
