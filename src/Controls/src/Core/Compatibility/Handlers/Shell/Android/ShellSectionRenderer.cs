@@ -149,7 +149,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (item is BaseShellItem baseShellItem)
 				{
-					baseShellItem.PropertyChanged += OnBaseShellItemPropertyChanged;
+					baseShellItem.SetRenderer(this);
+					//baseShellItem.PropertyChanged += OnBaseShellItemPropertyChanged;
 				}
 			}
 
@@ -160,12 +161,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName)
 			{
-				// Trigger tab reconfiguration when the Title changes
 				UpdateTabTitles();
 			}
 		}
 
-		private void UpdateTabTitles()
+		internal void UpdateTabTitles()
 		{
 			if (_tablayout == null || SectionController.GetItems().Count == 0)
 				return;
