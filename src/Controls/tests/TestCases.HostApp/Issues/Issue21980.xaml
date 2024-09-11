@@ -43,6 +43,6 @@
         </IndicatorView>
       </Border>
     </Grid>
-    <Button x:Name="BtnChangeSource" AutomationId="changeItemsSource" Text="Change ItemsSource" Clicked="OnChangeSourceClicked" HorizontalOptions="Center" WidthRequest="200" Margin="0,16"/>
+    <Button x:Name="BtnChangeSource" AutomationId="changeItemsSource" Command="{Binding ChangeSourceCommand}" Text="Change ItemsSource" HorizontalOptions="Center" WidthRequest="200" Margin="0,16"/>
   </VerticalStackLayout>
 </ContentPage>

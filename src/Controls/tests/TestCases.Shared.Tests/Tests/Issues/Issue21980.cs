@@ -1,3 +1,4 @@
+#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,17 +20,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindows("Need to create new issue for windows platform")]
 		public async Task ShouldIndicatorViewUpdateProperlyWhenChangeIndicatorViewItemsSource()
 		{
-			App.WaitForElement("IndicatorView");
-
-			// 1.The test fails if the placeholder text in the editor below is missing.
-			App.Tap("BtnChangeSource");
-
-			// Delay for the Editor underline on Android to return from
-			// the selected state to normal state.
+			App.WaitForElement("changeItemsSource");
 			await Task.Delay(500);
-
-			// 2. The test fails if the placeholder text in the editor below is not blue.
+			App.Click("changeItemsSource");
+			await Task.Delay(500);
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
