@@ -776,7 +776,7 @@ public static class KeyboardAutoManagerScroll
 
 		// For new lines in an editor, we want the cursor to stay right above the keyboard.
 		// When adding contentInsets for a scrollview, it is nice to have a little extra padding.
-		if (scrolledView is not UITextView)
+		if (scrolledView is not UITextView && keyboardIntersect.Height > 0)
 		{
 			bottomInset += TextViewDistanceFromBottom;
 		}
