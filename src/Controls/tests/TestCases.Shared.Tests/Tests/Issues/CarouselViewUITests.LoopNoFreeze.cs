@@ -21,6 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnMac("DragCoordinates methods not implemented")]
+		[FailsOnWindows("DragCoordinates methods not implemented")]
 		public void Issue12574Test()
 		{
 			App.WaitForElement("0 item");
@@ -51,15 +53,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForElement("0 item");
-
-			var rect = App.FindElement(_carouselAutomationId).GetRect();
-			var centerX = rect.CenterX();
-			var rightX = rect.X + rect.Width - 1;
-;
-			App.DragCoordinates(rect.X, rect.CenterY(), rightX, rect.CenterY());
-
-			App.WaitForElement("2 item");
-			
+	
 			App.Click(_btnRemoveAllAutomationId);
 
 			// If we haven't crashed, then the other button should be here
