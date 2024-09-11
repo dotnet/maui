@@ -33,6 +33,8 @@ Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> object!
+static Microsoft.Maui.Handlers.ElementHandler<TVirtualView, TPlatformView>.PlatformElementFactory.get -> System.Func<Microsoft.Maui.Handlers.ElementHandler<TVirtualView!, TPlatformView!>!, TPlatformView!>?
+static Microsoft.Maui.Handlers.ElementHandler<TVirtualView, TPlatformView>.PlatformElementFactory.set -> void
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
