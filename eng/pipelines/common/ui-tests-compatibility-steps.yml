@@ -44,6 +44,9 @@ steps:
       Get-PSDrive -PSProvider FileSystem
       if ($IsMacOS) {
         df -h
+        ls -R ~
+        ls /Applications
+        du -hs /Applications
       }
     displayName: 'List drives'
 
