@@ -167,6 +167,12 @@ stages:
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              - pwsh: |
+                  Get-PSDrive -PSProvider FileSystem
+                  if ($IsMacOS) {
+                    df -h
+                  }
+                displayName: 'List drives'
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -256,6 +262,12 @@ stages:
             - template: common/provision.yml
               parameters:
                 poolName: ${{ BuildPlatform.poolName }}
+            - pwsh: |
+                Get-PSDrive -PSProvider FileSystem
+                if ($IsMacOS) {
+                  df -h
+                }
+              displayName: 'List drives'
 
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'

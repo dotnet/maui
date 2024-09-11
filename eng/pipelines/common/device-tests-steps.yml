@@ -34,6 +34,12 @@ steps:
       skipAndroidImages : ${{ eq(parameters.platform, 'ios') }}
       skipAndroidSdks: ${{ eq(parameters.platform, 'ios') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  - pwsh: |
+      Get-PSDrive -PSProvider FileSystem
+      if ($IsMacOS) {
+        df -h
+      }
+    displayName: 'List drives'
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'

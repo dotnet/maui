@@ -123,6 +123,13 @@ steps:
     displayName: 'Setup ANDROID_SDK_ROOT Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
+  - pwsh: |
+      Get-PSDrive -PSProvider FileSystem
+      if ($IsMacOS) {
+        df -h
+      }
+    displayName: 'List drives'
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3

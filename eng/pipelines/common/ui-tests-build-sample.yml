@@ -39,6 +39,13 @@ steps:
     displayName: "Modify defaults"
     continueOnError: true
 
+  - pwsh: |
+      Get-PSDrive -PSProvider FileSystem
+      if ($IsMacOS) {
+        df -h
+      }
+    displayName: 'List drives'
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 2
