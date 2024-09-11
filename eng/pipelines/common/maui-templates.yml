@@ -73,6 +73,11 @@ jobs:
         Get-PSDrive -PSProvider FileSystem
         if ($IsMacOS) {
           df -h
+          echo "List Applications."
+          ls /Applications
+          sudo du -hs /Applications
+          echo "List home"
+          ls -R ~
         }
       displayName: 'List drives'
 
@@ -159,6 +164,11 @@ jobs:
         Get-PSDrive -PSProvider FileSystem
         if ($IsMacOS) {
           df -h
+          echo "List Applications."
+          ls /Applications
+          sudo du -hs /Applications
+          echo "List home"
+          ls -R ~
         }
       displayName: 'List drives'
 

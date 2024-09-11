@@ -171,6 +171,11 @@ stages:
                   Get-PSDrive -PSProvider FileSystem
                   if ($IsMacOS) {
                     df -h
+                    echo "List Applications."
+                    ls /Applications
+                    sudo du -hs /Applications
+                    echo "List home"
+                    ls -R ~
                   }
                 displayName: 'List drives'
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -266,6 +271,11 @@ stages:
                 Get-PSDrive -PSProvider FileSystem
                 if ($IsMacOS) {
                   df -h
+                  echo "List Applications."
+                  ls /Applications
+                  sudo du -hs /Applications
+                  echo "List home"
+                  ls -R ~
                 }
               displayName: 'List drives'
 
