@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Maui.Controls.Sample.Issues
 {
+	[XamlCompilation(XamlCompilationOptions.Compile)]
+	[Issue(IssueTracker.Github, 8244, "[iOS]Custom font icon is not rendered in a shell tabbar tab",
+	PlatformAffected.iOS)]
 	public partial class Issue8244 : Shell
 	{
 		public Issue8244()
@@ -62,5 +65,13 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 	}
-}
+
+	static class IconFont
+	{
+		public const string Laptop = "\uf109";
+		public const string LaptopFile = "\ue51d";
+		public const string LaptopCode = "\uf5fc";
+		public const string LaptopMedical = "\uf812";
+		public const string Plus = "\u002b";
+	}
 }
