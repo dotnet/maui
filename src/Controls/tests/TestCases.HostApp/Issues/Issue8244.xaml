@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue8244"
+            Shell.FlyoutBehavior="Disabled">
+  <TabBar>
+    <Tab Route="main" Title="Home">
+      <Tab.Icon>
+        <FontImageSource
+       Size="20"
+       FontFamily = "Ionicons" 
+       Glyph = "&#xf30c;"/>
+      </Tab.Icon>
+      <ShellContent ContentTemplate="{DataTemplate local:MainTabPage}" />
+    </Tab>
+
+    <Tab Route="plans" Title="Meal Plans">
+      <Tab.Icon>
+        <FontImageSource
+       Size="20"
+       FontFamily = "Ionicons" 
+       Glyph = "&#xf30c;"/>
+      </Tab.Icon>
+      <ShellContent ContentTemplate="{DataTemplate local:SecondTabPage}" />
+    </Tab>
+
+    <Tab Route="create">
+      <Tab.Icon>
+        <FontImageSource
+       FontAutoScalingEnabled="False"
+       Size="20"
+       FontFamily = "Ionicons" 
+       Glyph = "&#xf30c;"/>
+      </Tab.Icon>
+      <ShellContent ContentTemplate="{DataTemplate local:SecondTabPage}" />
+    </Tab>
+
+    <Tab Route="library" Title="Library">
+      <Tab.Icon>
+        <FontImageSource
+       Size="20"
+       FontFamily = "Ionicons" 
+       Glyph = "&#xf30c;"/>
+      </Tab.Icon>
+      <ShellContent ContentTemplate="{DataTemplate local:SecondTabPage}" />
+    </Tab>
+
+    <Tab Route="todo" Title="To Do">
+      <Tab.Icon>
+        <FontImageSource
+       Size="20"
+       FontFamily = "Ionicons" 
+       Glyph = "&#xf30c;"/>
+      </Tab.Icon>
+      <ShellContent ContentTemplate="{DataTemplate local:SecondTabPage}" />
+    </Tab>
+  </TabBar>
+</Shell>
