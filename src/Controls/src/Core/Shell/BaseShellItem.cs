@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public event EventHandler Appearing;
 		public event EventHandler Disappearing;
+		internal event EventHandler TitleChanged;
 
 		bool _hasAppearing;
 		const string DefaultFlyoutItemLabelStyle = "Default_FlyoutItemLabelStyle";
@@ -51,7 +52,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
-			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime, propertyChanged: OnTitlePropertyChanged);
+			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.TwoWay, propertyChanged: OnTitlePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
@@ -214,6 +215,15 @@ namespace Microsoft.Maui.Controls
 			var shellItem = (BaseShellItem)bindable;
 			if (shellItem.FindParentOfType<Shell>()?.Toolbar is ShellToolbar st)
 				st.UpdateTitle();
+			if (shellItem != null)
+			{
+				shellItem.OnTitleChanged();
+			}
+		}
+
+		internal virtual void OnTitleChanged()
+		{
+			TitleChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
