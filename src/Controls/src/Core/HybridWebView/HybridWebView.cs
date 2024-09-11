@@ -58,7 +58,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-		public async Task<string?> InvokeJavaScriptAsync(string methodName, object?[]? paramValues, JsonTypeInfo?[]? paramJsonTypeInfos = null)
+		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(
+			string methodName,
+			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
+			object?[]? paramValues = null,
+			JsonTypeInfo?[]? paramJsonTypeInfos = null)
 		{
 			if (string.IsNullOrEmpty(methodName))
 			{
@@ -77,32 +81,15 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentException($"The number of parameter values does not match the number of parameter JSON type infos.", nameof(paramValues));
 			}
 
-			var result = await Handler?.InvokeAsync(
+			var invokeResult = await Handler?.InvokeAsync(
 				nameof(IHybridWebView.InvokeJavaScriptAsync),
-				new HybridWebViewInvokeJavaScriptRequest(methodName, paramValues, paramJsonTypeInfos))!;
+				new HybridWebViewInvokeJavaScriptRequest(methodName, returnTypeJsonTypeInfo, paramValues, paramJsonTypeInfos))!;
 
-			return result;
-		}
-
-		/// <summary>
-		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
-		/// by <paramref name="paramValues"/> by JSON-encoding each one.
-		/// </summary>
-		/// <typeparam name="TReturnType">The type of the return value to deserialize from JSON.</typeparam>
-		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
-		/// <param name="returnTypeJsonTypeInfo">Metadata about deserializing the type of the return value specified by <typeparamref name="TReturnType"/>.</param>
-		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
-		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
-		/// <returns>An object of type <typeparamref name="TReturnType"/> containing the return value of the called method.</returns>
-		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(string methodName, JsonTypeInfo<TReturnType?> returnTypeJsonTypeInfo, object?[]? paramValues = null, JsonTypeInfo?[]? paramJsonTypeInfos = null)
-		{
-			var stringResult = await InvokeJavaScriptAsync(methodName, paramValues, paramJsonTypeInfos);
-
-			if (stringResult is null)
+			if (invokeResult is null)
 			{
 				return default;
 			}
-			return JsonSerializer.Deserialize<TReturnType?>(stringResult, returnTypeJsonTypeInfo);
+			return (TReturnType)invokeResult;
 		}
 
 		/// <inheritdoc/>

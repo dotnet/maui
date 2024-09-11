@@ -30,13 +30,19 @@ namespace Microsoft.Maui
 		Task<string?> EvaluateJavaScriptAsync(string script);
 
 		/// <summary>
-		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values
-		/// specified by <paramref name="paramValues"/>.
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
+		/// by <paramref name="paramValues"/> by JSON-encoding each one.
 		/// </summary>
+		/// <typeparam name="TReturnType">The type of the return value.</typeparam>
 		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
-		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method.</param>
+		/// <param name="returnTypeJsonTypeInfo">Metadata about deserializing the type of the return value specified by <typeparamref name="TReturnType"/>.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
 		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
-		/// <returns>A string containing the return value of the called method.</returns>
-		public Task<string?> InvokeJavaScriptAsync(string methodName, object?[]? paramValues, JsonTypeInfo?[]? paramJsonTypeInfos = null);
+		/// <returns>An object of type <typeparamref name="TReturnType"/> containing the return value of the called method.</returns>
+		Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(
+			string methodName,
+			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
+			object?[]? paramValues = null,
+			JsonTypeInfo?[]? paramJsonTypeInfos = null);
 	}
 }

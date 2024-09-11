@@ -209,9 +209,17 @@ namespace Microsoft.Maui.Handlers
 			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync),
 				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.InvokeMethod({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
 
-			var result = await callback.Task;
+			var stringResult = await callback.Task;
 
-			invokeJavaScriptRequest.SetResult(result);
+			if (stringResult is null)
+			{
+				invokeJavaScriptRequest.SetResult(null);
+			}
+			else
+			{
+				var typedResult = JsonSerializer.Deserialize(stringResult, invokeJavaScriptRequest.ReturnTypeJsonTypeInfo);
+				invokeJavaScriptRequest.SetResult(typedResult);
+			}
 #else
 			await Task.CompletedTask;
 #endif
