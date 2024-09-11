@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EditorScrollingWhenEnclosedInBorder()
 		{
 			App.WaitForElement("editor");
-			App.ScrollDown("editor", ScrollStrategy.Gesture);
+			App.ScrollDown("editor", ScrollStrategy.Programmatically);
 
 			VerifyScreenshot();
 		}
