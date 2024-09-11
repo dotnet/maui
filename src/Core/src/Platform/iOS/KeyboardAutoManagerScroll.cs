@@ -773,6 +773,14 @@ public static class KeyboardAutoManagerScroll
 		var keyboardIntersect = CGRect.Intersect(KeyboardFrame, frameInWindow);
 
 		var bottomInset = keyboardIntersect.Height;
+
+		// For new lines in an editor, we want the cursor to stay right above the keyboard.
+		// When adding contentInsets for a scrollview, it is nice to have a little extra padding.
+		if (scrolledView is not UITextView)
+		{
+			bottomInset += TextViewDistanceFromBottom;
+		}
+
 		var bottomScrollIndicatorInset = bottomInset;
 
 		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
@@ -796,7 +804,7 @@ public static class KeyboardAutoManagerScroll
 			var cursorRect = FindCursorPosition();
 			if (cursorRect is CGRect cursor)
 			{
-				var editorBottomInset = frameInWindow.Bottom - cursor.Bottom;
+				var editorBottomInset = frameInWindow.Bottom - cursor.Bottom - TextViewDistanceFromBottom;
 				movedInsets.Bottom = nfloat.Max(0, editorBottomInset);
 				bottomScrollIndicatorInset = nfloat.Max(0, editorBottomInset);
 			}
