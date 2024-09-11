@@ -11,19 +11,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Android] IndicatorView with DataTemplate (custom image) does not render correctly when ItemsSource change.";
+		public override string Issue => "IndicatorView with DataTemplate (custom image) does not render correctly when ItemsSource change.";
 
 		[Test]
 		[Category(UITestCategories.IndicatorView)]
-		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
-		[FailsOnIOS("Need to create new issue for iOS platform")]
-		[FailsOnWindows("Need to create new issue for windows platform")]
-		public async Task ShouldIndicatorViewUpdateProperlyWhenChangeIndicatorViewItemsSource()
+		public void IndicatorViewSizeAfterItemsSourceUpdate()
 		{
 			App.WaitForElement("changeItemsSource");
-			await Task.Delay(500);
 			App.Click("changeItemsSource");
-			await Task.Delay(500);
+			App.WaitForElement("changeItemsSource");
 			VerifyScreenshot();
 		}
 	}

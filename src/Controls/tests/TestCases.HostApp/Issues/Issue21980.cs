@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, "21980", "[Android] IndicatorView with DataTemplate (custom image) does not render correctly when ItemsSource change.", PlatformAffected.Android | PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, "21980", "IndicatorView with DataTemplate (custom image) does not render correctly when ItemsSource change.", PlatformAffected.Android | PlatformAffected.iOS)]
 	public partial class Issue21980 : ContentPage
 	{
 		public Issue21980()
