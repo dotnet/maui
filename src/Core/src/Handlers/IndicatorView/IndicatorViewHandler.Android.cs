@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator)
 		{
 			handler.PlatformView.UpdateIndicatorCount();
-			handler.PlatformView.ResetIndicators();
 		}
 
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator)

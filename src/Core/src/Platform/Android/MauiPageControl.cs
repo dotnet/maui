@@ -99,6 +99,11 @@ namespace Microsoft.Maui.Platform
 			}
 
 			RemoveViews(count);
+
+			if (_indicatorView is ITemplatedIndicatorView templatedIndicatorView)
+			{
+				UpdateIndicatorTemplate(templatedIndicatorView.IndicatorsLayoutOverride);
+			}
 		}
 
 		void UpdateIndicatorTemplate(ILayout? layout)
@@ -170,9 +175,11 @@ namespace Microsoft.Maui.Platform
 
 		void RemoveViews(int startAt)
 		{
-			for (int i = startAt; i < ChildCount; i++)
+			startAt = ChildCount - startAt;
+			int index = ChildCount - 1;
+			for (int i = 0; i < startAt; i++)
 			{
-				var imageView = GetChildAt(ChildCount - 1);
+				var imageView = GetChildAt(index - i);
 				imageView?.SetOnClickListener(null);
 				RemoveView(imageView);
 			}
