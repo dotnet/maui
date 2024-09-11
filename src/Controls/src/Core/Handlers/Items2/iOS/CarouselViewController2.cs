@@ -477,16 +477,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			int position = carousel.Position;
 			var currentItem = carousel.CurrentItem;
+
 			if (currentItem != null)
 			{
-				position = ItemsSource.GetIndexForItem(currentItem).Row;
+				// Sometimes the item could be just being removed while we navigate back to the CarouselView
+				var positionCurrentItem = ItemsSource.GetIndexForItem(currentItem).Row;
+				if (positionCurrentItem != -1)
+				{
+					position = positionCurrentItem;
+				}
 			}
+
 			var projectedPosition = NSIndexPath.FromItemSection(position, _section);
 
 			if (LoopItemsSource.Loop)
 			{
 				//We need to set the position to the correct position since we added 1 item at the beginning
-				projectedPosition = NSIndexPath.FromItemSection(position + 1, _section);
+				projectedPosition = GetScrollToIndexPath(position);
 			}
 
 			var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
@@ -499,13 +506,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						return;
 					}
-			CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
-				
-			InitialPositionSet = true;
-			//Set the position on VirtualView to update the CurrentItem also
-			SetPosition(position);
+					System.Diagnostics.Debug.WriteLine($"UpdateInitialPosition ScrollToItem: {projectedPosition}");
+					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
 
-			UpdateVisualStates();
+					InitialPositionSet = true;
+					//Set the position on VirtualView to update the CurrentItem also
+					SetPosition(position);
+
+					UpdateVisualStates();
 				});
 
 			});
@@ -649,7 +657,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else
 			{
-				return  Math.Max(0, indexPath.Row - 1);
+				return Math.Max(0, indexPath.Row - 1);
 			}
 		}
 
