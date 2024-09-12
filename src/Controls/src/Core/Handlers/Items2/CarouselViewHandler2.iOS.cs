@@ -114,11 +114,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 						if (ItemsView.Position != realPage)
 						{
-							var pageNumberIndex = NSIndexPath.FromRowSection(pageIndex, 0);
+							if (((CarouselViewController2)Controller).IsUpdating())
+								return;
+
+							var pageNumberIndex = NSIndexPath.FromItemSection(pageIndex, 0);
+							System.Diagnostics.Debug.WriteLine($"VisibleItemsInvalidationHandler Scrool: {realPage} {maxIndex} {pageNumberIndex}");
 							Controller.CollectionView.ScrollToItem(pageNumberIndex, UICollectionViewScrollPosition.Left, false);
 
-							//Update the CarouselView position
 							(Controller as CarouselViewController2)?.SetPosition(realPage);
+							//Update the CarouselView position
 						}
 					}
 					else
