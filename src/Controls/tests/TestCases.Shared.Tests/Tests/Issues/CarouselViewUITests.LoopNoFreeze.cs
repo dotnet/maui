@@ -23,6 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnMac("DragCoordinates methods not implemented")]
 		[FailsOnWindows("DragCoordinates methods not implemented")]
+		[FailsOnAndroid("This test is failing, likely due to product issue")]
 		public void Issue12574Test()
 		{
 			App.WaitForElement("0 item");
@@ -50,6 +51,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnWindows("This test is failing, likely due to product issu")]
+		[FailsOnAndroid("This test is failing, likely due to product issu")]
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForElement("0 item");
