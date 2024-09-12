@@ -33,7 +33,7 @@
           </DataTemplate>
         </CarouselView.ItemTemplate>
       </CarouselView>
-      <Border HorizontalOptions="Center" VerticalOptions="End" Margin="16" Background="white" Padding="6" StrokeShape="RoundRectangle 12" StrokeThickness="0" Grid.Row="0">
+      <Border HorizontalOptions="Center" VerticalOptions="End" Margin="16" Background="Green" Padding="6" StrokeShape="RoundRectangle 12" StrokeThickness="0" Grid.Row="0">
         <IndicatorView AutomationId="IndicatorView" x:Name="IndicatorView" IndicatorColor="Pink" SelectedIndicatorColor="Black" IndicatorSize="12" Padding="0" HeightRequest="12">
           <IndicatorView.IndicatorTemplate>
             <DataTemplate>
