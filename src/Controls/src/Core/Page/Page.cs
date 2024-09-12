@@ -502,24 +502,29 @@ namespace Microsoft.Maui.Controls
 		
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
-			// This time we won't propagate MeasureInvalidated up to the parent
-			// considering the page is the top level element for this feature
+			// Behave like `VisualElement` except for propagation to parent
 			switch (trigger)
 			{
 				case InvalidationTrigger.RendererReady:
+					InvokeMeasureInvalidated(InvalidationTrigger.RendererReady);
+					break;
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
-					InvokeMeasureInvalidated(trigger);
-					break;
+					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
+					return;
+				// We can ignore the request if we are either fully constrained or when the size request changes, and we were already fully constrained
+				case InvalidationTrigger.MeasureChanged when child.Constraint == LayoutConstraint.Fixed:
+				case InvalidationTrigger.SizeRequestChanged when child.ComputedConstraint == LayoutConstraint.Fixed:
+					return;
 				default:
 					// When visibility changes `InvalidationTrigger.Undefined` is used,
 					// so here we're sure that visibility didn't change
 					if (child.IsVisible)
 					{
 						// We need to invalidate measures only if child is actually visible
-						InvokeMeasureInvalidated(trigger);
+						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 					}
-					break;
+					return;
 			}
 
 			// We still need to call the legacy OnChildMeasureInvalidated to keep the compatibility.
