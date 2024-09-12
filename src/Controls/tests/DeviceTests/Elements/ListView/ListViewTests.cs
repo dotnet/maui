@@ -28,7 +28,62 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ListView, ListViewRenderer>();
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Entry, EntryHandler>();
 				});
+			});
+		}
+
+
+		[Fact
+#if ANDROID
+			(Skip = "https://github.com/dotnet/maui/issues/24701")
+#endif
+		]
+		public async Task ChangingTemplateTypeDoesNotCrash()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data1 = new ObservableCollection<string>()
+			{
+				"cat",
+				"dog",
+			};
+			ObservableCollection<string> data2 = new ObservableCollection<string>()
+			{
+				"dog",
+				"cat",
+			};
+
+			var template1 =  new DataTemplate(() =>
+			{
+				return new ViewCell()
+				{
+					View = new Label()
+				};
+			});
+
+			var template2 =  new DataTemplate(() =>
+			{
+				return new ViewCell()
+				{
+					View = new Entry()
+				};
+			});
+
+			var listView = new ListView()
+			{
+				HasUnevenRows = true,
+				ItemTemplate = new FunctionalDataTemplateSelector((item, container) =>
+				{
+					return item.ToString() == "cat" ? template1 : template2;
+				}),
+				IsGroupingEnabled = true,
+				ItemsSource = new ObservableCollection<ObservableCollection<string>>(){data1}
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(new VerticalStackLayout(){ listView }, async (handler) =>
+			{
+				listView.ItemsSource = new ObservableCollection<ObservableCollection<string>>(){data2};
+				await Task.Delay(5000);
 			});
 		}
 
@@ -345,6 +400,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("5", cells[1].Text);
 				Assert.Equal("6", cells[2].Text);
 			});
+		}
+
+		class FunctionalDataTemplateSelector : DataTemplateSelector
+		{
+			public Func<object, BindableObject, DataTemplate> Selector { get; }
+
+			public FunctionalDataTemplateSelector(Func<object, BindableObject, DataTemplate> selectTemplate)
+			{
+				Selector = selectTemplate;
+			}
+
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+			{
+				return Selector.Invoke(item, container);
+			}
 		}
 	}
 }

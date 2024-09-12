@@ -479,6 +479,11 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
+			if (value is BindingBase binding && !property.ReturnType.IsAssignableFrom(typeof(BindableProperty))) {
+				SetBinding(property, binding);
+				return;
+			}
+			
 			if (property.IsReadOnly)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
