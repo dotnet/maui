@@ -43,8 +43,18 @@ steps:
   - pwsh: |
       Get-PSDrive -PSProvider FileSystem
       if ($IsMacOS) {
+        Write-Host "Volumnes information"
         df -h
+
+        Write-Host "Home directory size"
         du -hs ~
+        $dirs = Get-ChildItem -Path ~ -Directory
+        foreach ($d in $dirs) {
+          Write-Host "Size of $d"
+          du -hs "$d"
+        }
+
+        Write-Host "/Applications information"
         du -hs /Applications
       }
     displayName: 'List drives'
