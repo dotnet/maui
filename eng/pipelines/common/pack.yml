@@ -137,10 +137,17 @@ steps:
 
         Write-Host "Home directory size"
         du -hs ~
+        Write-Host "Directory sizes"
         $dirs = Get-ChildItem -Path ~ -Directory
         foreach ($d in $dirs) {
           Write-Host "Size of $d"
           du -hs "$d"
+        }
+        Write-Host "Files sizes"
+        $files = Get-ChildItem -Path ~ -File
+        foreach ($f in $files) {
+          Write-Host "Size of $f"
+          du -hs "$f"
         }
 
         Write-Host "/Applications information"
