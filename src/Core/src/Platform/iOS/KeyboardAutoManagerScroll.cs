@@ -411,7 +411,15 @@ public static class KeyboardAutoManagerScroll
 			var superScrollInContainer = ContainerView.ConvertRectFromView(superScrollView.Frame, superScrollView.Superview);
 			superScrollViewRect = ContainerView.ConvertRectToView(superScrollInContainer, null);
 			topBoundary = Math.Max(topBoundary, superScrollViewRect.Value.Top);
-			bottomBoundary = Math.Min(bottomBoundary, superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom);
+			var superScrollViewBottom = superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom;
+
+			// if the superScrollView is a small editor, it may not make sense to scroll the entire screen if cursor is visible
+			if (superScrollView is UITextView && superScrollViewRect.Value.Bottom - TextViewDistanceFromBottom < cursorRect.Bottom)
+			{
+				superScrollViewBottom = superScrollViewRect.Value.Bottom;
+			}
+
+			bottomBoundary = Math.Min(bottomBoundary, superScrollViewBottom);
 		}
 
 		bool forceSetContentInsets = true;
