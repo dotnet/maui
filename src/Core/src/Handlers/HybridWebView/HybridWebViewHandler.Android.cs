@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
-		private sealed class HybridWebViewJavaScriptInterface : Java.Lang.Object
+		private sealed class HybridWebViewJavaScriptInterface : Java.Lang.Object, IHybridJavaScriptInterface
 		{
 			private readonly WeakReference<HybridWebViewHandler> _hybridWebViewHandler;
 
@@ -47,7 +47,6 @@ namespace Microsoft.Maui.Handlers
 			private HybridWebViewHandler? Handler => _hybridWebViewHandler is not null && _hybridWebViewHandler.TryGetTarget(out var h) ? h : null;
 
 			[JavascriptInterface]
-			[Export("sendMessage")]
 			public void SendMessage(string message)
 			{
 				Handler?.VirtualView?.MessageReceived(message);
