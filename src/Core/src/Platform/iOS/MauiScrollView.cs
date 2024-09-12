@@ -19,6 +19,12 @@ namespace Microsoft.Maui.Platform
 				base.ScrollRectToVisible(rect, animated);
 		}
 
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+			this.Superview?.SetNeedsLayout();
+		}
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
