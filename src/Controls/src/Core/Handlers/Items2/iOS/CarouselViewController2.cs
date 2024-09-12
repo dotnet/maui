@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	public class CarouselViewController2 : ItemsViewController2<CarouselView>
 	{
+		bool _isUpdating = false;
 		int _section = 0;
 		CarouselViewLoopManager _carouselViewLoopManager;
 
@@ -93,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override void UpdateItemsSource()
 		{
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
+			_isUpdating = true;
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
 			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
@@ -102,6 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				carousel.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 			}
+			_isUpdating = false;
 		}
 
 		protected override bool IsHorizontal => ItemsView?.ItemsLayout?.Orientation == ItemsLayoutOrientation.Horizontal;
@@ -147,6 +150,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			_carouselViewLoopManager?.Dispose();
 			_carouselViewLoopManager = null;
+			_isUpdating = false;
 		}
 
 		void Setup(CarouselView carouselView)
@@ -213,6 +217,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdating(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			_isUpdating = true;
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -276,6 +281,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 
+			_isUpdating = false;
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
@@ -334,6 +340,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
+		internal bool IsUpdating()
+		{
+			return _isUpdating;
+		}
 		internal void UpdateLoop()
 		{
 			if (ItemsView is not CarouselView carousel)
@@ -438,7 +448,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal void UpdateFromPosition()
 		{
 			if (!InitialPositionSet)
+			{
 				return;
+			}
 
 			if (ItemsView is not CarouselView carousel)
 			{
@@ -506,10 +518,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						return;
 					}
+					InitialPositionSet = true;
+
+					if (ItemsSource is null || ItemsSource.ItemCount == 0)
+					{
+						return;
+					}
+
 					System.Diagnostics.Debug.WriteLine($"UpdateInitialPosition ScrollToItem: {projectedPosition}");
 					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
 
-					InitialPositionSet = true;
 					//Set the position on VirtualView to update the CurrentItem also
 					SetPosition(position);
 
