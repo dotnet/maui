@@ -156,9 +156,11 @@ namespace Microsoft.Maui.Networking
 #pragma warning disable CA1422 // obsolete in MacCatalyst 15, iOS 13
 			remoteHostReachability.SetNotification(OnChange);
 			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
-#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1422
 
+#if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938
+			ConnectivityImplementation.CellularData.RestrictionDidUpdateNotifier = new Action<CTCellularDataRestrictedState>(OnRestrictedStateChanged);
 #pragma warning restore BI1234, CA1416
 #endif
 		}
