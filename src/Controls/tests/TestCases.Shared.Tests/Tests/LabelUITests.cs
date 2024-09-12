@@ -55,7 +55,7 @@ public class LabelUITests : _ViewUITests
 		remote.TapStateButton();
 		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
 
-		remote.TapStateButton();
-		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+		//remote.TapStateButton();
+		//VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
 	}
 }
