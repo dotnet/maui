@@ -472,7 +472,7 @@ namespace Microsoft.Maui.IntegrationTests
 						Code = "IL3050",
 						Messages = new List<string>
 						{
-							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'System.Type.MakeGenericType(Type[])' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. The native code for this instantiation might not be available at runtime.",
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(IElementNode,HydrationContext)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. XamlDataTypeProvider is not trim and AOT-compatible.",
 						}
 					},
 					
