@@ -282,6 +282,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 
 			_isUpdating = false;
+			ScrollToPosition(targetPosition, targetPosition, false, true);
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
@@ -656,7 +657,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
-
 
 		public NSIndexPath GetCorrectedIndexPathFromIndex(int index)
 		{
