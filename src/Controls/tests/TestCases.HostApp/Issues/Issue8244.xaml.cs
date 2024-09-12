@@ -24,6 +24,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				new Label(){
 					Text = "Page Loaded in first Tab",
+					AutomationId="TabBarIcon",
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center,
 					TextDecorations = TextDecorations.Underline,

@@ -5,7 +5,7 @@
             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
             Shell.FlyoutBehavior="Disabled">
   
-  <TabBar AutomationId="TabBarIcon">
+  <TabBar>
     <Tab Route="main" Title="Home">
       <Tab.Icon>
         <FontImageSource Size="20" FontFamily ="FA" Glyph="{x:Static local:IconFont.Laptop}"/>
