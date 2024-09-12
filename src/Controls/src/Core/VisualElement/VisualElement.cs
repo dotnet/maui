@@ -922,6 +922,12 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool Batched => _batched > 0;
 
+		/// <summary>
+		/// Legacy <see cref="Compatibility.Layout"/>s can force <see cref="LayoutConstraint.Fixed"/> flags on the element.
+		/// </summary>
+		/// <remarks>
+		/// This should be removed once we drop the legacy layout system, unless we decide to implement a similar functionality in the new layout system.
+		/// </remarks>
 		internal LayoutConstraint ComputedConstraint
 		{
 			get { return _computedConstraint; }
@@ -938,6 +944,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// This flag is substantially used by to avoid measure invalidation when the view is <see cref="LayoutConstraint.Fixed"/>.
+		/// </summary>
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
 
 		/// <summary>
@@ -1382,6 +1391,13 @@ namespace Microsoft.Maui.Controls
 				// No need to invalidate measure if there's no platform view
 				return;
 			}
+
+			// We can ignore the request if we are either fully constrained or when the size request changes, and we were already fully constrained
+			if ((trigger == InvalidationTrigger.MeasureChanged && Constraint == LayoutConstraint.Fixed) ||
+			    (trigger == InvalidationTrigger.SizeRequestChanged && ComputedConstraint == LayoutConstraint.Fixed))
+			{
+				return;
+			}
 			
 			InvalidateMeasureCacheInternal();
 
@@ -1402,12 +1418,6 @@ namespace Microsoft.Maui.Controls
 
 			InvokeMeasureInvalidated(trigger);
 
-			// Changing child position shouldn't invalidate parent's layout measure
-			if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
-			{
-				return;
-			}
-
 			// Notify parent chain that a child's measure has been invalidated
 			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 		}
@@ -1420,15 +1430,24 @@ namespace Microsoft.Maui.Controls
 			_measureCache.Clear();
 		}
 
+		internal virtual bool CanChangeDesiredSizeOnAlignmentChange(InvalidationTrigger trigger) => false;
+
 		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			switch (trigger)
 			{
 				case InvalidationTrigger.RendererReady:
+					InvokeMeasureInvalidated(InvalidationTrigger.RendererReady);
+					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.RendererReady);
+					break;
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
-					InvokeMeasureInvalidated(trigger);
-					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
+					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+					return;
+				// We can ignore the request if we are either fully constrained or when the size request changes, and we were already fully constrained
+				case InvalidationTrigger.MeasureChanged when child.Constraint == LayoutConstraint.Fixed:
+				case InvalidationTrigger.SizeRequestChanged when child.ComputedConstraint == LayoutConstraint.Fixed:
 					return;
 				default:
 					// When visibility changes `InvalidationTrigger.Undefined` is used,
@@ -1436,7 +1455,7 @@ namespace Microsoft.Maui.Controls
 					if (child.IsVisible)
 					{
 						// We need to invalidate measures only if child is actually visible
-						InvokeMeasureInvalidated(trigger);
+						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
 					}
 					return;

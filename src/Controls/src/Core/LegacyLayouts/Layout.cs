@@ -539,26 +539,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			child.Layout(region);
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		internal void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			IReadOnlyList<Element> children = LogicalChildrenInternal;
-			int count = children.Count;
-			for (var index = 0; index < count; index++)
-			{
-				if (LogicalChildrenInternal[index] is VisualElement { IsVisible: true } v && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-				{
-					return;
-				}
-			}
-
 			if (child is View view)
 			{
-				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrained
-				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
-					(trigger == InvalidationTrigger.SizeRequestChanged && view.ComputedConstraint == LayoutConstraint.Fixed))
-				{
-					return;
-				}
 				if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
 				{
 					ComputeConstraintForView(view);
