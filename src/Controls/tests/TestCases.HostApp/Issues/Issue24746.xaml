@@ -27,13 +27,13 @@
         <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png"
             Background="lightgray" ContentLayout="Top,0" HorizontalOptions="Center" />
 
-        <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png"Padding="0"
+        <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png" Padding="0"
             Background="lightgreen" ContentLayout="Top,0" HorizontalOptions="Center" />
 
-        <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png"Padding="5"
+        <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png" Padding="5"
             Background="lightblue" ContentLayout="Top,0" HorizontalOptions="Center" />
 
-        <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png"Padding="50,10"
+        <Button Text="Hello, longer world!" ImageSource="dotnet_bot_resized2.png" Padding="50,10"
             Background="purple" ContentLayout="Top,0" HorizontalOptions="Center" />
 
     </VerticalStackLayout>
