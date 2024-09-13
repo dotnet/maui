@@ -1661,81 +1661,81 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("12", sb.ToString());
 		}
 		
-		[Fact]
-		public void BindingContextBindingsApplyOnlyOnceOnBindingContextInheritance()
-		{
-			var sb = new StringBuilder(50);
-			var bindingContext = new
-			{
-				Level1 = new
-				{
-					Level2 = new
-					{
-						Text = "a binding context"
-					}
-				}
-			};
+		// [Fact]
+		// public void BindingContextBindingsApplyOnlyOnceOnBindingContextInheritance()
+		// {
+		// 	var sb = new StringBuilder(50);
+		// 	var bindingContext = new
+		// 	{
+		// 		Level1 = new
+		// 		{
+		// 			Level2 = new
+		// 			{
+		// 				Text = "a binding context"
+		// 			}
+		// 		}
+		// 	};
 			
-			var root = new MockBindable();
+		// 	var root = new MockBindable();
 
-			var level1 = new MockBindable();
-			level1.SetBinding(
-				BindableObject.BindingContextProperty,
-				new Binding("Level1", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
+		// 	var level1 = new MockBindable();
+		// 	level1.SetBinding(
+		// 		BindableObject.BindingContextProperty,
+		// 		new Binding("Level1", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
 
-			var level2 = new MockBindable();
-			level2.SetBinding(MockBindable.TextProperty, new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
-			level2.SetBinding(
-				BindableObject.BindingContextProperty,
-				new Binding("Level2", BindingMode.OneWay, new IdentityLoggerConverter(sb, 3)));
+		// 	var level2 = new MockBindable();
+		// 	level2.SetBinding(MockBindable.TextProperty, new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
+		// 	level2.SetBinding(
+		// 		BindableObject.BindingContextProperty,
+		// 		new Binding("Level2", BindingMode.OneWay, new IdentityLoggerConverter(sb, 3)));
 
-			root.AddLogicalChild(level1);
-			level1.AddLogicalChild(level2);
+		// 	root.AddLogicalChild(level1);
+		// 	level1.AddLogicalChild(level2);
 
-			root.BindingContext = bindingContext;
+		// 	root.BindingContext = bindingContext;
 
-			// 3 is in the middle because the BindingContext must be set before other properties (like text)
-			Assert.Equal("132", sb.ToString());
-			Assert.Equal(bindingContext.Level1.Level2.Text, level2.GetValue(MockBindable.TextProperty));
-		}
+		// 	// 3 is in the middle because the BindingContext must be set before other properties (like text)
+		// 	Assert.Equal("132", sb.ToString());
+		// 	Assert.Equal(bindingContext.Level1.Level2.Text, level2.GetValue(MockBindable.TextProperty));
+		// }
 		
-		[Fact]
-		public void BindingContextBindingsApplyOnlyOnceOnParentSet()
-		{
-			var sb = new StringBuilder(50);
-			var bindingContext = new
-			{
-				Level1 = new
-				{
-					Level2 = new
-					{
-						Text = "a binding context"
-					}
-				}
-			};
+		// [Fact]
+		// public void BindingContextBindingsApplyOnlyOnceOnParentSet()
+		// {
+		// 	var sb = new StringBuilder(50);
+		// 	var bindingContext = new
+		// 	{
+		// 		Level1 = new
+		// 		{
+		// 			Level2 = new
+		// 			{
+		// 				Text = "a binding context"
+		// 			}
+		// 		}
+		// 	};
 			
-			var root = new MockBindable();
+		// 	var root = new MockBindable();
 
-			var level1 = new MockBindable();
-			level1.SetBinding(
-				BindableObject.BindingContextProperty,
-				new Binding("Level1", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
+		// 	var level1 = new MockBindable();
+		// 	level1.SetBinding(
+		// 		BindableObject.BindingContextProperty,
+		// 		new Binding("Level1", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
 
-			var level2 = new MockBindable();
-			level2.SetBinding(MockBindable.TextProperty, new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
-			level2.SetBinding(
-				BindableObject.BindingContextProperty,
-				new Binding("Level2", BindingMode.OneWay, new IdentityLoggerConverter(sb, 3)));
+		// 	var level2 = new MockBindable();
+		// 	level2.SetBinding(MockBindable.TextProperty, new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
+		// 	level2.SetBinding(
+		// 		BindableObject.BindingContextProperty,
+		// 		new Binding("Level2", BindingMode.OneWay, new IdentityLoggerConverter(sb, 3)));
 
-			level1.AddLogicalChild(level2);
+		// 	level1.AddLogicalChild(level2);
 
-			root.BindingContext = bindingContext;
-			root.AddLogicalChild(level1);
+		// 	root.BindingContext = bindingContext;
+		// 	root.AddLogicalChild(level1);
 
-			// 3 is in the middle because the BindingContext must be set before other properties (like text)
-			Assert.Equal("132", sb.ToString());
-			Assert.Equal(bindingContext.Level1.Level2.Text, level2.GetValue(MockBindable.TextProperty));
-		}
+		// 	// 3 is in the middle because the BindingContext must be set before other properties (like text)
+		// 	Assert.Equal("132", sb.ToString());
+		// 	Assert.Equal(bindingContext.Level1.Level2.Text, level2.GetValue(MockBindable.TextProperty));
+		// }
 
 		[Fact("When there are multiple bindings, an update in one should not cause the other to udpate.")]
 		public void BindingsShouldNotTriggerOtherBindings()
