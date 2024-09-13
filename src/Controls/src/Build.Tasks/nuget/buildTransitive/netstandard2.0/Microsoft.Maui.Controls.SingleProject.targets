@@ -61,6 +61,24 @@
 
   </Target>
 
+  <!--
+    TEMPORARY workaround for the issue where the resource starts with the Resources/ prefix,
+    either in the Identity or Link metadata. The fix is to assume that was not intended
+    since that is how it worked in 8.0.60 and earlier.
+    See: https://github.com/xamarin/xamarin-macios/issues/20968
+  -->
+  <Target Name="_MauiBefore_CollectBundleResources" BeforeTargets="_CollectBundleResources">
+    <PropertyGroup>
+      <_MauiOld_ResourcePrefix>$(_ResourcePrefix)</_MauiOld_ResourcePrefix>
+      <_ResourcePrefix>Resources;$(_ResourcePrefix)</_ResourcePrefix>
+    </PropertyGroup>
+  </Target>
+  <Target Name="_MauiAfter_CollectBundleResources" AfterTargets="_CollectBundleResources">
+    <PropertyGroup>
+      <_ResourcePrefix>$(_MauiOld_ResourcePrefix)</_ResourcePrefix>
+    </PropertyGroup>
+  </Target>
+
   <!-- Import Maui Single Project property pages -->
   <PropertyGroup Condition="'$(MauiDesignTimeTargetsPath)' == ''">
     <MauiDesignTimeTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Maui\Maui.DesignTime.targets</MauiDesignTimeTargetsPath>

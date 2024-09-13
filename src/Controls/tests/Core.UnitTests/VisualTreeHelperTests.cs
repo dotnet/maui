@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task ModalChildrenFiresDiagnosticEvents()
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out var window, out _);
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task AddPageContentFiresVisualTreeChanged()
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out _, out var page);
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task RemovePageContentFiresVisualTreeChanged()
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out _, out var page);
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(StackLayout))]
 		public void AddLayoutChildFiresVisualTreeChanged(Type TLayout)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out _, out var page);
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(StackLayout))]
 		public void InsertLayoutChildFiresVisualTreeChanged(Type TLayout)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out _, out var page);
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(StackLayout))]
 		public void RemoveLayoutChildFiresVisualTreeChanged(Type TLayout)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out _, out var page);
@@ -286,7 +286,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(typeof(StackLayout))]
 		public void ClearLayoutChildrenFiresVisualTreeChanged(Type TLayout)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			CreateNewApp(out _, out _, out var page);

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using NUnit.Framework;
+using OpenQA.Selenium.Appium.iOS;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -107,6 +108,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+				
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -125,22 +127,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				switch (_testDevice)
 				{
 					case TestDevice.Android:
-						if (deviceName == "Nexus 5X")
+						environmentName = "android";
+						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
+						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
+						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+
+						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
-							environmentName = "android";
-						}
-						else
-						{
-							Assert.Fail($"Android visual tests should be run on an Nexus 5X (API 30) emulator image, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
 					case TestDevice.iOS:
-						if (deviceName == "iPhone Xs (iOS 17.2)")
+						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
+						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+
+						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
 						{
 							environmentName = "ios";
 						}
-						else if (deviceName == "iPhone X (iOS 16.4)")
+						else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
 						{
 							environmentName = "ios-iphonex";
 						}
