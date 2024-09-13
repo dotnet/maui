@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.RenderingPerformance"
+             Title="RenderingPerformance">
+
+    <Grid Padding="24" RowDefinitions="Auto,*" RowSpacing="8">
+      <Button x:Name="StartButton" Clicked="ButtonClicked" Text="Start" AutomationId="StartButton" />
+      
+      <ScrollView Grid.Row="1">
+        <ContentView>
+          <ContentView>
+            <VerticalStackLayout x:Name="BindableContainer" BindableLayout.ItemsSource="{Binding Models}">
+              <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                  <Grid RowDefinitions="Auto,Auto,Auto" CompressedLayout.IsHeadless="True">
+                    <Label Text="{Binding Header}" />
+                    <Label Text="{Binding Content}" Grid.Row="1" />
+                    <VerticalStackLayout Grid.Row="2" BindableLayout.ItemsSource="{Binding SubModels}" CompressedLayout.IsHeadless="True">
+                      <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                          <VerticalStackLayout CompressedLayout.IsHeadless="True">
+                            <Label Text="{Binding Header}" />
+                            <issues:MeasuredLabel IsMeasured="{Binding IsMeasured}" Text="{Binding Content}" />
+                          </VerticalStackLayout>
+                        </DataTemplate>
+                      </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                  </Grid>
+                </DataTemplate>
+              </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+          </ContentView>
+        </ContentView>
+      </ScrollView>
+    </Grid>
+</ContentPage>
