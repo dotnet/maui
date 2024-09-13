@@ -526,7 +526,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						return;
 					}
 
-					System.Diagnostics.Debug.WriteLine($"UpdateInitialPosition ScrollToItem: {projectedPosition}");
 					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
 
 					//Set the position on VirtualView to update the CurrentItem also
