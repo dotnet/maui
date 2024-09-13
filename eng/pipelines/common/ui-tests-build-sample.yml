@@ -65,6 +65,18 @@ steps:
           Write-Host "Size of $f"
           du -hs "$f"
         }
+        Write-Host "~/Library data"
+        du -hs ~/Library
+        $dirs = Get-ChildItem -Path ~/Library -Directory
+        foreach ($d in $dirs) {
+          Write-Host "Size of $d"
+          du -hs "$d"
+        }
+        $files = Get-ChildItem -Path ~/Library -File
+        foreach ($f in $files) {
+          Write-Host "Size of $f"
+          du -hs "$f"
+        }
 
         Write-Host "/Applications information"
         du -hs /Applications

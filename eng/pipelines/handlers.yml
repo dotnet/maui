@@ -175,9 +175,6 @@ stages:
               - pwsh: |
                   Get-PSDrive -PSProvider FileSystem
                   if ($IsMacOS) {
-                    Write-Host "Volumnes information"
-                    df -h
-
                     Write-Host "Home directory size"
                     du -hs ~
                     Write-Host "Directory sizes"
@@ -188,6 +185,18 @@ stages:
                     }
                     Write-Host "Files sizes"
                     $files = Get-ChildItem -Path ~ -File
+                    foreach ($f in $files) {
+                      Write-Host "Size of $f"
+                      du -hs "$f"
+                    }
+                    Write-Host "~/Library data"
+                    du -hs ~/Library
+                    $dirs = Get-ChildItem -Path ~/Library -Directory
+                    foreach ($d in $dirs) {
+                      Write-Host "Size of $d"
+                      du -hs "$d"
+                    }
+                    $files = Get-ChildItem -Path ~/Library -File
                     foreach ($f in $files) {
                       Write-Host "Size of $f"
                       du -hs "$f"
@@ -294,26 +303,35 @@ stages:
             - pwsh: |
                 Get-PSDrive -PSProvider FileSystem
                 if ($IsMacOS) {
-                    Write-Host "Volumnes information"
-                    df -h
+                  Write-Host "Home directory size"
+                  du -hs ~
+                  Write-Host "Directory sizes"
+                  $dirs = Get-ChildItem -Path ~ -Directory
+                  foreach ($d in $dirs) {
+                    Write-Host "Size of $d"
+                    du -hs "$d"
+                  }
+                  Write-Host "Files sizes"
+                  $files = Get-ChildItem -Path ~ -File
+                  foreach ($f in $files) {
+                    Write-Host "Size of $f"
+                    du -hs "$f"
+                  }
+                  Write-Host "~/Library data"
+                  du -hs ~/Library
+                  $dirs = Get-ChildItem -Path ~/Library -Directory
+                  foreach ($d in $dirs) {
+                    Write-Host "Size of $d"
+                    du -hs "$d"
+                  }
+                  $files = Get-ChildItem -Path ~/Library -File
+                  foreach ($f in $files) {
+                    Write-Host "Size of $f"
+                    du -hs "$f"
+                  }
 
-                    Write-Host "Home directory size"
-                    du -hs ~
-                    Write-Host "Directory sizes"
-                    $dirs = Get-ChildItem -Path ~ -Directory
-                    foreach ($d in $dirs) {
-                      Write-Host "Size of $d"
-                      du -hs "$d"
-                    }
-                    Write-Host "Files sizes"
-                    $files = Get-ChildItem -Path ~ -File
-                    foreach ($f in $files) {
-                      Write-Host "Size of $f"
-                      du -hs "$f"
-                    }
-
-                    Write-Host "/Applications information"
-                    du -hs /Applications
+                  Write-Host "/Applications information"
+                  du -hs /Applications
                 }
               displayName: 'List drives'
 
