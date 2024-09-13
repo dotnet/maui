@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (_carouselViewLoopManager is null)
 			{
-				_carouselViewLoopManager = new CarouselViewLoopManager(Layout as UICollectionViewCompositionalLayout);
+				_carouselViewLoopManager = new CarouselViewLoopManager();
 				_carouselViewLoopManager.SetItemsSource(LoopItemsSource);
 			}
 		}
@@ -626,18 +626,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	class CarouselViewLoopManager : IDisposable
 	{
 		int _section = 0;
-		UICollectionViewCompositionalLayout _layout;
 		Items.ILoopItemsViewSource _itemsSource;
 		bool _disposed;
 
-		public CarouselViewLoopManager(UICollectionViewCompositionalLayout layout)
+		public CarouselViewLoopManager()
 		{
-			if (layout is null)
-			{
-				throw new ArgumentNullException(nameof(layout), "LoopManager expects a UICollectionViewFlowLayout");
-			}
-
-			_layout = layout;
+			
 		}
 		protected virtual void Dispose(bool disposing)
 		{
