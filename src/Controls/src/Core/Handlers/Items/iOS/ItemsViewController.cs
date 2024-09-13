@@ -329,6 +329,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
 
+		internal void DisposeItemsSource()
+		{
+			_measurementCells?.Clear();
+			ItemsViewLayout?.ClearCellSizeCache();
+			ItemsSource?.Dispose();
+			ItemsSource = new EmptySource();
+			CollectionView.ReloadData();
+		}
+
 		public virtual void UpdateFlowDirection()
 		{
 			CollectionView.UpdateFlowDirection(ItemsView);
