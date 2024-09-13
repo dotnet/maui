@@ -24,6 +24,18 @@ steps:
         CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
         SelfHealPowerShell: false
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+
+  - ${{ if eq(parameters.poolName, 'Azure Pipelines') }}:
+    # We only use Xcode 15.4
+    - name: 'Remove unused applications'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      bash: |
+          df -h
+          echo "Deleting all Xcode versions except 15.4"
+          find /Applications/Xcode_* -maxdepth 0 -type d ! -name 'Xcode_15.4.app' -exec rm -rf {} \;
+          df -h
+          find /Applications/Xcode* -name "*.app" -exec du -mcsh {} \;  # Shows Xcode app sizes
+
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
