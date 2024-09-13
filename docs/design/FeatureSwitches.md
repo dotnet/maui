@@ -14,7 +14,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 
 ## MauiEnableIVisualAssemblyScanning
 
-When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registerd.
+When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registered.
 
 ## MauiShellSearchResultsRendererDisplayMemberNameSupported
 
@@ -26,7 +26,7 @@ When disabled, the `[QueryProperty(...)]` attributes won't be used to set values
 
 ## MauiImplicitCastOperatorsUsageViaReflectionSupport
 
-When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This can affact the following scenarios:
+When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This can affect the following scenarios:
 - bindings between properties with different types,
 - setting a property value of a bindable object with a value of different type.
 
