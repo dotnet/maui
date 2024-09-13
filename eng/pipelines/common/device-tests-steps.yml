@@ -34,6 +34,7 @@ steps:
       skipAndroidImages : ${{ eq(parameters.platform, 'ios') }}
       skipAndroidSdks: ${{ eq(parameters.platform, 'ios') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      poolName: ${{ parameters.poolName }}
 
   - pwsh: |
       if ($IsMacOS) {

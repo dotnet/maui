@@ -206,3 +206,4 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            poolName: ${{ parameters.windowsPool.name }}
