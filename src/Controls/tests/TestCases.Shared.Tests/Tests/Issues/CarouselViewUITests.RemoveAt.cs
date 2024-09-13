@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException";
+		public override string Issue => "ObservableCollection.RemoveAt(index) with a valid index raises ArgumentOutOfRangeException";
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
