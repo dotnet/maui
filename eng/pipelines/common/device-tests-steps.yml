@@ -31,7 +31,7 @@ steps:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
-      skipAndroidImages : or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst')) }}
+      skipAndroidImages : ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst')) }}
       skipAndroidSdks: ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'))  }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
