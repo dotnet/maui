@@ -88,8 +88,11 @@ parameters:
   - name: macosPool
     type: object
     default:
-      name: $(macosTestsVmPool)
-      vmImage: macOS-14
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
 
   - name: androidCompatibilityPool
     type: object
