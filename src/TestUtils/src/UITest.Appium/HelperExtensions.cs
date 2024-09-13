@@ -401,11 +401,10 @@ namespace UITest.Appium
 			Wait(query, i => i is null, timeoutMessage, timeout, retryFrequency);
 		}
 
-		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text)
+		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
 		{
-			TimeSpan timeout = DefaultTimeout;
+			timeout ??= DefaultTimeout;
 			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
-			string timeoutMessage = $"Timed out on {nameof(WaitForTextToBePresentInElement)}.";
 
 			DateTime start = DateTime.Now;
 
@@ -418,9 +417,9 @@ namespace UITest.Appium
 				}
 
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
-				if (elapsed >= timeout.Ticks)
+				if (elapsed >= timeout.Value.Ticks)
 				{
-					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Ticks}");
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
 
 					return false;
 				}
