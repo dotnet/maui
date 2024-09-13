@@ -49,10 +49,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
-				if(VirtualView is null)
+				if (VirtualView is null)
 				{
 					return null;
-				}	
+				}
 				double sectionMargin = 0.0;
 				if (!IsHorizontal)
 				{
@@ -87,19 +87,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				section.OrthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
+					//This will allow us to SetPosition when we are scrolling the items
+					//based on the current page
 					var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
 
-					// Check if we not are at the beginning or end of the page
+					// Check if we not are at the beginning or end of the page and if we have items
 					if (Math.Abs(page % 1) > (double.Epsilon * 100) || Controller.ItemsSource.ItemCount <= 0)
 					{
 						return;
 					}
 
 					var pageIndex = (int)page;
+					var carouselPosition = pageIndex;
 
+					var cv2Controller = (CarouselViewController2)Controller;
+
+					//If we are looping, we need to get the correct position
 					if (ItemsView.Loop)
 					{
-						var maxIndex = (Controller.ItemsSource as Items.ILoopItemsViewSource).LoopCount - 1;
+						var maxIndex = (Controller.ItemsSource as ILoopItemsViewSource).LoopCount - 1;
 
 						//To mimic looping, we needed to modify the ItemSource and inserted a new item at the beginning and at the end
 						if (pageIndex == maxIndex)
@@ -113,28 +119,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							pageIndex = maxIndex - 1;
 						}
 
-						//since we added one item at the beginning, we need to subtract one
-						var realPage = pageIndex - 1;
+						//since we added one item at the beginning of our ItemSource, we need to subtract one
+						carouselPosition = pageIndex - 1;
 
-						if (ItemsView.Position != realPage)
+						if (ItemsView.Position != carouselPosition)
 						{
-							if (((CarouselViewController2)Controller).IsUpdating())
+							//If we are updating the ItemsSource, we don't want to scroll the CollectionView
+							if (cv2Controller.IsUpdating())
+							{
 								return;
+							}
 
-							var pageNumberIndex = NSIndexPath.FromItemSection(pageIndex, 0);
-							System.Diagnostics.Debug.WriteLine($"VisibleItemsInvalidationHandler Scrool: {realPage} {maxIndex} {pageNumberIndex}");
-							Controller.CollectionView.ScrollToItem(pageNumberIndex, UICollectionViewScrollPosition.Left, false);
+							var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
 
-							(Controller as CarouselViewController2)?.SetPosition(realPage);
-							//Update the CarouselView position
+							//This will move the carousel to fake the loop
+							Controller.CollectionView.ScrollToItem(NSIndexPath.FromItemSection(pageIndex, 0), UICollectionViewScrollPosition.Left, false);
+
 						}
 					}
-					else
-					{
-						(Controller as CarouselViewController2)?.SetPosition((int)page);
-					}
-				};
+					
+					//Update the CarouselView position
+					cv2Controller?.SetPosition(carouselPosition);
 
+				};
 				return section;
 			});
 
