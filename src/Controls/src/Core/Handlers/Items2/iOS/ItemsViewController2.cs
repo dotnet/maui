@@ -203,6 +203,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				DetachingFromWindow();
 			}
 		}
+		internal void DisposeItemsSource()
+		{
+			ItemsSource?.Dispose();
+			ItemsSource = new Items.EmptySource();
+			CollectionView.ReloadData();
+		}
 
 		// void InvalidateMeasureIfContentSizeChanged()
 		// {

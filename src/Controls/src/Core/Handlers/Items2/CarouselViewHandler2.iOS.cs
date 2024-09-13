@@ -49,6 +49,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
+				if(VirtualView is null)
+				{
+					return null;
+				}	
 				double sectionMargin = 0.0;
 				if (!IsHorizontal)
 				{
