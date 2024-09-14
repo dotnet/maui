@@ -88,11 +88,8 @@ parameters:
   - name: macosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+      name: Azure Pipelines
+      vmImage: macOS-14
 
   - name: androidCompatibilityPool
     type: object
