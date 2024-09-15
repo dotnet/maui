@@ -419,15 +419,15 @@ namespace Microsoft.Maui.Maps.Handlers
 			foreach (var p in pins)
 			{
 				IMapPin pin = (IMapPin)p;
-				Marker marker;
+				Marker? marker;
 
 				var pinHandler = pin.ToHandler(MauiContext);
 				if (pinHandler is IMapPinHandler iMapPinHandler)
 				{
 					marker = Map.AddMarker(iMapPinHandler.PlatformView);
 					// associate pin with marker for later lookup in event handlers
-					pin.MarkerId = marker.Id;
-					_markers.Add(marker);
+					pin.MarkerId = marker?.Id;
+					_markers.Add(marker!);
 				}
 
 			}
@@ -539,7 +539,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_polygons = new List<APolygon>();
 
 			var options = polygon.ToHandler(MauiContext!)?.PlatformView as PolygonOptions;
-			var nativePolygon = map.AddPolygon(options);
+			var nativePolygon = map.AddPolygon(options!);
 
 			polygon.MapElementId = nativePolygon.Id;
 
@@ -556,7 +556,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_circles = new List<ACircle>();
 
 			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
-			var nativeCircle = map.AddCircle(options);
+			var nativeCircle = map.AddCircle(options!);
 
 			circle.MapElementId = nativeCircle.Id;
 
