@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting.Internal
@@ -11,6 +13,7 @@ namespace Microsoft.Maui.Hosting.Internal
 	{
 		static readonly Type EnumerableType = typeof(IEnumerable<>);
 		static readonly Type ListType = typeof(List<>);
+		static readonly ConcurrentDictionary<Type, IReadOnlyList<Type>> ServiceBaseTypes = new();
 
 		readonly IMauiServiceCollection _collection;
 
@@ -98,11 +101,14 @@ namespace Microsoft.Maui.Hosting.Internal
 			return false;
 		}
 
-		static List<Type> GetServiceBaseTypes(Type serviceType)
-		{
-			var types = new List<Type> { serviceType };
+		static IReadOnlyList<Type> GetServiceBaseTypes(Type serviceType) =>
+			ServiceBaseTypes.GetOrAdd(serviceType, ServiceBaseTypesFactory);
 
-			Type? baseType = serviceType.BaseType;
+		static IReadOnlyList<Type> ServiceBaseTypesFactory(Type type)
+		{
+			var types = new List<Type> { type };
+
+			Type? baseType = type.BaseType;
 
 			while (baseType != null)
 			{
@@ -110,11 +116,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				baseType = baseType.BaseType;
 			}
 
-			foreach (var interfac in serviceType.GetInterfaces())
-			{
-				if (typeof(IView).IsAssignableFrom(interfac))
-					types.Add(interfac);
-			}
+			types.AddRange(type.GetInterfaces().Where(typeof(IView).IsAssignableFrom));
 
 			return types;
 		}

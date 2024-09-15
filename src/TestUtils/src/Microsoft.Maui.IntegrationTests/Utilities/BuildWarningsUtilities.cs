@@ -380,6 +380,14 @@ namespace Microsoft.Maui.IntegrationTests
 							"Microsoft.Maui.Hosting.Internal.MauiFactory.GetServiceBaseTypes(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter '#0' of method 'Microsoft.Maui.Hosting.Internal.MauiFactory.GetServiceBaseTypes(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},
+					new WarningsPerCode
+					{
+						Code = "IL2070",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Hosting.Internal.MauiFactory.ServiceBaseTypesFactory(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter '#0' of method 'Microsoft.Maui.Hosting.Internal.MauiFactory.ServiceBaseTypesFactory(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
+						}
+					},
 				}
 			},
 			new WarningsPerFile
