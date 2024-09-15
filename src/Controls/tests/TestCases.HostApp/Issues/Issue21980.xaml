@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21980">
+    <ContentPage.Resources>
+        <Style x:Key="IndicatorViewTemplateStyle" TargetType="Image">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Source" Value="indicator_unselected" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="Source" Value="indicator_selected" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+        <VerticalStackLayout>
+            <Grid>
+                <CarouselView
+                    ItemsSource="{Binding Images}"
+                    IndicatorView="IndicatorView"
+                    HorizontalScrollBarVisibility="Never"
+                    BackgroundColor="#ececec"
+                    WidthRequest="300" 
+                    HeightRequest="450"
+                    Grid.Row="0">
+                    <CarouselView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Image 
+                                    Source="{Binding .}" 
+                                    WidthRequest="300" 
+                                    HeightRequest="450"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CarouselView.ItemTemplate>
+                </CarouselView>
+                <Border
+                    HorizontalOptions="Center"
+                    VerticalOptions="End"
+                    Margin="16"
+                    Padding="3"
+                    BackgroundColor="White"
+                    StrokeShape="RoundRectangle 12"
+                    StrokeThickness="0"
+                    Grid.Row="0">
+                    <IndicatorView
+                        x:Name="IndicatorView"
+                        IndicatorColor="Transparent"
+                        SelectedIndicatorColor="Transparent"
+                        Padding="0">
+                        <IndicatorView.IndicatorTemplate>
+                            <DataTemplate>
+                                <Image
+                                    HeightRequest="25"
+                                    WidthRequest="25"
+                                    Margin="0"
+                                    Style="{StaticResource IndicatorViewTemplateStyle}" />
+                            </DataTemplate>
+                        </IndicatorView.IndicatorTemplate>
+                    </IndicatorView>
+                </Border>
+            </Grid>
+            <Button
+                AutomationId="button"
+                Text="Change Source" 
+                Command="{Binding ChangeSourceCommand}"
+                HorizontalOptions="Center"
+                WidthRequest="200"
+                Margin="0,16"/>
+        </VerticalStackLayout>
+</ContentPage>
