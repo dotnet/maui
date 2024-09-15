@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			grid.IsVisible = false;
 			Assert.False(button.IsVisible);
 
-			// make buttin visible, but it should not appear
+			// make button visible, but it should not appear
 			button.IsVisible = true;
 			Assert.False(button.IsVisible);
 
