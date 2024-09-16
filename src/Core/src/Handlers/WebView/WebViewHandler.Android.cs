@@ -20,34 +20,18 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal string? UrlCanceled { get; set; }
 
-		private MauiWebView? platformView;
 		protected override AWebView CreatePlatformView()
 		{
-			platformView = new MauiWebView(this, Context!);
+			var platformView = new MauiWebView(this, Context!)
+			{
+				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
+			};
+
 			platformView.Settings.JavaScriptEnabled = true;
 			platformView.Settings.DomStorageEnabled = true;
 			platformView.Settings.SetSupportMultipleWindows(true);
 
 			return platformView;
-		}
-
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			if (heightConstraint <= 0 || double.IsInfinity(heightConstraint))
-			{
-				var measuredHeight = PlatformView?.ContentHeight ?? 0;
-				return base.GetDesiredSize(widthConstraint, measuredHeight);
-			}
-
-			if (platformView != null && platformView?.LayoutParameters is LayoutParams layoutParams)
-			{
-				if (layoutParams.Width != LayoutParams.MatchParent && layoutParams.Height != LayoutParams.MatchParent)
-				{
-					platformView.LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
-				}
-			}
-
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		internal WebNavigationEvent CurrentNavigationEvent
