@@ -25,6 +25,9 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.VirtualView.PresentedContent is IView view)
 				handler.PlatformView.Content = view.ToPlatform(handler.MauiContext);
+
+			if (handler.VirtualView.Shape is IShapeView shapeView)
+				shapeView.ToPlatform(handler.MauiContext);
 		}
 
 		protected override ContentPanel CreatePlatformView()
