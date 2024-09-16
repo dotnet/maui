@@ -9,31 +9,29 @@
             InitializeComponent();
         }
 
-		private static int _counter = 0;
+		private static int _count = 0;
 
-		private async void Button_OnClicked(object sender, EventArgs e)
+		private void OnClicked(object sender, EventArgs e)
 		{
-			var oldBarBackgroundColor = NavPage.BarBackgroundColor;
-			NavPage.BarBackgroundColor = oldBarBackgroundColor.Equals(Colors.Yellow)
+			var oldBarBackgroundColor = NavigationPage.BarBackgroundColor;
+			NavigationPage.BarBackgroundColor = oldBarBackgroundColor.Equals(Colors.Yellow)
 				? Colors.Red
 				: Colors.Yellow;
-			var newBarBackgroundColor = NavPage.BarBackgroundColor;
+			var newBarBackgroundColor = NavigationPage.BarBackgroundColor;
 
-			var oldNavPageBarTextColor = NavPage.BarTextColor;
-			NavPage.BarTextColor = oldNavPageBarTextColor.Equals(Colors.Yellow)
+			var oldBarTextColor = NavigationPage.BarTextColor;
+			NavigationPage.BarTextColor = oldBarTextColor.Equals(Colors.Yellow)
 				? Colors.Red
 				: Colors.Yellow;
-			var newNavPageBarTextColor = NavPage.BarTextColor;
+			var newBarTextColor = NavigationPage.BarTextColor;
 
-			var oldNavPageTitle = NavPage.Title;
-			NavPage.Title = oldNavPageTitle == "1"
-				? "2"
-				: "1";
-			var newNavPageTitle = NavPage.Title;
+			var oldTitle = NavigationPage.Title;
+			NavigationPage.Title = oldTitle == "Title 1"
+				? "Title 2"
+				: "Title 1";
+			var newTitle = NavigationPage.Title;
 
-			Btn.Text = $"{_counter++}";
-
-			await DisplayAlert("Alert", $"Changed:{Environment.NewLine}{nameof(oldBarBackgroundColor)}: {oldBarBackgroundColor} => {nameof(newBarBackgroundColor)}: {newBarBackgroundColor}{Environment.NewLine}{nameof(oldNavPageBarTextColor)}: {oldNavPageBarTextColor} => {nameof(newNavPageBarTextColor)}: {newNavPageBarTextColor}{Environment.NewLine}{nameof(oldNavPageTitle)}: {oldNavPageTitle} => {nameof(newNavPageTitle)}: {newNavPageTitle}", "OK");
+			button.Text = $"{_count++}";
 		}
 	}
 }

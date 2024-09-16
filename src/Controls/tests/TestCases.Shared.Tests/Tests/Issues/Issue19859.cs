@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		public void NavigationPageTitle()
 		{
-			App.WaitForElement("WaitForButtonControl");
-			App.Tap("WaitForButtonControl");
+			App.WaitForElement("Button");
+			App.Tap("Button");
 			VerifyScreenshot();
 		}
 	}

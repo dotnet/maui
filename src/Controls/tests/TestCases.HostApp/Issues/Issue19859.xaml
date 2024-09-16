@@ -6,34 +6,34 @@
             FlyoutLayoutBehavior="Default">
 
   <FlyoutPage.Flyout>
-    <ContentPage Title="My App" BackgroundColor="DarkBlue">
+    <ContentPage Title="The Flyout" BackgroundColor="DarkBlue">
       <VerticalStackLayout>
-        <Label Text="This is FlyoutPage.Flyout"
+        <Label Text="This is FlyoutPage Flyout"
                    FontAttributes="Bold"
                            FontSize="20"
                            TextColor="White"
                    HorizontalTextAlignment="Center"
                    Margin="20"/>
 
-        <Button Clicked="Button_OnClicked" Text="Klik mij"/>
+        <Button Clicked="OnClicked" Text="Change Title"/>
 
       </VerticalStackLayout>
     </ContentPage>
   </FlyoutPage.Flyout>
 
   <FlyoutPage.Detail>
-    <NavigationPage BarBackgroundColor="Yellow" BarTextColor="Red" Title="1" x:Name="NavPage">
+    <NavigationPage BarBackgroundColor="Yellow" BarTextColor="Red" Title="Title 1" x:Name="NavigationPage">
       <x:Arguments>
         <ContentPage BackgroundColor="DarkRed">
           <VerticalStackLayout>
-            <Label Text="This is FlyoutPage.Detail"
+            <Label Text="This is FlyoutPage Detail"
                            FontAttributes="Bold"
                            FontSize="20"
                            TextColor="White"
                        HorizontalTextAlignment="Center"
                        Margin="20"/>
 
-            <Button Clicked="Button_OnClicked" AutomationId="WaitForButtonControl" Text="Klik me" x:Name="Btn"/>
+            <Button x:Name="button" Clicked="OnClicked" AutomationId="Button" Text="Change Title"/>
           </VerticalStackLayout>
         </ContentPage>
       </x:Arguments>
