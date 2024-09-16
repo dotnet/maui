@@ -364,8 +364,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>This method has a default implementation and application developers must call the base implementation.</remarks>
 		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
+			InvalidateLayoutInternal();
 			OnChildMeasureInvalidated();
 		}
 
@@ -539,19 +538,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			child.Layout(region);
 		}
 
-		internal void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
-		{
-			if (child is View view)
-			{
-				if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
-				{
-					ComputeConstraintForView(view);
-				}
-			}
-
-			InvalidateLayoutInternal();
-		}
-
 		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
 			base.OnIsVisibleChanged(oldValue, newValue);
@@ -664,15 +650,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		protected override void InvalidateMeasureOverride()
 		{
+			InvalidateLayoutInternal();
 			base.InvalidateMeasureOverride();
-
-			foreach (var child in ((IElementController)this).LogicalChildren)
-			{
-				if (child is IView fe)
-				{
-					fe.InvalidateMeasure();
-				}
-			}
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

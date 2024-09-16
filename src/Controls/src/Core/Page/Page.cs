@@ -505,17 +505,17 @@ namespace Microsoft.Maui.Controls
 			// Behave like `VisualElement` except for propagation to parent
 			switch (trigger)
 			{
-				case InvalidationTrigger.RendererReady:
-					InvokeMeasureInvalidated(InvalidationTrigger.RendererReady);
-					break;
-				// Undefined happens in many cases, including when `IsVisible` changes
+				// case InvalidationTrigger.HorizontalOptionsChanged:
+				// case InvalidationTrigger.VerticalOptionsChanged:
+				// case InvalidationTrigger.MarginChanged:
+				// case InvalidationTrigger.RendererReady:
+				// => These flags are handled by `MeasureInvalidatedInternal` method
+
 				case InvalidationTrigger.Undefined:
+					// We need to invalidate measures only if child is actually visible
 					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
-					return;
-				// We can ignore the request if we are either fully constrained or when the size request changes, and we were already fully constrained
-				case InvalidationTrigger.MeasureChanged when child.Constraint == LayoutConstraint.Fixed:
-				case InvalidationTrigger.SizeRequestChanged when child.ComputedConstraint == LayoutConstraint.Fixed:
-					return;
+					break;
+
 				default:
 					// When visibility changes `InvalidationTrigger.Undefined` is used,
 					// so here we're sure that visibility didn't change
@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Controls
 						// We need to invalidate measures only if child is actually visible
 						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 					}
-					return;
+					break;
 			}
 
 			// We still need to call the legacy OnChildMeasureInvalidated to keep the compatibility.
