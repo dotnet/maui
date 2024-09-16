@@ -16,11 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Border)]
-		public void EditorScrollingWhenEnclosedInBorder()
+		public async Task EditorScrollingWhenEnclosedInBorderAsync()
 		{
 			App.WaitForElement("editor");
 			App.ScrollDown("editor", ScrollStrategy.Programmatically);
-
+			await Task.Delay(1000);
 			VerifyScreenshot();
 		}
 	}
