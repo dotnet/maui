@@ -1447,9 +1447,6 @@ namespace Microsoft.Maui.Controls
 		{
 			switch (trigger)
 			{
-				// case InvalidationTrigger.RendererReady:
-				// => These flags are handled by `MeasureInvalidatedInternal` method
-
 				case InvalidationTrigger.Undefined:
 					// We need to invalidate measures only if child is actually visible
 					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);

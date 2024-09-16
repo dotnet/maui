@@ -505,12 +505,6 @@ namespace Microsoft.Maui.Controls
 			// Behave like `VisualElement` except for propagation to parent
 			switch (trigger)
 			{
-				// case InvalidationTrigger.HorizontalOptionsChanged:
-				// case InvalidationTrigger.VerticalOptionsChanged:
-				// case InvalidationTrigger.MarginChanged:
-				// case InvalidationTrigger.RendererReady:
-				// => These flags are handled by `MeasureInvalidatedInternal` method
-
 				case InvalidationTrigger.Undefined:
 					// We need to invalidate measures only if child is actually visible
 					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
