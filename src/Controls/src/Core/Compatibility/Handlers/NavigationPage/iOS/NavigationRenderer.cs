@@ -1518,7 +1518,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ClearTitleViewContainer();
 				if (needContainer)
 				{
-					if (!_navigation.TryGetTarget(out n))
+					if (n is null)
 						return;
 
 					Container titleViewContainer = new Container(titleView, n.NavigationBar);
