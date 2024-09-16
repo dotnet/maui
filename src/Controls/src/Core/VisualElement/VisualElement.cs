@@ -1392,20 +1392,11 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// When handler is set `RendererReady` is triggered to immediately invalidate native view
-			// Short-circuiting here to avoid unnecessary checks
-			if (trigger == InvalidationTrigger.RendererReady)
-			{
-				InvalidateMeasureCacheInternal();
-				((IView)this).InvalidateMeasure();
-				InvokeMeasureInvalidated(trigger);
-				return;
-			}
-
-			// We can ignore the request if we are either fully constrained or when the size request changes, and we were already fully constrained
+			// We skip invalidation if we are either fully constrained or when the size request changes, and we were already fully constrained
 			if ((trigger == InvalidationTrigger.MeasureChanged && Constraint == LayoutConstraint.Fixed) ||
 			    (trigger == InvalidationTrigger.SizeRequestChanged && ComputedConstraint == LayoutConstraint.Fixed))
 			{
+				InvokeMeasureInvalidated(trigger);
 				return;
 			}
 
@@ -1416,15 +1407,15 @@ namespace Microsoft.Maui.Controls
 				{
 					parentElement.ComputeConstraintForView(thisView);
 				}
-				ParentView?.InvalidateMeasure();
 				InvokeMeasureInvalidated(trigger);
+				ParentView?.InvalidateMeasure();
 				return;
 			}
 
 			if (trigger == InvalidationTrigger.MarginChanged)
 			{
-				ParentView?.InvalidateMeasure();
 				InvokeMeasureInvalidated(trigger);
+				ParentView?.InvalidateMeasure();
 				return;
 			}
 			
