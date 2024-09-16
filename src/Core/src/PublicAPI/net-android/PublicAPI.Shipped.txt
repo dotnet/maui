@@ -2255,6 +2255,7 @@ override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetupC
 override Microsoft.Maui.Handlers.WebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.WebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.WebViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+override Microsoft.Maui.Handlers.WebViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Handlers.WindowHandler.ConnectHandler(Android.App.Activity! platformView) -> void
 override Microsoft.Maui.Handlers.WindowHandler.CreatePlatformElement() -> Android.App.Activity!
 override Microsoft.Maui.Layouts.AbsoluteLayoutManager.ArrangeChildren(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size

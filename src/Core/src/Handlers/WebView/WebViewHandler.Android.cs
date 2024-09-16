@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using Android.Webkit;
+using Microsoft.Maui.Graphics;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
@@ -30,6 +31,25 @@ namespace Microsoft.Maui.Handlers
 			platformView.Settings.SetSupportMultipleWindows(true);
 
 			return platformView;
+		}
+
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (heightConstraint <= 0 || double.IsInfinity(heightConstraint))
+			{
+				var measuredHeight = PlatformView?.ContentHeight ?? 0;
+				return base.GetDesiredSize(widthConstraint, measuredHeight);
+			}
+
+			if(PlatformView?.LayoutParameters is LayoutParams layoutParams)
+			{
+				if(layoutParams.Width != LayoutParams.MatchParent && layoutParams.Height != LayoutParams.MatchParent)
+				{
+					PlatformView.LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
+				}
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		internal WebNavigationEvent CurrentNavigationEvent
