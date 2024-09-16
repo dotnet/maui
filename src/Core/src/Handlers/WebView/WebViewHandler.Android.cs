@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using Android.Webkit;
-using Microsoft.Maui.Graphics;
-using System.Diagnostics;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
