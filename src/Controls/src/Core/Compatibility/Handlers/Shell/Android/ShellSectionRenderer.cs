@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _rootView = root;
 		}
 
-			void OnTabLayoutChange(object sender, AView.LayoutChangeEventArgs e)
+		void OnTabLayoutChange(object sender, AView.LayoutChangeEventArgs e)
 		{
 			if (_disposed)
 				return;

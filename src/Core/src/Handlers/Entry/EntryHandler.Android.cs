@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
-			
+
 			var drawable = GetClearButtonDrawable();
 
 			if (VirtualView?.TextColor is not null)
