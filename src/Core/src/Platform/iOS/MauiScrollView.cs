@@ -5,21 +5,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, IMauiUIView
 	{
-		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
-		bool _layoutInvalidated;
-		
-		public ICrossPlatformLayout? CrossPlatformLayout
-		{
-			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
-			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
-		}
-
-		public MauiScrollView()
-		{
-		}
 
 		// overriding this method so it does not automatically scroll large UITextFields
 		// while the KeyboardAutoManagerScroll is scrolling.
@@ -29,31 +17,26 @@ namespace Microsoft.Maui.Platform
 				base.ScrollRectToVisible(rect, animated);
 		}
 
-		public override void LayoutSubviews()
+		void IMauiUIView.SetNeedsLayout()
 		{
-			if (_layoutInvalidated)
+			// If the ContentView is the first subview, trigger SetNeedsLayout from there
+			if (Subviews.Length > 0 && Subviews[0] is ContentView contentContainer)
 			{
-				_layoutInvalidated = false;
-
-				// If the Superview is not a MauiView, we need to manually arrange the children
-				if (Superview is not MauiView or WrapperView && CrossPlatformLayout is { } layout)
-				{
-					var bounds = Bounds.ToRectangle();
-					layout.CrossPlatformArrange(bounds);
-				}
+				contentContainer.SetNeedsLayout();
 			}
-
-			base.LayoutSubviews();
+			else
+			{
+				SetNeedsLayout();
+			}
 		}
 
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
-			_layoutInvalidated = true;
 			TryToInvalidateSuperView(false);
 		}
 
-		private protected void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
+		private void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
 		{
 			if (shouldOnlyInvalidateIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
 			{

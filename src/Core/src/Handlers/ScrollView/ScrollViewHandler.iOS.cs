@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIScrollView CreatePlatformView()
 		{
-			return new MauiScrollView { CrossPlatformLayout = this };
+			return new MauiScrollView();
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)

@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun<LayoutHandler>(layout, async (_) =>
 			{
-				await Task.Yield();
+				await Task.Delay(100);
 
 				var frame = control.Frame;
 				var desiredSize = control.DesiredSize;
