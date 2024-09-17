@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue7453"
              FlyoutBehavior="Disabled"
              Title="Issue7453">
-    <TabBar AutomationId="tabbar">
+    <TabBar AutomationId="TabBar">
         <Tab Title="Nested Tabs">
             <ShellContent x:Name="tab" Title="Home">
                 <ContentPage>
