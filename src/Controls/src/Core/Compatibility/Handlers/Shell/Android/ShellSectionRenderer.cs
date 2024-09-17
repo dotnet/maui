@@ -145,8 +145,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
 
 			HookEvents();
+			foreach (var item in SectionController.GetItems())
+			{
+				if (item is BaseShellItem baseShellItem)
+				{
+					baseShellItem.PropertyChanged += OnBaseShellItemPropertyChanged;
+				}
+			}
 
 			return _rootView = root;
+		}
+
+		void OnBaseShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName && sender is BaseShellItem baseShellItem)
+			{
+				UpdateTabTitle(baseShellItem);
+			}
+		}
+
+		void UpdateTabTitle(BaseShellItem changedShellItem)
+		{
+			if (_tablayout == null || SectionController.GetItems().Count == 0)
+				return;
+
+			int index = SectionController.GetItems().IndexOf(changedShellItem);
+			if (index >= 0)
+			{
+				var tab = _tablayout.GetTabAt(index);
+				if (tab != null)
+				{
+					tab.SetText(new String(changedShellItem.Title));
+				}
+			}
 		}
 
 		void OnTabLayoutChange(object sender, AView.LayoutChangeEventArgs e)
@@ -172,6 +203,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_rootView != null)
 			{
 				UnhookEvents();
+
+				foreach (var item in SectionController.GetItems())
+				{
+					if (item is BaseShellItem baseShellItem)
+					{
+						baseShellItem.PropertyChanged -= OnBaseShellItemPropertyChanged;
+					}
+				}
 
 				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
 

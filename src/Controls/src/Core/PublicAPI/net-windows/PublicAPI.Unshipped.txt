@@ -251,3 +251,4 @@ Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
 *REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+~static Microsoft.Maui.Controls.Handlers.ShellContentHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellContentHandler handler, Microsoft.Maui.Controls.ShellContent item) -> void
