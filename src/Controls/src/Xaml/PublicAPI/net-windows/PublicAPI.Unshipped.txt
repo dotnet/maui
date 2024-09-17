@@ -8,3 +8,11 @@
 *REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
+Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.Default = 0 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.Runtime = 1 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.XamlC = 2 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.SourceGen = 4 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute
+Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute.XamlProcessingAttribute(Microsoft.Maui.Controls.Xaml.XamlInflator inflator) -> void
+Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute.XamlInflator.get -> Microsoft.Maui.Controls.Xaml.XamlInflator

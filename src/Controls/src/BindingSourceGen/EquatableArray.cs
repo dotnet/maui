@@ -32,6 +32,15 @@ public readonly struct EquatableArray<T> : IEquatable<EquatableArray<T>>, IEnume
 		get => array?.Length ?? 0;
 	}
 
+	public T Last()
+	{
+		if (array is null || array.Length == 0)
+		{
+			throw new InvalidOperationException("Array is empty.");
+		}
+
+		return array[array.Length - 1];
+	}
 	public bool Equals(EquatableArray<T> array)
 	{
 		return AsSpan().SequenceEqual(array.AsSpan());

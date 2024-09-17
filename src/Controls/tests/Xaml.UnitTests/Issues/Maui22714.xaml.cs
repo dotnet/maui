@@ -7,19 +7,11 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 [XamlCompilation(XamlCompilationOptions.Skip)]
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class Maui22714
 {
-	public Maui22714()
-	{
-		InitializeComponent();
-	}
+	public Maui22714() => InitializeComponent();
 
-	public Maui22714(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	public class Test
 	{
 		[SetUp]
@@ -33,10 +25,10 @@ public partial class Maui22714
 
 		[Test]
 		public void TestNonCompiledResourceDictionary(
-			[Values(false, true)] bool useCompiledXaml,
-			[Values(false, true)] bool treatWarningsAsErrors)
+			[Values] XamlInflator inflator,
+			[Values] bool treatWarningsAsErrors)
 		{
-			if (useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 			{
 				if (treatWarningsAsErrors)
 				{
@@ -49,11 +41,17 @@ public partial class Maui22714
 					MockCompiler.Compile(typeof(Maui22714), treatWarningsAsErrors: false);
 				}
 			}
-			else
+			else if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui22714));
+			}
+			else if (inflator == XamlInflator.Runtime)
 			{
 				// This will never affect non-compiled builds
-				_ = new Maui22714(useCompiledXaml);
+				_ = new Maui22714(inflator);
 			}
+			else
+				Assert.Ignore("This test is not yet implemented");
 		}
 	}
 }

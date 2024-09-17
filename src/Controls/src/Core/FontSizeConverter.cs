@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FontSizeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.FontSizeConverter']/Docs/*" />
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.FontSizeTypeConverter")]
+	//FIXME rename to FontSizeTypeConverter
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)

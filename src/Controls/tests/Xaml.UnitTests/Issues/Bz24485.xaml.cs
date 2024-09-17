@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz24485 : ContentPage
 	{
 		public Bz24485()
@@ -33,19 +34,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz24485(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BindingContextWithConverter(bool useCompiledXaml)
+			[Test]
+			public void BindingContextWithConverter([Values] XamlInflator inflator)
 			{
-				var layout = new Bz24485(useCompiledXaml);
+				var layout = new Bz24485(inflator);
 				layout.BindingContext = new { Data1 = new object() };
 				Assert.Pass();
 			}
