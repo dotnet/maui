@@ -145,43 +145,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
 
 			HookEvents();
-			foreach (var item in SectionController.GetItems())
-			{
-				if (item is BaseShellItem baseShellItem)
-				{
-					baseShellItem.SetRenderer(this);
-					//baseShellItem.PropertyChanged += OnBaseShellItemPropertyChanged;
-				}
-			}
 
 			return _rootView = root;
-		}
-
-		void OnBaseShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName)
-			{
-				UpdateTabTitles();
-			}
-		}
-
-		internal void UpdateTabTitles()
-		{
-			if (_tablayout == null || SectionController.GetItems().Count == 0)
-				return;
-
-			for (int i = 0; i < SectionController.GetItems().Count; i++)
-			{
-				var shellContent = SectionController.GetItems()[i];
-				if (shellContent is BaseShellItem baseShellItem)
-				{
-					var tab = _tablayout.GetTabAt(i);
-					if (tab != null)
-					{
-						tab.SetText(new String(baseShellItem.Title));
-					}
-				}
-			}
 		}
 
 			void OnTabLayoutChange(object sender, AView.LayoutChangeEventArgs e)

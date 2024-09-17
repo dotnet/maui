@@ -9,7 +9,7 @@ public partial class Issue15524 : ContentPage
 		InitializeComponent();
 	}
 
-	private void Button_Clicked(object sender, EventArgs e)
+	private void OnButtonClicked(object sender, EventArgs e)
 	{
 		if (Application.Current.UserAppTheme == AppTheme.Dark)
 		{

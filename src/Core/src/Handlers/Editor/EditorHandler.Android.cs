@@ -1,7 +1,7 @@
 ﻿using System;
 using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
+using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 
