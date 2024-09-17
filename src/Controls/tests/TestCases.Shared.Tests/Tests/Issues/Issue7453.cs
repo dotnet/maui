@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ChangeShellContentTitle()
 		{
 			App.WaitForElement("TabBar");
-			App.Click("ShellContentButton");
+			App.Click("ChangeShellContentTitle");
 			VerifyScreenshot();
 		}
 	}

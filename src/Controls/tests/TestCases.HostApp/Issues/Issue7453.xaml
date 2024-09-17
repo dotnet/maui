@@ -8,7 +8,7 @@
         <Tab Title="Nested Tabs">
             <ShellContent x:Name="tab" Title="Home">
                 <ContentPage>
-                    <Button Text="Hello" AutomationId="ShellContentButton" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="100" HeightRequest="40" Clicked="OnButtonClicked"/>
+                    <Button Text="Hello" AutomationId="ChangeShellContentTitle" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="100" HeightRequest="40" Clicked="OnButtonClicked"/>
                 </ContentPage>
             </ShellContent>
 
