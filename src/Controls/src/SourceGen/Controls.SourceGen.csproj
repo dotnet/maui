@@ -8,11 +8,8 @@
     <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <IsRoslynComponent>true</IsRoslynComponent>
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,8 +18,10 @@
     <Compile Include="..\Core\XamlParseException.cs" Link="XamlParseException.cs" />
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="..\Xaml\IDictionaryExtensions.cs" Link="IDictionaryExtensions.cs" />
     <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
     <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
+    <Compile Include="..\Xaml\XamlParser.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XamlNode.cs" Link="XamlNode.cs" />
     <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="XamlNodeVisitor.cs" />

@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
+
+using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -34,20 +33,25 @@ public class CodeBehindGenerator : IIncrementalGenerator
 	public void Initialize(IncrementalGeneratorInitializationContext initContext)
 	{
 #if DEBUG
-		//if (!System.Diagnostics.Debugger.IsAttached)
-		//{
-		//	System.Diagnostics.Debugger.Launch();
-		//}
+		if (!System.Diagnostics.Debugger.IsAttached)
+		{
+			System.Diagnostics.Debugger.Launch();
+		}
 #endif
 		var projectItemProvider = initContext.AdditionalTextsProvider
 			.Combine(initContext.AnalyzerConfigOptionsProvider)
 			.Select(ComputeProjectItem)
 			.WithTrackingName(TrackingNames.ProjectItemProvider);
 
-		var xamlProjectItemProvider = projectItemProvider
+		var xamlProjectItemProviderForCB = projectItemProvider
 			.Where(static p => p?.Kind == "Xaml")
-			.Select(ComputeXamlProjectItem)
-			.WithTrackingName(TrackingNames.XamlProjectItemProvider);
+			.Select(ComputeXamlProjectItemForCB)
+			.WithTrackingName(TrackingNames.XamlProjectItemProviderForCB);
+		
+		var xamlProjectItemProviderForIC = projectItemProvider
+			.Where(static p => p?.Kind == "Xaml")
+			.Select(ComputeXamlProjectItemForIC)
+			.WithTrackingName(TrackingNames.XamlProjectItemProviderForIC);
 
 		var cssProjectItemProvider = projectItemProvider
 			.Where(static p => p?.Kind == "Css")
@@ -66,28 +70,46 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			.Select(GetTypeCache)
 			.WithTrackingName(TrackingNames.ReferenceTypeCacheProvider);
 
-		var xamlSourceProvider = xamlProjectItemProvider
+		var xamlSourceProviderForCB = xamlProjectItemProviderForCB
 			.Combine(xmlnsDefinitionsProvider)
 			.Combine(referenceTypeCacheProvider)
 			.Combine(referenceCompilationProvider)
 			.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right))
-			.WithTrackingName(TrackingNames.XamlSourceProvider);
+			.WithTrackingName(TrackingNames.XamlSourceProviderForCB);
 
-		// Register the XAML pipeline
-		initContext.RegisterSourceOutput(xamlSourceProvider, static (sourceProductionContext, provider) =>
+		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
+			.Combine(xmlnsDefinitionsProvider)
+			.Combine(referenceTypeCacheProvider)
+			.Combine(referenceCompilationProvider)
+			.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right))
+			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
+
+		// Register the XAML pipeline for CodeBehind
+		initContext.RegisterSourceOutput(xamlSourceProviderForCB, static (sourceProductionContext, provider) =>
 		{
 			var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
 
 			GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 		});
 
+		// Register the XAML pipeline for InitializeComponent
+		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (spc, provider) =>
+		{
+			var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
+			if (!CanSourceGenXaml(xamlItem, compilation, spc, xmlnsCache, typeCache))
+				return;
+			
+			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.xsg.cs".Replace(Path.DirectorySeparatorChar, '_');
+			var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, xmlnsCache, typeCache);
+			spc.AddSource(fileName, code);
+			
+		});
+
 		// Register the CSS pipeline
 		initContext.RegisterSourceOutput(cssProjectItemProvider, static (sourceProductionContext, cssItem) =>
 		{
-			if (cssItem == null)
-			{
+			if (cssItem == null)			
 				return;
-			}
 
 			GenerateCssCodeBehind(cssItem, sourceProductionContext);
 		});
@@ -101,150 +123,20 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			: $"@{identifier}";
 	}
 
-	static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
+	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
 	{
-		var (additionalText, optionsProvider) = tuple;
-		var fileOptions = optionsProvider.GetOptions(additionalText);
-		if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
-		{
-			return null;
-		}
-
-		fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
-		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
-		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
-		return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework);
+		ProjectItem? projItem;
+		if (xamlItem == null || (projItem = xamlItem.ProjectItem) == null)
+			return false;
+		var itemName = projItem.ManifestResourceName ?? projItem.RelativePath;
+		if (itemName == null)
+			return false;
+		if (xamlItem.Root == null)
+			return false;
+		return true;
 	}
 
-	static XamlProjectItem? ComputeXamlProjectItem(ProjectItem? projectItem, CancellationToken cancellationToken)
-	{
-		if (projectItem == null)
-		{
-			return null;
-		}
-
-		var text = projectItem.AdditionalText.GetText(cancellationToken);
-		if (text == null)
-		{
-			return null;
-		}
-
-		var xmlDoc = new XmlDocument();
-		try
-		{
-			xmlDoc.LoadXml(text.ToString());
-		}
-		catch (XmlException xe)
-		{
-			return new XamlProjectItem(projectItem, xe);
-		}
-
-#pragma warning disable CS0618 // Type or member is obsolete
-		if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
-		{
-			return new XamlProjectItem(projectItem, new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead"));
-		}
-#pragma warning restore CS0618 // Type or member is obsolete
-
-		cancellationToken.ThrowIfCancellationRequested();
-
-		var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
-
-		var root = xmlDoc.SelectSingleNode("/*", nsmgr);
-		if (root == null)
-		{
-			return null;
-		}
-
-		ApplyTransforms(root, projectItem.TargetFramework, nsmgr);
-
-		foreach (XmlAttribute attr in root.Attributes)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (attr.Name == "xmlns")
-			{
-				nsmgr.AddNamespace("", attr.Value); //Add default xmlns
-			}
-
-			if (attr.Prefix != "xmlns")
-			{
-				continue;
-			}
-
-			nsmgr.AddNamespace(attr.LocalName, attr.Value);
-		}
-
-		return new XamlProjectItem(projectItem, root, nsmgr);
-	}
-
-	static AssemblyCaches GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
-	{
-		// [assembly: XmlnsDefinition]
-		INamedTypeSymbol? xmlnsDefinitonAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsDefinitionAttribute).FullName)
-			.SingleOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
-
-		// [assembly: InternalsVisibleTo]
-		INamedTypeSymbol? internalsVisibleToAttribute = compilation.GetTypeByMetadataName(typeof(InternalsVisibleToAttribute).FullName);
-
-		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
-		{
-			return AssemblyCaches.Empty;
-		}
-
-		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-		var internalsVisible = new List<IAssemblySymbol>();
-
-		internalsVisible.Add(compilation.Assembly);
-
-		// load from references
-		foreach (var reference in compilation.References)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-
-			if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol symbol)
-			{
-				continue;
-			}
-
-			foreach (var attr in symbol.GetAttributes())
-			{
-				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, xmlnsDefinitonAttribute))
-				{
-					// [assembly: XmlnsDefinition]
-					var xmlnsDef = new XmlnsDefinitionAttribute(attr.ConstructorArguments[0].Value as string, attr.ConstructorArguments[1].Value as string);
-					if (attr.NamedArguments.Length == 1 && attr.NamedArguments[0].Key == nameof(XmlnsDefinitionAttribute.AssemblyName))
-					{
-						xmlnsDef.AssemblyName = attr.NamedArguments[0].Value.Value as string;
-					}
-					else
-					{
-						xmlnsDef.AssemblyName = symbol.Name;
-					}
-
-					xmlnsDefinitions.Add(xmlnsDef);
-				}
-				else if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, internalsVisibleToAttribute))
-				{
-					// [assembly: InternalsVisibleTo]
-					if (attr.ConstructorArguments[0].Value is string assemblyName && new AssemblyName(assemblyName).Name == compilation.Assembly.Identity.Name)
-					{
-						internalsVisible.Add(symbol);
-					}
-				}
-			}
-		}
-		return new AssemblyCaches(xmlnsDefinitions, internalsVisible);
-	}
-
-	static IDictionary<XmlType, string> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)
-	{
-		return new Dictionary<XmlType, string>();
-	}
-
-	static void GenerateXamlCodeBehind(XamlProjectItem? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+	static void GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
 	{
 		if (xamlItem == null)
 		{
@@ -377,7 +269,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 	}
 
-	static bool TryParseXaml(XamlProjectItem parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
+	static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -437,7 +329,6 @@ public class CodeBehindGenerator : IIncrementalGenerator
 
 		return true;
 	}
-
 
 	static bool GetXamlCompilationProcessingInstruction(XmlDocument xmlDoc)
 	{
@@ -638,156 +529,5 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		}
 
 		sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
-	}
-
-	static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
-	{
-		SimplifyOnPlatform(node, targetFramework, nsmgr);
-	}
-
-	static void SimplifyOnPlatform(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
-	{
-		//remove OnPlatform nodes if the platform doesn't match, so we don't generate field for x:Name of elements being removed
-		if (targetFramework == null)
-		{
-			return;
-		}
-
-		string? target = null;
-		targetFramework = targetFramework.Trim();
-		if (targetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
-		{
-			target = "Android";
-		}
-
-		if (targetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
-		{
-			target = "iOS";
-		}
-
-		if (targetFramework.IndexOf("-macos", StringComparison.OrdinalIgnoreCase) != -1)
-		{
-			target = "macOS";
-		}
-
-		if (targetFramework.IndexOf("-maccatalyst", StringComparison.OrdinalIgnoreCase) != -1)
-		{
-			target = "MacCatalyst";
-		}
-
-		if (target == null)
-		{
-			return;
-		}
-
-		//no need to handle {OnPlatform} markup extension, as you can't x:Name there
-		var onPlatformNodes = node.SelectNodes("//__f__:OnPlatform", nsmgr);
-		foreach (XmlNode onPlatformNode in onPlatformNodes)
-		{
-			var onNodes = onPlatformNode.SelectNodes("__f__:On", nsmgr);
-			foreach (XmlNode onNode in onNodes)
-			{
-				var platforms = onNode.SelectSingleNode("@Platform");
-				var plats = platforms.Value.Split(',');
-				var match = false;
-
-				foreach (var plat in plats)
-				{
-					if (string.IsNullOrWhiteSpace(plat))
-					{
-						continue;
-					}
-
-					if (plat.Trim() == target)
-					{
-						match = true;
-						break;
-					}
-				}
-				if (!match)
-				{
-					onNode.ParentNode.RemoveChild(onNode);
-				}
-			}
-		}
-	}
-
-	class ProjectItem
-	{
-		public ProjectItem(AdditionalText additionalText, string? targetPath, string? relativePath, string? manifestResourceName, string kind, string? targetFramework)
-		{
-			AdditionalText = additionalText;
-			TargetPath = targetPath ?? additionalText.Path;
-			RelativePath = relativePath;
-			ManifestResourceName = manifestResourceName;
-			Kind = kind;
-			TargetFramework = targetFramework;
-		}
-
-		public AdditionalText AdditionalText { get; }
-		public string? TargetPath { get; }
-		public string? RelativePath { get; }
-		public string? ManifestResourceName { get; }
-		public string Kind { get; }
-		public string? TargetFramework { get; }
-	}
-
-	class XamlProjectItem
-	{
-		public XamlProjectItem(ProjectItem projectItem, XmlNode root, XmlNamespaceManager nsmgr)
-		{
-			ProjectItem = projectItem;
-			Root = root;
-			Nsmgr = nsmgr;
-		}
-
-		public XamlProjectItem(ProjectItem projectItem, Exception exception)
-		{
-			ProjectItem = projectItem;
-			Exception = exception;
-		}
-
-		public ProjectItem? ProjectItem { get; }
-		public XmlNode? Root { get; }
-		public XmlNamespaceManager? Nsmgr { get; }
-		public Exception? Exception { get; }
-	}
-
-	class AssemblyCaches
-	{
-		public static readonly AssemblyCaches Empty = new(Array.Empty<XmlnsDefinitionAttribute>(), Array.Empty<IAssemblySymbol>());
-
-		public AssemblyCaches(IReadOnlyList<XmlnsDefinitionAttribute> xmlnsDefinitions, IReadOnlyList<IAssemblySymbol> internalsVisible)
-		{
-			XmlnsDefinitions = xmlnsDefinitions;
-			InternalsVisible = internalsVisible;
-		}
-
-		public IReadOnlyList<XmlnsDefinitionAttribute> XmlnsDefinitions { get; }
-
-		public IReadOnlyList<IAssemblySymbol> InternalsVisible { get; }
-	}
-
-	class CompilationReferencesComparer : IEqualityComparer<Compilation>
-	{
-		public bool Equals(Compilation x, Compilation y)
-		{
-			if (x.AssemblyName != y.AssemblyName)
-			{
-				return false;
-			}
-
-			if (x.ExternalReferences.Length != y.ExternalReferences.Length)
-			{
-				return false;
-			}
-
-			return x.ExternalReferences.OfType<PortableExecutableReference>().SequenceEqual(y.ExternalReferences.OfType<PortableExecutableReference>());
-		}
-
-		public int GetHashCode(Compilation obj)
-		{
-			return obj.References.GetHashCode();
-		}
 	}
 }
