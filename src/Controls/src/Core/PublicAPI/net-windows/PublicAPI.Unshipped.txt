@@ -246,3 +246,10 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
+~Microsoft.Maui.Controls.Binding.DataType.get -> System.Type
+~Microsoft.Maui.Controls.Binding.DataType.set -> void

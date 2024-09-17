@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui26206 : ContentPage
 {
 	public Maui26206()
@@ -35,11 +36,9 @@ public partial class Maui26206 : ContentPage
 		}
 
 		[Test]
-		public void MultipleResourcesInRD([Values] bool useCompiledXaml)
+		public void MultipleResourcesInRD([Values] XamlInflator inflator)
 		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(Maui26206));
-			var page = new Maui26206(useCompiledXaml);
+			var page = new Maui26206(inflator);
 			Assert.That(((StackBase)page.Content).Spacing, Is.EqualTo(25d));
 		}
 	}

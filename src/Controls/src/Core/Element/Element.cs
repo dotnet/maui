@@ -502,7 +502,8 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		//this is only used by XAMLC, not added to public API
+		//this is only used by Xaml inflators, to avoid crash hen VSM applies before parenting. Not added to the public API
+		//https://github.com/dotnet/maui/issues/16208
 		[EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable RS0016 // Add public types and members to the declared API
 		public INameScope transientNamescope;

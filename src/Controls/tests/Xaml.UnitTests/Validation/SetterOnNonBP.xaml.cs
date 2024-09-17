@@ -1,37 +1,35 @@
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 using NUnit.Framework;
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class FakeView : View
 {
-	public class FakeView : View
+	public string NonBindable { get; set; }
+}
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+[XamlCompilation(XamlCompilationOptions.Skip)]
+public partial class SetterOnNonBP : ContentPage
+{
+	public SetterOnNonBP() => InitializeComponent();
+
+	public class SetterOnNonBPTests
 	{
-		public string NonBindable { get; set; }
-	}
-
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class SetterOnNonBP : ContentPage
-	{
-		public SetterOnNonBP()
+		[Test]
+		public void ShouldThrow([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public SetterOnNonBP(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class SetterOnNonBPTests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ShouldThrow(bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws(new BuildExceptionConstraint(10, 13), () => MockCompiler.Compile(typeof(SetterOnNonBP)));
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => new SetterOnNonBP(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws(new BuildExceptionConstraint(10, 13), () => MockCompiler.Compile(typeof(SetterOnNonBP)));
-				else
-					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => new SetterOnNonBP(useCompiledXaml));
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(SetterOnNonBP));
+				Assert.That(result.Diagnostics, Is.Not.Empty);
 			}
+			else
+				Assert.Ignore("Unknown inflator");
 		}
 	}
 }

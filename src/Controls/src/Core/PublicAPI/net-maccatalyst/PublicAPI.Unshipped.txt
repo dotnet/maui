@@ -254,3 +254,8 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.RemoveSearchController(UIKit.UINavigationItem! navigationItem) -> void
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchIsEnabled(UIKit.UISearchController! searchController) -> void
 virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.UpdateSearchVisibility(UIKit.UISearchController! searchController) -> void
+override Microsoft.Maui.Controls.ScrollView.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.TemplatedView.OnSizeAllocated(double width, double height) -> void
+override Microsoft.Maui.Controls.ContentPresenter.OnSizeAllocated(double width, double height) -> void
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!

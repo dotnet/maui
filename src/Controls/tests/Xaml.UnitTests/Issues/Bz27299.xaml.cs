@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz27299 : ContentPage
 	{
 		public Bz27299()
@@ -33,26 +34,19 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz27299(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[SetUp]
-			public void SetUp()
+			[SetUp] public void SetUp()
 			{
 				Bz27299ViewModelLocator.Count = 0;
 			}
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ViewModelLocatorOnlyCalledOnce(bool useCompiledXaml)
+			[Test]
+			public void ViewModelLocatorOnlyCalledOnce([Values]XamlInflator inflator)
 			{
 				Assert.AreEqual(0, Bz27299ViewModelLocator.Count);
-				var layout = new Bz27299(useCompiledXaml);
+				var layout = new Bz27299(inflator);
 				Assert.AreEqual(1, Bz27299ViewModelLocator.Count);
 				Assert.AreEqual("Foo", layout.label.Text);
 			}

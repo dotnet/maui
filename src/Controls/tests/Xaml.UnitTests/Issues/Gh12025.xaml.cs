@@ -1,39 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Gh12025NavPage : NavigationPage
 {
-	public class Gh12025NavPage : NavigationPage
-	{
-		public static new readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(Page), null);
-		public static void SetIconColor(Page page, Color barTintColor) => page.SetValue(IconColorProperty, barTintColor);
-		public static Color GetIconColor(Page page) => (Color)page.GetValue(IconColorProperty);
-	}
+	public static new readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(Page), null);
+	public static void SetIconColor(Page page, Color barTintColor) => page.SetValue(IconColorProperty, barTintColor);
+	public static Color GetIconColor(Page page) => (Color)page.GetValue(IconColorProperty);
+}
 
-	public partial class Gh12025 : ContentPage
-	{
-		public Gh12025() => InitializeComponent();
-		public Gh12025(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+[XamlProcessing(XamlInflator.Default, true)]
+public partial class Gh12025 : ContentPage
+{
+	public Gh12025() => InitializeComponent();
 
-		[TestFixture]
-		class Tests
+	[TestFixture]
+	class Tests
+	{
+		[Test]
+		public void FindMostDerivedABP([Values] XamlInflator inflator)
 		{
-			[Test]
-			public void FindMostDerivedABP([Values(false, true)] bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh12025)));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Gh12025)));
-				var layout = new Gh12025(useCompiledXaml);
-				Assert.That(NavigationPage.GetIconColor(layout), Is.EqualTo(NavigationPage.IconColorProperty.DefaultValue));
-				Assert.That(Gh12025NavPage.GetIconColor(layout), Is.EqualTo(Colors.HotPink));
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Gh12025));
+				Assert.That(result.Diagnostics, Is.Empty);
 			}
+			var layout = new Gh12025(inflator);
+			Assert.That(NavigationPage.GetIconColor(layout), Is.EqualTo(NavigationPage.IconColorProperty.DefaultValue));
+			Assert.That(Gh12025NavPage.GetIconColor(layout), Is.EqualTo(Colors.HotPink));
 		}
 	}
 }

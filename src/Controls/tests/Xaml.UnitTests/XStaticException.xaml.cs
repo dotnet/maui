@@ -1,43 +1,40 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
+using System.Linq;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class XStaticException : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class XStaticException : ContentPage
+	public XStaticException() => InitializeComponent();
+
+	[TestFixture]
+	public class Tests
 	{
-		public XStaticException()
+		//{x:Static Member=prefix:typeName.staticMemberName}
+		//{x:Static prefix:typeName.staticMemberName}
+
+		//The code entity that is referenced must be one of the following:
+		// - A constant
+		// - A static property
+		// - A field
+		// - An enumeration value
+		// All other cases should throw
+
+		[Test]
+		public void ThrowOnInstanceProperty([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public XStaticException(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			//{x:Static Member=prefix:typeName.staticMemberName}
-			//{x:Static prefix:typeName.staticMemberName}
-
-			//The code entity that is referenced must be one of the following:
-			// - A constant
-			// - A static property
-			// - A field
-			// - An enumeration value
-			// All other cases should throw
-
-			[TestCase(false)]
-			[TestCase(true)]
-			public void ThrowOnInstanceProperty(bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws(new BuildExceptionConstraint(7, 6), () => MockCompiler.Compile(typeof(XStaticException)));
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws(new XamlParseExceptionConstraint(7, 6), () => new XStaticException(inflator));
+			else if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws(new BuildExceptionConstraint(7, 6), () => MockCompiler.Compile(typeof(XStaticException)));
-				else
-					Assert.Throws(new XamlParseExceptionConstraint(7, 6), () => new XStaticException(useCompiledXaml));
+				var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(XStaticException));
+				Assert.That(result.Diagnostics.Any());
 			}
+			else
+				Assert.Ignore("Unknown inflator");
 		}
 	}
 }
