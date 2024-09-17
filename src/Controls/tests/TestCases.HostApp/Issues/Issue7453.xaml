@@ -8,7 +8,7 @@
         <Tab>
             <ShellContent x:Name="tab" Title="Home">
                 <ContentPage>
-                    <Button Text="Hello" AutomationId="shellContentButton" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="60" HeightRequest="40" Clicked="Button_Clicked"/>
+                    <Button Text="Hello" AutomationId="shellContentButton" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="100" HeightRequest="40" Clicked="Button_Clicked"/>
                 </ContentPage>
             </ShellContent>
 

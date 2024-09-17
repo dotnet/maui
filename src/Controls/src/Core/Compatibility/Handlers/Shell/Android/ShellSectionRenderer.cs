@@ -145,37 +145,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();
 
 			HookEvents();
-			foreach (var item in SectionController.GetItems())
-			{
-				if (item is BaseShellItem baseShellItem)
-				{
-					baseShellItem.PropertyChanged += OnBaseShellItemPropertyChanged;
-				}
-			}
 
 			return _rootView = root;
 		}
 
-		void OnBaseShellItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnShellContentPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName && sender is BaseShellItem baseShellItem)
+			if (e.PropertyName == ShellContent.TitleProperty.PropertyName && sender is ShellContent shellContent)
 			{
-				UpdateTabTitle(baseShellItem);
+				UpdateTabTitle(shellContent);
 			}
 		}
 
-		void UpdateTabTitle(BaseShellItem changedShellItem)
+		void UpdateTabTitle(ShellContent shellContent)
 		{
 			if (_tablayout == null || SectionController.GetItems().Count == 0)
 				return;
 
-			int index = SectionController.GetItems().IndexOf(changedShellItem);
+			int index = SectionController.GetItems().IndexOf(shellContent);
 			if (index >= 0)
 			{
 				var tab = _tablayout.GetTabAt(index);
 				if (tab != null)
 				{
-					tab.SetText(new String(changedShellItem.Title));
+					tab.SetText(new string(shellContent.Title));
 				}
 			}
 		}
@@ -203,14 +196,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_rootView != null)
 			{
 				UnhookEvents();
-
-				foreach (var item in SectionController.GetItems())
-				{
-					if (item is BaseShellItem baseShellItem)
-					{
-						baseShellItem.PropertyChanged -= OnBaseShellItemPropertyChanged;
-					}
-				}
 
 				_shellContext?.Shell?.Toolbar?.Handler?.DisconnectHandler();
 
@@ -366,6 +351,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, ShellSection);
 			ShellSection.PropertyChanged += OnShellItemPropertyChanged;
+			foreach (var item in SectionController.GetItems())
+			{
+				item.PropertyChanged += OnShellContentPropertyChanged;
+			}
 		}
 
 		void UnhookEvents()
@@ -373,6 +362,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
 			ShellSection.PropertyChanged -= OnShellItemPropertyChanged;
+			foreach (var item in SectionController.GetItems())
+			{
+				item.PropertyChanged -= OnShellContentPropertyChanged;
+			}
 		}
 
 		protected virtual void OnPageSelected(int position)
