@@ -192,6 +192,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
+			// TODO .NET 10
+			// This is required in order to set the "Frame" property on NavigationPage
+			// It'd be good to see if we can optimize this a bit better.
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
@@ -328,7 +331,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var actuallyRemoved = poppedViewController == null ? true : !await task;
 			_ignorePopCall = false;
 
-			poppedViewController?.Dispose();
+			if (poppedViewController is ParentingViewController pvc)
+				pvc.Disconnect(false);
+			else
+				poppedViewController?.Dispose();
 
 			UpdateToolBarVisible();
 			return actuallyRemoved;
@@ -1142,7 +1148,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return;
 
 					if (child is not null)
+					{
 						child.PropertyChanged -= HandleChildPropertyChanged;
+					}
 
 					if (value is not null)
 					{
@@ -1228,6 +1236,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			public override void ViewWillLayoutSubviews()
+			{
+				base.ViewWillLayoutSubviews();
+
+				var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
+
+				if (childView is not null)
+				{
+					childView.Frame = View.Bounds;
+				}
+			}
+
 			public override void ViewDidLayoutSubviews()
 			{
 				base.ViewDidLayoutSubviews();
@@ -1272,6 +1292,57 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			internal void Disconnect(bool dispose)
+			{
+				if (Child is Page child)
+				{
+					child.SendDisappearing();
+					child.PropertyChanged -= HandleChildPropertyChanged;
+					Child = null;
+				}
+
+				if (_tracker is not null)
+				{
+					_tracker.Target = null;
+					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
+					_tracker = null;
+				}
+
+				if (NavigationItem.TitleView is not null)
+				{
+					if (dispose)
+						NavigationItem.TitleView.Dispose();
+						
+					NavigationItem.TitleView = null;
+				}
+
+				if (NavigationItem.RightBarButtonItems is not null && dispose)
+				{
+					for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
+						NavigationItem.RightBarButtonItems[i].Dispose();
+				}
+
+				if (ToolbarItems is not null && dispose)
+				{
+					for (var i = 0; i < ToolbarItems.Length; i++)
+						ToolbarItems[i].Dispose();
+				}
+
+				for (int i = View.Subviews.Length - 1; i >= 0; i--)
+				{
+					View.Subviews[i].RemoveFromSuperview();
+				}
+
+
+				for (int i = ChildViewControllers.Length - 1; i >= 0; i--)
+				{
+					var childViewController = ChildViewControllers[i];
+					childViewController.View.RemoveFromSuperview();
+					childViewController.RemoveFromParentViewController();
+				}
+
+			}
+
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
@@ -1283,34 +1354,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
-					if (Child is Page child)
-					{
-						child.SendDisappearing();
-						child.PropertyChanged -= HandleChildPropertyChanged;
-						Child = null;
-					}
-
-					_tracker.Target = null;
-					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
-					_tracker = null;
-
-					if (NavigationItem.TitleView != null)
-					{
-						NavigationItem.TitleView.Dispose();
-						NavigationItem.TitleView = null;
-					}
-
-					if (NavigationItem.RightBarButtonItems != null)
-					{
-						for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
-							NavigationItem.RightBarButtonItems[i].Dispose();
-					}
-
-					if (ToolbarItems != null)
-					{
-						for (var i = 0; i < ToolbarItems.Length; i++)
-							ToolbarItems[i].Dispose();
-					}
+					Disconnect(true);
 				}
 
 				base.Dispose(disposing);
@@ -1971,7 +2015,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (_child != null)
 					{
-						_child.PlatformView.RemoveFromSuperview();
+						(_child.ContainerView ?? _child.PlatformView).RemoveFromSuperview();
 						_child.DisconnectHandler();
 						_child = null;
 					}

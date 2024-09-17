@@ -30,5 +30,10 @@ namespace Microsoft.Maui.Handlers
 					activity.Finish();
 			}
 		}
+
+		internal static partial void MapAppTheme(ApplicationHandler handler, IApplication application)
+		{
+			application?.UpdateNightMode();
+		}
 	}
 }

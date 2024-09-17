@@ -6,6 +6,11 @@ const int DefaultApiLevel = 30;
 
 Information("Local Dotnet: {0}", localDotnet);
 
+if (EnvironmentVariable("JAVA_HOME") == null)
+{
+	throw new Exception("JAVA_HOME environment variable isn't set. Set it to your JDK installation (e.g. \"C:\\Program Files (x86)\\Android\\openjdk\\jdk-17.0.8.101-hotspot\\bin\").");
+}
+
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
 var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
@@ -65,7 +70,12 @@ Setup(context =>
 
 Teardown(context =>
 {
-	CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	// For the uitest-prepare target, just leave the virtual device running
+	if (! string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
+	{
+		CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	}
+
 });
 
 Task("boot");
@@ -91,7 +101,14 @@ Task("uitest-build")
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
 	});
 
+Task("uitest-prepare")
+	.Does(() =>
+	{
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
+	});
+
 Task("uitest")
+	.IsDependentOn("uitest-prepare")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
@@ -265,10 +282,11 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 	Information("UI Test app build completed.");
 }
 
-void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
 	string platform = "android";
-	Information("Starting UI Tests...");
+	Information("Preparing UI Tests...");
+
 	var testApp = GetTestApplications(app, device, config, tfm, "").FirstOrDefault();
 
 	if (string.IsNullOrEmpty(testApp))
@@ -295,7 +313,11 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	Information($"Results Directory: {resultsDir}");
 
 	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+}
 
+void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+{
+	string platform = "android";
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
@@ -442,7 +464,7 @@ void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdMana
 		catch { }
 
 		// create the new AVD
-		Information("Creating AVD: {0}...", avdName);
+		Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 		AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
 
 		// start the emulator

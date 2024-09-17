@@ -587,8 +587,6 @@ namespace Microsoft.Maui.Controls
 		{
 			child.SetParent(this);
 
-			child.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
-
 			ChildAdded?.Invoke(this, new ElementEventArgs(child));
 
 			VisualDiagnostics.OnChildAdded(this, child);

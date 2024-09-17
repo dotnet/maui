@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 				newToolBarItems.AddRange(toolbarItems);
 
 			if (sender is ToolbarItem ti)
-				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, null, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
