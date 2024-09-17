@@ -4,8 +4,8 @@
              x:Class="Maui.Controls.Sample.Issues.Issue15524">
 
     <StackLayout>
-        <Entry Text="Microsoft" AutomationId="entry" HorizontalOptions="center" VerticalOptions="center"/>
-        <Button Text="ChangeTheme" AutomationId="changeTheme" Clicked="OnButtonClicked"/>
+        <Entry Text="Microsoft" AutomationId="Entry" HorizontalOptions="center" VerticalOptions="center"/>
+        <Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
     </StackLayout>
     
 </ContentPage>

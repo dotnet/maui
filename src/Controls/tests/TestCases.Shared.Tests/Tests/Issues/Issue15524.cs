@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryBorderVisibilityOnThemeChange()
 		{
-			App.WaitForElement("entry");
-			App.Tap("changeTheme");
+			App.WaitForElement("Entry");
+			App.Tap("ChangeTheme");
 			VerifyScreenshot();
 		}
 

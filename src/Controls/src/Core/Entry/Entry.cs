@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Entry>>(() => new PlatformConfigurationRegistry<Entry>(this));
 #if ANDROID
-            if(Application.Current != null)
+            if (Application.Current != null)
                 Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
 #endif
 		}
@@ -122,8 +122,6 @@ namespace Microsoft.Maui.Controls
             });
         }
 #endif
-
-
 
 		/// <summary>
 		/// Gets or sets the horizontal text alignment. This is a bindable property.
