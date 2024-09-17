@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
@@ -12,16 +10,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class BindingsCompiler : ContentPage
 	{
 		public BindingsCompiler()
 		{
 			InitializeComponent();
-		}
-
-		public BindingsCompiler(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
 		}
 
 		[TestFixture]
@@ -30,12 +24,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void Test(bool useCompiledXaml)
+			[Test]
+			public void Test([Values] XamlInflator inflator)
 			{
-				if (useCompiledXaml)
-					MockCompiler.Compile(typeof(BindingsCompiler));
+				if (inflator == XamlInflator.Default)
+					Assert.Ignore("not testing for default");
 
 				var vm = new MockViewModel
 				{
@@ -55,7 +48,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				};
 				vm.Model[3] = "TextIndex";
 
-				var layout = new BindingsCompiler(useCompiledXaml)
+				var layout = new BindingsCompiler(inflator)
 				{
 					BindingContext = new GlobalViewModel(),
 				};
@@ -116,10 +109,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				layout.entry1.BindingContext = null;
 
 				//testing standalone bindings
-				if (useCompiledXaml)
+				var binding = layout.picker0.ItemDisplayBinding;
+				if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
 				{
-					var binding = layout.picker0.ItemDisplayBinding;
 					Assert.That(binding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
+				}
+				else
+				{
+					Assert.That(binding, Is.TypeOf<Binding>());
+					Assert.That(((Binding)binding).DataType, Is.EqualTo(typeof(MockItemViewModel)));
 				}
 
 				//testing invalid bindingcontext type

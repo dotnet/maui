@@ -40,7 +40,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode, context));
 		}
 
-		public XamlServiceProvider() => IValueConverterProvider = defaultValueConverterProvider;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public XamlServiceProvider(object rootObject) : this()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			Add(typeof(IRootObjectProvider), new XamlRootObjectProvider(rootObject));
+		}
+		public XamlServiceProvider()
+			=> IValueConverterProvider = defaultValueConverterProvider;
 
 		internal IProvideValueTarget IProvideValueTarget
 		{
@@ -143,6 +151,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		readonly INameScope[] scopes;
 
 		[Obsolete("Use the other ctor")]
+		//used by XamlC
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope scope)
 			: this(objectAndParents, targetProperty, new INameScope[] { scope }, false)
 		{
@@ -156,10 +165,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope[] scopes, object rootObject)
 		{
-			if (objectAndParents == null)
+			if (objectAndParents == null || objectAndParents.Length == 0)
 				throw new ArgumentNullException(nameof(objectAndParents));
-			if (objectAndParents.Length == 0)
-				throw new ArgumentException();
 
 			this.objectAndParents = objectAndParents;
 			this.targetProperty = targetProperty;
@@ -182,9 +189,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			for (var i = 0; i < objectAndParents.Length; i++)
 			{
-				if (!(objectAndParents[i] is BindableObject bo))
+				if (objectAndParents[i] is not BindableObject bo)
 					continue;
-				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+				if (NameScope.GetNameScope(bo) is not INameScope ns)
 					continue;
 				if ((value = ns.FindByName(name)) != null)
 					return value;
@@ -286,13 +293,14 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 					return value;
 				n = n.Parent;
 			}
+
 			return null;
 		}
 	}
 
 	public class XmlNamespaceResolver : IXmlNamespaceResolver
 	{
-		readonly Dictionary<string, string> namespaces = new Dictionary<string, string>(StringComparer.Ordinal);
+		readonly Dictionary<string, string> namespaces = new(StringComparer.Ordinal);
 
 		public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope) => throw new NotImplementedException();
 
@@ -307,13 +315,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public void Add(string prefix, string ns) => namespaces.Add(prefix, ns);
 	}
 
-	class XamlDataTypeProvider : IXamlDataTypeProvider
+	public class XamlDataTypeProvider : IXamlDataTypeProvider
 	{
+		public XamlDataTypeProvider (string dataType) => this.dataType = dataType;
+
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
-		public XamlDataTypeProvider(IElementNode node, HydrationContext context)
+		internal XamlDataTypeProvider(IElementNode node, HydrationContext context)
 		{
 			Context = context;
 
@@ -380,9 +390,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				n = GetParent(n);
 			}
 			if (dataTypeNode is ValueNode valueNode)
-				BindingDataType = valueNode.Value as string;
+				this.dataType = valueNode.Value as string;
 		}
-		public string BindingDataType { get; }
-		public HydrationContext Context { get; }
+		string dataType;
+		string IXamlDataTypeProvider.BindingDataType => dataType;
+		internal HydrationContext Context { get; }
 	}
 }

@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			this XmlType xmlType,
 			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
 			string defaultAssemblyName,
-			Func<(string typeName, string clrNamespace, string assemblyName), T> refFromTypeInfo,
+			Func<(string typeName, string clrNamespace, string assemblyName), T?> refFromTypeInfo,
 			bool expandToExtension = true)
 			where T : class
 		{

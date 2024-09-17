@@ -7,31 +7,31 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class AB946693 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class AB946693 : ContentPage
+	public AB946693() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public AB946693() => InitializeComponent();
-		public AB946693(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-		[TestFixture]
-		class Tests
+		[Test]
+		public void KeylessResourceThrowsMeaningfulException([Values] XamlInflator inflator)
 		{
-			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-			[Test]
-			public void KeylessResourceThrowsMeaningfulException([Values(false, true)] bool useCompiledXaml)
+			if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(AB946693)));
-				else
-					Assert.Throws<XamlParseException>(() => new AB946693(useCompiledXaml));
+				var result = MockSourceGenerator.CreateMauiCompilation().RunMauiSourceGenerator(typeof(AB946693));
+				Assert.That(result.Diagnostics, Is.Not.Empty);
 			}
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws<XamlParseException>(() => new AB946693(XamlInflator.Runtime));
+			else if (inflator == XamlInflator.XamlC)
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(AB946693)));
 		}
 	}
 }
