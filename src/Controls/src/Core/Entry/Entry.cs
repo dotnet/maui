@@ -93,7 +93,37 @@ namespace Microsoft.Maui.Controls
 		public Entry()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Entry>>(() => new PlatformConfigurationRegistry<Entry>(this));
+#if ANDROID
+            if(Application.Current != null)
+                Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+#endif
 		}
+
+#if ANDROID
+        private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+        {
+            base.OnHandlerChangingCore(args);
+
+            if (Application.Current == null)
+                return;
+
+            if (args.NewHandler == null)
+                Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+        }
+
+        private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
+        {
+            Dispatcher.Dispatch(() =>
+            {
+                if (Handler != null)
+                {
+                    (Handler as EntryHandler)?.PlatformView?.UpdateBackground(this);
+                }
+            });
+        }
+#endif
+
+
 
 		/// <summary>
 		/// Gets or sets the horizontal text alignment. This is a bindable property.

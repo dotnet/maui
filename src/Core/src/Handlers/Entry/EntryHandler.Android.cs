@@ -1,17 +1,11 @@
 ﻿using System;
-using Android.App;
-using Android.Content;
-using Android.Content.Res;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
-using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -47,44 +41,16 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			ThemeService.ThemeChanged += OnThemeChanged;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		private void OnThemeChanged(UiMode obj)
-		{
-			ApplyTheme(PlatformView, obj);
-		}
-
-		internal static void  ApplyTheme(EditText platformView, UiMode mode)
-		{
-			switch (mode)
-			{
-				case UiMode.NightYes:
-					if (platformView.Background is InsetDrawable insetDrawable)
-					{
-						insetDrawable.SetTint(Color.White);
-					}
-
-					break;
-				case UiMode.NightNo:
-					if (platformView.Background is InsetDrawable insetDrawable1)
-					{
-						insetDrawable1.SetTint(Color.Black);
-					}
-
-					break;
-			}
-		}
-
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-			ThemeService.ThemeChanged -= OnThemeChanged;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
