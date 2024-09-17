@@ -5,14 +5,14 @@
              FlyoutBehavior="Disabled"
              Title="Issue7453">
     <TabBar AutomationId="tabbar">
-        <Tab>
+        <Tab Title="Nested Tabs">
             <ShellContent x:Name="tab" Title="Home">
                 <ContentPage>
-                    <Button Text="Hello" AutomationId="shellContentButton" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="100" HeightRequest="40" Clicked="Button_Clicked"/>
+                    <Button Text="Hello" AutomationId="ShellContentButton" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="100" HeightRequest="40" Clicked="OnButtonClicked"/>
                 </ContentPage>
             </ShellContent>
 
-            <ShellContent x:Name="tab1" Title="Settings">
+            <ShellContent Title="Settings">
                 <ContentPage>
                     <Label Text="This is Settings page"/>
                 </ContentPage>

@@ -9,7 +9,7 @@ public partial class Issue7453 : Shell
 		InitializeComponent();
 	}
 
-    private void Button_Clicked(object sender, EventArgs e)
+    private void OnButtonClicked(object sender, EventArgs e)
     {
 		this.tab.Title = "Updated title";
     }

@@ -22,8 +22,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ChangeShellContentTitle()
 		{
-			App.WaitForElement("tabbar");
-			App.Click("shellContentButton");
+			App.WaitForElement("TabBar");
+			App.Click("ShellContentButton");
 			VerifyScreenshot();
 		}
 	}
