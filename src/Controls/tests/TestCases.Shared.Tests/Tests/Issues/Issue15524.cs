@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if !MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("ChangeTheme");
 			VerifyScreenshot();
 		}
-
 	}
 }
 #endif
