@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue7453"
+             FlyoutBehavior="Disabled"
+             Title="Issue7453">
+    <TabBar AutomationId="tabbar">
+        <Tab>
+            <ShellContent x:Name="tab" Title="Home">
+                <ContentPage>
+                    <Button Text="Hello" AutomationId="shellContentButton" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="60" HeightRequest="40" Clicked="Button_Clicked"/>
+                </ContentPage>
+            </ShellContent>
+
+            <ShellContent x:Name="tab1" Title="Settings">
+                <ContentPage>
+                    <Label Text="This is Settings page"/>
+                </ContentPage>
+            </ShellContent>
+        </Tab>
+    </TabBar>
+
+</Shell>
