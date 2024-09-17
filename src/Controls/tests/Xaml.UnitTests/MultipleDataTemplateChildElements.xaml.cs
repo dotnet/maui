@@ -1,29 +1,42 @@
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class MultipleDataTemplateChildElements : BindableObject
-	{
-		public MultipleDataTemplateChildElements(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+using static Microsoft.Maui.Controls.Xaml.UnitTests.MockSourceGenerator;
 
-		[TestFixture]
-		public static class Tests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class MultipleDataTemplateChildElements : BindableObject
+{
+	public static class Tests
+	{
+		[Test]
+		public static void ThrowXamlParseException([Values] XamlInflator inflator)
 		{
-			[Test]
-			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 			{
-				if (useCompiledXaml)
-				{
-					MockCompiler.Compile(typeof(MultipleDataTemplateChildElements), out var md, out var hasLoggedErrors);
-					Assert.That(hasLoggedErrors);
-				}
-				else
-					Assert.Throws<XamlParseException>(() => new MultipleDataTemplateChildElements(useCompiledXaml));
+				MockCompiler.Compile(typeof(MultipleDataTemplateChildElements), out var md, out var hasLoggedErrors);
+				Assert.That(hasLoggedErrors);
 			}
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws<XamlParseException>(() => new MultipleDataTemplateChildElements(inflator));
+			else if (inflator == XamlInflator.SourceGen)
+			{
+				var result = CreateMauiCompilation()
+					.WithAdditionalSource(
+"""
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class MultipleDataTemplateChildElements : BindableObject
+{
+	public MultipleDataTemplateChildElements() => InitializeComponent();
+}
+""")
+					.RunMauiSourceGenerator(typeof(MultipleDataTemplateChildElements));
+				Assert.That(result.Diagnostics, Is.Not.Empty);
+			}
+			else
+				Assert.Ignore("This test is not yet implemented");
 		}
 	}
 }

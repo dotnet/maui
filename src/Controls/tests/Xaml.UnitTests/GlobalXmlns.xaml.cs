@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
@@ -6,35 +7,25 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class GlobalXmlns
 {
 	public GlobalXmlns() => InitializeComponent();
 
-	public GlobalXmlns(bool useCompiledXaml)
+	[SetUp]
+	public void Setup()
 	{
-		//this stub will be replaced at compile time
+		Application.SetCurrentApplication(new MockApplication());
+		DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 	}
 
-	[TestFixture]
-	class Test
+	[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+
+	[Test]
+	public void WorksWithoutXDeclaration([Values] XamlInflator inflator)
 	{
-		[SetUp]
-		public void Setup()
-		{
-			Application.SetCurrentApplication(new MockApplication());
-			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-		}
-
-		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
-
-		[Test]
-		public void WorksWithoutXDeclaration([Values] bool useCompiledXaml)
-		{
-			if (useCompiledXaml)
-				MockCompiler.Compile(typeof(GlobalXmlns));
-			var page = new GlobalXmlns(useCompiledXaml);
-			Assert.That(page.label, Is.Not.Null);
-			Assert.That(page.label.Text, Is.EqualTo("No xmlns:x declaration, but x: usage anyway"));
-		}
+		var page = new GlobalXmlns(inflator);
+		Assert.That(page.label, Is.Not.Null);
+		Assert.That(page.label.Text, Is.EqualTo("No xmlns:x declaration, but x: usage anyway"));
 	}
 }
