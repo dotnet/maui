@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 7453, "ShellContent Title doesn't observe changes to bound properties", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 7453, "ShellContent Title doesn't observe changes to bound properties", PlatformAffected.UWP | PlatformAffected.Android)]
 public partial class Issue7453 : Shell
 {
 	public Issue7453()
