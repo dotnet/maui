@@ -54,6 +54,12 @@ namespace Microsoft.Maui.Handlers
 				platformContent.Tag = ContentView.ContentTag;
 				platformView.AddSubview(platformContent);
 			}
+
+			if(handler.VirtualView.Shape is IShapeView shapeView)
+            {
+                var view = shapeView.ToPlatform(handler.MauiContext);
+                platformView.AddSubview(view);
+            }
 		}
 	}
 }
