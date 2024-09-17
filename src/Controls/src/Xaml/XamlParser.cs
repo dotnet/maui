@@ -34,7 +34,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
+#if !__SOURCEGEN__
 using Microsoft.Maui.Devices;
+#endif
+
+#if __SOURCEGEN__
+#nullable disable
+#endif
 
 namespace Microsoft.Maui.Controls.Xaml
 {
@@ -295,6 +301,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (targetPlatform == null)
 					continue;
 
+//FIXME
+#if !__SOURCEGEN__
 				try
 				{
 					if (targetPlatform != DeviceInfo.Platform.ToString())
@@ -310,6 +318,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					prefixes.Add(prefix);
 				}
+#endif
 			}
 			return prefixes;
 		}
@@ -357,7 +366,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
+#if !__SOURCEGEN__
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif

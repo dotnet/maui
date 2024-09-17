@@ -17,6 +17,8 @@
     <ErrorReport>prompt</ErrorReport>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -52,6 +54,10 @@
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
     <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
