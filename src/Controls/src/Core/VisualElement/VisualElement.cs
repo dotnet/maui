@@ -1392,30 +1392,40 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// We skip invalidation if we are either fully constrained or when the size request changes, and we were already fully constrained
-			if ((trigger == InvalidationTrigger.MeasureChanged && Constraint == LayoutConstraint.Fixed) ||
-			    (trigger == InvalidationTrigger.SizeRequestChanged && ComputedConstraint == LayoutConstraint.Fixed))
-			{
-				InvokeMeasureInvalidated(trigger);
-				return;
-			}
-
-			// If layout constraint has changed, we need to recompute constraints
 			if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
 			{
-				if (Parent is VisualElement parentElement && this is View thisView)
-				{
-					parentElement.ComputeConstraintForView(thisView);
-				}
 				InvokeMeasureInvalidated(trigger);
-				ParentView?.InvalidateMeasure();
+
+				if (Parent is VisualElement parentVisualElement)
+				{
+					parentVisualElement.InvalidateMeasure();
+					
+					// If layout constraint has changed, we need to recompute constraints
+					if (this is View thisView)
+					{
+						parentVisualElement.ComputeConstraintForView(thisView);
+					}
+				}
+				else
+				{
+					ParentView?.InvalidateMeasure();
+				}
+
 				return;
 			}
 
 			if (trigger == InvalidationTrigger.MarginChanged)
 			{
 				InvokeMeasureInvalidated(trigger);
-				ParentView?.InvalidateMeasure();
+				if (Parent is VisualElement parentVisualElement)
+				{
+					parentVisualElement.InvalidateMeasure();
+				}
+				else
+				{
+					ParentView?.InvalidateMeasure();
+				}
+
 				return;
 			}
 			

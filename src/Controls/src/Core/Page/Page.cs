@@ -506,7 +506,6 @@ namespace Microsoft.Maui.Controls
 			switch (trigger)
 			{
 				case InvalidationTrigger.Undefined:
-					// We need to invalidate measures only if child is actually visible
 					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 					break;
 
