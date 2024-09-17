@@ -273,15 +273,11 @@ class MockNativeBindingService : INativeBindingService
 	}
 }
 
-[XamlCompilation(XamlCompilationOptions.Skip)]
+[XamlProcessing(XamlInflator.Runtime, true)]
 public partial class NativeViewsAndBindings : ContentPage
 {
 
 	public NativeViewsAndBindings() => InitializeComponent();
-	public NativeViewsAndBindings(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 
 	[TestFixture]
 	class Test
@@ -297,9 +293,9 @@ public partial class NativeViewsAndBindings : ContentPage
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void NativeInContentView([Values(false)] bool useCompiledXaml)
+		public void NativeInContentView([Values(XamlInflator.Runtime)] XamlInflator inflator)
 		{
-			var layout = new NativeViewsAndBindings(useCompiledXaml);
+			var layout = new NativeViewsAndBindings(inflator);
 			layout.BindingContext = new
 			{
 				Baz = "Bound Value",

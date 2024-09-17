@@ -284,4 +284,7 @@ override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertFrom(Syste
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.WebViewSourceTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
-
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider
+Microsoft.Maui.Controls.Xaml.IXamlDataTypeProvider.BindingDataType.get -> string!
+~Microsoft.Maui.Controls.Binding.DataType.get -> System.Type
+~Microsoft.Maui.Controls.Binding.DataType.set -> void

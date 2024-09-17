@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz28689 : ContentPage
 	{
 		public Bz28689()
@@ -12,19 +13,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public Bz28689(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void XArrayInResources(bool useCompiledXaml)
+			[Test]
+			public void XArrayInResources([Values]XamlInflator inflator)
 			{
-				var layout = new Bz28689(useCompiledXaml);
+				var layout = new Bz28689(inflator);
 				var array = layout.Resources["stringArray"];
 				Assert.That(array, Is.TypeOf<string[]>());
 				var stringarray = (string[])array;

@@ -9,16 +9,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui25406 : ContentPage
 {
 	public Maui25406()
 	{
 		InitializeComponent();
-	}
-
-	public Maui25406(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
 	}
 
 	[TestFixture]
