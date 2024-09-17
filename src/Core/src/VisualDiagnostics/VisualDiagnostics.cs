@@ -51,8 +51,12 @@ namespace Microsoft.Maui
 		/// A <see cref="SourceInfo"/> instance containing the URI, line number, and position, or <c>null</c> if no information is available.
 		/// </returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static SourceInfo? GetSourceInfo(object obj) =>
-			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
+		public static SourceInfo? GetSourceInfo(object obj)
+		{
+			if (obj is null)
+				return null;
+			return sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
+		}
 
 		/// <summary>
 		/// Called when a child element is added to the visual tree; raises <see cref="VisualTreeChanged"/> event.

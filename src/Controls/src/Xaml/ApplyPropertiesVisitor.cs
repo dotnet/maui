@@ -21,14 +21,16 @@ namespace Microsoft.Maui.Controls.Xaml
 #endif
 	class ApplyPropertiesVisitor : IXamlNodeVisitor
 	{
-		public static readonly IList<XmlName> Skips = new List<XmlName> {
-			XmlName.xKey,
-			XmlName.xTypeArguments,
+		public static readonly IList<XmlName> Skips = [
 			XmlName.xArguments,
+			XmlName.xClass,
+			XmlName.xDataType,
 			XmlName.xFactoryMethod,
+			XmlName.xFieldModifier,
+			XmlName.xKey,
 			XmlName.xName,
-			XmlName.xDataType
-		};
+			XmlName.xTypeArguments,
+		];
 
 		public ApplyPropertiesVisitor(HydrationContext context, bool stopOnResourceDictionary = false)
 		{
