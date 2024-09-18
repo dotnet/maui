@@ -1,3 +1,6 @@
+parameters:
+      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
 stages:
   - stage: localization_handback
@@ -9,19 +12,23 @@ stages:
       - job : generate_resx
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
+
+        variables:
+          - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+
         steps:
           - checkout: self
             persistCredentials: true
             clean: true
 
           - powershell: |
-              $srcBranch = $(Build.SourceBranch)
+              $srcBranch = "$(Build.SourceBranch)"
               Write-Host "Extracting branch name from $srcBranch..."
-              if ("$srcBranch" -eq "refs/heads/loc") {
+              if ($srcBranch -eq "refs/heads/loc") {
                 $baseBranchName = "main"
                 $locBranchName = "loc"
-              } elseif ("$srcBranch".StartsWith("refs/heads/loc-")) {
-                $baseBranchName = "$srcBranch".SubString("refs/heads/loc-".Length)
+              } elseif ($srcBranch.StartsWith("refs/heads/loc-")) {
+                $baseBranchName = $srcBranch.SubString("refs/heads/loc-".Length)
                 $locBranchName = "loc-$baseBranchName"
               } else {
                 throw "Invalid branch name $srcBranch."
@@ -41,7 +48,7 @@ stages:
               Invoke-Git merge origin/$(LOC_BRANCH_NAME) --no-commit
             displayName: 'Merge loc Branch'
 
-          - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+          - task: OneLocBuild@2
             displayName: 'Localization Build'
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
@@ -49,11 +56,11 @@ stages:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
-              patVariable: "$(OneLocBuildPAT)"
+              patVariable: ${{ parameters.CeapexPat }}
               isCreatePrSelected: false
               repoType: gitHub
               prSourceBranchPrefix: $(LocBranchPrefix)
-              gitHubPatVariable: '$(GitHub.Token)'
+              gitHubPatVariable: "${{ parameters.GithubPat }}"
               gitHubPrMergeMethod: merge
 
           - powershell: |
