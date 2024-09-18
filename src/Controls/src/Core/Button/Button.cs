@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// The backing store for the <see cref="CharacterSpacing" /> bindable property.
 		/// </summary>
-		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
+	//	public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
 		/// <summary>
 		/// The backing store for the <see cref="FontFamily" /> bindable property.
