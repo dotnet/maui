@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 
 		/// <summary>
 		/// The Paint used to colorize the Shadow.
-		/// At this time only SoliPaint works in all platforms
+		/// At this time only SolidPaint works in all platforms
 		/// </summary>
 		Paint Paint { get; }
 

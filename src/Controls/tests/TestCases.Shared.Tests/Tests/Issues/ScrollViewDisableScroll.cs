@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST && !IOS && !ANDROID && !WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
 	public class ScrollViewDisableScrollUITests : _IssuesUITest
@@ -54,3 +55,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
+#endif

@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample
 			}
 		}
 		
-		public static void RunMemoryTest(this NavigationPage navigationPage, Func<VisualElement> elementToTest)
+		public static void RunMemoryTest(this INavigation navigationPage, Func<VisualElement> elementToTest)
 		{
         	ContentPage rootPage = new ContentPage { Title = "Page 1" };
 			navigationPage.PushAsync(rootPage);
