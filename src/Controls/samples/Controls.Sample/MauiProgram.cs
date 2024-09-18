@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample
 			{
 				ValidateOnBuild = true,
 				ValidateScopes = true,
-			}))
+			}));
 
 #if __ANDROID__ || __IOS__
 			appBuilder.UseMauiMaps();
