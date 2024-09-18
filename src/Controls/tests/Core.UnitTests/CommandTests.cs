@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var command = new Command<int>(context => executions += 1);
 
 			command.Execute(10.5); // "the command should not execute, so no exception should be thrown"
-			Assert.True(executions == 3, "the command should not have executed");
+			Assert.True(executions == 0, "the command should not have executed");
 		}
 
 		[Fact]
