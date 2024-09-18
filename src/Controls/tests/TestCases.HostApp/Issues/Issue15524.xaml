@@ -23,7 +23,7 @@
     	<Entry Text="First Entry" AutomationId="FirstEntry" />
     	<Entry Text="Second Entry" AutomationId="SecondEntry"/>
     	<Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
-  </VerticalStackLayout>
+    </VerticalStackLayout>
 
     
 </ContentPage>
