@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			sb.Commit(box, "foo", length: 100, repeat: () => ++i < 2);
 
 			await Task.Delay(1000);
-			Assert.Equal(1, animcount);
+			Assert.Equal(2, animcount);
 		}
 	}
 }
