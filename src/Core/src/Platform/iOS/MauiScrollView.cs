@@ -5,8 +5,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, IMauiUIView
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, IPropagatesSetNeedsLayout
 	{
+		bool _isSettingNeedsLayout;
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 
 		// overriding this method so it does not automatically scroll large UITextFields
@@ -17,21 +18,21 @@ namespace Microsoft.Maui.Platform
 				base.ScrollRectToVisible(rect, animated);
 		}
 
-		void IMauiUIView.SetNeedsLayout()
+		public override void SetNeedsLayout()
 		{
-			// If the ContentView is the first subview, trigger SetNeedsLayout from there
+			if (_isSettingNeedsLayout)
+			{
+				return;
+			}
+
+			_isSettingNeedsLayout = true;
+			// If the content container is set, we need to invalidate that too
 			if (Subviews.Length > 0 && Subviews[0] is ContentView contentContainer)
 			{
 				contentContainer.SetNeedsLayout();
 			}
-			else
-			{
-				SetNeedsLayout();
-			}
-		}
+			_isSettingNeedsLayout = false;
 
-		public override void SetNeedsLayout()
-		{
 			base.SetNeedsLayout();
 			TryToInvalidateSuperView(false);
 		}

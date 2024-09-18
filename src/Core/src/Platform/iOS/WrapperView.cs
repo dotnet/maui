@@ -9,7 +9,7 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IMauiUIView
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IPropagatesSetNeedsLayout
 	{
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;

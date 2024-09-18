@@ -65,6 +65,17 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(55, frame.Bottom, 0.5d);
 				Assert.Equal(60, desiredSize.Width, 0.5d);
 				Assert.Equal(60, desiredSize.Height, 0.5d);
+
+				control.WidthRequest = 60;
+				
+				await Task.Delay(100);
+				
+				frame = control.Frame;
+				desiredSize = control.DesiredSize;
+				Assert.Equal(5, frame.X, 0.5d);
+				Assert.Equal(60, frame.Width, 0.5d);
+				Assert.Equal(65, frame.Right, 0.5d);
+				Assert.Equal(70, desiredSize.Width, 0.5d);
 			});
 		}
 	}

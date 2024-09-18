@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IMauiUIView
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPropagatesSetNeedsLayout
 	{
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		static bool? _respondsToSafeArea;
