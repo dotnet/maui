@@ -40,13 +40,47 @@ Find the script for that on the DevDiv Azure DevOps instance, Engineering team, 
 
 param
 (
-    [string] $appiumVersion = '2.11.4',
-    [string] $windowsDriverVersion = '2.12.32',
-    [string] $androidDriverVersion = '3.8.0',    
-    [string] $iOSDriverVersion = '7.26.4',
-    [string] $macDriverVersion = '1.19.1',
+    [string] $appiumVersion = '',
+    [string] $windowsDriverVersion = '',
+    [string] $androidDriverVersion = '',
+    [string] $iOSDriverVersion = '',
+    [string] $macDriverVersion = '',
     [string] $logsDir = '../appium-logs'
 )
+
+# By default, versions should be read from /eng/Versions.props
+$versionPropsPath = [IO.Path]::Combine(Get-Location(), '..', 'Version.props')
+
+if (Test-Path $versionPropsPath)
+{
+    Write-Output "Reading versions from Version.props..."
+    [xml]$versionProps = Get-Content $versionPropsPath
+    
+    $versionPropsAppiumVersion = $versionProps.Project.PropertyGroup.AppiumVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($versionPropsAppiumVersion -ne $null) {
+        $appiumVersion = $versionPropsAppiumVersion
+    }
+
+    $versionPropsWindowsDriverVersion = $versionProps.Project.PropertyGroup.AppiumWindowsDriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($versionPropsWindowsDriverVersion -ne $null) {
+        $windowsDriverVersion = $versionPropsWindowsDriverVersion
+    }
+
+    $versionPropsUIAutomator2DriverVersion = $versionProps.Project.PropertyGroup.AppiumUIAutomator2DriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($versionPropsUIAutomator2DriverVersion -ne $null) {
+        $androidDriverVersion = $versionPropsUIAutomator2DriverVersion
+    }
+
+    $versionPropsXCUItestDriverVersion = $versionProps.Project.PropertyGroup.AppiumXCUITestDriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($versionPropsXCUItestDriverVersion -ne $null) {
+        $iOSDriverVersion = $versionPropsXCUItestDriverVersion
+    }
+
+    $versionPropsMac2DriverVersion = $versionProps.Project.PropertyGroup.AppiumMac2DriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($versionPropsMac2DriverVersion -ne $null) {
+        $macDriverVersion = $versionPropsMac2DriverVersion
+    }
+}
 
 Write-Output  "Welcome to the Appium installer"
 
