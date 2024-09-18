@@ -49,7 +49,8 @@ param
 )
 
 # By default, versions should be read from /eng/Versions.props
-$versionPropsPath = [IO.Path]::Combine(Get-Location(), '..', 'Version.props')
+$getLocation = Get-Location
+$versionPropsPath = [IO.Path]::Combine($getLocation, '..', 'Version.props')
 
 if (Test-Path $versionPropsPath)
 {
