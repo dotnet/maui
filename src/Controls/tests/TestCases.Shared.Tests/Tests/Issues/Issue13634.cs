@@ -15,10 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Editor)]
-		public void ScrollEditor()
+		public async Task ScrollEditor()
 		{
 			App.WaitForElement("Editor");
 			App.ScrollDown("Editor", ScrollStrategy.Programmatically);
+			await Task.Delay(1000);
 			VerifyScreenshot();
 		}
 	}
