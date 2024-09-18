@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class FrameRenderer : VisualElementRenderer<Frame>
+	public class FrameRenderer : VisualElementRenderer<Frame>, IPropagatesSetNeedsLayout
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper);

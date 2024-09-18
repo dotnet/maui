@@ -1,2 +1,6 @@
 #nullable enable
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.MovedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.SetNeedsLayout() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.MovedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.SetNeedsLayout() -> void
