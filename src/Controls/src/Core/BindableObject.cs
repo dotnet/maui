@@ -364,9 +364,14 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				bindable._inheritedContext = new WeakReference(value);
-				bindable.ApplyBindings(fromBindingContextChanged: true);
-				bindable.OnBindingContextChanged();
+				bindable.ApplyBindingsFromBindingContextChanged();
 			}
+		}
+
+		private protected virtual void ApplyBindingsFromBindingContextChanged()
+		{
+			ApplyBindings(fromBindingContextChanged: true);
+			OnBindingContextChanged();
 		}
 
 		/// <summary>
@@ -730,8 +735,7 @@ namespace Microsoft.Maui.Controls
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			bindable._inheritedContext = null;
-			bindable.ApplyBindings(fromBindingContextChanged: true);
-			bindable.OnBindingContextChanged();
+			bindable.ApplyBindingsFromBindingContextChanged();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

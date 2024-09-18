@@ -103,10 +103,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			_layoutInformation = new LayoutInformation();
 		}
 
-		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal override void InvalidateMeasureInternal(InvalidationTriggerFlags flags)
 		{
 			InvalidateLayoutInternal();
-			base.InvalidateMeasureInternal(trigger);
+			base.InvalidateMeasureInternal(flags);
 		}
 
 		void AlignOffAxis(LayoutInformation layout, StackOrientation orientation, double widthConstraint, double heightConstraint)

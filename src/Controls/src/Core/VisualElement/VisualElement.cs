@@ -1383,8 +1383,80 @@ namespace Microsoft.Maui.Controls
 		{
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
-		
-		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+
+		private protected InvalidationTriggerFlags MeasureInvalidationStatus;
+		private protected bool IsApplyingBindings => (MeasureInvalidationStatus & InvalidationTriggerFlags.ApplyingBindingContext) != 0;
+
+		private protected override void ApplyBindingsFromBindingContextChanged()
+		{
+			try
+			{
+				MeasureInvalidationStatus |= InvalidationTriggerFlags.ApplyingBindingContext;
+				base.ApplyBindingsFromBindingContextChanged();
+			}
+			finally
+			{
+				var status = MeasureInvalidationStatus;
+				MeasureInvalidationStatus = InvalidationTriggerFlags.None;
+				if (status > InvalidationTriggerFlags.ApplyingBindingContext)
+				{
+					InvalidateMeasureInternal(status);
+				}
+			}
+		}
+
+		internal virtual void InvalidateMeasureInternal(InvalidationTriggerFlags flags)
+		{
+			var parentVisualElement = Parent as VisualElement;
+
+			const InvalidationTriggerFlags notifyOnly = InvalidationTriggerFlags.WillNotifyParentMeasureInvalidated |
+			                                            InvalidationTriggerFlags.ApplyingBindingContext;
+
+			// While applying bindings we only received `OnChildMeasureInvalidatedInternal` calls, so just propagate one of them
+			if (flags <= notifyOnly)
+			{
+				InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
+				// Notify parent chain that a child's measure has been invalidated
+				parentVisualElement?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+				return;
+			}
+
+			const InvalidationTriggerFlags positionOptionsChanged = InvalidationTriggerFlags.WillTriggerHorizontalOptionsChanged | InvalidationTriggerFlags.WillTriggerVerticalOptionsChanged;
+
+			// If position options changed, we need to recompute constraints
+			if ((flags & positionOptionsChanged) != 0 && parentVisualElement != null && this is View thisView)
+			{
+				parentVisualElement.ComputeConstraintForView(thisView);
+			}
+
+			var invalidationTrigger = flags.ToInvalidationTrigger();
+
+			// If this view's measure has not been invalidated, we can trigger the invalidation on parent only
+			if (flags < InvalidationTriggerFlags.WillTriggerSizeRequestChanged)
+			{
+				InvokeMeasureInvalidated(invalidationTrigger);
+
+				// Trigger parent measure invalidation
+				if (parentVisualElement is not null)
+				{
+					parentVisualElement.InvalidateMeasure();
+				}
+				else
+				{
+					// This should never happen, but just in case, the only thing we can do is invalidate the platform view
+					ParentView?.InvalidateMeasure();
+				}
+				return;
+			}
+
+			InvalidateMeasureCacheInternal();
+			((IView)this).InvalidateMeasure();
+			InvokeMeasureInvalidated(invalidationTrigger);
+			// Notify parent chain that a child's measure has been invalidated
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, invalidationTrigger);
+		}
+
+		internal void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			if (!IsPlatformEnabled)
 			{
@@ -1392,48 +1464,14 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
+			if (IsApplyingBindings)
 			{
-				InvokeMeasureInvalidated(trigger);
-
-				if (Parent is VisualElement parentVisualElement)
-				{
-					parentVisualElement.InvalidateMeasure();
-					
-					// If layout constraint has changed, we need to recompute constraints
-					if (this is View thisView)
-					{
-						parentVisualElement.ComputeConstraintForView(thisView);
-					}
-				}
-				else
-				{
-					ParentView?.InvalidateMeasure();
-				}
-
+				// If we're applying bindings, we need to wait until it's done to invalidate the measure
+				MeasureInvalidationStatus |= trigger.ToInvalidationTriggerFlags();
 				return;
 			}
 
-			if (trigger == InvalidationTrigger.MarginChanged)
-			{
-				InvokeMeasureInvalidated(trigger);
-				if (Parent is VisualElement parentVisualElement)
-				{
-					parentVisualElement.InvalidateMeasure();
-				}
-				else
-				{
-					ParentView?.InvalidateMeasure();
-				}
-
-				return;
-			}
-			
-			InvalidateMeasureCacheInternal();
-			((IView)this).InvalidateMeasure();
-			InvokeMeasureInvalidated(trigger);
-			// Notify parent chain that a child's measure has been invalidated
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+			InvalidateMeasureInternal(trigger.ToInvalidationTriggerFlags());
 		}
 
 		/// <summary>
@@ -1444,12 +1482,18 @@ namespace Microsoft.Maui.Controls
 			_measureCache.Clear();
 		}
 
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal virtual bool OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			switch (trigger)
 			{
 				case InvalidationTrigger.Undefined:
-					// We need to invalidate measures only if child is actually visible
+					if (IsApplyingBindings)
+					{
+						// If we're applying bindings, we need to wait until it's done to invalidate the measure
+						MeasureInvalidationStatus |= InvalidationTriggerFlags.WillNotifyParentMeasureInvalidated;
+						return false;
+					}
+
 					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
 					break;
@@ -1460,11 +1504,20 @@ namespace Microsoft.Maui.Controls
 					if (child.IsVisible)
 					{
 						// We need to invalidate measures only if child is actually visible
+						if (IsApplyingBindings)
+						{
+							// If we're applying bindings, we need to wait until it's done to invalidate the measure
+							MeasureInvalidationStatus |= InvalidationTriggerFlags.WillNotifyParentMeasureInvalidated;
+							return false;
+						}
+
 						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
 					}
 					break;
 			}
+
+			return true;
 		}
 
 		/// <inheritdoc/>

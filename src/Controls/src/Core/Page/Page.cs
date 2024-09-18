@@ -500,12 +500,19 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
 		
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal override bool OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			// Behave like `VisualElement` except for propagation to parent
 			switch (trigger)
 			{
 				case InvalidationTrigger.Undefined:
+					if (IsApplyingBindings)
+					{
+						// If we're applying bindings, we need to wait until it's done to invalidate the measure
+						MeasureInvalidationStatus |= InvalidationTriggerFlags.WillNotifyParentMeasureInvalidated;
+						return false;
+					}
+
 					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 					break;
 
@@ -514,6 +521,13 @@ namespace Microsoft.Maui.Controls
 					// so here we're sure that visibility didn't change
 					if (child.IsVisible)
 					{
+						if (IsApplyingBindings)
+						{
+							// If we're applying bindings, we need to wait until it's done to invalidate the measure
+							MeasureInvalidationStatus |= InvalidationTriggerFlags.WillNotifyParentMeasureInvalidated;
+							return false;
+						}
+
 						// We need to invalidate measures only if child is actually visible
 						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 					}
@@ -522,6 +536,8 @@ namespace Microsoft.Maui.Controls
 
 			// We still need to call the legacy OnChildMeasureInvalidated to keep the compatibility.
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+
+			return true;
 		}
 
 		/// <summary>

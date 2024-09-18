@@ -349,10 +349,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use ArrangeOverride")]
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal override bool OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
-			base.OnChildMeasureInvalidatedInternal(child, trigger);
+			if (base.OnChildMeasureInvalidatedInternal(child, trigger))
+			{
+				OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>
