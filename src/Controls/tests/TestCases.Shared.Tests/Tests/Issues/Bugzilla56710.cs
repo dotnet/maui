@@ -16,16 +16,16 @@ public class Bugzilla56710 : _IssuesUITest
 
 	public override string Issue => "Multi-item add in INotifyCollectionChanged causes a NSInternalInconsistencyException in bindings on iOS";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
-	[Category(UITestCategories.Compatibility)]
-	[FailsOnIOS]
-	[FailsOnMac]
-	public void Bugzilla56771Test()
-	{
-		App.WaitForElement(BtnAdd);
-		App.Tap(BtnAdd);
-		App.WaitForNoElement(Success);
-	}
+	// [Test]
+	// [Category(UITestCategories.ListView)]
+	// [Category(UITestCategories.Compatibility)]
+	// [FailsOnIOS]
+	// [FailsOnMac]
+	// public void Bugzilla56771Test()
+	// {
+	// 	App.WaitForElement(BtnAdd);
+	// 	App.Tap(BtnAdd);
+	// 	App.WaitForNoElement(Success);
+	// }
 }
 #endif

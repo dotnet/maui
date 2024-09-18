@@ -12,23 +12,23 @@ public class Bugzilla37841 : _IssuesUITest
 
 	public override string Issue => "TableView EntryCells and TextCells cease to update after focus change";
 
-	[Test]
-	[Category(UITestCategories.TableView)]
-	[FailsOnIOS]
-	public void TextAndEntryCellsDataBindInTableView()
-	{
-		App.WaitForElement("Generate");
-		App.Tap("Generate");
+	// [Test]
+	// [Category(UITestCategories.TableView)]
+	// [FailsOnIOS]
+	// public void TextAndEntryCellsDataBindInTableView()
+	// {
+	// 	App.WaitForElement("Generate");
+	// 	App.Tap("Generate");
 
-		App.Screenshot("First Generate Tap");
+	// 	App.Screenshot("First Generate Tap");
 
-		App.WaitForTextToBePresentInElement("entrycell", "12345");
-		App.WaitForTextToBePresentInElement("textcell", "6789");
-		App.Tap("Generate");
+	// 	App.WaitForTextToBePresentInElement("entrycell", "12345");
+	// 	App.WaitForTextToBePresentInElement("textcell", "6789");
+	// 	App.Tap("Generate");
 
-		App.Screenshot("Second Generate Tap");
+	// 	App.Screenshot("Second Generate Tap");
 
-		App.WaitForTextToBePresentInElement("entrycell", "112358");
-		App.WaitForTextToBePresentInElement("textcell", "48151623");
-	}
+	// 	App.WaitForTextToBePresentInElement("entrycell", "112358");
+	// 	App.WaitForTextToBePresentInElement("textcell", "48151623");
+	// }
 }

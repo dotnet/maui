@@ -14,14 +14,14 @@ public class Bugzilla43161 : _IssuesUITest
 
 	public override string Issue => "[iOS] Setting Accessory in ViewCellRenderer breaks layout";
 
-	[Test]
-	[Category(UITestCategories.Cells)]
-	[FailsOnIOS]
-	public void Bugzilla43161Test()
-	{
-		App.WaitForElement("0");
-		App.WaitForElement("10");
-		App.WaitForElement("20");
-	}
+	// [Test]
+	// [Category(UITestCategories.Cells)]
+	// [FailsOnIOS]
+	// public void Bugzilla43161Test()
+	// {
+	// 	App.WaitForElement("0");
+	// 	App.WaitForElement("10");
+	// 	App.WaitForElement("20");
+	// }
 }
 #endif

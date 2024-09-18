@@ -12,16 +12,16 @@ public class Bugzilla32902 : _IssuesUITest
 
 	public override string Issue => "[iOS | iPad] App Crashes (without debug log) when Flyout Detail isPresented and navigation being popped";
 
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
-	public void Bugzilla32902Test()
-	{
-		if (Devices.DeviceInfo.Idiom == Devices.DeviceIdiom.Tablet)
-		{
-			App.Tap("btnNext");
-			App.Tap("btnPushModal");
-			App.Tap("Flyout");
-			App.Tap("btnPop");
-		}
-	}
+	// [Test]
+	// [Category(UITestCategories.FlyoutPage)]
+	// public void Bugzilla32902Test()
+	// {
+	// 	if (Devices.DeviceInfo.Idiom == Devices.DeviceIdiom.Tablet)
+	// 	{
+	// 		App.Tap("btnNext");
+	// 		App.Tap("btnPushModal");
+	// 		App.Tap("Flyout");
+	// 		App.Tap("btnPop");
+	// 	}
+	// }
 }

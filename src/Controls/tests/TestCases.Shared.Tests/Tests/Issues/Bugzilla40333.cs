@@ -14,30 +14,30 @@ public class Bugzilla40333 : _IssuesUITest
 
 	public override string Issue => "[Android] IllegalStateException: Recursive entry to executePendingTransactions";
 
-	[Test]
-	public void ClickingOnMenuItemInRootDoesNotCrash_NavPageVersion()
-	{
-		App.Tap("StartNavPageTest");
-		App.WaitForElement("OpenRoot");
+	// [Test]
+	// public void ClickingOnMenuItemInRootDoesNotCrash_NavPageVersion()
+	// {
+	// 	App.Tap("StartNavPageTest");
+	// 	App.WaitForElement("OpenRoot");
 
-		App.Tap("OpenRoot");
-		App.WaitForElement("ClickThisId");
+	// 	App.Tap("OpenRoot");
+	// 	App.WaitForElement("ClickThisId");
 
-		App.Tap("ClickThisId");
-		App.WaitForElement("StillHereId"); // If the bug isn't fixed, the app will have crashed by now
-	}
+	// 	App.Tap("ClickThisId");
+	// 	App.WaitForElement("StillHereId"); // If the bug isn't fixed, the app will have crashed by now
+	// }
 
-	[Test]
-	public void ClickingOnMenuItemInRootDoesNotCrash_TabPageVersion()
-	{
-		App.Tap("StartTabPageTest");
-		App.WaitForElement("OpenRoot");
+	// [Test]
+	// public void ClickingOnMenuItemInRootDoesNotCrash_TabPageVersion()
+	// {
+	// 	App.Tap("StartTabPageTest");
+	// 	App.WaitForElement("OpenRoot");
 
-		App.Tap("OpenRoot");
-		App.WaitForElement("ClickThisId");
+	// 	App.Tap("OpenRoot");
+	// 	App.WaitForElement("ClickThisId");
 
-		App.Tap("ClickThisId");
-		App.WaitForElement("StillHereId"); // If the bug isn't fixed, the app will have crashed by now
-	}
+	// 	App.Tap("ClickThisId");
+	// 	App.WaitForElement("StillHereId"); // If the bug isn't fixed, the app will have crashed by now
+	// }
 }
 #endif

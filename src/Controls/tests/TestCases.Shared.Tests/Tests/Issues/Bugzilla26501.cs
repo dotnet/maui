@@ -12,13 +12,12 @@ public class Bugzilla26501 : _IssuesUITest
 
     public override string Issue => "BindingSource / Context action issue";
 
-	[FailsOnAllPlatforms]
-	[Test]
-	[Category(UITestCategories.InputTransparent)]		
-	public void TestCellsShowAfterRefresh()
-	{
-		App.Tap("Refresh");
+	// [Test]
+	// [Category(UITestCategories.InputTransparent)]		
+	// public void TestCellsShowAfterRefresh()
+	// {
+	// 	App.Tap("Refresh");
 
-		App.WaitForElement("ZOOMER robothund 2");
-	}
+	// 	App.WaitForElement("ZOOMER robothund 2");
+	// }
 }

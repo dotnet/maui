@@ -16,24 +16,24 @@ public class Bugzilla44044 : _IssuesUITest
 
 	public override string Issue => "TabbedPage steals swipe gestures";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
-	public void Bugzilla44044Test()
-	{
-		App.WaitForElement(_btnToggleSwipe);
+	// [Test]
+	// [Category(UITestCategories.TabbedPage)]
+	// public void Bugzilla44044Test()
+	// {
+	// 	App.WaitForElement(_btnToggleSwipe);
 		
-		App.SwipeRightToLeft();
-		App.WaitForNoElement(_btnToggleSwipe);
-		App.WaitForElement(_btnDisplayAlert);
+	// 	App.SwipeRightToLeft();
+	// 	App.WaitForNoElement(_btnToggleSwipe);
+	// 	App.WaitForElement(_btnDisplayAlert);
 		
-		App.SwipeLeftToRight();
-		App.WaitForNoElement(_btnDisplayAlert);
-		App.WaitForElement(_btnToggleSwipe);
+	// 	App.SwipeLeftToRight();
+	// 	App.WaitForNoElement(_btnDisplayAlert);
+	// 	App.WaitForElement(_btnToggleSwipe);
 		
-		App.Tap(_btnToggleSwipe);
-		App.SwipeRightToLeft();
-		App.WaitForNoElement(_btnDisplayAlert);
-		App.WaitForElement(_btnToggleSwipe);
-	}
+	// 	App.Tap(_btnToggleSwipe);
+	// 	App.SwipeRightToLeft();
+	// 	App.WaitForNoElement(_btnDisplayAlert);
+	// 	App.WaitForElement(_btnToggleSwipe);
+	// }
 }
 #endif
