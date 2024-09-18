@@ -7,8 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla44044 : _IssuesUITest
 {
-	string _btnToggleSwipe = "btnToggleSwipe";
-	string _btnDisplayAlert = "btnDisplayAlert";
+	//string _btnToggleSwipe = "btnToggleSwipe";
+	//string _btnDisplayAlert = "btnDisplayAlert";
 
 	public Bugzilla44044(TestDevice testDevice) : base(testDevice)
 	{
