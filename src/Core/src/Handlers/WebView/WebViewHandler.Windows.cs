@@ -195,6 +195,10 @@ namespace Microsoft.Maui.Handlers
 
 			if (myCookieJar is null)
 				return;
+			
+			// While setting a cookie in MAUI WebView at load time, CoreWebView2 is null before the CoreWebView2Initialized event is triggered.
+			if (PlatformView.CoreWebView2 is null)
+				return;
 
 			await InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
