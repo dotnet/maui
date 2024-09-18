@@ -11,7 +11,7 @@ public partial class Issue15524 : ContentPage
 
 	private void OnButtonClicked(object sender, EventArgs e)
 	{
-		if (Application.Current.UserAppTheme == AppTheme.Dark)
+		if (Application.Current.RequestedTheme == AppTheme.Dark)
 		{
 			Application.Current.UserAppTheme = AppTheme.Light;
 		}

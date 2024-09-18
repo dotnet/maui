@@ -2,10 +2,27 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue15524">
+  <ContentPage.Resources>
+    	<Color x:Key="Primary">#512BD4</Color>
+    	<Color x:Key="White">White</Color>
+    	<Color x:Key="Black">Black</Color>
+    
+    	<Style TargetType="Button">
+      		<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Primary}}"/>
+      		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"/>
+    	</Style>
+    
+    	<Style TargetType="Entry">
+      		<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+      		<Setter Property="BackgroundColor" Value="Transparent" />
+    	</Style>
+  </ContentPage.Resources>
 
-    <StackLayout>
-        <Entry Text="Microsoft" AutomationId="Entry" HorizontalOptions="center" VerticalOptions="center"/>
-        <Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
-    </StackLayout>
+    <VerticalStackLayout Spacing="25" Padding="30,0" >
+    	<Entry Text="First Entry" AutomationId="FirstEntry" />
+    	<Entry Text="Second Entry" AutomationId="SecondEntry"/>
+    	<Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
+  </VerticalStackLayout>
+
     
 </ContentPage>
