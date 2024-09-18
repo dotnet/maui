@@ -126,6 +126,17 @@ namespace Microsoft.Maui.Controls
 			{
 				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
+
+				if (_navigationView.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> items)
+				{
+					foreach (var item in items)
+					{
+						item.IsSelected = false;
+					}
+
+					_navigationView.MenuItemsSource = null;
+					_navigationView.MenuItemsSource = items;
+				}
 			}
 
 			if (platformView is WFrame wFrame)
@@ -331,6 +342,7 @@ namespace Microsoft.Maui.Controls
 						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
+						vm.IsSelected = page == view.CurrentPage;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
