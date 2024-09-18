@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void RecursiveSettingInSystem()
 		{
 			var tempObjects = new[] {
-				new {Name = "Test1"},
-				new {Name = "Test2"}
+				new {Name = "Test111"},
+				new {Name = "Test211"}
 			};
 
 			var template = new DataTemplate(typeof(BindableViewCell))
