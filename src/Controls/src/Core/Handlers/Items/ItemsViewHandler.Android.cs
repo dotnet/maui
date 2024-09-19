@@ -109,8 +109,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (adapter is EmptyViewAdapter emptyViewAdapter)
 			{
+				var emptyView = emptyViewAdapter.EmptyView ?? emptyViewAdapter.EmptyViewTemplate;
+
+				var size = Size.Zero;
+
+				if (emptyView is IView view)
+				{
+					if (view.Handler == null)
+					{
+						TemplateHelpers.GetHandler(view as View, this.MauiContext);
+					}
+
+					size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				}
+				else if (emptyView is DataTemplate dataTemplate)
+				{
+					var content = dataTemplate.CreateContent() as IView;
+
+					if (content.Handler == null)
+					{
+						TemplateHelpers.GetHandler(content as View, this.MauiContext);
+					}
+
+					size = content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				}
+
+				var measuredHeight = size.Height;
+
+				if (!double.IsInfinity(size.Height))
+					measuredHeight = Context.ToPixels(size.Height);
+
 				emptyViewAdapter.RecyclerViewWidth = width;
-				emptyViewAdapter.RecyclerViewHeight = height;
+				emptyViewAdapter.RecyclerViewHeight = measuredHeight > 0 ? measuredHeight : height;
 			}
 		}
 	}
