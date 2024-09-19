@@ -133,9 +133,6 @@ namespace Microsoft.Maui.Controls
 					{
 						item.IsSelected = false;
 					}
-
-					_navigationView.MenuItemsSource = null;
-					_navigationView.MenuItemsSource = items;
 				}
 			}
 
