@@ -13,10 +13,6 @@ namespace Microsoft.Maui.Layouts
 			FlexLayout = flexLayout;
 		}
 
-		public void LayoutChildren(Rect bounds)
-		{
-		}
-
 		public Size ArrangeChildren(Rect bounds)
 		{
 			var padding = FlexLayout.Padding;
