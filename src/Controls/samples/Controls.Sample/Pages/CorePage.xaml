@@ -15,7 +15,7 @@
         <!-- HEADER -->
         <Image
             Grid.Row="0"
-            Aspect="AspectFill"
+            Aspect=""
             Source="header_background"/>
         <!-- SEARCH -->
         <Frame
