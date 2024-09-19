@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 
 		double _lastMeasureHeight = double.NaN;
 		double _lastMeasureWidth = double.NaN;
+		bool _needsLayout;
 
 		WeakReference<IView>? _reference;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
@@ -111,6 +112,10 @@ namespace Microsoft.Maui.Platform
 		// apply to ViewHandlerExtensions.LayoutVirtualView
 		public override void LayoutSubviews()
 		{
+			_needsLayout = false;
+
+			this.BeginLayoutPass();
+
 			base.LayoutSubviews();
 
 			if (_crossPlatformLayoutReference == null)
@@ -135,10 +140,19 @@ namespace Microsoft.Maui.Platform
 			}
 
 			CrossPlatformArrange(bounds);
+			this.EndLayoutPass();
 		}
 
 		public override void SetNeedsLayout()
 		{
+			// if we're in a layout pass
+			// we still need to go up the tree and invalidate ancestors on which the layout pass is running
+			if (_needsLayout && !this.IsInLayoutPass())
+			{
+				return;
+			}
+
+			_needsLayout = true;
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
 			TryToInvalidateSuperView(false);

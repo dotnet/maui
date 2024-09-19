@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
+		bool _needsLayout;
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
@@ -100,6 +101,8 @@ namespace Microsoft.Maui.Platform
 
 		public override void LayoutSubviews()
 		{
+			_needsLayout = false;
+			this.BeginLayoutPass();
 			base.LayoutSubviews();
 
 			var subviews = Subviews;
@@ -139,6 +142,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			CrossPlatformLayout?.CrossPlatformArrange(Bounds.ToRectangle());
+			this.EndLayoutPass();
 		}
 
 		internal void Disconnect()
@@ -239,6 +243,14 @@ namespace Microsoft.Maui.Platform
 
 		public override void SetNeedsLayout()
 		{
+			// if we're in a layout pass
+			// we still need to go up the tree and invalidate ancestors on which the layout pass is running
+			if (_needsLayout && !this.IsInLayoutPass())
+			{
+				return;
+			}
+
+			_needsLayout = true;
 			base.SetNeedsLayout();
 			TryToInvalidateSuperView(false);
 		}
@@ -370,6 +382,7 @@ namespace Microsoft.Maui.Platform
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
+
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
 			add => _movedToWindow += value;

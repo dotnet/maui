@@ -7,20 +7,6 @@ namespace Microsoft.Maui.Platform
 	{
 		bool _userInteractionEnabled;
 
-		public override void SubviewAdded(UIView uiview)
-		{
-			InvalidateConstraintsCache();
-			base.SubviewAdded(uiview);
-			TryToInvalidateSuperView(false);
-		}
-
-		public override void WillRemoveSubview(UIView uiview)
-		{
-			InvalidateConstraintsCache();
-			base.WillRemoveSubview(uiview);
-			TryToInvalidateSuperView(false);
-		}
-
 		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
 		{
 			var result = base.HitTest(point, uievent);

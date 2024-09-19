@@ -296,6 +296,35 @@ namespace Microsoft.Maui.Platform
 			UpdateFrame(platformView, view);
 		}
 
+		const nint DefaultTag = 0;
+		const nint LayoutPassTag = -1;
+
+		internal static bool IsInLayoutPass(this UIView view)
+		{
+			if (view.Window is { } window)
+			{
+				return window.Tag == LayoutPassTag;
+			}
+
+			return false;
+		}
+
+		internal static void BeginLayoutPass(this UIView view)
+		{
+			if (view.Window is { } window)
+			{
+				window.Tag = LayoutPassTag;
+			}
+		}
+
+		internal static void EndLayoutPass(this UIView view)
+		{
+			if (view.Window is { } window)
+			{
+				window.Tag = DefaultTag;
+			}
+		}
+
 		public static void UpdateHeight(this UIView platformView, IView view)
 		{
 			UpdateFrame(platformView, view);
