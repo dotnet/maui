@@ -52,6 +52,8 @@ param
 $getLocation = Get-Location
 $versionPropsPath = [IO.Path]::Combine($getLocation, '..', 'Version.props')
 
+Write-Output "Checking $versionPropsPath for versions..."
+
 if (Test-Path $versionPropsPath)
 {
     Write-Output "Reading versions from Version.props..."
@@ -122,11 +124,16 @@ if ($appiumCurrentVersion) {
     Write-Output  "No Appium version installed"
 }
 
+# Check if we found a version of appium at all
+$missingAppium = [string]::IsNullOrEmpty($appiumCurrentVersion)
+
 # If current version does not match the one we want, uninstall and install the new version
-if ($appiumCurrentVersion -ne $appiumVersion) {
-    Write-Output  "Uninstalling appium $appiumCurrentVersion"
-    npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium
-    Write-Output  "Uninstalled appium $appiumCurrentVersion"
+if ($missingAppium -or ($appiumCurrentVersion -ne $appiumVersion)) {
+    if (-not $missingAppium) {
+        Write-Output  "Uninstalling appium $appiumCurrentVersion"
+        npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium
+        Write-Output  "Uninstalled appium $appiumCurrentVersion"
+    }
 
     Write-Output  "Installing appium $appiumVersion"
     npm install --logs-dir=$logsDir --loglevel $npmLogLevel -g appium@$appiumVersion
