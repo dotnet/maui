@@ -12,13 +12,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
-		public async Task SelectedTabIconShouldChangeColor()
+		public void SelectedTabIconShouldChangeColor()
 		{
 			App.WaitForElement("button");
-
 			App.Click("button");
-
-			await Task.Delay(500);
+			App.WaitForElement("label");
 
 			// The test passes if tab1 icon is green and tab2 red
 			VerifyScreenshot();

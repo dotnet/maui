@@ -22,5 +22,9 @@
                 Glyph="¼"
                 Size="15" />
         </ContentPage.IconImageSource>
+        <Label
+             Text="Hello, Maui!"
+             TextColor="White"
+             AutomationId="label"/>
     </ContentPage>
 </TabbedPage>
