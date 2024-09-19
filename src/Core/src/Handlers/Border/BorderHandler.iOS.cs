@@ -56,10 +56,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			if(handler.VirtualView.Shape is IShapeView shapeView)
-            {
-                var view = shapeView.ToPlatform(handler.MauiContext);
-                platformView.AddSubview(view);
-            }
+        		shapeView.ToPlatform(handler.MauiContext);
 		}
 	}
 }
