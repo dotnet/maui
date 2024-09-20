@@ -2,7 +2,6 @@ using System;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 
@@ -17,7 +16,6 @@ namespace Maui.Controls.Sample
 #if IOS || ANDROID
 			appBuilder.UseMauiMaps();
 #endif
-			appBuilder.UseMauiCompatibility();
 			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
