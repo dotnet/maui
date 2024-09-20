@@ -254,11 +254,12 @@ namespace Microsoft.Maui.Controls.Xaml
 					case "Name":
 						return XmlName.xName;
 					case "Class":
+						return XmlName.xClass;
 					case "FieldModifier":
-						return new XmlName(null, null);
+						return XmlName.xFieldModifier;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
-						return new XmlName(null, null);
+						return XmlName.Empty;
 				}
 			}
 
@@ -275,15 +276,16 @@ namespace Microsoft.Maui.Controls.Xaml
 					case "DataType":
 						return XmlName.xDataType;
 					case "Class":
+						return XmlName.xClass;
 					case "FieldModifier":
-						return new XmlName(null, null);
+						return XmlName.xFieldModifier;
 					case "FactoryMethod":
 						return XmlName.xFactoryMethod;
 					case "Arguments":
 						return XmlName.xArguments;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", name);
-						return new XmlName(null, null);
+						return XmlName.Empty;
 				}
 			}
 

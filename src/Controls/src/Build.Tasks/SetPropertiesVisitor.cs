@@ -15,14 +15,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class SetPropertiesVisitor : IXamlNodeVisitor
 	{
-		static readonly IList<XmlName> skips =
-		[
-			XmlName.xKey,
-			XmlName.xTypeArguments,
+		public static readonly IList<XmlName> skips = [
 			XmlName.xArguments,
+			XmlName.xClass,
+			XmlName.xDataType,
 			XmlName.xFactoryMethod,
+			XmlName.xFieldModifier,
+			XmlName.xKey,
 			XmlName.xName,
-			XmlName.xDataType
+			XmlName.xTypeArguments,
 		];
 
 		public SetPropertiesVisitor(ILContext context, bool stopOnResourceDictionary = false)

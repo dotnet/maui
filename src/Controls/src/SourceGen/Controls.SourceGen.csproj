@@ -19,6 +19,8 @@
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
     <Compile Include="..\Xaml\IDictionaryExtensions.cs" Link="IDictionaryExtensions.cs" />
+    <Compile Include="..\Xaml\PruneIgnoredNodesVisitor.cs" Link="PruneIgnoredNodesVisitor.cs" />
+    <Compile Include="..\Xaml\RemoveDuplicateDesignNodes.cs" Link="RemoveDuplicateDesignNodes.cs" />
     <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
     <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
     <Compile Include="..\Xaml\XamlParser.cs" Link="XamlParser.Namespaces.cs" />
