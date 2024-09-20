@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
+using static Microsoft.Maui.Controls.SourceGen.TypeHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -106,7 +107,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		});
 
 		// Register the CSS pipeline
-		initContext.RegisterSourceOutput(cssProjectItemProvider, static (sourceProductionContext, cssItem) =>
+		initContext.RegisterImplementationSourceOutput(cssProjectItemProvider, static (sourceProductionContext, cssItem) =>
 		{
 			if (cssItem == null)			
 				return;
@@ -115,7 +116,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		});
 	}
 
-	static string EscapeIdentifier(string identifier)
+	public static string EscapeIdentifier(string identifier)
 	{
 		var kind = SyntaxFacts.GetKeywordKind(identifier);
 		return kind == SyntaxKind.None
@@ -383,110 +384,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		}
 	}
 
-	static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
-	{
-		if (typeCache.TryGetValue(xmlType, out string returnType))
-		{
-			return returnType;
-		}
 
-		var ns = GetClrNamespace(xmlType.NamespaceUri);
-		if (ns != null)
-		{
-			returnType = $"{ns}.{xmlType.Name}";
-		}
-		else
-		{
-			// It's an external, non-built-in namespace URL.
-			returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
-		}
-
-		if (xmlType.TypeArguments != null)
-		{
-			returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
-		}
-
-		returnType = $"global::{returnType}";
-		typeCache[xmlType] = returnType;
-		return returnType;
-	}
-
-	static string? GetClrNamespace(string namespaceuri)
-	{
-		if (namespaceuri == XamlParser.X2009Uri)
-		{
-			return "System";
-		}
-
-		if (namespaceuri != XamlParser.X2006Uri &&
-			!namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) &&
-			!namespaceuri.StartsWith("using:", StringComparison.InvariantCulture))
-		{
-			return null;
-		}
-
-		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
-	}
-
-	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
-	{
-#nullable disable
-		string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
-			(typeInfo) =>
-			{
-				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
-				string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
-				IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
-
-				if (types.Count == 0)
-				{
-					return null;
-				}
-
-				foreach (INamedTypeSymbol type in types)
-				{
-					// skip over types that are not in the correct assemblies
-					if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
-					{
-						continue;
-					}
-
-					if (!IsPublicOrVisibleInternal(type, xmlnsCache.InternalsVisible))
-					{
-						continue;
-					}
-
-					int i = fullName.IndexOf('`');
-					if (i > 0)
-					{
-						fullName = fullName.Substring(0, i);
-					}
-					return fullName;
-				}
-
-				return null;
-			});
-
-		return typeName;
-#nullable enable
-	}
-
-	static bool IsPublicOrVisibleInternal(INamedTypeSymbol type, IEnumerable<IAssemblySymbol> internalsVisible)
-	{
-		// return types that are public
-		if (type.DeclaredAccessibility == Accessibility.Public)
-		{
-			return true;
-		}
-
-		// only return internal types if they are visible to us
-		if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
-		{
-			return true;
-		}
-
-		return false;
-	}
 
 	static string? GetAttributeValue(XmlNode node, string localName, params string[] namespaceURIs)
 	{
