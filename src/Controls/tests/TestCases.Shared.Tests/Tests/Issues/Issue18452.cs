@@ -17,7 +17,7 @@ public class Issue18452 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void WebViewLoadedWithoutException()
 	{
-		App.WaitForElement("WebViewControl");
+		App.WaitForElement("WebView");
 
 		VerifyScreenshot();
 	}
