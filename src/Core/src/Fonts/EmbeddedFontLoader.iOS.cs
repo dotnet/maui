@@ -42,8 +42,10 @@ namespace Microsoft.Maui
 
 				var name = cgFont.PostScriptName;
 
+#pragma warning disable CA1422 //obsolete on iOS 18.0
 				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
 					return name;
+#pragma warning restore CA1422
 
 				var uiFont = UIFont.FromName(name, 10);
 				if (uiFont != null)
