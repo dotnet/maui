@@ -40,8 +40,13 @@ static class GeneratorHelpers
 		{
 			return null;
 		}
-		
-		return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString()));
+		try { 
+			return new XamlProjectItemForIC(projectItem!, ParseXaml(text.ToString()));
+		}
+		catch (Exception e)
+		{
+			return new XamlProjectItemForIC(projectItem!, e);
+		}
 	}
 
 	static SGRootNode? ParseXaml(string xaml)
@@ -61,8 +66,8 @@ static class GeneratorHelpers
                 }
 
 				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
-
                 XamlParser.ParseXaml(rootnode, reader);
+
                 return rootnode;
             }
         }
