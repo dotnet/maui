@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue18452"
+    xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <StackLayout Grid.Row="1" Padding="10">
+      <WebView x:Name="webView" AutomationId="WebViewControl" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+    </StackLayout>
+  </Grid>
+</ContentPage>
