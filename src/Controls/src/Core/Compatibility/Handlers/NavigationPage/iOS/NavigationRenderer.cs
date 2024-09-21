@@ -194,6 +194,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
+			// TODO .NET 10
+			// This is required in order to set the "Frame" property on NavigationPage
+			// It'd be good to see if we can optimize this a bit better.
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
@@ -1232,6 +1235,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						newAdditionalSafeArea.Top = offset;
 						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
 					}
+				}
+			}
+
+			public override void ViewWillLayoutSubviews()
+			{
+				base.ViewWillLayoutSubviews();
+
+				var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
+
+				if (childView is not null)
+				{
+					childView.Frame = View.Bounds;
 				}
 			}
 

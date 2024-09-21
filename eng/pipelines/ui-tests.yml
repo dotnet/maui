@@ -88,7 +88,7 @@ parameters:
   - name: macosPool
     type: object
     default:
-      name: $(macosTestsVmPool)
+      name: Azure Pipelines
       vmImage: macOS-14
 
   - name: androidCompatibilityPool
