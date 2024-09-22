@@ -2067,7 +2067,6 @@ override Microsoft.Maui.GridLength.GetHashCode() -> int
 override Microsoft.Maui.GridLength.ToString() -> string!
 override Microsoft.Maui.Handlers.ActivityIndicatorHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiActivityIndicator!
 override Microsoft.Maui.Handlers.ApplicationHandler.CreatePlatformElement() -> UIKit.IUIApplicationDelegate!
-override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentView!
 override Microsoft.Maui.Handlers.BorderHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void

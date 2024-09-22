@@ -42,6 +42,7 @@ Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(WebKit.WKWebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(WebKit.WKWebView! platformView) -> void
+override Microsoft.Maui.Platform.MauiCALayer.AddAnimation(CoreAnimation.CAAnimation! animation, string? key) -> void
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
@@ -120,4 +121,4 @@ virtual Microsoft.Maui.Platform.PlatformNavigationController.ShouldPopItem(UIKit
 virtual Microsoft.Maui.Platform.StackNavigationManager.Connect(Microsoft.Maui.IStackNavigationView! virtualView, Microsoft.Maui.Platform.PlatformNavigationController! navigationController, Microsoft.Maui.Handlers.NavigationViewHandler! navigationViewHandler) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.Disconnect(Microsoft.Maui.IStackNavigationView! virtualView, UIKit.UINavigationController! navigationController) -> void
 virtual Microsoft.Maui.Platform.StackNavigationManager.RequestNavigation(Microsoft.Maui.NavigationRequest! request) -> void
-*
+
