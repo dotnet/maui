@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			UpdatePlaceholderLabelFrame();
-			ShouldCenterVertically();
+			AlignTextVertically();
 		}
 
 		MauiLabel InitPlaceholderLabel()
@@ -149,6 +149,39 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+	 	void AlignTextVertically()
+		{
+			var height = Bounds.Size.Height;
+			var contentHeight = ContentSize.Height;
+			nfloat topOffset;
+
+			switch (VerticalTextAlignment)
+			{
+				case Maui.TextAlignment.Start:
+					ContentOffset = CGPoint.Empty;
+					break;
+
+				case Maui.TextAlignment.Center:
+					topOffset = (height - contentHeight * ZoomScale) / 2.0f;
+					topOffset = topOffset < 0 ? 0 : topOffset;
+					ContentOffset = new CGPoint(0, -topOffset);
+					break;
+
+				case Maui.TextAlignment.End:
+					topOffset = height - contentHeight;
+					topOffset = topOffset < 0 ? 0 : topOffset;
+					ContentOffset = new CGPoint(0, -topOffset);
+					break;
+			}
+
+			if (contentHeight >= height)
+			{
+				topOffset = contentHeight - height;
+				topOffset = topOffset < 0 ? 0 : topOffset;
+				ContentOffset = new CGPoint(0, topOffset);
+			}
+		}
+
 		void HidePlaceholderIfTextIsPresent(string? value)
 		{
 			_placeholderLabel.Hidden = !string.IsNullOrEmpty(value);
@@ -158,21 +191,6 @@ namespace Microsoft.Maui.Platform
 		{
 			HidePlaceholderIfTextIsPresent(Text);
 			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		void ShouldCenterVertically()
-		{
-			var fittingSize = new CGSize(Bounds.Width, NFloat.MaxValue);
-			var sizeThatFits = SizeThatFits(fittingSize);
-			var availableSpace = Bounds.Height - sizeThatFits.Height * ZoomScale;
-			if (availableSpace <= 0)
-				return;
-			ContentOffset = VerticalTextAlignment switch
-			{
-				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
-				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
-				_ => ContentOffset,
-			};
 		}
 
 		void UpdatePlaceholderFont(UIFont? value)
