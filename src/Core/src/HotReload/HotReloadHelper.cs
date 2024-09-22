@@ -34,21 +34,36 @@ namespace Microsoft.Maui.HotReload
 
 		public static void Register(IHotReloadableView view, params object[] parameters)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
 				return;
+
+			if (!IsEnabled)
+				return;
+
 			currentViews[view] = parameters;
 		}
 
 		public static void UnRegister(IHotReloadableView view)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
 				return;
+
+			if (!IsEnabled)
+				return;
+
 			currentViews.Remove(view);
 		}
 		public static bool IsReplacedView(IHotReloadableView view, IView newView)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
 				return false;
+
+			if (!IsEnabled)
+				return false;
+
 			if (view == null || newView == null)
 				return false;
 
@@ -58,7 +73,11 @@ namespace Microsoft.Maui.HotReload
 		}
 		public static IView GetReplacedView(IHotReloadableView view)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
+				return view;
+
+			if (!IsEnabled)
 				return view;
 
 			var viewType = view.GetType();
@@ -105,7 +124,11 @@ namespace Microsoft.Maui.HotReload
 #endif
 		public static void RegisterReplacedView(string oldViewType, Type newViewType)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
+				return;
+
+			if (!IsEnabled)
 				return;
 
 			Action<MethodInfo> executeStaticMethod = (method) =>

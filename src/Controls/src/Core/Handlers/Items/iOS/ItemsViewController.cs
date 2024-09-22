@@ -250,17 +250,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					invalidate = true;
 				}
-
-				if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
+				else if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
 				{
 					invalidate = true;
 				}
 
 				if (invalidate)
 				{
-					(ItemsView as IView)?.InvalidateMeasure();
+					ItemsView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				}
 			}
+
 			_previousContentSize = contentSize.Value;
 		}
 		
@@ -327,6 +327,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
 			(ItemsView as IView)?.InvalidateMeasure();
+		}
+
+		internal void DisposeItemsSource()
+		{
+			_measurementCells?.Clear();
+			ItemsViewLayout?.ClearCellSizeCache();
+			ItemsSource?.Dispose();
+			ItemsSource = new EmptySource();
+			CollectionView.ReloadData();
 		}
 
 		public virtual void UpdateFlowDirection()
@@ -533,12 +542,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (IsHorizontal)
 			{
 				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, request.Width, CollectionView.Frame.Height));
+				formsElement.Arrange(new Rect(0, 0, request.Width, CollectionView.Frame.Height));
 			}
 			else
 			{
 				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, CollectionView.Frame.Width, request.Height));
+				formsElement.Arrange(new Rect(0, 0, CollectionView.Frame.Width, request.Height));
 			}
 		}
 

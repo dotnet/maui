@@ -130,6 +130,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
+#if ENABLE_PREVIOUS_TFM_BUILDS
 	[Test]
 	[TestCase("maui", "Debug", false)]
 	[TestCase("maui", "Release", false)]
@@ -168,6 +169,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
+#endif
 
 	[Test]
 	public void BuildHandlesBadFilesInImages()

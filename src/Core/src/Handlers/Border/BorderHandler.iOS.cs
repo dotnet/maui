@@ -20,11 +20,6 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(ContentView platformView)
-		{
-			base.ConnectHandler(platformView);
-		}
-
 		protected override void DisconnectHandler(ContentView platformView)
 		{
 			base.DisconnectHandler(platformView);

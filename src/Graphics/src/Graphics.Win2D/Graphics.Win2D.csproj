@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(WindowsMauiPlatforms);$(WindowsMauiPreviousPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(WindowsMauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfmsGraphics)' == 'true'">$(TargetFrameworks);$(WindowsMauiPreviousPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
     <IsTrimmable>false</IsTrimmable>

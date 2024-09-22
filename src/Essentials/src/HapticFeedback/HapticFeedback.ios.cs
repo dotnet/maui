@@ -1,3 +1,4 @@
+using System;
 using UIKit;
 
 namespace Microsoft.Maui.Devices
@@ -21,9 +22,17 @@ namespace Microsoft.Maui.Devices
 
 		void Click()
 		{
-#pragma warning disable CA1422 // obsolete in MacCatalyst 13, iOS 13
-			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
-#pragma warning restore CA1422
+			UIImpactFeedbackGenerator impact;
+#if IOS17_4_OR_GREATER || MACCATALYST17_4_OR_GREATER
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+			{
+				impact = UIImpactFeedbackGenerator.GetFeedbackGenerator(UIImpactFeedbackStyle.Light, new UIView());
+			}
+			else
+#endif
+			{
+				impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Light);
+			}
 			impact.Prepare();
 			impact.ImpactOccurred();
 			impact.Dispose();
@@ -31,9 +40,17 @@ namespace Microsoft.Maui.Devices
 
 		void LongPress()
 		{
-#pragma warning disable CA1422 // obsolete in MacCatalyst 13, iOS 13
-			var impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
-#pragma warning restore CA1422
+			UIImpactFeedbackGenerator impact;
+#if IOS17_4_OR_GREATER || MACCATALYST17_4_OR_GREATER
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+			{
+				impact = UIImpactFeedbackGenerator.GetFeedbackGenerator(UIImpactFeedbackStyle.Medium, new UIView());
+			}
+			else
+#endif
+			{
+				impact = new UIImpactFeedbackGenerator(UIImpactFeedbackStyle.Medium);
+			}
 			impact.Prepare();
 			impact.ImpactOccurred();
 			impact.Dispose();

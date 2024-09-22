@@ -5,8 +5,10 @@
 		xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
-		x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.BindingsCompiler" >
-	<cmp:StackLayout>
+		x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.BindingsCompiler"
+        x:Name="page"
+        x:DataType="local:GlobalViewModel">
+	<cmp:StackLayout x:Name="stack" x:DataType="{x:Null}">
         <cmp:StackLayout x:DataType="local:MockViewModel">
 			<Label Text="{Binding Text}" x:Name="label0" />
 			<Label Text="{Binding Path=Text}" x:Name="label1" />
@@ -23,6 +25,7 @@
 			<Label Text="{Binding StructModel.Model.Text, Mode=TwoWay}" x:Name="label10" />
             <Label Text="Text for label12" x:Name="label11" />
             <Label Text="{Binding Text, x:DataType=Label, Source={x:Reference label11}}" x:Name="label12" />
+            <Label Text="{Binding BindingContext.GlobalText, Source={x:Reference page}, x:DataType=ContentPage}" x:Name="label13" />
 
 			<Picker
 				ItemsSource="{Binding Items}"

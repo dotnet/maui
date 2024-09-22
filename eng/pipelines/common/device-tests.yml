@@ -12,6 +12,7 @@ parameters:
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  androidConfiguration: 'debug' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   useArtifacts: false
   targetFrameworkVersion:
     - tfm: ''
@@ -48,6 +49,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
+                    ANDROID_CONFIGURATION: ${{ project.androidConfiguration }}
                     TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if eq(api, 27) }}:
                       DEVICE: android-emulator-32_${{ api }}
@@ -70,6 +72,7 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: ${{ parameters.androidPool.name }}
+            androidConfiguration: $(ANDROID_CONFIGURATION)
 
   - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests

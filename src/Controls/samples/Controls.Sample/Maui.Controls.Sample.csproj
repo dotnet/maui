@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiSamplePlatforms);$(_MauiDotNetTfm)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' ">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
     <OutputType Condition="$(TargetFramework.Contains('-'))">Exe</OutputType>
     <SingleProject>true</SingleProject>
     <RootNamespace>Maui.Controls.Sample</RootNamespace>

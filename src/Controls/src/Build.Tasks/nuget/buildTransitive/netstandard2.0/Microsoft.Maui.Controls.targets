@@ -161,8 +161,8 @@
 			<_MauiXamlCValidateOnly Condition="'$(BuildingForLiveUnitTesting)' == 'True' ">True</_MauiXamlCValidateOnly>
 
 			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and ('$(PublishAot)' == 'true' or '$(TrimMode)' == 'full')">true</MauiStrictXamlCompilation>
-			<_MauiXamlCNoWarn>$(NoWarn)</_MauiXamlCNoWarn>
-			<_MauiXamlCNoWarn Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCNoWarn);XC0022;XC0023</_MauiXamlCNoWarn>
+			<_MauiXamlCWarningsNotAsErrors>$(WarningsNotAsErrors)</_MauiXamlCWarningsNotAsErrors>
+			<_MauiXamlCWarningsNotAsErrors Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCWarningsNotAsErrors);XC0022;XC0023</_MauiXamlCWarningsNotAsErrors>
 
       <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == '' and '$(GenerateFullPaths)' == 'true'">true</_MauiXamlCGenerateFullPaths>
       <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == ''">false</_MauiXamlCGenerateFullPaths>
@@ -181,9 +181,9 @@
 
       WarningLevel = "$(WarningLevel)"
       TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
-      NoWarn = "$(_MauiXamlCNoWarn)"
+      NoWarn = "$(NoWarn)"
       WarningsAsErrors = "$(WarningsAsErrors)"
-      WarningsNotAsErrors = "$(WarningsNotAsErrors)"
+      WarningsNotAsErrors = "$(_MauiXamlCWarningsNotAsErrors)"
       GenerateFullPaths = "$(_MauiXamlCGenerateFullPaths)"
       FullPathPrefix = "$(_MauiXamlCFullPathPrefix)" />
       

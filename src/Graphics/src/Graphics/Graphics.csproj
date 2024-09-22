@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiGraphicsPlatforms);$(_MauiPreviousDotNetTfm);$(MauiGraphicsPreviousPlatforms)</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiGraphicsPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfmsGraphics)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiGraphicsPreviousPlatforms)</TargetFrameworks>
     <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

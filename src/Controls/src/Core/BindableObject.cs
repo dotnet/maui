@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetInheritedBindingContext(BindableObject bindable, object value)
 		{
-			//I wonder if we couldn't treat BindingContext with specificities
+			// I wonder if we couldn't treat BindingContext with specificities
 			BindablePropertyContext bpContext = bindable.GetContext(BindingContextProperty);
 			if (bpContext != null && bpContext.Values.GetSpecificity() >= SetterSpecificity.ManualValueSetter)
 				return;
@@ -358,20 +358,33 @@ namespace Microsoft.Maui.Controls
 			{
 				binding.Context = value;
 				bindable._inheritedContext = null;
+				// OnBindingContextChanged fires from within BindingContextProperty propertyChanged callback
+				bindable.ApplyBinding(bpContext, fromBindingContextChanged: true);
 			}
 			else
 			{
 				bindable._inheritedContext = new WeakReference(value);
+				bindable.ApplyBindings(fromBindingContextChanged: true);
+				bindable.OnBindingContextChanged();
 			}
-
-			bindable.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
-			bindable.OnBindingContextChanged();
 		}
 
 		/// <summary>
 		/// Applies all the current bindings to <see cref="BindingContext" />.
 		/// </summary>
-		protected void ApplyBindings() => ApplyBindings(skipBindingContext: false, fromBindingContextChanged: false);
+		protected void ApplyBindings()
+		{
+			BindablePropertyContext bpContext = GetContext(BindingContextProperty);
+			var binding = bpContext?.Bindings.GetValue();
+			if (binding != null)
+			{
+				ApplyBinding(bpContext, fromBindingContextChanged: false);
+			}
+			else
+			{
+				ApplyBindings(fromBindingContextChanged: false);
+			}
+		}
 
 		/// <summary>
 		/// Raises the <see cref="BindingContextChanged"/> event.
@@ -469,6 +482,11 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
+			if (value is BindingBase binding && !property.ReturnType.IsAssignableFrom(typeof(BindableProperty))) {
+				SetBinding(property, binding);
+				return;
+			}
+			
 			if (property.IsReadOnly)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
@@ -658,25 +676,43 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)
+		void ApplyBindings(bool fromBindingContextChanged)
 		{
 			var prop = _properties.Values.ToArray();
+
 			for (int i = 0, propLength = prop.Length; i < propLength; i++)
 			{
 				BindablePropertyContext context = prop[i];
-				var kvp = context.Bindings.GetSpecificityAndValue();
-				var specificity = kvp.Key;
-				var binding = kvp.Value;
-
-				if (binding == null)
+				if (ReferenceEquals(context.Property, BindingContextProperty))
+				{
+					// BindingContextProperty Binding is handled separately within SetInheritedBindingContext
 					continue;
+				}
 
-				if (skipBindingContext && ReferenceEquals(context.Property, BindingContextProperty))
-					continue;
-
-				binding.Unapply(fromBindingContextChanged: fromBindingContextChanged);
-				binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, specificity);
+				ApplyBinding(context, fromBindingContextChanged);
 			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void ApplyBinding(BindablePropertyContext context, bool fromBindingContextChanged)
+		{
+			var bindings = context.Bindings;
+			if (bindings.Count == 0)
+			{
+				return;
+			}
+
+			var kvp = bindings.GetSpecificityAndValue();
+			var binding = kvp.Value;
+
+			if (binding == null)
+			{
+				return;
+			}
+
+			var specificity = kvp.Key;
+			binding.Unapply(fromBindingContextChanged);
+			binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, specificity);
 		}
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
@@ -694,7 +730,7 @@ namespace Microsoft.Maui.Controls
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			bindable._inheritedContext = null;
-			bindable.ApplyBindings(skipBindingContext: true, fromBindingContextChanged: true);
+			bindable.ApplyBindings(fromBindingContextChanged: true);
 			bindable.OnBindingContextChanged();
 		}
 
