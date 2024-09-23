@@ -43,7 +43,8 @@ namespace Microsoft.Maui.Controls.Xaml
 			BindingBase CreateBinding()
 			{
 				Type bindingXDataType = null;
-				if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
+				if (serviceProvider is not null &&
+					(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
 					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
 					&& dataTypeProvider.BindingDataType != null)
 				{
