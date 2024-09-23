@@ -221,6 +221,9 @@ namespace Microsoft.Maui.Controls
 
 			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 
+			// Fix for FlyoutItemIsVisible property in Shell Items is always true, we need to set FlyoutItemIsVisible
+			result.FlyoutItemIsVisible = Shell.GetFlyoutItemIsVisible(shellSection.CurrentItem);
+
 			result.Items.Add(shellSection);
 			result.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellSection));
 			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));

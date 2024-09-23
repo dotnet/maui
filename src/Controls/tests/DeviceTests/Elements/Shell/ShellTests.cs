@@ -345,6 +345,53 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "FlyoutItemIsVisible is always true")]
+		public async Task FlyoutItemVisibilityWithoutTabBar()
+		{
+			SetupBuilder();
+			// Set up Shell and content pages
+			var mainTabPage = new ContentPage() {Title = "MainTabPage" };
+			var secondTabPage = new ContentPage() { Title = "SecondTabPage" };
+			var thirdTabPage = new ContentPage() { Title = "ThirdTabPage" };
+
+			Shell shell = new Shell();
+
+			// Adding ShellContent directly to Shell
+			shell.Items.Add(new ShellContent()
+			{
+				Title = "Home",
+				FlyoutItemIsVisible = false, // Set to false to hide from Flyout
+				ContentTemplate = new DataTemplate(() => mainTabPage),
+				Route = "MainPage"
+			});
+
+			shell.Items.Add(new ShellContent()
+			{
+				Title = "SecondTabPage",
+				FlyoutItemIsVisible = false, // Set to false to hide from Flyout
+				ContentTemplate = new DataTemplate(() => secondTabPage),
+				Route = "SecondTabPage"
+			});
+
+			shell.Items.Add(new ShellContent()
+			{
+				Title = "ThirdTabPage",
+				FlyoutItemIsVisible = false, // Set to false to hide from Flyout
+				ContentTemplate = new DataTemplate(() => thirdTabPage),
+				Route = "ThirdTabPage"
+			});
+
+			// Get visible flyout items
+			var visibleFlyoutItems = shell.Items.Where(item => item.FlyoutItemIsVisible).ToList();
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				// TODO MAUI Fix this 
+				await Task.Delay(100);
+				Assert.Empty(visibleFlyoutItems);
+			});
+		}
+
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
 		{
