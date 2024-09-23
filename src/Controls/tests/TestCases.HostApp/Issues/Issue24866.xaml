@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+            x:Class="Maui.Controls.Sample.Issues.Issue24866">
+
+  <Grid RowDefinitions="AUTO,*">
+    <HorizontalStackLayout Grid.Row="0">
+      <Button Text="Add" Clicked="OnAddClicked" AutomationId="add"/>
+      <Button Text="Clear" Clicked="OnClearClicked" AutomationId="clear"/>
+    </HorizontalStackLayout>
+    <CollectionView ItemsSource="{Binding Animals}" AutomationId="CollectionView" Grid.Row="1"
+                        IsGrouped="true">
+      <CollectionView.GroupHeaderTemplate>
+        <DataTemplate x:DataType="local:AnimalGroup">
+          <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
+        </DataTemplate>
+      </CollectionView.GroupHeaderTemplate>
+      <CollectionView.ItemTemplate>
+        <DataTemplate x:DataType="local:Animal">
+          <Grid Padding="10">
+            <Label Text="{Binding Name}" />
+          </Grid>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+      <CollectionView.GroupFooterTemplate>
+        <DataTemplate x:DataType="local:AnimalGroup">
+          <Label Text="{Binding Count, StringFormat='Count: {0:D}'}"
+              Margin="0,0,0,10" />
+        </DataTemplate>
+      </CollectionView.GroupFooterTemplate>
+    </CollectionView>
+  </Grid>
+</ContentPage>
