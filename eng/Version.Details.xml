@@ -4,9 +4,9 @@
       <Uri>https://github.com/dotnet/sdk</Uri>
       <Sha>a9ebd73da1c3d4a1913f085cf9e9148ef670472c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.2.24469.6">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-rc.2.24471.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>327e087789062a8930335aa2a214d1c21ec26173</Sha>
+      <Sha>002e894b34e678524323398e11c1485f9fd5c5dd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.2.134">
       <Uri>https://github.com/dotnet/android</Uri>
