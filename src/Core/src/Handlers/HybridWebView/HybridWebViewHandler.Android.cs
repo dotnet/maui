@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 			[JavascriptInterface]
 			public void SendMessage(string message)
 			{
-				Handler?.VirtualView?.MessageReceived(message);
+				Handler?.MessageReceived(message);
 			}
 		}
 
@@ -86,12 +86,9 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
+		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)
 		{
-			if (arg is EvaluateJavaScriptAsyncRequest request)
-			{
-				handler.PlatformView.EvaluateJavaScript(request);
-			}
+			handler.PlatformView.EvaluateJavaScript(request);
 		}
 
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)

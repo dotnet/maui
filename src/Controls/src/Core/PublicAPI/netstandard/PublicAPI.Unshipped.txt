@@ -72,8 +72,7 @@ Microsoft.Maui.Controls.HybridWebView.EvaluateJavaScriptAsync(string! script) ->
 Microsoft.Maui.Controls.HybridWebView.HybridRoot.get -> string?
 Microsoft.Maui.Controls.HybridWebView.HybridRoot.set -> void
 Microsoft.Maui.Controls.HybridWebView.HybridWebView() -> void
-Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, object?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<string?>!
-Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, object! returnTypeJsonTypeInfo, object?[]? paramValues, object?[]? paramJsonTypeInfos) -> System.Threading.Tasks.Task<TReturnType?>!
+Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
 Microsoft.Maui.Controls.HybridWebView.RawMessageReceived -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs!>?
 Microsoft.Maui.Controls.HybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs
