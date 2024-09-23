@@ -15,8 +15,9 @@ public class Issue24583 : _IssuesUITest
 	[Category(UITestCategories.Editor)]
 	public void TextInEditorShouldBeCorrectlyPositionedAfterResizing()
 	{
+		App.WaitForElement("button");
+		VerifyScreenshot("TextsInEditorsBeforeScaling");
 		App.Click("button");
-
-		VerifyScreenshot();
+		VerifyScreenshot("TextsInEditorsAfterScaling");
 	}
 }
