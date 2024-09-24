@@ -16,6 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <Manifest Include="$(ApplicationManifest)" />
