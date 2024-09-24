@@ -17,13 +17,7 @@ public class Issue24878 : _IssuesUITest
 	{
 		App.WaitForElement("label");
 		
-		try {
-			App.SetDarkTheme();
-			VerifyScreenshot();
-		}
-		finally {
-			App.SetLightTheme();
-		}
+		VerifyScreenshot();
 	}
 }
 #endif

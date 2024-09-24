@@ -7,6 +7,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue24878()
 		{
+			Application.Current.UserAppTheme = AppTheme.Dark;
 			InitializeComponent();
 		}
 	}

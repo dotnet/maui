@@ -16,11 +16,11 @@
     <ShellContent>
         <ContentPage>
             <ContentPage.ToolbarItems>
-                <ToolbarItem  Text="Icon 1"/>
+                <ToolbarItem Text="Icon 1"/>
                 <ToolbarItem Text="Icon 2"/>
             </ContentPage.ToolbarItems>
-
-            <Label AutomationId="label"/>
+            
+            <Label IsVisible="{AppThemeBinding Dark='True', Light='False'}" TextColor="White" Text="Hello" AutomationId="label"/>
         </ContentPage>
     </ShellContent>
 
