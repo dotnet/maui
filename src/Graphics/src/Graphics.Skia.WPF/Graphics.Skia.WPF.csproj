@@ -11,6 +11,10 @@
     <NoWarn>$(NoWarn);RS0041</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
+  </ItemGroup>
+
   <PropertyGroup>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>

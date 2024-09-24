@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(_MauiDotNetTfm)-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-windows$(WindowsTargetFrameworkVersion)</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -30,6 +30,10 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
   </ItemGroup>
 
   <ItemGroup>
@@ -110,7 +114,7 @@
     <None Include="Compatibility\**\*.cs" />
     <Compile Remove="Compatibility\**\*.cs" />
   </ItemGroup>
-  
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>
