@@ -57,8 +57,4 @@
     <TimePicker AutomationId="TimePicker"/>
     <Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
   </VerticalStackLayout>
-
-
-
-    
 </ContentPage>

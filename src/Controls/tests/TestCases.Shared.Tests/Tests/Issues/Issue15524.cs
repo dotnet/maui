@@ -35,7 +35,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("ChangeTheme");
 			VerifyScreenshot();
 		}
-
 	}
 }
 #endif
