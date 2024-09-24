@@ -182,7 +182,17 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (Source is RelativeBindingSource relativeSource)
 			{
-				ApplyRelativeSourceBinding(relativeSource, bindObj, targetProperty, specificity);
+				var relativeSourceTarget = RelativeSourceTargetOverride ?? bindObj as Element;
+				if (relativeSourceTarget is not Element)
+				{
+					var message = bindObj is not null
+						? $"Cannot apply relative binding to {bindObj.GetType().FullName} because it is not a superclass of Element."
+						: "Cannot apply relative binding when the target object is null.";
+
+					throw new InvalidOperationException(message);
+				}
+
+				ApplyRelativeSourceBinding(relativeSource, relativeSourceTarget, bindObj, targetProperty, specificity);
 			}
 			else
 			{
@@ -192,13 +202,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
 		async void ApplyRelativeSourceBinding(
-			RelativeBindingSource relativeSource, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
+			RelativeBindingSource relativeSource, Element relativeSourceTarget, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
-			var relativeSourceTarget = RelativeSourceTargetOverride ?? targetObject as Element;
-			if (!(relativeSourceTarget is Element))
-				throw new InvalidOperationException();
-
 			await relativeSource.Apply(this, relativeSourceTarget, targetObject, targetProperty, specificity);
 		}
 

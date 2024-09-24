@@ -1,8 +1,9 @@
-﻿using NUnit.Framework;
+﻿#if !ANDROID && !WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
 	public class ScrollViewObjectDisposedUITests : _IssuesUITest
@@ -28,3 +29,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
+#endif

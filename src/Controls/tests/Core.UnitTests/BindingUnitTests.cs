@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -1599,6 +1600,142 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, vm.count);
 		}
+		
+		[Fact]
+		public void BindingsApplyOnlyOnceOnBindingContextInheritance()
+		{
+			var sb = new StringBuilder(50);
+			var bindingContext = new
+			{
+				Text = "a binding context"
+			};
+			
+			var root = new MockBindable();
+			var bindableProperty = MockBindable.TextProperty;
+
+			var level1 = new MockBindable();
+			level1.SetBinding(
+				bindableProperty,
+				new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
+
+			var level2 = new MockBindable();
+			level2.SetBinding(
+				bindableProperty,
+				new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
+
+			root.AddLogicalChild(level1);
+			level1.AddLogicalChild(level2);
+
+			root.BindingContext = bindingContext;
+
+			Assert.Equal("12", sb.ToString());
+		}
+		
+		[Fact]
+		public void BindingsApplyOnlyOnceOnParentSet()
+		{
+			var sb = new StringBuilder(50);
+			var bindingContext = new
+			{
+				Text = "a binding context"
+			};
+			
+			var root = new MockBindable();
+			var bindableProperty = MockBindable.TextProperty;
+
+			var level1 = new MockBindable();
+			level1.SetBinding(
+				bindableProperty,
+				new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
+
+			var level2 = new MockBindable();
+			level2.SetBinding(
+				bindableProperty,
+				new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
+
+			level1.AddLogicalChild(level2);
+
+			root.BindingContext = bindingContext;
+			root.AddLogicalChild(level1);
+
+			Assert.Equal("12", sb.ToString());
+		}
+		
+		[Fact]
+		public void BindingContextBindingsApplyOnlyOnceOnBindingContextInheritance()
+		{
+			var sb = new StringBuilder(50);
+			var bindingContext = new
+			{
+				Level1 = new
+				{
+					Level2 = new
+					{
+						Text = "a binding context"
+					}
+				}
+			};
+			
+			var root = new MockBindable();
+
+			var level1 = new MockBindable();
+			level1.SetBinding(
+				BindableObject.BindingContextProperty,
+				new Binding("Level1", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
+
+			var level2 = new MockBindable();
+			level2.SetBinding(MockBindable.TextProperty, new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
+			level2.SetBinding(
+				BindableObject.BindingContextProperty,
+				new Binding("Level2", BindingMode.OneWay, new IdentityLoggerConverter(sb, 3)));
+
+			root.AddLogicalChild(level1);
+			level1.AddLogicalChild(level2);
+
+			root.BindingContext = bindingContext;
+
+			// 3 is in the middle because the BindingContext must be set before other properties (like text)
+			Assert.Equal("132", sb.ToString());
+			Assert.Equal(bindingContext.Level1.Level2.Text, level2.GetValue(MockBindable.TextProperty));
+		}
+		
+		[Fact]
+		public void BindingContextBindingsApplyOnlyOnceOnParentSet()
+		{
+			var sb = new StringBuilder(50);
+			var bindingContext = new
+			{
+				Level1 = new
+				{
+					Level2 = new
+					{
+						Text = "a binding context"
+					}
+				}
+			};
+			
+			var root = new MockBindable();
+
+			var level1 = new MockBindable();
+			level1.SetBinding(
+				BindableObject.BindingContextProperty,
+				new Binding("Level1", BindingMode.OneWay, new IdentityLoggerConverter(sb, 1)));
+
+			var level2 = new MockBindable();
+			level2.SetBinding(MockBindable.TextProperty, new Binding("Text", BindingMode.OneWay, new IdentityLoggerConverter(sb, 2)));
+			level2.SetBinding(
+				BindableObject.BindingContextProperty,
+				new Binding("Level2", BindingMode.OneWay, new IdentityLoggerConverter(sb, 3)));
+
+			level1.AddLogicalChild(level2);
+
+			root.BindingContext = bindingContext;
+			root.AddLogicalChild(level1);
+
+			// 3 is in the middle because the BindingContext must be set before other properties (like text)
+			Assert.Equal("132", sb.ToString());
+			Assert.Equal(bindingContext.Level1.Level2.Text, level2.GetValue(MockBindable.TextProperty));
+		}
 
 		[Fact("When there are multiple bindings, an update in one should not cause the other to udpate.")]
 		public void BindingsShouldNotTriggerOtherBindings()
@@ -2358,6 +2495,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
 			button.BackgroundColor = Colors.Coral;
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
+		}
+		
+		private class IdentityLoggerConverter : IValueConverter
+		{
+			readonly StringBuilder _sb;
+			readonly int _id;
+
+			public IdentityLoggerConverter(StringBuilder sb, int id)
+			{
+				_sb = sb;
+				_id = id;
+			}
+
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				_sb.Append(_id);
+				return value;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 		}
 	}
 }
