@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
-			var webview = new WKWebView(RectangleF.Empty, config)
+			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{
 				BackgroundColor = UIColor.Clear,
 				AutosizesSubviews = true
@@ -56,21 +56,12 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			return new MauiHybridWebView(this, RectangleF.Empty, config);
+			return webview;
 		}
 
-		public static void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
+		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)
 		{
-			if (arg is EvaluateJavaScriptAsyncRequest request)
-			{
-				if (handler.PlatformView is null)
-				{
-					request.SetCanceled();
-					return;
-				}
-
-				handler.PlatformView.EvaluateJavaScript(request);
-			}
+			handler.PlatformView.EvaluateJavaScript(request);
 		}
 
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
@@ -85,7 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 		private void MessageReceived(Uri uri, string message)
 		{
-			VirtualView?.MessageReceived(message);
+			MessageReceived(message);
 		}
 
 		protected override void ConnectHandler(WKWebView platformView)
