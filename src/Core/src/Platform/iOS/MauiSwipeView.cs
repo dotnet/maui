@@ -517,7 +517,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var swipeThresholdPercent = MinimumOpenSwipeThresholdPercentage * GetSwipeThreshold();
 
-			if (Math.Abs(_swipeOffset) < swipeThresholdPercent)
+			if (!scrollEnabled && Math.Abs(_swipeOffset) < swipeThresholdPercent)
 				return;
 
 			if (scrollEnabled == _isScrollEnabled)

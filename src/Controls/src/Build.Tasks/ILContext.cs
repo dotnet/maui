@@ -44,5 +44,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public string XamlFilePath { get; internal set; }
 
 		public TaskLoggingHelper LoggingHelper { get; internal set; }
+
+		public bool ValidateOnly { get; set; }
 	}
 }

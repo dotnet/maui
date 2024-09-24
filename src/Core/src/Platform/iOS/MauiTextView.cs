@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Platform
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
-				_ => new CGPoint(0, 0),
+				_ => ContentOffset,
 			};
 		}
 

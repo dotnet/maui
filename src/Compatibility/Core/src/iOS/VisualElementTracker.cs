@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			var formsGeometry = element.Clip;
 			var nativeGeometry = formsGeometry.ToCGPath();
 
-			var maskLayer = new CAShapeLayer
+			var maskLayer = new StaticCAShapeLayer
 			{
 				Name = ClipShapeLayer,
 				Path = nativeGeometry.Data,

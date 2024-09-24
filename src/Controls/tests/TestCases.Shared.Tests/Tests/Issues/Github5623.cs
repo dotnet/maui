@@ -21,8 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInfiniteScroll()
 		{
+			// The reproduction initially adds 10 elements to the CollectionView, and we need to scroll to the bottom
+			// to trigger the RemainingItemsThresholdReached event
 			App.WaitForElement(automationId);
-			App.ScrollTo("20");
+			App.ScrollTo("12");
 		}
 	}
 }

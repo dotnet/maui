@@ -21,13 +21,9 @@ string TARGET = Argument("target", "Test");
 string DEFAULT_PROJECT = "";
 string DEFAULT_APP_PROJECT = "";
 
-if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
-{
-    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
-}
 
-if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
+// "uitest", "uitest-build", and "uitest-prepare" all trigger this case
+if (TARGET.StartsWith("uitest", StringComparison.OrdinalIgnoreCase))
 {
     DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
     DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";

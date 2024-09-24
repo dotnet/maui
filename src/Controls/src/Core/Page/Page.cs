@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
-		bool _allocatedFlag;
 		Rect _containerArea;
 
 		bool _containerAreaSet;
@@ -497,6 +496,12 @@ namespace Microsoft.Maui.Controls
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
+		
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+		}
 
 		/// <summary>
 		/// Indicates that the preferred size of a child <see cref="Element"/> has changed.
@@ -537,7 +542,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="height">The height allocated to the page.</param>
 		protected override void OnSizeAllocated(double width, double height)
 		{
-			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
 			UpdateChildrenLayout();
 		}
@@ -599,12 +603,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			_allocatedFlag = false;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			if (!_allocatedFlag && Width >= 0 && Height >= 0)
-			{
-				SizeAllocated(Width, Height);
-			}
 		}
 
 		internal void OnAppearing(Action action)
@@ -706,9 +705,6 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var item = (Element)e.OldItems[i];
-					if (item is VisualElement visual)
-						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
-
 					RemoveLogicalChild(item);
 				}
 			}
@@ -721,20 +717,21 @@ namespace Microsoft.Maui.Controls
 				{
 					int insertIndex = index;
 					if (insertIndex < 0)
-						insertIndex = InternalChildren.IndexOf(item);
-
-					if (item is VisualElement visual)
 					{
-						visual.MeasureInvalidated += OnChildMeasureInvalidated;
+						insertIndex = InternalChildren.IndexOf(item);
+					}
 
-						InsertLogicalChild(insertIndex, visual);
+					InsertLogicalChild(insertIndex, item);
+					
+					if (item is VisualElement)
+					{
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
-					else
-						InsertLogicalChild(insertIndex, item);
-
+					
 					if (index >= 0)
+					{
 						index++;
+					}
 				}
 			}
 		}

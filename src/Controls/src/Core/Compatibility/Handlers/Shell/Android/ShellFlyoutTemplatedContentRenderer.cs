@@ -779,7 +779,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					frameLayoutView.SetMinimumHeight(minHeight);
 				}
 
-				if (PlatformView.MinimumHeight != minHeight)
+				if (PlatformView is not null && PlatformView.MinimumHeight != minHeight)
 				{
 					PlatformView.SetMinimumHeight(minHeight);
 				}

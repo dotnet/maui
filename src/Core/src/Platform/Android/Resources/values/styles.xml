@@ -65,6 +65,8 @@
       <!-- remove all the min sizes as MAUI manages it -->
       <item name="android:minWidth">0dp</item>
       <item name="android:minHeight">0dp</item>
+      <!-- remove the button tint as MAUI manages it -->
+      <item name="buttonTint">?attr/colorPrimary</item>
     </style>
 
     <style name="MauiAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
