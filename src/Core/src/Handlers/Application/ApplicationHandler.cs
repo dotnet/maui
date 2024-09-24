@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static IPropertyMapper<IApplication, ApplicationHandler> Mapper = new PropertyMapper<IApplication, ApplicationHandler>(ElementMapper)
 		{
+#if ANDROID || IOS
+			[nameof(IApplication.UserAppTheme)] = MapAppTheme,
+#endif
 		};
 
 		public static CommandMapper<IApplication, ApplicationHandler> CommandMapper = new(ElementCommandMapper)
@@ -83,5 +86,9 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="application">The associated <see cref="IApplication"/> instance.</param>
 		/// <param name="args">The associated command arguments.</param>
 		public static partial void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args);
+
+#if ANDROID || IOS
+		internal static partial void MapAppTheme(ApplicationHandler handler, IApplication application);
+#endif
 	}
 }

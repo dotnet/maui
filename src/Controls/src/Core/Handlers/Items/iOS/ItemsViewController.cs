@@ -250,17 +250,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					invalidate = true;
 				}
-
-				if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
+				else if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
 				{
 					invalidate = true;
 				}
 
 				if (invalidate)
 				{
-					(ItemsView as IView)?.InvalidateMeasure();
+					ItemsView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				}
 			}
+
 			_previousContentSize = contentSize.Value;
 		}
 		
@@ -327,6 +327,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
 			(ItemsView as IView)?.InvalidateMeasure();
+		}
+
+		internal void DisposeItemsSource()
+		{
+			_measurementCells?.Clear();
+			ItemsViewLayout?.ClearCellSizeCache();
+			ItemsSource?.Dispose();
+			ItemsSource = new EmptySource();
+			CollectionView.ReloadData();
 		}
 
 		public virtual void UpdateFlowDirection()
