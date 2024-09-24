@@ -29,8 +29,6 @@ Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.ReceivedRemoteNotification
-Microsoft.Maui.LifecycleEvents.iOSLifecycle.RegisteredForRemoteNotifications
 Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, CoreGraphics.CGRect frame, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
@@ -56,14 +54,10 @@ static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ReceivedRemoteNotification(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.ReceivedRemoteNotification! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
-static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.RegisteredForRemoteNotifications(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.RegisteredForRemoteNotifications! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
-virtual Microsoft.Maui.MauiUIApplicationDelegate.ReceivedRemoteNotification(UIKit.UIApplication! application, Foundation.NSDictionary! userInfo) -> void
-virtual Microsoft.Maui.MauiUIApplicationDelegate.RegisteredForRemoteNotifications(UIKit.UIApplication! application, Foundation.NSData! deviceToken) -> void
 override Microsoft.Maui.Platform.MauiCALayer.AddAnimation(CoreAnimation.CAAnimation! animation, string? key) -> void
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
