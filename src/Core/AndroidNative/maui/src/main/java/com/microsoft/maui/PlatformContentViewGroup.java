@@ -31,8 +31,10 @@ public abstract class PlatformContentViewGroup extends ViewGroup {
      * @param hasClip
      */
     protected final void setHasClip(boolean hasClip) {
-        this.hasClip = hasClip;
-        postInvalidate();
+        if (this.hasClip != hasClip) {
+            this.hasClip = hasClip;
+            postInvalidate();
+        }
     }
 
     @Override

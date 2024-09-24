@@ -1,9 +1,12 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
 	public class FailsOnAllPlatforms : IgnoreAttribute
 	{
+		public FailsOnAllPlatforms() : base(nameof(FailsOnAndroid))
+		{
+		}
 		public FailsOnAllPlatforms(string reason) : base(reason)
 		{
 		}
@@ -12,6 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #if ANDROID
 	public class FailsOnAndroid : IgnoreAttribute
 	{
+		public FailsOnAndroid() : base(nameof(FailsOnAndroid))
+		{
+		}
 		public FailsOnAndroid(string reason) : base(reason)
 		{
 		}
@@ -19,7 +25,10 @@ namespace Microsoft.Maui.TestCases.Tests
 #else
 	public class FailsOnAndroid : CategoryAttribute
 	{
-		public FailsOnAndroid(string name) : base(name)
+		public FailsOnAndroid() : base(nameof(FailsOnAndroid))
+		{
+		}
+		public FailsOnAndroid(string description) : base(description)
 		{
 		}
 	}
@@ -28,6 +37,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS
 	public class FailsOnIOS : IgnoreAttribute
 	{
+		public FailsOnIOS() : base(nameof(FailsOnIOS))
+		{
+		}
 		public FailsOnIOS(string reason) : base(reason)
 		{
 		}
@@ -35,7 +47,10 @@ namespace Microsoft.Maui.TestCases.Tests
 #else
 	public class FailsOnIOS : CategoryAttribute
 	{
-		public FailsOnIOS(string name) : base(name)
+		public FailsOnIOS() : base(nameof(FailsOnIOS))
+		{
+		}
+		public FailsOnIOS(string description) : base(description)
 		{
 		}
 	}
@@ -44,6 +59,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #if MACCATALYST
 	public class FailsOnMac : IgnoreAttribute
 	{
+		public FailsOnMac() : base(nameof(FailsOnMac))
+		{
+		}
 		public FailsOnMac(string reason) : base(reason)
 		{
 		}
@@ -51,7 +69,10 @@ namespace Microsoft.Maui.TestCases.Tests
 #else
 	public class FailsOnMac : CategoryAttribute
 	{
-		public FailsOnMac(string name) : base(name)
+		public FailsOnMac() : base(nameof(FailsOnMac))
+		{
+		}
+		public FailsOnMac(string description) : base(description)
 		{
 		}
 	}
@@ -60,6 +81,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #if WINDOWS
 	public class FailsOnWindows : IgnoreAttribute
 	{
+		public FailsOnWindows() : base(nameof(FailsOnWindows))
+		{
+		}
 		public FailsOnWindows(string reason) : base(reason)
 		{
 		}
@@ -67,6 +91,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #else
 	public class FailsOnWindows : CategoryAttribute
 	{
+		public FailsOnWindows() : base(nameof(FailsOnWindows))
+		{
+		}
 		public FailsOnWindows(string description) : base(description)
 		{
 		}

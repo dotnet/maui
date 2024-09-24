@@ -1,3 +1,7 @@
+parameters:
+  CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+  GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+
 stages:
   - stage: localization_handoff
     displayName: Localization Handoff
@@ -8,9 +12,12 @@ stages:
       - job : generate_lci
         displayName: 'Process outgoing strings'
         pool:  $(HostedWinVS2019)
-        steps:
 
-          - task: cesve.one-loc-build.one-loc-build.OneLocBuild@2
+        variables:
+          - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+
+        steps:
+          - task: OneLocBuild@2
             displayName: 'Localization Build'
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
@@ -18,7 +25,7 @@ stages:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
-              patVariable: "$(OneLocBuildPAT)"
+              patVariable: ${{ parameters.CeapexPat }}
 
           - task: PublishBuildArtifacts@1
             inputs:

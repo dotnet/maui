@@ -7,6 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
@@ -204,10 +205,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		bool _pendingSuperViewSetNeedsLayout;
+
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
+
+			if (Window is not null)
+			{
+				_pendingSuperViewSetNeedsLayout = false;
+				this.Superview?.SetNeedsLayout();
+			}
+			else{
+				_pendingSuperViewSetNeedsLayout = true;
+			}
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (_pendingSuperViewSetNeedsLayout)
+			{
+				this.Superview?.SetNeedsLayout();
+			}
+
+			_pendingSuperViewSetNeedsLayout = false;
 		}
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

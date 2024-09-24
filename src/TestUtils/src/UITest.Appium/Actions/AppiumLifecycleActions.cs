@@ -119,11 +119,11 @@ namespace UITest.Appium
 
 		CommandResponse CloseApp(IDictionary<string, object> parameters)
 		{
-			if (_app?.Driver is null)
-				return CommandResponse.FailedEmptyResponse;
-
 			try
 			{
+				if (_app is null || _app.Driver is null)
+					return CommandResponse.FailedEmptyResponse;
+
 				if (_app.AppState == ApplicationState.NotRunning)
 					return CommandResponse.SuccessEmptyResponse;
 			}

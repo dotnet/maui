@@ -374,9 +374,9 @@ namespace Microsoft.Maui.Controls
 			return base.OnBackButtonPressed();
 		}
 
-		void SendNavigated(Page previousPage)
+		void SendNavigated(Page previousPage, NavigationType navigationType)
 		{
-			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
 			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 		}
 
@@ -402,6 +402,8 @@ namespace Microsoft.Maui.Controls
 		void RemoveFromInnerChildren(Element page)
 		{
 			InternalChildren.Remove(page);
+
+			// TODO For NET9 we should remove this because the DisconnectHandlers will take care of it
 			page.Handler = null;
 		}
 
@@ -440,6 +442,7 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			// We don't want forcelayout to call the legacy
@@ -699,7 +702,8 @@ namespace Microsoft.Maui.Controls
 				},
 				() =>
 				{
-					SendNavigated(null);
+					// TODO this is the wrong navigation type
+					SendNavigated(null, NavigationType.Initialize);
 				})
 				.FireAndForget(Handler);
 			}
@@ -797,7 +801,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigated(currentPage);
+						Owner.SendNavigated(currentPage, NavigationType.Pop);
 						Owner?.Popped?.Invoke(Owner, new NavigationEventArgs(currentPage));
 					});
 
@@ -834,7 +838,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage);
+						Owner.SendNavigated(previousPage, NavigationType.PopToRoot);
 						Owner?.PoppedToRoot?.Invoke(Owner, new PoppedToRootEventArgs(newPage, pagesToRemove));
 					});
 			}
@@ -859,7 +863,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage);
+						Owner.SendNavigated(previousPage, NavigationType.Push);
 						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
 					});
 			}

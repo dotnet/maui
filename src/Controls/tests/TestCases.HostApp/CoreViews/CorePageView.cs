@@ -136,7 +136,7 @@ namespace Maui.Controls.Sample
 					var realize = page.Realize();
 					if (realize is Shell)
 					{
-						Application.Current.MainPage = realize;
+						this.Window.Page = realize;
 					}
 					else
 					{

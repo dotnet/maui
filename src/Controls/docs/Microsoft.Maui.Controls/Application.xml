@@ -27,43 +27,6 @@
     <summary>Class that represents a cross-platform mobile application.</summary>
     <remarks>
       <para>The <see cref="T:Microsoft.Maui.Controls.Application" /> class is the core of a .NET MAUI application. It sets the root page of the application, and provides events to respond to pushing and popping of modal views. Visual Studio creates this class for the developer in the appropriate project in a new .NET MAUI solution.</para>
-      <example>
-        <para>Both Visual Studio creates a XAML and a code-behind file for the application when the developer creates a new .NET MAUI solution. The following example shows a typical <c>Application</c> class, with an entry in its resource dictionary.</para>
-        <code lang="XAML"><![CDATA[
-<Application xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="App1.App">
-  <Application.Resources>
-     <Color x:Key="ButtonBackgroundColor">Red</Color>
-  </Application.Resources>
-</Application>]]></code>
-        <code lang="csharp lang-csharp"><![CDATA[
-public partial class App : Application
-{
-    public App()
-    {
-        InitializeComponent();
-
-        MainPage = new MainPage();
-    }
-
-    protected override void OnStart()
-    {
-        // Handle when your app starts
-    }
-
-    protected override void OnSleep()
-    {
-        // Handle when your app sleeps
-    }
-
-    protected override void OnResume()
-    {
-        // Handle when your app resumes
-    }
-}
-        ]]></code>
-      </example>
     </remarks>
   </Docs>
   <Members>

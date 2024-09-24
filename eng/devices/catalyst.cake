@@ -1,6 +1,4 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 // Argument handling
 string DEFAULT_MAC_PROJECT = "../../src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj";
@@ -173,7 +171,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 		Framework = tfm,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
-			.Append("/t:Restore;Build")
 			.Append($"/bl:{binlog}")
 	});
 

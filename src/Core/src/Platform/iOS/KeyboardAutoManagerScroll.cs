@@ -6,7 +6,7 @@
  */
 
 using System;
-using System.Text.RegularExpressions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -254,8 +254,7 @@ public static class KeyboardAutoManagerScroll
 		if (description is null)
 			return null;
 
-		// remove everything except for numbers and commas
-		var temp = Regex.Replace(description, @"[^0-9,]", "");
+		var temp = RemoveEverythingExceptForNumbersAndCommas(description);
 		var dimensions = temp.Split(',');
 
 		if (dimensions.Length == 4
@@ -268,6 +267,19 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		return null;
+
+		static string RemoveEverythingExceptForNumbersAndCommas(string input)
+		{
+			var sb = new StringBuilder(input.Length);
+			foreach (var character in input)
+			{
+				if (char.IsDigit(character) || character == ',')
+				{
+					sb.Append(character);
+				}
+			}
+			return sb.ToString();
+		}
 	}
 
 	// Used to debounce calls from different oberservers so we can be sure

@@ -618,7 +618,7 @@
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
         <ItemGroup>
-            <_MauiImageToProcess Include="@(MauiImage)" Exclude="$(DefaultItemExcludes)" />
+            <_MauiImageToProcess Include="@(MauiImage)" Condition=" '%(FileName)%(Extension)' != '.DS_Store' " />
         </ItemGroup>
 
         <DetectInvalidResourceOutputFilenamesTask

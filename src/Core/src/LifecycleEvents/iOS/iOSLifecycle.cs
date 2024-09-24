@@ -1,6 +1,5 @@
 ﻿using System;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.LifecycleEvents
@@ -19,6 +18,8 @@ namespace Microsoft.Maui.LifecycleEvents
 		public delegate void WillTerminate(UIApplication application);
 		public delegate void ApplicationSignificantTimeChange(UIApplication application);
 		public delegate void PerformFetch(UIApplication application, Action<UIBackgroundFetchResult> completionHandler);
+		public delegate void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken);
+		public delegate void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo);
 
 		// Scene
 		public delegate void SceneWillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions);

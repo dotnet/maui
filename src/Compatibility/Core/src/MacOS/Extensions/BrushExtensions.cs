@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var p1 = linearGradientBrush.StartPoint;
 				var p2 = linearGradientBrush.EndPoint;
 
-				var linearGradientLayer = new CAGradientLayer
+				var linearGradientLayer = new StaticCAGradientLayer
 				{
 					Name = BackgroundLayer,
 					AutoresizingMask = CAAutoresizingMask.HeightSizable | CAAutoresizingMask.WidthSizable,
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				var center = radialGradientBrush.Center;
 				var radius = radialGradientBrush.Radius;
 
-				var radialGradientLayer = new CAGradientLayer
+				var radialGradientLayer = new StaticCAGradientLayer
 				{
 					Name = BackgroundLayer,
 					Frame = control.Bounds,

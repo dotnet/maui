@@ -10,9 +10,15 @@ namespace Microsoft.Maui.Controls
 	public class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{
 		readonly List<IMenuElement> _menus = new List<IMenuElement>();
+		public MenuFlyout()
+		{
+			LogicalChildrenInternalBackingStore = new CastingList<Element, IMenuElement>(_menus);
+		}
 
 		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> new CastingList<Element, IMenuElement>(_menus);
+		{
+			get;
+		}
 
 		public IMenuElement this[int index]
 		{

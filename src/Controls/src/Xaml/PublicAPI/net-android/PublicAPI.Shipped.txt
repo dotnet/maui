@@ -44,6 +44,7 @@
 ~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.FindByName(string name) -> object
 ~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope scope) -> void
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, bool notused) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.Add(System.Type type, object service) -> void
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.GetService(System.Type serviceType) -> object
 ~Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver.XamlTypeResolver(System.Xml.IXmlNamespaceResolver namespaceResolver, System.Reflection.Assembly currentAssembly) -> void

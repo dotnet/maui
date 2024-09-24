@@ -16,8 +16,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
 			typeof(MenuBarItem), true);
 
-
 		static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
+		public MenuBarItem()
+		{
+			LogicalChildrenInternalBackingStore = new CastingList<Element, IMenuElement>(_menus);
+		}
 
 		public int Priority
 		{
@@ -39,8 +42,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<IMenuElement> _menus = new List<IMenuElement>();
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> new CastingList<Element, IMenuElement>(_menus);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore {get; }
 
 		public IMenuElement this[int index]
 		{

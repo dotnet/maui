@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://dotnetcli.azureedge.net/dotnet</DotNetFeedUrl>
+    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
@@ -12,7 +12,7 @@
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'false' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -21,8 +21,8 @@
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -173,7 +173,7 @@
     <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(ArtifactsLogDir)/DotNetWorkloads.binlog"
-        EnvironmentVariables="MSBuildSDKsPath=;NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        EnvironmentVariables="NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
       NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/microsoft.net.*/
@@ -197,7 +197,72 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install ios --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install maccatalyst --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install macos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install tvos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
         Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload update --print-rollback"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
     />

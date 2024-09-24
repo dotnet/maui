@@ -13,16 +13,19 @@ namespace Microsoft.Maui
 	public static class VisualDiagnostics
 	{
 		static ConditionalWeakTable<object, SourceInfo> sourceInfos = new ConditionalWeakTable<object, SourceInfo>();
+		static Lazy<bool> isVisualDiagnosticsEnvVarSet  = new Lazy<bool>(() => Environment.GetEnvironmentVariable("ENABLE_XAML_DIAGNOSTICS_SOURCE_INFO") is { } value && value == "1");
+
+		static internal bool IsEnabled => DebuggerHelper.DebuggerIsAttached || isVisualDiagnosticsEnvVarSet.Value;
 
 		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='RegisterSourceInfo']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void RegisterSourceInfo(object target, Uri uri, int lineNumber, int linePosition)
 		{
 #if !NETSTANDARD2_0
-			if (target != null && DebuggerHelper.DebuggerIsAttached)
+			if (target != null && VisualDiagnostics.IsEnabled)
 				sourceInfos.AddOrUpdate(target, new SourceInfo(uri, lineNumber, linePosition));
 #else
-			if (target != null && DebuggerHelper.DebuggerIsAttached)
+			if (target != null && VisualDiagnostics.IsEnabled)
 			{
 				if (sourceInfos.TryGetValue(target, out _))
 					sourceInfos.Remove(target);
@@ -38,7 +41,7 @@ namespace Microsoft.Maui
 
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			if (child is null)
@@ -51,7 +54,7 @@ namespace Microsoft.Maui
 
 		public static void OnChildAdded(IVisualTreeElement? parent, IVisualTreeElement child, int newLogicalIndex)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			if (child is null)
@@ -62,7 +65,7 @@ namespace Microsoft.Maui
 
 		public static void OnChildRemoved(IVisualTreeElement parent, IVisualTreeElement child, int oldLogicalIndex)
 		{
-			if (!DebuggerHelper.DebuggerIsAttached)
+			if (!VisualDiagnostics.IsEnabled)
 				return;
 
 			OnVisualTreeChanged(new VisualTreeChangeEventArgs(parent, child, oldLogicalIndex, VisualTreeChangeType.Remove));

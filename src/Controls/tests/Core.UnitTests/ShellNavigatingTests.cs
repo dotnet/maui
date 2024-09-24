@@ -499,10 +499,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("page2");
 			await shell.Navigation.PopAsync();
 
-			shell.TestNavigatingArgs(ShellNavigationSource.Pop,
+			await shell.TestNavigatingArgs(ShellNavigationSource.Pop,
 				"//item1/page1/page2", $"..");
 
-			shell.TestNavigatedArgs(ShellNavigationSource.Pop,
+			await shell.TestNavigatedArgs(ShellNavigationSource.Pop,
 				"//item1/page1/page2", $"//item1/page1");
 		}
 
@@ -534,25 +534,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("//animals/monkeys/details", shell.CurrentState.Location.ToString());
 		}
 
-		[Theory]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task GotoSameGlobalRoutesCollapsesUriCorrectly(bool modal)
-		{
-			var shell = new Shell();
-			var item1 = CreateShellItem<FlyoutItem>(asImplicit: true, shellItemRoute: "animals", shellContentRoute: "monkeys");
+		//[Theory]
+		//[InlineData(true)]
+		//[InlineData(false)]
+		//public async Task GotoSameGlobalRoutesCollapsesUriCorrectly(bool modal)
+		//{
+		//	var shell = new Shell();
+		//	var item1 = CreateShellItem<FlyoutItem>(asImplicit: true, shellItemRoute: "animals", shellContentRoute: "monkeys");
 
-			if (modal)
-				Routing.RegisterRoute("details", typeof(ShellModalTests.ModalTestPage));
-			else
-				Routing.RegisterRoute("details", typeof(ContentPage));
+		//	if (modal)
+		//		Routing.RegisterRoute("details", typeof(ShellModalTests.ModalTestPage));
+		//	else
+		//		Routing.RegisterRoute("details", typeof(ContentPage));
 
-			shell.Items.Add(item1);
+		//	shell.Items.Add(item1);
 
-			await shell.GoToAsync("details");
-			await shell.GoToAsync("details");
-			Assert.Equal("//animals/monkeys/details/details", shell.CurrentState.Location.ToString());
-		}
+		//	await shell.GoToAsync("details");
+		//	await shell.GoToAsync("details");
+		//	Assert.Equal("//animals/monkeys/details/details", shell.CurrentState.Location.ToString());
+		//}
 
 		[Fact]
 		public async Task ShellSectionWithGlobalRouteAbsolute()
@@ -629,8 +629,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
-			serviceCollection.AddTransient<PageWithDependency>();
-			serviceCollection.AddTransient<PageWithDependencyAndMultipleConstructors>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
 			var fakeMauiContext = Substitute.For<IMauiContext>();
 			var fakeHandler = Substitute.For<IElementHandler>();

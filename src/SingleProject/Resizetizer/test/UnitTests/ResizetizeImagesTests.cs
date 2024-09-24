@@ -523,10 +523,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_round.png", 48, 48);
 				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
 				AssertFileSize($"mipmap-mdpi/{outputName}_foreground.png", 108, 108);
 
 				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_round.png", 96, 96);
 				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
 				AssertFileSize($"mipmap-xhdpi/{outputName}_foreground.png", 216, 216);
 
@@ -542,9 +544,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileMatches($"mipmap-mdpi/{outputName}.png", new object[] { name, alias, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/{outputName}_round.png", new object[] { name, alias, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/{outputName}_background.png", new object[] { name, alias, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/{outputName}_foreground.png", new object[] { name, alias, "m", "f" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}.png", new object[] { name, alias, "xh", "i" });
+				AssertFileMatches($"mipmap-xhdpi/{outputName}_round.png", new object[] { name, alias, "xh", "r" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}_background.png", new object[] { name, alias, "xh", "b" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}_foreground.png", new object[] { name, alias, "xh", "f" });
 			}
@@ -582,10 +586,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_round.png", 48, 48);
 				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
 				AssertFileSize($"mipmap-mdpi/{outputName}_foreground.png", 108, 108);
 
 				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_round.png", 96, 96);
 				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
 				AssertFileSize($"mipmap-xhdpi/{outputName}_foreground.png", 216, 216);
 
@@ -601,9 +607,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileMatches($"mipmap-mdpi/{outputName}.png", new object[] { name, alias, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/{outputName}_round.png", new object[] { name, alias, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/{outputName}_background.png", new object[] { name, alias, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/{outputName}_foreground.png", new object[] { name, alias, "m", "f" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}.png", new object[] { name, alias, "xh", "i" });
+				AssertFileMatches($"mipmap-xhdpi/{outputName}_round.png", new object[] { name, alias, "xh", "r" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}_background.png", new object[] { name, alias, "xh", "b" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}_foreground.png", new object[] { name, alias, "xh", "f" });
 			}
@@ -643,10 +651,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
 
 				AssertFileSize($"mipmap-mdpi/{outputName}.png", 48, 48);
+				AssertFileSize($"mipmap-mdpi/{outputName}_round.png", 48, 48);
 				AssertFileSize($"mipmap-mdpi/{outputName}_background.png", 108, 108);
 				AssertFileSize($"mipmap-mdpi/{outputName}_foreground.png", 108, 108);
 
 				AssertFileSize($"mipmap-xhdpi/{outputName}.png", 96, 96);
+				AssertFileSize($"mipmap-xhdpi/{outputName}_round.png", 96, 96);
 				AssertFileSize($"mipmap-xhdpi/{outputName}_background.png", 216, 216);
 				AssertFileSize($"mipmap-xhdpi/{outputName}_foreground.png", 216, 216);
 
@@ -662,10 +672,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					$"<background android:drawable=\"@mipmap/{outputName}_background\"/>");
 
 				AssertFileMatches($"mipmap-mdpi/{outputName}.png", new object[] { name, alias, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/{outputName}_round.png", new object[] { name, alias, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/{outputName}_background.png", new object[] { name, alias, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/{outputName}_foreground.png", new object[] { name, alias, "m", "f" });
 
 				AssertFileMatches($"mipmap-xhdpi/{outputName}.png", new object[] { name, alias, "xh", "i" });
+				AssertFileMatches($"mipmap-xhdpi/{outputName}_round.png", new object[] { name, alias, "xh", "r" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}_background.png", new object[] { name, alias, "xh", "b" });
 				AssertFileMatches($"mipmap-xhdpi/{outputName}_foreground.png", new object[] { name, alias, "xh", "f" });
 			}
@@ -707,6 +719,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				var fn = filename.Replace("camera.", "", StringComparison.OrdinalIgnoreCase);
 				AssertFileMatches($"mipmap-mdpi/camera.png", new object[] { fn, colorString, tintColorString, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/camera_round.png", new object[] { fn, colorString, tintColorString, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/camera_background.png", new object[] { fn, colorString, tintColorString, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/camera_foreground.png", new object[] { fn, colorString, tintColorString, "m", "f" });
 			}
@@ -749,6 +762,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				var fn = filename.Replace("camera.", "", StringComparison.OrdinalIgnoreCase);
 				AssertFileMatches($"mipmap-mdpi/camera.png", new object[] { fn, colorString, tintColorString, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/camera_round.png", new object[] { fn, colorString, tintColorString, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/camera_background.png", new object[] { fn, colorString, tintColorString, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/camera_foreground.png", new object[] { fn, colorString, tintColorString, "m", "f" });
 			}
@@ -791,6 +805,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				var fn = filename.Replace("camera.", "", StringComparison.OrdinalIgnoreCase);
 				AssertFileMatches($"mipmap-mdpi/dotnet_background.png", new object[] { fn, colorString, tintColorString, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/dotnet_background_round.png", new object[] { fn, colorString, tintColorString, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/dotnet_background_background.png", new object[] { fn, colorString, tintColorString, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/dotnet_background_foreground.png", new object[] { fn, colorString, tintColorString, "m", "f" });
 			}
@@ -834,6 +849,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				var fn = filename.Replace("camera.", "", StringComparison.OrdinalIgnoreCase);
 				AssertFileMatches($"mipmap-mdpi/dotnet_background.png", new object[] { fn, colorString, tintColorString, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/dotnet_background_round.png", new object[] { fn, colorString, tintColorString, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/dotnet_background_background.png", new object[] { fn, colorString, tintColorString, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/dotnet_background_foreground.png", new object[] { fn, colorString, tintColorString, "m", "f" });
 			}
@@ -884,10 +900,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}_foreground.png", 216, 216);
 
 				AssertFileMatches($"mipmap-mdpi/{Path.GetFileNameWithoutExtension(bg)}.png", new object[] { fgScale, bg, fg, "m", "i" });
+				AssertFileMatches($"mipmap-mdpi/{Path.GetFileNameWithoutExtension(bg)}_round.png", new object[] { fgScale, bg, fg, "m", "r" });
 				AssertFileMatches($"mipmap-mdpi/{Path.GetFileNameWithoutExtension(bg)}_background.png", new object[] { fgScale, bg, fg, "m", "b" });
 				AssertFileMatches($"mipmap-mdpi/{Path.GetFileNameWithoutExtension(bg)}_foreground.png", new object[] { fgScale, bg, fg, "m", "f" });
 
 				AssertFileMatches($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}.png", new object[] { fgScale, bg, fg, "xh", "i" });
+				AssertFileMatches($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}_round.png", new object[] { fgScale, bg, fg, "xh", "r" });
 				AssertFileMatches($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}_background.png", new object[] { fgScale, bg, fg, "xh", "b" });
 				AssertFileMatches($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}_foreground.png", new object[] { fgScale, bg, fg, "xh", "f" });
 			}
@@ -1219,7 +1237,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}60x60@3x.png", 180, 180);
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}ItunesArtwork.png", 1024, 1024);
 
-				AssertFileExists($"Assets.xcassets/{outputName}.appiconset/Contents.json");
+				AssertFileMatches($"Assets.xcassets/{outputName}.appiconset/Contents.json", [name, alias, outputName]);
 
 				AssertFileContains($"Assets.xcassets/{outputName}.appiconset/Contents.json",
 					$"\"filename\": \"{outputName}20x20@2x.png\"",
@@ -1272,7 +1290,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}60x60@3x.png", 180, 180);
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}ItunesArtwork.png", 1024, 1024);
 
-				AssertFileExists($"Assets.xcassets/{outputName}.appiconset/Contents.json");
+				AssertFileMatches($"Assets.xcassets/{outputName}.appiconset/Contents.json", [name, alias, outputName]);
 
 				AssertFileContains($"Assets.xcassets/{outputName}.appiconset/Contents.json",
 					$"\"filename\": \"{outputName}20x20@2x.png\"",

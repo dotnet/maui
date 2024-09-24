@@ -8,7 +8,7 @@
         <ResourceDictionary>
             
             <Style x:Key="CustomStyle" TargetType="Label" BaseResourceKey="SubtitleStyle">
-                <Setter Property="Label.TextColor" Value="Color.Pink"/>
+                <Setter Property="TextColor" Value="Pink"/>
             </Style>
             
             <Style x:Key="ButtonStyle" TargetType="Button">

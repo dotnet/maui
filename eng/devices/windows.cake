@@ -1,12 +1,9 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 const string defaultVersion = "10.0.19041.0";
-const string dotnetVersion = "net8.0";
 
 // required
 string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
@@ -19,7 +16,7 @@ var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
@@ -57,6 +54,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
+Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
 
 Setup(context =>
@@ -205,7 +203,7 @@ Task("Test")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	var waitForResultTimeoutInSeconds = 120;
+	var waitForResultTimeoutInSeconds = 240;
 
 	CleanDirectories(TEST_RESULTS);
 
@@ -439,7 +437,7 @@ Task("SetupTestPaths")
 			throw new Exception("If no app was specified, an app must be provided.");
 		}
 
-		var winVersion = $"{dotnetVersion}-windows{windowsVersion}";
+		var winVersion = $"{DotnetVersion}-windows{windowsVersion}";
 		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("Controls.TestCases.HostApp").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
@@ -525,26 +523,34 @@ Task("uitest")
 	Information("old dotnet root: {0}", DOTNET_ROOT);
 	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("new dotnet toolPath: {0}", localToolPath);
-
-	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	var buildSettings = new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = localToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
-	});
+	};
+
+	string? localToolPath = null;
+
+	if (localDotnet)
+	{
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
+
+		DOTNET_ROOT = localDotnetRoot.ToString();
+
+		localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+		Information("new dotnet toolPath: {0}", localToolPath);
+
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+		buildSettings.ToolPath = localToolPath;
+	}
+
+	DotNetBuild(PROJECT.FullPath, buildSettings);
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");

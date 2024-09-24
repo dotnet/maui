@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls
 			ImageSourceChanging(oldSource);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static SizeRequest Measure(IImageElement ImageElementManager, SizeRequest desiredSize, double widthConstraint, double heightConstraint)
 		{
 			double desiredAspect = desiredSize.Request.Width / desiredSize.Request.Height;
@@ -96,6 +97,7 @@ namespace Microsoft.Maui.Controls
 
 			return new SizeRequest(new Size(width, height));
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public static void OnBindingContextChanged(IImageElement image, VisualElement visualElement)
 		{

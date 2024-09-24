@@ -83,6 +83,13 @@ namespace Microsoft.Maui.Resizetizer
 
 			using var canvas = new SKCanvas(tempBitmap);
 
+			if (GetClipPath(dpi, canvasSize, unscaledCanvasSize) is { } clipPath)
+			{
+				canvas.Clear(SKColors.Transparent);
+
+				canvas.ClipPath(clipPath, antialias: true);
+			}
+
 			canvas.Clear(Info.Color ?? SKColors.Transparent);
 
 			// draw background
@@ -140,6 +147,23 @@ namespace Microsoft.Maui.Resizetizer
 				// draw
 				foregroundTools.DrawUnscaled(canvas, fgScale);
 			}
+		}
+
+		static SKPath? GetClipPath(DpiPath dpi, SKSize canvasSize, SKSize unscaledCanvasSize)
+		{
+			if (dpi.ClipShape == ClipShape.Circle)
+			{
+				var radius = Math.Min(canvasSize.Width, canvasSize.Height) / 2;
+
+				var clip = new SKPath();
+				clip.AddCircle(
+					canvasSize.Width / 2,
+					canvasSize.Height / 2,
+					radius);
+				return clip;
+			}
+
+			return null;
 		}
 	}
 }

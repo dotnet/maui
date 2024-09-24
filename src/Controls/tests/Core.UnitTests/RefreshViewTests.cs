@@ -57,6 +57,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void IsEnabledShouldCoerceCanExecute()
+		{
+			RefreshView refreshView = new RefreshView()
+			{
+				IsEnabled = false,
+				Command = new Command(() => { })
+			};
+			Assert.False(refreshView.IsEnabled);
+		}
+
+		[Fact]
 		public void CanExecuteChangesEnabled()
 		{
 			RefreshView refreshView = new RefreshView();

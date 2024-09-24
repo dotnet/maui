@@ -92,34 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Contains(shellSectionGrid, (shellSection as IVisualTreeElement).GetVisualChildren());
 				Assert.Contains(shellContentGrid, (shellContent as IVisualTreeElement).GetVisualChildren());
 			});
-		}
-
-		[Fact]
-		public async Task FlyoutHeaderAdaptsToMinimumHeight()
-		{
-			await RunShellTest(shell =>
-			{
-				var layout = new VerticalStackLayout()
-				{
-					new Label() { Text = "Flyout Header" }
-				};
-
-				layout.MinimumHeightRequest = 30;
-
-				shell.FlyoutHeader = layout;
-				shell.FlyoutHeaderBehavior = FlyoutHeaderBehavior.CollapseOnScroll;
-			},
-			async (shell, handler) =>
-			{
-				await OpenFlyout(handler);
-				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
-
-				await AssertionExtensions.AssertEventually(() =>
-				{
-					return Math.Abs(30 - flyoutFrame.Height) < 0.2;
-				}, message: $"Expected: {30}. Actual: {flyoutFrame.Height}. Diff: {Math.Abs(30 - flyoutFrame.Height)}");
-			});
-		}
+		}	
 
 #if !WINDOWS
 		[Theory]

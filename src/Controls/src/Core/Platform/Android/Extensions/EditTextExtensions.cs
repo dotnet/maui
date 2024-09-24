@@ -43,7 +43,10 @@ namespace Microsoft.Maui.Controls.Platform
 				editText.Text = newText;
 
 				// When updating from xplat->plat, we set the selection (cursor) to the end of the text
-				editText.SetSelection(newText.Length);
+				if(newText.Length <= editText.Text.Length)
+					editText.SetSelection(newText.Length);
+				else 
+					editText.SetSelection(editText.Text.Length);
 			}
 		}
 

@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[Obsolete("IBorder is not used and will be removed in a future release.")]
 		public static void UpdateBorder(this FrameworkElement platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
@@ -195,9 +196,13 @@ namespace Microsoft.Maui.Platform
 
 			if (Dimension.IsMinimumSet(minHeight))
 			{
-				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
-				// because the platform/theme may have a minimum height for this control
+				// We only use the minimum value if it's been explicitly set; otherwise, clear the local
+				// value so that the platform/theme can use the default minimum height for this control
 				platformView.MinHeight = minHeight;
+			}
+			else
+			{
+				platformView.ClearValue(FrameworkElement.MinHeightProperty);
 			}
 		}
 
@@ -207,9 +212,13 @@ namespace Microsoft.Maui.Platform
 
 			if (Dimension.IsMinimumSet(minWidth))
 			{
-				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
-				// because the platform/theme may have a minimum width for this control
+				// We only use the minimum value if it's been explicitly set; otherwise, clear the local
+				// value so that the platform/theme can use the default minimum width for this control
 				platformView.MinWidth = minWidth;
+			}
+			else
+			{
+				platformView.ClearValue(FrameworkElement.MinWidthProperty);
 			}
 		}
 

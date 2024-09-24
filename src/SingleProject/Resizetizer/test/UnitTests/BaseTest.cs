@@ -126,42 +126,51 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				? actualFilename
 				: Path.Combine(DestinationDirectory, actualFilename);
 
-			var expectedFilename = GetTestImageFileName(args, methodName);
+			var expectedFilename = GetTestImageFileName(args, methodName, Path.GetExtension(actualFilename));
 
-			using var actual = SKImage.FromEncodedData(actualFilename);
-			using var expected = SKImage.FromEncodedData(expectedFilename);
-
-			var similarity = SKPixelComparer.Compare(actual, expected);
-
-			var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
-
-			if (!isSimilar)
+			if (Path.GetExtension(actualFilename).Equals(".json", StringComparison.OrdinalIgnoreCase))
 			{
-				var maskFilename = Path.Combine(DestinationDirectory, GetTestImageFileName(args, methodName));
-				maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
+				var actual = File.ReadAllText(actualFilename);
+				var expected = File.ReadAllText(expectedFilename);
 
-				Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
+				Assert.Equal(expected, actual);
+			}
+			else
+			{
+				using var actual = SKImage.FromEncodedData(actualFilename);
+				using var expected = SKImage.FromEncodedData(expectedFilename);
 
-				using var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected);
-				using var data = mask.Encode(SKEncodedImageFormat.Png, 100);
-				using var maskFile = File.Create(maskFilename);
-				data.SaveTo(maskFile);
+				var similarity = SKPixelComparer.Compare(actual, expected);
 
-				Assert.True(
-					isSimilar,
-					$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
+				var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
+
+				if (!isSimilar)
+				{
+					var root = GetTestProjectRoot();
+
+					var maskFilename = Path.Combine(root, "errors", expectedFilename);
+					maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
+
+					Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
+
+					using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
+					using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
+					using (var maskFile = File.Create(maskFilename))
+					{
+						data.SaveTo(maskFile);
+					}
+
+					Assert.True(
+						isSimilar,
+						$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
+				}
 			}
 		}
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
-			// working + up 3 levels (../../..)
-			var root = Directory.GetCurrentDirectory();
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
-			root = Path.GetDirectoryName(root);
-
-			var imagePath = GetTestImageFileName(args, methodName);
+			var root = GetTestProjectRoot();
+			var imagePath = GetTestImageFileName(args, methodName, Path.GetExtension(destinationFilename));
 			var path = Path.Combine(root, imagePath);
 
 			var dir = Path.GetDirectoryName(path);
@@ -174,7 +183,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.Copy(src, path, true);
 		}
 
-		private string GetTestImageFileName(object[] args, string methodName)
+		private string GetTestImageFileName(object[] args, string methodName, string extension)
 		{
 			var strsSelect = args?.Select(a => string
 				.Format(CultureInfo.InvariantCulture, "{0}", a ?? "NULL")
@@ -186,13 +195,22 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var sepStr = strs?.Length > 0 ? "-" : "";
 			var argStr = strs?.Length > 0 ? string.Join("-", strs) : "";
 
-			var filename = $"output{sepStr}{argStr}.png";
+			var filename = $"output{sepStr}{argStr}{extension}";
 
 			var name = GetType().FullName;
 			if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))
 				name = name.Substring(TestFolderName.Length + 1);
 
 			return Path.Combine(TestImagesFolderName, name, methodName, filename);
+		}
+
+		private static string GetTestProjectRoot()
+		{
+			var cwd = Directory.GetCurrentDirectory();
+
+			var root = Path.Combine(cwd, "../../../../../src/SingleProject/Resizetizer/test/UnitTests/");
+
+			return root;
 		}
 	}
 }

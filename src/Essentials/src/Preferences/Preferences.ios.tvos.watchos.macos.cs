@@ -85,6 +85,9 @@ namespace Microsoft.Maui.Storage
 							var encodedDateTime = Convert.ToString(dt.ToBinary(), CultureInfo.InvariantCulture);
 							userDefaults.SetString(encodedDateTime, key);
 							break;
+						case DateTimeOffset dt:
+							userDefaults.SetString(dt.ToString("O"), key);
+							break;
 					}
 				}
 			}
@@ -123,6 +126,13 @@ namespace Microsoft.Maui.Storage
 							var savedDateTime = userDefaults.StringForKey(key);
 							var encodedDateTime = Convert.ToInt64(savedDateTime, CultureInfo.InvariantCulture);
 							value = DateTime.FromBinary(encodedDateTime);
+							break;
+						case DateTimeOffset dt:
+							var savedDateTimeOffset = userDefaults.StringForKey(key);
+							if (DateTimeOffset.TryParse(savedDateTimeOffset, out var dateTimeOffset))
+							{
+								value = dateTimeOffset;
+							}
 							break;
 						case string s:
 							// the case when the string is not null

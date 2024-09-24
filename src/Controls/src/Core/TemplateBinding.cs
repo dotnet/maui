@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplateBinding']/Docs/*" />
 	[Obsolete("Use Binding.Source=RelativeBindingSource.TemplatedParent")]
+	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class TemplateBinding : BindingBase
 	{
 		internal const string SelfPath = ".";
@@ -99,7 +101,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var clone = new TemplateBinding(Path, Mode) { Converter = Converter, ConverterParameter = ConverterParameter, StringFormat = StringFormat };
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;

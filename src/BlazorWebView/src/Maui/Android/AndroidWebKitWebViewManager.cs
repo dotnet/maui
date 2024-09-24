@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// Using an IP address means that WebView doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private static readonly string AppOrigin = $"https://{BlazorWebView.AppHostAddress}/";
-		private static readonly Uri AppOriginUri = new(AppOrigin);
-		private static readonly AUri AndroidAppOriginUri = AUri.Parse(AppOrigin)!;
+		private static string AppOrigin { get; } = $"https://{BlazorWebView.AppHostAddress}/";
+		private static Uri AppOriginUri { get; } = new(AppOrigin);
+		private static AUri AndroidAppOriginUri { get; } = AUri.Parse(AppOrigin)!;
 		private readonly ILogger _logger;
 		private readonly AWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;

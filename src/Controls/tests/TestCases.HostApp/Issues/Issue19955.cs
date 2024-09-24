@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample.Issues
 
 			async void Button_Clicked()
 			{
-				await Application.Current.MainPage.Navigation.PushAsync(new SecondPage());
+				await this.Window.Page.Navigation.PushAsync(new SecondPage());
 			}
 		}
 
@@ -84,7 +84,7 @@ namespace Maui.Controls.Sample.Issues
 
 			async void Button_Clicked()
 			{
-				await Application.Current.MainPage.Navigation.PopAsync();
+				await this.Window.Page.Navigation.PopAsync();
 			}
 		}
 	}

@@ -29,88 +29,7 @@
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.Layout" /> that positions child elements in a single line which can be oriented vertically or horizontally.</summary>
     <remarks>
-      <para>Because <see cref="T:Microsoft.Maui.Controls.StackLayout" /> layouts override the bounds on their child elements, application developers should not set bounds on them.</para>
-      <example>
-        <para>The following example code shows how to create a new <see cref="T:Microsoft.Maui.Controls.StackLayout" /> with children that explore many of the layout behaviors of <see cref="T:Microsoft.Maui.Controls.StackLayout" />:</para>
-        <code lang="csharp lang-csharp"><![CDATA[
-StackLayout stackLayout = new StackLayout
-{
-    Spacing = 0,
-    VerticalOptions = LayoutOptions.FillAndExpand,
-    Children = 
-    {
-        new Label
-        {
-            Text = "StackLayout",
-            HorizontalOptions = LayoutOptions.Start
-        },
-        new Label
-        {
-            Text = "stacks its children",
-            HorizontalOptions = LayoutOptions.Center
-        },
-        new Label
-        {
-            Text = "vertically",
-            HorizontalOptions = LayoutOptions.End
-        },
-        new Label
-        {
-            Text = "by default,",
-            HorizontalOptions = LayoutOptions.Center
-        },
-        new Label
-        {
-            Text = "but horizontal placement",
-            HorizontalOptions = LayoutOptions.Start
-        },
-        new Label
-        {
-            Text = "can be controlled with",
-            HorizontalOptions = LayoutOptions.Center
-        },
-        new Label
-        {
-            Text = "the HorizontalOptions property.",
-            HorizontalOptions = LayoutOptions.End
-        },
-        new Label
-        {
-            Text = "An Expand option allows one or more children " +
-                   "to occupy the an area within the remaining " +
-                   "space of the StackLayout after it's been sized " +
-                   "to the height of its parent.",
-            VerticalOptions = LayoutOptions.CenterAndExpand,
-            HorizontalOptions = LayoutOptions.End
-        },
-        new StackLayout
-        {
-            Spacing = 0,
-            Orientation = StackOrientation.Horizontal,
-            Children = 
-            {
-                new Label
-                {
-                    Text = "Stacking",
-                },
-                new Label
-                {
-                    Text = "can also be",
-                    HorizontalOptions = LayoutOptions.CenterAndExpand
-                },
-                new Label
-                {
-                    Text = "horizontal.",
-                },
-            }
-        }
-    }
-};
-]]></code>
-      </example>
-      <para>
-        <img href="~/xml/Microsoft.Maui.Controls/_images/StackLayout.TripleScreenShot.png" />
-      </para>
+      
     </remarks>
   </Docs>
   <Members>
@@ -134,23 +53,6 @@ StackLayout stackLayout = new StackLayout
       <Parameters />
       <Docs>
         <summary>Initializes a new instance of the StackLayout class.</summary>
-        <remarks>
-          <para>
-              The following example shows the initialization of a new StackLayout and setting its orientation and children.
-              </para>
-          <example>
-            <code lang="csharp lang-csharp"><![CDATA[
-var stackLayout = new StackLayout {
-  Orientation = StackOrientation.Horizontal,
-  Children = {
-    firstChild,
-    secondChild,
-    thirdChild
-  }
-};
-              ]]></code>
-          </example>
-        </remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChildren">

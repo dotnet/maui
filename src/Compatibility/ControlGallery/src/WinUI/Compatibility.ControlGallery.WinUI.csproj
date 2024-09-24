@@ -8,7 +8,7 @@
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <NoWarn>1701;1702;CS8305;8305;CA1416;0612</NoWarn>
+    <NoWarn>1701;1702;CS8305;8305;CA1416;0612;CS0672;CS0618</NoWarn>
     <EnableDefaultPageItems>true</EnableDefaultPageItems>
     <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
 

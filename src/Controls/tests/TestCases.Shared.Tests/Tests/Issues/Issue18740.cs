@@ -36,8 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap($"Test{view}");
 
 				// 3. Verify that the virtual keyboard appears.
-				ClassicAssert.IsTrue(App.IsKeyboardShown());
-
+				Assert.That(App.IsKeyboardShown(), Is.True);
 			}
 			finally
 			{

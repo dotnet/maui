@@ -22,7 +22,7 @@ stages:
           use1ESTemplate: true
           usePipelineArtifactTasks: true
         
-      - template: nuget-msi-convert/job/v3.yml@yaml-templates
+      - template: nuget-msi-convert/job/v4.yml@yaml-templates
         parameters:
           yamlResourceName: yaml-templates
           artifactName: nuget-signed
@@ -42,7 +42,7 @@ stages:
             inputs:
               TargetFolders: |
                 $(Build.ArtifactStagingDirectory)\bin\manifests
-                $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
+                $(Build.ArtifactStagingDirectory)\bin\manifests-packs
                 $(Build.ArtifactStagingDirectory)\bin\msi-nupkgs
               ExcludeSNVerify: true
               ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt

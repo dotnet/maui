@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
@@ -97,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					template = new CellWrapperTemplate(new DataTemplate(() =>
 					{
 						var label = new TextCell();
-						label.SetBinding(TextCell.TextProperty, new Binding("."));
+						label.SetBinding(TextCell.TextProperty, static (object source) => source);
 						return label;
 					}), Element);
 				}

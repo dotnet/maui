@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		bool _disposed;
 		BindingBase _groupDisplayBinding;
-		OrderedDictionary<object, TemplatedItemsList<TView, TItem>> _groupedItems;
+		Cadenza.Collections.OrderedDictionary<object, TemplatedItemsList<TView, TItem>> _groupedItems;
 		DataTemplate _groupHeaderTemplate;
 		BindingBase _groupShortNameBinding;
 		ShortNamesProxy _shortNames;
@@ -755,7 +755,14 @@ namespace Microsoft.Maui.Controls.Internals
 				// time for right now.
 				groupProxy.HeaderContent = _itemsView.CreateDefault(ListProxy.ProxiedEnumerable);
 				groupProxy.HeaderContent.BindingContext = groupProxy;
-				groupProxy.HeaderContent.SetBinding(TextCell.TextProperty, "Name");
+				// TODO: the interceptor doesn't support generics at the moment
+				// groupProxy.HeaderContent.SetBinding(TextCell.TextProperty, static (TemplatedItemsList<TView, TItem> list) => list.Name);
+				groupProxy.HeaderContent.SetBinding(
+					TextCell.TextProperty,
+					TypedBinding.ForSingleNestingLevel(
+						nameof(TemplatedItemsList<TView, TItem>.Name),
+						getter: static (TemplatedItemsList<TView, TItem> list) => list.Name,
+						setter: static (list, val) => list.Name = val));
 			}
 
 			SetIndex(groupProxy.HeaderContent, index);
@@ -781,7 +788,7 @@ namespace Microsoft.Maui.Controls.Internals
 		void OnCollectionChangedGrouped(NotifyCollectionChangedEventArgs e)
 		{
 			if (_groupedItems == null)
-				_groupedItems = new OrderedDictionary<object, TemplatedItemsList<TView, TItem>>();
+				_groupedItems = new Cadenza.Collections.OrderedDictionary<object, TemplatedItemsList<TView, TItem>>();
 
 			List<TemplatedItemsList<TView, TItem>> newItems = null, oldItems = null;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -9,8 +10,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Windowing;
 using Xunit;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -43,6 +44,35 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(mainWindow.Page, mainPage);
 
 				Assert.NotNull(mainWindow.Page);
+			});
+		}
+
+		[Fact(DisplayName = "MauiWinUIWindow doesn't leak")]
+		public async Task MauiWinUIWindowDoesntLeak()
+		{
+			List<WeakReference> weakReferences = new();
+
+			SetupBuilder();
+
+			var mainPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					var window = new MauiWinUIWindow();
+					weakReferences.Add(new WeakReference(window));
+
+					window.Activate();
+					await Task.Delay(100);
+					window.Close();
+				}
+
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.WaitForFullGCComplete();
+
+				Assert.True(weakReferences.Count(r => r.IsAlive) == 0);
 			});
 		}
 
