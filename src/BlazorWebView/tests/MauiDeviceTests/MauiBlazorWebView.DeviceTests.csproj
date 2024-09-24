@@ -41,10 +41,6 @@
     <ProjectReference Include="..\..\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
   <!-- include/exclude the *.<platform>.cs files -->
   <ItemGroup>
     <None Include="@(Compile)" />

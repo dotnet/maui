@@ -61,10 +61,6 @@
       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-   <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <AndroidResource Include="$(AndroidRoot)Resources\layout\Tabbar.axml" />
     <AndroidResource Include="$(AndroidRoot)Resources\layout\Toolbar.axml" />
