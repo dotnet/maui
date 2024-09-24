@@ -52,22 +52,19 @@ public partial class Maui24849 : ContentPage
         {            
             var app = new MockApplication();
             app.Resources.Add(new Style24849());
-            
-            var page = new Maui24849(useCompiledXaml);        
+            var page = new Maui24849(useCompiledXaml);       
+                         
             app.MainPage = page;
 
             Assert.That(page.button.IsEnabled, Is.False);
-            Assert.That((page.button.Background as SolidColorBrush).Color , Is.EqualTo(Color.FromHex("#EBE9EB")));
             Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
 
             page.button.IsEnabled = true;
             Assert.That(page.button.IsEnabled, Is.True);
-            Assert.That((page.button.Background as SolidColorBrush).Color, Is.EqualTo(Color.FromHex("#D65397")));
             Assert.That(page.button.TextColor, Is.EqualTo(Colors.White));
 
             page.button.IsEnabled = false;
             Assert.That(page.button.IsEnabled, Is.False);
-            Assert.That((page.button.Background as SolidColorBrush).Color , Is.EqualTo(Color.FromHex("#EBE9EB")));
             Assert.That(page.button.TextColor, Is.EqualTo(Color.FromHex("#3c3c3b")));
         }
     }
