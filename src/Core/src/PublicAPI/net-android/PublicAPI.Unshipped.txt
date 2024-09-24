@@ -95,3 +95,6 @@ override Microsoft.Maui.PlatformWrapperView.OnLayout(bool changed, int left, int
 virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
+Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType

@@ -34,6 +34,31 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(searchBar, expected, tolerance: .05);
 		}
 
+		[Fact(DisplayName = "ReturnType Initializes Correctly")]
+		public async Task ReturnTypeInitializesCorrectly()
+		{
+			var xplatReturnType = ReturnType.Next;
+			var entry = new SearchBarStub()
+			{
+				Text = "Test",
+				ReturnType = xplatReturnType
+			};
+
+			UIReturnKeyType expectedValue = UIReturnKeyType.Next;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.ReturnType,
+					PlatformViewValue = GetNativeReturnType(handler)
+				};
+			});
+
+			Assert.Equal(xplatReturnType, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
 		[Fact]
 		public async Task ShouldShowCancelButtonToggles()
 		{
@@ -148,6 +173,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
 			GetNativeSearchBar(searchBarHandler).Text = text;
+
+		UIReturnKeyType GetNativeReturnType(SearchBarHandler searchBarHandler) =>
+			GetNativeSearchBar(searchBarHandler).ReturnKeyType;
 
 		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
 		{

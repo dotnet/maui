@@ -81,3 +81,6 @@ static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Micros
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this Microsoft.UI.Xaml.Controls.TextBox! textBox, int cursorOffset = 0) -> int
+Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
+static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void

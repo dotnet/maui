@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Android.Text;
 using Android.Text.Method;
+using Android.Views.InputMethods;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
@@ -13,6 +14,31 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Fact(DisplayName = "ReturnType Initializes Correctly")]
+		public async Task ReturnTypeInitializesCorrectly()
+		{
+			var xplatReturnType = ReturnType.Next;
+			var entry = new SearchBarStub()
+			{
+				Text = "Test",
+				ReturnType = xplatReturnType
+			};
+
+			ImeAction expectedValue = ImeAction.Next;
+
+			var values = await GetValueAsync(entry, (handler) =>
+			{
+				return new
+				{
+					ViewValue = entry.ReturnType,
+					PlatformViewValue = GetNativeReturnType(handler)
+				};
+			});
+
+			Assert.Equal(xplatReturnType, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
@@ -159,8 +185,12 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Query;
 
+		ImeAction GetNativeReturnType(SearchBarHandler searchBarHandler) =>
+			(ImeAction)GetNativeSearchBar(searchBarHandler).ImeOptions;
+
 		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
 			GetNativeSearchBar(searchBarHandler).SetQuery(text, false);
+
 
 		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
 		{

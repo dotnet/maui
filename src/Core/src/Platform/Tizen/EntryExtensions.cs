@@ -87,6 +87,11 @@ namespace Microsoft.Maui.Platform
 			platformEntry.Keyboard = entry.Keyboard.ToPlatform();
 		}
 
+		public static void UpdateReturnType(this Entry platformEntry, ITextInput entry)
+		{
+			platformEntry.ReturnType = entry.ReturnType.ToPlatform();
+		}
+
 		public static void UpdateCursorPosition(this Entry platformEntry, IEntry entry)
 		{
 			platformEntry.PrimaryCursorPosition = entry.CursorPosition;
