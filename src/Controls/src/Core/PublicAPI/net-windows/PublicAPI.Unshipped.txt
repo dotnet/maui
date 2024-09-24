@@ -1,2 +1,1 @@
 #nullable enable
-~static Microsoft.Maui.Controls.Handlers.ShellContentHandler.MapTitle(Microsoft.Maui.Controls.Handlers.ShellContentHandler handler, Microsoft.Maui.Controls.ShellContent item) -> void

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		public static void MapTitle(ShellContentHandler handler, ShellContent item)
+		internal static void MapTitle(ShellContentHandler handler, ShellContent item)
 		{
 			var shellSection = item.Parent as ShellSection;
 			var shellItem = shellSection?.Parent as ShellItem;
