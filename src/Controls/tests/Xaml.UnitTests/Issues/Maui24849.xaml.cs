@@ -15,14 +15,14 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public partial class Maui28849 : ContentPage
+public partial class Maui24849 : ContentPage
 {
-    public Maui28849()
+    public Maui24849()
     {
         InitializeComponent();
     }
 
-    public Maui28849(bool useCompiledXaml)
+    public Maui24849(bool useCompiledXaml)
     {
         //this stub will be replaced at compile time
     }
@@ -50,7 +50,7 @@ public partial class Maui28849 : ContentPage
         [Test]
         public void VSGReturnsToNormal([Values(false, true)] bool useCompiledXaml)
         {
-            var page = new Maui28849(useCompiledXaml);
+            var page = new Maui24849(useCompiledXaml);
 
             Assert.That(page.button.IsEnabled, Is.False);
             Assert.That((page.button.Background as SolidColorBrush).Color , Is.EqualTo(Color.FromHex("#EBE9EB")));
