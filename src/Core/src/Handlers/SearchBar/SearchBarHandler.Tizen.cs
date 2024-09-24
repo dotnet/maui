@@ -83,10 +83,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.Entry.UpdateKeyboard(searchBar);
 		}
 
-		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.PlatformView?.Entry.UpdateReturnType(searchBar);
-		}
+		[MissingMapper]
+		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar) { }
 
 		[MissingMapper]
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar) { }
