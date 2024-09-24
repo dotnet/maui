@@ -21,13 +21,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public void VerifyEntryBorderVisibilityOnThemeChange()
+		[Category(UITestCategories.Picker)]
+		[Category(UITestCategories.Editor)]
+		[Category(UITestCategories.DatePicker)]
+		[Category(UITestCategories.TimePicker)]
+		public void VerifyBorderVisibilityOnThemeChange()
 		{
-			App.WaitForElement("FirstEntry");
-			App.WaitForElement("SecondEntry");
+			App.WaitForElement("Entry");
+			App.WaitForElement("Picker");
+			App.WaitForElement("Editor");
+			App.WaitForElement("DatePicker");
+			App.WaitForElement("TimePicker");
 			App.Tap("ChangeTheme");
 			VerifyScreenshot();
 		}
+
 	}
 }
 #endif

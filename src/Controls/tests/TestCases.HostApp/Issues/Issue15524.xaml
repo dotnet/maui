@@ -4,26 +4,61 @@
              BackgroundColor="{AppThemeBinding Light=White,Dark=Black}"
              x:Class="Maui.Controls.Sample.Issues.Issue15524">
   <ContentPage.Resources>
-    	<Color x:Key="Primary">#512BD4</Color>
-    	<Color x:Key="White">White</Color>
-    	<Color x:Key="Black">Black</Color>
-    
-    	<Style TargetType="Button">
-      		<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Primary}}"/>
-      		<Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"/>
-    	</Style>
-    
-    	<Style TargetType="Entry">
-      		<Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
-      		<Setter Property="BackgroundColor" Value="Transparent" />
-    	</Style>
+    <Color x:Key="Primary">#512BD4</Color>
+    <Color x:Key="White">White</Color>
+    <Color x:Key="Black">Black</Color>
+
+    <Style TargetType="Button">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Primary}}"/>
+      <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}"/>
+    </Style>
+
+    <Style TargetType="Entry">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+      <Setter Property="BackgroundColor" Value="transparent" />
+    </Style>
+
+    <Style TargetType="Picker">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+      <Setter Property="BackgroundColor" Value="transparent" />
+    </Style>
+
+    <Style TargetType="Editor">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+      <Setter Property="BackgroundColor" Value="transparent" />
+    </Style>
+
+    <Style TargetType="TimePicker">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+      <Setter Property="BackgroundColor" Value="transparent" />
+    </Style>
+
+    <Style TargetType="DatePicker">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+      <Setter Property="BackgroundColor" Value="transparent" />
+    </Style>
+
+    <Style TargetType="Label">
+      <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black},Dark={StaticResource White}}"/>
+      <Setter Property="FontAttributes" Value="Bold"/>
+    </Style>
   </ContentPage.Resources>
 
-    <VerticalStackLayout Spacing="25" Padding="30,0" >
-    	<Entry Text="First Entry" AutomationId="FirstEntry" />
-    	<Entry Text="Second Entry" AutomationId="SecondEntry"/>
-    	<Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
-    </VerticalStackLayout>
+  <VerticalStackLayout Spacing="20" Padding="30,0" >
+    <Label Text="Entry" />
+    <Entry Text="First Entry" AutomationId="Entry" />
+    <Label Text="Picker"/>
+    <Picker x:Name="picker" AutomationId="Picker"/>
+    <Label Text="Editor"/>
+    <Editor Text="Editor" AutomationId="Editor"/>
+    <Label Text="DatePicker"/>
+    <DatePicker AutomationId="DatePicker"/>
+    <Label Text="TimePicker"/>
+    <TimePicker AutomationId="TimePicker"/>
+    <Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
+  </VerticalStackLayout>
+
+
 
     
 </ContentPage>
