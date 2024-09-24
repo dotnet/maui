@@ -37,7 +37,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
     <PackageReference Include="System.Numerics.Vectors" Condition="$(TargetFramework.StartsWith('netstandard'))" />
-    <PackageReference Include="System.Text.Json" Condition="$(TargetFramework.StartsWith('netstandard'))" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
