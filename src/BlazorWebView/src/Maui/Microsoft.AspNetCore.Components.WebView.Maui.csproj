@@ -41,10 +41,6 @@
     <PackageReference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" PrivateAssets="all" />
