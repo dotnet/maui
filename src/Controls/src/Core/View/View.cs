@@ -164,6 +164,39 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
+#if ANDROID
+        internal override void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            Dispatcher.Dispatch(() =>
+            {
+                if (Handler is not null)
+                {
+                    if (Handler is EntryHandler entryHandler)
+                    {
+                        entryHandler?.PlatformView?.UpdateBackground(this);
+                    }
+                    else if (Handler is EditorHandler editorHandler)
+                    {
+                        editorHandler?.PlatformView?.UpdateBackground(this);
+                    }
+                    else if (Handler is PickerHandler pickerHandler)
+                    {
+                        pickerHandler?.PlatformView?.UpdateBackground(this);
+                    }
+                    else if (Handler is DatePickerHandler datePickerHandler)
+                    {
+                        datePickerHandler?.PlatformView?.UpdateBackground(this);
+                    }
+                    else if (Handler is TimePickerHandler timePickerHandler)
+                    {
+                        timePickerHandler?.PlatformView?.UpdateBackground(this);
+                    }
+                }
+            });
+            base.OnParentResourcesChanged(sender, e);
+        }
+#endif
+
 		/// <summary>The collection of gesture recognizers associated with this view.</summary>
 		/// <remarks>
 		/// Adding items to this collection will associate gesture events with this element.
