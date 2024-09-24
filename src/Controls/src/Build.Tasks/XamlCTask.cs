@@ -128,6 +128,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool OptimizeIL { get; set; } = true;
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
+		public bool CompileBindingsWithSource { get; set; }
 		public string TargetFramework { get; set; }
 
 		public int WarningLevel { get; set; } = 4; //unused so far
@@ -415,6 +416,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					XamlFilePath = xamlFilePath,
 					LoggingHelper = loggingHelper,
 					ValidateOnly = ValidateOnly,
+					CompileBindingsWithSource = CompileBindingsWithSource,
 				};
 
 
