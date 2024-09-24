@@ -65,7 +65,7 @@
     <MicrosoftWindowsAppSDKPackageVersion>1.6.240829007</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.756</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.2.0</MicrosoftGraphicsWin2DPackageVersion>
-    <MicrosoftWindowsWebView2PackageVersion>1.0.2739.15</MicrosoftWindowsWebView2PackageVersion>
+    <MicrosoftWindowsWebView2PackageVersion>1.0.2792.45</MicrosoftWindowsWebView2PackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAuthorizationPackageVersion>9.0.0-rc.2.24474.3</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>9.0.0-rc.2.24474.3</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
