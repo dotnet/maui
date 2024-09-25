@@ -15,5 +15,5 @@ internal static class HostAddressHelper
 	public static string GetAppHostAddress()
 		=> IsAppHostAddressAlways0000Enabled
 			? "0.0.0.0"
-			: "localhost";
+			: "0.0.0.1";
 }
