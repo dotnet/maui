@@ -1,6 +1,7 @@
 #nullable enable
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-
+using Microsoft.UI.Xaml.Media;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
@@ -91,7 +92,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateMaxLength(searchBar);
+			var textbox = FindChildOfType<TextBox>(handler.PlatformView);
+			if (textbox != null)
+				handler!.PlatformView?.UpdateMaxLength(searchBar, textbox);
 		}
 
 		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
@@ -111,12 +114,14 @@ namespace Microsoft.Maui.Handlers
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
+			var textbox = FindChildOfType<TextBox>(PlatformView);
 			if (VirtualView != null)
 			{
 				PlatformView?.UpdateTextColor(VirtualView);
 				PlatformView?.UpdatePlaceholderColor(VirtualView);
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
-				PlatformView?.UpdateMaxLength(VirtualView);
+				if (textbox != null)
+					PlatformView?.UpdateMaxLength(VirtualView, textbox);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
 				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
 				PlatformView?.UpdateIsSpellCheckEnabled(VirtualView);
@@ -125,6 +130,25 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		static T? FindChildOfType<T>(DependencyObject parent) where T : DependencyObject
+		{
+			int childCount = VisualTreeHelper.GetChildrenCount(parent);
+			for (int i = 0; i < childCount; i++)
+			{
+				DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+				if (child is T foundChild)
+				{
+					return foundChild;
+				}
+				// Recursively search for the child within this child's children
+				T? result = FindChildOfType<T>(child);
+				if (result != null)
+				{
+					return result;
+				}
+			}
+			return null;
+		}
 		void OnQuerySubmitted(AutoSuggestBox? sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
 			if (VirtualView == null)
