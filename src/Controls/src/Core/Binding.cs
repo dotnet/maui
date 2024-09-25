@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
 				{
-					BindingDiagnostics.SendBindingFailure(this, "Binding", "Mismatch between the specified x:DataType and the current binding context");
+					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({DataType}) and the current binding context ({bindingContext.GetType()}).");
 					bindingContext = null;
 				}
 			}
