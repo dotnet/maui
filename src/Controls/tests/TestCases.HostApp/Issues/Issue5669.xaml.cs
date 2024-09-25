@@ -13,6 +13,5 @@
 		{
 			searchbar.MaxLength = 4;
 		}
-
     }
 }
