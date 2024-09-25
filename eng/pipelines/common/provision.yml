@@ -12,6 +12,11 @@ parameters:
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
   certPass: $(pass--components-mac-ios-certificate-p12)
+  federatedServiceConnection: 'dotnetbuilds-internal-read'
+  outputVariableName: 'dotnetbuilds-internal-container-read-token'
+  expiryInHours: 1
+  base64Encode: false
+  is1ESPipeline: false
 
 steps:
   # Prepare macOS
@@ -143,14 +148,15 @@ steps:
       displayName: 'Clear all NuGet caches'
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: PowerShell@2
-      condition: eq(variables['PrivateBuild'], 'true')
-      displayName: Setup Private Feeds Credentials
-      inputs:
-        filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-        arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-      env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw)
-    
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
+      parameters:
+        federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+        outputVariableName: ${{ parameters.outputVariableName }}
+        expiryInHours: ${{ parameters.expiryInHours }}
+        base64Encode: ${{ parameters.base64Encode }}
+        storageAccount: dotnetbuilds
+        container: internal
+        permissions: rl
+        is1ESPipeline: ${{ parameters.is1ESPipeline }}
+        
     - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
