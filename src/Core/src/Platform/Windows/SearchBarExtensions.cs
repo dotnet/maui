@@ -105,12 +105,14 @@ namespace Microsoft.Maui.Platform
 			platformControl.VerticalContentAlignment = searchBar.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
-		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar, TextBox textbox)
 		{
 			var maxLength = searchBar.MaxLength;
 
 			if (maxLength == -1)
 				maxLength = int.MaxValue;
+
+			textbox.MaxLength = searchBar.MaxLength;
 
 			if (maxLength == 0)
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, true);
