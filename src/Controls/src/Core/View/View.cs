@@ -162,38 +162,42 @@ namespace Microsoft.Maui.Controls
 						break;
 				}
 			};
+
+#if ANDROID
+            if (this is Entry or Editor or Picker or DatePicker or TimePicker && Application.Current is not null)
+            {
+                Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+            }
+#endif
 		}
 
 #if ANDROID
-        internal override void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
         {
             Dispatcher.Dispatch(() =>
             {
                 if (Handler is not null)
                 {
-                    if (Handler is EntryHandler entryHandler)
+                    switch (Handler)
                     {
-                        entryHandler?.PlatformView?.UpdateBackground(this);
-                    }
-                    else if (Handler is EditorHandler editorHandler)
-                    {
-                        editorHandler?.PlatformView?.UpdateBackground(this);
-                    }
-                    else if (Handler is PickerHandler pickerHandler)
-                    {
-                        pickerHandler?.PlatformView?.UpdateBackground(this);
-                    }
-                    else if (Handler is DatePickerHandler datePickerHandler)
-                    {
-                        datePickerHandler?.PlatformView?.UpdateBackground(this);
-                    }
-                    else if (Handler is TimePickerHandler timePickerHandler)
-                    {
-                        timePickerHandler?.PlatformView?.UpdateBackground(this);
+                        case EntryHandler entryHandler:
+                            entryHandler.PlatformView?.UpdateBackground(this);
+                            break;
+                        case EditorHandler editorHandler:
+                            editorHandler.PlatformView?.UpdateBackground(this);
+                            break;
+                        case PickerHandler pickerHandler:
+                            pickerHandler.PlatformView?.UpdateBackground(this);
+                            break;
+                        case DatePickerHandler datePickerHandler:
+                            datePickerHandler.PlatformView?.UpdateBackground(this);
+                            break;
+                        case TimePickerHandler timePickerHandler:
+                            timePickerHandler.PlatformView?.UpdateBackground(this);
+                            break;
                     }
                 }
             });
-            base.OnParentResourcesChanged(sender, e);
         }
 #endif
 
@@ -312,6 +316,19 @@ namespace Microsoft.Maui.Controls
 		Thickness IView.Margin => Margin;
 		partial void HandlerChangedPartial();
 		GestureManager _gestureManager;
+
+#if ANDROID
+        private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+        {
+            base.OnHandlerChangingCore(args);
+
+            if (Application.Current == null)
+                return;
+
+            if (this is Entry or Editor or Picker or DatePicker or TimePicker && args.NewHandler == null)
+                Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+        }
+#endif
 
 		private protected override void OnHandlerChangedCore()
 		{

@@ -52,7 +52,7 @@
     <Label Text="Editor"/>
     <Editor Text="Editor" AutomationId="Editor"/>
     <Label Text="DatePicker"/>
-    <DatePicker AutomationId="DatePicker"/>
+    <DatePicker Date="9/24/2024" AutomationId="DatePicker"/>
     <Label Text="TimePicker"/>
     <TimePicker AutomationId="TimePicker"/>
     <Button Text="ChangeTheme" AutomationId="ChangeTheme" Clicked="OnButtonClicked"/>
