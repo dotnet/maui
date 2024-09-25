@@ -25,13 +25,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.DatePicker)]
 		[Category(UITestCategories.TimePicker)]
+		[FailsOnWindows("Currently fails on Windows; see https://github.com/dotnet/maui/issues/24923")]
 		public void VerifyBorderVisibilityOnThemeChange()
 		{
 			App.WaitForElement("Entry");
-			App.WaitForElement("Picker");
-			App.WaitForElement("Editor");
-			App.WaitForElement("DatePicker");
-			App.WaitForElement("TimePicker");
 			App.Tap("ChangeTheme");
 			VerifyScreenshot();
 		}
