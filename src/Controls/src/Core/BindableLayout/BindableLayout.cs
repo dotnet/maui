@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using Microsoft.Maui.Controls.Internals;
 
@@ -148,6 +147,18 @@ namespace Microsoft.Maui.Controls
 				_ = layout.Children.Add(item);
 			}
 		}
+		
+		internal static void Replace(this IBindableLayout layout, object item, int index)
+		{
+			if (layout is Maui.ILayout mauiLayout && item is IView view)
+			{
+				mauiLayout[index] = view;
+			}
+			else
+			{
+				layout.Children[index] = item;
+			}
+		}
 
 		internal static void Insert(this IBindableLayout layout, object item, int index)
 		{
@@ -200,6 +211,31 @@ namespace Microsoft.Maui.Controls
 
 	class BindableLayoutController
 	{
+		static readonly BindableProperty BindableLayoutTemplateProperty = BindableProperty.CreateAttached("BindableLayoutTemplate", typeof(DataTemplate), typeof(BindableLayoutController), default(DataTemplate));
+		
+		/// <summary>
+		/// Gets the template reference used to generate a view in the <see cref="BindableLayout"/>.
+		/// </summary>
+		static DataTemplate GetBindableLayoutTemplate(BindableObject b)
+		{
+			return (DataTemplate)b.GetValue(BindableLayoutTemplateProperty);
+		}
+		
+		/// <summary>
+		/// Sets the template reference used to generate a view in the <see cref="BindableLayout"/>.
+		/// </summary>
+		static void SetBindableLayoutTemplate(BindableObject b, DataTemplate value)
+		{
+			b.SetValue(BindableLayoutTemplateProperty, value);
+		}
+
+		static readonly DataTemplate DefaultItemTemplate = new DataTemplate(() =>
+		{
+			var label = new Label { HorizontalTextAlignment = TextAlignment.Center };
+			label.SetBinding(Label.TextProperty, ".");
+			return label;
+		});
+
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
 		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
 		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
@@ -290,7 +326,7 @@ namespace Microsoft.Maui.Controls
 
 			if (!_isBatchUpdate)
 			{
-				CreateChildren();
+				UpdateEmptyView();
 			}
 		}
 
@@ -302,8 +338,18 @@ namespace Microsoft.Maui.Controls
 
 			if (!_isBatchUpdate)
 			{
-				CreateChildren();
+				UpdateEmptyView();
 			}
+		}
+
+		void UpdateEmptyView()
+		{
+			if (!_layoutWeakReference.TryGetTarget(out IBindableLayout layout))
+			{
+				return;
+			}
+
+			TryAddEmptyView(layout, out _);
 		}
 
 		void CreateChildren()
@@ -313,17 +359,95 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			ClearChildren(layout);
-
-			UpdateEmptyView(layout);
-
-			if (_itemsSource == null)
-				return;
-
-			foreach (object item in _itemsSource)
+			if (TryAddEmptyView(layout, out IEnumerator enumerator))
 			{
-				layout.Add(CreateItemView(item, layout));
+				return;
 			}
+
+			var layoutChildren = layout.Children;
+			var childrenCount = layoutChildren.Count;
+
+			// if we have the empty view, remove it before generating children
+			if (childrenCount == 1 && layoutChildren[0] == _currentEmptyView)
+			{
+				layout.RemoveAt(0);
+				childrenCount = 0;
+			}
+
+			// Add or replace items
+			var index = 0;
+			do
+			{
+				var item = enumerator.Current;
+				if (index < childrenCount)
+				{
+					ReplaceChild(item, layout, layoutChildren, index);
+				}
+				else
+				{
+					layout.Add(CreateItemView(item, SelectTemplate(item, layout)));
+				}
+
+				++index;
+			} while (enumerator.MoveNext());
+
+			// Remove exceeding items
+			while (index <= --childrenCount)
+			{
+				var child = (BindableObject) layoutChildren[childrenCount]!;
+				layout.RemoveAt(childrenCount);
+				// It's our responsibility to clear the BindingContext for the children
+				// Given that we've set them manually in CreateItemView
+				child.BindingContext = null;
+			}
+		}
+
+		bool TryAddEmptyView(IBindableLayout layout, out IEnumerator enumerator)
+		{
+			enumerator = _itemsSource?.GetEnumerator();
+
+			if (enumerator == null || !enumerator.MoveNext())
+			{
+				var layoutChildren = layout.Children;
+				
+				// We may have a single child that is either the old empty view or a generated item
+				if (layoutChildren.Count == 1)
+				{
+					var maybeEmptyView = (View)layoutChildren[0]!;
+					
+					// If the current empty view is already in place we have nothing to do
+					if (maybeEmptyView == _currentEmptyView)
+					{
+						return true;
+					}
+					
+					// We may have a single child that is either the old empty view or a generated item
+					// So remove it to make room for the new empty view
+					layout.RemoveAt(0);
+					
+					// If this is a generated item, we need to clear the BindingContext
+					if (maybeEmptyView.IsSet(BindableLayoutTemplateProperty))
+					{
+						maybeEmptyView.ClearValue(BindableObject.BindingContextProperty);
+					}
+				}
+				else if (layoutChildren.Count > 1)
+				{
+					// If we have more than one child it means we have generated items only
+					// So clear them all to make room for the new empty view
+					ClearChildren(layout);
+				}
+				
+				// If an empty view is set, add it
+				if (_currentEmptyView != null)
+				{
+					layout.Add(_currentEmptyView);
+				}
+
+				return true;
+			}
+
+			return false;
 		}
 
 		void ClearChildren(IBindableLayout layout)
@@ -333,47 +457,15 @@ namespace Microsoft.Maui.Controls
 			{
 				var child = (View)layout.Children[index]!;
 				layout.RemoveAt(index);
-
-				// Empty view inherits the BindingContext automatically,
-				// we don't want to mess up with automatic inheritance.
-				if (child == _currentEmptyView) continue;
 				
-				// Given that we've set BindingContext manually on children we have to clear it on removal.
-				child.BindingContext = null;
+				// It's our responsibility to clear the manually-set BindingContext for the generated children
+				child.ClearValue(BindableObject.BindingContextProperty);
 			}
 		}
 
-		void UpdateEmptyView(IBindableLayout layout)
+		DataTemplate SelectTemplate(object item, IBindableLayout layout)
 		{
-			if (_currentEmptyView == null)
-				return;
-
-			if (!_itemsSource?.GetEnumerator().MoveNext() ?? true)
-			{
-				layout.Add(_currentEmptyView);
-				return;
-			}
-
-			layout.Remove(_currentEmptyView);
-		}
-
-		View CreateItemView(object item, IBindableLayout layout)
-		{
-			return CreateItemView(item, _itemTemplate ?? _itemTemplateSelector?.SelectTemplate(item, layout as BindableObject));
-		}
-
-		View CreateItemView(object item, DataTemplate dataTemplate)
-		{
-			if (dataTemplate != null)
-			{
-				var view = (View)dataTemplate.CreateContent();
-				view.BindingContext = item;
-				return view;
-			}
-			else
-			{
-				return new Label { Text = item?.ToString(), HorizontalTextAlignment = TextAlignment.Center };
-			}
+			return _itemTemplate ?? _itemTemplateSelector?.SelectTemplate(item, layout as BindableObject) ?? DefaultItemTemplate;
 		}
 
 		View CreateEmptyView(object emptyView, DataTemplate dataTemplate)
@@ -404,8 +496,29 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if (e.Action == NotifyCollectionChangedAction.Replace)
+			{
+				var index = e.OldStartingIndex;
+				var layoutChildren = layout.Children;
+				foreach (var item in e.NewItems!)
+				{
+					ReplaceChild(item, layout, layoutChildren, index);
+					++index;
+				}
+				return;
+			}
+			
 			e.Apply(
-				insert: (item, index, _) => layout.Insert(CreateItemView(item, layout), index),
+				insert: (item, index, _) =>
+				{
+					var layoutChildren = layout.Children;
+					if (layoutChildren.Count == 1 && layoutChildren[0] == _currentEmptyView)
+					{
+						layout.RemoveAt(0);
+					}
+
+					layout.Insert(CreateItemView(item, SelectTemplate(item, layout)), index);
+				},
 				removeAt: (item, index) =>
 				{
 					var child = (View)layout.Children[index]!;
@@ -414,12 +527,40 @@ namespace Microsoft.Maui.Controls
 					// It's our responsibility to clear the BindingContext for the children
 					// Given that we've set them manually in CreateItemView
 					child.BindingContext = null;
+
+					// If we removed the last item, we need to insert the empty view
+					if (layout.Children.Count == 0 && _currentEmptyView != null)
+					{
+						layout.Add(_currentEmptyView);
+					}
 				},
 				reset: CreateChildren);
+		}
 
-			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
-			if (e.Action != NotifyCollectionChangedAction.Reset)
-				UpdateEmptyView(layout);
+		void ReplaceChild(object item, IBindableLayout layout, IList layoutChildren, int index)
+		{
+			var template = SelectTemplate(item, layout);
+			var child = (BindableObject) layoutChildren[index]!;
+			var currentTemplate = GetBindableLayoutTemplate(child);
+			if (currentTemplate == template)
+			{
+				child.BindingContext = item;
+			}
+			else
+			{
+				// It's our responsibility to clear the BindingContext for the children
+				// Given that we've set them manually in CreateItemView
+				child.BindingContext = null;
+				layout.Replace(CreateItemView(item, template), index);
+			}
+		}
+		
+		static View CreateItemView(object item, DataTemplate dataTemplate)
+		{
+			var view = (View)dataTemplate.CreateContent();
+			SetBindableLayoutTemplate(view, dataTemplate);
+			view.BindingContext = item;
+			return view;
 		}
 	}
 }

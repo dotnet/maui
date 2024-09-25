@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static CALayer? CreateCALayer(this SolidPaint solidPaint, CGRect frame = default)
 		{
-			var solidColorLayer = new CALayer
+			var solidColorLayer = new StaticCALayer
 			{
 				ContentsGravity = CALayer.GravityResizeAspectFill,
 				Frame = frame,
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Graphics
 			var p1 = linearGradientPaint.StartPoint;
 			var p2 = linearGradientPaint.EndPoint;
 
-			var linearGradientLayer = new CAGradientLayer
+			var linearGradientLayer = new StaticCAGradientLayer
 			{
 				ContentsGravity = CALayer.GravityResizeAspectFill,
 				Frame = frame,
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Graphics
 			var center = radialGradientPaint.Center;
 			var radius = radialGradientPaint.Radius;
 
-			var radialGradientLayer = new CAGradientLayer
+			var radialGradientLayer = new StaticCAGradientLayer
 			{
 				ContentsGravity = CALayer.GravityResizeAspectFill,
 				Frame = frame,
