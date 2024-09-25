@@ -107,6 +107,10 @@ jobs:
       displayName: Run $(PLATFORM_NAME) templates build tests
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
+    - publish: ${{ parameters.checkoutDirectory }}/**/*.binlog
+      condition: always()
+      artifact: template-build-tests
+
     - task: PublishTestResults@2
       displayName: Publish the $(PLATFORM_NAME) templates build tests
       condition: always()
