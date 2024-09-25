@@ -149,4 +149,7 @@ steps:
         filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
         arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
       env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+        Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    
+    - template: ../../eng/common/templates-official/steps/enable-internal-sources.yml
+    - template: ../../eng/common/templates-official/steps/enable-internal-runtimes.yml
