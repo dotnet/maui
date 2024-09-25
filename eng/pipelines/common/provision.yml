@@ -152,5 +152,5 @@ steps:
       env:
         Token: $(dn-bot-dnceng-artifact-feeds-rw)
     
-    - template: ../../eng/common/templates-official/steps/enable-internal-sources.yml
-    - template: ../../eng/common/templates-official/steps/enable-internal-runtimes.yml
+    - template: ../../common/templates-official/steps/enable-internal-sources.yml
+    - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
