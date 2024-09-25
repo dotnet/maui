@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID || WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
