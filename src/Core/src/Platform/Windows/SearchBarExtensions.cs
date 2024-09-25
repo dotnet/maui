@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Platform
 
 			var child = platformControl.GetChildren<TextBox>();
 
-			if (child is not null && child.Count() > 0)
+			if (child is not null)
 			{
 				var textBox = child.FirstOrDefault();
 				if (textBox is not null)
