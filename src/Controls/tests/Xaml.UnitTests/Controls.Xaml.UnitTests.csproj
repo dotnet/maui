@@ -9,8 +9,6 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023;XC0025;XC0045</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
-
-    <!-- enable compilation of bindings with Source -->
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
 
