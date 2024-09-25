@@ -16,7 +16,6 @@ parameters:
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
-  is1ESPipeline: false
 
 steps:
   # Prepare macOS
@@ -157,6 +156,5 @@ steps:
         storageAccount: dotnetbuilds
         container: internal
         permissions: rl
-        is1ESPipeline: ${{ parameters.is1ESPipeline }}
-        
+
     - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
