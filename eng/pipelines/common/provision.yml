@@ -148,13 +148,10 @@ steps:
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
+
+    - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
       parameters:
         federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
         outputVariableName: ${{ parameters.outputVariableName }}
         expiryInHours: ${{ parameters.expiryInHours }}
         base64Encode: ${{ parameters.base64Encode }}
-        storageAccount: dotnetbuilds
-        container: internal
-        permissions: rl
-
-    - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
