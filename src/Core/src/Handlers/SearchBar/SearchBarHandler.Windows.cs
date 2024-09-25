@@ -1,5 +1,6 @@
 #nullable enable
 using Microsoft.UI.Xaml.Controls;
+
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, AutoSuggestBox>
@@ -90,7 +91,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler!.PlatformView?.UpdateMaxLength(searchBar, textbox);
+			handler.PlatformView?.UpdateMaxLength(searchBar);
 		}
 
 		public static void MapIsReadOnly(ISearchBarHandler handler, ISearchBar searchBar)
