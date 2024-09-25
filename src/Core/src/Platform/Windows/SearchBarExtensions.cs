@@ -105,15 +105,16 @@ namespace Microsoft.Maui.Platform
 			platformControl.VerticalContentAlignment = searchBar.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
 
-		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar, TextBox textbox)
+		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
+			var textbox = FindChildOfType<TextBox>(platformControl);
+
 			var maxLength = searchBar.MaxLength;
 
 			if (maxLength == -1)
 				maxLength = int.MaxValue;
-
-			textbox.MaxLength = searchBar.MaxLength;
-
+			if (textbox != null)
+				textbox!.MaxLength = searchBar.MaxLength;
 			if (maxLength == 0)
 				MauiAutoSuggestBox.SetIsReadOnly(platformControl, true);
 			else
@@ -166,6 +167,26 @@ namespace Microsoft.Maui.Platform
 			"TextControlButtonForegroundPointerOver",
 			"TextControlButtonForegroundPressed",
 		};
+
+		static T? FindChildOfType<T>(DependencyObject parent) where T : DependencyObject
+		{
+			int childCount = VisualTreeHelper.GetChildrenCount(parent);
+			for (int i = 0; i < childCount; i++)
+			{
+				DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+				if (child is T foundChild)
+				{
+					return foundChild;
+				}
+				// Recursively search for the child within this child's children
+				T? result = FindChildOfType<T>(child);
+				if (result != null)
+				{
+					return result;
+				}
+			}
+			return null;
+		}
 
 		internal static void UpdateCancelButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
