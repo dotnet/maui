@@ -248,9 +248,11 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
 		public static void UpdateBackgroundLayerFrame(this UIView view) =>
 			view.UpdateBackgroundLayerFrame(BackgroundLayerName);
 
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
 		internal static void UpdateBackgroundLayerFrame(this UIView view, string layerName)
 		{
 			if (view.Frame.IsEmpty)

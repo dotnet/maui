@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			UpdateClip();
-			this.UpdateBackgroundLayerFrame();
 		}
 
 		internal IBorderStroke? Clip
