@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		internal static readonly string AppHostAddress = HostAddressHelper.GetAppHostAddress();
 
 		/// <summary>
-		/// Gets the application's base URI. Defaults to <c>https://localhost/</c>.
+		/// Gets the application's base URI. Defaults to <c>https://0.0.0.1/</c>.
 		/// </summary>
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 
