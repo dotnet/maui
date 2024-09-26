@@ -113,6 +113,8 @@ jobs:
         SourceFolder: '$(Build.SourcesDirectory)'
         Contents: |
           **/*.binlog
+          ../**/*.binlog
+          ../../**/*.binlog
         TargetFolder: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
       continueOnError: true
       condition: succeededOrFailed()
