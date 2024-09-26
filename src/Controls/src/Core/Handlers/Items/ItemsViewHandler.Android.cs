@@ -114,9 +114,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				IView view = emptyView as IView ?? (emptyView as DataTemplate)?.CreateContent() as IView;
 
-				if (view != null)
+				if (view is not null)
 				{
-					if (view.Handler == null)
+					if (view.Handler is null)
 					{
 						TemplateHelpers.GetHandler(view as View, this.MauiContext);
 					}
