@@ -113,7 +113,6 @@ namespace Microsoft.Maui.Platform
 				maxLength = int.MaxValue;
 
 			var children = platformControl.GetChildren<TextBox>();
-
 			if (children is not null)
 			{
 				var textBox = children.FirstOrDefault();
