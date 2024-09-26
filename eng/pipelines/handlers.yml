@@ -71,8 +71,8 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
+        poolName: Azure Pipelines
+        vmImage: macOS-14
         artifact: build-macos
  
   - name: PackPlatforms
@@ -83,8 +83,8 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: nuget
       - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
+        poolName: Azure Pipelines
+        vmImage: macOS-14
         artifact: nuget-macos
 
   - name: BuilTemplatePlatforms
@@ -95,25 +95,19 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
+        poolName: Azure Pipelines
+        vmImage: macOS-14
         artifact: build-macos
 
   - name: RunTemplatePlatforms
     type: object
     default:
-    - name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+    - name: Azure Pipelines
+      vmImage: macOS-14
       testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+    - name: Azure Pipelines
+      vmImage:  macOS-14
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -158,9 +152,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Sonoma
-                - macOS.Architecture -equals x64
             steps:
               - template: common/provision.yml
                 parameters:
@@ -200,9 +191,6 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Sonoma
-              - macOS.Architecture -equals x64
           variables:
             - name: _buildScript
               value: $(Build.SourcesDirectory)/build.cmd -ci
@@ -248,9 +236,6 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Sonoma
-              - macOS.Architecture -equals x64
           steps:
             - template: common/provision.yml
               parameters:

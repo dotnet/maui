@@ -30,7 +30,7 @@ stages:
         clean: all
       displayName: "Android emulator tests"
       pool: ${{ parameters.androidPool }}
-      timeoutInMinutes: 60
+      timeoutInMinutes: 120
       strategy:
         matrix:
           # create all the variables used for the matrix

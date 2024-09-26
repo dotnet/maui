@@ -22,29 +22,23 @@ parameters:
     type: object
     default:
     - name: Windows
-      poolName: $(windowsVmPool)
-      vmImage: $(windowsVmImage)
+      poolName: Azure Pipelines
+      vmImage: macOS-14
       artifact: templates-windows
     - name: macOS
-      poolName: $(macOSXVmPool)
-      vmImage: $(macOSXVmImage)
+      poolName: Azure Pipelines
+      vmImage: macOS-14
       artifact: templates-macos
 
   - name: RunPlatforms
     type: object
     default:
-    - name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+    - name: Azure Pipelines
+      vmImage: macOS-14
       testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+    - name: Azure Pipelines
+      vmImage: macOS-14
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -70,9 +64,7 @@ jobs:
   pool:
     name: $(POOL_NAME)
     vmImage: $(POOL_VIMAGE)
-    demands:
-      - macOS.Name -equals Sonoma
-      - macOS.Architecture -equals x64
+    
   steps:
 
   - ${{ each step in parameters.prepareSteps }}:

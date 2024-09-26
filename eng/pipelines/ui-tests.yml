@@ -94,20 +94,14 @@ parameters:
   - name: androidCompatibilityPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: macOS-14
 
   - name: iosCompatibilityPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: macOS-14
 
 resources:
   repositories:
