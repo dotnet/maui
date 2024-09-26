@@ -6,11 +6,11 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 18204, "[iOS] Drawing of Borders lags behind other elements creating bizarre overlaps and glitches", PlatformAffected.iOS)]
+[Issue(IssueTracker.None, 0, "Border and shadow drawing verifications", PlatformAffected.All)]
 
-public partial class Issue18204 : ContentPage
+public partial class BorderAndShadowDrawingVerifications : ContentPage
 {
-	public Issue18204()
+	public BorderAndShadowDrawingVerifications()
 	{
 		InitializeComponent();
 	}
@@ -21,6 +21,12 @@ public partial class Issue18204 : ContentPage
 		button.CancelAnimations();
 		var targetHeight = button.HeightRequest == 200.0 ? 400.0 : 200.0;
 		button.Animate("Height", new Animation(v => button.HeightRequest = v, button.Height, targetHeight, Easing.Linear));
+	}
+	
+	private void ChangeShadowClicked(object sender, EventArgs e)
+	{
+		var button = (View)TheButton.Parent;
+		button.Shadow.Radius += 16;
 	}
 	
 	private void ShowHideClicked(object sender, EventArgs e)

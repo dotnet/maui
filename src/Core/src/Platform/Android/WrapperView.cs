@@ -97,6 +97,8 @@ namespace Microsoft.Maui.Platform
 			{
 				ClearShadowResources();
 			}
+
+			Invalidate();
 		}
 
 		partial void BorderChanged()

@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue18204"
-             Title="Issue18204">
+             x:Class="Maui.Controls.Sample.Issues.BorderAndShadowDrawingVerifications"
+             Title="BorderAndShadowDrawingVerifications">
     <ContentPage.Resources>
       <Color x:Key="TealFadeStart">#1B836D</Color>
       <Color x:Key="TealFadeEnd">#015b66</Color>
       <Color x:Key="TealFadeStartHover">#2aab88</Color>
       <Color x:Key="TealFadeEndHover">#026875</Color>
     </ContentPage.Resources>
-    <VerticalStackLayout Padding="24" Spacing="30">
+    <VerticalStackLayout Padding="16" Spacing="8">
       <Button AutomationId="ChangeSize"
               Clicked="ChangeSizeClicked"
               Text="Change Size"
@@ -20,10 +20,15 @@
               Text="Show/Hide"
               BackgroundColor="WhiteSmoke"
               WidthRequest="200" />
+      <Button AutomationId="ChangeShadow"
+              Clicked="ChangeShadowClicked"
+              Text="Change Shadow"
+              BackgroundColor="WhiteSmoke"
+              WidthRequest="200" />
       <Border
         HorizontalOptions="Center"
         BackgroundColor="LightBlue"
-        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=24, Opacity=0.2}"
+        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=16, Opacity=0.6}"
         StrokeShape="{RoundRectangle CornerRadius=20}">
         <Button x:Name="TheButton" BackgroundColor="LightGreen" WidthRequest="200" HeightRequest="400" />
       </Border>
@@ -31,7 +36,7 @@
               BackgroundColor="Transparent"
               StrokeShape="{RoundRectangle CornerRadius=20}"
               StrokeThickness="0"
-              Shadow="{Shadow Brush=Black, Offset='0,2', Radius=24, Opacity=0.5}"
+              Shadow="{Shadow Brush=Black, Offset='0,2', Radius=32, Opacity=0.8}"
               IsVisible="False"
               Stroke="Transparent">
         <Border.Background>
