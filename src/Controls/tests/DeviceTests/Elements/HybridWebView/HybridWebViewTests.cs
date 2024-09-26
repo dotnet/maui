@@ -1,4 +1,4 @@
-﻿#if !ANDROID
+﻿#if !ANDROID && !IOS
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
