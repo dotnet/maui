@@ -15,8 +15,8 @@
             x:Name="deleteBtn">
             <Button.CommandParameter>
                 <MultiBinding Converter="{StaticResource MultiValueConverter}">
-                    <Binding Source="Dummy"/>
-                    <Binding Source="Edit"/>
+                    <Binding Source="Dummy" x:DataType="{x:Null}"/>
+                    <Binding Source="Edit" x:DataType="{x:Null}"/>
                 </MultiBinding>
             </Button.CommandParameter>
             <Button.Triggers>
@@ -40,15 +40,15 @@
             x:Name="editBtn">
             <Button.CommandParameter>
                 <MultiBinding Converter="{StaticResource MultiValueConverter}">
-                    <Binding Source="Dummy"/>
-                    <Binding Source="Edit"/>
+                    <Binding Source="Dummy" x:DataType="{x:Null}"/>
+                    <Binding Source="Edit" x:DataType="{x:Null}"/>
                 </MultiBinding>
             </Button.CommandParameter>
             <Button.Triggers>
-                <DataTrigger TargetType="Button" Binding="{Binding Mode}" Value="Edit" x:DataType="local:Maui18123VM">
+                <DataTrigger TargetType="Button" Binding="{Binding Mode, x:DataType=local:Maui18123VM}" Value="Edit" >
                     <Setter Property="Text" Value="SUBMIT" />
                 </DataTrigger>
-                <DataTrigger TargetType="Button" Binding="{Binding Mode}" Value="Create" x:DataType="local:Maui18123VM">
+                <DataTrigger TargetType="Button" Binding="{Binding Mode, x:DataType=local:Maui18123VM}" Value="Create" >
                     <Setter Property="Text" Value="SUBMIT" />
                     <Setter Property="CommandParameter" Value="Edit"/>
                 </DataTrigger>

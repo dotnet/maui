@@ -7,7 +7,6 @@
         <SearchHandler
             x:Name="searchHandler"
             Command="{Binding FilterCommand}"
-            CommandParameter="{Binding Source={x:Reference searchHandler}, Path=Query}" 
-            x:DataType="local:Gh5706VM" />
+            CommandParameter="{Binding Source={x:Reference searchHandler}, Path=Query}"  />
     </Shell.SearchHandler>
 </Shell>

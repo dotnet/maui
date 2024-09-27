@@ -22,12 +22,12 @@
                             Text="BTN 1" 
                             HorizontalOptions="FillAndExpand" 
                             CommandParameter="{Binding}" 
-                            Command="{Binding BindingContext.Button1Command, Source={x:Reference self}}" x:DataType="swi:ICommand"/>
+                            Command="{Binding BindingContext.Button1Command, Source={x:Reference self}}" x:DataType="local:Gh7097"/>
                         <Button 
                             Text="BTN 2" 
                             HorizontalOptions="FillAndExpand" 
                             CommandParameter="{Binding}" 
-                            Command="{Binding BindingContext.Button2Command, Source={x:Reference self}}" x:DataType="swi:ICommand"/>
+                            Command="{Binding BindingContext.Button2Command, Source={x:Reference self}}" x:DataType="local:Gh7097"/>
                     </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
