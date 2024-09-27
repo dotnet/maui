@@ -301,16 +301,28 @@ namespace Microsoft.Maui.Controls
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
+				if (leadingContent is Layout layout)
+				{
+					layout.IgnoreSafeArea = true;
+				}
 				PassthroughElements.Add(leadingContent);
 			}
 
 			if (controlTemplate?.GetTemplateChild(TitleBarContent) is IView content)
 			{
+				if (content is Layout layout)
+				{
+					layout.IgnoreSafeArea = true;
+				}
 				PassthroughElements.Add(content);
 			}
 
 			if (controlTemplate?.GetTemplateChild(TitleBarTrailing) is IView trailingContent)
 			{
+				if (trailingContent is Layout layout)
+				{
+					layout.IgnoreSafeArea = true;
+				}
 				PassthroughElements.Add(trailingContent);
 			}
 
@@ -349,7 +361,11 @@ namespace Microsoft.Maui.Controls
 #if !MACCATALYST
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
-				}
+				},
+#if IOS || MACCATALYST
+				IgnoreSafeArea = true,
+				// HeightRequest = 200,
+#endif
 			};
 
 			contentGrid.SetBinding(
@@ -371,7 +387,7 @@ namespace Microsoft.Maui.Controls
 			#region Leading content
 			var leadingContent = new ContentView()
 			{
-				IsVisible = false
+				IsVisible = false,
 			};
 
 			contentGrid.Add(leadingContent);
@@ -419,7 +435,7 @@ namespace Microsoft.Maui.Controls
 				VerticalOptions = LayoutOptions.Center,
 				MinimumWidthRequest = 48,
 				FontSize = 12,
-				IsVisible = false
+				IsVisible = false,
 			};
 
 			contentGrid.Add(titleLabel);
@@ -473,7 +489,7 @@ namespace Microsoft.Maui.Controls
 				MinimumWidthRequest = 48,
 				FontSize = 12,
 				Opacity = 0.7,
-				IsVisible = false
+				IsVisible = false,
 			};
 
 			contentGrid.Add(subtitleLabel);
@@ -497,7 +513,7 @@ namespace Microsoft.Maui.Controls
 			#region Content
 			var content = new ContentView()
 			{
-				IsVisible = false
+				IsVisible = false,
 			};
 
 			contentGrid.Add(content);
@@ -516,7 +532,7 @@ namespace Microsoft.Maui.Controls
 			#region Trailing content
 			var trailingContent = new ContentView()
 			{
-				IsVisible = false
+				IsVisible = false,
 			};
 
 			contentGrid.Add(trailingContent);
