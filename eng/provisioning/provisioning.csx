@@ -15,6 +15,8 @@ string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS"
 string SKIP_ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_SDKS");
 string SKIP_ANDROID_API_IMAGES = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_IMAGES");
 
+string INSTALL_DEFAULT_ANDROID_API = Environment.GetEnvironmentVariable ("INSTALL_DEFAULT_ANDROID_API");
+
 
 Console.WriteLine($"LOGGING:");
 Console.WriteLine($"ANDROID_API_SDKS: {ANDROID_API_SDKS}");
@@ -74,6 +76,12 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 	AndroidSdk().SdkManagerPackage ("build-tools;35.0.0");
 }
 
+if(!string.IsNullOrEmpty(INSTALL_DEFAULT_ANDROID_API))
+{
+	AndroidSdk()
+		.ApiLevel((AndroidApiLevel)35)
+		.SdkManagerPackage ("build-tools;35.0.0");;
+}
 
 else if(!String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 {
