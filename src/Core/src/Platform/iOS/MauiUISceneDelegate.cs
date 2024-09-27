@@ -150,6 +150,7 @@ namespace Microsoft.Maui
 						.MainSystem
 						.SetNeedsRebuild();
 				}
+				Console.WriteLine("TJ IS IN THE DIDUPDATE VIRTUAL!");
 			}
 		}
 	}

@@ -91,6 +91,12 @@ namespace Microsoft.Maui.Platform
 			if (currentPlatformView == null)
 				return;
 			currentPlatformView.Frame = View!.Bounds;
+
+#if MACCATALYST
+			var window = View.Window;
+			var mauiWindow = window.GetWindow() as IWindow;
+			var titleBar = mauiWindow?.TitleBar;
+#endif
 		}
 
 		public void Reload() => SetView(CurrentView, true);

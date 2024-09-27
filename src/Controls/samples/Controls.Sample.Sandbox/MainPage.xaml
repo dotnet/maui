@@ -4,4 +4,29 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+	<!-- <Window.TitleBar>
+		<TitleBar
+			x:Name="TeamsTitleBar"
+			HeightRequest="46"
+			Title="Hello World">
+			<TitleBar.Content>
+			<Entry
+				x:Name="SearchTitleBar"
+				Placeholder="Search"
+				VerticalOptions="Center"
+				MinimumWidthRequest="300"
+				MaximumWidthRequest="450"
+				HeightRequest="32"/>
+			</TitleBar.Content>
+		</TitleBar>
+	</Window.TitleBar> -->
+
+<StackLayout Background="lightblue">
+				<Label Text="Welcome to GPT-Generated Page" 
+					VerticalOptions="CenterAndExpand" 
+					HorizontalOptions="CenterAndExpand" />
+				<Entry Placeholder="Username" />
+				<Entry Placeholder="Password" IsPassword="True" />
+				<Button Text="Submit" />
+			</StackLayout>
 </ContentPage>

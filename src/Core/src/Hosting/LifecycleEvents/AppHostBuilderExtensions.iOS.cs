@@ -58,6 +58,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			iOS
 				.SceneWillEnterForeground(scene =>
 				{
+					Console.WriteLine("TJ SceneWillEnterForeground");
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
 						return;
 
@@ -69,6 +70,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.SceneOnActivated(scene =>
 				{
+					Console.WriteLine("TJ SceneOnActivated");
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
 						return;
 
@@ -77,6 +79,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.SceneOnResignActivation(scene =>
 				{
+					Console.WriteLine("TJ SceneOnResignActivation");
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
 						return;
 
@@ -85,6 +88,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.SceneDidEnterBackground(scene =>
 				{
+					Console.WriteLine("TJ SceneDidEnterBackground");
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
 						return;
 
@@ -93,6 +97,7 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.SceneDidDisconnect(scene =>
 				{
+					Console.WriteLine("TJ SceneDidDisconnect");
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
 						return;
 
@@ -110,6 +115,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			iOS = iOS
 				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
 				{
+					Console.WriteLine("TJ in AppHostBuilderExtensions");
 					if (!OperatingSystem.IsIOSVersionAtLeast(13))
 						return;
 

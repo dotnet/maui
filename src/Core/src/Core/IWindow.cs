@@ -130,7 +130,8 @@ namespace Microsoft.Maui
 
 		float RequestDisplayDensity();
 
-#if WINDOWS
+#pragma warning disable RS0016
+#if WINDOWS || MACCATALYST
 		ITitleBar? TitleBar => null;
 		Rect[]? TitleBarDragRectangles => null;
 #endif

@@ -301,16 +301,28 @@ namespace Microsoft.Maui.Controls
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
+				if (leadingContent is Layout layout)
+				{
+					layout.IgnoreSafeArea = true;
+				}
 				PassthroughElements.Add(leadingContent);
 			}
 
 			if (controlTemplate?.GetTemplateChild(TitleBarContent) is IView content)
 			{
+				if (content is Layout layout)
+				{
+					layout.IgnoreSafeArea = true;
+				}
 				PassthroughElements.Add(content);
 			}
 
 			if (controlTemplate?.GetTemplateChild(TitleBarTrailing) is IView trailingContent)
 			{
+				if (trailingContent is Layout layout)
+				{
+					layout.IgnoreSafeArea = true;
+				}
 				PassthroughElements.Add(trailingContent);
 			}
 
@@ -349,8 +361,14 @@ namespace Microsoft.Maui.Controls
 #if !MACCATALYST
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
-				}
+				},
+#if IOS || MACCATALYST
+				IgnoreSafeArea = true,
+				HeightRequest = 200,
+#endif
 			};
+
+			// RemoveSafeArea(contentGrid);
 			
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
@@ -371,8 +389,12 @@ namespace Microsoft.Maui.Controls
 			#region Leading content
 			var leadingContent = new ContentView()
 			{
-				IsVisible = false
+				IsVisible = false,
+#if IOS || MACCATALYST
+				// IgnoreSafeArea = true,
+#endif
 			};
+			// RemoveSafeArea(leadingContent);
 
 			contentGrid.Add(leadingContent);
 			contentGrid.SetColumn(leadingContent, 0);
@@ -395,7 +417,11 @@ namespace Microsoft.Maui.Controls
 				VerticalOptions = LayoutOptions.Center,
 				Margin = new Thickness(16, 0, 0, 0),
 				IsVisible = false,
+#if IOS || MACCATALYST
+				// IgnoreSafeArea = true,
+#endif
 			};
+			// RemoveSafeArea(icon);
 
 			contentGrid.Add(icon);
 			contentGrid.SetColumn(icon, 1);
@@ -419,8 +445,12 @@ namespace Microsoft.Maui.Controls
 				VerticalOptions = LayoutOptions.Center,
 				MinimumWidthRequest = 48,
 				FontSize = 12,
-				IsVisible = false
+				IsVisible = false,
+#if IOS || MACCATALYST
+				// IgnoreSafeArea = true,
+#endif
 			};
+			// RemoveSafeArea(titleLabel);
 			
 			contentGrid.Add(titleLabel);
 			contentGrid.SetColumn(titleLabel, 2);
@@ -473,8 +503,12 @@ namespace Microsoft.Maui.Controls
 				MinimumWidthRequest = 48,
 				FontSize = 12,
 				Opacity = 0.7,
-				IsVisible = false
+				IsVisible = false,
+#if IOS || MACCATALYST
+				// IgnoreSafeArea = true,
+#endif
 			};
+			// RemoveSafeArea(subtitleLabel);
 
 			contentGrid.Add(subtitleLabel);
 			contentGrid.SetColumn(subtitleLabel, 3);
@@ -497,8 +531,12 @@ namespace Microsoft.Maui.Controls
 			#region Content
 			var content = new ContentView()
 			{
-				IsVisible = false
+				IsVisible = false,
+#if IOS || MACCATALYST
+				// IgnoreSafeArea = true,
+#endif
 			};
+			// RemoveSafeArea(content);
 
 			contentGrid.Add(content);
 			contentGrid.SetColumn(content, 4);
@@ -516,8 +554,12 @@ namespace Microsoft.Maui.Controls
 			#region Trailing content
 			var trailingContent = new ContentView()
 			{
-				IsVisible = false
+				IsVisible = false,
+#if IOS || MACCATALYST
+				// IgnoreSafeArea = true,
+#endif
 			};
+			// RemoveSafeArea(trailingContent);
 
 			contentGrid.Add(trailingContent);
 			contentGrid.SetColumn(trailingContent, 5);
@@ -545,6 +587,16 @@ namespace Microsoft.Maui.Controls
 			VisualStateManager.SetVisualStateGroups(contentGrid, visualStateGroups);
 
 			return contentGrid;
+		}
+
+		void RemoveSafeArea (View view)
+		{
+#if IOS || MACCATALYST
+			if (view is ISafeAreaView safeAreaView)
+			{
+				// safeAreaView.IgnoreSafeArea = true;
+			}
+#endif
 		}
 
 		static VisualStateGroup GetVisibleStateGroup(string targetName, string visibleState, string hiddenState)

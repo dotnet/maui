@@ -195,6 +195,7 @@ namespace Microsoft.Maui.Handlers
 				.UpdateTitleBar(window, handler.MauiContext);
 		}
 
+		// TODO can we have the same in Catalyst?
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
 		{
 			if (!args.DidSizeChange && !args.DidPositionChange)
