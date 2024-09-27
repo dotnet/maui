@@ -63,6 +63,20 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "CookieResult"
 				};
 
+				var successNavigationLabel = new Label()
+				{
+					IsVisible = false,
+					Text = "Page was loaded",
+					AutomationId = "SuccessNavigationLabel"
+				};
+
+				var successCookiesLabel = new Label()
+				{
+					IsVisible = false,
+					Text = "Success",
+					AutomationId = "SuccessCookiesLabel"
+				};
+
 				webView.Navigating += (_, __) =>
 				{
 					if (cookieExpectation != null)
@@ -72,7 +86,10 @@ namespace Maui.Controls.Sample.Issues
 				webView.Navigated += async (_, __) =>
 				{
 					if (cookieResult.Text == "Loading")
+					{
 						cookieResult.Text = "Loaded";
+						successNavigationLabel.IsVisible = true;
+					}
 
 					_currentCookieValue = await webView.EvaluateJavaScriptAsync("document.cookie");
 					cookieExpectation?.Invoke(_currentCookieValue);
@@ -90,7 +107,12 @@ namespace Maui.Controls.Sample.Issues
 						{
 							Text = "Modify the Cookie Container"
 						},
-						cookieResult,
+						new HorizontalStackLayout()
+						{
+							cookieResult,
+							successNavigationLabel,
+							successCookiesLabel
+						},
 						new StackLayout()
 						{
 							Orientation = StackOrientation.Horizontal,
@@ -104,6 +126,7 @@ namespace Maui.Controls.Sample.Issues
 									{
 										webView.Cookies = cookieContainer;
 										cookieResult.Text = String.Empty;
+										successCookiesLabel.IsVisible = false;
 										cookieExpectation = (cookieValue) =>
 										{
 											if(cookieValue.Contains("TestCookie", StringComparison.OrdinalIgnoreCase))
@@ -112,7 +135,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												cookieResult.Text = "Success";
+												successCookiesLabel.IsVisible = true;
 											}
 										};
 
@@ -140,7 +163,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												cookieResult.Text = "Success";
+												successCookiesLabel.IsVisible = true;
 											}
 										};
 
@@ -155,6 +178,7 @@ namespace Maui.Controls.Sample.Issues
 									Command = new Command(() =>
 									{
 										cookieResult.Text = String.Empty;
+										successCookiesLabel.IsVisible = false;
 										cookieExpectation = (cookieValue) =>
 										{
 											if(Regex.Matches(cookieValue, "TestCookie").Count > 1)
@@ -163,7 +187,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												cookieResult.Text = "Success";
+												successCookiesLabel.IsVisible = true;
 											}
 										};
 
@@ -196,6 +220,7 @@ namespace Maui.Controls.Sample.Issues
 									{
 										webView.Cookies = cookieContainer;
 										cookieResult.Text = String.Empty;
+										successCookiesLabel.IsVisible = false;
 										cookieContainer.Add(new Cookie
 										{
 											Name = $"TestCookie{cookieContainer.Count}",
@@ -218,7 +243,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												cookieResult.Text = "Success";
+												successCookiesLabel.IsVisible = true;
 											}
 										};
 
@@ -248,6 +273,7 @@ namespace Maui.Controls.Sample.Issues
 										};
 
 										cookieResult.Text = String.Empty;
+										successCookiesLabel.IsVisible = false;
 										cookieExpectation = (cookieValue) =>
 										{
 											if(cookieValue.Contains(cookieToAdd.Name, StringComparison.OrdinalIgnoreCase))
@@ -256,7 +282,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												cookieResult.Text = "Success";
+												successCookiesLabel.IsVisible = true;
 											}
 										};
 

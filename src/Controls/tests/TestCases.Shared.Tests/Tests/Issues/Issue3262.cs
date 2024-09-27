@@ -4,17 +4,17 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.WebView)]
 	public class Issue3262 : _IssuesUITest
 	{
 		public Issue3262(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
+		protected override bool ResetAfterEachTest => true;
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
 		[Test]
-		[Category(UITestCategories.WebView)]
-		[FailsOnAllPlatforms]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			App.Tap("PageWithoutCookies");
@@ -22,12 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
 		public void ChangeDuringNavigating()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessNavigationLabel");
 			// add a couple cookies
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
@@ -36,12 +34,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
 		public void AddAdditionalCookieToWebView()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessNavigationLabel");
 			// add a couple cookies
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
@@ -50,23 +46,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
 		public void SetToOneCookie()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessNavigationLabel");
 			App.Tap("OneCookie");
 			ValidateSuccess();
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessNavigationLabel");
 			// add a cookie to verify said cookie remains
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
@@ -75,12 +67,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
 		public void RemoveAllTheCookiesIAdded()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessNavigationLabel");
 			// add a cookie so you can remove a cookie
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
@@ -92,7 +82,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			try
 			{
-				App.WaitForElement("Success");
+				App.WaitForElement("SuccessCookiesLabel");
 			}
 			catch
 			{
