@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.WebView)]
 	public class Issue3262 : _IssuesUITest
 	{
 		public Issue3262(TestDevice testDevice) : base(testDevice)
@@ -13,21 +14,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
 		[Test]
-		[Category(UITestCategories.WebView)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[FailsOnMac]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
+			App.WaitForElement("SuccessfullPageLoadLabel");
 			App.Tap("PageWithoutCookies");
 			App.WaitForElement("PageWithoutCookies");
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void ChangeDuringNavigating()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
@@ -36,12 +37,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void AddAdditionalCookieToWebView()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
@@ -50,23 +51,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void SetToOneCookie()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessfullPageLoadLabel");
 			App.Tap("OneCookie");
 			ValidateSuccess();
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a cookie to verify said cookie remains
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
@@ -75,12 +76,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[FailsOnMac]
+		[FailsOnWindows]
 		public void RemoveAllTheCookiesIAdded()
 		{
-			App.WaitForElement("Loaded");
+			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a cookie so you can remove a cookie
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
@@ -92,7 +93,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			try
 			{
-				App.WaitForElement("Success");
+				App.WaitForElement("SuccessCookiesLabel");
 			}
 			catch
 			{
