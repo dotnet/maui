@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 
-			const string url = "https://www.google.com";
+			const string url = "http://xamarin.com";
 
 			CookieContainer cookieContainer = new();
 			Uri uri = new(url, UriKind.RelativeOrAbsolute);
