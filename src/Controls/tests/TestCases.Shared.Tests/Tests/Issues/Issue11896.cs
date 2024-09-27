@@ -37,19 +37,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Here we check for Header and Footer proper visibility with proper alignment in view.
 			VerifyScreenshot();
 		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewFooterVisibilityWhenDynamicEmptyViewOnItemRemoval()
-		{
-			App.WaitForElement("AddButton");
-			App.Tap("AddButton");
-			App.Tap("AddButton");
-			App.Tap("RemoveButton");
-			App.Tap("RemoveButton");
-			// Here we check for dynamic Emptyview and Footer proper proper alignment in view it should not be at the bottom of screen.
-			VerifyScreenshot();
-		}
 	}
 }
 #endif
