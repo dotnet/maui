@@ -300,10 +300,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (bindingExtensionType.HasValue)
 				{
-					if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null, out var instructions))
+					// for backwards compatibility, it is possible to disable compilation of bindings with the `Source` property via a feature switch
+					// this feature switch is enabled by default only for NativeAOT and full trimming mode
+					bool hasSource = node.Properties.ContainsKey(new XmlName("", "Source"));
+					bool skipBindingCompilation = hasSource && !context.CompileBindingsWithSource;
+					if (!skipBindingCompilation)
 					{
-						foreach (var instruction in instructions)
-							yield return instruction;
+						if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null, out var instructions))
+						{
+							foreach (var instruction in instructions)
+								yield return instruction;
+						}
+					}
+					else
+					{
+						context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithSourceCompilationSkipped, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 					}
 				}
 
@@ -1759,6 +1770,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				XamlFilePath = parentContext.XamlFilePath,
 				LoggingHelper = parentContext.LoggingHelper,
 				ValidateOnly = parentContext.ValidateOnly,
+				CompileBindingsWithSource = parentContext.CompileBindingsWithSource,
 			};
 
 			//Instanciate nested class
