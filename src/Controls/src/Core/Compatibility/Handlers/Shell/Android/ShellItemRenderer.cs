@@ -85,7 +85,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			HookEvents(ShellItem);
 			SetupMenu();
-
+			var appearance = (ShellContext.Shell).GetAppearanceForPivot(ShellItem);
+			if (_bottomView.Background is ColorDrawable background)
+			{
+				var appearanceElement = appearance as IShellAppearanceElement;
+				if (appearanceElement != null)
+				{
+					background.Color = appearanceElement.EffectiveTabBarBackgroundColor.ToPlatform();
+				}
+			}
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
 			_bottomNavigationTracker = new BottomNavigationViewTracker();
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
