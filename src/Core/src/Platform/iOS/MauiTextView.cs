@@ -149,6 +149,17 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		void HidePlaceholderIfTextIsPresent(string? value)
+		{
+			_placeholderLabel.Hidden = !string.IsNullOrEmpty(value);
+		}
+
+		void OnChanged(object? sender, EventArgs e)
+		{
+			HidePlaceholderIfTextIsPresent(Text);
+			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+		}
+
 		void ShouldCenterVertically()
 		{
 			var contentHeight = ContentSize.Height;
@@ -161,17 +172,6 @@ namespace Microsoft.Maui.Platform
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
 				_ => ContentOffset,
 			};
-		}
-
-		void HidePlaceholderIfTextIsPresent(string? value)
-		{
-			_placeholderLabel.Hidden = !string.IsNullOrEmpty(value);
-		}
-
-		void OnChanged(object? sender, EventArgs e)
-		{
-			HidePlaceholderIfTextIsPresent(Text);
-			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		void UpdatePlaceholderFont(UIFont? value)
