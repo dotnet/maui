@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_bottomView.Background is ColorDrawable background)
 			{
 				var appearanceElement = appearance as IShellAppearanceElement;
-				if (appearanceElement != null)
+				if (appearanceElement is not null)
 				{
 					background.Color = appearanceElement.EffectiveTabBarBackgroundColor.ToPlatform();
 				}
