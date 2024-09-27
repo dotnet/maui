@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
@@ -49,6 +50,19 @@ namespace Microsoft.Maui.Controls
 		public DatePicker()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<DatePicker>>(() => new PlatformConfigurationRegistry<DatePicker>(this));
+		}
+
+		/// <summary>
+		/// Initialize <see cref="DateTime"/> on startup since first call without initializing beforehand takes too much time
+		/// See: https://github.com/dotnet/maui/issues/24929
+		/// </summary>
+		static DatePicker()
+		{
+			Task.Run(() =>
+			{
+				DateTime dateNow = DateTime.Now;
+				string dateString = dateNow.ToString();
+			});
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='Date']/Docs/*" />
