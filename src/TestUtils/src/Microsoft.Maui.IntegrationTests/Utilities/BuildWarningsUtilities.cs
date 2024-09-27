@@ -126,7 +126,33 @@ namespace Microsoft.Maui.IntegrationTests
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new()
+		{
+			new WarningsPerFile
+			{
+				File = "src/Controls/src/Xaml/XamlServiceProvider.cs",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "IL2026",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(IElementNode,HydrationContext)' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. XamlDataTypeProvider is not trim and AOT-compatible.",
+						}
+					},
+					new WarningsPerCode
+					{
+						Code = "IL3050",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(IElementNode,HydrationContext)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. XamlDataTypeProvider is not trim and AOT-compatible.",
+						}
+					},
+
+				}
+			},
+		};
 
 		#region Utility methods for generating the list of expected warnings
 
