@@ -173,17 +173,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return CGSize.Empty;
 			}
 
-			if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
-			{
-				// iOS 10 crashes if we try to dequeue a cell for measurement
-				// so we'll use an alternate method
-				return MeasureSupplementaryView(elementKind, section);
-			}
-
-			var cell = GetViewForSupplementaryElement(collectionView, elementKind,
-				NSIndexPath.FromItemSection(0, section)) as ItemsViewCell;
-
-			return cell.Measure();
+			// Dequeuing a supplementary view for measurement caused multiple instances of the header/footer to appear in the view.
+			// We now always use MeasureSupplementaryView, an alternate approach for calculating the size without dequeuing the view.
+			return MeasureSupplementaryView(elementKind, section);
 		}
 
 		internal void SetScrollAnimationEndedCallback(Action callback)
