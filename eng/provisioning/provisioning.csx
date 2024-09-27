@@ -1,7 +1,7 @@
 if (IsMac)
 {
-	// ForceJavaCleanup();
-	// MicrosoftOpenJdk ("11.0.13.8.1");
+	ForceJavaCleanup();
+	MicrosoftOpenJdk ("17.0.12");
 	//this is needed for tools on macos like for nuget pack additional target and for classic xamarin projects
 	Item("https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.206.macos10.xamarin.universal.pkg");
 	
