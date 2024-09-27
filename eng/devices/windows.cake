@@ -15,8 +15,6 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE
 var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_ID") ?? $"");
 
 // optional
-var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -39,6 +37,8 @@ bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
+
+var dotnetToolPath = GetDotnetToolPath();
 
 // Uninstall the deployed app
 var uninstallPS = new Action(() =>
@@ -139,23 +139,14 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-	var toolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("toolPath: {0}", toolPath);
+	Information("toolPath: {0}", dotnetToolPath);
 
 	Information("Building and publishing device test app");
 
 	// Build the app in publish mode
 	// Using the certificate thumbprint for the cert we just created
 	var s = new DotNetPublishSettings();
-	s.ToolPath = toolPath;
+	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
 	s.MSBuildSettings = new DotNetMSBuildSettings();
@@ -520,23 +511,9 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	Information("old dotnet root: {0}", DOTNET_ROOT);
-	Information("old dotnet path: {0}", DOTNET_PATH);
-
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("new dotnet toolPath: {0}", localToolPath);
-
-	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = localToolPath,
+			ToolPath = dotnetToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
@@ -548,7 +525,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, dotnetToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
 });
 
 RunTarget(TARGET);
