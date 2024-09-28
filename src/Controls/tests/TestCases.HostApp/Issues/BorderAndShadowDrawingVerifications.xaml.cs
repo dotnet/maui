@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues;
@@ -25,8 +26,20 @@ public partial class BorderAndShadowDrawingVerifications : ContentPage
 	
 	private void ChangeShadowClicked(object sender, EventArgs e)
 	{
-		var button = (View)TheButton.Parent;
-		button.Shadow.Radius += 16;
+		var border = (Border)TheButton.Parent;
+		border.Shadow.Radius += 16;
+	}
+
+	private void ChangeShapeClicked(object sender, EventArgs e)
+	{
+		var border = (Border)TheButton.Parent;
+		border.StrokeShape = new Ellipse();
+	}
+
+	private void ChangeClipClicked(object sender, EventArgs e)
+	{
+		var border = (Border)TheButton.Parent;
+		border.Clip = new RoundRectangleGeometry(40, new Rect(0, 0, 80, 80));
 	}
 	
 	private void ShowHideClicked(object sender, EventArgs e)

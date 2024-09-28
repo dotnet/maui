@@ -30,6 +30,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Display a border for the first time (initially IsVisible=false)
 			App.Click("ShowHide");
 			VerifyScreenshot("BorderShadowShownForTheFirstTime");
+
+			// Change shape of the border
+			App.Click("ChangeShape");
+			VerifyScreenshot("BorderShadowShapeChanged");
+
+			// Change clip of the border
+			App.Click("ChangeClip");
+			VerifyScreenshot("BorderShadowClipChanged");
 		}
 	}
 }

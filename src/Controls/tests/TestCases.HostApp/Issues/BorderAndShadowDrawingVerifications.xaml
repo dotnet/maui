@@ -10,21 +10,33 @@
       <Color x:Key="TealFadeEndHover">#026875</Color>
     </ContentPage.Resources>
     <VerticalStackLayout Padding="16" Spacing="8">
-      <Button AutomationId="ChangeSize"
-              Clicked="ChangeSizeClicked"
-              Text="Change Size"
-              BackgroundColor="WhiteSmoke"
-              WidthRequest="200" />
-      <Button AutomationId="ShowHide"
-              Clicked="ShowHideClicked"
-              Text="Show/Hide"
-              BackgroundColor="WhiteSmoke"
-              WidthRequest="200" />
-      <Button AutomationId="ChangeShadow"
-              Clicked="ChangeShadowClicked"
-              Text="Change Shadow"
-              BackgroundColor="WhiteSmoke"
-              WidthRequest="200" />
+      <Grid HorizontalOptions="Center" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+        <Button AutomationId="ChangeSize"
+                Grid.Row="0"
+                Grid.Column="0"
+                Clicked="ChangeSizeClicked"
+                Text="Change Size" />
+        <Button AutomationId="ShowHide"
+                Grid.Row="0"
+                Grid.Column="1"
+                Clicked="ShowHideClicked"
+                Text="Show/Hide" />
+        <Button AutomationId="ChangeClip"
+                Grid.Row="0"
+                Grid.Column="2"
+                Clicked="ChangeClipClicked"
+                Text="Change Clip" />
+        <Button AutomationId="ChangeShadow"
+                Grid.Row="1"
+                Grid.Column="0"
+                Clicked="ChangeShadowClicked"
+                Text="Change Shadow" />
+        <Button AutomationId="ChangeShape"
+                Grid.Row="1"
+                Grid.Column="1"
+                Clicked="ChangeShapeClicked"
+                Text="Change Shape" />
+      </Grid>
       <Border
         HorizontalOptions="Center"
         BackgroundColor="LightBlue"
