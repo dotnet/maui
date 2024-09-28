@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (datePickerDialog != null)
 			{
-				datePickerDialog.DatePicker.MinDate = (long)datePicker.MinimumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				datePickerDialog.DatePicker.MinDate = (long)datePicker.MinimumDate.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (datePickerDialog != null)
 			{
-				datePickerDialog.DatePicker.MaxDate = (long)datePicker.MaximumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				datePickerDialog.DatePicker.MaxDate = (long)datePicker.MaximumDate.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 
