@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.InnerTabbedPage"
+             Title="InnerTabbedPage"
+             Shell.TabBarIsVisible="True">
+    <Grid RowDefinitions="*, 60">
+        <StackLayout HorizontalOptions="FillAndExpand"
+                     VerticalOptions="FillAndExpand" BackgroundColor="Aqua">
+
+            <Button BackgroundColor="OrangeRed"
+                Text="Open NonTabbed Page"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
+                Clicked="OpenNonTabbedPage"/>
+
+        </StackLayout>
+        <Button BackgroundColor="OrangeRed"
+                Text="Open NonTabbed Page"
+                Grid.Row="1"
+                VerticalOptions="FillAndExpand"
+                HorizontalOptions="FillAndExpand"
+                Clicked="OpenNonTabbedPage"/>
+    </Grid>
+</ContentPage>
