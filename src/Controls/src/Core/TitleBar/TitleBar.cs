@@ -390,11 +390,7 @@ namespace Microsoft.Maui.Controls
 			var leadingContent = new ContentView()
 			{
 				IsVisible = false,
-#if IOS || MACCATALYST
-				// IgnoreSafeArea = true,
-#endif
 			};
-			// RemoveSafeArea(leadingContent);
 
 			contentGrid.Add(leadingContent);
 			contentGrid.SetColumn(leadingContent, 0);
@@ -417,11 +413,7 @@ namespace Microsoft.Maui.Controls
 				VerticalOptions = LayoutOptions.Center,
 				Margin = new Thickness(16, 0, 0, 0),
 				IsVisible = false,
-#if IOS || MACCATALYST
-				// IgnoreSafeArea = true,
-#endif
 			};
-			// RemoveSafeArea(icon);
 
 			contentGrid.Add(icon);
 			contentGrid.SetColumn(icon, 1);
@@ -446,11 +438,7 @@ namespace Microsoft.Maui.Controls
 				MinimumWidthRequest = 48,
 				FontSize = 12,
 				IsVisible = false,
-#if IOS || MACCATALYST
-				// IgnoreSafeArea = true,
-#endif
 			};
-			// RemoveSafeArea(titleLabel);
 			
 			contentGrid.Add(titleLabel);
 			contentGrid.SetColumn(titleLabel, 2);
@@ -504,11 +492,7 @@ namespace Microsoft.Maui.Controls
 				FontSize = 12,
 				Opacity = 0.7,
 				IsVisible = false,
-#if IOS || MACCATALYST
-				// IgnoreSafeArea = true,
-#endif
 			};
-			// RemoveSafeArea(subtitleLabel);
 
 			contentGrid.Add(subtitleLabel);
 			contentGrid.SetColumn(subtitleLabel, 3);
@@ -532,11 +516,7 @@ namespace Microsoft.Maui.Controls
 			var content = new ContentView()
 			{
 				IsVisible = false,
-#if IOS || MACCATALYST
-				// IgnoreSafeArea = true,
-#endif
 			};
-			// RemoveSafeArea(content);
 
 			contentGrid.Add(content);
 			contentGrid.SetColumn(content, 4);
@@ -555,11 +535,7 @@ namespace Microsoft.Maui.Controls
 			var trailingContent = new ContentView()
 			{
 				IsVisible = false,
-#if IOS || MACCATALYST
-				// IgnoreSafeArea = true,
-#endif
 			};
-			// RemoveSafeArea(trailingContent);
 
 			contentGrid.Add(trailingContent);
 			contentGrid.SetColumn(trailingContent, 5);
@@ -587,16 +563,6 @@ namespace Microsoft.Maui.Controls
 			VisualStateManager.SetVisualStateGroups(contentGrid, visualStateGroups);
 
 			return contentGrid;
-		}
-
-		void RemoveSafeArea (View view)
-		{
-#if IOS || MACCATALYST
-			if (view is ISafeAreaView safeAreaView)
-			{
-				// safeAreaView.IgnoreSafeArea = true;
-			}
-#endif
 		}
 
 		static VisualStateGroup GetVisibleStateGroup(string targetName, string visibleState, string hiddenState)

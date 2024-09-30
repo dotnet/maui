@@ -96,6 +96,8 @@ namespace Microsoft.Maui.Platform
 			var window = View.Window;
 			var mauiWindow = window.GetWindow() as IWindow;
 			var titleBar = mauiWindow?.TitleBar;
+			var titleBarFrame = titleBar?.PresentedContent?.Frame;
+			Console.WriteLine($"size: {titleBarFrame?.Height ?? -1}x{titleBarFrame?.Width ?? -1}");
 #endif
 		}
 
