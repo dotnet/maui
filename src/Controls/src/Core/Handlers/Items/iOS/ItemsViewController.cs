@@ -533,8 +533,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual CGRect DetermineEmptyViewFrame()
 		{
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y,
-				CollectionView.Frame.Width, CollectionView.Frame.Height);
+			nfloat emptyViewHeight = 0;
+
+			if (_emptyViewFormsElement is not null)
+			{
+				emptyViewHeight = (nfloat)_emptyViewFormsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity).Request.Height;
+			}
+			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width, emptyViewHeight);
 		}
 
 		protected void RemeasureLayout(VisualElement formsElement)
