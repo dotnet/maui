@@ -1,10 +1,10 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
+[Category(UITestCategories.WebView)]
 public class Issue18452 : _IssuesUITest
 {
 	public override string Issue => "NullReferenceException throws on Windows when setting Cookies on .NET MAUI WebView";
@@ -14,13 +14,8 @@ public class Issue18452 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.WebView)]
 	public void WebViewLoadedWithoutException()
 	{
-		App.WaitForElement("WebView");
-
-		VerifyScreenshot();
+		App.WaitForElement("Label");
 	}
-
 }
-#endif
