@@ -46,16 +46,28 @@ namespace Microsoft.Maui.Controls.Platform
 				return _defaultAutomationPropertiesAccessibilityView;
 			}
 
+			bool isInitializing = (Element.Handler as ElementHandler)?._isInitializing ?? false;
+
 			AccessibilityView? currentValue = null;
 
-			if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
+			if (isInitializing)
 			{
-				_defaultAutomationPropertiesAccessibilityView = currentValue = (AccessibilityView)Control.GetValue(NativeAutomationProperties.AccessibilityViewProperty);
+				currentValue = AccessibilityView.Content;
+				_defaultAutomationPropertiesAccessibilityView ??= AccessibilityView.Content;
+			} 
+			else 
+			{
+				if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
+				{
+					_defaultAutomationPropertiesAccessibilityView = currentValue = (AccessibilityView)Control.GetValue(NativeAutomationProperties.AccessibilityViewProperty);
+				}
 			}
 
 			var newValue = _defaultAutomationPropertiesAccessibilityView;
 
-			var elemValue = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
+			var elemValue = isInitializing 
+				? null
+				: (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
 
 			if (elemValue == true)
 			{
