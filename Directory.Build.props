@@ -130,26 +130,26 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>17.5</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>17.5</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>17.5</MacCatalystTargetFrameworkVersionSdkDefault>
-    <MacosTargetFrameworkVersionSdkDefault>14.5</MacosTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>18.0</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>18.0</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>18.0</MacCatalystTargetFrameworkVersionSdkDefault>
+    <MacosTargetFrameworkVersionSdkDefault>15.0</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>35.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
-    <IosTargetFrameworkVersion>17.5</IosTargetFrameworkVersion>
-    <TvosTargetFrameworkVersion>17.5</TvosTargetFrameworkVersion>
-    <MacCatalystTargetFrameworkVersion>17.5</MacCatalystTargetFrameworkVersion>
-    <MacosTargetFrameworkVersion>14.5</MacosTargetFrameworkVersion>
+    <IosTargetFrameworkVersion>18.0</IosTargetFrameworkVersion>
+    <TvosTargetFrameworkVersion>18.0</TvosTargetFrameworkVersion>
+    <MacCatalystTargetFrameworkVersion>18.0</MacCatalystTargetFrameworkVersion>
+    <MacosTargetFrameworkVersion>15.0</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>35.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>
     <!-- Previous .NET -->
-    <IosPreviousTargetFrameworkVersion>17.0</IosPreviousTargetFrameworkVersion>
-    <TvosPreviousTargetFrameworkVersion>17.0</TvosPreviousTargetFrameworkVersion>
-    <MacCatalystPreviousTargetFrameworkVersion>17.0</MacCatalystPreviousTargetFrameworkVersion>
-    <MacosPreviousTargetFrameworkVersion>14.0</MacosPreviousTargetFrameworkVersion>
-    <AndroidPreviousTargetFrameworkVersion>34.0</AndroidPreviousTargetFrameworkVersion>
+    <IosPreviousTargetFrameworkVersion>17.5</IosPreviousTargetFrameworkVersion>
+    <TvosPreviousTargetFrameworkVersion>17.5</TvosPreviousTargetFrameworkVersion>
+    <MacCatalystPreviousTargetFrameworkVersion>17.5</MacCatalystPreviousTargetFrameworkVersion>
+    <MacosPreviousTargetFrameworkVersion>14.5</MacosPreviousTargetFrameworkVersion>
+    <AndroidPreviousTargetFrameworkVersion>35.0</AndroidPreviousTargetFrameworkVersion>
     <WindowsPreviousTargetFrameworkVersion>10.0.19041.0</WindowsPreviousTargetFrameworkVersion>
     <Windows2PreviousTargetFrameworkVersion>10.0.20348.0</Windows2PreviousTargetFrameworkVersion>
     <TizenPreviousTargetFrameworkVersion>7.0</TizenPreviousTargetFrameworkVersion>
