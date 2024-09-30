@@ -15,114 +15,74 @@ namespace Microsoft.Maui.Controls
 	    
 	    SetterSpecificity[] _keys;
 	    T[] _values;
+
 	    int _count;
 	    
 	    public int Count => _count;
 
-		object _lock = new();
+	    public T this[SetterSpecificity key]
+	    {
+	        set => SetValue(key, value);
+	        get => GetValue(key);
+	    }
 
-		public object this[SetterSpecificity key]
-		{
-			set => SetValue(key, value);
-		}
+	    public SetterSpecificityList()
+	    {
+		    _keys = Array.Empty<SetterSpecificity>();
+		    _values = Array.Empty<T>();
+	    }
 
-		public void SetValue(SetterSpecificity specificity, object value)
-		{
-			if (_first is null || _first.Value.Key == specificity)
-			{
-				_first = new KeyValuePair<SetterSpecificity, object>(specificity, value);
-				lock(_lock) {
-					if (_values is not null)
-							_values[specificity] = value;
-				}
-				return;
-			}
-
-			if (_second is null || _second.Value.Key == specificity)
-			{
-				_second = new KeyValuePair<SetterSpecificity, object>(specificity, value);
-				lock(_lock) {
-					if (_values is not null)	
-						_values[specificity] = value;
-				}
-				return;
-			}
-
-			lock(_lock) {
-				if (_values is null)
-				{
-					_values = new()
-					{
-						[_first.Value.Key] = _first.Value.Value,
-						[_second.Value.Key] = _second.Value.Value,
-					};
-					// Clear the fields, to reduce duplication in memory
-					_first = null;
-					_second = null;
-				}
+	    public SetterSpecificityList(int initialCapacity)
+	    {
+		    if (initialCapacity == 0)
+		    {
+			    _keys = Array.Empty<SetterSpecificity>();
+			    _values = Array.Empty<T>();
+		    }
+		    else
+		    {
+			    _keys = new SetterSpecificity[initialCapacity];
+			    _values = new T[initialCapacity];
+		    }
+	    }
+	    
+	    /// <summary>
+	    /// Gets the highest specificity
+	    /// </summary>
+	    /// <returns></returns>
+	    public SetterSpecificity GetSpecificity()
+	    {
+	        var index = _count - 1;
+	        return index < 0 ? default : _keys[index];
+	    }
 			
-				_values[specificity] = value;
-			}
-		}
-
-		public void Remove(SetterSpecificity specificity)
-		{
-			lock(_lock)
-			{
-				if (_values is not null)
-					_values.Remove(specificity);
-			}
-			if (_first is not null && _first.Value.Key == specificity)
-				_first = null;
-			if (_second is not null && _second.Value.Key == specificity)
-				_second = null;
-		}
-
-		public KeyValuePair<SetterSpecificity, object> GetSpecificityAndValue()
-		{
-			// Slow path calls SortedList.Last()
-			lock(_lock) {
-				if (_values is not null) {
-					return _values.Last();
-				}
-			}
-			// Fast path accesses _first and _second
-			if (_first is not null && _second is not null)
-			{
-				if (_first.Value.Key.CompareTo(_second.Value.Key) >= 0)
-				{
-					return _first.Value;
-				}
-				else
-				{
-					return _second.Value;
-				}
-			}
-			else if (_first is not null)
-			{
-				return _first.Value;
-			}
-			else if (_second is not null)
-			{
-				return _second.Value;
-			}
-
-			throw new InvalidOperationException("No BindablePropertyContext Value specified!");
-		}
+	    /// <summary>
+	    /// Gets the value for the highest specificity
+	    /// </summary>
+	    /// <returns></returns>
+	    public T GetValue()
+	    {
+	        var index = _count - 1;
+	        return index < 0 ? default : _values[index];
+	    }
+	    
+	    /// <summary>
+	    /// Returns what the value would be if the current value was removed
+	    /// </summary>
+	    public T GetClearedValue()
+	    {
+	        var index = _count - 2;
+	        return index < 0 ? default : _values[index];
+	    }
 
 		/// <summary>
-		/// Called by ClearValueCore, returns what the top value would be if cleared
-		/// </summary>
-		public object? GetClearedValue(SetterSpecificity clearedSpecificity)
-		{
-			lock(_lock) {
-				if (_values is not null)
-				{
-					var index = _values.IndexOfKey(clearedSpecificity);
-					if (index == _values.Count - 1) //last value will be cleared
-						return _values.Count >= 2 ? _values[_values.Keys[_values.Count - 2]] : null;
-					return _values.Last().Value;
-				}
+	    /// Returns what the value would be if the specificity value was removed
+	    /// </summary>
+	    public T GetClearedValue(SetterSpecificity specificity)
+	    {
+	        var index = _count - 1;
+			if (index >= 0 && _keys[index] == specificity) {
+				--index;
 			}
 	        return index < 0 ? default : _values[index];
 	    }
