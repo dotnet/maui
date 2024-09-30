@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Key))]
+	[RequireService([typeof(IXmlLineInfoProvider), typeof(IProvideParentValues)])]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticResourceExtension")]
 	public sealed class StaticResourceExtension : IMarkupExtension
 	{
