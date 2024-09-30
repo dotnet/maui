@@ -285,10 +285,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				out markupExtension, out genericArguments))
 			{
 				var acceptEmptyServiceProvider = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+				var requiredServiceType = vardefref.VariableDefinition.VariableType.GetRequiredServices(context.Cache, module);
 
-				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+				if (!acceptEmptyServiceProvider && requiredServiceType is null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				(string, string, string)? bindingExtensionType = vardefref.VariableDefinition.VariableType.FullName switch
@@ -327,10 +326,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension"))))
 			{
 				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+				var requiredServiceType = vardefref.VariableDefinition.VariableType.GetRequiredServices(context.Cache, module);
 
-				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+				if (!acceptEmptyServiceProvider && requiredServiceType is null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				var markupExtensionType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension");
@@ -371,10 +369,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IValueProvider"))))
 			{
 				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+				var requiredServiceType = vardefref.VariableDefinition.VariableType.GetRequiredServices(context.Cache, module);
 
-				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+				if (!acceptEmptyServiceProvider && requiredServiceType is null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				var valueProviderType = context.Variables[node].VariableType;
