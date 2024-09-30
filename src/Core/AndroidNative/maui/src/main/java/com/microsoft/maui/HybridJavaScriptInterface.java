@@ -2,6 +2,7 @@ package com.microsoft.maui;
 
 import androidx.annotation.NonNull;
 
-public interface HybridJavaScriptInterface {
-    void sendMessage(@NonNull String message);
+public abstract class HybridJavaScriptInterface {
+    @android.webkit.JavascriptInterface
+    public abstract void sendMessage(@NonNull String message);
 }
