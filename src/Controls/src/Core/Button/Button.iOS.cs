@@ -144,9 +144,10 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			// if we are in a scenario with unlimited width and the image is on top or bottom, let's make sure the title is not cut off by ensuring we have enough padding for the image and title
-			if (padding == ButtonHandler.DefaultPadding
-				&& image is not null
+			// if we are in a scenario with unlimited width and the image is on top or bottom,
+			// of if the horizontalOption is not fill and the image is on top or bottom,
+			// let's make sure the title is not cut off by ensuring we have enough padding for the image and title.
+			if (image is not null
 				&& (widthConstraint == double.PositiveInfinity || button.HorizontalOptions != LayoutOptions.Fill)
 				&& (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom))
 			{
