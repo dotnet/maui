@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -106,15 +107,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (Children.Count == 0 || Control == null)
-				return new SizeRequest();
-
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
+
+			// Check if the control is null
+			if (Control is null)
+			{
+				// If control is null but there are children present, measure them and handle accordingly
+				if (Children.Count > 0)
+				{
+					var childElement = Children.FirstOrDefault();
+					childElement.Measure(constraint);
+					return new SizeRequest(new Size(Math.Ceiling(childElement.DesiredSize.Width), Math.Ceiling(childElement.DesiredSize.Height)));
+				}
+				else
+				{
+					return new SizeRequest();
+				}
+			}
+
 			TNativeElement child = Control;
 
 			child.Measure(constraint);
 			var result = new Size(Math.Ceiling(child.DesiredSize.Width), Math.Ceiling(child.DesiredSize.Height));
-
 			return new SizeRequest(result);
 		}
 
