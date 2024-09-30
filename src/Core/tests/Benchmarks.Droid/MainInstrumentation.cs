@@ -20,7 +20,7 @@ public class MainInstrumentation : Instrumentation
 
 		Instance = this;
 		ExternalDataDirectory = Context?.GetExternalFilesDir(null)?.ToString() ?? string.Empty;
-		if (ExternalDataDirectory == string.Empty)
+		if (string.IsNullOrEmpty(ExternalDataDirectory))
 		{
 			Log.Error(Tag, "ExternalDataDirectory is failed to be set");
 			return;
