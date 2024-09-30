@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewHeaderBlankAndFooterShiftsWhenLastItemRemoved()
+		public void CollectionViewHeaderBlankWhenLastItemRemoved()
 		{
 			App.WaitForElement("AddButton");
 			App.Tap("AddButton");
