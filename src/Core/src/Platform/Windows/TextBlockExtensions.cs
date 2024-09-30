@@ -5,7 +5,6 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Resolvers;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Documents;
 
 namespace Microsoft.Maui.Platform
 {
@@ -31,8 +30,18 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this TextBlock platformControl, ITextStyle text) =>
 			platformControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
-		public static void UpdatePadding(this TextBlock platformControl, ILabel label) =>
-			platformControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToPlatform());
+        public static void UpdatePadding(this TextBlock platformControl, ILabel label)
+        {
+			var padding = label.Padding;
+
+            bool? skipInitialization = (label.Handler as ElementHandler)?._isInitializing ?? false
+                || padding != Thickness.Zero;
+
+            if (skipInitialization != true)
+            {
+                platformControl.UpdateProperty(TextBlock.PaddingProperty, padding.ToPlatform());
+            }
+        }
 
 		public static void UpdateCharacterSpacing(this TextBlock platformControl, ITextStyle label)
 		{
