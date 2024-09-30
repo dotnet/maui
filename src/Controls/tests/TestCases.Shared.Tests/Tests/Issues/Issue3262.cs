@@ -17,65 +17,107 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
-			App.Tap("PageWithoutCookies");
-			App.WaitForElement("PageWithoutCookies");
+			try
+			{
+				App.Tap("PageWithoutCookies");
+				App.WaitForElement("PageWithoutCookies");
+			}
+			catch
+			{
+				Assert.Fail();
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
 		public void ChangeDuringNavigating()
 		{
-			App.WaitForElement("SuccessNavigationLabel");
-			// add a couple cookies
-			App.Tap("ChangeDuringNavigating");
-			ValidateSuccess();
-			App.Tap("ChangeDuringNavigating");
-			ValidateSuccess();
+			try
+			{
+				App.WaitForElement("SuccessNavigationLabel");
+				// add a couple cookies
+				App.Tap("ChangeDuringNavigating");
+				ValidateSuccess();
+				App.Tap("ChangeDuringNavigating");
+				ValidateSuccess();
+			}
+			catch
+			{
+				Assert.Fail();
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
 		public void AddAdditionalCookieToWebView()
 		{
-			App.WaitForElement("SuccessNavigationLabel");
-			// add a couple cookies
-			App.Tap("AdditionalCookie");
-			ValidateSuccess();
-			App.Tap("AdditionalCookie");
-			ValidateSuccess();
+			try
+			{
+				App.WaitForElement("SuccessNavigationLabel");
+				// add a couple cookies
+				App.Tap("AdditionalCookie");
+				ValidateSuccess();
+				App.Tap("AdditionalCookie");
+				ValidateSuccess();
+			}
+			catch
+			{
+				Assert.Fail();
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
 		public void SetToOneCookie()
 		{
-			App.WaitForElement("SuccessNavigationLabel");
-			App.Tap("OneCookie");
-			ValidateSuccess();
+			try
+			{
+				App.WaitForElement("SuccessNavigationLabel");
+				App.Tap("OneCookie");
+				ValidateSuccess();
+			}
+			catch
+			{
+				Assert.Fail();
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
-			App.WaitForElement("SuccessNavigationLabel");
-			// add a cookie to verify said cookie remains
-			App.Tap("AdditionalCookie");
-			ValidateSuccess();
-			App.Tap("NullAllCookies");
-			ValidateSuccess();
+			try
+			{
+				App.WaitForElement("SuccessNavigationLabel");
+				// add a cookie to verify said cookie remains
+				App.Tap("AdditionalCookie");
+				ValidateSuccess();
+				App.Tap("NullAllCookies");
+				ValidateSuccess();
+			}
+			catch
+			{
+				Assert.Fail();
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
 		public void RemoveAllTheCookiesIAdded()
 		{
-			App.WaitForElement("SuccessNavigationLabel");
-			// add a cookie so you can remove a cookie
-			App.Tap("AdditionalCookie");
-			ValidateSuccess();
-			App.Tap("EmptyAllCookies");
-			ValidateSuccess();
+			try
+			{
+				App.WaitForElement("SuccessNavigationLabel");
+				// add a cookie so you can remove a cookie
+				App.Tap("AdditionalCookie");
+				ValidateSuccess();
+				App.Tap("EmptyAllCookies");
+				ValidateSuccess();
+			}
+			catch
+			{
+				Assert.Fail();
+			}
 		}
 
 		void ValidateSuccess()
