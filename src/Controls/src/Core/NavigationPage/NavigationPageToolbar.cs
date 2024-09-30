@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Controls
 				return string.Empty;
 			}
 
-			return _currentNavigationPage?.CurrentPage?.Title;
+			return _currentNavigationPage?.CurrentPage?.Title ?? _currentNavigationPage?.Title;
 		}
 
 		VisualElement GetTitleView()
