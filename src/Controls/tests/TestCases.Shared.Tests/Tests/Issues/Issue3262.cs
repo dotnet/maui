@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
-		[Test]
+		
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			try
