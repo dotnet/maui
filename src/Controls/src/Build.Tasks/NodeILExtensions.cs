@@ -197,9 +197,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (isExtendedConverter)
 				{
-					var requireServiceAttribute = typeConverter.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-					var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
-
+					var requiredServiceType = typeConverter.GetRequiredServices(context.Cache, module);
 					foreach (var instruction in pushServiceProvider(requiredServiceType))
 						yield return instruction;
 				}
@@ -327,6 +325,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Newobj, module.ImportReference(nullableCtor));
 			if (originalTypeRef.IsValueType && boxValueTypes)
 				yield return Create(Box, module.ImportReference(originalTypeRef));
+		}
+
+		public static TypeReference[] GetRequiredServices(this TypeReference type, XamlCache cache, ModuleDefinition module)
+		{
+			var requireServiceAttribute = type.GetCustomAttribute(cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
+			return (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
 		}
 
 		static Instruction PushParsedEnum(XamlCache cache, TypeReference enumRef, string value, IXmlLineInfo lineInfo)

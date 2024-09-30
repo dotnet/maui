@@ -11,6 +11,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
+| MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
 
 ## MauiEnableIVisualAssemblyScanning
 
@@ -61,3 +62,12 @@ Compiled binding in XAML:
 ```xml
 <Label Text="{Binding Customer.Name}" x:DataType="local:PageViewModel" />
 ```
+
+## MauiEnableXamlCBindingWithSourceCompilation
+
+XamlC skipped compilation of bindings with the `Source` property set to any value in previous releases. Some bindings might start producing build errors or start failing at runtime after this feature is enabled. After enabling this feature, make sure all bindings have the right `x:DataType` so they are compiled correctly. For bindings which should not be compiled, clear the data type like this:
+```
+{Binding MyProperty, Source={x:Reference MyTarget}, x:DataType={x:Null}}
+```
+
+This feature is disabled by default, unless `TrimMode=true` or `PublishAot=true`. For fully trimmed and NativeAOT apps, the feature is enabled.
