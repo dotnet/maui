@@ -2,15 +2,14 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 18452, "NullReferenceException throws on Windows when setting Cookies on .NET MAUI WebView", PlatformAffected.UWP)]
-	public partial class Issue18452 : ContentPage
+	public class Issue18452 : TestContentPage
 	{
-		public Issue18452()
+		protected override void Init()
 		{
-			InitializeComponent();
-
-			const string url = "http://xamarin.com";
+			VerticalStackLayout stackLayout = new VerticalStackLayout();
+			WebView webView = new WebView();
+			const string url = "https://httpbin.org/#/Cookies/get_cookies";
 
 			CookieContainer cookieContainer = new();
 			Uri uri = new(url, UriKind.RelativeOrAbsolute);
@@ -26,7 +25,17 @@ namespace Maui.Controls.Sample.Issues
 
 			cookieContainer.Add(uri, cookie);
 			webView.Cookies = cookieContainer;
+			webView.AutomationId = "WebView";
 			webView.Source = new UrlWebViewSource { Url = uri.ToString() };
+			Label label = new Label()
+			{
+				AutomationId = "Label",
+				Text = "This is a test label"
+			};
+			
+			stackLayout.Children.Add(webView);
+			stackLayout.Children.Add(label);
+			Content = stackLayout;
 		}
 	}
 }
