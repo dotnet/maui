@@ -49,8 +49,8 @@ param
 )
 
 # By default, versions should be read from /eng/Versions.props
-$getLocation = Get-Location
-$versionPropsPath = [IO.Path]::Combine($getLocation, '..', 'Version.props')
+$getLocation = $PSScriptRoot
+$versionPropsPath = [IO.Path]::Combine($getLocation, '..', 'Versions.props')
 
 Write-Output "Checking $versionPropsPath for versions..."
 
@@ -83,6 +83,9 @@ if (Test-Path $versionPropsPath)
     if ($versionPropsMac2DriverVersion -ne $null) {
         $macDriverVersion = $versionPropsMac2DriverVersion
     }
+}
+else {
+    throw "The version.props file was not found at path: $versionPropsPath"
 }
 
 Write-Output  "Welcome to the Appium installer"
