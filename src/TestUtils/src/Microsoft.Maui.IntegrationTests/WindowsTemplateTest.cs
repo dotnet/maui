@@ -38,15 +38,6 @@ public class WindowsTemplateTest : BaseTemplateTests
 				"");
 		}
 
-		FileUtilities.ReplaceInFile(projectFile,
-		"</Project>",
-		$"""
-			<ItemGroup>
-			<FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
-			</ItemGroup>
-		</Project>
-		""");
-
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
@@ -77,15 +68,6 @@ public class WindowsTemplateTest : BaseTemplateTests
 			<WindowsAppSDKSelfContained>{wasdkself}</WindowsAppSDKSelfContained>
 			<SelfContained>{netself}</SelfContained>
 			<WindowsPackageType>{packageType}</WindowsPackageType>
-			""");
-
-		FileUtilities.ReplaceInFile(projectFile,
-			"</Project>",
-			$"""
-			  <ItemGroup>
-			    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
-			  </ItemGroup>
-			</Project>
 			""");
 
 		var extendedBuildProps = BuildProps;
@@ -155,15 +137,6 @@ public class WindowsTemplateTest : BaseTemplateTests
 				"<WindowsPackageType>None</WindowsPackageType>");
 		}
 
-		FileUtilities.ReplaceInFile(projectFile,
-			"</Project>",
-			$"""
-			  <ItemGroup>
-			    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
-			  </ItemGroup>
-			</Project>
-			""");
-
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
@@ -213,15 +186,6 @@ public class WindowsTemplateTest : BaseTemplateTests
 				"<WindowsPackageType>None</WindowsPackageType>",
 				"");
 		}
-
-		FileUtilities.ReplaceInFile(projectFile,
-			"</Project>",
-			$"""
-			  <ItemGroup>
-			    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
-			  </ItemGroup>
-			</Project>
-			""");
 
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
