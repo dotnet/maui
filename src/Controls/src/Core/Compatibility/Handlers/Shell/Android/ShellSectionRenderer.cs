@@ -149,6 +149,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return _rootView = root;
 		}
 
+		void OnShellContentPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == ShellContent.TitleProperty.PropertyName && sender is ShellContent shellContent)
+			{
+				UpdateTabTitle(shellContent);
+			}
+		}
+
+		void UpdateTabTitle(ShellContent shellContent)
+		{
+			if (_tablayout == null || SectionController.GetItems().Count == 0)
+				return;
+
+			int index = SectionController.GetItems().IndexOf(shellContent);
+			if (index >= 0)
+			{
+				var tab = _tablayout.GetTabAt(index);
+				if (tab != null)
+				{
+					tab.SetText(new string(shellContent.Title));
+				}
+			}
+		}
+
 		void OnTabLayoutChange(object sender, AView.LayoutChangeEventArgs e)
 		{
 			if (_disposed)
@@ -327,6 +351,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SectionController.ItemsCollectionChanged += OnItemsCollectionChanged;
 			((IShellController)_shellContext.Shell).AddAppearanceObserver(this, ShellSection);
 			ShellSection.PropertyChanged += OnShellItemPropertyChanged;
+			foreach (var item in SectionController.GetItems())
+			{
+				item.PropertyChanged += OnShellContentPropertyChanged;
+			}
 		}
 
 		void UnhookEvents()
@@ -334,6 +362,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SectionController.ItemsCollectionChanged -= OnItemsCollectionChanged;
 			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
 			ShellSection.PropertyChanged -= OnShellItemPropertyChanged;
+			foreach (var item in SectionController.GetItems())
+			{
+				item.PropertyChanged -= OnShellContentPropertyChanged;
+			}
 		}
 
 		protected virtual void OnPageSelected(int position)

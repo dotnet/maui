@@ -7,26 +7,26 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class NavigationRootManager
 	{
-		Window _platformWindow;
+		readonly WeakReference<Window> _platformWindow;
 		WindowRootView _rootView;
 		bool _disconnected = true;
 		internal event EventHandler? OnApplyTemplateFinished;
 
 		public NavigationRootManager(Window platformWindow)
 		{
-			_platformWindow = platformWindow;
+			_platformWindow = new(platformWindow);
 			_rootView = new WindowRootView();
 			_rootView.BackRequested += OnBackRequested;
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
 
-			var titleBar = _platformWindow.GetAppWindow()?.TitleBar;
+			var titleBar = platformWindow.GetAppWindow()?.TitleBar;
 			if (titleBar is not null)
 			{
-				SetTitleBarVisibility(titleBar.ExtendsContentIntoTitleBar);
+				SetTitleBarVisibility(platformWindow, titleBar.ExtendsContentIntoTitleBar);
 			}
 		}
 
-		internal void SetTitleBarVisibility(bool isVisible)
+		internal void SetTitleBarVisibility(Window platformWindow, bool isVisible)
 		{
 			// https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design
 			// Standard title bar height is 32px
@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Platform
 			var appbarHeight = isVisible ? 32 : 0;
 			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{
-				var titleBar = _platformWindow.GetAppWindow()?.TitleBar;
+				var titleBar = platformWindow.GetAppWindow()?.TitleBar;
 				if (titleBar is not null)
 				{
-					var density = _platformWindow.GetDisplayDensity();
+					var density = platformWindow.GetDisplayDensity();
 					appbarHeight = (int)(titleBar.Height / density);
 				}
 			}
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 			if (_disconnected)
 				return;
 
-			_platformWindow?
+			_platformWindow.GetTargetOrDefault()?
 				.GetWindow()?
 				.Handler?
 				.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 
 		void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
 		{
-			_platformWindow
+			_platformWindow.GetTargetOrDefault()?
 				.GetWindow()?
 				.BackButtonClicked();
 		}
@@ -89,40 +89,27 @@ namespace Microsoft.Maui.Platform
 				_rootView.Content = null;
 			}
 
-			NavigationView rootNavigationView;
-			if (platformView is NavigationView nv)
+			_rootView.Content = platformView is NavigationView ? platformView : new RootNavigationView()
 			{
-				rootNavigationView = nv;
-				_rootView.Content = platformView;
-			}
-			else
-			{
-				if (_rootView.Content is RootNavigationView navView)
-				{
-					rootNavigationView = navView;
-				}
-				else
-				{
-					rootNavigationView = new RootNavigationView();
-				}
+				Content = platformView
+			};
 
-				rootNavigationView.Content = platformView;
-				_rootView.Content = rootNavigationView;
+			if (_disconnected && _platformWindow.TryGetTarget(out var platformWindow))
+			{
+				platformWindow.Activated += OnWindowActivated;
+				_disconnected = false;
 			}
 
-			if (_disconnected)
-			{
-				_platformWindow.Activated += OnWindowActivated;
-			}
-
-			_disconnected = false;
 			_rootView.OnWindowTitleBarContentSizeChanged += WindowRootViewOnWindowTitleBarContentSizeChanged;
 		}
 
 		public virtual void Disconnect()
 		{
 			_rootView.OnWindowTitleBarContentSizeChanged -= WindowRootViewOnWindowTitleBarContentSizeChanged;
-			_platformWindow.Activated -= OnWindowActivated;
+			if (_platformWindow.TryGetTarget(out var platformWindow))
+			{
+				platformWindow.Activated -= OnWindowActivated;
+			}
 			SetToolbar(null);
 
 			if (_rootView.Content is RootNavigationView navView)

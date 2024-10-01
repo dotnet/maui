@@ -1252,9 +1252,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnChildAdded(child);
 
-			var view = child as View;
-
-			if (view != null)
+			if (child is View view)
 			{
 				ComputeConstraintForView(view);
 			}
@@ -1377,6 +1375,35 @@ namespace Microsoft.Maui.Controls
 			}
 
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+		}
+		
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		{
+			switch (trigger)
+			{
+				case InvalidationTrigger.VerticalOptionsChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+					// When a child changes its HorizontalOptions or VerticalOptions
+					// the size of the parent won't change, so we don't have to invalidate the measure
+					return;
+				case InvalidationTrigger.RendererReady:
+				// Undefined happens in many cases, including when `IsVisible` changes
+				case InvalidationTrigger.Undefined:
+					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					return;
+				default:
+					// When visibility changes `InvalidationTrigger.Undefined` is used,
+					// so here we're sure that visibility didn't change
+					if (child.IsVisible)
+					{
+						// We need to invalidate measures only if child is actually visible
+						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
+						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+					}
+					return;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -2146,19 +2173,19 @@ namespace Microsoft.Maui.Controls
 		{
 			add
 			{
-				bool watchingLoaded = _watchingPlatformLoaded;
+				bool loadedAlreadyFired = _isLoadedFired;
+
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
 
-				// The point of this code, is to fire loaded if the element is already loaded.
-				//
-				// If this is the first time the user is subscribing to Loaded,
-				// UpdatePlatformUnloadedLoadedWiring will take care of firing Loaded.
-				// If we are already wired up to watch loaded, then we'll fire it off if we know this
-				// view is in a state where it's been determined that it's accurate to fire
-				// _isLoadedFired.
-				if (_isLoadedFired && watchingLoaded)
+				// The first time UpdatePlatformUnloadedLoadedWiring is called it will handle
+				// invoking _loaded
+				// This is only to make sure that new subscribers get invoked when the element is already loaded
+				// and a previous subscriber has already invoked the UpdatePlatformUnloadedLoadedWiring path
+				if (loadedAlreadyFired && _isLoadedFired)
+				{
 					value?.Invoke(this, EventArgs.Empty);
+				}
 
 			}
 			remove
@@ -2212,7 +2239,9 @@ namespace Microsoft.Maui.Controls
 			// unloaded is still correctly being watched for.
 
 			if (updateWiring)
+			{
 				UpdatePlatformUnloadedLoadedWiring(Window);
+			}
 		}
 
 		void SendUnloaded() => SendUnloaded(true);

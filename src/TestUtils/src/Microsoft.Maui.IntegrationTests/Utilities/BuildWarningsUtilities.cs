@@ -125,21 +125,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			new WarningsPerFile
 			{
-				File = "ILC",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL3050",
-						Messages = new List<string>
-						{
-							"<Module>..cctor(): Using member 'System.Enum.GetValues(Type)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. It might not be possible to create an array of the enum type at runtime. Use the GetValues<TEnum> overload or the GetValuesAsUnderlyingType method instead.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Controls/src/Xaml/XamlParser.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
@@ -467,6 +452,30 @@ namespace Microsoft.Maui.IntegrationTests
 							"Microsoft.Maui.Controls.Xaml.MarkupExpressionParser.ParseExpression(String&,IServiceProvider): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},
+				}
+			},
+			new WarningsPerFile
+			{
+				File = "src/Controls/src/Xaml/XamlServiceProvider.cs",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "IL2026",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(IElementNode,HydrationContext)' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. XamlDataTypeProvider is not trim and AOT-compatible.",
+						}
+					},
+					new WarningsPerCode
+					{
+						Code = "IL3050",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider.XamlServiceProvider(INode,HydrationContext): Using member 'Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(IElementNode,HydrationContext)' which has 'RequiresDynamicCodeAttribute' can break functionality when AOT compiling. XamlDataTypeProvider is not trim and AOT-compatible.",
+						}
+					},
+					
 				}
 			},
 		};

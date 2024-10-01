@@ -8,8 +8,19 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
+  testFilter: ''
 
 steps:
+  - task: DownloadPipelineArtifact@2
+    condition: ne('${{ parameters.platform }}' , 'windows')
+    inputs:
+      artifact: ui-tests-samples
+
+  - task: DownloadPipelineArtifact@2
+    condition: eq('${{ parameters.platform }}' , 'windows')
+    inputs:
+      artifact: ui-tests-samples-windows
+  
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
@@ -24,7 +35,7 @@ steps:
       skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-
+      
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')
     inputs:
@@ -35,6 +46,16 @@ steps:
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
     displayName: "Modify defaults"
     continueOnError: true
+  
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 2
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
 
   # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
   - task: ScreenResolutionUtility@1
@@ -60,30 +81,25 @@ steps:
     env:
       APPIUM_HOME: $(APPIUM_HOME)
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
-    displayName: 'Install .NET'
-    retryCountOnTaskFailure: 2
-    env:
-      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
+  - pwsh: |
+      $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
+      $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
+      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
+      
+      $testFilter = ""
 
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: 'Add .NET to PATH'
+      "${{ parameters.testFilter }}".Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
+      }
 
-  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
-    displayName: 'Build the MSBuild Tasks'
+      $testFilter = $testFilter.TrimEnd("|")
 
-  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
-    displayName: 'Build the samples'
+      # Cake does not allow empty parameters, so check if our filter is empty before adding it
+      if ($testFilter) {
+        $command += " --test-filter ""$testFilter"""
+      }
 
-  - bash: |
-      if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-      if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-    displayName: Delete Old Simulator Logs
-    condition: ${{ eq(parameters.platform, 'ios') }}
-    continueOnError: true
-
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
+      Invoke-Expression $command  
     displayName: $(Agent.JobName)
     ${{ if ne(parameters.platform, 'android')}}:
       retryCountOnTaskFailure: 1
@@ -91,10 +107,8 @@ steps:
       APPIUM_HOME: $(APPIUM_HOME)
 
   - bash: |
-      suffix=$(date +%Y%m%d%H%M%S)
-      zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-      zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-    displayName: Zip Simulator Logs
+      pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+    displayName: Cleanup and Create Simulator Logs if Test Run Failed To
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 

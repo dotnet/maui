@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Label)]
 		public void SpanLineHeightShouldNotGrowProgressively()
 		{
 			_ = App.WaitForElement("label");

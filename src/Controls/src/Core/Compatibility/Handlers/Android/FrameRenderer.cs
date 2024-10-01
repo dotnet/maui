@@ -131,7 +131,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					var child = GetChildAt(0);
 					child?.RemoveFromParent();
-					child?.Dispose();
 				}
 
 				Element?.Handler?.DisconnectHandler();
@@ -176,7 +175,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 			if (Element.Handler is IPlatformViewHandler pvh &&
-				Element is IContentView cv)
+				Element is ICrossPlatformLayout cv)
 			{
 				pvh.LayoutVirtualView(l, t, r, b, cv.CrossPlatformArrange);
 			}

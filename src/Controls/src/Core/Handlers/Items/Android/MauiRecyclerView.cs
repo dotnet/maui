@@ -425,13 +425,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
+			var item = args.Item;
 			if (args.Mode == ScrollToMode.Position)
 			{
-				// TODO hartez 2018/08/28 15:40:03 Need to handle group indices here as well	
-				return args.Index;
+				// Do not use `IGroupableItemsViewSource` since `UngroupedItemsSource` also implements that interface
+				if (ItemsViewAdapter.ItemsSource is UngroupedItemsSource)
+				{
+					return args.Index;
+				}
+				else if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource)
+				{
+					item = FindBoundItemInGroup(args, groupItemSource);
+				}
 			}
 
-			return ItemsViewAdapter.GetPositionForItem(args.Item);
+			return ItemsViewAdapter.GetPositionForItem(item);
+		}
+
+		private static object FindBoundItemInGroup(ScrollToRequestEventArgs args, IGroupableItemsViewSource groupItemSource)
+		{
+			if (args.GroupIndex >= 0 &&
+				args.GroupIndex < groupItemSource.Count)
+			{
+				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
+
+				if (group is not null)
+				{
+					// GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header (UngroupedItemsSource does not do this)
+					return group.GetItem(args.Index + 1);
+				}
+			}
+			return groupItemSource.GetItem(args.Index);
 		}
 
 		protected virtual void UpdateItemSpacing()

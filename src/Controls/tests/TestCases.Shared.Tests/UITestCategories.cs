@@ -1,5 +1,7 @@
 namespace Microsoft.Maui.TestCases.Tests
 {
+	// Make sure that this list is always up-to-date with eng/pipelines/common/ui-tests.yml
+	// we might want to improve this somehow depending on how much the categories change over time
 	internal static class UITestCategories
 	{
 		public const string ViewBaseTests = "ViewBaseTests";
@@ -16,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string CollectionView = "CollectionView";
 		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
+		public const string Dispatcher = "Dispatcher";
 		public const string DragAndDrop = "DragAndDrop";
 		public const string DisplayAlert = "DisplayAlert";
 		public const string Editor = "Editor";
@@ -27,12 +30,14 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Layout = "Layout";
 		public const string ListView = "ListView";
 		public const string LifeCycle = "Lifecycle";
+		public const string Flaky = "Flaky";
 		public const string FlyoutPage = "FlyoutPage";
 		public const string Picker = "Picker";
 		public const string ProgressBar = "ProgressBar";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string Slider = "Slider";
+		public const string SoftInput = "SoftInput";
 		public const string Stepper = "Stepper";
 		public const string Switch = "Switch";
 		public const string SwipeView = "SwipeView";
@@ -44,6 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Maps = "Maps";
 		public const string InputTransparent = "InputTransparent";
 		public const string IsEnabled = "IsEnabled";
+		public const string IsVisible = "IsVisible";
 		public const string Gestures = "Gestures";
 		public const string Navigation = "Navigation";
 		public const string Effects = "Effects";
@@ -64,5 +70,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Shape = "Shape";
 		public const string Accessibility = "Accessibility";
 		public const string Brush = "Brush";
+		public const string Compatibility = "MovedFromCompatibility";
 	}
 }

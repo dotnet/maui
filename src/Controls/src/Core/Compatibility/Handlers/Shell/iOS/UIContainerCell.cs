@@ -28,7 +28,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext() ?? shell.FindMauiContext());
 			}
 
-			ContentView.AddSubview(_renderer.PlatformView);
+			var platformView = view.ToPlatform();
+			ContentView.AddSubview(platformView);
+			platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+
 			_renderer.PlatformView.ClipsToBounds = true;
 			ContentView.ClipsToBounds = true;
 
