@@ -25,29 +25,30 @@
     it will be increased to the minimum supported version.
   -->
   <PropertyGroup>
+    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
     <!-- Minimum versions that will warn -->
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.14</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">10.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">21.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">11.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">13.1</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'macos'">10.14</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tizen'">6.5</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tvos'">10.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'windows'">10.0.17763.0</_MauiMinimumSupportedOSPlatformVersion>
     <!-- Default versions that will be injected if it is missing -->
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'macos'">10.14</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">10.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">21.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">11.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">13.1</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'macos'">10.14</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tizen'">6.5</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tvos'">10.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'windows'">10.0.17763.0</_MauiDefaultSupportedOSPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UsingMicrosoftAspNetCoreComponentsWebViewMaui)' == 'true'">
     <!-- .NET MAUI Blazor Hybrid -->
     <!-- Also update: src\BlazorWebView\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props -->
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">24.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">24.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">14.0</_MauiMinimumSupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!-- .NET MAUI version for telemetry: this is the installed workload in use, not the final version in the app -->

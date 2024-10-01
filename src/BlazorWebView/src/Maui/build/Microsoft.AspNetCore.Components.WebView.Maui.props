@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <_MauiBlazorTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiBlazorTargetPlatformIdentifier>
     <!-- .NET MAUI Blazor Hybrid -->
     <!-- Also update: src\Workload\Microsoft.Maui.Sdk\Sdk\BundledVersions.in.targets -->
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiBlazorTargetPlatformIdentifier)' == 'android'">24.0</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiBlazorTargetPlatformIdentifier)' == 'android'">24.0</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiBlazorTargetPlatformIdentifier)' == 'ios'">14.0</_MauiMinimumSupportedOSPlatformVersion>
   </PropertyGroup>
 
 </Project>
