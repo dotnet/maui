@@ -25,7 +25,6 @@
     it will be increased to the minimum supported version.
   -->
   <PropertyGroup>
-    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
     <!-- Minimum versions that will warn -->
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">21.0</_MauiMinimumSupportedOSPlatformVersion>
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">11.0</_MauiMinimumSupportedOSPlatformVersion>
