@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 #if MACCATALYST
 		internal static void MapTitleBar(IWindowHandler handler, IWindow window)
 		{
-			handler.PlatformView.UpdateTitleBar(window, handler.MauiContext);
+			handler.PlatformView.UpdateTitleBar(window, handler.MauiContext, -1);
 			// MapContent(handler, window);
 		}
 #endif
@@ -30,64 +30,7 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = window.Content.ToUIViewController(handler.MauiContext);
 
-			// Create a container view controller
-			var containerViewController = new UIViewController();
-
-#if MACCATALYST
-			var mauiTitleBar = window.TitleBar?.ToPlatform(handler.MauiContext);
-
-			// Add the native content as a child view controller
-			containerViewController.AddChildViewController(nativeContent);
-
-			if (nativeContent.View is null || mauiTitleBar is null)
-				return;
-
-			if (containerViewController?.View is UIView cVCView)
-			{
-				cVCView.AddSubview(nativeContent.View);
-				nativeContent.DidMoveToParentViewController(containerViewController);
-
-				cVCView.AddSubview(mauiTitleBar);
-
-				var items = window.TitleBar?.PassthroughElements;
-				if (items is not null)
-				{
-					foreach (var item in items)
-					{
-						var p = item.Measure(double.PositiveInfinity, double.PositiveInfinity);
-						
-					}
-				}
-				
-
-				// var titleBarHeight = window.TitleBar.HeightRequest == -1 ? cVCView.SafeAreaLayoutGuide.Top :  window.TitleBar.HeightRequest;
-
-				// Set constraints for the custom title bar
-				mauiTitleBar.TranslatesAutoresizingMaskIntoConstraints = false;
-				NSLayoutConstraint.ActivateConstraints(new[]
-				{
-					mauiTitleBar.TopAnchor.ConstraintEqualTo(cVCView.TopAnchor),
-					mauiTitleBar.LeadingAnchor.ConstraintEqualTo(cVCView.LeadingAnchor),
-					mauiTitleBar.TrailingAnchor.ConstraintEqualTo(cVCView.TrailingAnchor),
-					mauiTitleBar.HeightAnchor.ConstraintEqualTo(200) // Set the desired height
-				});
-
-				// Set constraints for the native content
-				nativeContent.View.TranslatesAutoresizingMaskIntoConstraints = false;
-				NSLayoutConstraint.ActivateConstraints(new[]
-				{
-					nativeContent.View.TopAnchor.ConstraintEqualTo(mauiTitleBar.BottomAnchor), // Adjust the top anchor to leave space for the custom title bar
-					nativeContent.View.LeadingAnchor.ConstraintEqualTo(cVCView.LeadingAnchor),
-					nativeContent.View.TrailingAnchor.ConstraintEqualTo(cVCView.TrailingAnchor),
-					nativeContent.View.BottomAnchor.ConstraintEqualTo(cVCView.BottomAnchor)
-				});
-			}
-
-			handler.PlatformView.RootViewController = containerViewController;
-#else
-
 			handler.PlatformView.RootViewController = nativeContent;
-#endif
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();

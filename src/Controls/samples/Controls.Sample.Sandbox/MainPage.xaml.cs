@@ -73,7 +73,7 @@ public partial class MainPage : ContentPage
 	{
 		if (e.Value)
 		{
-			_customTitleBar.Icon = "tb_appicon.png";
+			_customTitleBar.Icon = "dotnet_bot.png";
 		}
 		else
 		{

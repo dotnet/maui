@@ -96,8 +96,39 @@ namespace Microsoft.Maui.Platform
 			var window = View.Window;
 			var mauiWindow = window.GetWindow() as IWindow;
 			var titleBar = mauiWindow?.TitleBar;
-			var titleBarFrame = titleBar?.PresentedContent?.Frame;
-			Console.WriteLine($"size: {titleBarFrame?.Height ?? -1}x{titleBarFrame?.Width ?? -1}");
+			// var titleBarFrame = titleBar?.PresentedContent?.Frame;
+			var windowHandler = mauiWindow?.Handler as WindowHandler;
+			// if (windowHandler is not null && titleBar is not null && mauiWindow is not null && titleBarFrame?.Height is double height)
+			// {
+			// 	// WindowHandler.MapContent(windowHandler, mauiWindow);
+
+			// 	// TODO when the heightRequest is not set on the titlebar, I can't see the height
+			// 	window.UpdateTitleBar(mauiWindow, windowHandler.MauiContext, height);
+			// 	// this UIWindow platformWindow, IWindow window, IMauiContext? mauiContext
+			// }
+
+
+			if (windowHandler is not null && titleBar is not null && mauiWindow is not null)
+			{
+				// Force layout update only if needed
+				if ((titleBar.PresentedContent?.Frame.Height == -1 || titleBar.PresentedContent?.Frame.Width == -1) && titleBar.PresentedContent?.Handler?.PlatformView is UIView plat)
+				{
+					plat.SetNeedsLayout();
+					plat.LayoutIfNeeded();
+				}
+
+				var titleBarFrame = titleBar.PresentedContent?.Frame;
+
+				if (titleBarFrame?.Height is double height)
+				{
+					// WindowHandler.MapContent(windowHandler, mauiWindow);
+
+					// TODO when the heightRequest is not set on the titlebar, I can't see the height
+					window.UpdateTitleBar(mauiWindow, windowHandler.MauiContext, height);
+					// this UIWindow platformWindow, IWindow window, IMauiContext? mauiContext
+				}
+					Console.WriteLine($"size: {titleBar?.Height ?? -1}x{titleBar?.Width ?? -1}");
+			}
 #endif
 		}
 
