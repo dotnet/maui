@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue20461"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+    <Grid RowDefinitions="Auto,*">
+
+        <FlexLayout Direction="Row"
+                    Grid.Row="0"
+                    BackgroundColor="Black"
+                    HeightRequest="48"
+                    AlignItems="Center"
+                    JustifyContent="Start"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start">
+            <!-- Child FlexLayout on the left with a 24x24 pixel Rectangle inside -->
+            <FlexLayout Direction="Row"
+                        AlignItems="Center"
+                        JustifyContent="Start"
+                        BackgroundColor="LightBlue"
+                        FlexLayout.Basis="48"
+                        HeightRequest="24"
+                        FlexLayout.Grow="1">
+                <Rectangle WidthRequest="24"
+                           HeightRequest="24"
+                           Fill="Blue"/>
+            </FlexLayout>
+
+            <!-- Child FlexLayout on the right with 3 FlexLayouts inside it -->
+            <FlexLayout Direction="Row"
+                        VerticalOptions="Start"
+                        AlignItems="Start"
+                        JustifyContent="SpaceBetween"
+                        HeightRequest="24"
+                        BackgroundColor="Grey"
+                        FlexLayout.Basis="144">
+                <!-- Each of these FlexLayouts has a 24x24 pixel Rectangle inside -->
+                <FlexLayout Direction="Row"
+                            AlignItems="Center"
+                            VerticalOptions="Start"
+                            JustifyContent="Center"
+                            BackgroundColor="Pink"
+                            HeightRequest="24"
+                            FlexLayout.Basis="48">
+                    <Rectangle WidthRequest="24"
+                               HeightRequest="24"
+                               Fill="Red"/>
+                </FlexLayout>
+                <FlexLayout Direction="Row"
+                            AlignItems="Center"
+                            VerticalOptions="Start"
+                            JustifyContent="Center"
+                            BackgroundColor="LightGreen"
+                            HeightRequest="24"
+                            FlexLayout.Basis="48">
+                    <Rectangle WidthRequest="24"
+                               HeightRequest="24"
+                               Fill="Green"/>
+                </FlexLayout>
+                <FlexLayout Direction="Row"
+                            AlignItems="Center"
+                            VerticalOptions="Start"
+                            JustifyContent="Center"
+                            BackgroundColor="LightYellow"
+                            HeightRequest="24"
+                            FlexLayout.Basis="48">
+                    <Rectangle WidthRequest="24"
+                               HeightRequest="24"
+                               Fill="Yellow"/>
+                </FlexLayout>
+            </FlexLayout>
+        </FlexLayout>
+
+        <FlexLayout Grid.Row="1"
+                    Direction="Column"
+                    BackgroundColor="LightBlue"
+                    Wrap="Wrap">
+            <Label Text="Parent FlexLayout - First Element"/>
+            <FlexLayout Direction="Row"
+                        BackgroundColor="Yellow"
+                        JustifyContent="SpaceBetween"
+                        Wrap="Wrap"
+                        AlignItems="Center">
+                <Label Text="Nested FlexLayout - First Element"/>
+                <Label Text="Nested FlexLayout - Second Element"/>
+                <Image Source="groceries.png"
+                       WidthRequest="30"
+                       HeightRequest="30"
+                       BackgroundColor="LightBlue"
+                       AutomationId="imageInNestedLayout"/>
+                <ImageButton Source="groceries.png"
+                             WidthRequest="30"
+                             HeightRequest="30"
+                             CornerRadius="15"
+                             BackgroundColor="Red"
+                             AutomationId="imageButtonInNestedLayout"/>
+                <Label Text="Nested FlexLayout - Third Element"/>
+            </FlexLayout>
+
+            <ImageButton Source="groceries.png"
+                         WidthRequest="100"
+                         HeightRequest="100"
+                         CornerRadius="50"
+                         BackgroundColor="Red"
+                         AutomationId="imageButtonInParentLayout"/>
+
+            <Label Text="Parent FlexLayout - Second Element"/>
+        </FlexLayout>
+    </Grid>
+</ContentPage>
