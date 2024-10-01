@@ -124,10 +124,16 @@ namespace Microsoft.Maui.Controls
 			var isApplied = IsApplied;
 
 			var bindingContext = src ?? Context ?? context;
-			if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
+
+			// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disabled
+			bool skipTypeMismatchCheck = Source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
+			if (!skipTypeMismatchCheck)
 			{
-				BindingDiagnostics.SendBindingFailure(this, "Binding", "Mismatch between the specified x:DataType and the current binding context");
-				bindingContext = null;
+				if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
+				{
+					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({DataType}) and the current binding context ({bindingContext.GetType()}).");
+					bindingContext = null;
+				}
 			}
 
 			base.Apply(bindingContext, bindObj, targetProperty, fromBindingContextChanged, specificity);
@@ -137,7 +143,17 @@ namespace Microsoft.Maui.Controls
 
 			if (Source is RelativeBindingSource relativeBindingSource)
 			{
-				ApplyRelativeSourceBinding(relativeBindingSource, bindObj, targetProperty, specificity);
+				var relativeSourceTarget = RelativeSourceTargetOverride ?? bindObj as Element;
+				if (relativeSourceTarget is not Element)
+				{
+					var message = bindObj is not null
+						? $"Cannot apply relative binding to {bindObj.GetType().FullName} because it is not a superclass of Element."
+						: "Cannot apply relative binding when the target object is null.";
+
+					throw new InvalidOperationException(message);
+				}
+
+				ApplyRelativeSourceBinding(relativeBindingSource, relativeSourceTarget, bindObj, targetProperty, specificity);
 			}
 			else
 			{
@@ -148,13 +164,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
-		async void ApplyRelativeSourceBinding(RelativeBindingSource relativeSource, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
+		async void ApplyRelativeSourceBinding(RelativeBindingSource relativeSource, Element relativeSourceTarget, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
-			var relativeSourceTarget = RelativeSourceTargetOverride ?? targetObject as Element;
-			if (!(relativeSourceTarget is Element))
-				throw new InvalidOperationException();
-
 			await relativeSource.Apply(_expression, relativeSourceTarget, targetObject, targetProperty, specificity);
 		}
 

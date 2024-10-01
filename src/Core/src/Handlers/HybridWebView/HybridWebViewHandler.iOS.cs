@@ -59,9 +59,18 @@ namespace Microsoft.Maui.Handlers
 			return webview;
 		}
 
-		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)
+		public static void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
-			handler.PlatformView.EvaluateJavaScript(request);
+			if (arg is EvaluateJavaScriptAsyncRequest request)
+			{
+				if (handler.PlatformView is null)
+				{
+					request.SetCanceled();
+					return;
+				}
+
+				handler.PlatformView.EvaluateJavaScript(request);
+			}
 		}
 
 		public static void MapSendRawMessage(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
@@ -76,7 +85,7 @@ namespace Microsoft.Maui.Handlers
 
 		private void MessageReceived(Uri uri, string message)
 		{
-			MessageReceived(message);
+			VirtualView?.MessageReceived(message);
 		}
 
 		protected override void ConnectHandler(WKWebView platformView)
