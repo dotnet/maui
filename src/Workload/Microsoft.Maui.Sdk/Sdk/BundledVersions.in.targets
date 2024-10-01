@@ -27,16 +27,16 @@
   <PropertyGroup>
     <!-- Minimum versions that will warn -->
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">21.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">11.0</_MauiMinimumSupportedOSPlatformVersion>
-    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">13.1</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">12.2</_MauiMinimumSupportedOSPlatformVersion>
+    <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">15.0</_MauiMinimumSupportedOSPlatformVersion>
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'macos'">10.14</_MauiMinimumSupportedOSPlatformVersion>
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tizen'">6.5</_MauiMinimumSupportedOSPlatformVersion>
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tvos'">10.0</_MauiMinimumSupportedOSPlatformVersion>
     <_MauiMinimumSupportedOSPlatformVersion Condition="'$(_MauiMinimumSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'windows'">10.0.17763.0</_MauiMinimumSupportedOSPlatformVersion>
     <!-- Default versions that will be injected if it is missing -->
     <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'android'">21.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">11.0</_MauiDefaultSupportedOSPlatformVersion>
-    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">13.1</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'ios'">12.2</_MauiDefaultSupportedOSPlatformVersion>
+    <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">15.0</_MauiDefaultSupportedOSPlatformVersion>
     <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'macos'">10.14</_MauiDefaultSupportedOSPlatformVersion>
     <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tizen'">6.5</_MauiDefaultSupportedOSPlatformVersion>
     <_MauiDefaultSupportedOSPlatformVersion Condition="'$(_MauiDefaultSupportedOSPlatformVersion)' == '' and '$(_MauiTargetPlatformIdentifier)' == 'tvos'">10.0</_MauiDefaultSupportedOSPlatformVersion>
