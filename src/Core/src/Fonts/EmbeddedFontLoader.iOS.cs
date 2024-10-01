@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 				var provider = GetCGDataProviderFromEmbeddedFont(font);
 				CGFont? cgFont = CGFont.CreateFromProvider(provider);
 				
-				if (cgFont == null)
+				if (cgFont is null)
 					throw new InvalidOperationException("Unable to load font from the stream.");
 
 				var name = cgFont.PostScriptName;
@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 						return null;
 					var fontUrl = NSUrl.FromFilename(fontFilePath);
 					var nsError = CTFontManager.RegisterFontsForUrl(fontUrl, CTFontManagerScope.Process);
-					if (nsError != null)
+					if (nsError is not null)
 						throw new NSErrorException(nsError);
 					return name;
 				}
@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 #pragma warning restore CA1416
 
 				var uiFont = UIFont.FromName(name, 10);
-				if (uiFont != null)
+				if (uiFont is not null)
 					return name;
 
 				if (error != null)
@@ -61,9 +61,9 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		private static CGDataProvider GetCGDataProviderFromEmbeddedFont(EmbeddedFont font)
+		static CGDataProvider GetCGDataProviderFromEmbeddedFont(EmbeddedFont font)
 		{
-			if (font.ResourceStream == null)
+			if (font.ResourceStream is null)
 			{
 				if (!System.IO.File.Exists(font.FontName))
 					throw new InvalidOperationException("ResourceStream was null.");
@@ -73,20 +73,20 @@ namespace Microsoft.Maui
 			else
 			{
 				var data = NSData.FromStream(font.ResourceStream);
-				if (data == null)
+				if (data is null)
 					throw new InvalidOperationException("Unable to load font stream data.");
 				return new CGDataProvider(data);
 			}
 		}
 
-		private static string? SaveCGFontToFile(CGDataProvider dataProvider, string? fontName)
+		static string? SaveCGFontToFile(CGDataProvider dataProvider, string? fontName)
 		{
 			if (string.IsNullOrEmpty(fontName))
 				return null;
 
 			using (var fontData = dataProvider.CopyData())
 			{
-				if (fontData == null)
+				if (fontData is null)
 					return null;
 
 				// Gets the temporary directory path for the current application.
