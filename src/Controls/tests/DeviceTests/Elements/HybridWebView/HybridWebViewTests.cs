@@ -1,5 +1,4 @@
-﻿#if !ANDROID
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -356,4 +355,3 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif
