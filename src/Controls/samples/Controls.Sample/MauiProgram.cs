@@ -126,6 +126,7 @@ namespace Maui.Controls.Sample
 			services.AddMauiBlazorWebView();
 #if DEBUG
 			services.AddBlazorWebViewDeveloperTools();
+			services.AddHybridWebViewDeveloperTools();
 #endif
 
 			services.AddLogging(logging =>
