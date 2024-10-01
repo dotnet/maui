@@ -37,8 +37,8 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
-    <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
