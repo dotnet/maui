@@ -19,19 +19,16 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
-#pragma warning disable CS0612 // Type or member is obsolete
 			Label header = new Label
 			{
 				Text = "Cookies...",
-				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
 				HorizontalOptions = LayoutOptions.Center
 			};
-#pragma warning restore CS0612 // Type or member is obsolete
 
 			try
 			{
 				CookieContainer cookieContainer = new CookieContainer();
-				string url = "https://dotnet.microsoft.com/apps/xamarin";
+				string url = "https://dotnet.microsoft.com/apps/maui";
 				Uri uri = new Uri(url, UriKind.RelativeOrAbsolute);
 
 				Cookie cookie = new Cookie
@@ -45,29 +42,27 @@ namespace Maui.Controls.Sample.Issues
 
 				cookieContainer.Add(uri, cookie);
 
-#pragma warning disable CS0618 // Type or member is obsolete
 				WebView webView = new WebView
 				{
 					Source = url,
-					HorizontalOptions = LayoutOptions.FillAndExpand,
-					VerticalOptions = LayoutOptions.FillAndExpand,
+					HeightRequest = 200,
+					WidthRequest = 300,
 					Cookies = cookieContainer
 				};
-#pragma warning restore CS0618 // Type or member is obsolete
-				webView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetIsJavaScriptAlertEnabled(true);
+
+				webView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
 
 				Action<string> cookieExpectation = null;
 				var cookieResult = new Label()
 				{
 					Text = "Loading",
-					AutomationId = "CookieResult"
 				};
 
-				var successNavigationLabel = new Label()
+				var successfullPageLoadLabel = new Label()
 				{
 					IsVisible = false,
 					Text = "Page was loaded",
-					AutomationId = "SuccessNavigationLabel"
+					AutomationId = "SuccessfullPageLoadLabel"
 				};
 
 				var successCookiesLabel = new Label()
@@ -77,20 +72,9 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "SuccessCookiesLabel"
 				};
 
-				webView.Navigating += (_, __) =>
-				{
-					if (cookieExpectation != null)
-						cookieResult.Text = "Navigating";
-				};
-
 				webView.Navigated += async (_, __) =>
 				{
-					if (cookieResult.Text == "Loading")
-					{
-						cookieResult.Text = "Loaded";
-						successNavigationLabel.IsVisible = true;
-					}
-
+					successfullPageLoadLabel.IsVisible = true;
 					_currentCookieValue = await webView.EvaluateJavaScriptAsync("document.cookie");
 					cookieExpectation?.Invoke(_currentCookieValue);
 					cookieExpectation = null;
@@ -110,7 +94,7 @@ namespace Maui.Controls.Sample.Issues
 						new HorizontalStackLayout()
 						{
 							cookieResult,
-							successNavigationLabel,
+							successfullPageLoadLabel,
 							successCookiesLabel
 						},
 						new StackLayout()
@@ -125,7 +109,7 @@ namespace Maui.Controls.Sample.Issues
 									Command = new Command(() =>
 									{
 										webView.Cookies = cookieContainer;
-										cookieResult.Text = String.Empty;
+										cookieResult.Text = string.Empty;
 										successCookiesLabel.IsVisible = false;
 										cookieExpectation = (cookieValue) =>
 										{
@@ -307,8 +291,13 @@ namespace Maui.Controls.Sample.Issues
 							AutomationId = "PageWithoutCookies",
 							Command = new Command(() =>
 							{
+								var previousCookies = webView.Cookies;
 								webView.Cookies = null;
 								webView.Source = "file:///android_asset/googlemapsearch.html";
+
+								//Restore to the previous state
+								webView.Cookies = previousCookies;
+								webView.Source = url;
 							})
 						}
 					}
