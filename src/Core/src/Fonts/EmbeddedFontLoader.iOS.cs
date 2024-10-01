@@ -89,6 +89,7 @@ namespace Microsoft.Maui
 				if (fontData == null)
 					return null;
 
+				// Gets the temporary directory path for the current application.
 				var tempFolderPath = NSFileManager.DefaultManager.GetTemporaryDirectory().Path;
 				if (string.IsNullOrEmpty(tempFolderPath))
 					return null;
