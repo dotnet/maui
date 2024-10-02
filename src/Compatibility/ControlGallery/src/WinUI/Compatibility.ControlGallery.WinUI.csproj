@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/Microsoft.Maui*.dll
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\..\eng\Environment.Build.props" />
 
