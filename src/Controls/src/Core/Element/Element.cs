@@ -502,7 +502,11 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		internal INameScope transientNamescope;
+		//this is only used by XAMLC, not added to public API
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public INameScope transientNamescope;
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
