@@ -50,12 +50,12 @@
     <MicrosoftExtensionsLoggingDebugVersion>9.0.0-rc.2.24463.7</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>9.0.0-rc.2.24463.7</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>35.0.0-rc.2.134</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>35.0.0-rc.2.145</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet90_175PackageVersion>17.5.9334-net9-rc2</MicrosoftMacCatalystSdknet90_175PackageVersion>
-    <MicrosoftmacOSSdknet90_145PackageVersion>14.5.9334-net9-rc2</MicrosoftmacOSSdknet90_145PackageVersion>
-    <MicrosoftiOSSdknet90_175PackageVersion>17.5.9334-net9-rc2</MicrosoftiOSSdknet90_175PackageVersion>
-    <MicrosofttvOSSdknet90_175PackageVersion>17.5.9334-net9-rc2</MicrosofttvOSSdknet90_175PackageVersion>
+    <MicrosoftMacCatalystSdknet90_180PackageVersion>18.0.9600-net9-rc2</MicrosoftMacCatalystSdknet90_180PackageVersion>
+    <MicrosoftmacOSSdknet90_150PackageVersion>15.0.9600-net9-rc2</MicrosoftmacOSSdknet90_150PackageVersion>
+    <MicrosoftiOSSdknet90_180PackageVersion>18.0.9600-net9-rc2</MicrosoftiOSSdknet90_180PackageVersion>
+    <MicrosofttvOSSdknet90_180PackageVersion>18.0.9600-net9-rc2</MicrosofttvOSSdknet90_180PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -164,9 +164,9 @@
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
-    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet90_175PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet90_145PackageVersion)</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet90_175PackageVersion)</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet90_175PackageVersion)</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet90_180PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet90_150PackageVersion)</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet90_180PackageVersion)</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet90_180PackageVersion)</MicrosofttvOSSdkPackageVersion>
   </PropertyGroup>
 </Project>

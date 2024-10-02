@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6f23d04dc2b2039e9eaf97bee2ac02a77ce56b21</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.2.134">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.0-rc.2.145">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>b795a653460417af9da75f94e4a487a2665faa7f</Sha>
+      <Sha>b8b9bef6a47b099f2fae9abcdb30a9da0d00eabb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_17.5" Version="17.5.9334-net9-rc2">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.0" Version="18.0.9600-net9-rc2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>3c83e65de78e3ec58b6b7c22362658fa83939572</Sha>
+      <Sha>a6599c76713d4004a4555637137053503c092565</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net9.0_14.5" Version="14.5.9334-net9-rc2">
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_15.0" Version="15.0.9600-net9-rc2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>3c83e65de78e3ec58b6b7c22362658fa83939572</Sha>
+      <Sha>a6599c76713d4004a4555637137053503c092565</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net9.0_17.5" Version="17.5.9334-net9-rc2">
+    <Dependency Name="Microsoft.iOS.Sdk.net9.0_18.0" Version="18.0.9600-net9-rc2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>3c83e65de78e3ec58b6b7c22362658fa83939572</Sha>
+      <Sha>a6599c76713d4004a4555637137053503c092565</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_17.5" Version="17.5.9334-net9-rc2">
+    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_18.0" Version="18.0.9600-net9-rc2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>3c83e65de78e3ec58b6b7c22362658fa83939572</Sha>
+      <Sha>a6599c76713d4004a4555637137053503c092565</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
@@ -149,13 +149,13 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.24426.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.24476.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e3bdd9a0f2a65fe037ba1adb2261eea48a840fa4</Sha>
+      <Sha>7e8b8f4f321c8671aa01b53567d31aaa4950706f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24426.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.24476.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e3bdd9a0f2a65fe037ba1adb2261eea48a840fa4</Sha>
+      <Sha>7e8b8f4f321c8671aa01b53567d31aaa4950706f</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
