@@ -17,13 +17,6 @@
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
-  </ItemGroup>
-  <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>   
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
