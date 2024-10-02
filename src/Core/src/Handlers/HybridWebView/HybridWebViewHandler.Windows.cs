@@ -185,7 +185,7 @@ Content-Length: {contentLength}";
 			{
 				await webView.EnsureCoreWebView2Async();
 
-				webView.CoreWebView2.Settings.AreDevToolsEnabled = true;//EnableWebDevTools;
+				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
 				webView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 

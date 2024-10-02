@@ -25,6 +25,8 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -74,6 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView IHybridWebViewHandler.PlatformView => PlatformView;
 
+		internal HybridWebViewDeveloperTools DeveloperTools => MauiContext?.Services.GetService<HybridWebViewDeveloperTools>() ?? new HybridWebViewDeveloperTools();
 
 
 		/// <summary>
