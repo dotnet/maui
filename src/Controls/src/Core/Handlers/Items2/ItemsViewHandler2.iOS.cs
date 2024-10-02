@@ -40,6 +40,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected override void DisconnectHandler(UIView platformView)
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
+			_layout = null;
+			Controller?.DisposeItemsSource();
 			base.DisconnectHandler(platformView);
 		}
 

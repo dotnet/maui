@@ -285,10 +285,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				out markupExtension, out genericArguments))
 			{
 				var acceptEmptyServiceProvider = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+				var requiredServiceType = vardefref.VariableDefinition.VariableType.GetRequiredServices(context.Cache, module);
 
-				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+				if (!acceptEmptyServiceProvider && requiredServiceType is null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				(string, string, string)? bindingExtensionType = vardefref.VariableDefinition.VariableType.FullName switch
@@ -300,10 +299,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (bindingExtensionType.HasValue)
 				{
-					if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null, out var instructions))
+					// for backwards compatibility, it is possible to disable compilation of bindings with the `Source` property via a feature switch
+					// this feature switch is enabled by default only for NativeAOT and full trimming mode
+					bool hasSource = node.Properties.ContainsKey(new XmlName("", "Source"));
+					bool skipBindingCompilation = hasSource && !context.CompileBindingsWithSource;
+					if (!skipBindingCompilation)
 					{
-						foreach (var instruction in instructions)
-							yield return instruction;
+						if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null, out var instructions))
+						{
+							foreach (var instruction in instructions)
+								yield return instruction;
+						}
+					}
+					else
+					{
+						context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithSourceCompilationSkipped, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 					}
 				}
 
@@ -327,13 +337,32 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension"))))
 			{
 				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+				var requiredServiceType = vardefref.VariableDefinition.VariableType.GetRequiredServices(context.Cache, module);
 
-				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+				if (!acceptEmptyServiceProvider && requiredServiceType is null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				var markupExtensionType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension");
+				//some markup extensions weren't compiled earlier (on purpose), so we need to compile them now
+				var compiledValueProviderName = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "ProvideCompiledAttribute"))?.ConstructorArguments?[0].Value as string;
+				Type compiledValueProviderType;
+				ICompiledValueProvider valueProvider;
+
+				if (   compiledValueProviderName != null 
+					&& (compiledValueProviderType = Type.GetType(compiledValueProviderName)) != null
+					&& (valueProvider = Activator.CreateInstance(compiledValueProviderType) as ICompiledValueProvider) != null)
+				{
+					var cProvideValue = typeof(ICompiledValueProvider).GetMethods().FirstOrDefault(md => md.Name == "ProvideValue");
+					var instructions = (IEnumerable<Instruction>)cProvideValue.Invoke(valueProvider, [
+						vardefref,
+						context.Body.Method.Module,
+						node as BaseNode,
+						context]);
+					foreach (var i in instructions)
+						yield return i;
+					yield break;
+				}
+
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);
 				foreach (var instruction in context.Variables[node].LoadAs(context.Cache, module.GetTypeDefinition(context.Cache, markupExtensionType), module))
 					yield return instruction;
@@ -351,10 +380,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IValueProvider"))))
 			{
 				var acceptEmptyServiceProvider = context.Variables[node].VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "AcceptEmptyServiceProviderAttribute")) != null;
-				var requireServiceAttribute = vardefref.VariableDefinition.VariableType.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-				var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+				var requiredServiceType = vardefref.VariableDefinition.VariableType.GetRequiredServices(context.Cache, module);
 
-				if (!acceptEmptyServiceProvider && requireServiceAttribute == null)
+				if (!acceptEmptyServiceProvider && requiredServiceType is null)
 					context.LoggingHelper.LogWarningOrError(BuildExceptionCode.UnattributedMarkupType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, vardefref.VariableDefinition.VariableType);
 
 				var valueProviderType = context.Variables[node].VariableType;
@@ -1099,7 +1127,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanGetValue(parent, bpRef, attached, lineInfo, context, out _))
 				return GetValue(parent, bpRef, lineInfo, context, out propertyType);
 
-			//If it's a property, set it
+			//If it's a property, get it
 			if (CanGet(parent, localName, context, out _))
 				return Get(parent, localName, lineInfo, context, out propertyType);
 
@@ -1107,12 +1135,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		static FieldReference GetBindablePropertyReference(VariableDefinition parent, string namespaceURI, ref string localName, out bool attached, ILContext context, IXmlLineInfo iXmlLineInfo)
+			=> GetBindablePropertyReference(parent.VariableType, namespaceURI, ref localName, out attached, context, iXmlLineInfo);
+
+		public static FieldReference GetBindablePropertyReference(TypeReference bpOwnerType, string namespaceURI, ref string localName, out bool attached, ILContext context, IXmlLineInfo iXmlLineInfo)
 		{
 			var module = context.Body.Method.Module;
 			TypeReference declaringTypeReference;
 
 			//If it's an attached BP, update elementType and propertyName
-			var bpOwnerType = parent.VariableType;
 			attached = GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
 			var name = $"{localName}Property";
 			FieldDefinition bpDef = bpOwnerType.GetField(context.Cache,
@@ -1311,10 +1341,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
 				return false;
 
+
+				
 			var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
 			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
 			// Worst case scenario ? InvalidCastException at runtime
-			if (attached && varValue.VariableType.FullName == "System.Object")
+			if (varValue.VariableType.FullName == "System.Object")
 				return true;
 			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(context.Cache, bpTypeRef, module);
 			if (implicitOperator != null)
@@ -1324,7 +1356,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (varValue.VariableType.IsValueType && bpTypeRef.FullName == "System.Object")
 				return true;
 
-			return varValue.VariableType.InheritsFromOrImplements(context.Cache, bpTypeRef);
+			return varValue.VariableType.InheritsFromOrImplements(context.Cache, bpTypeRef) || varValue.VariableType.FullName == "System.Object";
 		}
 
 		static bool CanGetValue(VariableDefinition parent, FieldReference bpRef, bool attached, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
@@ -1367,11 +1399,37 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			else if (elementNode != null)
 			{
+				var @else = Create(OpCodes.Nop);
+				var endif = Create(OpCodes.Nop);
+
+				if(context.Variables[elementNode].VariableType.FullName == "System.Object")
+				{
+					//if(value != null && value.GetType().IsAssignableFrom(typeof(BindingBase)))
+					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Brfalse, @else);
+					
+					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase")));
+					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Object"), methodName: "GetType",  paramCount: 0));
+					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "IsAssignableFrom", parameterTypes: new[] { ("mscorlib", "System", "Type") }));
+					yield return Create(Brfalse, @else);
+					//then
+					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Br, endif);
+					//else
+					yield return @else;
+				}
 				var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
 				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, bpTypeRef, module))
 					yield return instruction;
 				if (bpTypeRef.IsValueType)
 					yield return Create(Box, module.ImportReference(bpTypeRef));
+				
+				//endif
+				if(context.Variables[elementNode].VariableType.FullName == "System.Object")
+					yield return endif;
+
 			}
 			yield return Create(Callvirt, module.ImportMethodReference(context.Cache,
 																	   bindableObjectType,
@@ -1416,7 +1474,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return false;
 
 			var valueNode = node as ValueNode;
-			if (valueNode != null && valueNode.CanConvertValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }))
+            if (valueNode != null && valueNode.CanConvertValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }))
 				return true;
 
 			var elementNode = node as IElementNode;
@@ -1732,6 +1790,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Root = root,
 				XamlFilePath = parentContext.XamlFilePath,
 				LoggingHelper = parentContext.LoggingHelper,
+				ValidateOnly = parentContext.ValidateOnly,
+				CompileBindingsWithSource = parentContext.CompileBindingsWithSource,
 			};
 
 			//Instanciate nested class

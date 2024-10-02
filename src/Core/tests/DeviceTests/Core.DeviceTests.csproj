@@ -33,6 +33,11 @@
     <!-- <WindowsPackageType>None</WindowsPackageType> -->
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- enable compilation of bindings with Source -->
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+  </PropertyGroup>
+
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />

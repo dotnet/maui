@@ -160,6 +160,7 @@ jobs:
     - template: provision.yml
       parameters:
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
+        skipAndroidImages: ${{ ne(RunPlatform.testName, 'RunOnAndroid') }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0

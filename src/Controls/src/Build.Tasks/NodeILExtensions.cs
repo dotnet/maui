@@ -197,9 +197,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (isExtendedConverter)
 				{
-					var requireServiceAttribute = typeConverter.GetCustomAttribute(context.Cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
-					var requiredServiceType = (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
-
+					var requiredServiceType = typeConverter.GetRequiredServices(context.Cache, module);
 					foreach (var instruction in pushServiceProvider(requiredServiceType))
 						yield return instruction;
 				}
@@ -329,6 +327,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Box, module.ImportReference(originalTypeRef));
 		}
 
+		public static TypeReference[] GetRequiredServices(this TypeReference type, XamlCache cache, ModuleDefinition module)
+		{
+			var requireServiceAttribute = type.GetCustomAttribute(cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
+			return (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
+		}
+
 		static Instruction PushParsedEnum(XamlCache cache, TypeReference enumRef, string value, IXmlLineInfo lineInfo)
 		{
 			var enumDef = enumRef.ResolveCached(cache);
@@ -425,6 +429,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushXmlLineInfo(this INode node, ILContext context)
 		{
+			if (context.ValidateOnly)
+			{
+				yield break;
+			}
 			var module = context.Body.Method.Module;
 
 			var xmlLineInfo = node as IXmlLineInfo;
@@ -450,6 +458,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushParentObjectsArray(this INode node, ILContext context)
 		{
+			if (context.ValidateOnly)
+			{
+				yield break;
+			}
 			var module = context.Body.Method.Module;
 
 			var nodes = new List<IElementNode>();
@@ -588,6 +600,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context, TypeReference[] requiredServices, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference declaringTypeReference = null)
 		{
+			if (context.ValidateOnly)
+			{
+				yield break;
+			}
 			var module = context.Body.Method.Module;
 
 			var createAllServices = requiredServices is null;
