@@ -116,15 +116,24 @@ namespace Microsoft.Maui.Handlers
 
 			switch (messageType)
 			{
-				case "InvokeMethodCompleted":
+				case "__InvokeJavaScriptCompleted":
 					{
-						var sections = messageContent.Split('|');
-						var taskId = sections[0];
-						var result = sections[1];
+#if !NETSTANDARD2_0
+						var indexOfPipeInContent = messageContent.IndexOf('|', StringComparison.Ordinal);
+#else
+						var indexOfPipeInContent = messageContent.IndexOf("|", StringComparison.Ordinal);
+#endif
+						if (indexOfPipeInContent == -1)
+						{
+							throw new ArgumentException($"The '{messageType}' message content must contain a pipe character ('|').", nameof(rawMessage));
+						}
+
+						var taskId = messageContent.Substring(0, indexOfPipeInContent);
+						var result = messageContent.Substring(indexOfPipeInContent + 1);
 						AsyncTaskCompleted(taskId, result);
 					}
 					break;
-				case "RawMessage":
+				case "__RawMessage":
 					VirtualView?.RawMessageReceived(messageContent);
 					break;
 				default:
@@ -210,7 +219,7 @@ namespace Microsoft.Maui.Handlers
 					invokeJavaScriptRequest.ParamValues.Select((v, i) => (v == null ? "null" : JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!))));
 
 			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync),
-				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.InvokeMethod({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
+				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.__InvokeJavaScript({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
 
 			var stringResult = await callback.Task;
 

@@ -121,8 +121,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
 						"AddNumbersWithNulls",
 						HybridWebViewTestContext.Default.ComputationResult,
-						new object[] { x, null, y, null },
-						new[] { HybridWebViewTestContext.Default.Decimal, null, HybridWebViewTestContext.Default.Decimal, null });
+						[x, null, y, null],
+						[HybridWebViewTestContext.Default.Decimal, null, HybridWebViewTestContext.Default.Decimal, null]);
 
 					Assert.NotNull(result);
 					Assert.Equal(777.777m, result.result);
@@ -169,8 +169,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
 						"EvaluateMeWithParamsAndReturn",
 						HybridWebViewTestContext.Default.Decimal,
-						new object[] { x, y },
-						new[] { HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal });
+						[x, y],
+						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
 					Assert.Equal(777.777m, result);
 				});
@@ -215,8 +215,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
 						"AddNumbers",
 						HybridWebViewTestContext.Default.ComputationResult,
-						new object[] { x, y },
-						new[] { HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal });
+						[x, y],
+						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
 					Assert.NotNull(result);
 					Assert.Equal(777.777m, result.result);
@@ -263,8 +263,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
 						"EvaluateMeWithParamsAndAsyncReturn",
 						HybridWebViewTestContext.Default.DictionaryStringString,
-						new object[] { s1, s2 },
-						new[] { HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String });
+						[s1, s2],
+						[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
 
 					Assert.NotNull(result);
 					Assert.Equal(3, result.Count);
