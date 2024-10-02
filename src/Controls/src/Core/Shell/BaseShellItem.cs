@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Controls
 				var selectedState = new VisualState();
 				selectedState.Name = "Selected";
 
-				if (DeviceInfo.Platform != DevicePlatform.WinUI)
+				if (!OperatingSystem.IsWindows())
 				{
 					selectedState.Setters.Add(new Setter
 					{
@@ -557,6 +557,16 @@ namespace Microsoft.Maui.Controls
 				return grid;
 			});
 		}
+
+#if NETSTANDARD
+		sealed class OperatingSystem
+		{
+			public static bool IsAndroid() => false;
+			public static bool IsIOS() => false;
+			public static bool IsMacCatalyst() => false;
+			public static bool IsWindows() => false;
+		}
+#endif
 	}
 
 	public interface IQueryAttributable
