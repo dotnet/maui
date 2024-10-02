@@ -38,12 +38,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			return TypedBinding;
 
 			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
-				Justification = "This code is only reachable in XamlC compiled code when there is a missing x:DataType and the binding could not be compiled. " +
-					"In that case, we produce a warning that the binding could not be compiled.")]
+				Justification = "If this method is invoked, we have already produced warnings in XamlC " +
+					"when the compilation of this binding failed or was skipped.")]
 			BindingBase CreateBinding()
 			{
 				Type bindingXDataType = null;
-				if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
+				if (serviceProvider is not null &&
+					(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
 					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
 					&& dataTypeProvider.BindingDataType != null)
 				{

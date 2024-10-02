@@ -15,6 +15,13 @@
     <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
 
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>   
+  </PropertyGroup>
+  
   <ItemGroup>
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.44" TargetingPackVersion="10.0.19041.44" />
   </ItemGroup>

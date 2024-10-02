@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	    
 	    SetterSpecificity[] _keys;
 	    T[] _values;
+
 	    int _count;
 	    
 	    public int Count => _count;

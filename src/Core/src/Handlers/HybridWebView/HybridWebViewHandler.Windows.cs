@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
-using Windows.Foundation;
 using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Handlers
@@ -73,17 +72,10 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
+		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)
 		{
-			if (arg is not EvaluateJavaScriptAsyncRequest request ||
-				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
+			if (handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
 			{
-				return;
-			}
-
-			if (handler.PlatformView is null)
-			{
-				request.SetCanceled();
 				return;
 			}
 
@@ -102,7 +94,7 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 		{
-			VirtualView?.MessageReceived(args.TryGetWebMessageAsString());
+			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
@@ -193,7 +185,7 @@ Content-Length: {contentLength}";
 			{
 				await webView.EnsureCoreWebView2Async();
 
-				webView.CoreWebView2.Settings.AreDevToolsEnabled = true;//EnableWebDevTools;
+				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
 				webView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
