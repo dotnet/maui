@@ -28,7 +28,7 @@
     },
 
     "SendRawMessage": function (message) {
-        window.HybridWebView.__SendMessageInternal('RawMessage', message);
+        window.HybridWebView.__SendMessageInternal('__RawMessage', message);
     },
 
     "__SendMessageInternal": function (type, message) {
@@ -49,7 +49,7 @@
         }
     },
 
-    "InvokeMethod": function (taskId, methodName, args) {
+    "__InvokeJavaScript": function (taskId, methodName, args) {
         if (methodName[Symbol.toStringTag] === 'AsyncFunction') {
             // For async methods, we need to call the method and then trigger the callback when it's done
             const asyncPromise = methodName(...args);
@@ -71,7 +71,7 @@
             result = JSON.stringify(result);
         }
 
-        window.HybridWebView.__SendMessageInternal('InvokeMethodCompleted', taskId + '|' + result);
+        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptCompleted', taskId + '|' + result);
     }
 }
 
