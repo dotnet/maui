@@ -17,11 +17,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
-		// NOTE: keep these in sync with:
+		// NOTE: keep these in *reasonably* in sync with:
+		// * src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj
 		// * src\Templates\src\templates\maui-blazor\MauiApp.1.csproj
 		// * src\Templates\src\templates\maui-blazor-solution\MauiApp.1\MauiApp.1.csproj
+		// * https://learn.microsoft.com/dotnet/maui/supported-platforms
 		internal const string AndroidSupportedOSPlatformVersion = "android24.0";
-		internal const string iOSSupportedOSPlatformVersion = "ios15.0";
+		internal const string iOSSupportedOSPlatformVersion = "ios14.0";
 
 		internal static string AppHostAddress { get; } = HostAddressHelper.GetAppHostAddress();
 
