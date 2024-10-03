@@ -771,30 +771,30 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     Information("Run Test binlog: {0}", binlog);
 
     var settings = new DotNetTestSettings
-        {
-            Configuration = config,
-            NoBuild = noBuild,
-            Filter = filter,
-            Loggers = { 
-                $"trx;LogFileName={results}",
-                $"console;verbosity=normal"
-            }, 
-           	ResultsDirectory = GetTestResultsDirectory(),
-            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
-            ArgumentCustomization = args => 
-            { 
-                args.Append($"-bl:{binlog}");
-               // args.Append($"/tl");
-                if(argsExtra != null)
+    {
+        Configuration = config,
+        NoBuild = noBuild,
+        Filter = filter,
+        Loggers = { 
+          //  $"trx;LogFileName={results}",
+            $"console;verbosity=diagnostic"
+        }, 
+        ResultsDirectory = GetTestResultsDirectory(),
+        //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+        ArgumentCustomization = args => 
+        { 
+            args.Append($"-bl:{binlog}");
+            // args.Append($"/tl");
+            if(argsExtra != null)
+            {
+                foreach(var prop in argsExtra)
                 {
-                    foreach(var prop in argsExtra)
-                    {
-                        args.Append($"/p:{prop.Key}={prop.Value}");
-                    }
+                    args.Append($"/p:{prop.Key}={prop.Value}");
                 }
-                return args;
             }
-        };
+            return args;
+        }
+    };
     
     if(!string.IsNullOrEmpty(pathDotnet))
     {
