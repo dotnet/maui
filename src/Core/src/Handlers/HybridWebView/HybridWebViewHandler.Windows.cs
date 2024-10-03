@@ -112,17 +112,19 @@ namespace Microsoft.Maui.Handlers
 			{
 				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
-				string? contentType;
+				string? contentType = null;
 				Stream? contentStream = null;
 
+				// 1. Try special DotNet invocation path
 				if (relativePath == InvokeDotNetPath)
 				{
 					var fullUri = new Uri(eventArgs.Request.Uri);
 					// get 'data' key from query string
 					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-					(contentStream, contentType) = await InvokeDotNetAsync(invokeQueryString);
+					(contentStream, contentType) = InvokeDotNet(invokeQueryString);
 				}
 
+				// 2. If nothing found yet, try to get the content from the asset path
 				if (contentStream is null)
 				{
 					if (string.IsNullOrEmpty(relativePath))
@@ -141,26 +143,28 @@ namespace Microsoft.Maui.Handlers
 
 					var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
 					contentStream = await GetAssetStreamAsync(assetPath);
+				}
 
-					if (contentStream is null)
-					{
-						var notFoundContent = "Resource not found (404)";
-						eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-							Content: null,
-							StatusCode: 404,
-							ReasonPhrase: "Not Found",
-							Headers: GetHeaderString("text/plain", notFoundContent.Length)
-						);
-					}
-					else
-					{
-						eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-							Content: await CopyContentToRandomAccessStreamAsync(contentStream),
-							StatusCode: 200,
-							ReasonPhrase: "OK",
-							Headers: GetHeaderString(contentType, (int)contentStream.Length)
-						);
-					}
+				// If still nothing is found, return a 404
+				if (contentStream is null)
+				{
+					var notFoundContent = "Resource not found (404)";
+					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+						Content: null,
+						StatusCode: 404,
+						ReasonPhrase: "Not Found",
+						Headers: GetHeaderString("text/plain", notFoundContent.Length)
+					);
+				}
+				else
+				{
+					// Otherwise, return the content
+					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+						Content: await CopyContentToRandomAccessStreamAsync(contentStream),
+						StatusCode: 200,
+						ReasonPhrase: "OK",
+						Headers: GetHeaderString(contentType ?? "text/plain", (int)contentStream.Length)
+					);
 				}
 
 				contentStream?.Dispose();

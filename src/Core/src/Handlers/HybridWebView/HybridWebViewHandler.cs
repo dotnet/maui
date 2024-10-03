@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 
 		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-		internal async Task<(Stream? ContentStream, string? ContentType)> InvokeDotNetAsync(NameValueCollection invokeQueryString)
+		internal (Stream? ContentStream, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
 		{
 			try
 			{
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (invokeData != null && invokeData.MethodName != null)
 				{
-					var result = await InvokeDotNetMethod(invokeTarget, invokeData);
+					var result = InvokeDotNetMethod(invokeTarget, invokeData);
 
 					contentType = "application/json";
 
@@ -216,11 +216,8 @@ namespace Microsoft.Maui.Handlers
 
 		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-		private static async Task<object?> InvokeDotNetMethod(object jsInvokeTarget, JSInvokeMethodData invokeData)
+		private static object? InvokeDotNetMethod(object jsInvokeTarget, JSInvokeMethodData invokeData)
 		{
-			// TODO: Remove this
-			await Task.Yield();
-
 			if (jsInvokeTarget is null)
 			{
 				throw new NotImplementedException($"The {nameof(jsInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");

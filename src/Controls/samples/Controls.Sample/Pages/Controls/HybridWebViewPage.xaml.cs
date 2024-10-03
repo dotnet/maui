@@ -108,17 +108,27 @@ namespace Maui.Controls.Sample.Pages
 				Debug.WriteLine($"DoSyncWorkParams: {i}, {s}");
 			}
 
-			public async Task DoWorkAsync()
+			public string DoSyncWorkReturn()
 			{
-				Debug.WriteLine("DoWorkAsync");
-				await Task.Yield();
+				Debug.WriteLine("DoSyncWorkReturn");
+				return "Hello from C#!";
 			}
 
-			public async Task DoWorkParamsAsync(int i, string s)
+			public SyncReturn DoSyncWorkParamsReturn(int i, string s)
 			{
-				Debug.WriteLine($"DoWorkParamsAsync: {i}, {s}");
-				await Task.Yield();
+				Debug.WriteLine($"DoSyncWorkParamsReturn: {i}, {s}");
+				return new SyncReturn
+				{
+					Message = "Hello from C#! " + s,
+					Value = i,
+				};
 			}
+		}
+
+		public class SyncReturn
+		{
+			public string? Message { get; set; }
+			public int Value { get; set; }
 		}
 	}
 }

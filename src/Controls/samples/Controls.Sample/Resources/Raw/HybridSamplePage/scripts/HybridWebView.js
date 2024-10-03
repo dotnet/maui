@@ -52,7 +52,6 @@
 
         const message = JSON.stringify(body);
 
-        // Android web view doesn't support getting the body of a POST request, so we use a GET request instead and pass the body as a query string parameter.
         var requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
 
         const rawResponse = await fetch(requestUrl, {
@@ -64,7 +63,11 @@
         const response = await rawResponse.json();
 
         if (response) {
-            return JSON.parse(response.Result);
+            if (response.IsJson) {
+                return JSON.parse(response.Result);
+            }
+
+            return response.Result;
         }
 
         return null;
