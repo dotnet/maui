@@ -85,11 +85,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			HookEvents(ShellItem);
 			SetupMenu();
-			var appearance = (ShellContext.Shell).GetAppearanceForPivot(ShellItem);
+			var appearance = ShellContext.Shell.GetAppearanceForPivot(ShellItem);
 			if (_bottomView.Background is ColorDrawable background)
 			{
-				var appearanceElement = appearance as IShellAppearanceElement;
-				if (appearanceElement is not null)
+				if (appearance is IShellAppearanceElement appearanceElement)
 				{
 					background.Color = appearanceElement.EffectiveTabBarBackgroundColor.ToPlatform();
 				}
