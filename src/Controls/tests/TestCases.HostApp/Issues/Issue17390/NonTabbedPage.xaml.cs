@@ -6,4 +6,9 @@ public partial class NonTabbedPage : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	async void OpenNonTabbedPage(object sender, EventArgs args)
+	{
+		await Shell.Current.GoToAsync("innertabbedpage");
+	}
 }
