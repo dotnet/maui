@@ -66,20 +66,26 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Ventura
+        - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
 
   - name: iosPool
     type: object
     default:
-      name: $(macosTestsVmPool)
-      vmImage: macOS-14
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
 
   - name: catalystPool
     type: object
     default:
-      name: $(macosTestsVmPool)
-      vmImage: macOS-14
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
 
   - name: windowsPool
     type: object

@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue24414"
+             Title="Issue24414">
+
+    <Grid RowDefinitions="Auto,*,*" RowSpacing="24">
+      <Label Text="Shadows" AutomationId="WaitForStubControl" />
+      <Border Grid.Row="1"
+              HeightRequest="248"
+              WidthRequest="248"
+              VerticalOptions="Center"
+              HorizontalOptions="Center"
+              StrokeShape="{RoundRectangle CornerRadius=24}"
+              Stroke="Black"
+              Padding="24" />
+      <Border Grid.Row="1"
+              HeightRequest="200"
+              WidthRequest="200"
+              VerticalOptions="Center"
+              HorizontalOptions="Center"
+              StrokeShape="{RoundRectangle CornerRadius=24}"
+              Background="LightGreen"
+              Shadow="{Shadow Brush=Black, Offset='0,0', Radius=24, Opacity=1}" />
+      <Border Grid.Row="2"
+              HeightRequest="248"
+              WidthRequest="248"
+              VerticalOptions="Center"
+              HorizontalOptions="Center"
+              StrokeShape="{RoundRectangle CornerRadius=24}"
+              Stroke="Black"
+              Padding="24" />
+      <Border Grid.Row="2"
+              HeightRequest="200"
+              WidthRequest="200"
+              VerticalOptions="Center"
+              HorizontalOptions="Center"
+              StrokeShape="{RoundRectangle CornerRadius=24}"
+              Background="LightGreen"
+              Shadow="{Shadow Brush=Black, Offset='24,24', Radius=24, Opacity=1}" />
+    </Grid>
+</ContentPage>

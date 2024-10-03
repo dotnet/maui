@@ -24,17 +24,17 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "ClickMe",
 					Command = new Command(async () =>
 					{
-						TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
-						vsl.Unloaded += (_, _) =>
-						{
-							vsl.Add(new Label { Text = "Hello, World!", AutomationId = "Success" });
-							taskCompletionSource.TrySetResult();
-						};
+						var secondPage = new ContentPage() { Content = new Label() { Text = "I should just disappear" } };
 
-						await Navigation.PushAsync(new ContentPage() { Content = new Label() { Text = "I should just disappear" } });
+						await Navigation.PushAsync(secondPage);
 						await Navigation.PushModalAsync(new ContentPage() { Content = new Label() { Text = "I should just disappear" } });
 
-						await taskCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						// Ensure that the VSL is unloaded otherwise the test isn't really valid
+						if (!vsl.IsLoaded)
+						{
+							vsl.Add(new Label { Text = "Hello, World!", AutomationId = "Success" });
+						}
+
 						await Navigation.PopModalAsync();
 						await Navigation.PopAsync();
 					})

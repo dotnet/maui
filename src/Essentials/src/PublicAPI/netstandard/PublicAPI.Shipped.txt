@@ -33,6 +33,7 @@
 ~Microsoft.Maui.ApplicationModel.MapLaunchOptions.Name.set -> void
 ~Microsoft.Maui.ApplicationModel.PermissionException.PermissionException(string message) -> void
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.AccessToken.get -> string
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.CallbackUri.get -> System.Uri
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.Get(string key) -> string
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.IdToken.get -> string
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.Properties.get -> System.Collections.Generic.Dictionary<string, string>
@@ -40,6 +41,7 @@
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.Put(string key, string value) -> void
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.RefreshToken.get -> string
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Collections.Generic.IDictionary<string, string> properties) -> void
+~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri, Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder responseDecoder) -> void
 ~Microsoft.Maui.Authentication.WebAuthenticatorResult.WebAuthenticatorResult(System.Uri uri) -> void
 ~Microsoft.Maui.Devices.Sensors.Location.Location(Microsoft.Maui.Devices.Sensors.Location point) -> void
 ~Microsoft.Maui.Devices.Sensors.Placemark.AdminArea.get -> string
@@ -419,6 +421,8 @@ Microsoft.Maui.Authentication.IAppleSignInAuthenticator.AuthenticateAsync(Micros
 Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback
 Microsoft.Maui.Authentication.IWebAuthenticator
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
+Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>?
 Microsoft.Maui.Authentication.WebAuthenticator
 Microsoft.Maui.Authentication.WebAuthenticatorExtensions
 Microsoft.Maui.Authentication.WebAuthenticatorOptions
@@ -426,6 +430,8 @@ Microsoft.Maui.Authentication.WebAuthenticatorOptions.CallbackUrl.get -> System.
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.CallbackUrl.set -> void
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.PrefersEphemeralWebBrowserSession.get -> bool
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.PrefersEphemeralWebBrowserSession.set -> void
+Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.get -> Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder?
+Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> void
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.Url.get -> System.Uri?
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.Url.set -> void
 Microsoft.Maui.Authentication.WebAuthenticatorOptions.WebAuthenticatorOptions() -> void
@@ -524,6 +530,7 @@ Microsoft.Maui.Devices.IDeviceInfo.Platform.get -> Microsoft.Maui.Devices.Device
 Microsoft.Maui.Devices.IDeviceInfo.Version.get -> System.Version!
 Microsoft.Maui.Devices.IDeviceInfo.VersionString.get -> string!
 Microsoft.Maui.Devices.IFlashlight
+Microsoft.Maui.Devices.IFlashlight.IsSupportedAsync() -> System.Threading.Tasks.Task<bool>!
 Microsoft.Maui.Devices.IFlashlight.TurnOffAsync() -> System.Threading.Tasks.Task!
 Microsoft.Maui.Devices.IFlashlight.TurnOnAsync() -> System.Threading.Tasks.Task!
 Microsoft.Maui.Devices.IHapticFeedback
@@ -582,7 +589,24 @@ Microsoft.Maui.Devices.Sensors.GeolocationAccuracy.High = 4 -> Microsoft.Maui.De
 Microsoft.Maui.Devices.Sensors.GeolocationAccuracy.Low = 2 -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
 Microsoft.Maui.Devices.Sensors.GeolocationAccuracy.Lowest = 1 -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
 Microsoft.Maui.Devices.Sensors.GeolocationAccuracy.Medium = 3 -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
+Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationError.PositionUnavailable = 0 -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationError.Unauthorized = 1 -> Microsoft.Maui.Devices.Sensors.GeolocationError
 Microsoft.Maui.Devices.Sensors.GeolocationExtensions
+Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs
+Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs.Error.get -> Microsoft.Maui.Devices.Sensors.GeolocationError
+Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs.GeolocationListeningFailedEventArgs(Microsoft.Maui.Devices.Sensors.GeolocationError geolocationError) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.get -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.DesiredAccuracy.set -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest() -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy, System.TimeSpan minimumTime) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.GeolocationListeningRequest(Microsoft.Maui.Devices.Sensors.GeolocationAccuracy accuracy) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumTime.get -> System.TimeSpan
+Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest.MinimumTime.set -> void
+Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs
+Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs.GeolocationLocationChangedEventArgs(Microsoft.Maui.Devices.Sensors.Location! location) -> void
+Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs.Location.get -> Microsoft.Maui.Devices.Sensors.Location!
 Microsoft.Maui.Devices.Sensors.GeolocationRequest
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.DesiredAccuracy.get -> Microsoft.Maui.Devices.Sensors.GeolocationAccuracy
 Microsoft.Maui.Devices.Sensors.GeolocationRequest.DesiredAccuracy.set -> void
@@ -629,6 +653,11 @@ Microsoft.Maui.Devices.Sensors.IGeocoding.GetPlacemarksAsync(double latitude, do
 Microsoft.Maui.Devices.Sensors.IGeolocation
 Microsoft.Maui.Devices.Sensors.IGeolocation.GetLastKnownLocationAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 Microsoft.Maui.Devices.Sensors.IGeolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request, System.Threading.CancellationToken cancelToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsListeningForeground.get -> bool
+Microsoft.Maui.Devices.Sensors.IGeolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>?
+Microsoft.Maui.Devices.Sensors.IGeolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>?
+Microsoft.Maui.Devices.Sensors.IGeolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
+Microsoft.Maui.Devices.Sensors.IGeolocation.StopListeningForeground() -> void
 Microsoft.Maui.Devices.Sensors.IGyroscope
 Microsoft.Maui.Devices.Sensors.IGyroscope.IsMonitoring.get -> bool
 Microsoft.Maui.Devices.Sensors.IGyroscope.IsSupported.get -> bool
@@ -715,11 +744,11 @@ Microsoft.Maui.Devices.Sensors.SensorSpeed.UI = 1 -> Microsoft.Maui.Devices.Sens
 Microsoft.Maui.Devices.Vibration
 Microsoft.Maui.Devices.VibrationExtensions
 Microsoft.Maui.Media.IMediaPicker
-Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+Microsoft.Maui.Media.IMediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 Microsoft.Maui.Media.IMediaPicker.IsCaptureSupported.get -> bool
-Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+Microsoft.Maui.Media.IMediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+Microsoft.Maui.Media.IMediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 Microsoft.Maui.Media.IPlatformScreenshot
 Microsoft.Maui.Media.IScreenshot
 Microsoft.Maui.Media.IScreenshot.CaptureAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
@@ -815,7 +844,7 @@ Microsoft.Maui.Storage.IPreferences.Get<T>(string! key, T defaultValue, string? 
 Microsoft.Maui.Storage.IPreferences.Remove(string! key, string? sharedName = null) -> void
 Microsoft.Maui.Storage.IPreferences.Set<T>(string! key, T value, string? sharedName = null) -> void
 Microsoft.Maui.Storage.ISecureStorage
-Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
+Microsoft.Maui.Storage.ISecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 Microsoft.Maui.Storage.ISecureStorage.Remove(string! key) -> bool
 Microsoft.Maui.Storage.ISecureStorage.RemoveAll() -> void
 Microsoft.Maui.Storage.ISecureStorage.SetAsync(string! key, string! value) -> System.Threading.Tasks.Task!
@@ -848,6 +877,7 @@ override Microsoft.Maui.Devices.Sensors.BarometerData.ToString() -> string!
 override Microsoft.Maui.Devices.Sensors.CompassData.Equals(object? obj) -> bool
 override Microsoft.Maui.Devices.Sensors.CompassData.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.CompassData.ToString() -> string!
+override Microsoft.Maui.Devices.Sensors.GeolocationRequest.ToString() -> string!
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.Equals(object? obj) -> bool
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.GetHashCode() -> int
 override Microsoft.Maui.Devices.Sensors.GyroscopeData.ToString() -> string!
@@ -897,7 +927,6 @@ static Microsoft.Maui.ApplicationModel.Communication.Email.ComposeAsync(string! 
 static Microsoft.Maui.ApplicationModel.Communication.Email.Default.get -> Microsoft.Maui.ApplicationModel.Communication.IEmail!
 static Microsoft.Maui.ApplicationModel.Communication.EmailExtensions.ComposeAsync(this Microsoft.Maui.ApplicationModel.Communication.IEmail! email, string! subject, string! body, params string![]! to) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.ApplicationModel.Communication.EmailExtensions.ComposeAsync(this Microsoft.Maui.ApplicationModel.Communication.IEmail! email) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Current.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
 static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Default.get -> Microsoft.Maui.ApplicationModel.Communication.IPhoneDialer!
 static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.IsSupported.get -> bool
 static Microsoft.Maui.ApplicationModel.Communication.PhoneDialer.Open(string! number) -> void
@@ -1016,6 +1045,7 @@ static Microsoft.Maui.Devices.DevicePlatform.WinUI.get -> Microsoft.Maui.Devices
 static Microsoft.Maui.Devices.DisplayInfo.operator !=(Microsoft.Maui.Devices.DisplayInfo left, Microsoft.Maui.Devices.DisplayInfo right) -> bool
 static Microsoft.Maui.Devices.DisplayInfo.operator ==(Microsoft.Maui.Devices.DisplayInfo left, Microsoft.Maui.Devices.DisplayInfo right) -> bool
 static Microsoft.Maui.Devices.Flashlight.Default.get -> Microsoft.Maui.Devices.IFlashlight!
+static Microsoft.Maui.Devices.Flashlight.IsSupportedAsync() -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Devices.Flashlight.TurnOffAsync() -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Devices.Flashlight.TurnOnAsync() -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Devices.HapticFeedback.Default.get -> Microsoft.Maui.Devices.IHapticFeedback!
@@ -1056,6 +1086,11 @@ static Microsoft.Maui.Devices.Sensors.Geolocation.GetLastKnownLocationAsync() ->
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request, System.Threading.CancellationToken cancelToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Geolocation.GetLocationAsync(Microsoft.Maui.Devices.Sensors.GeolocationRequest! request) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsListeningForeground.get -> bool
+static Microsoft.Maui.Devices.Sensors.Geolocation.ListeningFailed -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationListeningFailedEventArgs!>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.LocationChanged -> System.EventHandler<Microsoft.Maui.Devices.Sensors.GeolocationLocationChangedEventArgs!>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.StartListeningForegroundAsync(Microsoft.Maui.Devices.Sensors.GeolocationListeningRequest! request) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Devices.Sensors.Geolocation.StopListeningForeground() -> void
 static Microsoft.Maui.Devices.Sensors.GeolocationExtensions.GetLocationAsync(this Microsoft.Maui.Devices.Sensors.IGeolocation! geolocation, Microsoft.Maui.Devices.Sensors.GeolocationRequest! request) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.GeolocationExtensions.GetLocationAsync(this Microsoft.Maui.Devices.Sensors.IGeolocation! geolocation) -> System.Threading.Tasks.Task<Microsoft.Maui.Devices.Sensors.Location?>!
 static Microsoft.Maui.Devices.Sensors.Gyroscope.Default.get -> Microsoft.Maui.Devices.Sensors.IGyroscope!
@@ -1089,12 +1124,12 @@ static Microsoft.Maui.Devices.Vibration.Vibrate() -> void
 static Microsoft.Maui.Devices.Vibration.Vibrate(double duration) -> void
 static Microsoft.Maui.Devices.Vibration.Vibrate(System.TimeSpan duration) -> void
 static Microsoft.Maui.Devices.VibrationExtensions.Vibrate(this Microsoft.Maui.Devices.IVibration! vibration, double duration) -> void
-static Microsoft.Maui.Media.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-static Microsoft.Maui.Media.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+static Microsoft.Maui.Media.MediaPicker.CapturePhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.CaptureVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 static Microsoft.Maui.Media.MediaPicker.Default.get -> Microsoft.Maui.Media.IMediaPicker!
 static Microsoft.Maui.Media.MediaPicker.IsCaptureSupported.get -> bool
-static Microsoft.Maui.Media.MediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
-static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult!>!
+static Microsoft.Maui.Media.MediaPicker.PickPhotoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
+static Microsoft.Maui.Media.MediaPicker.PickVideoAsync(Microsoft.Maui.Media.MediaPickerOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Storage.FileResult?>!
 static Microsoft.Maui.Media.Screenshot.CaptureAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.Media.IScreenshotResult!>!
 static Microsoft.Maui.Media.Screenshot.Default.get -> Microsoft.Maui.Media.IScreenshot!
 static Microsoft.Maui.Media.Screenshot.IsCaptureSupported.get -> bool
@@ -1183,7 +1218,7 @@ static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value) -> voi
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, string? sharedName) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value) -> void
 static Microsoft.Maui.Storage.SecureStorage.Default.get -> Microsoft.Maui.Storage.ISecureStorage!
-static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string!>!
+static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Threading.Tasks.Task<string?>!
 static Microsoft.Maui.Storage.SecureStorage.Remove(string! key) -> bool
 static Microsoft.Maui.Storage.SecureStorage.RemoveAll() -> void
 static Microsoft.Maui.Storage.SecureStorage.SetAsync(string! key, string! value) -> System.Threading.Tasks.Task!

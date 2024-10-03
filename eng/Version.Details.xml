@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24420.3">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.24476.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>69f15217657bc3a7f0102911aa967525529fdfdb</Sha>
+      <Sha>7d5c32dbda0c6c8b9dc20cde4e1261b191896138</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24420.3">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="10.0.0-prerelease.24476.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>69f15217657bc3a7f0102911aa967525529fdfdb</Sha>
+      <Sha>7d5c32dbda0c6c8b9dc20cde4e1261b191896138</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24420.3">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="10.0.0-prerelease.24476.1">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>69f15217657bc3a7f0102911aa967525529fdfdb</Sha>
+      <Sha>7d5c32dbda0c6c8b9dc20cde4e1261b191896138</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

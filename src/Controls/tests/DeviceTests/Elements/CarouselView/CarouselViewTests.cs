@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
@@ -112,6 +113,45 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(handler.PlatformView);
 			});
 		}
+
+		#if !ANDROID //https://github.com/dotnet/maui/pull/24610
+		[Fact]
+		public async void DisconnectedCarouselViewDoesNotHookCollectionViewChanged()
+		{
+			SetupBuilder();
+
+			CollectionChangedObservableCollection<int> data = new CollectionChangedObservableCollection<int>()
+			{
+				1,
+				2,
+			};
+
+			var template = new DataTemplate(() =>
+			{
+				return new Grid()
+				{
+					new Label()
+				};
+			});
+
+			var carouselView = new CarouselView()
+			{
+				ItemTemplate = template,
+				ItemsSource = data
+			};
+
+			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async (handler) =>
+			{
+				await Task.Delay(100);
+				Assert.NotNull(handler.PlatformView);
+				Assert.False(data.IsCollectionChangedEventEmpty);
+			});
+
+			carouselView.Handler?.DisconnectHandler();
+
+			Assert.True(data.IsCollectionChangedEventEmpty);
+		}
+		#endif
 	}
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector
@@ -128,5 +168,18 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				return Template2;
 		}
+	}
+
+	internal class CollectionChangedObservableCollection<T> : ObservableCollection<T>, INotifyCollectionChanged
+	{
+		NotifyCollectionChangedEventHandler collectionChanged;
+
+		event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
+		{
+			add { collectionChanged += value; base.CollectionChanged += value; }
+			remove { collectionChanged -= value; base.CollectionChanged -= value; }
+		}
+
+		public bool IsCollectionChangedEventEmpty => collectionChanged is null;
 	}
 }

@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
+		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 		internal ICrossPlatformLayout? CrossPlatformLayout
@@ -239,8 +240,27 @@ namespace Microsoft.Maui.Platform
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
+		}
 
-			this.Superview?.SetNeedsLayout();
+		private protected void TryToInvalidateSuperView(bool onlyIfPending)
+		{
+			if (onlyIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				return;
+			}
+
+			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+			// To a SuperView that's been disposed which will cause a crash when trying to access it
+			if (Window is not null)
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+				this.Superview?.SetNeedsLayout();
+			}
+			else
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
+			}
 		}
 
 		partial void ClipChanged()
@@ -268,7 +288,7 @@ namespace Microsoft.Maui.Platform
 			var path = _clip?.PathForBounds(bounds);
 			var nativePath = path?.AsCGPath();
 
-			mask ??= MaskLayer = new CAShapeLayer();
+			mask ??= MaskLayer = new StaticCAShapeLayer();
 			mask.Path = nativePath;
 
 			var backgroundLayer = GetBackgroundLayer();
@@ -278,7 +298,7 @@ namespace Microsoft.Maui.Platform
 			if (backgroundLayer is null)
 				return;
 
-			backgroundMask ??= BackgroundMaskLayer = new CAShapeLayer();
+			backgroundMask ??= BackgroundMaskLayer = new StaticCAShapeLayer();
 			backgroundMask.Path = nativePath;
 		}
 
@@ -289,7 +309,7 @@ namespace Microsoft.Maui.Platform
 			if (shadowLayer == null && Shadow == null)
 				return;
 
-			shadowLayer ??= ShadowLayer = new CAShapeLayer();
+			shadowLayer ??= ShadowLayer = new StaticCAShapeLayer();
 
 			var frame = Frame;
 			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
@@ -360,6 +380,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			TryToInvalidateSuperView(true);
 		}
 	}
 }

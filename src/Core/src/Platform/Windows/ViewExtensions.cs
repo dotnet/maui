@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Platform
 		public static void Unfocus(this FrameworkElement platformView, IView view)
 		{
 			if (platformView is Control control)
+			{
 				UnfocusControl(control);
+			}
 		}
 
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
@@ -195,9 +197,13 @@ namespace Microsoft.Maui.Platform
 
 			if (Dimension.IsMinimumSet(minHeight))
 			{
-				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
-				// because the platform/theme may have a minimum height for this control
+				// We only use the minimum value if it's been explicitly set; otherwise, clear the local
+				// value so that the platform/theme can use the default minimum height for this control
 				platformView.MinHeight = minHeight;
+			}
+			else
+			{
+				platformView.ClearValue(FrameworkElement.MinHeightProperty);
 			}
 		}
 
@@ -207,9 +213,13 @@ namespace Microsoft.Maui.Platform
 
 			if (Dimension.IsMinimumSet(minWidth))
 			{
-				// We only use the minimum value if it's been explicitly set; otherwise, leave it alone
-				// because the platform/theme may have a minimum width for this control
+				// We only use the minimum value if it's been explicitly set; otherwise, clear the local
+				// value so that the platform/theme can use the default minimum width for this control
 				platformView.MinWidth = minWidth;
+			}
+			else
+			{
+				platformView.ClearValue(FrameworkElement.MinWidthProperty);
 			}
 		}
 
@@ -370,8 +380,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UnfocusControl(Control control)
 		{
-			if (control == null || !control.IsEnabled)
+			if (!control.IsEnabled)
+			{
 				return;
+			}
 
 			var isTabStop = control.IsTabStop;
 			control.IsTabStop = false;
