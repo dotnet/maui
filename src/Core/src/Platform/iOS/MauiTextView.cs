@@ -162,9 +162,8 @@ namespace Microsoft.Maui.Platform
 
 		void ShouldCenterVertically()
 		{
-			var fittingSize = new CGSize(Bounds.Width, NFloat.MaxValue);
-			var sizeThatFits = SizeThatFits(fittingSize);
-			var availableSpace = Bounds.Height - sizeThatFits.Height * ZoomScale;
+			var contentHeight = ContentSize.Height;
+			var availableSpace = Bounds.Height - contentHeight * ZoomScale;
 			if (availableSpace <= 0)
 				return;
 			ContentOffset = VerticalTextAlignment switch
