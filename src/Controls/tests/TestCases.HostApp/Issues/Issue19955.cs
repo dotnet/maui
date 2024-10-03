@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 
 		}
 
-		public partial class MainFlyout : FlyoutPage
+		public class MainFlyout : FlyoutPage
 		{
 			public MainFlyout()
 			{
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class MainFlyoutMenu : ContentPage
+		public class MainFlyoutMenu : ContentPage
 		{
 			public MainFlyoutMenu()
 			{
@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class FirstPage : ContentPage
+		public class FirstPage : ContentPage
 		{
 			public FirstPage()
 			{
@@ -68,7 +68,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class SecondPage : ContentPage
+		public class SecondPage : ContentPage
 		{
 			public SecondPage()
 			{

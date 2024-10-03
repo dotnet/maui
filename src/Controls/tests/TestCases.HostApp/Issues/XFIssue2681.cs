@@ -29,13 +29,14 @@ public class XFIssue2681 : NavigationPage
 			};
 		}
 
-		public partial class FreezeMe : ContentPage
+		public class FreezeMe : ContentPage
 		{
 			public List<int> Items { get; set; }
 
 			public FreezeMe()
 			{
 				this.BindingContext = this;
+				Issue14829
 				var lv = new ListView()
 				{
 					Margin = new Thickness(20, 5, 5, 5)
