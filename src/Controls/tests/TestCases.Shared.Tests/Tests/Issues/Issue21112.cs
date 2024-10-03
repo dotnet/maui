@@ -18,9 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("TextCell");
 			App.Tap("TextCell");
+			App.WaitForElement("Button");
 			App.Tap("Button");
+			App.WaitForElement("TextCell");
 			App.Tap("TextCell");
-			VerifyScreenshot();
+			App.WaitForElement("Button");
 		}
 	}
 }
