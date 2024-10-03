@@ -126,14 +126,6 @@ namespace Microsoft.Maui.Controls
 			{
 				_navigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
-
-				if (_navigationView.MenuItemsSource is ObservableCollection<NavigationViewItemViewModel> items)
-				{
-					foreach (var item in items)
-					{
-						item.IsSelected = false;
-					}
-				}
 			}
 
 			if (platformView is WFrame wFrame)
@@ -142,7 +134,10 @@ namespace Microsoft.Maui.Controls
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
+			{
+				_navigationView.SelectedItem = null;
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+			}
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
 
