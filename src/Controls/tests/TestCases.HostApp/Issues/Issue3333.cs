@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 			[Preserve(AllMembers = true)]
-			public partial class TestPage : ContentPage
+			public class TestPage : ContentPage
 			{
 				Label content = new Label();
 				public TestPage()

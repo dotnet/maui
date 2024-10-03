@@ -19,11 +19,11 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class MainPage : ContentPage
+		public class MainPage : ContentPage
 		{
 			protected override void OnAppearing()
 			{
-				Content = new VerticalStackLayout()
+				Content = new VerticalStackLayout()Issue19955
 				{
 					new Button()
 					{
