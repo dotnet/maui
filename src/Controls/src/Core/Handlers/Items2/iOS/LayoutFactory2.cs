@@ -128,7 +128,7 @@ internal static class LayoutFactory2
 			// Create header and footer for group
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
-				null,
+				layoutHeaderFooterInfo,
 				scrollDirection,
 				groupWidth,
 				groupHeight);
