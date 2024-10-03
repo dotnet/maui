@@ -36,7 +36,6 @@ public class XFIssue2681 : NavigationPage
 			public FreezeMe()
 			{
 				this.BindingContext = this;
-				Issue14829
 				var lv = new ListView()
 				{
 					Margin = new Thickness(20, 5, 5, 5)

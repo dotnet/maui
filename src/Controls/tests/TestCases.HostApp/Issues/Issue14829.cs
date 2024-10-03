@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			protected override void OnAppearing()
 			{
-				Content = new VerticalStackLayout()Issue19955
+				Content = new VerticalStackLayout()
 				{
 					new Button()
 					{
