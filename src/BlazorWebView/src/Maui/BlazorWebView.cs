@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Controls;
@@ -9,8 +10,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A <see cref="View"/> that can render Blazor content.
 	/// </summary>
+#if ANDROID
+	[SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
+#elif IOS
+	[SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#endif
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
+		// NOTE: keep these in sync with:
+		// * src\Templates\src\templates\maui-blazor\MauiApp.1.csproj
+		// * src\Templates\src\templates\maui-blazor-solution\MauiApp.1\MauiApp.1.csproj
+		internal const string AndroidSupportedOSPlatformVersion = "android24.0";
+		internal const string iOSSupportedOSPlatformVersion = "ios15.0";
+
 		internal static string AppHostAddress { get; } = HostAddressHelper.GetAppHostAddress();
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
