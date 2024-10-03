@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,3 +21,4 @@ public class Issue17228 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
