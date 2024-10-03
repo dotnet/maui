@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[FailsOnMac]
-		public void VerifyEntryHorizontalEndTextAlignmentPosition()
+		public void VerifyEntryClearButtonVisibility()
 		{
 			App.WaitForElement("button");
 			App.Tap("button");
