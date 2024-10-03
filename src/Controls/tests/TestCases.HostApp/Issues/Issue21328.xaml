@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21328"
+             Title="Issue21328">
+    <HorizontalStackLayout Spacing="40" Padding="10">
+        <VerticalStackLayout>
+            <Image Source="test.png" x:Name="image" Aspect="Center" HeightRequest="40"
+               HorizontalOptions="Center" VerticalOptions="Center"/>
+            <Label Text="Center" AutomationId="LabelNames"/>
+        </VerticalStackLayout>
+        
+        <VerticalStackLayout>
+            <Image Source="test.png" Aspect="AspectFit" HeightRequest="40"
+       HorizontalOptions="Center" VerticalOptions="Center"/>
+            <Label Text="AspectFit"/>
+        </VerticalStackLayout>
+        
+        <VerticalStackLayout>
+            <Image Source="test.png" Aspect="AspectFill" HeightRequest="40"
+       HorizontalOptions="Center" VerticalOptions="Center"/>
+            <Label Text="AspectFill"/>
+        </VerticalStackLayout>
+        
+        <VerticalStackLayout>
+            <Image Source="test.png" Aspect="Fill" HeightRequest="40"
+       HorizontalOptions="Center" VerticalOptions="Center"/>
+            <Label Text="Fill" HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+    </HorizontalStackLayout>
+
+</ContentPage>
