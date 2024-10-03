@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.InnerTabbedPage"
              Title="InnerTabbedPage"
+             AutomationId="InnerTabBarIsVisible"
              Shell.TabBarIsVisible="True">
     <Grid RowDefinitions="*, 60">
         <StackLayout HorizontalOptions="FillAndExpand"
@@ -10,6 +11,7 @@
 
             <Button BackgroundColor="OrangeRed"
                 Text="Open NonTabbed Page"
+                AutomationId="OpenNonTabbedPage"
                 VerticalOptions="CenterAndExpand"
                 HorizontalOptions="Center"
                 Clicked="OpenNonTabbedPage"/>

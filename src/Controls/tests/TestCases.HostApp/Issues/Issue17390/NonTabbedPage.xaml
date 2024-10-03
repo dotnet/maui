@@ -9,5 +9,12 @@
             Text="This is a non-tabbed page"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+    <Button BackgroundColor="YellowGreen"
+                Text="Back To Tabbed Page"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="Center"
+                Clicked="BackToTabbedPage"/>
+
+  </VerticalStackLayout>
 </ContentPage>
