@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue13807">
+
+  <NavigationPage Title="Navigation Page"
+                HasNavigationBar="False" BarBackgroundColor="Red" BarBackground="Green">
+    <x:Arguments>
+      <ContentPage Title="Content Page">
+        <ScrollView>
+          <VerticalStackLayout Padding="30,0" Spacing="25">
+            <Label x:Name="label" Text="Hello, World!"/>
+          </VerticalStackLayout>
+        </ScrollView>
+      </ContentPage>
+    </x:Arguments>
+  </NavigationPage>
+
+</TabbedPage>
