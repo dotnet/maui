@@ -29,8 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CollectionViewHeaderBlankWhenLastItemRemoved()
 		{
 			App.WaitForElement("AddButton");
-			App.Tap("AddButton");
-			App.Tap("AddButton");
+			App.Tap("RemoveButton");
 			App.Tap("RemoveButton");
 			App.Tap("RemoveButton");
 			App.Tap("AddButton");
