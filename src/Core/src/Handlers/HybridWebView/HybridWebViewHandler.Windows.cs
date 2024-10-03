@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -97,6 +100,7 @@ namespace Microsoft.Maui.Handlers
 			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
+		[RequiresUnreferencedCode("Calls Microsoft.Maui.Handlers.HybridWebViewHandler.InvokeDotNetAsync(NameValueCollection)")]
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
@@ -108,42 +112,55 @@ namespace Microsoft.Maui.Handlers
 			{
 				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
-				string contentType;
-				if (string.IsNullOrEmpty(relativePath))
-				{
-					relativePath = VirtualView.DefaultFile;
-					contentType = "text/html";
-				}
-				else
-				{
-					if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
-					{
-						// TODO: Log this
-						contentType = "text/plain";
-					}
-				}
+				string? contentType;
+				Stream? contentStream = null;
 
-				var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
-				var contentStream = await GetAssetStreamAsync(assetPath);
+				if (relativePath == InvokeDotNetPath)
+				{
+					var fullUri = new Uri(eventArgs.Request.Uri);
+					// get 'data' key from query string
+					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
+					(contentStream, contentType) = await InvokeDotNetAsync(invokeQueryString);
+				}
 
 				if (contentStream is null)
 				{
-					var notFoundContent = "Resource not found (404)";
-					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-						Content: null,
-						StatusCode: 404,
-						ReasonPhrase: "Not Found",
-						Headers: GetHeaderString("text/plain", notFoundContent.Length)
-					);
-				}
-				else
-				{
-					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-						Content: await CopyContentToRandomAccessStreamAsync(contentStream),
-						StatusCode: 200,
-						ReasonPhrase: "OK",
-						Headers: GetHeaderString(contentType, (int)contentStream.Length)
-					);
+					if (string.IsNullOrEmpty(relativePath))
+					{
+						relativePath = VirtualView.DefaultFile;
+						contentType = "text/html";
+					}
+					else
+					{
+						if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+						{
+							// TODO: Log this
+							contentType = "text/plain";
+						}
+					}
+
+					var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
+					contentStream = await GetAssetStreamAsync(assetPath);
+
+					if (contentStream is null)
+					{
+						var notFoundContent = "Resource not found (404)";
+						eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+							Content: null,
+							StatusCode: 404,
+							ReasonPhrase: "Not Found",
+							Headers: GetHeaderString("text/plain", notFoundContent.Length)
+						);
+					}
+					else
+					{
+						eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+							Content: await CopyContentToRandomAccessStreamAsync(contentStream),
+							StatusCode: 200,
+							ReasonPhrase: "OK",
+							Headers: GetHeaderString(contentType, (int)contentStream.Length)
+						);
+					}
 				}
 
 				contentStream?.Dispose();
@@ -195,6 +212,7 @@ Content-Length: {contentLength}";
 				return true;
 			}
 
+			[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 			private void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
 			{
 				Handler?.OnWebResourceRequested(sender, args);

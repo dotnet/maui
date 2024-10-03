@@ -35,6 +35,11 @@ namespace Microsoft.Maui.Platform
 			{
 				var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
+				if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
+				{
+
+				}
+
 				string contentType;
 				if (string.IsNullOrEmpty(relativePath))
 				{
