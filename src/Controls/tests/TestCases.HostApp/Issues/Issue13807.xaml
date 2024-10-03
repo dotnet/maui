@@ -9,7 +9,7 @@
       <ContentPage Title="Content Page">
         <ScrollView>
           <VerticalStackLayout Padding="30,0" Spacing="25">
-            <Label x:Name="label" Text="Hello, World!"/>
+            <Label AutomationId="label" Text="Hello, World!"/>
           </VerticalStackLayout>
         </ScrollView>
       </ContentPage>
