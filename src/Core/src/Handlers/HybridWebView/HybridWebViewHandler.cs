@@ -27,6 +27,10 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using System.Collections.Specialized;
+using System.Text.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -51,6 +55,8 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly string AppOrigin = $"{AppHostScheme}://{AppHostAddress}/";
 
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
+
+		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
@@ -140,6 +146,125 @@ namespace Microsoft.Maui.Handlers
 					throw new ArgumentException($"The message type '{messageType}' is not recognized.", nameof(rawMessage));
 			}
 		}
+
+		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+		internal async Task<(Stream? ContentStream, string? ContentType)> InvokeDotNetAsync(NameValueCollection invokeQueryString)
+		{
+			try
+			{
+				var invokeTarget = VirtualView.InvokeJavaScriptTarget;
+				if (invokeTarget is null)
+				{
+					throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+				}
+				var invokeDataString = invokeQueryString["data"];
+				if (string.IsNullOrEmpty(invokeDataString))
+				{
+					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
+				}
+
+				Stream? contentStream = null;
+				string? contentType = null;
+
+				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
+
+				if (invokeData != null && invokeData.MethodName != null)
+				{
+					var result = await InvokeDotNetMethod(invokeTarget, invokeData);
+
+					contentType = "application/json";
+
+					DotNetInvokeResult dotNetInvokeResult;
+
+					if (result is not null)
+					{
+						var resultType = result.GetType();
+						if (resultType.IsArray || resultType.IsClass)
+						{
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = JsonSerializer.Serialize(result),
+								IsJson = true,
+							};
+						}
+						else
+						{
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = result,
+							};
+						}
+					}
+					else
+					{
+						dotNetInvokeResult = new();
+					}
+
+					contentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
+				}
+
+				return (contentStream, contentType);
+			}
+			catch (Exception)
+			{
+				// TODO: Log this
+
+				return (null, null);
+			}
+		}
+
+		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+		private static async Task<object?> InvokeDotNetMethod(object jsInvokeTarget, JSInvokeMethodData invokeData)
+		{
+			// TODO: Remove this
+			await Task.Yield();
+
+			if (jsInvokeTarget is null)
+			{
+				throw new NotImplementedException($"The {nameof(jsInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+			}
+
+			var invokeMethod = jsInvokeTarget.GetType().GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+			if (invokeMethod == null)
+			{
+				throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
+			}
+
+			if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
+			{
+				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
+			}
+
+			var paramObjectValues =
+				invokeData.ParamValues?
+					.Zip(invokeMethod.GetParameters(), (s, p) => s == null ? null : JsonSerializer.Deserialize(s, p.ParameterType))
+					.ToArray();
+
+			return invokeMethod.Invoke(jsInvokeTarget, paramObjectValues);
+		}
+
+
+		private sealed class JSInvokeMethodData
+		{
+			public string? MethodName { get; set; }
+			public string[]? ParamValues { get; set; }
+		}
+
+		private sealed class DotNetInvokeResult
+		{
+			public object? Result { get; set; }
+			public bool IsJson { get; set; }
+		}
+
+		[JsonSourceGenerationOptions()]
+		[JsonSerializable(typeof(JSInvokeMethodData))]
+		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
+		{
+		}
+
+
 
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)

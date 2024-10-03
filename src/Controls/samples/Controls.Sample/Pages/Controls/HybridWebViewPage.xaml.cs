@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,6 +13,8 @@ namespace Maui.Controls.Sample.Pages
 		public HybridWebViewPage()
 		{
 			InitializeComponent();
+
+			hwv.InvokeJavaScriptTarget = new DotNetMethods(this);
 		}
 
 		int count;
@@ -28,8 +32,8 @@ namespace Maui.Controls.Sample.Pages
 			var result = await hwv.InvokeJavaScriptAsync<ComputationResult>(
 				"AddNumbers",
 				SampleInvokeJsContext.Default.ComputationResult,
-				new object?[] { x, null, y, null },
-				new[] { SampleInvokeJsContext.Default.Double, null, SampleInvokeJsContext.Default.Double, null });
+				[x, null, y, null],
+				[SampleInvokeJsContext.Default.Double, null, SampleInvokeJsContext.Default.Double, null]);
 
 			if (result is null)
 			{
@@ -47,7 +51,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			var statusResult = "";
 
-			var asyncFuncResult = await hwv.InvokeJavaScriptAsync<Dictionary<string,string>>(
+			var asyncFuncResult = await hwv.InvokeJavaScriptAsync<Dictionary<string, string>>(
 				"EvaluateMeWithParamsAndAsyncReturn",
 				SampleInvokeJsContext.Default.DictionaryStringString,
 				["new_key", "new_value"],
@@ -83,6 +87,38 @@ namespace Maui.Controls.Sample.Pages
 		[JsonSerializable(typeof(Dictionary<string, string>))]
 		internal partial class SampleInvokeJsContext : JsonSerializerContext
 		{
+		}
+
+		private class DotNetMethods
+		{
+			private HybridWebViewPage _hybridWebViewPage;
+
+			public DotNetMethods(HybridWebViewPage hybridWebViewPage)
+			{
+				_hybridWebViewPage = hybridWebViewPage;
+			}
+
+			public void DoSyncWork()
+			{
+				Debug.WriteLine("DoSyncWork");
+			}
+
+			public void DoSyncWorkParams(int i, string s)
+			{
+				Debug.WriteLine($"DoSyncWorkParams: {i}, {s}");
+			}
+
+			public async Task DoWorkAsync()
+			{
+				Debug.WriteLine("DoWorkAsync");
+				await Task.Yield();
+			}
+
+			public async Task DoWorkParamsAsync(int i, string s)
+			{
+				Debug.WriteLine($"DoWorkParamsAsync: {i}, {s}");
+				await Task.Yield();
+			}
 		}
 	}
 }
