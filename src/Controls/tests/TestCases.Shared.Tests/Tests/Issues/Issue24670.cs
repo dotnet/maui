@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.SearchBar)]
 		public void SearchHandlerFocusAndUnfocusEventsShouldWork()
 		{
+			App.WaitForElement("button");
 			App.Click("button");
 			App.Click("button");
 
