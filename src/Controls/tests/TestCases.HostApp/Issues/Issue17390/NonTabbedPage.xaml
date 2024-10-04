@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.NonTabbedPage"
+             AutomationId="TabBarIsVisibleFalse"
              Title="NonTabbedPage"
              Shell.TabBarIsVisible="False">
     <VerticalStackLayout>
@@ -10,7 +11,7 @@
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
 
-    <Button BackgroundColor="YellowGreen"
+    <Button BackgroundColor="YellowGreen" AutomationId="BackToTabbedPageButton"
                 Text="Back To Tabbed Page"
                 VerticalOptions="CenterAndExpand"
                 HorizontalOptions="Center"
