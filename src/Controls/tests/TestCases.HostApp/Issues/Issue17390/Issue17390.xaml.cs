@@ -19,14 +19,5 @@ namespace Maui.Controls.Sample.Issues
 			Routing.RegisterRoute("nontabbedpage", typeof(NonTabbedPage));
 			Routing.RegisterRoute("innertabbedpage", typeof(InnerTabbedPage));
 		}
-		async void OpenNonTabbedPage(object sender, EventArgs args)
-		{
-			await Shell.Current.GoToAsync("nontabbedpage");
-		}
-
-		async void OpenInnerTabbedPage(object sender, EventArgs args)
-		{
-			await Shell.Current.GoToAsync("innertabbedpage");
-		}
 	}
 }
