@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateAspect(this ImageView imageView, IImage image)
 		{
 			bool setAdjustViewBounds = false;
-			if (image.Aspect == Aspect.Center)
+			if (image.Aspect is Aspect.Center)
 			{
 				imageView.ClipToOutline = true;
 			}
