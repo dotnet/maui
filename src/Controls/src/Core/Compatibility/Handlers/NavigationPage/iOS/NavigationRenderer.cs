@@ -1607,7 +1607,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (current == null || NavigationController == null)
 					return;
 
-				var hasNavBar = NavigationPage.GetHasNavigationBar(current.Parent) && NavigationPage.GetHasNavigationBar(current);
+				bool hasNavBar;
+
+				if (current.Parent is not null)
+				{
+					hasNavBar = NavigationPage.GetHasNavigationBar(current.Parent)
+								&& NavigationPage.GetHasNavigationBar(current);
+				}
+				else
+				{
+					hasNavBar = NavigationPage.GetHasNavigationBar(current);
+				}
+
+
 				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
 				{
 					navigationRenderer._hasNavigationBar = hasNavBar;

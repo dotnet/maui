@@ -218,7 +218,18 @@ namespace Microsoft.Maui.Controls
 				previousPage = stack[stack.Count - 1];
 
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-			IsVisible = NavigationPage.GetHasNavigationBar(currentPage.Parent) && NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
+
+			if (currentPage.Parent is not null)
+			{
+				IsVisible = NavigationPage.GetHasNavigationBar(currentPage.Parent)
+							&& NavigationPage.GetHasNavigationBar(currentPage)
+							&& _hasAppeared;
+			}
+			else
+			{
+				IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
+			}
+
 
 			UpdateBackButton();
 
