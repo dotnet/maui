@@ -4,26 +4,17 @@
              x:Class="Maui.Controls.Sample.Issues.Issue21368">
 
 
-    <HorizontalStackLayout Spacing="40" Padding="10">
-        <VerticalStackLayout>
-            <Image Source="dotnet_bot.png" x:Name="image" Aspect="Center" WidthRequest="50" HeightRequest="40"
-                    HorizontalOptions="Center" VerticalOptions="Center"/>
-            <Label Text="Center" AutomationId="Label"/>
-        </VerticalStackLayout>
-        <VerticalStackLayout>
-            <Image Source="dotnet_bot.png" Aspect="AspectFit" HeightRequest="40" WidthRequest="50"
+        <HorizontalStackLayout Spacing="40" Padding="10">
+            <VerticalStackLayout>
+                <Image Source="dotnet_bot.png" Aspect="AspectFit" HeightRequest="40" WidthRequest="50"
                 HorizontalOptions="Center" VerticalOptions="Center"/>
-            <Label Text="AspectFit"/>
-        </VerticalStackLayout>
-        <VerticalStackLayout>
-            <Image Source="dotnet_bot.png" Aspect="AspectFill" WidthRequest="50" HeightRequest="40"
+                <Label Text="AspectFit" AutomationId="Label"/>
+            </VerticalStackLayout>
+            <VerticalStackLayout>
+                <Image Source="dotnet_bot.png" Aspect="AspectFill" WidthRequest="50" HeightRequest="40"
                 HorizontalOptions="Center" VerticalOptions="Center"/>
-            <Label Text="AspectFill"/>
-        </VerticalStackLayout>
-        <VerticalStackLayout>
-            <Image Source="dotnet_bot.png" Aspect="Fill" HeightRequest="40" WidthRequest="50"
-                HorizontalOptions="Center"  VerticalOptions="Center"/>
-            <Label Text="Fill" HorizontalTextAlignment="Center"/>
-        </VerticalStackLayout>
-    </HorizontalStackLayout>
+                <Label Text="AspectFill"/>
+            </VerticalStackLayout>
+        </HorizontalStackLayout>
+
 </ContentPage>
