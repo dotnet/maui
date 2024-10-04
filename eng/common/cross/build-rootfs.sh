@@ -66,6 +66,7 @@ __UbuntuPackages+=" libcurl4-openssl-dev"
 __UbuntuPackages+=" libkrb5-dev"
 __UbuntuPackages+=" libssl-dev"
 __UbuntuPackages+=" zlib1g-dev"
+__UbuntuPackages+=" libbrotli-dev"
 
 __AlpinePackages+=" curl-dev"
 __AlpinePackages+=" krb5-dev"
