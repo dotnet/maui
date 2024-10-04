@@ -8,7 +8,7 @@
         <VerticalStackLayout>
             <Image Source="dotnet_bot.png" x:Name="image" Aspect="Center" WidthRequest="50" HeightRequest="40"
                     HorizontalOptions="Center" VerticalOptions="Center"/>
-            <Label Text="Center" AutomationId="LabelNames"/>
+            <Label Text="Center" AutomationId="Label"/>
         </VerticalStackLayout>
         <VerticalStackLayout>
             <Image Source="dotnet_bot.png" Aspect="AspectFit" HeightRequest="40" WidthRequest="50"

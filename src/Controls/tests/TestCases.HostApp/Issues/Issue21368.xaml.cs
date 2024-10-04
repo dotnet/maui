@@ -1,4 +1,4 @@
-namespace Maui.Controls.Sample.Issue;
+namespace Maui.Controls.Sample.Issues;
 
 [XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 21368, "Image AspectFill is not honored", PlatformAffected.Android)]
