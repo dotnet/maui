@@ -10,13 +10,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
     public class Issue21368 : _IssuesUITest
     {
-        public override string Issue => "Image has wrong orientation on iOS";
+        public override string Issue => "Image AspectFill is not honored";
 
         public Issue21368(TestDevice device) : base(device)
         {
         }
 
-        public void VerifyImageAspects()
+		[Test]
+		[Category(UITestCategories.Image)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		[FailsOnWindows]
+		public void VerifyImageAspects()
         {
             App.WaitForElement("LabelNames");
             VerifyScreenshot();
