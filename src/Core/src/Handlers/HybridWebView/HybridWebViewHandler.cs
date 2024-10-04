@@ -153,11 +153,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			try
 			{
-				var invokeTarget = VirtualView.InvokeJavaScriptTarget;
-				if (invokeTarget is null)
-				{
-					throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
-				}
+				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
 				var invokeDataString = invokeQueryString["data"];
 				if (string.IsNullOrEmpty(invokeDataString))
 				{
@@ -218,12 +214,7 @@ namespace Microsoft.Maui.Handlers
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 		private static object? InvokeDotNetMethod(object jsInvokeTarget, JSInvokeMethodData invokeData)
 		{
-			if (jsInvokeTarget is null)
-			{
-				throw new NotImplementedException($"The {nameof(jsInvokeTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
-			}
-
-			var invokeMethod = jsInvokeTarget.GetType().GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+			var invokeMethod = jsInvokeTarget.GetType().GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
 			if (invokeMethod == null)
 			{
 				throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");

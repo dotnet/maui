@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="icon" href="data:,">
+    <script src="scripts/HybridWebView.js"></script>
+    <script>
+        window.addEventListener(
+            "HybridWebViewMessageReceived",
+            async function (e) {
+                var methodToInvoke = e.detail.message;
+                var result;
+
+                switch (methodToInvoke) {
+                    case 'Invoke_ValueTypeParam_NoReturn':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, 5);
+                        break;
+                    case 'Invoke_ValueTypeParam_Return':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, 5);
+                        break;
+
+                    case 'Invoke_DictValueTypeParam_NoReturn':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
+                        break;
+                    case 'Invoke_DictValueTypeParam_Return':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
+                        break;
+
+                    case 'Invoke_ArrayValueTypeParam_NoReturn':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [[111, 222]]); // nest array in another array so that it's passed as a single parameter
+                        break;
+
+                    case 'Invoke_ArrayValueTypeParam_Return':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [[111, 222]]); // nest array in another array so that it's passed as a single parameter
+                        break;
+
+                    default:
+                        return;
+                }
+
+                lastScriptResult = result === null ? null : JSON.stringify(result);
+                SetStatusDone();
+            });
+
+        var lastScriptResult = null;
+
+        function GetLastScriptResult() {
+            return lastScriptResult;
+        }
+
+        function SetStatusDone() {
+            document.getElementById('status').innerHTML = "Done!";
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        Hybrid test!
+    </div>
+    <div id="htmlLoaded"></div>
+    <div id="status"></div>
+</body>
+</html>

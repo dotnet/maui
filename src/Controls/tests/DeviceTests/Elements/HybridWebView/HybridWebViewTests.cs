@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -20,6 +24,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler<HybridWebView, HybridWebViewHandler>();
 				});
+
+				builder.Services.AddHybridWebViewDeveloperTools();
 			});
 		}
 
@@ -60,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					const string TestRawMessage = "Hybrid\"\"'' {Test} with chars!";
 					hybridWebView.SendRawMessage(TestRawMessage);
@@ -113,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var x = 123.456m;
 					var y = 654.321m;
@@ -161,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var x = 123.456m;
 					var y = 654.321m;
@@ -207,7 +213,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var x = 123.456m;
 					var y = 654.321m;
@@ -255,7 +261,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var s1 = "new_key";
 					var s2 = "new_value";
@@ -263,8 +269,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
 						"EvaluateMeWithParamsAndAsyncReturn",
 						HybridWebViewTestContext.Default.DictionaryStringString,
-						[s1, s2],
-						[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
+						new object[] { s1, s2 },
+						new[] { HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String });
 
 					Assert.NotNull(result);
 					Assert.Equal(3, result.Count);
@@ -305,7 +311,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					// Run some JavaScript to call a method and get result
 					var result1 = await hybridWebView.EvaluateJavaScriptAsync("EvaluateMeWithParamsAndReturn('abc', 'def')");
@@ -316,6 +322,142 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal("test_value", result2);
 				});
 			});
+		}
+
+		[Theory]
+		[ClassData(typeof(InvokeJavaScriptAsyncTestData))]
+		public async Task InvokeDotNet(string methodName, string expectedReturnValue)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var invokeJavaScriptTarget = new TestDotNetMethods();
+
+				var hybridWebView = new HybridWebView()
+				{
+					WidthRequest = 100,
+					HeightRequest = 100,
+
+					HybridRoot = "HybridTestRoot",
+					DefaultFile = "invokedotnettests.html",
+					InvokeJavaScriptTarget = invokeJavaScriptTarget,
+				};
+
+				var handler = CreateHandler(hybridWebView);
+
+				var platformView = handler.PlatformView;
+
+				// Set up the view to be displayed/parented and run our tests on it
+				await AttachAndRun(hybridWebView, async (handler) =>
+				{
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+
+					//await Task.Delay(15_000);
+
+					// Tell JavaScript to invoke the method
+					hybridWebView.SendRawMessage(methodName);
+
+					// Wait for method invocation to complete
+					await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+
+					// Run some JavaScript to see if it got the expected result
+					var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
+					Assert.Equal(expectedReturnValue, result);
+					Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
+				});
+			});
+		}
+
+		private class TestDotNetMethods
+		{
+			public string LastMethodCalled { get; private set; }
+
+			public void Invoke_ValueTypeParam_NoReturn(int x)
+			{
+				Assert.Equal(5, x);
+				UpdateLastMethodCalled();
+			}
+
+			public int Invoke_ValueTypeParam_Return(int x)
+			{
+				Assert.Equal(5, x);
+				UpdateLastMethodCalled();
+				return x;
+			}
+
+			public void Invoke_DictValueTypeParam_NoReturn(Dictionary<string, int> x)
+			{
+				Assert.Equal(2, x.Count);
+				Assert.Equal(111, x["first"]);
+				Assert.Equal(222, x["second"]);
+				UpdateLastMethodCalled();
+			}
+
+			public Dictionary<string, int> Invoke_DictValueTypeParam_Return(Dictionary<string, int> x)
+			{
+				Assert.Equal(2, x.Count);
+				Assert.Equal(111, x["first"]);
+				Assert.Equal(222, x["second"]);
+				UpdateLastMethodCalled();
+				x["third"] = 333;
+				return x;
+			}
+
+			public void Invoke_ArrayValueTypeParam_NoReturn(int[] x)
+			{
+				Assert.Equal(2, x.Length);
+				Assert.Equal(111, x[0]);
+				Assert.Equal(222, x[1]);
+				UpdateLastMethodCalled();
+			}
+
+			public int[] Invoke_ArrayValueTypeParam_Return(int[] x)
+			{
+				Assert.Equal(2, x.Length);
+				Assert.Equal(111, x[0]);
+				Assert.Equal(222, x[1]);
+				UpdateLastMethodCalled();
+				return [.. x, 333];
+			}
+
+			private void UpdateLastMethodCalled([CallerMemberName] string methodName = null)
+			{
+				LastMethodCalled = methodName;
+			}
+		}
+
+		private class InvokeJavaScriptAsyncTestData : IEnumerable<object[]>
+		{
+			public IEnumerator<object[]> GetEnumerator()
+			{
+				// Test variations of:
+				// 1. Data type: ValueType, RefType, string, complex type
+				// 2. Containers of those types: array, dictionary
+				// 3. Methods with return value, and no return value
+				yield return new object[] { "Invoke_ValueTypeParam_NoReturn", null };
+				yield return new object[] { "Invoke_ValueTypeParam_Return", "5" };
+				yield return new object[] { "Invoke_DictValueTypeParam_NoReturn", null };
+				yield return new object[] { "Invoke_DictValueTypeParam_Return", "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}" };
+				yield return new object[] { "Invoke_ArrayValueTypeParam_NoReturn", null };
+				yield return new object[] { "Invoke_ArrayValueTypeParam_Return", "[111,222,333]" };
+
+				//yield return new object[] { "Invoke_RefTypeParam_NoReturn", null };
+				//yield return new object[] { "Invoke_RefTypeParam_Return", "5" };
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
 		}
 
 		public class ComputationResult
@@ -333,25 +475,42 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		private async Task WaitForHybridWebViewLoaded(HybridWebView hybridWebView)
+		public static partial class WebViewHelpers
 		{
-			const int NumRetries = 40;
-			const int RetryDelay = 500;
-			for (var i = 0; i < NumRetries; i++)
-			{
-				// 1. Check that the window.HybridWebView object exists (as set by HybridWebView.js)
-				// 2. Check that the test page's HTML is loaded by checking for the HTML element defined in the Resources\Raw\HybridTestRoot\index.html test page
+			const int MaxWaitTimes = 60;
+			const int WaitTimeInMS = 250;
 
-				var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
-				if (loaded == "true")
+			private static async Task Retry(Func<Task<bool>> tryAction, Func<int, Task<Exception>> createExceptionWithTimeoutMS)
+			{
+				for (var i = 0; i < MaxWaitTimes; i++)
 				{
-					return;
+					if (await tryAction())
+					{
+						return;
+					}
+					await Task.Delay(WaitTimeInMS);
 				}
 
-				await Task.Delay(RetryDelay);
+				throw await createExceptionWithTimeoutMS(MaxWaitTimes * WaitTimeInMS);
 			}
 
-			Assert.Fail($"Waited {NumRetries * RetryDelay:N0}ms for the HybridWebView test page to be ready, but it wasn't.");
+			public static async Task WaitForHybridWebViewLoaded(HybridWebView hybridWebView)
+			{
+				await Retry(async () =>
+				{
+					var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
+					return loaded == "true";
+				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get the HybridWebView test page to be ready.")));
+			}
+
+			public static async Task WaitForHtmlStatusSet(HybridWebView hybridWebView)
+			{
+				await Retry(async () =>
+				{
+					var controlValue = await hybridWebView.EvaluateJavaScriptAsync("document.getElementById('status').innerText");
+					return !string.IsNullOrEmpty(controlValue);
+				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get status element to have a non-empty value.")));
+			}
 		}
 	}
 }
