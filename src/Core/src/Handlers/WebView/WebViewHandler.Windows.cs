@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			async void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
+			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
 			{
 				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
@@ -369,7 +369,6 @@ namespace Microsoft.Maui.Handlers
 
 				if (Handler is WebViewHandler handler && handler.VirtualView is not null)
 				{
-					await handler.SyncPlatformCookiesToVirtualView(sender.CoreWebView2.Source);
 					sender.UpdateUserAgent(handler.VirtualView);
 				}
 			}

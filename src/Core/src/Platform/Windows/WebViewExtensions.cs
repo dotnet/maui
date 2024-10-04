@@ -25,6 +25,11 @@ namespace Microsoft.Maui.Platform
 			if (platformWebView.CoreWebView2 == null)
 				return;
 
+			if (webView.Handler is WebViewHandler webViewHandler)
+			{
+				webViewHandler.SyncPlatformCookies(platformWebView.CoreWebView2.Source).FireAndForget();
+			}
+
 			if (webView.UserAgent != null)
 				platformWebView.CoreWebView2.Settings.UserAgent = webView.UserAgent;
 			else
