@@ -17,6 +17,8 @@ public class Issue7673 : _IssuesUITest
 	{
 	}
 
+	[Test]
+	[Category(UITestCategories.Switch)]
 	public void VerifyOffTrackColor()
 	{
 		App.WaitForElement("Label");
