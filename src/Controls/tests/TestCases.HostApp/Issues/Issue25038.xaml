@@ -16,6 +16,6 @@
     </Grid>
 
     <!-- Button to trigger the changes -->
-    <Button Text="Show Entries" Clicked="OnShowEntriesClicked"/>
+    <Button Text="Show Entries" AutomationId="button" Clicked="OnShowEntriesClicked"/>
   </StackLayout>
 </ContentPage>
