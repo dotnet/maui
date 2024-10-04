@@ -20,11 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/17390
 			App.WaitForElement("MainTabPage");
-			App.Click("InnerTabbedPage");
+			App.Click("InnerTabbedPageButton");
 			App.WaitForElement("InnerTabBarIsVisible");
 			App.Click("OpenNonTabbedPage");
 			App.WaitForElement("TabBarIsVisibleFalse");
-			App.Click("BackToTabBarVisible");
+			App.Click("BackToTabbedPageButton");
 			VerifyScreenshot();
 		}
 	}
