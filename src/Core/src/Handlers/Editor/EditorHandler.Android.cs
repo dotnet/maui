@@ -46,6 +46,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusChange;
+
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged += OnThemeChanged;
 		}
 
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
@@ -54,6 +57,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusChange;
+
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged -= OnThemeChanged;
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
@@ -121,6 +127,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is FocusRequest request)
 				handler.PlatformView.Focus(request);
+		}
+
+		void OnThemeChanged(object? sender, Android.Content.Res.UiMode e)
+		{
+			PlatformView?.UpdateBackground(VirtualView);
 		}
 
 		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)

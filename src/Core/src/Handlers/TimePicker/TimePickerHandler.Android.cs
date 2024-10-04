@@ -22,6 +22,14 @@ namespace Microsoft.Maui.Handlers
 			return _timePicker;
 		}
 
+		protected override void ConnectHandler(MauiTimePicker platformView)
+		{
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged += OnThemeChanged;
+
+			base.ConnectHandler(platformView);
+		}
+
 		protected override void DisconnectHandler(MauiTimePicker platformView)
 		{
 			if (_dialog != null)
@@ -83,6 +91,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTextColor(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateTextColor(timePicker);
+		}
+
+		void OnThemeChanged(object? sender, Android.Content.Res.UiMode e)
+		{
+			PlatformView?.UpdateBackground(VirtualView);
 		}
 
 		void ShowPickerDialog()

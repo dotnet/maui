@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged += OnThemeChanged;
+
 			base.ConnectHandler(platformView);
 		}
 
@@ -29,6 +32,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
+
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged -= OnThemeChanged;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -84,6 +90,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
+		}
+
+		void OnThemeChanged(object? sender, Android.Content.Res.UiMode e)
+		{
+			PlatformView?.UpdateBackground(VirtualView);
 		}
 
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
