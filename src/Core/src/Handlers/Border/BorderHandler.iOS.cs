@@ -3,6 +3,7 @@ using System.Formats.Asn1;
 using System.Linq;
 using CoreAnimation;
 using Microsoft.Maui.Graphics;
+using UIKit;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -51,8 +52,18 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView.PresentedContent is IView content)
 			{
 				var platformContent = content.ToPlatform(handler.MauiContext);
-				platformContent.Tag = ContentView.ContentTag;
-				platformView.AddSubview(platformContent);
+
+				// If the content is a UIScrollView, we need a container to handle masks and clip shapes effectively.
+				if (platformContent is UIScrollView && content.Handler is not null)
+				{
+					content.Handler.HasContainer = true;
+					UpdateContent(handler);
+				}
+				else
+				{
+					platformContent.Tag = ContentView.ContentTag;
+					platformView.AddSubview(platformContent);
+				}
 			}
 		}
 	}
