@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -116,10 +115,13 @@ namespace Microsoft.Maui.Platform
 			var children = platformControl.GetChildren<TextBox>();
 			if (children is not null)
 			{
-				var textBox = children.FirstOrDefault();
-				if (textBox is not null)
+				foreach (var textBox in children)
 				{
-					textBox.MaxLength = searchBar.MaxLength;
+					if (textBox is not null)
+					{
+						textBox.MaxLength = searchBar.MaxLength;
+						break;
+					}
 				}
 			}
 
