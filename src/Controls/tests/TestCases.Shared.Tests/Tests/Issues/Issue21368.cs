@@ -19,9 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Image)]
-		[FailsOnIOS]
 		[FailsOnMac]
-		[FailsOnWindows]
 		public void VerifyImageAspects()
         {
             App.WaitForElement("Label");
