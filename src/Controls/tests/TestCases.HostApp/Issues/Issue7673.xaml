@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue7673">
+    
+    <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="auto,auto,auto" Padding="10">
+        
+        <Label Grid.Row="0" AutomationID="Label"  Grid.Column="0" Text="Initial Off State" VerticalOptions="Center"/>
+        <Switch x:Name="switch1" Grid.Row="0" Grid.Column="1" VerticalOptions="Center"/>
+        <Button Text="Toggle"  Grid.Row="0" Grid.Column="2" Clicked="OnToggleSwitch1" VerticalOptions="Center"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Text="On State" VerticalOptions="Center"/>
+        <Switch x:Name="switch2" Grid.Row="1" Grid.Column="1" VerticalOptions="Center"/>
+        <Button Text="Toggle" AutomationID="OnStateSwitch"  Grid.Row="1" Grid.Column="2" Clicked="OnToggleSwitch2" VerticalOptions="Center"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Text="Change On Toggling" VerticalOptions="Center"/>
+        <Switch x:Name="switch3" Grid.Row="2" Grid.Column="1" VerticalOptions="Center"/>
+        <Button Text="Toggle" AutomationID="TogglingSwitch"  Grid.Row="2" Grid.Column="2" Clicked="OnToggleSwitch3" VerticalOptions="Center"/>
+    </Grid>
+</ContentPage>
