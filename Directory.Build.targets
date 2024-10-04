@@ -80,7 +80,7 @@
   </ItemGroup>
 
   <!-- Until we get net9 rtm -->
-  <!-- <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
     <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
   <PropertyGroup>
