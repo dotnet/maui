@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindows]
 		public void VerifyImageAspects()
         {
-            App.WaitForElement("LabelNames");
+            App.WaitForElement("Label");
             VerifyScreenshot();
         }
     }
