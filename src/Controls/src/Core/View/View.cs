@@ -162,44 +162,7 @@ namespace Microsoft.Maui.Controls
 						break;
 				}
 			};
-
-#if ANDROID
-            if (this is Entry or Editor or Picker or DatePicker or TimePicker && Application.Current is not null)
-            {
-                Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-            }
-#endif
 		}
-
-#if ANDROID
-        private void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
-        {
-            Dispatcher.Dispatch(() =>
-            {
-                if (Handler is not null)
-                {
-                    switch (Handler)
-                    {
-                        case EntryHandler entryHandler:
-                            entryHandler.PlatformView?.UpdateBackground(this);
-                            break;
-                        case EditorHandler editorHandler:
-                            editorHandler.PlatformView?.UpdateBackground(this);
-                            break;
-                        case PickerHandler pickerHandler:
-                            pickerHandler.PlatformView?.UpdateBackground(this);
-                            break;
-                        case DatePickerHandler datePickerHandler:
-                            datePickerHandler.PlatformView?.UpdateBackground(this);
-                            break;
-                        case TimePickerHandler timePickerHandler:
-                            timePickerHandler.PlatformView?.UpdateBackground(this);
-                            break;
-                    }
-                }
-            });
-        }
-#endif
 
 		/// <summary>The collection of gesture recognizers associated with this view.</summary>
 		/// <remarks>
@@ -316,19 +279,6 @@ namespace Microsoft.Maui.Controls
 		Thickness IView.Margin => Margin;
 		partial void HandlerChangedPartial();
 		GestureManager _gestureManager;
-
-#if ANDROID
-        private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
-        {
-            base.OnHandlerChangingCore(args);
-
-            if (Application.Current == null)
-                return;
-
-            if (this is Entry or Editor or Picker or DatePicker or TimePicker && args.NewHandler == null)
-                Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
-        }
-#endif
 
 		private protected override void OnHandlerChangedCore()
 		{

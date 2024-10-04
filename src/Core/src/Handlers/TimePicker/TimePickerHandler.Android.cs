@@ -37,6 +37,9 @@ namespace Microsoft.Maui.Handlers
 				_dialog.Hide();
 				_dialog = null;
 			}
+
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged -= OnThemeChanged;
 		}
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hour, int minute)
