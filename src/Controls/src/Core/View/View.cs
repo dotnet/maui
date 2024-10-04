@@ -101,9 +101,11 @@ namespace Microsoft.Maui.Controls
 					foreach (IElementDefinition item in newItems)
 					{
 						var gestureRecognizer = item as IGestureRecognizer;
-						ValidateGesture(gestureRecognizer);
-						item.Parent = this;
-						GestureController.CompositeGestureRecognizers.Add(gestureRecognizer);
+						if (ValidateGesture(gestureRecognizer))
+						{
+							item.Parent = this;
+							GestureController.CompositeGestureRecognizers.Add(gestureRecognizer);
+						}
 					}
 				}
 
@@ -266,12 +268,13 @@ namespace Microsoft.Maui.Controls
 			((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.MarginChanged);
 		}
 
-		void ValidateGesture(IGestureRecognizer gesture)
+		bool ValidateGesture(IGestureRecognizer gesture)
 		{
 			if (gesture == null)
-				return;
+				return false;
 			if (gesture is PinchGestureRecognizer && _gestureRecognizers.GetGesturesFor<PinchGestureRecognizer>().Count() > 1)
 				throw new InvalidOperationException($"Only one {nameof(PinchGestureRecognizer)} per view is allowed");
+			return true;
 		}
 
 #nullable enable
