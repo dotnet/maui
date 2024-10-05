@@ -909,7 +909,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#region IAppearanceObserver
 		public void OnAppearanceChanged(ShellAppearance appearance)
 		{
-			UpdateToolbarItemsInternal(true, appearance.TitleColor);
+			UpdateToolbarItemsInternal(true, appearance?.TitleColor);
 		}
 		#endregion
 	}
