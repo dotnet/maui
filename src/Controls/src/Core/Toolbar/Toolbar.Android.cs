@@ -6,6 +6,7 @@ using Android.Runtime;
 using Android.Views;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using LP = Android.Views.ViewGroup.LayoutParams;
@@ -53,13 +54,13 @@ namespace Microsoft.Maui.Controls
 				newToolBarItems.AddRange(toolbarItems);
 
 			if (sender is ToolbarItem ti)
-				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, IconColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
-		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
+		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem, Color? color)
 		{
 			_ = MauiContext ?? throw new ArgumentNullException(nameof(MauiContext));
-			MauiContext.UpdateMenuItemIcon(menuItem, toolBarItem, null);
+			MauiContext.UpdateMenuItemIcon(menuItem, toolBarItem, color);
 		}
 
 		void UpdateMenu()
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			if (_currentMenuItems == null)
 				return;
 
-			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, IconColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
 		}
 
 		void UpdateTitleView()

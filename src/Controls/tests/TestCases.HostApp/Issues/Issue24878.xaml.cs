@@ -5,8 +5,12 @@
 	{
 		public Issue24878()
 		{
-			Application.Current.UserAppTheme = AppTheme.Dark;
 			InitializeComponent();
+		}
+
+		private void Button_Clicked(object sender, EventArgs e)
+		{
+			Application.Current.UserAppTheme = AppTheme.Dark;
 		}
 	}
 }
