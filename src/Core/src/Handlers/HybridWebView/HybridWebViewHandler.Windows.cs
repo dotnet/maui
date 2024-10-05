@@ -115,16 +115,15 @@ namespace Microsoft.Maui.Handlers
 				string? contentType = null;
 				Stream? contentStream = null;
 
-				// 1. Try special DotNet invocation path
+				// 1. Try special InvokeDotNet path
 				if (relativePath == InvokeDotNetPath)
 				{
 					var fullUri = new Uri(eventArgs.Request.Uri);
-					// get 'data' key from query string
 					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 					(contentStream, contentType) = InvokeDotNet(invokeQueryString);
 				}
 
-				// 2. If nothing found yet, try to get the content from the asset path
+				// 2. If nothing found yet, try to get static content from the asset path
 				if (contentStream is null)
 				{
 					if (string.IsNullOrEmpty(relativePath))
@@ -145,9 +144,9 @@ namespace Microsoft.Maui.Handlers
 					contentStream = await GetAssetStreamAsync(assetPath);
 				}
 
-				// If still nothing is found, return a 404
 				if (contentStream is null)
 				{
+					// 3.a. If still nothing is found, return a 404
 					var notFoundContent = "Resource not found (404)";
 					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
 						Content: null,
@@ -158,7 +157,7 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					// Otherwise, return the content
+					// 3.b. Otherwise, return the content
 					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
 						Content: await CopyContentToRandomAccessStreamAsync(contentStream),
 						StatusCode: 200,
