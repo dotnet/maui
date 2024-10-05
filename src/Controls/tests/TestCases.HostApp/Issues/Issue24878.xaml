@@ -17,7 +17,7 @@
         <ContentPage>
             <ContentPage.ToolbarItems>
                 <ToolbarItem Text="Icon 1"/>
-                <ToolbarItem Text="Icon 2"/>
+                <ToolbarItem IconImageSource="groceries.png"/>
             </ContentPage.ToolbarItems>
             
             <Label IsVisible="{AppThemeBinding Dark='True', Light='False'}" TextColor="White" Text="Hello" AutomationId="label"/>
