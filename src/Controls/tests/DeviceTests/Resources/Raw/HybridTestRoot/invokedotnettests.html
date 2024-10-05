@@ -14,26 +14,31 @@
                 var result;
 
                 switch (methodToInvoke) {
-                    case 'Invoke_ValueTypeParam_NoReturn':
-                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, 5);
+                    case 'Invoke_NoParam_NoReturn':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
                         break;
-                    case 'Invoke_ValueTypeParam_Return':
-                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, 5);
+                    case 'Invoke_NoParam_ReturnNull':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
                         break;
-
-                    case 'Invoke_DictValueTypeParam_NoReturn':
+                    case 'Invoke_OneParam_ReturnValueType':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
                         break;
-                    case 'Invoke_DictValueTypeParam_Return':
+                    case 'Invoke_OneParam_ReturnDictionary':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
                         break;
-
-                    case 'Invoke_ArrayValueTypeParam_NoReturn':
-                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [[111, 222]]); // nest array in another array so that it's passed as a single parameter
+                    case 'Invoke_NullParam_ReturnComplex':
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [null]);
                         break;
-
-                    case 'Invoke_ArrayValueTypeParam_Return':
-                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke, [[111, 222]]); // nest array in another array so that it's passed as a single parameter
+                    case 'Invoke_ManyParams_NoReturn':
+                        result = await window.HybridWebView.InvokeDotNet(
+                            methodToInvoke,
+                            [
+                                { "first": 111, "second": 222 },
+                                "hello",
+                                null,
+                                { "operationName": "invoke_method", "result": 123.456 },
+                                [ 111, 222 ]
+                            ]);
                         break;
 
                     default:

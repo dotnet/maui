@@ -269,8 +269,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
 						"EvaluateMeWithParamsAndAsyncReturn",
 						HybridWebViewTestContext.Default.DictionaryStringString,
-						new object[] { s1, s2 },
-						new[] { HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String });
+						[s1, s2],
+						[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
 
 					Assert.NotNull(result);
 					Assert.Equal(3, result.Count);
@@ -381,52 +381,66 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public string LastMethodCalled { get; private set; }
 
-			public void Invoke_ValueTypeParam_NoReturn(int x)
+			public void Invoke_NoParam_NoReturn()
 			{
-				Assert.Equal(5, x);
 				UpdateLastMethodCalled();
 			}
 
-			public int Invoke_ValueTypeParam_Return(int x)
+			public object Invoke_NoParam_ReturnNull()
 			{
-				Assert.Equal(5, x);
 				UpdateLastMethodCalled();
-				return x;
+				return null;
 			}
 
-			public void Invoke_DictValueTypeParam_NoReturn(Dictionary<string, int> x)
+			public int Invoke_OneParam_ReturnValueType(Dictionary<string, int> dict)
 			{
-				Assert.Equal(2, x.Count);
-				Assert.Equal(111, x["first"]);
-				Assert.Equal(222, x["second"]);
+				Assert.NotNull(dict);
+				Assert.Equal(2, dict.Count);
+				Assert.Equal(111, dict["first"]);
+				Assert.Equal(222, dict["second"]);
 				UpdateLastMethodCalled();
+				return dict.Count;
 			}
 
-			public Dictionary<string, int> Invoke_DictValueTypeParam_Return(Dictionary<string, int> x)
+			public Dictionary<string, int> Invoke_OneParam_ReturnDictionary(Dictionary<string, int> dict)
 			{
-				Assert.Equal(2, x.Count);
-				Assert.Equal(111, x["first"]);
-				Assert.Equal(222, x["second"]);
+				Assert.NotNull(dict);
+				Assert.Equal(2, dict.Count);
+				Assert.Equal(111, dict["first"]);
+				Assert.Equal(222, dict["second"]);
 				UpdateLastMethodCalled();
-				x["third"] = 333;
-				return x;
+				dict["third"] = 333;
+				return dict;
 			}
 
-			public void Invoke_ArrayValueTypeParam_NoReturn(int[] x)
+			public ComputationResult Invoke_NullParam_ReturnComplex(object obj)
 			{
-				Assert.Equal(2, x.Length);
-				Assert.Equal(111, x[0]);
-				Assert.Equal(222, x[1]);
+				Assert.Null(obj);
 				UpdateLastMethodCalled();
+				return new ComputationResult { result = 123, operationName = "Test" };
 			}
 
-			public int[] Invoke_ArrayValueTypeParam_Return(int[] x)
+			public void Invoke_ManyParams_NoReturn(Dictionary<string, int> dict, string str, object obj, ComputationResult computationResult, int[] arr)
 			{
-				Assert.Equal(2, x.Length);
-				Assert.Equal(111, x[0]);
-				Assert.Equal(222, x[1]);
+				Assert.NotNull(dict);
+				Assert.Equal(2, dict.Count);
+				Assert.Equal(111, dict["first"]);
+				Assert.Equal(222, dict["second"]);
+
+				Assert.Equal("hello", str);
+
+				Assert.Null(obj);
+
+				Assert.NotNull(computationResult);
+				Assert.Equal("invoke_method", computationResult.operationName);
+				Assert.Equal(123.456m, computationResult.result, 6);
+
+				Assert.NotNull(arr);
+				Assert.Equal(2, arr.Length);
+				Assert.Equal(111, arr[0]);
+				Assert.Equal(222, arr[1]);
+
 				UpdateLastMethodCalled();
-				return [.. x, 333];
 			}
 
 			private void UpdateLastMethodCalled([CallerMemberName] string methodName = null)
@@ -442,16 +456,13 @@ namespace Microsoft.Maui.DeviceTests
 				// Test variations of:
 				// 1. Data type: ValueType, RefType, string, complex type
 				// 2. Containers of those types: array, dictionary
-				// 3. Methods with return value, and no return value
-				yield return new object[] { "Invoke_ValueTypeParam_NoReturn", null };
-				yield return new object[] { "Invoke_ValueTypeParam_Return", "5" };
-				yield return new object[] { "Invoke_DictValueTypeParam_NoReturn", null };
-				yield return new object[] { "Invoke_DictValueTypeParam_Return", "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}" };
-				yield return new object[] { "Invoke_ArrayValueTypeParam_NoReturn", null };
-				yield return new object[] { "Invoke_ArrayValueTypeParam_Return", "[111,222,333]" };
-
-				//yield return new object[] { "Invoke_RefTypeParam_NoReturn", null };
-				//yield return new object[] { "Invoke_RefTypeParam_Return", "5" };
+				// 3. Methods with different return values (none, simple, complex, etc.)
+				yield return new object[] { "Invoke_NoParam_NoReturn", null };
+				yield return new object[] { "Invoke_NoParam_ReturnNull", null };
+				yield return new object[] { "Invoke_OneParam_ReturnValueType", 2 };
+				yield return new object[] { "Invoke_OneParam_ReturnDictionary", "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}" };
+				yield return new object[] { "Invoke_NullParam_ReturnComplex", "{\\\"result\\\":123,\\\"operationName\\\":\\\"Test\\\"}" };
+				yield return new object[] { "Invoke_ManyParams_NoReturn", null };
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
