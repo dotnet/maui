@@ -15,12 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		public void Issue2728TestsItalicLabel()
+		public void VerifyLabelTextColorWhenResetingFromFormattedText()
 		{
 			App.WaitForElement("HelloWorldLabel");
-			App.Tap("ChangeFormattedText");
-			App.Tap("ChangeFormattedText");
-			App.WaitForElement("HelloWorldLabel");
+			App.Tap("ChangeTextType");
+			App.Tap("ChangeTextType");
 			VerifyScreenshot();
 		}
 	}
