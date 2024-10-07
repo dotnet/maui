@@ -1,0 +1,28 @@
+﻿#if !MACCATALYST
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.TestCases.Tests.Issues 
+{
+	public class Issue24516 : _IssuesUITest
+	{
+		public Issue24516(TestDevice testDevice) : base(testDevice)
+		{
+		}
+
+		public override string Issue => "Rendering issue in WinUI when setting Label.FormattedText";
+
+		[Test]
+		[Category(UITestCategories.Label)]
+		public void Issue2728TestsItalicLabel()
+		{
+			App.WaitForElement("HelloWorldLabel");
+			App.Tap("ChangeFormattedText");
+			App.Tap("ChangeFormattedText");
+			App.WaitForElement("HelloWorldLabel");
+			VerifyScreenshot();
+		}
+	}
+}
+#endif
