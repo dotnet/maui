@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
+using System.Web;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
 
@@ -21,7 +23,10 @@ namespace Microsoft.Maui.Platform
 
 		private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
+		[RequiresUnreferencedCode("Calls Microsoft.Maui.Handlers.HybridWebViewHandler.InvokeDotNetAsync(NameValueCollection)")]
+#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
+#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 		{
 			if (Handler is null)
 			{
@@ -35,31 +40,41 @@ namespace Microsoft.Maui.Platform
 			{
 				var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
+				string? contentType = null;
+				Stream? contentStream = null;
+
+				// 1. Try special InvokeDotNet path
 				if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
 				{
-
+					var fullUri = new Uri(fullUrl!);
+					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
+					(contentStream, contentType) = Handler.InvokeDotNet(invokeQueryString);
 				}
 
-				string contentType;
-				if (string.IsNullOrEmpty(relativePath))
+				// 2. If nothing found yet, try to get static content from the asset path
+				if (contentStream is null)
 				{
-					relativePath = Handler.VirtualView.DefaultFile;
-					contentType = "text/html";
-				}
-				else
-				{
-					if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+					if (string.IsNullOrEmpty(relativePath))
 					{
-						// TODO: Log this
-						contentType = "text/plain";
+						relativePath = Handler.VirtualView.DefaultFile;
+						contentType = "text/html";
 					}
-				}
+					else
+					{
+						if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+						{
+							// TODO: Log this
+							contentType = "text/plain";
+						}
+					}
 
-				var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
-				var contentStream = PlatformOpenAppPackageFile(assetPath);
+					var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
+					contentStream = PlatformOpenAppPackageFile(assetPath);
+				}
 
 				if (contentStream is null)
 				{
+					// 3.a. If still nothing is found, return a 404
 					var notFoundContent = "Resource not found (404)";
 
 					var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
@@ -69,8 +84,10 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
+					// 3.b. Otherwise, return the content
+
 					// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
-					return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType), contentStream);
+					return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType ?? "text/plain"), contentStream);
 				}
 			}
 			else
