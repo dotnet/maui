@@ -8,9 +8,4 @@ public partial class Issue7673 : ContentPage
 	{
 		InitializeComponent();
 	}
-
-    private void OnToggleSwitch1(object sender, EventArgs e)
-    {
-		switch1.IsToggled = !switch1.IsToggled;
-	}
 }
