@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -115,9 +114,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				// If control is null but there are children present, measure them and handle accordingly
 				if (Children.Count > 0)
 				{
-					var childElement = Children.FirstOrDefault();
-					childElement.Measure(constraint);
-					return new SizeRequest(new Size(Math.Ceiling(childElement.DesiredSize.Width), Math.Ceiling(childElement.DesiredSize.Height)));
+					double maxWidth = 0;
+					double maxHeight = 0;
+
+					foreach (var childElement in Children)
+					{
+						childElement.Measure(constraint);
+						maxWidth = Math.Max(maxWidth, childElement.DesiredSize.Width);
+						maxHeight = Math.Max(maxHeight, childElement.DesiredSize.Height);
+					}
+
+					return new SizeRequest(new Size(Math.Ceiling(maxWidth), Math.Ceiling(maxHeight)));
+
 				}
 				else
 				{
