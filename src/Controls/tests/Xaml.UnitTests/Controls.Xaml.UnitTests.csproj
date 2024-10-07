@@ -49,6 +49,7 @@
     <Compile Include="..\Core.UnitTests\MockMauiContext.cs" />
     <Compile Include="..\Core.UnitTests\MockServiceProvider.cs" />
     <Compile Include="..\Core.UnitTests\MockFontManager.cs" />
+    <Compile Include="..\Core.UnitTests\MockDeviceDisplay.cs" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
