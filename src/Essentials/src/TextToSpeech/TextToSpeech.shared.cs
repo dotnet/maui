@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Media
 		public float? Volume { get; set; }
 
 		/// <summary>
-		/// The Speech Rate to use when speaking.
+		/// The speech rate to use when speaking.
 		/// </summary>
 		/// <remarks>This value should be between <c>0.1f</c> and <c>2.0f</c>.</remarks>
 		public float? Rate { get; set; }
