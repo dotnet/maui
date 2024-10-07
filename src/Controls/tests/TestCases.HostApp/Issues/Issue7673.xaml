@@ -5,8 +5,8 @@
     
     <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="auto,auto,auto" Padding="10">
         
-        <Label Grid.Row="0" AutomationID="Label"  Grid.Column="0" Text="Initial Off State" VerticalOptions="Center"/>
-        <Switch x:Name="switch1" Grid.Row="0" Grid.Column="1" VerticalOptions="Center"/>
-        <Button Text="Toggle" AutomationID="TogglingSwitch"  Grid.Row="0" Grid.Column="2" Clicked="OnToggleSwitch1" VerticalOptions="Center"/>
+        <Label Grid.Row="0" AutomationId="Label"  Grid.Column="0" Text="Initial Off State" VerticalOptions="Center"/>
+        <Switch x:Name="switch1" Grid.Row="0" OffTrackColor="Red" OnColor="Green" Grid.Column="1" VerticalOptions="Center"/>
+        <Button Text="Toggle" AutomationId="TogglingSwitch"  Grid.Row="0" Grid.Column="2" Clicked="OnToggleSwitch1" VerticalOptions="Center"/>
     </Grid>
 </ContentPage>
