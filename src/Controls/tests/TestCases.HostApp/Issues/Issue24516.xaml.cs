@@ -8,14 +8,13 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None, 24516, "Rendering issue in WinUI when setting Label.FormattedText", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 24516, "Rendering issue in WinUI when setting Label.FormattedText", PlatformAffected.UWP)]
 	public partial class Issue24516 : ContentPage
 	{
 		int count = 0;
 		public Issue24516()
 		{
 			InitializeComponent();
-		
 		}
 
 		private void OnCounterClicked(object sender, EventArgs e)
@@ -33,6 +32,5 @@ namespace Maui.Controls.Sample.Issues
 				HelloWorldLabel.FormattedText = formattedString;
 			}
 		}
-
 	}
 }

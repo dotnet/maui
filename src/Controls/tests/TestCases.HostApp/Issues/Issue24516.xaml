@@ -4,17 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Issues.Issue24516">
 
-
-  <StackLayout Spacing="20" VerticalOptions="Center" HorizontalOptions="Center">
+  <StackLayout Spacing="20" 
+               VerticalOptions="Center" 
+               HorizontalOptions="Center">
     <Label x:Name="HelloWorldLabel"
            AutomationId="label"
-        Text="Hello, World!" />
-
-    <Button
-       AutomationId="ChangeFormattedText"
-       Text="Change Formatted Text"
-       Clicked="OnCounterClicked" />
-
+           Text="Hello, World!" />
+    <Button AutomationId="ChangeTextType"
+            Text="Change Text Type"
+            Clicked="OnCounterClicked" />
   </StackLayout>
   
 </ContentPage>
