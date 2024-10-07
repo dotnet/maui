@@ -257,5 +257,7 @@
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key expects a string literal.</value>
   </data>
-  
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>A key is required in {StaticResource}.</value>
+  </data>  
 </root>
