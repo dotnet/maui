@@ -1,10 +1,10 @@
-﻿namespace Controls.TestCases.HostApp.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 21112, "TableView TextCell command executes only once", PlatformAffected.UWP)]
-	public class Issue21112 : ContentPage
+	public class Issue21112 : TestContentPage
 	{
-		public Issue21112()
+		protected override void Init()
 		{
 			Title = "AbsoluteLayout demos";
 
