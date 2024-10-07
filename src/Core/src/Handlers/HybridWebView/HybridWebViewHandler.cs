@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 
 		[RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-		internal (Stream? ContentStream, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
+		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
 		{
 			try
 			{
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Handlers
 					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
 				}
 
-				Stream? contentStream = null;
+				byte[]? contentBytes = null;
 				string? contentType = null;
 
 				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
@@ -197,10 +197,10 @@ namespace Microsoft.Maui.Handlers
 						dotNetInvokeResult = new();
 					}
 
-					contentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult)));
+					contentBytes = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult));
 				}
 
-				return (contentStream, contentType);
+				return (contentBytes, contentType);
 			}
 			catch (Exception)
 			{

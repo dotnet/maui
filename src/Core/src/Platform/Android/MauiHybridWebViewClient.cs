@@ -48,7 +48,11 @@ namespace Microsoft.Maui.Platform
 				{
 					var fullUri = new Uri(fullUrl!);
 					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-					(contentStream, contentType) = Handler.InvokeDotNet(invokeQueryString);
+					(var contentBytes, contentType) = Handler.InvokeDotNet(invokeQueryString);
+					if (contentBytes is not null)
+					{
+						contentStream = new MemoryStream(contentBytes);
+					}
 				}
 
 				// 2. If nothing found yet, try to get static content from the asset path
