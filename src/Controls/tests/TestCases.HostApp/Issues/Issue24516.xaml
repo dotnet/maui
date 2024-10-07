@@ -8,7 +8,7 @@
                VerticalOptions="Center" 
                HorizontalOptions="Center">
     <Label x:Name="HelloWorldLabel"
-           AutomationId="label"
+           AutomationId="HelloWorldLabel"
            Text="Hello, World!" />
     <Button AutomationId="ChangeTextType"
             Text="Change Text Type"
