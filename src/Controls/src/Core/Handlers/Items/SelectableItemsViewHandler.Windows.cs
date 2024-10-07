@@ -77,9 +77,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_ignorePlatformSelectionChange = true;
 
-			// Workaround for https://github.com/microsoft/CsWinRT/issues/1733
-			var itemsList = ListViewBase.Items.ToList();
-
 			switch (ListViewBase.SelectionMode)
 			{
 				case WASDKListViewSelectionMode.None:
@@ -94,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						else
 						{
 							ListViewBase.SelectedItem =
-								itemsList.FirstOrDefault(item =>
+								ListViewBase.Items.FirstOrDefault(item =>
 								{
 									if (item is ItemTemplateContext itemPair)
 									{
@@ -111,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 				case WASDKListViewSelectionMode.Multiple:
 					ListViewBase.SelectedItems.Clear();
-					foreach (var nativeItem in itemsList)
+					foreach (var nativeItem in ListViewBase.Items)
 					{
 						if (nativeItem is ItemTemplateContext itemPair && ItemsView.SelectedItems.Contains(itemPair.Item))
 						{
