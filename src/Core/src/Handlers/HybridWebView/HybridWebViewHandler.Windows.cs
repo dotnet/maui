@@ -120,7 +120,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					var fullUri = new Uri(eventArgs.Request.Uri);
 					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-					(contentStream, contentType) = InvokeDotNet(invokeQueryString);
+					(var contentBytes, contentType) = InvokeDotNet(invokeQueryString);
+					if (contentBytes is not null)
+					{
+						contentStream = new MemoryStream(contentBytes);
+					}
 				}
 
 				// 2. If nothing found yet, try to get static content from the asset path
