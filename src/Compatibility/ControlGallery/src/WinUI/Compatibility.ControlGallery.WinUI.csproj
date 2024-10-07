@@ -36,6 +36,10 @@
     </AppxManifest>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="bank.png" />
     <Content Include="calculator.png" />
