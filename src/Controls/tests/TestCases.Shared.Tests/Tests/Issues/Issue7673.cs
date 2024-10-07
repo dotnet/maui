@@ -21,7 +21,7 @@ public class Issue7673 : _IssuesUITest
 	[Category(UITestCategories.Switch)]
 	public void VerifyOffTrackColor()
 	{
-		App.WaitForElement("Label");
+		App.WaitForElement("Switch");
 		VerifyScreenshot();
 	}
 
@@ -29,18 +29,18 @@ public class Issue7673 : _IssuesUITest
 	[Category(UITestCategories.Switch)]
 	public void VerifyOnTrackColor()
 	{
-		App.WaitForElement("Label");
-		App.Click("TogglingSwitch");
+		App.WaitForElement("Switch");
+		App.Tap("Switch");
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifyTogglingOnOffColor()
+	public void VerifyOffColorAfterToggling()
 	{
-		App.WaitForElement("Label");
-		App.Click("TogglingSwitch");
-		App.Click("TogglingSwitch");
+		App.WaitForElement("Switch");
+		App.Tap("Switch");
+		App.Tap("Switch");
 		VerifyScreenshot();
 	}
 }
