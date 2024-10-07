@@ -521,24 +521,11 @@ Task("uitest")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
-	};
-
-	string? localToolPath = null;
+	});
 
 	if (localDotnet)
 	{
-		var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
-		Information("new dotnet root: {0}", localDotnetRoot);
-
-		DOTNET_ROOT = localDotnetRoot.ToString();
-
-		localToolPath = $"{localDotnetRoot}/dotnet.exe";
-
-		Information("new dotnet toolPath: {0}", localToolPath);
-
-		SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-		buildSettings.ToolPath = localToolPath;
+		buildSettings.ToolPath = dotnetToolPath;
 	}
 
 	DotNetBuild(PROJECT.FullPath, buildSettings);
