@@ -13,12 +13,4 @@ public partial class Issue7673 : ContentPage
     {
 		switch1.IsToggled = !switch1.IsToggled;
 	}
-    private void OnToggleSwitch2(object sender, EventArgs e)
-    {
-		switch2.IsToggled = !switch2.IsToggled;
-    }
-    private void OnToggleSwitch3(object sender, EventArgs e)
-    {
-		switch3.IsToggled = !switch3.IsToggled;
-	}
 }
