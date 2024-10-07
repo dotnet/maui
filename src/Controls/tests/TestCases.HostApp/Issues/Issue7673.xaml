@@ -3,10 +3,5 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue7673">
     
-    <Grid ColumnDefinitions="Auto,Auto,Auto" RowDefinitions="auto,auto,auto" Padding="10">
-        
-        <Label Grid.Row="0" AutomationId="Label"  Grid.Column="0" Text="Initial Off State" VerticalOptions="Center"/>
-        <Switch x:Name="switch1" Grid.Row="0" OffTrackColor="Red" OnColor="Green" Grid.Column="1" VerticalOptions="Center"/>
-        <Button Text="Toggle" AutomationId="TogglingSwitch"  Grid.Row="0" Grid.Column="2" Clicked="OnToggleSwitch1" VerticalOptions="Center"/>
-    </Grid>
+ <Switch x:Name="switch1" AutomationId="Switch" OffTrackColor="Red" OnColor="Green" HorizontalOptions="Center" VerticalOptions="Center"/>
 </ContentPage>
