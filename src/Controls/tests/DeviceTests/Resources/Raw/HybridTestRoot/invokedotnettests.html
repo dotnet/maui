@@ -13,6 +13,7 @@
                 var methodToInvoke = e.detail.message;
                 var result;
 
+                // Invoke the method requested by the test and pass a certain set of parameters
                 switch (methodToInvoke) {
                     case 'Invoke_NoParam_NoReturn':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
@@ -37,7 +38,7 @@
                                 "hello",
                                 null,
                                 { "operationName": "invoke_method", "result": 123.456 },
-                                [ 111, 222 ]
+                                [111, 222]
                             ]);
                         break;
 
@@ -45,6 +46,7 @@
                         return;
                 }
 
+                // Store the return value from the method so that it can be checked in the test
                 lastScriptResult = result === null ? null : JSON.stringify(result);
                 SetStatusDone();
             });
