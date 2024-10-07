@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			if (ReloadRequired())
+			if (NotLoadedYet())
 			{
 				Reload();
 				return;

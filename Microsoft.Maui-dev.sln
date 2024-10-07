@@ -135,6 +135,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharedSource", "SharedSource", "{4F2926C8-43AB-4328-A735-D9EAD699F81D}"
 	ProjectSection(SolutionItems) = preProject
 		src\BlazorWebView\src\SharedSource\AutoCloseOnReadCompleteStream.cs = src\BlazorWebView\src\SharedSource\AutoCloseOnReadCompleteStream.cs
+		src\BlazorWebView\src\SharedSource\HostAddressHelper.cs = src\BlazorWebView\src\SharedSource\HostAddressHelper.cs
 		src\BlazorWebView\src\SharedSource\QueryStringHelper.cs = src\BlazorWebView\src\SharedSource\QueryStringHelper.cs
 		src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs = src\BlazorWebView\src\SharedSource\UrlLoadingEventArgs.cs
 		src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs = src\BlazorWebView\src\SharedSource\UrlLoadingStrategy.cs
