@@ -22,8 +22,17 @@ public class Issue7673 : _IssuesUITest
 	public void VerifyOffTrackColor()
 	{
 		App.WaitForElement("Label");
-		App.Click("OnStateSwitch");
+		VerifyScreenshot();
+	}
+
+	public void VerifyOnTrackColor()
+	{
 		App.Click("TogglingSwitch");
+		VerifyScreenshot();
+	}
+
+	public void VerifyTogglingOnOffColor()
+	{
 		App.Click("TogglingSwitch");
 		VerifyScreenshot();
 	}
