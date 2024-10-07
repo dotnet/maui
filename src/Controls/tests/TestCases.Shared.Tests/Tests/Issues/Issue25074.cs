@@ -15,9 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ButtonResizesWhenTitleOrImageChanges()
 		{
 			App.WaitForElement("Button1");
-			VerifyScreenshot();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
 			App.Tap("Button1");
-			VerifyScreenshot();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Altered");
+			App.Tap("Button1");
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original");
 		}
 	}
 }
