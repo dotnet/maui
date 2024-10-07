@@ -523,13 +523,6 @@ Task("uitest")
 				//.Append("/tl")
 	});
 
-	if (localDotnet)
-	{
-		buildSettings.ToolPath = dotnetToolPath;
-	}
-
-	DotNetBuild(PROJECT.FullPath, buildSettings);
-
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
 
