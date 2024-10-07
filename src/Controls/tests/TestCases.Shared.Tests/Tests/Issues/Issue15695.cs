@@ -9,11 +9,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue7673 : _IssuesUITest
+public class Issue15695 : _IssuesUITest
 {
-	public override string Issue => "Android Switch view has inconsistent colors when off";
+	public override string Issue => "Support for Switch OFF State color";
 
-	public Issue21368(TestDevice device) : base(device)
+	public Issue15695(TestDevice device) : base(device)
 	{
 	}
 
@@ -30,7 +30,7 @@ public class Issue7673 : _IssuesUITest
 	public void VerifyOnTrackColor()
 	{
 		App.WaitForElement("Switch");
-		App.Tap("Switch");
+		App.Tap("SwitchButton");
 		VerifyScreenshot();
 	}
 
@@ -39,8 +39,8 @@ public class Issue7673 : _IssuesUITest
 	public void VerifyOffColorAfterToggling()
 	{
 		App.WaitForElement("Switch");
-		App.Tap("Switch");
-		App.Tap("Switch");
+		App.Tap("SwitchButton");
+		App.Tap("SwitchButton");
 		VerifyScreenshot();
 	}
 }
