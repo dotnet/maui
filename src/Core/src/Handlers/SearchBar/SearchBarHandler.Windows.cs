@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.Loaded += OnLoaded;
 			platformView.QuerySubmitted += OnQuerySubmitted;
+			platformView.KeyDown += OnKeyDown;
 			platformView.TextChanged += OnTextChanged;
 		}
 
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.Loaded -= OnLoaded;
 			platformView.QuerySubmitted -= OnQuerySubmitted;
+			platformView.KeyDown -= OnKeyDown;
 			platformView.TextChanged -= OnTextChanged;
 		}
 
@@ -136,6 +138,12 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.Text = e.QueryText;
 
 			VirtualView.SearchButtonPressed();
+		}
+
+		void OnKeyDown(object sender, UI.Xaml.Input.KeyRoutedEventArgs e)
+		{
+			if (VirtualView.MaxLength != -1)
+				PlatformView?.UpdateMaxLength(VirtualView);
 		}
 
 		void OnTextChanged(AutoSuggestBox? sender, AutoSuggestBoxTextChangedEventArgs e)
