@@ -76,7 +76,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+        - macOS.Architecture -equals arm64
         
   - name: catalystPool
     type: object
