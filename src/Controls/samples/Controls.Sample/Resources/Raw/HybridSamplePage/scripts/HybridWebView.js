@@ -118,3 +118,4 @@
 }
 
 window.HybridWebView.Init();
+
