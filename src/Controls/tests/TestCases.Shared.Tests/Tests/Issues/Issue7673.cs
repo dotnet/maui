@@ -25,14 +25,21 @@ public class Issue7673 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
+	[Test]
+	[Category(UITestCategories.Switch)]
 	public void VerifyOnTrackColor()
 	{
+		App.WaitForElement("Label");
 		App.Click("TogglingSwitch");
 		VerifyScreenshot();
 	}
 
+	[Test]
+	[Category(UITestCategories.Switch)]
 	public void VerifyTogglingOnOffColor()
 	{
+		App.WaitForElement("Label");
+		App.Click("TogglingSwitch");
 		App.Click("TogglingSwitch");
 		VerifyScreenshot();
 	}
