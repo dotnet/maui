@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				ImeOptions = ImeAction.Done,
 				Gravity = GravityFlags.Top,
-				TextAlignment = Android.Views.TextAlignment.ViewStart,
 			};
 
 			editText.SetSingleLine(false);
