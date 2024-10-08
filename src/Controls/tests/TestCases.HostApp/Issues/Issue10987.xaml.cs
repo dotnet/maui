@@ -14,5 +14,11 @@
 			editor.VerticalTextAlignment = TextAlignment.End;
 			editor.HorizontalTextAlignment = TextAlignment.End;
 		}
+
+		private void ResetButtonClicked(object sender, EventArgs e)
+		{
+			editor.VerticalTextAlignment = TextAlignment.Start;
+			editor.HorizontalTextAlignment = TextAlignment.Start;
+		}
 	}
 }

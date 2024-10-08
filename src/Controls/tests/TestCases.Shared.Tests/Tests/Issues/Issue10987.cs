@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMac]
   		public void EditorPlaceholderRuntimeTextAlignmentChanged()
 		{
-			App.WaitForElement("button");
+			App.WaitForElement("MauiEditor");
 			App.Tap("button");
 			VerifyScreenshot();
 		}
@@ -24,10 +24,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMac]
 		public void EditorRuntimeTextAlignmentChanged()
 		{
+			App.WaitForElement("MauiEditor");
 			App.EnterText("MauiEditor", "Editor");
-			App.WaitForElement("button");
-			App.Tap("button");
-			VerifyScreenshot();
+			App.Tap("resetButton");
 			VerifyScreenshot();
 		}		
 	}
