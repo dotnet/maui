@@ -10,6 +10,7 @@
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
     <PrivateSdk  Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
