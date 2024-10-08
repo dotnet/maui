@@ -79,4 +79,4 @@ class AppiumAppleStepperActions : ICommandExecutionGroup
 			AppiumDriverElement driverElement => driverElement.AppiumElement,
 			_ => null
 		};
-	
+}
