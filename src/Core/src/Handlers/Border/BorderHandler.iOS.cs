@@ -54,10 +54,25 @@ namespace Microsoft.Maui.Handlers
 				var platformContent = content.ToPlatform(handler.MauiContext);
 
 				// If the content is a UIScrollView, we need a container to handle masks and clip shapes effectively.
-				if (platformContent is UIScrollView && content.Handler is not null)
+				if (platformContent is UIScrollView)
 				{
-					content.Handler.HasContainer = true;
-					UpdateContent(handler);
+					var containerView = new UIView
+					{
+						BackgroundColor = UIColor.Clear,
+						TranslatesAutoresizingMaskIntoConstraints = false 
+					};
+
+					platformContent.Tag = ContentView.ContentTag;
+					containerView.AddSubview(platformContent);
+					platformView.AddSubview(containerView);
+
+					NSLayoutConstraint.ActivateConstraints(
+					[
+						containerView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor),
+						containerView.LeadingAnchor.ConstraintEqualTo(platformView.LeadingAnchor),
+						containerView.TrailingAnchor.ConstraintEqualTo(platformView.TrailingAnchor),
+						containerView.BottomAnchor.ConstraintEqualTo(platformView.BottomAnchor)
+					]);
 				}
 				else
 				{
