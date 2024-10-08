@@ -58,4 +58,3 @@ static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 Microsoft.Maui.IStepper.Increment.get -> double
 *REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
-

@@ -70,4 +70,3 @@ static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this Microsoft.
 Microsoft.Maui.IStepper.Increment.get -> double
 *REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
 *REMOVED*static Microsoft.Maui.Platform.StepperExtensions.UpdateInterval(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
-
