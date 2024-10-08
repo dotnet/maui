@@ -9,6 +9,22 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class TabbedViewExtensions
 	{
+		internal static void DisableiOS18ToolbarTabs(
+			this UITabBarController tabBarController)
+		{
+
+			bool is18 = OperatingSystem.IsMacCatalystVersionAtLeast(18);
+			
+			// Should apply to iOS and Catalyst
+            if (OperatingSystem.IsIOSVersionAtLeast(18) || OperatingSystem.IsMacCatalystVersionAtLeast(18))
+            {
+				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
+                tabBarController.Mode = UITabBarControllerMode.TabSidebar;
+                tabBarController.Sidebar.Hidden = true;
+                tabBarController.TabBarHidden = true;
+            }
+		}
+
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		internal static void UpdateiOS15TabBarAppearance(
