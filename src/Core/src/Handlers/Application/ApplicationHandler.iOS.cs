@@ -62,6 +62,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal static partial void MapAppTheme(ApplicationHandler handler, IApplication application)
+		{
+			application?.UpdateUserInterfaceStyle();
+		}
+
 #if __MACCATALYST__
 		class NSApplication
 		{

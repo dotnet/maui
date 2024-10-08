@@ -7,59 +7,59 @@ namespace BindingSourceGen.UnitTests;
 
 public class BindingRepresentationGenTests
 {
-    [Fact]
-    public void GenerateSimpleBinding()
-    {
-        var source = """
+	[Fact]
+	public void GenerateSimpleBinding()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("string"),
-                new TypeDescription("int", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Length", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("string"),
+				new TypeDescription("int", IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Length", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWithNestedProperties()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNestedProperties()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Button b) => b.Text?.Length);
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Microsoft.Maui.Controls.Button"),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Text"),
-                    new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Microsoft.Maui.Controls.Button"),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Text"),
+					new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWithNullableReferenceElementInPathWhenNullableEnabled()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNullableReferenceElementInPathWhenNullableEnabled()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.Button?.Text?.Length);
@@ -70,53 +70,53 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Button"),
-                    new ConditionalAccess(new MemberAccess("Text")),
-                    new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Button"),
+					new ConditionalAccess(new MemberAccess("Text")),
+					new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
 
-    }
+	}
 
-    [Fact]
-    public void GenerateBindingWithNullableReferenceSourceWhenNullableEnabled()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNullableReferenceSourceWhenNullableEnabled()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Button? b) => b?.Text?.Length);
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new ConditionalAccess(new MemberAccess("Text")),
-                    new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new ConditionalAccess(new MemberAccess("Text")),
+					new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWithNullableValueTypeWhenNullableEnabled()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNullableValueTypeWhenNullableEnabled()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value);
@@ -127,50 +127,50 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Value", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Value", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWithNullableSourceReferenceAndNullableReferenceElementInPathWhenNullableEnabled()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNullableSourceReferenceAndNullableReferenceElementInPathWhenNullableEnabled()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Button? b) => b?.Text?.Length);
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new ConditionalAccess(new MemberAccess("Text")),
-                    new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new ConditionalAccess(new MemberAccess("Text")),
+					new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWithNullablePropertyReferenceWhenNullableEnabled()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNullablePropertyReferenceWhenNullableEnabled()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value);
@@ -181,25 +181,25 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("string", IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Value"),
-                ]),
-                SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("string", IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Value"),
+				]),
+				SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWithNullableReferenceTypesWhenNullableDisabledAndConditionalAccessOperator()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWithNullableReferenceTypesWhenNullableDisabledAndConditionalAccessOperator()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         #nullable disable
         var label = new Label();
@@ -211,26 +211,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
-                new TypeDescription("global::Foo", IsNullable: true),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new ConditionalAccess(new MemberAccess("Bar")),
-                    new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: false,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
+				new TypeDescription("global::Foo", IsNullable: true),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new ConditionalAccess(new MemberAccess("Bar")),
+					new ConditionalAccess(new MemberAccess("Length", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: false,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenNullableDisabledAndPropertyNonNullableValueType()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenNullableDisabledAndPropertyNonNullableValueType()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         #nullable disable
         var label = new Label();
@@ -247,26 +247,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
-                new TypeDescription("global::Foo", IsNullable: true),
-                new TypeDescription("int", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Bar"),
-                    new MemberAccess("Length", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: false,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
+				new TypeDescription("global::Foo", IsNullable: true),
+				new TypeDescription("int", IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Bar"),
+					new MemberAccess("Length", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: false,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenNullableDisabledAndPropertyNullableValueType()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenNullableDisabledAndPropertyNullableValueType()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         #nullable disable
         var label = new Label();
@@ -283,26 +283,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
-                new TypeDescription("global::Foo", IsNullable: true),
-                new TypeDescription("int", IsNullable: true, IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Bar"),
-                    new MemberAccess("Length", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: false,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
+				new TypeDescription("global::Foo", IsNullable: true),
+				new TypeDescription("int", IsNullable: true, IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Bar"),
+					new MemberAccess("Length", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
+				NullableContextEnabled: false,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenNullableDisabledAndPropertyReferenceType()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenNullableDisabledAndPropertyReferenceType()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         #nullable disable
         var label = new Label();
@@ -324,26 +324,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
-                new TypeDescription("global::Foo", IsNullable: true),
-                new TypeDescription("global::CustomLength", IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Bar"),
-                    new MemberAccess("Length"),
-                ]),
-                SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
-                NullableContextEnabled: false,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
+				new TypeDescription("global::Foo", IsNullable: true),
+				new TypeDescription("global::CustomLength", IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Bar"),
+					new MemberAccess("Length"),
+				]),
+				SetterOptions: new(IsWritable: true, AcceptsNullValue: true),
+				NullableContextEnabled: false,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenBindingContainsIntegerIndexing()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenBindingContainsIntegerIndexing()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.Items[0].Length);
@@ -354,27 +354,27 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Items"),
-                    new IndexAccess("Item", 0),
-                    new MemberAccess("Length", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Items"),
+					new IndexAccess("Item", 0),
+					new MemberAccess("Length", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsStringIndexing()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsStringIndexing()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         using System.Collections.Generic;
         var label = new Label();
@@ -385,27 +385,27 @@ public class BindingRepresentationGenTests
             public Dictionary<string, string> Items { get; set; } = new();
         }
         """;
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Items"),
-                    new IndexAccess("Item", "key"),
-                    new MemberAccess("Length", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: false),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Items"),
+					new IndexAccess("Item", "key"),
+					new MemberAccess("Length", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: false),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsCustomIndexerWithIndexerNameAttribute()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsCustomIndexerWithIndexerNameAttribute()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         using System.Runtime.CompilerServices;
 
@@ -419,26 +419,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("int", IsValueType: true),
-            new EquatableArray<IPathPart>([
-                new IndexAccess("CustomIndexer", "key"),
-                new MemberAccess("Length", IsValueType: true),
-            ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("int", IsValueType: true),
+			new EquatableArray<IPathPart>([
+				new IndexAccess("CustomIndexer", "key"),
+				new MemberAccess("Length", IsValueType: true),
+			]),
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsNullableIndexer()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsNullableIndexer()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f["key"]?.Length);
@@ -449,26 +449,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                new IndexAccess("Item", "key"),
-                new ConditionalAccess(new MemberAccess("Length", IsValueType: true)), // TODO: Improve naming so this looks right
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+				new IndexAccess("Item", "key"),
+				new ConditionalAccess(new MemberAccess("Length", IsValueType: true)), // TODO: Improve naming so this looks right
             ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsConditionallyAccessedIndexer()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsConditionallyAccessedIndexer()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.bar?["key"].Length);
@@ -484,27 +484,27 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("int", IsValueType: true, IsNullable: true),
-            new EquatableArray<IPathPart>([
-                new MemberAccess("bar"),
-                new ConditionalAccess(new IndexAccess("Item", "key")),
-                new MemberAccess("Length", IsValueType: true),
-            ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("int", IsValueType: true, IsNullable: true),
+			new EquatableArray<IPathPart>([
+				new MemberAccess("bar"),
+				new ConditionalAccess(new IndexAccess("Item", "key")),
+				new MemberAccess("Length", IsValueType: true),
+			]),
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsComplexCombinedIndexers()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsComplexCombinedIndexers()
+	{
+		var source = """
             using Microsoft.Maui.Controls;
             using System.Runtime.CompilerServices;
             using MyNamespace;
@@ -533,27 +533,27 @@ public class BindingRepresentationGenTests
             }
             """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
-            new TypeDescription("global::MyNamespace.MySourceClass"),
-            new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true),
-                new EquatableArray<IPathPart>([
-                new IndexAccess("Item", 12),
-                new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
-                new IndexAccess("Item", 0),
-            ]),
-            SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
+			new TypeDescription("global::MyNamespace.MySourceClass"),
+			new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true),
+				new EquatableArray<IPathPart>([
+				new IndexAccess("Item", 12),
+				new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
+				new IndexAccess("Item", 0),
+			]),
+			SetterOptions: new(IsWritable: true),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsCustomIndexerWithDefaultMemberAttribute()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsCustomIndexerWithDefaultMemberAttribute()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         using System.Text;
 
@@ -567,26 +567,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("char", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                new MemberAccess("s"),
-                new IndexAccess("Chars", 0, IsValueType: true),
-            ]),
-            SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("char", IsValueType: true),
+				new EquatableArray<IPathPart>([
+				new MemberAccess("s"),
+				new IndexAccess("Chars", 0, IsValueType: true),
+			]),
+			SetterOptions: new(IsWritable: true),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsCustomIndexerWithoutAttributes()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsCustomIndexerWithoutAttributes()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
 
         var label = new Label();
@@ -598,26 +598,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("int", IsValueType: true),
-            new EquatableArray<IPathPart>([
-                new IndexAccess("Item", "key"),
-                new MemberAccess("Length", IsValueType: true),
-            ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("int", IsValueType: true),
+			new EquatableArray<IPathPart>([
+				new IndexAccess("Item", "key"),
+				new MemberAccess("Length", IsValueType: true),
+			]),
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsSimpleReferenceTypeCast()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsSimpleReferenceTypeCast()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.Value as string);
@@ -628,26 +628,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("string", IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Value"),
-                    new Cast(new TypeDescription("string")),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("string", IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Value"),
+					new Cast(new TypeDescription("string")),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsSimpleReferenceTypeExplicitCast()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsSimpleReferenceTypeExplicitCast()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => (string)f.Value);
@@ -658,26 +658,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("string"),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Value"),
-                    new Cast(new TypeDescription("string")),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("string"),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Value"),
+					new Cast(new TypeDescription("string")),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsMemberAccessOfCastReferenceType()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsMemberAccessOfCastReferenceType()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => (f.C as C)?.X);
@@ -693,27 +693,27 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true, IsNullable: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("C"),
-                    new Cast(new TypeDescription("global::C")),
-                    new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true, IsNullable: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("C"),
+					new Cast(new TypeDescription("global::C")),
+					new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsMemberAccessOfExplicitCastReferenceType()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsMemberAccessOfExplicitCastReferenceType()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => ((C)f.C).X);
@@ -729,30 +729,30 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("C"),
-                    new Cast(new TypeDescription("global::C")),
-                    new MemberAccess("X", IsValueType: true),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("C"),
+					new Cast(new TypeDescription("global::C")),
+					new MemberAccess("X", IsValueType: true),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
 
-    [Theory]
-    [InlineData("static (Foo f) => (f.C as C)?.X")]
-    [InlineData("static (Foo f) => ((C?)f.C)?.X")]
-    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableReferenceType(string bindingLambda)
-    {
-        var source = $$"""
+	[Theory]
+	[InlineData("static (Foo f) => (f.C as C)?.X")]
+	[InlineData("static (Foo f) => ((C?)f.C)?.X")]
+	public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableReferenceType(string bindingLambda)
+	{
+		var source = $$"""
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, {{bindingLambda}});
@@ -768,29 +768,29 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsNullable: true, IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("C"),
-                    new Cast(new TypeDescription("global::C")),
-                    new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsNullable: true, IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("C"),
+					new Cast(new TypeDescription("global::C")),
+					new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Theory]
-    [InlineData("static (Foo f) => f.Value as int?")]
-    [InlineData("static (Foo f) => (int?)f.Value")]
-    public void GenerateBindingWhenGetterContainsSimpleValueTypeCast(string bindingLambda)
-    {
-        var source = $$"""
+	[Theory]
+	[InlineData("static (Foo f) => f.Value as int?")]
+	[InlineData("static (Foo f) => (int?)f.Value")]
+	public void GenerateBindingWhenGetterContainsSimpleValueTypeCast(string bindingLambda)
+	{
+		var source = $$"""
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, {{bindingLambda}});
@@ -801,27 +801,27 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsNullable: true, IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Value", IsValueType: true),
-                    new Cast(new TypeDescription("int", IsNullable: true, IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsNullable: true, IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Value", IsValueType: true),
+					new Cast(new TypeDescription("int", IsNullable: true, IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GenerateBindingWhenGetterContainsSimpleValueTypeExplicitCast()
-    {
-        var source = """
+	[Fact]
+	public void GenerateBindingWhenGetterContainsSimpleValueTypeExplicitCast()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => (int)f.Value);
@@ -832,29 +832,29 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("Value", IsValueType: true),
-                    new Cast(new TypeDescription("int", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("Value", IsValueType: true),
+					new Cast(new TypeDescription("int", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Theory]
-    [InlineData("static (Foo f) => (f.C as C?)?.X")]
-    [InlineData("static (Foo f) => ((C?)f.C)?.X")]
-    public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableValueType(string bindingLambda)
-    {
-        var source = $$"""
+	[Theory]
+	[InlineData("static (Foo f) => (f.C as C?)?.X")]
+	[InlineData("static (Foo f) => ((C?)f.C)?.X")]
+	public void GenerateBindingWhenGetterContainsMemberAccessOfCastNullableValueType(string bindingLambda)
+	{
+		var source = $$"""
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, {{bindingLambda}});
@@ -870,27 +870,27 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-                new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-                new TypeDescription("global::Foo"),
-                new TypeDescription("int", IsNullable: true, IsValueType: true),
-                new EquatableArray<IPathPart>([
-                    new MemberAccess("C"),
-                    new Cast(new TypeDescription("global::C", IsNullable: true, IsValueType: true)),
-                    new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
-                ]),
-                SetterOptions: new(IsWritable: true),
-                NullableContextEnabled: true,
-                MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+				new TypeDescription("global::Foo"),
+				new TypeDescription("int", IsNullable: true, IsValueType: true),
+				new EquatableArray<IPathPart>([
+					new MemberAccess("C"),
+					new Cast(new TypeDescription("global::C", IsNullable: true, IsValueType: true)),
+					new ConditionalAccess(new MemberAccess("X", IsValueType: true)),
+				]),
+				SetterOptions: new(IsWritable: true),
+				NullableContextEnabled: true,
+				MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void SetsIsWritableFalseWhenPropertyComesFromImmutableCollection()
-    {
-        var source = """
+	[Fact]
+	public void SetsIsWritableFalseWhenPropertyComesFromImmutableCollection()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.S[0]);
@@ -901,26 +901,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("char", IsValueType: true),
-            new EquatableArray<IPathPart>([
-                new MemberAccess("S"),
-                new IndexAccess("Chars", 0, IsValueType: true),
-            ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("char", IsValueType: true),
+			new EquatableArray<IPathPart>([
+				new MemberAccess("S"),
+				new IndexAccess("Chars", 0, IsValueType: true),
+			]),
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void SetsIsWritableTrueWhenPropertyComesFromMutableCollection()
-    {
-        var source = """
+	[Fact]
+	public void SetsIsWritableTrueWhenPropertyComesFromMutableCollection()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f.S[0]);
@@ -931,26 +931,26 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("char", IsValueType: true),
-            new EquatableArray<IPathPart>([
-                new MemberAccess("S"),
-                new IndexAccess("Item", 0, IsValueType: true),
-            ]),
-            SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("char", IsValueType: true),
+			new EquatableArray<IPathPart>([
+				new MemberAccess("S"),
+				new IndexAccess("Item", 0, IsValueType: true),
+			]),
+			SetterOptions: new(IsWritable: true),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void SetsIsWritableFalseWhenCustomIndexerHasNoSetter()
-    {
-        var source = """
+	[Fact]
+	public void SetsIsWritableFalseWhenCustomIndexerHasNoSetter()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f["key"]);
@@ -961,25 +961,25 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("string"),
-            new EquatableArray<IPathPart>([
-                new IndexAccess("Item", "key"),
-            ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("string"),
+			new EquatableArray<IPathPart>([
+				new IndexAccess("Item", "key"),
+			]),
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void SetsIsWritableTrueWhenCustomIndexerHasSetter()
-    {
-        var source = """
+	[Fact]
+	public void SetsIsWritableTrueWhenCustomIndexerHasSetter()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo f) => f["key"]);
@@ -990,25 +990,25 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("string"),
-            new EquatableArray<IPathPart>([
-                new IndexAccess("Item", "key"),
-            ]),
-            SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("string"),
+			new EquatableArray<IPathPart>([
+				new IndexAccess("Item", "key"),
+			]),
+			SetterOptions: new(IsWritable: true),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void SetsIsWritableWhenElementAccessIsConditional()
-    {
-        var source = """
+	[Fact]
+	public void SetsIsWritableWhenElementAccessIsConditional()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
         var label = new Label();
         label.SetBinding(Label.RotationProperty, static (Foo? f) => f?[0]);
@@ -1019,25 +1019,25 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
-            new TypeDescription("global::Foo", IsNullable: true),
-            new TypeDescription("int", IsValueType: true, IsNullable: true),
-            new EquatableArray<IPathPart>([
-                new ConditionalAccess(new IndexAccess("Item", 0, IsValueType: true)),
-            ]),
-            SetterOptions: new(IsWritable: false),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			new TypeDescription("global::Foo", IsNullable: true),
+			new TypeDescription("int", IsValueType: true, IsNullable: true),
+			new EquatableArray<IPathPart>([
+				new ConditionalAccess(new IndexAccess("Item", 0, IsValueType: true)),
+			]),
+			SetterOptions: new(IsWritable: false),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GeneratesInaccessibleMemberAccessWhenUsingPrivateFields()
-    {
-        var source = """
+	[Fact]
+	public void GeneratesInaccessibleMemberAccessWhenUsingPrivateFields()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
 
         var foo = new Foo();
@@ -1054,31 +1054,31 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("int", IsValueType: true),
-            new EquatableArray<IPathPart>([
-                new InaccessibleMemberAccess(
-                    new TypeDescription("global::Foo"),
-                    new TypeDescription("int", IsValueType: true),
-                    AccessorKind.Field,
-                    "_value",
-                    IsValueType: true
-                )
-            ]),
-            SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("int", IsValueType: true),
+			new EquatableArray<IPathPart>([
+				new InaccessibleMemberAccess(
+					new TypeDescription("global::Foo"),
+					new TypeDescription("int", IsValueType: true),
+					AccessorKind.Field,
+					"_value",
+					IsValueType: true
+				)
+			]),
+			SetterOptions: new(IsWritable: true),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 
-    [Fact]
-    public void GeneratesInaccessibleMemberAccessWhenUsingPrivateProperties()
-    {
-        var source = """
+	[Fact]
+	public void GeneratesInaccessibleMemberAccessWhenUsingPrivateProperties()
+	{
+		var source = """
         using Microsoft.Maui.Controls;
 
         var foo = new Foo();
@@ -1095,24 +1095,24 @@ public class BindingRepresentationGenTests
         }
         """;
 
-        var codeGeneratorResult = SourceGenHelpers.Run(source);
-        var expectedBinding = new BindingInvocationDescription(
-            new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
-            new TypeDescription("global::Foo"),
-            new TypeDescription("int", IsValueType: true),
-            new EquatableArray<IPathPart>([
-                new InaccessibleMemberAccess(
-                    new TypeDescription("global::Foo"),
-                    new TypeDescription("int", IsValueType: true),
-                    AccessorKind.Property,
-                    "Value",
-                    IsValueType: true
-                )
-            ]),
-            SetterOptions: new(IsWritable: true),
-            NullableContextEnabled: true,
-            MethodType: InterceptedMethodType.SetBinding);
+		var codeGeneratorResult = SourceGenHelpers.Run(source);
+		var expectedBinding = new BindingInvocationDescription(
+			new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
+			new TypeDescription("global::Foo"),
+			new TypeDescription("int", IsValueType: true),
+			new EquatableArray<IPathPart>([
+				new InaccessibleMemberAccess(
+					new TypeDescription("global::Foo"),
+					new TypeDescription("int", IsValueType: true),
+					AccessorKind.Property,
+					"Value",
+					IsValueType: true
+				)
+			]),
+			SetterOptions: new(IsWritable: true),
+			NullableContextEnabled: true,
+			MethodType: InterceptedMethodType.SetBinding);
 
-        AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
-    }
+		AssertExtensions.BindingsAreEqual(expectedBinding, codeGeneratorResult);
+	}
 }

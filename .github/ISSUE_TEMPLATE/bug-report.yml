@@ -7,8 +7,6 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! Please make sure to add as much detail as you can, preferably with a [reproduction](https://github.com/dotnet/maui/blob/main/.github/repro.md). This will help us diagnose the issue faster and thus resolve it quicker.
-        
-        If this is a bug in Xamarin.Forms, please [open the issue in the Xamarin.Forms repo](https://github.com/xamarin/Xamarin.Forms/issues/new?assignees=&labels=s%2Funverified%2C+t%2Fbug+%3Abug%3A&template=bug_report.md&title=[Bug]+).
   - type: textarea
     id: description
     attributes:
@@ -44,6 +42,7 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
+        - 9.0.0-rc.1.24453.9
         - 9.0.0-preview.7.24407.4
         - 9.0.0-preview.6.24327.7
         - 9.0.0-preview.5.24307.10
@@ -51,6 +50,8 @@ body:
         - 9.0.0-preview.3.10457
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.1.9973
+        - 8.0.90 SR9
+        - 8.0.82 SR8.2
         - 8.0.80 SR8
         - 8.0.71 SR7.1
         - 8.0.70 SR7
@@ -123,12 +124,15 @@ body:
         - 8.0.70 SR7
         - 8.0.71 SR7.1
         - 8.0.80 SR8
+        - 8.0.82 SR8.2
+        - 8.0.90 SR9
         - 9.0.0-preview.1.9973
         - 9.0.0-preview.2.10293
         - 9.0.0-preview.3.10457
         - 9.0.0-preview.4.10690
         - 9.0.0-preview.5.24307.10
         - 9.0.0-preview.6.24327.7
+        - 9.0.0-preview.7.24407.4
     validations:
       required: true
   - type: dropdown
