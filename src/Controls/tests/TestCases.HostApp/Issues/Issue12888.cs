@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Issues
 			var shellTitleView = 
                 new HorizontalStackLayout()
                 {
-                    new Editor() { AutomationId = "Success"},
+                    new Editor() { AutomationId = "Success", WidthRequest = 100},
                     new Label() { Text = "Title View" },
                 };
 
