@@ -70,11 +70,6 @@ variables:
       value: True
     - name: _SignType
       value: real
-    # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
-    # DotNet-HelixApi-Access provides: HelixApiAccessToken
-    - group: Publish-Build-Assets
-    - group: DotNet-HelixApi-Access
-    - group: SDL_Settings
     # - name: PostBuildSign
     #   value: true
     # For eng/common/SetupNugetSources.ps1
@@ -86,3 +81,10 @@ variables:
         /p:DotNetPublishUsingPipelines=true
         /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
 
+- ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+    # DotNet-HelixApi-Access provides: HelixApiAccessToken
+    - group: Publish-Build-Assets
+    - group: DotNet-HelixApi-Access
+    - group: SDL_Settings
