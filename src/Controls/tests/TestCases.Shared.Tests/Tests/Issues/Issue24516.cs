@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Label)]
 		public void VerifyLabelTextColorWhenResettingFromFormattedText()
 		{
-			App.WaitForElement("HelloWorldLabel");
-			App.Tap("ChangeTextType");
-			App.Tap("ChangeTextType");
+			App.WaitForElement("Label");
+			App.Tap("Button");
+			App.Tap("Button");
 			VerifyScreenshot();
 		}
 	}

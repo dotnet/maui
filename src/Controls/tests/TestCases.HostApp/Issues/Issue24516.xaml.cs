@@ -22,14 +22,14 @@ namespace Maui.Controls.Sample.Issues
 			count++;
 			if (count % 2 == 0)
 			{
-				HelloWorldLabel.Text = "Hello, World!";
+				label.Text = "Hello, World!";
 			}
 			else
 			{
 				var formattedString = new FormattedString();
 				formattedString.Spans.Add(new Span { Text = "Hello", TextColor = Color.FromRgb(0xB0, 0x0F, 0x50) });
 				formattedString.Spans.Add(new Span { Text = ", World!" });
-				HelloWorldLabel.FormattedText = formattedString;
+				label.FormattedText = formattedString;
 			}
 		}
 	}

@@ -7,10 +7,10 @@
   <StackLayout Spacing="20" 
                VerticalOptions="Center" 
                HorizontalOptions="Center">
-    <Label x:Name="HelloWorldLabel"
-           AutomationId="HelloWorldLabel"
+    <Label x:Name="label"
+           AutomationId="Label"
            Text="Hello, World!" />
-    <Button AutomationId="ChangeTextType"
+    <Button AutomationId="Button"
             Text="Change Text Type"
             Clicked="OnCounterClicked" />
   </StackLayout>
