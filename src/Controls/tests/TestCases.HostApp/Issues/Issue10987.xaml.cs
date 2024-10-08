@@ -7,7 +7,7 @@
 		public Issue10987()
 		{
 			InitializeComponent();
-		}		
+		}
 
 		private void UpdateButtonClicked(object sender, EventArgs e)
 		{
