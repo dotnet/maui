@@ -156,7 +156,7 @@
         Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(ManifestOutputPath)"
     />
     <MSBuild
-        Projects="$(MSBuildThisFileDirectory)..\msbuild\vsman\xamarin-workload.vsmanproj"
+        Projects="$(MSBuildThisFileDirectory)\maui.vsmanproj"
         Targets="Restore;GenerateSetupManifest"
         Properties="SwixBuildTargets=$(SwixTargetsPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps);ManifestOutputPath=$(ManifestOutputPath);TargetName=$(TargetName).components;ManifestBuildNumber=$(DropBuildNumber)/vs-components"
     />
@@ -167,7 +167,7 @@
         Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(PreviewManifestOutputPath)"
     />
     <MSBuild
-        Projects="$(MSBuildThisFileDirectory)..\msbuild\vsman\xamarin-workload.vsmanproj"
+        Projects="$(MSBuildThisFileDirectory)\maui.vsmanproj"
         Targets="Restore;GenerateSetupManifest"
         Properties="SwixBuildTargets=$(SwixTargetsPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps);ManifestOutputPath=$(PreviewManifestOutputPath);TargetName=$(TargetName).components.pre;ManifestBuildNumber=$(DropBuildNumber)/vs-components"
     />
@@ -185,7 +185,7 @@
         Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(PackManifestOutputPath)"
     />
     <MSBuild
-        Projects="$(MSBuildThisFileDirectory)..\msbuild\vsman\xamarin-workload.vsmanproj"
+        Projects="$(MSBuildThisFileDirectory)\maui.vsmanproj"
         Targets="Restore;GenerateSetupManifest"
         Properties="SwixBuildTargets=$(SwixTargetsPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps);ManifestOutputPath=$(PackManifestOutputPath);TargetName=$(TargetName).packs;ManifestBuildNumber=$(DropBuildNumber)/vs-packs"
     />
