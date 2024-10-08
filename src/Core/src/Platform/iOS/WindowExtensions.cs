@@ -462,7 +462,7 @@ namespace Microsoft.Maui.Platform
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(16) && TitleBar is UIView titlebarView)
 			{
 				var identifier = new Foundation.NSString(itemIdentifier);
-				var customViewItem = new NSUIViewToolbarItem(identifier, titlebarView);
+				// var customViewItem = new NSUIViewToolbarItem(identifier, titlebarView);
 				// var entry = new UITextField(){ Text = "TJ Text From WindowExt" };
 				// var customViewItem = new NSUIViewToolbarItem(identifier, entry);
 
