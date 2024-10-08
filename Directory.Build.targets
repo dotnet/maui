@@ -55,8 +55,8 @@
     <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!-- 
-    NOTE: The Contains('-windows10') is a bit of a hack 
+  <!--
+    NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...
     There's probably a better way we should find to infer this
   -->
@@ -83,9 +83,6 @@
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
     <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
-  <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>   
-  </PropertyGroup>
 
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
