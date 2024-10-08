@@ -33,6 +33,7 @@ steps:
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       skipAndroidImages : ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst')) }}
       skipAndroidSdks: ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'))  }}
+      installDefaultAndroidApi: ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'))  }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
