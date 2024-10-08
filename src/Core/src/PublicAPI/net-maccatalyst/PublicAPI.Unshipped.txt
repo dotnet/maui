@@ -68,7 +68,6 @@ static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.ReceivedRemo
 static Microsoft.Maui.LifecycleEvents.iOSLifecycleBuilderExtensions.RegisteredForRemoteNotifications(this Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.iOSLifecycle.RegisteredForRemoteNotifications! del) -> Microsoft.Maui.LifecycleEvents.IiOSLifecycleBuilder!
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
-Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.IStepper.Increment.get -> double
 *REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
