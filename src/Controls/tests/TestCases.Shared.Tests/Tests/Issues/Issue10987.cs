@@ -1,4 +1,3 @@
-﻿using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,23 +11,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[FailsOnMac]
-  		public void EditorPlaceholderRuntimeTextAlignmentChanged()
+		public void EditorPlaceholderRuntimeTextAlignmentChanged()
 		{
-			App.WaitForElement("Editor");
-			App.Tap("Button");
+			App.WaitForElement("button");
+			App.Tap("button");
 			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[FailsOnMac]
 		public void EditorRuntimeTextAlignmentChanged()
 		{
 			App.WaitForElement("Editor");
 			App.EnterText("Editor", "Editor Text");
 			App.Tap("ResetButton");
 			VerifyScreenshot();
-		}		
+		}
 	}
 }
