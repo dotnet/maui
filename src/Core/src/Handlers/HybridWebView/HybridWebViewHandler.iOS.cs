@@ -128,10 +128,7 @@ namespace Microsoft.Maui.Handlers
 
 			[Export("webView:startURLSchemeTask:")]
 			[SupportedOSPlatform("ios11.0")]
-			[RequiresUnreferencedCode("Calls Microsoft.Maui.Handlers.HybridWebViewHandler.InvokeDotNetAsync(NameValueCollection)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 			{
 				var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
 
@@ -157,7 +154,6 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			[RequiresUnreferencedCode("Calls Microsoft.Maui.Handlers.HybridWebViewHandler.InvokeDotNetAsync(NameValueCollection)")]
 			private (byte[] ResponseBytes, string ContentType, int StatusCode) GetResponseBytes(string? url)
 			{
 				if (Handler is null)

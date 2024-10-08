@@ -100,7 +100,6 @@ namespace Microsoft.Maui.Handlers
 			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
-		[RequiresUnreferencedCode("Calls Microsoft.Maui.Handlers.HybridWebViewHandler.InvokeDotNetAsync(NameValueCollection)")]
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.

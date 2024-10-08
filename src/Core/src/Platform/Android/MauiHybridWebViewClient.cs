@@ -23,10 +23,7 @@ namespace Microsoft.Maui.Platform
 
 		private HybridWebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
-		[RequiresUnreferencedCode("Calls Microsoft.Maui.Handlers.HybridWebViewHandler.InvokeDotNetAsync(NameValueCollection)")]
-#pragma warning disable IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
-#pragma warning restore IL2046 // 'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides.
 		{
 			if (Handler is null)
 			{
