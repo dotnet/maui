@@ -51,7 +51,7 @@
     <PackageReference Include="Microsoft.Signed.WiX" GeneratePathProperty="true" />
     <PackageReference Include="MicroBuild.Plugins.SwixBuild.Dotnet" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true" />
-    <!-- <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" PrivateAssets="all" /> -->
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" PrivateAssets="all" />
   </ItemGroup>
 
     <Target Name="_SetMsiVersionFromNuGetVersion" >
