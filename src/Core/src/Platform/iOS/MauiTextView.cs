@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Platform
 					base.TextAlignment = value;
 					UpdateHorizontalTextAlignment(value);
 				}
-
 			}
 		}
 
