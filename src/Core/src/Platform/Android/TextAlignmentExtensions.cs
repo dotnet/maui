@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// The text alignment does not work at runtime, so we also need to update the gravity.
 			view.TextAlignment = alignment.ToTextAlignment();
-			view.Gravity = (view.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;	
+			view.Gravity = (view.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
 		}
 
 		public static void UpdateVerticalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
