@@ -7,8 +7,8 @@ public partial class NonTabbedPage : ContentPage
 		InitializeComponent();
 	}
 
-	async void BackToTabbedPage(object sender, EventArgs args)
+    void BackToTabbedPage(object sender, EventArgs args)
 	{
-		await Shell.Current.GoToAsync("innertabbedpage");
+		 Navigation.PopAsync();
 	}
 }
