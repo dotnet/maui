@@ -8,11 +8,11 @@
     VerticalOptions="Center">
 
     <Button AutomationId="button"
-        Text="Update alignment"
-        Clicked="UpdateButtonClicked"/>
+            Text="Update alignment"
+            Clicked="UpdateButtonClicked"/>
     <Button AutomationId="resetButton"
-        Text="Reset alignment"
-        Clicked="ResetButtonClicked"/>
+            Text="Reset alignment"
+            Clicked="ResetButtonClicked"/>
 
     <Editor x:Name="editor"
             AutomationId="MauiEditor"
@@ -23,5 +23,4 @@
 
 
   </VerticalStackLayout>
-
 </ContentPage>

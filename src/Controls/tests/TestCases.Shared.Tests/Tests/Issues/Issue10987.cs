@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		public void EditorPlaceholderRuntimeTextAlignmentChanged()
 		{
-			App.WaitForElement("MauiEditor");
-			App.Tap("button");
+			App.WaitForElement("Editor");
+			App.Tap("Button");
 			VerifyScreenshot();
 		}
 
