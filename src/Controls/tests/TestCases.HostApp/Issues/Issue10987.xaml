@@ -7,16 +7,12 @@
           Spacing="25"
           VerticalOptions="Center">
     
-    <Button AutomationId="button" Text="Update alignment" Clicked="UpdateButtonClicked" />
-    <Button AutomationId="resetButton" Text="Reset alignment" Clicked="ResetButtonClicked" />
+    <Button AutomationId="Button" Text="Update alignment" Clicked="UpdateButtonClicked" />
+    <Button AutomationId="ResetButton" Text="Reset alignment" Clicked="ResetButtonClicked" />
 
-    <Editor x:Name="editor" AutomationId="MauiEditor" BackgroundColor="lightblue"
+    <Editor x:Name="editor" AutomationId="Editor" BackgroundColor="lightblue"
               Placeholder="placeholder text"
               HeightRequest="250"
-              WidthRequest="220"
-              />
-
-
+              WidthRequest="220" />
   </VerticalStackLayout>
-
 </ContentPage>
