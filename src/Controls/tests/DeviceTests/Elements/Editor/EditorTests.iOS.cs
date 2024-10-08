@@ -119,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var horizontalEndAlignment = TextAlignment.End;
 				var horizontalCenterAlignment = TextAlignment.Center;
-				var horizontalStartAlignment = TextAlignment.Start;				
+				var horizontalStartAlignment = TextAlignment.Start;
 
 				var editor = new Editor
 				{
