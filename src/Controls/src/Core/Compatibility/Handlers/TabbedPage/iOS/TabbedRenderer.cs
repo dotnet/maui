@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TabbedRenderer()
 		{
+			this.DisableiOS18ToolbarTabs();
 			_viewHandlerWrapper = new ViewHandlerDelegator<TabbedPage>(Mapper, CommandMapper, this);
 		}
 
