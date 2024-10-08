@@ -19,6 +19,7 @@
 		{
 			editor.VerticalTextAlignment = TextAlignment.Start;
 			editor.HorizontalTextAlignment = TextAlignment.Start;
+			editor.Unfocus();
 		}
 	}
 }
