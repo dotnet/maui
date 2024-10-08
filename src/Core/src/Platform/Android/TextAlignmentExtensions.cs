@@ -12,12 +12,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
-			if (!Rtl.IsSupported)
-			{
-				view.Gravity = (view.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
-			}
-			else
-				view.TextAlignment = alignment.ToTextAlignment();
+			view.Gravity = (view.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
 		}
 
 		public static void UpdateVerticalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
