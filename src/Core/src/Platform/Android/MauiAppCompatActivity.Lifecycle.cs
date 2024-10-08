@@ -13,7 +13,13 @@ namespace Microsoft.Maui
 	{
 		private UiMode currentNightMode = UiMode.NightUndefined;
 
-		internal event EventHandler<UiMode>? ThemeChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		internal event EventHandler<UiMode> ThemeChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
 		{
@@ -50,7 +56,7 @@ namespace Microsoft.Maui
 			var newNightMode = newConfig.UiMode & UiMode.NightMask;
 			if (newNightMode != currentNightMode)
 			{
-				ThemeChanged?.Invoke(this, newNightMode);
+				_weakEventManager.HandleEvent(this, newNightMode, nameof(ThemeChanged));
 				currentNightMode = newNightMode;
 			}
 
