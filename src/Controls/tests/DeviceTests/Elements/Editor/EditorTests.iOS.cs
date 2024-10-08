@@ -105,6 +105,52 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(expectedFontFamily, placeholderLabel?.Font?.FamilyName);
 				});
 			}
+
+			[Fact]
+			public async Task PlaceholderHorizontalTextAlignment()
+			{
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handlers =>
+					{
+						handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
+					});
+				});
+
+				var horizontalEndAlignment = TextAlignment.End;
+				var horizontalCenterAlignment = TextAlignment.Center;
+				var horizontalStartAlignment = TextAlignment.Start;				
+
+				var editor = new Editor
+				{
+					HorizontalTextAlignment = horizontalStartAlignment,
+					Placeholder = "This is a placeholder"
+				};
+
+				ContentPage contentPage = new ContentPage()
+				{
+					Content = new VerticalStackLayout()
+					{
+						editor
+					}
+				};
+
+				await CreateHandlerAndAddToWindow(contentPage, async () =>
+				{
+					await AssertEventually(() => editor.IsVisible);
+					var handler = CreateHandler<EditorHandler>(editor);
+					var platformControl = GetPlatformControl(handler);
+
+					var placeholderLabel = handler.PlatformView.Subviews.OfType<UIKit.UILabel>().FirstOrDefault();
+
+					Assert.Equal(UIKit.UITextAlignment.Left, placeholderLabel?.TextAlignment);
+					editor.HorizontalTextAlignment = horizontalCenterAlignment;
+					Assert.Equal(UIKit.UITextAlignment.Center, placeholderLabel?.TextAlignment);
+					editor.HorizontalTextAlignment = horizontalEndAlignment;
+					Assert.Equal(UIKit.UITextAlignment.Right, placeholderLabel?.TextAlignment);
+
+				});
+			}
 		}
 
 		//src/Compatibility/Core/tests/iOS/FlowDirectionTests.cs
