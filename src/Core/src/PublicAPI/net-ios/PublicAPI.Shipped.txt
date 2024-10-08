@@ -2466,6 +2466,8 @@ override Microsoft.Maui.Platform.MauiTextView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiTextView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiTextView.Text.get -> string?
 override Microsoft.Maui.Platform.MauiTextView.Text.set -> void
+override Microsoft.Maui.Platform.MauiTextView.TextAlignment.get -> UIKit.UITextAlignment
+override Microsoft.Maui.Platform.MauiTextView.TextAlignment.set -> void
 override Microsoft.Maui.Platform.MauiTextView.WillMoveToWindow(UIKit.UIWindow? window) -> void
 override Microsoft.Maui.Platform.MauiView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiView.MovedToWindow() -> void

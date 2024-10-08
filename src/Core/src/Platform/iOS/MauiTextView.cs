@@ -34,6 +34,19 @@ namespace Microsoft.Maui.Platform
 			base.WillMoveToWindow(window);
 		}
 
+		public override UITextAlignment TextAlignment 
+		{ 
+			get => base.TextAlignment;
+			set
+			{	if(base.TextAlignment != value)
+				{
+					base.TextAlignment = value;
+					UpdateHorizontalTextAlignment(value);
+				}
+				
+			}
+		}
+
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
@@ -60,13 +73,33 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		void UpdateHorizontalTextAlignment(UITextAlignment textAlignment)
+		{
+			if (_placeholderLabel is null)
+				return;
+
+			this._placeholderLabel.TextAlignment = textAlignment;
+		}
+
 		public UIColor? PlaceholderTextColor
 		{
 			get => _placeholderLabel.TextColor;
 			set => _placeholderLabel.TextColor = value;
 		}
 
-		public TextAlignment VerticalTextAlignment { get; set; }
+		TextAlignment _verticalTextAlignment;
+		public TextAlignment VerticalTextAlignment 
+		{
+			get => this._verticalTextAlignment;
+			set
+			{
+				if(this._verticalTextAlignment != value)
+				{
+					this._verticalTextAlignment = value;
+					ShouldCenterVertically();
+				}
+			} 
+		}
 
 		public override string? Text
 		{
@@ -170,7 +203,7 @@ namespace Microsoft.Maui.Platform
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
-				_ => ContentOffset,
+				_ => new CGPoint(0,0),
 			};
 
 			// Scroll the content to the cursor position if it is hidden by the keyboard
