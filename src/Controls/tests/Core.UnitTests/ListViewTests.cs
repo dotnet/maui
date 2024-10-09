@@ -1519,8 +1519,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				// Bind ItemsSource to the relative source (MainViewModel)
 				picker.SetBinding(Picker.ItemsSourceProperty, new Binding("BloodworkStatuses", source: page.BindingContext));
 				picker.SetBinding(Picker.SelectedItemProperty, new Binding("BloodworkStatus", BindingMode.TwoWay));
-
-
 				return new ViewCell { View = picker };
 			});
 			listView.ItemTemplate = dataTemplate;
