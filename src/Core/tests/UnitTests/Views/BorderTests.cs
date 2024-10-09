@@ -106,11 +106,7 @@ namespace Microsoft.Maui.UnitTests.Views
 
 			strokeShape = null;
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "Border should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "Border should not be alive!");
 		}
 
 		[Fact]
