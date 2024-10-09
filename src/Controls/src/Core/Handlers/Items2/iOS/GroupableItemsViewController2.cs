@@ -60,8 +60,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private protected override void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
-			 base.RegisterSupplementaryViews(kind);
-			 if (IsHorizontal)
+			base.RegisterSupplementaryViews(kind);
+			if (IsHorizontal)
 			{
 				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
 					kind, HorizontalSupplementalView2ReuseId);
@@ -87,10 +87,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
 			NSString elementKind, NSIndexPath indexPath)
 		{
-			var suplementaryViewFromStructuredView = base.GetViewForSupplementaryElement(collectionView, elementKind, indexPath);
-			if (suplementaryViewFromStructuredView is not null)
+			// If the IndexPath is less than 2, it's a header or footer for a section not a group
+			if (indexPath.Length < 2)
 			{
-				return suplementaryViewFromStructuredView;
+				var suplementaryViewFromStructuredView = base.GetViewForSupplementaryElement(collectionView, elementKind, indexPath);
+				if (suplementaryViewFromStructuredView is not null)
+				{
+					return suplementaryViewFromStructuredView;
+				}
 			}
 
 			var reuseId = DetermineViewReuseId(elementKind);
