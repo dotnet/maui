@@ -176,7 +176,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 				$"--app=\"{testApp}\" " +
 				$"--targets=\"{device}\" " +
 				$"--output-directory=\"{resultsDir}\" " +
-				$"--timeout=01:15:00 " +
+				$"--timeout=00:10:00 " +
 				$"--launch-timeout=00:06:00 " +
 				xcode_args +
 				$"--verbosity=\"Debug\" ");
