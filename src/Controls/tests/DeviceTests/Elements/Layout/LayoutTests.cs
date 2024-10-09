@@ -535,5 +535,44 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		[Fact]
+		public async Task SizeRequestIsClampedToMinimumAndMaximum()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var button = new Button()
+			{
+				WidthRequest = 20, // request smaller than the minimum
+				MinimumWidthRequest = 200,
+				MaximumWidthRequest = 300,
+
+				HeightRequest = 400, // request larger than the maximum
+				MinimumHeightRequest = 200,
+				MaximumHeightRequest = 300,
+
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Start,
+			};
+
+			var grid = new Grid { button };
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await AttachAndRun(grid, _ =>
+				{
+					// The size should be the minimum requested size, since that will easily hold the "X" text
+					Assert.Equal(button.MinimumWidthRequest, button.Width, 0.5);
+					Assert.Equal(button.MaximumHeightRequest, button.Height, 0.5);
+				});
+			});
+		}
 	}
 }

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Android.Content;
 using Android.Content.Res;
-using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -378,7 +377,7 @@ namespace Microsoft.Maui.Platform
 			return _navigationBarHeight ?? 0;
 		}
 
-		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double maximumSize)
+		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double minimumSize, double maximumSize)
 		{
 			var mode = MeasureSpecMode.AtMost;
 
@@ -386,7 +385,14 @@ namespace Microsoft.Maui.Platform
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
-				constraint = explicitSize;
+
+				// Since the mode is "Exactly", we have to return the exact final value clamped to the minimum/maximum.
+				constraint = Math.Max(explicitSize, ResolveMinimum(minimumSize));
+
+				if (IsMaximumSet(maximumSize))
+				{
+					constraint = Math.Min(constraint, maximumSize);
+				}
 			}
 			else if (IsMaximumSet(maximumSize) && maximumSize < constraint)
 			{
