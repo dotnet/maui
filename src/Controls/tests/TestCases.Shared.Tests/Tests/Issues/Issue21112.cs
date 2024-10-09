@@ -5,8 +5,8 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue21112 : _IssuesUITest
-    {
+	public class Issue21112 : _IssuesUITest
+	{
 		public Issue21112(TestDevice testDevice) : base(testDevice)
 		{
 		}
@@ -16,13 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.TableView)]
 		public void TableViewTextCellCommand()
 		{
-			App.WaitForElement("TextCell");
-			App.Tap("TextCell");
-			App.WaitForElement("Button");
-			App.Tap("Button");
-			App.WaitForElement("TextCell");
-			App.Tap("TextCell");
-			App.WaitForElement("Button");
+			App.WaitForElement("MainPageButton");
+			App.Tap("MainPageButton");
+			App.WaitForElement("NavigatedPageButton");
+			App.Tap("NavigatedPageButton");
+			App.WaitForElement("MainPageButton");
+			App.Tap("MainPageButton");
+			App.WaitForElement("NavigatedPageButton");
 		}
 	}
 }
