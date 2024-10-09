@@ -151,6 +151,12 @@ namespace Microsoft.Maui.Handlers
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
 		{
+#if !NETSTANDARD2_0
+			if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+			{
+				return (null, null);
+			}
+#endif
 			try
 			{
 				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
