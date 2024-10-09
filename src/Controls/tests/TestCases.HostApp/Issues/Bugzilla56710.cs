@@ -28,14 +28,14 @@ public class Bugzilla56710 : TestNavigationPage
 [Preserve(AllMembers = true)]
 public class TestPage : ContentPage
 {
-	ObservableCollection<TestItem> Items;
+	ObservableCollection<Bugzilla56710TestItem> Items;
 
 	public TestPage()
 	{
-		Items = new ObservableCollection<TestItem>();
-		Items.Add(new TestItem { Text = "Item 1", ItemText = "Action 1" });
-		Items.Add(new TestItem { Text = "Item 2", ItemText = "Action 2" });
-		Items.Add(new TestItem { Text = "Item 3", ItemText = "Action 3" });
+		Items = new ObservableCollection<Bugzilla56710TestItem>();
+		Items.Add(new Bugzilla56710TestItem { Text = "Item 1", ItemText = "Action 1" });
+		Items.Add(new Bugzilla56710TestItem { Text = "Item 2", ItemText = "Action 2" });
+		Items.Add(new Bugzilla56710TestItem { Text = "Item 3", ItemText = "Action 3" });
 
 		var testListView = new ListView
 		{
@@ -55,7 +55,7 @@ public class TestPage : ContentPage
 }
 
 [Preserve(AllMembers = true)]
-public class TestItem
+public class Bugzilla56710TestItem
 {
 	public string Text { get; set; }
 	public string ItemText { get; set; }
