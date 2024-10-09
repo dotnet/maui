@@ -18,6 +18,12 @@ namespace Microsoft.Maui
 		/// </summary>
 		string? HybridRoot { get; }
 
+		/// <summary>
+		///  The object that will be the target of JavaScript calls from the web view. The public methods on this object
+		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
+		/// </summary>
+		object? InvokeJavaScriptTarget { get; }
+
 		void RawMessageReceived(string rawMessage);
 
 		void SendRawMessage(string rawMessage);

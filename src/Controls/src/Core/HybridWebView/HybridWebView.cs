@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -31,6 +32,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(HybridRootProperty); }
 			set { SetValue(HybridRootProperty, value); }
+		}
+
+		/// <inheritdoc/>
+		public object? InvokeJavaScriptTarget
+		{
+			get;
+			set;
 		}
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)
