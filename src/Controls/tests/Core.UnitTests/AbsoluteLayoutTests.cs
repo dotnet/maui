@@ -275,4 +275,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new Rect(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
 		}
 	}
+	
 }
