@@ -188,11 +188,8 @@ namespace Microsoft.Maui.Handlers
 
 			void HandleButtonInteraction()
             {
-                if (VirtualView is IButton virtualView)
-                {
-                    virtualView.Released();
-                    virtualView.Clicked();
-                }
+                VirtualView?.Released();
+                VirtualView?.Clicked();
             }
  
             void OnButtonTouchCancel(object? sender, EventArgs e)
