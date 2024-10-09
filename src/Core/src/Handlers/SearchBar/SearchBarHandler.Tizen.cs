@@ -84,6 +84,9 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		[MissingMapper]
+		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar) { }
+
+		[MissingMapper]
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar) { }
 
 		public static void MapCharacterSpacing(ISearchBarHandler handler, ISearchBar searchBar)

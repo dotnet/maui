@@ -49,6 +49,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Keyboard Keyboard { get; set; }
 
+		public ReturnType ReturnType { get; set; }
+
 		public void SearchButtonPressed() { }
 	}
 }

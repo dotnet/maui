@@ -71,3 +71,6 @@ static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowS
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Platform.MauiCALayer.AddAnimation(CoreAnimation.CAAnimation! animation, string? key) -> void
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
+Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
