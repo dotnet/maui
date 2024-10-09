@@ -73,7 +73,7 @@ namespace Maui.Controls.Sample.Issues
 			var label = new Label
 			{
 				AutomationId = "NavigatedPageLabel",
-				Text = "Navigated Page"
+				Text = "Main Page"
 			};
 
 			button.Clicked += (sender, e) =>
