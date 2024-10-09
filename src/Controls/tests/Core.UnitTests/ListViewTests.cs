@@ -1529,7 +1529,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Get the first item in the ListView
 			var firstCell = (ViewCell)listView.TemplatedItems[0];
 			var picker = (Picker)firstCell.View;
-			Assert.Equal("Completed", picker.SelectedItem); // Check if the selected item is bound correctly
+			Assert.Equal("Completed", picker.SelectedItem.ToString()); // Check if the selected item is bound correctly
 		}
 
 		[Fact]
