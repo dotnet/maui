@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		// _isFirstMeasure is a flag to make sure we manually recalculate the titleRect when there are dynamic changes to the button.
 		// There are times the platformButton.TitleLabel is updated on dynamic changes and reacts to the change by truncating the label when we actually
 		// have space in our constraints. We provide the space to be used in our first measure of the titleRect and then use the newly laid out titleRect in later iterations.
-		internal bool _isFirstMeasure = true;
+		bool _isFirstMeasure = true;
 
 		/// <summary>
 		/// Measure the desired size of the button based on the image and title size taking into account
@@ -450,6 +450,9 @@ namespace Microsoft.Maui.Controls
 
 			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
+
+		internal void ResetToFirstMeasureOfNewContent() =>
+			_isFirstMeasure = true;
 
 		public static void MapText(ButtonHandler handler, Button button) =>
 			MapText((IButtonHandler)handler, button);
