@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
         [Test]
         [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterTemplatewWorks()
+        public void HeaderFooterTemplateWorks()
         {
             // Navigate to the selection galleries
             VisitInitialGallery("Header Footer");
