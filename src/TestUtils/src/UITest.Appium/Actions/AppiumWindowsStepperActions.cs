@@ -42,7 +42,7 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
 
-		var buttons = AppiumQuery.ByClass("//Button").FindElements(stepper, _appiumApp);
+		var buttons = AppiumQuery.ByXPath("//Button").FindElements(stepper, _appiumApp);
 
 		if (buttons is not null && buttons.Count > 1)
 		{
@@ -60,7 +60,7 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
 
-		var buttons = AppiumQuery.ByClass("//Button").FindElements(stepper, _appiumApp);
+		var buttons = AppiumQuery.ByXPath("//Button").FindElements(stepper, _appiumApp);
 
 		if (buttons is not null && buttons.Count > 1)
 		{
