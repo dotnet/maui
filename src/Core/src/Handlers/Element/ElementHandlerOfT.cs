@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Handlers
 
 		object? IElementHandler.PlatformView => base.PlatformView;
 
+		public static Func<ElementHandler<TVirtualView, TPlatformView>, TPlatformView>? PlatformElementFactory { get; set; }
+
 		protected abstract TPlatformView CreatePlatformElement();
 
 		protected virtual void ConnectHandler(TPlatformView platformView)
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		private protected override object OnCreatePlatformElement() =>
-			CreatePlatformElement();
+			PlatformElementFactory?.Invoke(this) ?? CreatePlatformElement();
 
 		private protected override void OnConnectHandler(object platformView) =>
 			ConnectHandler((TPlatformView)platformView);
