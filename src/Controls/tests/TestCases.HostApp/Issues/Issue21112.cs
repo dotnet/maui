@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample.Issues
 
 			button.Clicked += (sender, e) =>
 			{
-				headerTextCell.Command?.Execute(headerTextCell.CommandParameter);
+				headerTextCell.Command.Execute(headerTextCell.CommandParameter);
 			};
 
 			stackLayout.Children.Add(tableView);

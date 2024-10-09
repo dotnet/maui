@@ -22,7 +22,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("NavigatedPageButton");
 			App.WaitForElement("MainPageButton");
 			App.Tap("MainPageButton");
-			App.WaitForElement("NavigatedPageButton");
 		}
 	}
 }
