@@ -23,7 +23,6 @@ namespace Maui.Controls.Sample.Issues
 			label.GestureRecognizers.Add(rec);
 
 			Content = label;
-			
 		}
 	}
 }
