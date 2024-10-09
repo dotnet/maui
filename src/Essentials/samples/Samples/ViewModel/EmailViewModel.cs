@@ -27,6 +27,8 @@ namespace Samples.ViewModel
 			SendEmailCommand = new Command(OnSendEmail);
 		}
 
+		public bool IsComposeSupported => Email.Default.IsComposeSupported;
+
 		public ICommand SendEmailCommand { get; }
 
 		public string Subject
