@@ -65,6 +65,7 @@ namespace Maui.Controls.Sample.Issues
 			lab1.FontSize = Device.GetNamedSize(NamedSize.Small, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
 
+
 			ScrollView = new ScrollView
 			{
 				VerticalOptions = LayoutOptions.Fill,
