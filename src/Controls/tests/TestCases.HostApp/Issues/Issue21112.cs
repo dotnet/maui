@@ -1,12 +1,32 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿using System.Windows.Input;
+
+namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 21112, "TableView TextCell command executes only once", PlatformAffected.UWP)]
-	public class Issue21112 : TestContentPage
+	public class Issue21112 : NavigationPage
 	{
-		protected override void Init()
+		public Issue21112() : base(new MainPage())
 		{
-			Title = "AbsoluteLayout demos";
+
+		}
+	}
+
+	public class MainPage : ContentPage
+	{
+		public MainPage()
+		{
+			var stackLayout = new StackLayout();
+			BindingContext = new MainViewModel();
+
+			var headerTextCell = new TextCell
+			{
+				Text = "Header demo",
+				Detail = "Absolute positioning and sizing"
+			};
+
+			headerTextCell.SetBinding(TextCell.CommandProperty, new Binding("NavigateCommand"));
+			headerTextCell.CommandParameter = typeof(DemoPage);
 
 			var tableView = new TableView
 			{
@@ -15,55 +35,70 @@
 				{
 					new TableSection("XAML")
 					{
-						new TextCell
-						{
-							Text = "Stylish header demo",
-							AutomationId = "TextCell",
-							Detail = "Absolute positioning and sizing",
-							Command = new Command<Type>(async (pageType) =>
-							{
-								var page = (Page)Activator.CreateInstance(pageType);
-								await Navigation.PushAsync(page);
-							}),
-							CommandParameter = typeof(StylishHeaderDemoPage)
-						}
+						headerTextCell
 					}
 				}
 			};
 
-			Content = tableView;
-		}
-	}
-
-	public class StylishHeaderDemoPage : ContentPage
-	{
-		public StylishHeaderDemoPage()
-		{
-			Title = "Stylish header demo";
-
-			var stackLayout = new StackLayout
-			{
-				Margin = new Thickness(20)
-			};
-
 			var button = new Button
 			{
-				WidthRequest = 150,
-				AutomationId = "Button",
-				Text = "click"
+				Text = "Trigger TextCell Click",
+				AutomationId = "MainPageButton"
 			};
 
-			button.Clicked += Button_Clicked;
+			button.Clicked += (sender, e) =>
+			{
+				headerTextCell.Command?.Execute(headerTextCell.CommandParameter);
+			};
 
+			stackLayout.Children.Add(tableView);
 			stackLayout.Children.Add(button);
 
 			Content = stackLayout;
 		}
+	}
 
-		private async void Button_Clicked(object sender, EventArgs e)
+	public partial class DemoPage : ContentPage
+	{
+		public DemoPage()
 		{
-			await Navigation.PopAsync();
-		}
+			Title = "Text demo";
 
+			var button = new Button
+			{
+				AutomationId = "NavigatedPageButton",
+				Text = "Click"
+			};
+
+			button.Clicked += (sender, e) =>
+			{
+				Navigation.PopAsync();
+			};
+
+			Content = new StackLayout
+			{
+				Children =
+				{
+					button
+				}
+			};
+		}
+	}
+
+	public class MainViewModel
+	{
+		public ICommand NavigateCommand { get; set; }
+
+		public MainViewModel()
+		{
+			NavigateCommand = new Command<Type>(async (Type pageType) =>
+			{
+				Page page = Activator.CreateInstance(pageType) as Page;
+				if (page is not null)
+				{
+					await Application.Current.MainPage.Navigation.PushAsync(page);
+				}
+			});
+		}
 	}
 }
