@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly MauiLabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
+		TextAlignment _verticalTextAlignment;
 
 		public MauiTextView()
 		{
@@ -87,7 +88,6 @@ namespace Microsoft.Maui.Platform
 			set => _placeholderLabel.TextColor = value;
 		}
 
-		TextAlignment _verticalTextAlignment;
 		public TextAlignment VerticalTextAlignment
 		{
 			get => _verticalTextAlignment;
