@@ -1,5 +1,5 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("NavigatedPageButton");
 			App.WaitForElement("MainPageButton");
 			App.Tap("MainPageButton");
+			App.WaitForElement("NavigatedPageLabel");
+			ClassicAssert.AreEqual("Navigated Page", App.FindElement("NavigatedPageLabel").GetText());
+
 		}
 	}
 }
-#endif
