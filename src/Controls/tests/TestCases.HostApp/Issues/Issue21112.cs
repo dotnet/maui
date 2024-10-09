@@ -70,6 +70,12 @@ namespace Maui.Controls.Sample.Issues
 				Text = "Click"
 			};
 
+			var label = new Label
+			{
+				AutomationId = "NavigatedPageLabel",
+				Text = "Navigated Page"
+			};
+
 			button.Clicked += (sender, e) =>
 			{
 				Navigation.PopAsync();
@@ -79,7 +85,8 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Children =
 				{
-					button
+					button,
+					label
 				}
 			};
 		}
