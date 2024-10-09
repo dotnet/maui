@@ -304,5 +304,11 @@
         Update="System.Drawing.Common"
         Version="$(SystemDrawingCommonPackageVersion)"
     />
+
+
+    <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
+    <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
+    <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
+    <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
 </Project>

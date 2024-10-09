@@ -3,16 +3,19 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
+    <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
     <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
     <PrivateSdk  Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
-    <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
+    <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
@@ -21,7 +24,7 @@
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
-    <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
+    <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
@@ -36,12 +39,12 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
-  <!-- Build target provisions ./bin/dotnet/ -->
+  <!-- Build target provisions ./.dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
   <!--
     Install target takes artifacts/*.nupkg and installs them to the current 'dotnet'.
-    Running this with ./bin/dotnet/dotnet will work without elevation.
+    Running this with ./.dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
   <Target Name="Install">
@@ -83,7 +86,7 @@
   </Target>
 
   <PropertyGroup>
-    <!-- These files should invalidate ./bin/dotnet completely -->
+    <!-- These files should invalidate ./.dotnet/ completely -->
     <_Inputs>
       $(MSBuildThisFile);
       ../../eng/Versions.props;
@@ -92,10 +95,11 @@
 
   <Target Name="_DownloadDotNetInstallScript"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetInstallScriptPath)">
+      Outputs="$(DotNetInstallScriptPath)"
+      Condition=" '$(InstallDotNet)' == 'true' ">
     <DownloadFile
         SourceUrl="$(DotNetInstallScriptUrl)"
-        DestinationFolder="$(DotNetOutputPath)"
+        DestinationFolder="$(DotNetTempDirectory)"
         DestinationFileName="$(DotNetInstallScriptName)"
     />
   </Target>
@@ -128,7 +132,9 @@
 
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetDirectory).stamp">
+      Outputs="$(DotNetDirectory).stamp"
+      Condition=" '$(InstallDotNet)' == 'true' ">
+
     <RemoveDir Directories="$(DotNetDirectory)" />
     <Exec Command="$(DotNetInstallCommand)" />
     <Exec Condition=" '$(VersionFromAndroid)' != '' " Command="$(DotNetXARuntimeInstallCommand)" />
