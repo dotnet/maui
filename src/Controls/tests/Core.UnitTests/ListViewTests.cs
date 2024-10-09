@@ -1454,7 +1454,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public string MedicalHistory { get; set; }
 			public BloodworkStatus BloodworkStatus { get; set; }
 		}
-		public class MainViewModel 
+		public class MainViewModel
 		{
 			public ObservableCollection<Patient> Patients { get; set; }
 			public ObservableCollection<BloodworkStatus> BloodworkStatuses { get; set; }
