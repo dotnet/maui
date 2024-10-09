@@ -1,4 +1,4 @@
-﻿#if ANDROID || IOS
+﻿#if ANDROID || IOS || WINDOWS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
