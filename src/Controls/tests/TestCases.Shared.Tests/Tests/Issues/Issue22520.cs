@@ -13,7 +13,8 @@ public class Issue22520 : _IssuesUITest
 	{ }
 
     [Test]
-	public void CornersShouldBeProperlyRounded()
+	[Category(UITestCategories.ImageButton)]
+	public void ImageShouldNotOverlapBorder()
 	{
 		_ = App.WaitForElement("imageButton");
 		VerifyScreenshot();
