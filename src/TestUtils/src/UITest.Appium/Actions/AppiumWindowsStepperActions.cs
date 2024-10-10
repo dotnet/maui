@@ -44,11 +44,11 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 
 		var buttons = AppiumQuery.ByXPath("//Button").FindElements(stepper, _appiumApp);
 
-		if (buttons is not null && buttons.Count > 1)
-		{
-			var increaseButton = buttons.LastOrDefault();
-			increaseButton?.Tap();
-		}
+		var increaseButton = AppiumQuery.ByXPath("//*[@text='\" + \"+\" + \"']\"")
+			.FindElements(stepper, _appiumApp)
+			.FirstOrDefault();
+
+		increaseButton?.Tap();
 
 		return CommandResponse.SuccessEmptyResponse;
 	}
@@ -60,13 +60,11 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
 
-		var buttons = AppiumQuery.ByXPath("//Button").FindElements(stepper, _appiumApp);
+		var decreaseButton = AppiumQuery.ByXPath("//*[@text='\" + \"-\" + \"']\"")
+			.FindElements(stepper, _appiumApp)
+			.FirstOrDefault();
 
-		if (buttons is not null && buttons.Count > 1)
-		{
-			var decreaseButton = buttons.FirstOrDefault();
-			decreaseButton?.Tap();
-		}
+		decreaseButton?.Tap();
 
 		return CommandResponse.SuccessEmptyResponse;
 	}
@@ -79,4 +77,3 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 			_ => null
 		};
 }
-
