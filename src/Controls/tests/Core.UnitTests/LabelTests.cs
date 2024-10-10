@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void InvalidateMeasureWhenTextChanges()
 		{
-			var label = new Label();
+			var label = new Label { IsPlatformEnabled = true };
 
 			bool fired;
 			label.MeasureInvalidated += (sender, args) =>

@@ -499,7 +499,25 @@ namespace Microsoft.Maui.Controls
 		
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
-			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
+			// Behave like `VisualElement` except for propagation to parent
+			switch (trigger)
+			{
+				case InvalidationTrigger.Undefined:
+					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
+					break;
+
+				default:
+					// When visibility changes `InvalidationTrigger.Undefined` is used,
+					// so here we're sure that visibility didn't change
+					if (child.IsVisible)
+					{
+						// We need to invalidate measures only if child is actually visible
+						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
+					}
+					break;
+			}
+
+			// We still need to call the legacy OnChildMeasureInvalidated to keep the compatibility.
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
 		}
 
@@ -510,8 +528,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="e">The event arguments.</param>
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
+			// Nothing to do here: platform will take care of arranging the children if needed on the next layout pass
 		}
 
 		/// <summary>
@@ -581,29 +598,6 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-		}
-
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
-		{
-			var container = this as IPageContainer<Page>;
-			if (container != null)
-			{
-				Page page = container.CurrentPage;
-				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
-					return;
-			}
-			else
-			{
-				var logicalChildren = this.InternalChildren;
-				for (var i = 0; i < logicalChildren.Count; i++)
-				{
-					var v = logicalChildren[i] as VisualElement;
-					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-						return;
-				}
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		internal void OnAppearing(Action action)
