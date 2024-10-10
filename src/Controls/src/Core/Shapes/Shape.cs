@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		double _fallbackWidth;
 		double _fallbackHeight;
-		private static bool IsStrokeUpdated;
+		bool _isStrokeUpdated;
 
 		/// <summary>Bindable property for <see cref="Fill"/>.</summary>
 		public static readonly BindableProperty FillProperty =
@@ -263,9 +263,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		private static void OnStrokePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable is RoundRectangle rect && IsStrokeUpdated)
+			if (bindable is RoundRectangle rect && rect._isStrokeUpdated)
 			{
-					IsStrokeUpdated = false;
+				rect._isStrokeUpdated = false;
 			}
 		}
 
@@ -446,11 +446,11 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			if(!IsStrokeUpdated)
+			if (!_isStrokeUpdated)
 			{
 				result.Height += StrokeThickness;
 				result.Width += StrokeThickness;
-				IsStrokeUpdated = true;
+				_isStrokeUpdated = true;
 			}
 
 			return result;
