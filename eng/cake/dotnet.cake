@@ -6,6 +6,11 @@ var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
 string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
+if (!localDotnet)
+{
+    dotnetPath = null;
+}
+
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
@@ -256,6 +261,7 @@ Task("dotnet-integration-build")
     });
 
 Task("dotnet-integration-test")
+    .IsDependentOn("dotnet-integration-build")
     .Does(() =>
     {
         RunTestWithLocalDotNet(
@@ -780,6 +786,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+    Information("Log Directory: {0}", logDirectory);
 
     if (!string.IsNullOrWhiteSpace(pathDotnet) && localDotnet)
     {
