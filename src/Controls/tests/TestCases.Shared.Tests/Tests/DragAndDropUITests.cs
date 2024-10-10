@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// https://github.com/dotnet/maui/issues/24914
-		#if !MACCATALYST
+		
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
@@ -61,19 +61,50 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Red");
 			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
-			App.WaitForElement("DragEventsLabel");
 
-			var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDrag))
+			App.WaitForElement("DragStartEventsLabel");
+			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
+
+			if (string.IsNullOrEmpty(textAfterDragstart))
+			{
+				Assert.Fail("Text was expected: Drag start event");
+			}
+			else
+			{
+				Assert.That(textAfterDragstart, Is.EqualTo("DragStarting"));
+			}
+
+			App.WaitForElement("DragOverEventsLabel");
+			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragover))
+			{
+				Assert.Fail("Text was expected: Drag over event");
+			}
+			else
+			{
+				Assert.That(textAfterDragover, Is.EqualTo("DragOver"));
+			}
+
+			App.WaitForElement("DragCompletedEventsLabel");
+			var textAfterDragcomplete = App.FindElement("DragCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragcomplete))
+			{
+				Assert.Fail("Text was expected: Drag complete event");
+			}
+			else
+			{
+				Assert.That(textAfterDragcomplete, Is.EqualTo("DropCompleted"));
+			}
+
+			App.WaitForElement("RainBowColorsLabel");
+			var rainbowColorText = App.FindElement("RainBowColorsLabel").GetText();
+			if (string.IsNullOrEmpty(rainbowColorText))
 			{
 				Assert.Fail("Text was expected");
 			}
 			else
 			{
-				ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("RainbowColorsAdd:Red", StringComparison.OrdinalIgnoreCase));
+				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
 		}
 
@@ -281,7 +312,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
 			ClassicAssert.True(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
 		}
-		#endif
 
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
 		Point? GetCoordinatesFromLabel(string? labelText)
