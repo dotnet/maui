@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
-
+		
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
@@ -777,7 +777,7 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (IElementDefinition item in args.OldItems)
 					item.Parent = null;
-		}
+			}
 		}
 
 		bool ShouldLayoutChildren()
