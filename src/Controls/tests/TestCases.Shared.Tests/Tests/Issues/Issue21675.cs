@@ -14,16 +14,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		public void MenuBarItemBindingContextPageNavigation()
+		public void MenuBarItemBindingContextOnPageNavigation()
 		{
 			App.WaitForElement("MainButton");
 			App.Tap("MainButton");
 			App.WaitForElement("GoBackButton");
 			App.Tap("GoBackButton");
-			App.WaitForElement("Button1");
-			App.Tap("Button1");
+			App.WaitForElement("CommandButton");
+			App.Tap("CommandButton");
 
-			var label = App.WaitForElement("Label");
+			var label = App.WaitForElement("CommandLabel");
 			Assert.That(label.GetText(), Is.EqualTo("Menu Item Clicked"));
 		}
 	}
