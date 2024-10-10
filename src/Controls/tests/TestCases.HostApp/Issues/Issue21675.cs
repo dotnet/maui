@@ -79,7 +79,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			menuFlyoutItem?.Command.Execute(menuFlyoutItem.CommandParameter);
 		}
-
 	}
 
 	public class OtherPage : ContentPage
@@ -119,7 +118,6 @@ namespace Maui.Controls.Sample.Issues
 		private void GoBackAsync()
 		{
 			otherPage.Navigation.PopAsync();
-
 		}
 	}
 
