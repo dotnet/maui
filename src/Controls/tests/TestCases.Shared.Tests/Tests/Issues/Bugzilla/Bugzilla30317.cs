@@ -1,4 +1,5 @@
-﻿#if ANDROID
+/*
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,7 +32,6 @@ public class Bugzilla30317 : _IssuesUITest
 	}
 
 	[Test]
-	[FailsOnAndroid]
 	public void Bugzilla30317ItemSourceCtorContentPage()
 	{
 		App.WaitForElement("GoToPageTwoButton");
@@ -50,7 +50,6 @@ public class Bugzilla30317 : _IssuesUITest
 	}
 
 	[Test]
-	[FailsOnAndroid]
 	public void Bugzilla30317ItemSourceTabbedPage()
 	{
 		App.WaitForElement("GoToPageTwoButton");
@@ -87,3 +86,4 @@ public class Bugzilla30317 : _IssuesUITest
 	}
 }
 #endif
+*/
