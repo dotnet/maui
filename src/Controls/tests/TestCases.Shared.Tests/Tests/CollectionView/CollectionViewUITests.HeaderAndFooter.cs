@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+#if IOS
     public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
     {
 
@@ -89,4 +90,5 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
     }
+#endif
 }
