@@ -25,7 +25,12 @@ namespace Microsoft.Maui.TestCases.Tests
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
 
-		protected UITest(TestDevice testDevice) : base(testDevice)
+		protected UITest(TestDevice testDevice)
+#if USE_BROWSERSTACK
+			: base(testDevice, useBrowserStack:true)
+#else
+			: base(testDevice, useBrowserStack:false)
+#endif
 		{
 			string? ciArtifactsDirectory = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 			if (ciArtifactsDirectory != null)
