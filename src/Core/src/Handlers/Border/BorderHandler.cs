@@ -8,6 +8,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentPanel;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 #elif (NETSTANDARD || !PLATFORM)
+using Microsoft.Maui.Graphics;
 using PlatformView = System.Object;
 #endif
 
@@ -80,6 +81,22 @@ namespace Microsoft.Maui.Handlers
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeShape(border);
 			MapBackground(handler, border);
 		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+
+		Microsoft.Maui.Graphics.Rect? _previous;
+		public override void PlatformArrange(Microsoft.Maui.Graphics.Rect rect)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			if (_previous?.Size != rect.Size)
+			{
+				_previous = rect;
+				UpdateValue(nameof(IBorderStroke.Shape));
+			}
+
+			base.PlatformArrange(rect);
+		}
+
 
 		/// <summary>
 		/// Maps the abstract <see cref="IStroke.Stroke"/> property to the platform-specific implementations.
