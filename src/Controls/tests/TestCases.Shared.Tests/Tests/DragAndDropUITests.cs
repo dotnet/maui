@@ -34,17 +34,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 			App.WaitForElement("DragEventsLabel");
 
-            var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
-            if (string.IsNullOrEmpty(textAfterDrag))
-            {
-            	Assert.Fail("Text was expected");
-            }
-            else
-            {
-            	ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
-            	ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
-            	ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
-            }
+			var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDrag))
+			{
+				Assert.Fail("Text was expected");
+			}
+			else
+			{
+				ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
+				ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
+				ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
+			}
 		}
 
 		[Test]
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				ClassicAssert.True(textAfterDragstart.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
+				Assert.That(textAfterDragstart, Is.EqualTo("DragStarting"));
 			}
 
 			App.WaitForElement("DragOverEventsLabel");
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				ClassicAssert.True(textAfterDragover.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
+				Assert.That(textAfterDragover, Is.EqualTo("DragOver"));
 			}
 
 			App.WaitForElement("DragCompletedEventsLabel");
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				ClassicAssert.True(textAfterDragcomplete.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
+				Assert.That(textAfterDragcomplete, Is.EqualTo("DropCompleted"));
 			}
 
 			App.WaitForElement("RainBowColorsLabel");
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			else
 			{
-				ClassicAssert.True(rainbowColorText.Contains("RainbowColorsAdd:Red", StringComparison.OrdinalIgnoreCase));
+				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
 		}
 
