@@ -5,9 +5,8 @@
 				 x:Class="Maui.Controls.Sample.Issues.Issue18235">
 
     <VerticalStackLayout Padding="25" Spacing="25">
-      <Button Clicked="Button_Clicked" AutomationId="Button1" x:Name="Button1" Text="Test Button1" />
-      <Button Clicked="Button_Clicked" AutomationId="Button2" x:Name="Button2" Text="Test Button2" />
-      <Label AutomationId="Label" x:Name="ButtonText"/>
+      <Button Clicked="Button_Clicked" Background="#FF5D5DB4" AutomationId="Button1" x:Name="Button1" Text="Test Button1" />
+      <Button Clicked="Button_Clicked" Background="#FF5D5DB4" AutomationId="Button2" x:Name="Button2" Text="Test Button2" />
     </VerticalStackLayout>
 
 </ContentPage>

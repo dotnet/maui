@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonText()
 		{
-			App.WaitForElement("Label");
+			App.WaitForElement("Button2");
 			App.Tap("Button1");
 			App.Tap("Button2");
 			VerifyScreenshot();
