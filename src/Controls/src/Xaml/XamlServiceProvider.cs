@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				return false;
 			}
 
-			static bool IsBindingBaseProperty(IElementNode node, HydrationContext context)
+			static bool DoesNotInheritDataType(IElementNode node, HydrationContext context)
 			{
 				if (   node.TryGetPropertyName(node.Parent, out XmlName name)
 					&& node.Parent is IElementNode parent
@@ -332,9 +332,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition), 
 												 context.RootElement.GetType().Assembly, out var xpe) is Type parentType
 					&& parentType.GetRuntimeProperties().FirstOrDefault(p => p.Name == name.LocalName) is PropertyInfo propertyInfo
-					&& propertyInfo.PropertyType == typeof(BindingBase))
+					&& propertyInfo.CustomAttributes.Any(ca => ca.AttributeType == typeof(DoesNotInheritDataTypeAttribute)))
 				{								
-						return true;
+					return true;
 				}
 				return false;
 			}
@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				{
 					break;
 				}
-				if (IsBindingBaseProperty(n, context))
+				if (DoesNotInheritDataType(n, context))
 				{					
 					break;
 				}
