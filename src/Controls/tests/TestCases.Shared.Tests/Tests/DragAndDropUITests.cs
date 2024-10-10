@@ -32,6 +32,36 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
+			App.WaitForElement("DragEventsLabel");
+
+            var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
+            if (string.IsNullOrEmpty(textAfterDrag))
+            {
+            	Assert.Fail("Text was expected");
+            }
+            else
+            {
+            	ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
+            	ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
+            	ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
+            }
+		}
+
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void DragAndDropBetweenLayouts()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
+			App.Tap("GoButton");
+
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
+			App.WaitForElement("Red");
+			App.WaitForElement("Green");
+			App.DragAndDrop("Red", "Green");
+
 			App.WaitForElement("DragStartEventsLabel");
 			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
 
@@ -75,36 +105,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			else
 			{
 				ClassicAssert.True(rainbowColorText.Contains("RainbowColorsAdd:Red", StringComparison.OrdinalIgnoreCase));
-			}
-		}
-
-		[Test]
-		[Category(UITestCategories.Gestures)]
-		public void DragAndDropBetweenLayouts()
-		{
-			App.WaitForElement("TargetView");
-			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-			App.Tap("GoButton");
-
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("Red");
-			App.WaitForElement("Green");
-			App.DragAndDrop("Red", "Green");
-			App.WaitForElement("DragEventsLabel");
-
-			var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDrag))
-			{
-				Assert.Fail("Text was expected");
-			}
-			else
-			{
-				ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("RainbowColorsAdd:Red", StringComparison.OrdinalIgnoreCase));
 			}
 		}
 
