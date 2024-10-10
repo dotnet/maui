@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if !WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +16,6 @@ public class Bugzilla32462 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.ListView)]
 	[FailsOnIOS]
-	[FailsOnWindows]
 	public void Bugzilla36729Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -33,3 +33,4 @@ public class Bugzilla32462 : _IssuesUITest
 		App.Back();
 	}
 }
+#endif
