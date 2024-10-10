@@ -2,6 +2,8 @@ using System;
 using AppKit;
 using Foundation;
 
+#pragma warning disable CA1422
+
 namespace GraphicsTester.Skia
 {
 	public partial class MainWindow : NSWindow
@@ -24,3 +26,4 @@ namespace GraphicsTester.Skia
 
 	}
 }
+#pragma warning restore CA1422

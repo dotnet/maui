@@ -4,6 +4,8 @@ using AppKit;
 using CoreGraphics;
 using Foundation;
 
+#pragma warning disable CA1422 
+
 namespace GraphicsTester.Mac
 {
 	public partial class MainWindow : AppKit.NSWindow
@@ -28,3 +30,5 @@ namespace GraphicsTester.Mac
 		}
 	}
 }
+
+#pragma warning restore CA1422
