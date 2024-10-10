@@ -58,25 +58,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateHorizontalTextAlignment(this TextView textView, ITextAlignment text)
 		{
-			if (Rtl.IsSupported)
-			{
-				// We want to use TextAlignment where possible because it doesn't conflict with the
-				// overall gravity of the underlying control
-				textView.TextAlignment = text.HorizontalTextAlignment.ToTextAlignment();
-			}
-			else
-			{
-				// But if RTL support is not available for some reason, we have to resort
-				// to gravity, because Android will simply ignore text alignment
-				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
-			}
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(26))
-			{
-				textView.JustificationMode = text.HorizontalTextAlignment == TextAlignment.Justify
-					? Android.Text.JustificationMode.InterWord
-					: Android.Text.JustificationMode.None;
-			}
+			textView.UpdateHorizontalAlignment(text.HorizontalTextAlignment);
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextView textView, ITextAlignment textAlignment)
