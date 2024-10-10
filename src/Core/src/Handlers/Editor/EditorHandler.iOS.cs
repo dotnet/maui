@@ -77,6 +77,20 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
+		public override bool NeedsContainer
+		{
+			get
+			{
+				// If we are wrapped by a BorderView, we need a container
+				// to handle masks and clip shapes effectively.
+				if (VirtualView?.Parent is IBorderView)
+				{
+					return true;
+				}
+				return base.NeedsContainer;
+			}
+		}
+
 		public static void MapText(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdateText(editor);
