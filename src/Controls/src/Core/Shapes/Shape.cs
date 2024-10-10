@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		double _fallbackWidth;
 		double _fallbackHeight;
+		bool _isStrokeUpdated;
 
 		/// <summary>Bindable property for <see cref="Fill"/>.</summary>
 		public static readonly BindableProperty FillProperty =
@@ -59,7 +60,14 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
-			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0);
+			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0,
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (bindable is RoundRectangle rect && rect._isStrokeUpdated)
+					{
+						rect._isStrokeUpdated = false;
+					}
+				});
 
 		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
@@ -437,8 +445,12 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			result.Height += StrokeThickness;
-			result.Width += StrokeThickness;
+			if (!_isStrokeUpdated)
+			{
+				result.Height += StrokeThickness;
+				result.Width += StrokeThickness;
+				_isStrokeUpdated = true;
+			}
 
 			return result;
 		}
