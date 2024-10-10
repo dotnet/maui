@@ -618,14 +618,14 @@ namespace Microsoft.Maui.Controls.Internals
 
 		internal TItem UpdateContent(TItem content, int index, object item)
 		{
-			content.BindingContext = item;
-
 			if (Parent != null)
 				SetGroup(content, this);
 
 			SetIndex(content, index);
 
 			_itemsView.SetupContent(content, index);
+
+			content.BindingContext = item;
 
 			return content;
 		}
