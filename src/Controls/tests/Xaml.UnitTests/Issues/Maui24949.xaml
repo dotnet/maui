@@ -21,6 +21,9 @@
             <local:Maui24949Button x:Name="button">
                 <Label Text="TESTING Button" />
             </local:Maui24949Button>
+            <local:Maui24949Border x:Name="border">
+                <Label Text="TESTING Border" />
+            </local:Maui24949Border>
         </VerticalStackLayout>
     </ScrollView>        
 </ContentPage>

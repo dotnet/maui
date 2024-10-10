@@ -11,6 +11,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
@@ -52,6 +53,9 @@ public partial class Maui24949 : ContentPage
         {
             var page = new Maui24949(useCompiledXaml);
             Assert.That(page.button.Content, Is.TypeOf<Label>());
+            Assert.That(page.border.Content, Is.TypeOf<Label>());
+            var presenter = page.border.m_contentPresenter;
+            Assert.That(presenter.Children.Count, Is.EqualTo(1));
         }
     }
 }
@@ -73,7 +77,7 @@ public class Maui24949Button : TemplatedView
 [ContentProperty( "Content" )]
 public class Maui24949Border : TemplatedView
 {
-    private ContentPresenter m_contentPresenter;
+    public ContentPresenter m_contentPresenter;
 
     public Maui24949Border()
     {
