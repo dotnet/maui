@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<NavigationPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Name="Self"
+    BarBackgroundColor="{AppThemeBinding Light=White,Dark=Black}"
+    BarTextColor="{AppThemeBinding Light=Black,Dark=White}"
+    x:Class="Maui.Controls.Sample.Issues.Issue23195">
+    <x:Arguments>
+        <ContentPage x:Name="contentPage" Title="Content page">
+            <ContentPage.ToolbarItems>
+                <ToolbarItem>
+                    <ToolbarItem.IconImageSource>
+                        <FontImageSource Glyph="&#xf133;"
+                                         Color="{AppThemeBinding Light=Black, Dark=White}"
+                                         FontFamily="FA"/>
+                    </ToolbarItem.IconImageSource>
+                </ToolbarItem>
+            </ContentPage.ToolbarItems>
+            <VerticalStackLayout>
+            <Button Text="Chnage theme" 
+                    AutomationId="button" 
+                    HeightRequest="100" 
+                    Clicked="Button_Clicked"/>
+            <Label Text="Dark theme applied"
+                   IsVisible="{AppThemeBinding Default=False,Dark=True}"           
+                   AutomationId="label"/>
+            </VerticalStackLayout>
+        </ContentPage>
+    </x:Arguments>
+</NavigationPage>
