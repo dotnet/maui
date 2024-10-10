@@ -195,6 +195,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsView.SelectionChanged += VirtualSelectionChanged;
 		}
 
+		void UpdateItemContentControlSelection()
+		{
+			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
+
+			foreach (var formsItemContentControl in formsItemContentControls)
+			{
+				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
+				formsItemContentControl.UpdateIsSelected(isSelected);
+			}
+		}
+
 		protected override void UpdateItemsSource()
 		{
 			_ignorePlatformSelectionChange = true;
@@ -238,17 +249,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						return SelectionMode.None;
 					default:
 						return SelectionMode.None;
-				}
-			}
-
-			void UpdateItemContentControlSelection()
-			{
-				var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
-
-				foreach (var formsItemContentControl in formsItemContentControls)
-				{
-					bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
-					formsItemContentControl.UpdateIsSelected(isSelected);
 				}
 			}
 		}
