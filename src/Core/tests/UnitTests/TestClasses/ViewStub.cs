@@ -5,6 +5,7 @@ namespace Microsoft.Maui.UnitTests
 {
 	class ViewStub : IViewStub
 	{
+		bool IElement.IsPlatformViewNew { get; set; }
 		IElementHandler IElement.Handler
 		{
 			get => Handler;

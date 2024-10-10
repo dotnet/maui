@@ -134,7 +134,10 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					uiElement.ClearValue(UIElement.ContextFlyoutProperty);
+					if (contextFlyoutContainer is not IView view || !view.IsPlatformViewNew)
+					{
+						uiElement.ClearValue(UIElement.ContextFlyoutProperty);
+					}
 				}
 			}
 		}

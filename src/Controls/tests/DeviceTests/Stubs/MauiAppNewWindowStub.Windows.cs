@@ -7,6 +7,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	class MauiAppNewWindowStub : IApplication
 	{
+		bool IElement.IsPlatformViewNew { get; set; }
 		readonly IWindow _window;
 		Window Window => _window as Window;
 
