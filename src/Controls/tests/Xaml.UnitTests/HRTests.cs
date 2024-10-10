@@ -17,16 +17,17 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void LoadResources()
 		{
-			var app = @"
-				<Application xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+			var app = """
+				<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 					<Application.Resources>
 						<ResourceDictionary>
-							<Color x:Key=""almostPink"">HotPink</Color>
+							<Color x:Key="almostPink">HotPink</Color>
 						</ResourceDictionary>
 					</Application.Resources>
-				</Application>
-			";
+				</Application>	
+				""";
+
 			Assert.That(Application.Current, Is.Null);
 			var mockApplication = new MockApplication();
 			var rd = XamlLoader.LoadResources(app, mockApplication);
@@ -41,15 +42,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void LoadMultipleResources()
 		{
-			var app = @"
-				<Application xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+			var app = """
+				<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 					<Application.Resources>
-						<Color x:Key=""almostPink"">HotPink</Color>
-						<Color x:Key=""yellowOrGreen"">Chartreuse</Color>
+						<Color x:Key="almostPink">HotPink</Color>
+						<Color x:Key="yellowOrGreen">Chartreuse</Color>
 					</Application.Resources>
 				</Application>
-			";
+				""";
 
 			Assert.That(Application.Current, Is.Null);
 			var mockApplication = new MockApplication();
@@ -65,14 +66,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void LoadSingleImplicitResources()
 		{
-			var app = @"
-				<Application xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-					xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+			var app = """
+				<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 					<Application.Resources>
-						<Color x:Key=""almostPink"">HotPink</Color>
+						<Color x:Key="almostPink">HotPink</Color>
 					</Application.Resources>
 				</Application>
-			";
+				""";
 
 			Assert.That(Application.Current, Is.Null);
 			var mockApplication = new MockApplication();
