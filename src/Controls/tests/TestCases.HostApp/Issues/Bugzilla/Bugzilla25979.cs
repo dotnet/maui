@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Bugzilla, 25979, "https://bugzilla.xamarin.com/show_bug.cgi?id=25979")]
 public class Bugzilla25979 : NavigationPage
 {
-	public Bugzilla25979() : base(new MyPage())
+	public Bugzilla25979()
 	{      
 		// Initialize ui here instead of ctor
 		Navigation.PushAsync(new MyPage());

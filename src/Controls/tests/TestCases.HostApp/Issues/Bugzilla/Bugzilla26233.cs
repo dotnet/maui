@@ -3,7 +3,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Bugzilla, 26233, "Windows phone crashing when going back to page containing listview with Frame inside ViewCell")]
 public class Bugzilla26233 : NavigationPage
 {
-	public Bugzilla26233() : base(new MainPage())
+	public Bugzilla26233()
 	{
 		Navigation.PushAsync(new MainPage());
 	}

@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Bugzilla, 28001, "[Android] TabbedPage: invisible tabs are not Disposed", PlatformAffected.Android)]
 public class Bugzilla28001 : NavigationPage
 {
-	public Bugzilla28001() : base(new MainPage())
+	public Bugzilla28001()
 	{
 		Navigation.PushAsync(new MainPage());
 	}
