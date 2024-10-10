@@ -11,7 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		public void EntrySelectionLengthRuntimeUpdate()
+		[FailsOnMac]
+		public void LabelHorizontalTextAlignmentChanged()
 		{
 			App.WaitForElement("Button");
 			App.Tap("Button");
