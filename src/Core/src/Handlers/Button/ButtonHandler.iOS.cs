@@ -186,20 +186,15 @@ namespace Microsoft.Maui.Handlers
 				platformView.TouchCancel -= OnButtonTouchCancel;
 			}
 
-			void HandleButtonInteraction()
-            {
-                VirtualView?.Released();
-                VirtualView?.Clicked();
-            }
- 
             void OnButtonTouchCancel(object? sender, EventArgs e)
             {
-                HandleButtonInteraction();
+               VirtualView?.Released();
             }
  
             void OnButtonTouchUpInside(object? sender, EventArgs e)
             {
-                HandleButtonInteraction();
+                VirtualView?.Released();
+                VirtualView?.Clicked();
             }
 
 			void OnButtonTouchUpOutside(object? sender, EventArgs e)
