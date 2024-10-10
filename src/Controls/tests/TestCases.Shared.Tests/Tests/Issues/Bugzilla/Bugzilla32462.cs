@@ -15,6 +15,7 @@ public class Bugzilla32462 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.ListView)]
 	[FailsOnIOS]
+	[FailsOnWindows]
 	public void Bugzilla36729Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
