@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 			var editText = new MauiAppCompatEditText(Context)
 			{
 				ImeOptions = ImeAction.Done,
+				TextAlignment = Android.Views.TextAlignment.ViewStart,
 				Gravity = GravityFlags.Top,
 				TextAlignment = global::Android.Views.TextAlignment.ViewStart,
 			};
