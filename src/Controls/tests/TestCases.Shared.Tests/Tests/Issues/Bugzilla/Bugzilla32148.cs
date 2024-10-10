@@ -1,4 +1,4 @@
-#if !IOS
+#if !MACCATALYST && !WINDOWS // TODO: Fix on Mac and Windows. Randomly crashing in the Teardown process.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

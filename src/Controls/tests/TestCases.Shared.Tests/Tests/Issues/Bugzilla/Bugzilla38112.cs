@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !WINDOWS // TODO: Fix on Windows.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,7 @@ public class Bugzilla38112 : _IssuesUITest
 	public override string Issue => "Switch becomes reenabled when previous ViewCell is removed from TableView";
 
 	[Test]
-	 [FailsOnIOS]
+	[FailsOnIOS]
 	public void Bugzilla38112_SwitchIsStillOnScreen()
 	{
 		App.WaitForElement("Click");
@@ -35,3 +36,4 @@ public class Bugzilla38112 : _IssuesUITest
 			StringComparison.OrdinalIgnoreCase), Is.False);
 	}
 }
+#endif

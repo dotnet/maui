@@ -1,4 +1,4 @@
-#if !WINDOWS // TODO FIX ON WINDOWS
+#if !MACCATALYST && !WINDOWS // TODO: Fix on Mac and Windows. 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

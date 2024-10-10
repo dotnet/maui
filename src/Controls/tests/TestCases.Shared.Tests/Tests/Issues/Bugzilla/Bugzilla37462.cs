@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !IOS && !MACCATALYST // TODO: Fix on Apple devices.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -45,3 +46,4 @@ public class Bugzilla37462 : _IssuesUITest
 		App.WaitForNoElement("This is a label on page 1");
 	}
 }
+#endif

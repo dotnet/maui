@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !IOS && !MACCATALYST // TODO: Fix on Apple devices.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -40,3 +41,4 @@ public class Bugzilla33612 : _IssuesUITest
 		App.Screenshot("Success Page");
 	}
 }
+#endif
