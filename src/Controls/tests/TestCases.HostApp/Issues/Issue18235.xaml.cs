@@ -15,10 +15,10 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		private void Button_Clicked(object sender, EventArgs e)
+		private void OnButtonClicked(object sender, EventArgs e)
 		{
 			if (sender is Button buttonClicked)
-				buttonClicked.Text = String.Empty; // Changing this to any other string doesn't reproduce the problem
+				buttonClicked.Text = String.Empty;
 		}
 	}
 }

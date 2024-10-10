@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonText()
 		{
-			App.WaitForElement("Button2");
-			App.Tap("Button1");
-			App.Tap("Button2");
+			App.WaitForElement("SecondaryActionButton");
+			App.Tap("PrimaryActionButton");
+			App.Tap("SecondaryActionButton");
 			VerifyScreenshot();
 		}
 	}
