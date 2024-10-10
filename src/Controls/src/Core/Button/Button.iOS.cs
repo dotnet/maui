@@ -14,7 +14,10 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button : ICrossPlatformLayout
 	{
+		// _originalImageSize and _originalImageSource are used to ensure we don't resize the image
+		// larger than the original image size and to ensure if a new image is loaded, we use that image's size for resizing.
 		CGSize _originalImageSize = CGSize.Empty;
+		string _originalImageSource = string.Empty;
 
 		// _isFirstMeasure is a flag to make sure we manually recalculate the titleRect when there are dynamic changes to the button.
 		// There are times the platformButton.TitleLabel is updated on dynamic changes and reacts to the change by truncating the label when we actually
@@ -86,8 +89,9 @@ namespace Microsoft.Maui.Controls
 			if (image is not null)
 			{
 				// Save the original image size for later image resizing
-				if (_originalImageSize == CGSize.Empty)
+				if (_originalImageSize == CGSize.Empty || _originalImageSource == string.Empty || _originalImageSource != button.ImageSource.ToString())
 				{
+					_originalImageSource = button.ImageSource.ToString();
 					_originalImageSize = image.Size;
 				}
 
@@ -144,11 +148,8 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			// if we are in a scenario with unlimited width and the image is on top or bottom,
-			// of if the horizontalOption is not fill and the image is on top or bottom,
-			// let's make sure the title is not cut off by ensuring we have enough padding for the image and title.
+			// if the image is on top or bottom, let's make sure the title is not cut off by ensuring we have enough padding for the image and title.
 			if (image is not null
-				&& (widthConstraint == double.PositiveInfinity || button.HorizontalOptions != LayoutOptions.Fill)
 				&& (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom))
 			{
 				var maxTitleRect = ComputeTitleRect(platformButton, button, image, double.PositiveInfinity, double.PositiveInfinity, borderWidth, padding, true);
@@ -182,8 +183,6 @@ namespace Microsoft.Maui.Controls
 
 			// Layout the image and title of the button
 			LayoutButton(platformButton, this, bounds);
-
-			_isFirstMeasure = true;
 
 			return new Size(bounds.Width, bounds.Height);
 		}
@@ -295,7 +294,9 @@ namespace Microsoft.Maui.Controls
 			// Use the current TitleLabel if it is set and valid
 			var titleRect = platformButton.TitleLabel.Bounds;
 
-			if ((isMeasuring && _isFirstMeasure) || titleRect.Height == 0 || titleRect.Width == 0)
+			// if the platformButton.TitleLabel.Bounds is updated, use that value. If that value is not yet updated, is invalid, or if the platformButton.TitleLabel.Bounds
+			// still has the old text value, we will need to estimate the titleRect with the new title.
+			if ((isMeasuring && _isFirstMeasure) || platformButton.TitleLabel.Text != button.Text || titleRect.Height == 0 || titleRect.Width == 0)
 			{
 				var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
 				var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
@@ -449,6 +450,9 @@ namespace Microsoft.Maui.Controls
 
 			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
+
+		internal void ResetToFirstMeasureOfNewContent() =>
+			_isFirstMeasure = true;
 
 		public static void MapText(ButtonHandler handler, Button button) =>
 			MapText((IButtonHandler)handler, button);

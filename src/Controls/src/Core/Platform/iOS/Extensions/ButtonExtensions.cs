@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Platform
 					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading | NSStringDrawingOptions.UsesDeviceMetrics,
 					null);
 
-				return new CGRect(boundingRectWithDeviceMetrics.Location, new CGSize(Math.Max(boundingRect.Width, boundingRectWithDeviceMetrics.Width), Math.Min(availableHeight, boundingRect.Height)));
+				return new CGRect(boundingRectWithDeviceMetrics.Location,
+					new CGSize(Math.Ceiling(Math.Max(boundingRect.Width, boundingRectWithDeviceMetrics.Width)),
+						Math.Ceiling(Math.Min(availableHeight, boundingRect.Height))));
 			}
 
 			return CGRect.Empty;
@@ -77,6 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateContentLayout(this UIButton platformButton, Button button)
 		{
+			button.ResetToFirstMeasureOfNewContent();
 			(button as IView)?.InvalidateMeasure();
 		}
 
