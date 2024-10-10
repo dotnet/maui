@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						if (deviceName == "iPhone Xs (iOS 18.0)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0"))
 						{
 							environmentName = "ios";
 						}
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 18.0) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
 

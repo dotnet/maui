@@ -1,7 +1,7 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "./uitests-shared.cake"
 
-const string DefaultVersion = "17.2";
+const string DefaultVersion = "18.0";
 const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
 
 // Required arguments
