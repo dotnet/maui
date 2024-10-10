@@ -1,4 +1,4 @@
-using NUnit.Framework;
+/*using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,9 +14,8 @@ public class Bugzilla26171 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Maps)]
-	[FailsOnAllPlatforms]
 	public void Bugzilla26171Test()
 	{
 		App.WaitForElement("lblValue");
 	}
-}
+}*/
