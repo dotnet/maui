@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public string NamespaceUri { get; }
 		public string Name { get; }
-		public IList<XmlType> TypeArguments { get; }
+		public IList<XmlType> TypeArguments { get; set; }
 
 		public override bool Equals(object obj)
 		{
