@@ -79,7 +79,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateContentLayout(this UIButton platformButton, Button button)
 		{
-			button.ResetToFirstMeasureOfNewContent();
 			(button as IView)?.InvalidateMeasure();
 		}
 
