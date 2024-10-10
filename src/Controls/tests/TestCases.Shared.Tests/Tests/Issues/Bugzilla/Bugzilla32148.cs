@@ -12,14 +12,20 @@ public class Bugzilla32148 : _IssuesUITest
 
 	public override string Issue => " Pull to refresh hides the first item on a list view";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Bugzilla32148Test()
-	// {
-	// 	App.WaitForElement("Contact0 LastName");
-	// 	App.Tap("Search");
-	// 	App.WaitForElement("Contact0 LastName");
-	// 	App.Screenshot("For manual review, is the first cell visible?");
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	[FailsOnIOS]
+	public void Bugzilla32148Test()
+	{
+		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
+		{
+			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
+		}
+
+		App.WaitForNoElement("Contact0 LastName");
+		var searchButton = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Search" + "']"));
+		searchButton.Click();
+		App.WaitForNoElement("Contact0 LastName");
+		App.Screenshot("For manual review, verify that the first cell is visible");
+	}
 }

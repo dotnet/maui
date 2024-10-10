@@ -12,15 +12,23 @@ public class Bugzilla32462 : _IssuesUITest
 
 	public override string Issue => "Crash after a page disappeared if a ScrollView is in the HeaderTemplate property of a ListView";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Bugzilla36729Test()
-	// {
-	// 	App.WaitForElement("Click!");
-	// 	App.Tap("Click!");
-	// 	App.WaitForElement("listview");
-	// 	App.WaitForElement("some text 35");
-	// 	App.Back();
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	[FailsOnIOS]
+	public void Bugzilla36729Test()
+	{
+		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
+		{
+			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
+		}
+
+		App.WaitForNoElement("Click!");
+
+		var button = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Click!" + "']"));
+		button.Click();
+
+		App.WaitForElement("listview");
+		App.WaitForNoElement("some text 35");
+		App.Back();
+	}
 }

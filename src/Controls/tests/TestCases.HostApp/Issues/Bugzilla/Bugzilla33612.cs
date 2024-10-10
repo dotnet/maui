@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
@@ -46,7 +43,7 @@ public class Bugzilla33612 : TestNavigationPage
 	{
 		public Page2()
 		{
-			var button = new Button { Text = "Go to Page 3" };
+			var button = new Button { Text = "Go To Page 3" };
 			button.Clicked += async (sender, args) =>
 			{
 				int numPagesToRemove = Navigation.NavigationStack.Count;

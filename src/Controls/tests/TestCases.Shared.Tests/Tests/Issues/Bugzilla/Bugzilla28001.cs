@@ -29,14 +29,14 @@ public class Bugzilla28001 : _IssuesUITest
 
 		string tab2String = "tab2";
 #if ANDROID
-		tab2String = "TAB2";
+		tab2String = tab2String.ToUpperInvariant();
 #endif
 		var tab2 = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + tab2String + "']"));
 		tab2.Click();
 
 		string tab1String = "tab1";
 #if ANDROID
-		tab1String = "TAB1";
+		tab1String = tab1String.ToUpperInvariant();
 #endif
 
 		var tab1 = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + tab1String + "']"));
