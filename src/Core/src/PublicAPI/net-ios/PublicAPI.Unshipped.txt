@@ -1,3 +1,4 @@
 #nullable enable
 override Microsoft.Maui.Platform.MauiCALayer.AddAnimation(CoreAnimation.CAAnimation! animation, string? key) -> void
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+override Microsoft.Maui.Platform.MauiLabel.TextRectForBounds(CoreGraphics.CGRect bounds, nint numberOfLines) -> CoreGraphics.CGRect
