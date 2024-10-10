@@ -1,22 +1,64 @@
-<Project DefaultTargets="Record">
+<Project DefaultTargets="LegacyRecordProfile">
   <Import Project="../../Directory.Build.props" />
   <PropertyGroup>
-    <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == '' ">android-arm64</RuntimeIdentifier>
     <Intermediate>src/obj/$(App)/</Intermediate>
     <CSProj>$(Intermediate)$(App).csproj</CSProj>
-    <EnvVars>DOTNET_MULTILEVEL_LOOKUP=0</EnvVars>
+    <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == '' ">android-arm64</RuntimeIdentifier>
+    <_RecordProfileDependsOnTargets>
+      _CheckParameters;
+      _CheckDiagnosticsTools;
+      _SetupAppForProfiling;
+      _Restore;
+    </_RecordProfileDependsOnTargets>
+    <_LegacyRecordProfileDependsOnTargets>
+      _CheckParameters;
+      _SetupAppForProfiling;
+      _Restore;
+    </_LegacyRecordProfileDependsOnTargets>
   </PropertyGroup>
-  <Target Name="Record">
-    <Error Condition=" '$(App)' != 'maui' and '$(App)' != 'maui-blazor' " Text="Please pass -p:App=maui or -p:App=maui-blazor" />
-    <RemoveDir Directories="$(Intermediate)" />
-    <Exec Command="&quot;$(DotNetToolPath)&quot; new $(App) -o $(Intermediate)" EnvironmentVariables="$(EnvVars)" />
-    <!-- Copy replacement files-->
+
+  <Target Name="_CheckParameters">
+    <Error Condition="'$(App)' != 'maui' and '$(App)' != 'maui-blazor'" Text="Please pass -p:App=maui or -p:App=maui-blazor" />
+  </Target>
+
+  <Target Name="_CheckDiagnosticsTools">
+    <Exec Command="$(DotNetToolPath) tool list -g | grep dotnet-trace" ContinueOnError="true">
+        <Output TaskParameter="ExitCode" PropertyName="TraceToolInstalled" />
+    </Exec>
+    <Error Condition="'$(TraceToolInstalled)' != '0'" Text="dotnet-trace tool is not installed. Please install it using 'dotnet tool install -g dotnet-trace'." />
+
+    <Exec Command="$(DotNetToolPath) tool list -g | grep dotnet-dsrouter" ContinueOnError="true">
+        <Output TaskParameter="ExitCode" PropertyName="DsRouterToolInstalled" />
+    </Exec>
+    <Error Condition="'$(DsRouterToolInstalled)' != '0'" Text="dotnet-dsrouter tool is not installed. Please install it using 'dotnet tool install -g dotnet-dsrouter'." />
+  </Target>
+
+  <Target Name="_SetupAppForProfiling">
+    <PropertyGroup>
+      <EnvVars>DOTNET_MULTILEVEL_LOOKUP=0</EnvVars>
+    </PropertyGroup>
     <ItemGroup>
       <_FilesToCopy Include="src/$(App)/*" />
     </ItemGroup>
+
+    <RemoveDir Directories="$(Intermediate)" />
+
+    <Exec Command="$(DotNetToolPath) new $(App) -o $(Intermediate)" EnvironmentVariables="$(EnvVars)" />
+
+    <!-- Copy replacement files-->
     <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(Intermediate)" />
-    <!-- Restore as a separate step due to: https://github.com/dotnet/sdk/issues/21877 -->
+  </Target>
+
+  <!-- Restore as a separate step due to: https://github.com/dotnet/sdk/issues/21877 -->
+  <Target Name="_Restore" DependsOnTargets="_SetupAppForProfiling">
     <MSBuild Projects="$(CSProj)" Targets="Restore" />
-    <MSBuild Projects="$(CSProj)" Targets="Record" Properties="App=$(App);TargetFramework=$(_MauiDotNetTfm)-android;RuntimeIdentifier=$(RuntimeIdentifier)" />
+  </Target>
+
+  <Target Name="RecordProfile" DependsOnTargets="$(_RecordProfileDependsOnTargets)">
+    <MSBuild Projects="$(CSProj)" Targets="Record" Properties="App=$(App);TargetFramework=$(_MauiDotNetTfm)-android;RuntimeIdentifier=$(RuntimeIdentifier);AndroidEnableProfiler=true" />
+  </Target>
+
+  <Target Name="LegacyRecordProfile" DependsOnTargets="$(_LegacyRecordProfileDependsOnTargets)">
+    <MSBuild Projects="$(CSProj)" Targets="LegacyRecord" Properties="App=$(App);TargetFramework=$(_MauiDotNetTfm)-android;RuntimeIdentifier=$(RuntimeIdentifier)" />
   </Target>
 </Project>
