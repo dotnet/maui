@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void ShellBottomPaddingNotCalculatedCorrectlyWhenNavigatingBetweenTabbedAndNonTabbedPages()
+		public void ShellBottomPaddingWhenNavigatingBetweenTabs()
 		{
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/17390
 			App.WaitForElement("MainTabPage");
