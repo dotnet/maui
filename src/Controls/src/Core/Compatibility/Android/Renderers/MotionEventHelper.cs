@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return false;
 			}
 
-			return true;
+           // We should consider the InputTransparent for the VisualElement and decides to pass touch to the event
+			return ShouldPassThroughElement();
 		}
 
 		public void UpdateElement(VisualElement element)
