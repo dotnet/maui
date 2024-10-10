@@ -25,6 +25,19 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element.
+		/// For mobile, this will tap the element.
+		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
+		/// https://github.com/dotnet/maui/issues/19754
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void Tap(this IApp app, IQuery query)
+		{
+			app.FindElement(query).Tap();
+		}
+
+		/// <summary>
 		/// Performs a mouse click on the matched element.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -32,6 +45,16 @@ namespace UITest.Appium
 		public static void Click(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
+		}
+
+		/// <summary>
+		/// Performs a mouse click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void Click(this IApp app, IQuery query)
+		{
+			app.FindElement(query).Click();
 		}
 
 		public static void RightClick(this IApp app, string element)
@@ -92,6 +115,20 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Enters text into the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void EnterText(this IApp app, IQuery query, string text)
+		{
+			var appElement = app.FindElement(query);
+			appElement.SendKeys(text);
+			app.DismissKeyboard();
+		}
+
+
+		/// <summary>
 		/// Hides soft keyboard if present.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -143,6 +180,16 @@ namespace UITest.Appium
 		public static void ClearText(this IApp app, string element)
 		{
 			app.FindElement(element).Clear();
+		}
+
+		/// <summary>
+		/// Clears text from the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void ClearText(this IApp app, IQuery query)
+		{
+			app.FindElement(query).Clear();
 		}
 
 		/// <summary>
