@@ -1,2 +1,4 @@
 #nullable enable
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
+~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnAppearanceChanged(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
+~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, Microsoft.Maui.Graphics.Color itemColor) -> UIKit.UIBarButtonItem
