@@ -1,29 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue18204"
-             Title="Issue18204">
+             x:Class="Maui.Controls.Sample.Issues.BorderAndShadowDrawingVerifications"
+             Title="BorderAndShadowDrawingVerifications">
     <ContentPage.Resources>
       <Color x:Key="TealFadeStart">#1B836D</Color>
       <Color x:Key="TealFadeEnd">#015b66</Color>
       <Color x:Key="TealFadeStartHover">#2aab88</Color>
       <Color x:Key="TealFadeEndHover">#026875</Color>
     </ContentPage.Resources>
-    <VerticalStackLayout Padding="24" Spacing="30">
-      <Button AutomationId="ChangeSize"
-              Clicked="ChangeSizeClicked"
-              Text="Change Size"
-              BackgroundColor="WhiteSmoke"
-              WidthRequest="200" />
-      <Button AutomationId="ShowHide"
-              Clicked="ShowHideClicked"
-              Text="Show/Hide"
-              BackgroundColor="WhiteSmoke"
-              WidthRequest="200" />
+    <VerticalStackLayout Padding="16" Spacing="8">
+      <Grid HorizontalOptions="Center" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+        <Button AutomationId="ChangeSize"
+                Grid.Row="0"
+                Grid.Column="0"
+                Clicked="ChangeSizeClicked"
+                Text="Change Size" />
+        <Button AutomationId="ShowHide"
+                Grid.Row="0"
+                Grid.Column="1"
+                Clicked="ShowHideClicked"
+                Text="Show/Hide" />
+        <Button AutomationId="ChangeClip"
+                Grid.Row="0"
+                Grid.Column="2"
+                Clicked="ChangeClipClicked"
+                Text="Change Clip" />
+        <Button AutomationId="ChangeShadow"
+                Grid.Row="1"
+                Grid.Column="0"
+                Clicked="ChangeShadowClicked"
+                Text="Change Shadow" />
+        <Button AutomationId="ChangeShape"
+                Grid.Row="1"
+                Grid.Column="1"
+                Clicked="ChangeShapeClicked"
+                Text="Change Shape" />
+      </Grid>
       <Border
         HorizontalOptions="Center"
         BackgroundColor="LightBlue"
-        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=24, Opacity=0.2}"
+        Shadow="{Shadow Brush=Black, Offset='0,2', Radius=16, Opacity=0.6}"
         StrokeShape="{RoundRectangle CornerRadius=20}">
         <Button x:Name="TheButton" BackgroundColor="LightGreen" WidthRequest="200" HeightRequest="400" />
       </Border>
@@ -31,7 +48,7 @@
               BackgroundColor="Transparent"
               StrokeShape="{RoundRectangle CornerRadius=20}"
               StrokeThickness="0"
-              Shadow="{Shadow Brush=Black, Offset='0,2', Radius=24, Opacity=0.5}"
+              Shadow="{Shadow Brush=Black, Offset='0,2', Radius=32, Opacity=0.8}"
               IsVisible="False"
               Stroke="Transparent">
         <Border.Background>
