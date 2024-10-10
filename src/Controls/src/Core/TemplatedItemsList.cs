@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cadenza.Collections;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Internals
@@ -100,6 +101,7 @@ namespace Microsoft.Maui.Controls.Internals
 			remove { PropertyChanged -= value; }
 		}
 
+		[DoesNotInheritDataType]
 		public BindingBase GroupDisplayBinding
 		{
 			get { return _groupDisplayBinding; }
@@ -133,6 +135,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public BindableProperty GroupHeaderTemplateProperty { get; set; }
 
+		[DoesNotInheritDataType]
 		public BindingBase GroupShortNameBinding
 		{
 			get { return _groupShortNameBinding; }
