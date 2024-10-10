@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Controls
 
 		public static readonly SetterSpecificity DynamicResourceSetter = new SetterSpecificity(0, 0, 1, 0, 0, 0, 0, 0);
 
+		public static readonly SetterSpecificity ImplicitSetter = new(StyleImplicit, 0, 0, 0);
+		public static readonly SetterSpecificity LocalSetter = new(StyleLocal, 0, 0, 0);
+		public static readonly SetterSpecificity LocalClassSetter = new(StyleLocal, 0, 1, 0);
+
 		//handler always apply, but are removed when anything else comes in. see SetValueActual
 		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(1000, 0, 0, 0, 0, 0, 0, 0);
 
