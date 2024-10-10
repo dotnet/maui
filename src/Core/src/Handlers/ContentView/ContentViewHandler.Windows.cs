@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Children.Clear();
 
 			if (handler.VirtualView.PresentedContent is IView view)
-				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
+				handler.PlatformView.Children.Add(CreateContent(view, handler.MauiContext));
 		}
 
 		protected override ContentPanel CreatePlatformView()
@@ -35,7 +36,8 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new ContentPanel
 			{
-				CrossPlatformLayout = VirtualView
+				CrossPlatformLayout = VirtualView,
+				IsHitTestVisible = true
 			};
 
 			return view;
@@ -52,6 +54,17 @@ namespace Microsoft.Maui.Handlers
 			platformView.Children?.Clear();
 
 			base.DisconnectHandler(platformView);
+		}
+
+		static UI.Xaml.FrameworkElement? CreateContent(IView content, IMauiContext mauiContext)
+		{
+			var platformContent = content.ToPlatform(mauiContext);
+
+			var defaultBrush = new UI.Xaml.Media.SolidColorBrush(Colors.Transparent.ToWindowsColor());
+			platformContent.UpdatePlatformViewBackground(content, defaultBrush);
+			
+			return platformContent;
+
 		}
 	}
 }
