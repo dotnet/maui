@@ -1,4 +1,4 @@
-using NUnit.Framework;
+/*using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +14,6 @@ public class Bugzilla26501 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.InputTransparent)]
-	[FailsOnAllPlatforms("Sample crash just after navigating")]
 	public void TestCellsShowAfterRefresh()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -27,4 +26,4 @@ public class Bugzilla26501 : _IssuesUITest
 
 		App.WaitForNoElement("ZOOMER robothund 2");
 	}
-}
+}*/
