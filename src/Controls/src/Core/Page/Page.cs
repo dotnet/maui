@@ -446,6 +446,26 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected virtual void OnAppearing()
 		{
+			UpdateMenuBarItemBindingContext();
+		}
+
+		/// <summary>
+		/// Resets the BindingContext for each MenuBarItem when it becomes null after page navigation.
+		/// </summary>
+		private void UpdateMenuBarItemBindingContext()
+		{
+			if (MenuBarItems is null)
+			{
+				return;
+			}
+
+			foreach (var menuBarItem in MenuBarItems)
+			{
+				if (menuBarItem.BindingContext is null)
+				{
+					SetInheritedBindingContext(menuBarItem, BindingContext);
+				}
+			}
 		}
 
 		/// <summary>
@@ -496,7 +516,7 @@ namespace Microsoft.Maui.Controls
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
-		
+
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
@@ -757,7 +777,7 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (IElementDefinition item in args.OldItems)
 					item.Parent = null;
-			}
+		}
 		}
 
 		bool ShouldLayoutChildren()
