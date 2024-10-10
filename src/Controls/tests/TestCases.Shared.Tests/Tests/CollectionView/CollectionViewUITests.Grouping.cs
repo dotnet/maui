@@ -30,5 +30,5 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Total members: 12");
         }
     }
+#endif 
 }
-#endif
