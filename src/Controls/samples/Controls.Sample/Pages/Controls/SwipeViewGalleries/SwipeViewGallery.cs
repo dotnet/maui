@@ -1,5 +1,4 @@
 ﻿using Maui.Controls.Sample.Pages;
-using Maui.Controls.Sample.Pages.CollectionViewGalleries;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
