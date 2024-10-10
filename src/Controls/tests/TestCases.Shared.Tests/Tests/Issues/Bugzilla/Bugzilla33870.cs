@@ -12,15 +12,22 @@ public class Bugzilla33870 : _IssuesUITest
 
 	public override string Issue => "[W] Crash when the ListView Selection is set to null";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Bugzilla33870Test()
-	// {
-	// 	App.WaitForElement("PageContentAutomatedId");
-	// 	App.WaitForElement("ListViewAutomatedId");
-	// 	App.Tap("CLEAR SELECTION");
+	[Test]
+	[Category(UITestCategories.ListView)]
+	[FailsOnIOS]
+	public void Bugzilla33870Test()
+	{
+		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
+		{
+			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
+		}
 
-	// 	App.WaitForElement("Cleared");
-	// }
+		App.WaitForElement("PageContentAutomatedId");
+		App.WaitForElement("ListViewAutomatedId");
+
+		var clearSelectionButton = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "CLEAR SELECTION" + "']"));
+		clearSelectionButton.Click();
+
+		App.WaitForNoElement("Cleared");
+	}
 }
