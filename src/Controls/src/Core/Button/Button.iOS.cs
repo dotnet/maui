@@ -409,8 +409,11 @@ namespace Microsoft.Maui.Controls
 					return false;
 				}
 
-				image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-
+				if (platformButton.ImageView?.TintColor?.CGColor is { } tintColor && tintColor != UIColor.Tint.CGColor)
+					image = image?.ImageWithRenderingMode(UIImageRenderingMode.Automatic);
+				else 
+					image = image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					
 				platformButton.SetImage(image, UIControlState.Normal);
 
 				return true;
