@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if !IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +16,6 @@ public class Bugzilla32148 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.ListView)]
 	[FailsOnIOS]
-	[FailsOnWindows]
 	public void Bugzilla32148Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -30,3 +30,4 @@ public class Bugzilla32148 : _IssuesUITest
 		App.Screenshot("For manual review, verify that the first cell is visible");
 	}
 }
+#endif
