@@ -76,7 +76,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (GesturePlatformManager != null)
 				return;
 
+#if PLATFORM
+			GesturePlatformManager = handler is IPlatformViewHandler ? new GesturePlatformManager(handler) : null;
+#else
 			GesturePlatformManager = new GesturePlatformManager(handler);
+#endif
+
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
