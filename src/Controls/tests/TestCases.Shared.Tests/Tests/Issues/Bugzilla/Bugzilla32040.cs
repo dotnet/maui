@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+/*
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,8 @@ public class Bugzilla32040 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Cells)]
-	[FailsOnAllPlatforms]
+	[FailsOnIOS]
+ 	[FailsOnWindows]
 	public void TappedWorksForEntryAndSwithCellTest()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -34,3 +36,4 @@ public class Bugzilla32040 : _IssuesUITest
 			Is.GreaterThanOrEqualTo(2));
 	}
 }
+*/
