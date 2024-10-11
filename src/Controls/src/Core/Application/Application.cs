@@ -220,10 +220,9 @@ namespace Microsoft.Maui.Controls
 
 			return null;
 #elif ANDROID
-			if (Current?.Windows?.Count > 0)
-				return Current.Windows[0].MauiContext.Context?.GetAccentColor();
-
-			return null;
+			return Current?.Windows?.Count > 0
+			? Current.Windows[0].MauiContext.Context?.GetAccentColor()
+			: Color.FromRgba(50, 79, 133, 255);
 #elif IOS
 			return ColorExtensions.AccentColor.ToColor();
 #else
