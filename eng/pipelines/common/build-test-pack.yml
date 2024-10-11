@@ -29,10 +29,10 @@ steps:
   #     useGlobalJson: true
 
   - pwsh: |
-      if ($env:JAVA_HOME_11_X64) {
-        $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+      if ($env:JAVA_HOME_17_X64) {
+        $env:JAVA_HOME = $env:JAVA_HOME_17_X64
       } else {
-        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-17.*\bin\java.exe) | Select-Object -First 1
         if ($path -and (Test-Path $path)) {
           $env:JAVA_HOME = $path.Directory.Parent.FullName
         }
@@ -132,27 +132,27 @@ steps:
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
     
-    - script: ${{ parameters.buildScript }}
-        -restore -build
-        -sign $(_SignArgs)
-        -publish $(_PublishArgs)
-        -configuration $(_BuildConfig)
-        /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
-        -projects src/Workload/workloads.csproj
-        $(_OfficialBuildIdArgs)
-      displayName: Build Workloads
+    # - script: ${{ parameters.buildScript }}
+    #     -restore -build
+    #     -sign $(_SignArgs)
+    #     -publish $(_PublishArgs)
+    #     -configuration $(_BuildConfig)
+    #     /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
+    #     -projects src/Workload/workloads.csproj
+    #     $(_OfficialBuildIdArgs)
+    #   displayName: Build Workloads
 
-    - ${{ if eq(parameters.runAsPublic, 'true') }}:
-      - task: PublishPipelineArtifact@1
-        displayName: Publish VSDrop MSIs
-        inputs:
-          targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-          artifactName: VSDropInsertion
-          publishLocation: 'pipeline'
+    # - ${{ if eq(parameters.runAsPublic, 'true') }}:
+    #   - task: PublishPipelineArtifact@1
+    #     displayName: Publish VSDrop MSIs
+    #     inputs:
+    #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+    #       artifactName: VSDropInsertion
+    #       publishLocation: 'pipeline'
 
-    - ${{ if ne(parameters.runAsPublic, 'true') }}:
-      - task: 1ES.PublishPipelineArtifact@1
-        displayName: Publish VSDrop MSIs
-        inputs:
-          targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-          artifactName: VSDropInsertion
+    # - ${{ if ne(parameters.runAsPublic, 'true') }}:
+    #   - task: 1ES.PublishPipelineArtifact@1
+    #     displayName: Publish VSDrop MSIs
+    #     inputs:
+    #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+    #       artifactName: VSDropInsertion
