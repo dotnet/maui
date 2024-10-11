@@ -22,7 +22,7 @@
                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding BindingContext.ItemListHeader, Source={x:Reference Self}}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <Label Padding="10" Text="{Binding .}" />
+                                <Label AutomationId="{Binding .}" Padding="10" Text="{Binding .}" />
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>

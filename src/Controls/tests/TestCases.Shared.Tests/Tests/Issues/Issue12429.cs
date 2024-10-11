@@ -13,15 +13,15 @@ public class Issue12429 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public async Task HeaderShouldNotCollapseWithItems()
+	public void HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");
 		App.Click("button");
 		App.Click("button");
 		App.Click("button");
-
-		await Task.Delay(500);
-
+		
+		App.WaitForElement("HeaderItem4");
+		
 		//The test passes of header has 4 elements that don't overlap with the collection view's items
 		VerifyScreenshot();
 	}
