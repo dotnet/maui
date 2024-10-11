@@ -1,3 +1,4 @@
+#if !MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,3 +44,4 @@ public class Issue15695 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
