@@ -207,8 +207,8 @@ namespace Microsoft.Maui.Controls
 			if (_currentPage == null)
 				return;
 
-			var stack = navigationPage.Navigation.NavigationStack;
-			if (stack.Count == 0)
+			var stack = navigationPage?.Navigation?.NavigationStack;
+			if (stack is null || stack.Count == 0)
 				return;
 
 			var currentPage = _currentPage;
