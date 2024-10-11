@@ -99,6 +99,9 @@ extends:
         - repository: yaml-templates
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+      tsa:
+        enabled: true
+        configFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
     stages:
       - stage: pack_net
         displayName: Pack .NET MAUI
@@ -194,6 +197,7 @@ extends:
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}     
             tsaUploadEnabled: true
+            tsaConfigFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
         - ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
