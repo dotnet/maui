@@ -412,6 +412,16 @@ namespace UITest.Appium
 			return (IReadOnlyCollection<string>?)result.Value ?? Array.Empty<string>();
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Target Element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
@@ -420,6 +430,33 @@ namespace UITest.Appium
 			return results;
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static IUIElement WaitForElement(this IApp app, IQuery query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => app.FindElement(query);
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Entry point for the fluent API to specify the element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
 		public static IUIElement WaitForElement(
 			this IApp app,
 			Func<IUIElement?> query,
@@ -432,12 +469,47 @@ namespace UITest.Appium
 			return results;
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Target Element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static void WaitForNoElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
 			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static void WaitForNoElement(this IApp app, IQuery query, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => app.FindElement(query);
+			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
+		}
+
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Entry point for the fluent API to specify the element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
 		public static void WaitForNoElement(
 			this IApp app,
 			Func<IUIElement?> query,
