@@ -10,7 +10,7 @@ internal class StepperCoreGalleryPage : ContentPage
 		};
 
 		// Default
-		var defaultLabel = new Label { Text = "Default" };
+		var defaultLabel = new Label { AutomationId = "DefaultLabel", Text = "Default" };
 		var defaultStepper = new Stepper { AutomationId = "DefaultStepper" };
 		var defaultLabelValue = new Label
 		{

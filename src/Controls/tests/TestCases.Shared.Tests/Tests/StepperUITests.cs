@@ -27,10 +27,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Increase the Stepper value")]
 		public void IncreaseStepper()
 		{
+			const string titleAutomationId = "DefaultLabel";
 			const string stepperAutomationId = "DefaultStepper";
 			const string valueAutomationId = "DefaultLabelValue";
 
-			App.WaitForElement(stepperAutomationId);
+			App.WaitForElement(titleAutomationId);
 
 			// 1. Check the current value.
 			var step1Value = App.FindElement(valueAutomationId).GetText();
@@ -50,10 +51,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Decrease the Stepper value")]
 		public void DecreaseStepper()
 		{
+			const string titleAutomationId = "DefaultLabel";
 			const string stepperAutomationId = "DefaultStepper";
 			const string valueAutomationId = "DefaultLabelValue";
 
-			App.WaitForElement(stepperAutomationId);
+			App.WaitForElement(titleAutomationId);
 
 			// 1. Check the current value.
 			var step1Value = App.FindElement(valueAutomationId).GetText();

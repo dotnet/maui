@@ -38,7 +38,13 @@ class AppiumIOSStepperActions : ICommandExecutionGroup
 
 	CommandResponse Increase(IDictionary<string, object> parameters)
 	{
-		var stepper = GetAppiumElement(parameters["element"]);
+		string? elementId = parameters["elementId"].ToString();
+
+		if (elementId is null)
+			return CommandResponse.FailedEmptyResponse;
+
+		var element = _appiumApp.FindElement(elementId);
+		var stepper = GetAppiumElement(elementId);
 
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
@@ -56,7 +62,13 @@ class AppiumIOSStepperActions : ICommandExecutionGroup
 
 	CommandResponse Decrease(IDictionary<string, object> parameters)
 	{
-		var stepper = GetAppiumElement(parameters["element"]);
+		string? elementId = parameters["elementId"].ToString();
+
+		if (elementId is null)
+			return CommandResponse.FailedEmptyResponse;
+
+		var element = _appiumApp.FindElement(elementId);
+		var stepper = GetAppiumElement(elementId);
 
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;

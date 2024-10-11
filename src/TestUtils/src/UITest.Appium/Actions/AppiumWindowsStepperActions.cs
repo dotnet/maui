@@ -37,25 +37,24 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 
 	CommandResponse Increase(IDictionary<string, object> parameters)
 	{
-		var stepper = GetAppiumElement(parameters["element"]);
+		string? elementId = parameters["elementId"].ToString();
 
-		if (stepper is null)
+		if (elementId is null)
 			return CommandResponse.FailedEmptyResponse;
 
-		var increaseButton = stepper.FindElement(OpenQA.Selenium.By.Id("IncreaseStepper"));
+		var increaseButton = _appiumApp.FindElement(elementId + "Plus");
 		increaseButton?.Click();
-
 		return CommandResponse.SuccessEmptyResponse;
 	}
 
 	CommandResponse Decrease(IDictionary<string, object> parameters)
 	{
-		var stepper = GetAppiumElement(parameters["element"]);
+		string? elementId = parameters["elementId"].ToString();
 
-		if (stepper is null)
+		if (elementId is null)
 			return CommandResponse.FailedEmptyResponse;
 
-		var decreaseButton = stepper.FindElement(OpenQA.Selenium.By.Id("DecreaseStepper"));
+		var decreaseButton = _appiumApp.FindElement(elementId + "Minus");
 		decreaseButton?.Click();
 
 		return CommandResponse.SuccessEmptyResponse;

@@ -12,8 +12,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Button Name="Minus" AutomationProperties.AutomationId="DecreaseStepper" Grid.Column="0" Content="-" />
-                        <Button Name="Plus" AutomationProperties.AutomationId="IncreaseStepper" Grid.Column="1" Content="+" />
+                        <Button Name="Minus" Grid.Column="0" Content="-" />
+                        <Button Name="Plus" Grid.Column="1" Content="+" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

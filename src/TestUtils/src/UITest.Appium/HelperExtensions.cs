@@ -773,11 +773,9 @@ namespace UITest.Appium
 		/// <param name="marked">Marked selector of the Stepper element to increase.</param>
 		public static void IncreaseStepper(this IApp app, string marked)
 		{
-			var element = app.FindElement(marked);
-
 			app.CommandExecutor.Execute("increaseStepper", new Dictionary<string, object>
 			{
-				["element"] = element
+				["elementId"] = marked
 			});
 		}
 
@@ -788,11 +786,9 @@ namespace UITest.Appium
 		/// <param name="marked">Marked selector of the Stepper element to decrease.</param>
 		public static void DecreaseStepper(this IApp app, string marked)
 		{
-			var element = app.FindElement(marked);
-
 			app.CommandExecutor.Execute("decreaseStepper", new Dictionary<string, object>
 			{
-				["element"] = element
+				["element"] = marked
 			});
 		}
 
