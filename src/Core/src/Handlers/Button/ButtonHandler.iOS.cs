@@ -173,6 +173,7 @@ namespace Microsoft.Maui.Handlers
 				platformView.TouchUpInside += OnButtonTouchUpInside;
 				platformView.TouchUpOutside += OnButtonTouchUpOutside;
 				platformView.TouchDown += OnButtonTouchDown;
+				platformView.TouchCancel += OnButtonTouchCancel;
 			}
 
 			public void Disconnect(UIButton platformView)
@@ -182,16 +183,19 @@ namespace Microsoft.Maui.Handlers
 				platformView.TouchUpInside -= OnButtonTouchUpInside;
 				platformView.TouchUpOutside -= OnButtonTouchUpOutside;
 				platformView.TouchDown -= OnButtonTouchDown;
+				platformView.TouchCancel -= OnButtonTouchCancel;
 			}
 
-			void OnButtonTouchUpInside(object? sender, EventArgs e)
-			{
-				if (VirtualView is IButton virtualView)
-				{
-					virtualView.Released();
-					virtualView.Clicked();
-				}
-			}
+            void OnButtonTouchCancel(object? sender, EventArgs e)
+            {
+               VirtualView?.Released();
+            }
+ 
+            void OnButtonTouchUpInside(object? sender, EventArgs e)
+            {
+                VirtualView?.Released();
+                VirtualView?.Clicked();
+            }
 
 			void OnButtonTouchUpOutside(object? sender, EventArgs e)
 			{

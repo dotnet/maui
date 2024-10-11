@@ -46,6 +46,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Foldable.UnitTests")]
 [assembly: InternalsVisibleTo("WinUI.UITests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.HostApp")]
 
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Core")]
@@ -53,6 +54,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
+[assembly: InternalsVisibleTo("Controls.TestCases.HostApp")]
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
