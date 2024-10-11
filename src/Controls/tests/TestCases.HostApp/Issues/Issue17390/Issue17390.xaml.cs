@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 17390, "Shell where the bottom padding is not calculated properly when navigating from a tabbed page to a non-tabbed page and returning back to the tabbed page.",
-		PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 17390, "Shell where the bottom padding is not calculated properly when navigating between the tabs.",
+		PlatformAffected.iOS)]
 	public partial class Issue17390 : Shell
 	{
 		public Issue17390()

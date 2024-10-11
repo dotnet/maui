@@ -6,13 +6,6 @@
 		{
 			InitializeComponent();
 		}
-
-		protected override async void OnAppearing()
-		{
-		await Task.Delay(500);
-		base.OnAppearing();
-		}
-
 		async void OpenNonTabbedPage(object sender, EventArgs args)
 		{
 			await Shell.Current.GoToAsync("nontabbedpage");
