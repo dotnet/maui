@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 			// We can't use insets because then the title shows up outside the
 			// bounds of the UIButton. We could set the UIButton to clip bounds
 			// but that feels like it might cause confusing side effects
-			if (contentMode == UIViewContentMode.Center && !string.IsNullOrEmpty(platformButton.CurrentTitle))
+			if (contentMode == UIViewContentMode.Center)
 				platformButton.TitleLabel.Layer.Hidden = false;
 			else
 				platformButton.TitleLabel.Layer.Hidden = true;

@@ -85,6 +85,12 @@ namespace Microsoft.Maui.Controls.Platform
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.SetTitle(text, UIControlState.Normal);
 
+			//The TitleLabel Text retains its previous value after the current text is assigned. As a result, the label text does not update with the newly mapped text, causing the outdated text to reappear during button re-measurement.
+			if (string.IsNullOrEmpty(button.Text))
+			{
+				platformButton.TitleLabel.Text = string.Empty;
+			}
+
 			// Content layout depends on whether or not the text is empty; changing the text means
 			// we may need to update the content layout
 			platformButton.UpdateContentLayout(button);
