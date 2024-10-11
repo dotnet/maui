@@ -55,6 +55,12 @@ namespace Microsoft.Maui.Platform
 							width,
 							height);
 
+						// Element might be hidden/empty/fully transparent
+						if (bitmap.PixelWidth == 0 && bitmap.PixelHeight == 0)
+						{
+							return null;
+						}
+
 						var pixels = await bitmap.GetPixelsAsync();
 
 						using (var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(

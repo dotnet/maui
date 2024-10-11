@@ -98,6 +98,12 @@ namespace Microsoft.Maui.Controls
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
 			Frame = bounds;
+
+			if (Window is not null && Window.IsDestroyed)
+			{
+				return bounds.Size;
+			}
+
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
