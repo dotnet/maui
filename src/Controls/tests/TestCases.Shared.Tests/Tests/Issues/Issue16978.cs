@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	internal class Issue16978 : _IssuesUITest
 	{
-		public override string Issue => "[Android]Editor controls don't raise Completed event consistently";
+		public override string Issue => "[Android]PanGestureRecognizer is not updated for Frame";
 
 		public Issue16978(TestDevice device) : base(device)
 		{
