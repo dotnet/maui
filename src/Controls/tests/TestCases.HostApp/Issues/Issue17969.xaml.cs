@@ -29,10 +29,6 @@ namespace Maui.Controls.Sample.Issues
 
 	}
 
-	public class TestItem
-	{
-		public string Name { get; set; }
-	}
 	public class Animal
 	{
 		public string Name { get; set; }

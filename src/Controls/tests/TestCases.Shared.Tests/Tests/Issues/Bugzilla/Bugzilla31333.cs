@@ -1,21 +1,21 @@
-﻿// using System.Diagnostics;
-// using NUnit.Framework;
-// using UITest.Appium;
-// using UITest.Core;
+﻿using System.Diagnostics;
+using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
-// namespace Microsoft.Maui.TestCases.Tests.Issues;
+namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-// [Category(UITestCategories.TableView)]
-// public class Bugzilla31333 : _IssuesUITest
-// {
-// 	public Bugzilla31333(TestDevice testDevice) : base(testDevice)
-// 	{
-// 	}
+[Category(UITestCategories.TableView)]
+public class Bugzilla31333 : _IssuesUITest
+{
+	public Bugzilla31333(TestDevice testDevice) : base(testDevice)
+	{
+	}
 
-// 	public override string Issue => "Focus() on Entry in ViewCell brings up keyboard, but doesn't have cursor in EditText";
+	public override string Issue => "Focus() on Entry in ViewCell brings up keyboard, but doesn't have cursor in EditText";
 
-// // TODO: Migrating from Xamarin.UITest, some method calls in here
-// // do not translate to Appium (yet) need to look into that later.
+// TODO: Migrating from Xamarin.UITest, some method calls in here
+// do not translate to Appium (yet) need to look into that later.
 // 	[FailsOnAndroid]
 // 	[FailsOnIOS]
 // 	[Test]
@@ -111,4 +111,4 @@
 
 // 		Assert.Fail($"Timed out waiting for text '{text}'");
 // 	}
-// }
+}
