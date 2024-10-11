@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls
 		PropertyChangedEventHandler? _strokeShapeChanged;
 		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
 		PropertyChangedEventHandler? _strokeChanged;
-		bool _sizeChanged;
 
 		~Border()
 		{
@@ -310,11 +309,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == WidthProperty.PropertyName || propertyName == HeightProperty.PropertyName)
-			{
-				_sizeChanged = true;
-			}
-			else if (propertyName == StrokeThicknessProperty.PropertyName || propertyName == StrokeShapeProperty.PropertyName)
+			if (propertyName == StrokeThicknessProperty.PropertyName || propertyName == StrokeShapeProperty.PropertyName)
 			{
 				UpdateStrokeShape();
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
@@ -322,16 +317,6 @@ namespace Microsoft.Maui.Controls
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
 			{
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
-			}
-		}
-
-		protected override void OnSizeAllocated(double width, double height)
-		{
-			base.OnSizeAllocated(width, height);
-			if (_sizeChanged)
-			{
-				_sizeChanged = false;
-				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
 			}
 		}
 

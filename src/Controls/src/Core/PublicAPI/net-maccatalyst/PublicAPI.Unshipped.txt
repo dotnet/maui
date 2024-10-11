@@ -1,3 +1,2 @@
 #nullable enable
-override Microsoft.Maui.Controls.Border.OnSizeAllocated(double width, double height) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
