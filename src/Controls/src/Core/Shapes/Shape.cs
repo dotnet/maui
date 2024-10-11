@@ -449,6 +449,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				result.Height += StrokeThickness;
 				result.Width += StrokeThickness;
+
+		 		// Stroke thickness is added to the measured size during each Measure call,
+				// which could cause the height of the RoundRectangle to increase repeatedly.
+				// To prevent this, the RoundRectangle's height is updated only once during the first measure using flag.
+				// Size adjustments for other shapes, such as Rectangle and Ellipse, are handled separately in the GetPath() method of the Rectangle class.
 				if (this is RoundRectangle)
 				{
 					_isStrokeUpdated = true;
