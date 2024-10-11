@@ -29,8 +29,8 @@ namespace Microsoft.Maui.Controls
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
-		/// <summary>Bindable property for <see cref="OffTrackColor"/>.</summary>
-		public static readonly BindableProperty OffTrackColorProperty = BindableProperty.Create(nameof(OffTrackColor), typeof(Color), typeof(Switch), null,
+		/// <summary>Bindable property for <see cref="OffColor"/>.</summary>
+		public static readonly BindableProperty OffColorProperty = BindableProperty.Create(nameof(OffColor), typeof(Color), typeof(Switch), null,
 			propertyChanged: (bindable, oldValue, newValue) =>
             {
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
@@ -50,10 +50,10 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the color of the toggle switch's track when it is in the off state.
 		/// If not set, the default color will be used for the off-track appearance.
 		/// </summary>
-		public Color OffTrackColor
+		public Color OffColor
 		{
-			get { return (Color) GetValue(OffTrackColorProperty); }
-			set { SetValue(OffTrackColorProperty, value); }
+			get { return (Color) GetValue(OffColorProperty); }
+			set { SetValue(OffColorProperty, value); }
         }
 
 
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					return OffTrackColor;
+					return OffColor;
 				}
 			}
 		}

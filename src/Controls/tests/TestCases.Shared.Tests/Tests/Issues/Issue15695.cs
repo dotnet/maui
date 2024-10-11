@@ -40,7 +40,6 @@ public class Issue15695 : _IssuesUITest
 	{
 		App.WaitForElement("Switch");
 		App.Tap("SwitchButton");
-		App.Tap("SwitchButton");
 		VerifyScreenshot();
 	}
 }
