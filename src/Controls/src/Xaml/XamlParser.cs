@@ -44,11 +44,8 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var attributes = ParseXamlAttributes(reader, out IList<KeyValuePair<string, string>> xmlns);
 			var prefixes = PrefixesToIgnore(xmlns);
-
-			rootNode.XmlType.TypeArguments = GetTypeArguments(attributes);
 			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 			rootNode.Properties.AddRange(attributes);
-
 			ParseXamlElementFor(rootNode, reader);
 		}
 
