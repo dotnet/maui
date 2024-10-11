@@ -44,7 +44,7 @@ class AppiumIOSStepperActions : ICommandExecutionGroup
 			return CommandResponse.FailedEmptyResponse;
 
 		var element = _appiumApp.FindElement(elementId);
-		var stepper = GetAppiumElement(elementId);
+		var stepper = GetAppiumElement(element);
 
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
@@ -68,7 +68,7 @@ class AppiumIOSStepperActions : ICommandExecutionGroup
 			return CommandResponse.FailedEmptyResponse;
 
 		var element = _appiumApp.FindElement(elementId);
-		var stepper = GetAppiumElement(elementId);
+		var stepper = GetAppiumElement(element);
 
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
