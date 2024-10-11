@@ -193,6 +193,7 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}     
+            tsaUploadEnabled: true
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
 
         - ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
