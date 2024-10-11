@@ -11,6 +11,6 @@ public partial class Issue15695 : ContentPage
 
 	private void OnButtonClicked(object? sender, EventArgs e)
 	{
-		switch1.IsToggled = !switch1.IsToggled;
+		mauiSwitch.IsToggled = !mauiSwitch.IsToggled;
 	}
 }

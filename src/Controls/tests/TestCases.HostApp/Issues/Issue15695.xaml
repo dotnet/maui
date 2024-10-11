@@ -4,7 +4,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue15695">
 
     <StackLayout>
-        <Switch x:Name="switch1" AutomationId="Switch" OffTrackColor="Red" OnColor="Green" HorizontalOptions="Center" VerticalOptions="Center"/>
+        <Switch x:Name="mauiSwitch" AutomationId="Switch" OffColor="Red" OnColor="Green" HorizontalOptions="Center" VerticalOptions="Center"/>
         <Button Text="ToggleSwitch" AutomationId="SwitchButton"  Clicked="OnButtonClicked"/>
     </StackLayout>
 </ContentPage>

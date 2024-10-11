@@ -19,7 +19,7 @@ public class Issue15695 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifyOffTrackColor()
+	public void VerifySwitchOffColor()
 	{
 		App.WaitForElement("Switch");
 		VerifyScreenshot();
@@ -27,7 +27,7 @@ public class Issue15695 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifyOnTrackColor()
+	public void VerifySwitchOnColor()
 	{
 		App.WaitForElement("Switch");
 		App.Tap("SwitchButton");
@@ -36,7 +36,7 @@ public class Issue15695 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifyOffColorAfterToggling()
+	public void VerifySwitchOffColorAfterToggling()
 	{
 		App.WaitForElement("Switch");
 		App.Tap("SwitchButton");
