@@ -43,18 +43,12 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static void ParseXaml(RootNode rootNode, XmlReader reader)
 		{
 			var attributes = ParseXamlAttributes(reader, out IList<KeyValuePair<string, string>> xmlns);
-			foreach (var kvp in attributes)
-			{
-				if (kvp.Key == XmlName.xTypeArguments && kvp.Value is ValueNode { Value: IList<XmlType> typeArguments })
-				{
-					rootNode.XmlType.TypeArguments = typeArguments;
-					break;
-				}
-			}
-
 			var prefixes = PrefixesToIgnore(xmlns);
+
+			rootNode.XmlType.TypeArguments = GetTypeArguments(attributes);
 			(rootNode.IgnorablePrefixes ?? (rootNode.IgnorablePrefixes = new List<string>())).AddRange(prefixes);
 			rootNode.Properties.AddRange(attributes);
+
 			ParseXamlElementFor(rootNode, reader);
 		}
 
