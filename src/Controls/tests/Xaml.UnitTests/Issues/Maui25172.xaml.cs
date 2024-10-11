@@ -1,6 +1,5 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
@@ -15,16 +14,6 @@ public partial class Maui25172 : CoreContentPage<VM25172>
         InitializeComponent();
     }
 
-    public Maui25172(bool useCompiledXaml)
-    {
-        //this stub will be replaced at compile time
-    }
-
-    void Header_Tapped(object sender, TappedEventArgs e)
-    {
-
-    }
-
     [TestFixture]
     class Test
     {
@@ -35,11 +24,9 @@ public partial class Maui25172 : CoreContentPage<VM25172>
             DispatcherProvider.SetCurrent(new DispatcherProviderStub());
         }
 
-
         [TearDown] public void TearDown()
         {
             AppInfo.SetCurrent(null);
-            DeviceInfo.SetCurrent(null);
         }
 
         [Test]
@@ -52,17 +39,6 @@ public partial class Maui25172 : CoreContentPage<VM25172>
 
 public class VM25172 {}
 
-public class BaseCoreContentPage : ContentPage
-{	
-}
-
-public class CoreContentPage<T> : Label
-	where T : new()
+public class CoreContentPage<T> : ContentPage
 {
-	public T ContextedViewModel { get; set; }
-
-	public CoreContentPage()
-	{
-		BindingContext = ContextedViewModel = new T();
-	}
 }
