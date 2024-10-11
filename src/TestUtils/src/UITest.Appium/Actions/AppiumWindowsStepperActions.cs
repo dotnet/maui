@@ -1,5 +1,4 @@
-﻿using OpenQA.Selenium.Appium;
-using UITest.Core;
+﻿using UITest.Core;
 
 namespace UITest.Appium;
 
@@ -59,12 +58,4 @@ public class AppiumWindowsStepperActions : ICommandExecutionGroup
 
 		return CommandResponse.SuccessEmptyResponse;
 	}
-
-	static AppiumElement? GetAppiumElement(object element) =>
-		element switch
-		{
-			AppiumElement appiumElement => appiumElement,
-			AppiumDriverElement driverElement => driverElement.AppiumElement,
-			_ => null
-		};
 }

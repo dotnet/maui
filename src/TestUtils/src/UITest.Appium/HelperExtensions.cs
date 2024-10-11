@@ -788,7 +788,7 @@ namespace UITest.Appium
 		{
 			app.CommandExecutor.Execute("decreaseStepper", new Dictionary<string, object>
 			{
-				["element"] = marked
+				["elementId"] = marked
 			});
 		}
 
