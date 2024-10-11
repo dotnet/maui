@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCornerRadius(this ShapeableImageView platformButton, IButtonStroke buttonStroke) =>
 			platformButton.UpdateButtonStroke(buttonStroke);
 
-		public static async void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
+		public static void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			var padding = platformButton.Context!.ToPixels(imageButton.Padding);
 			var (strokeWidth, _, _) = imageButton.GetStrokeProperties(platformButton.Context!, true);
@@ -32,29 +32,9 @@ namespace Microsoft.Maui.Platform
 
 			// Because there is only a single padding property, we need to reset the padding to 0 otherwise we
 			// probably will get a double padding. Trust me. I've seen it happen. It's not pretty.
+			// The padding is also reset in MauiShapeableImageView.
 			platformButton.SetPadding(0, 0, 0, 0);
 
-			// The padding has a few issues, but setting and then resetting after some calculations
-			// are done seems to work. This is a workaround for the following issue:
-			// https://github.com/material-components/material-components-android/issues/2063
-			await Task.Yield();
-
-			if (!platformButton.IsAlive())
-				return;
-
-			// We must re-set all the paddings because the first time was not hard enough.
-			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);
-			platformButton.SetPadding(0, 0, 0, 0);
-
-			// Just like before, the bugs are not done. This needs to trigger a re-calculation of
-			// the shape appearance mode to avoid clipping issues.
-			if (platformButton.Drawable is not null)
-			{
-				platformButton.ShapeAppearanceModel =
-					platformButton.ShapeAppearanceModel
-						.ToBuilder()
-						.Build();
-			}
 		}
 
 		internal static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
