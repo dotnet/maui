@@ -529,7 +529,7 @@ Task("uitest")
 
 	if (localDotnet)
 	{
-		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
 		Information("new dotnet root: {0}", localDotnetRoot);
 
 		DOTNET_ROOT = localDotnetRoot.ToString();
