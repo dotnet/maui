@@ -28,6 +28,8 @@ string CONFIGURATION = Argument("configuration", "Debug");
 
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
+var dotnetToolPath = GetDotnetToolPath();
+
 // other
 string PLATFORM = "windows";
 string DOTNET_PLATFORM = $"win10-x64";
@@ -38,8 +40,6 @@ bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
-
-var dotnetToolPath = GetDotnetToolPath();
 
 // Uninstall the deployed app
 var uninstallPS = new Action(() =>
@@ -513,21 +513,43 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	Information("old dotnet root: {0}", DOTNET_ROOT);
+	Information("old dotnet path: {0}", DOTNET_PATH);
+
+	var buildSettings = new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = dotnetToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
-	});
+	};
+
+	string? localToolPath = null;
+
+	if (localDotnet)
+	{
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
+
+		DOTNET_ROOT = localDotnetRoot.ToString();
+
+		localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+		Information("new dotnet toolPath: {0}", localToolPath);
+
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+		buildSettings.ToolPath = localToolPath;
+	}
+
+	DotNetBuild(PROJECT.FullPath, buildSettings);
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, dotnetToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");
 });
 
 RunTarget(TARGET);
