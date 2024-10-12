@@ -58,7 +58,10 @@ namespace Microsoft.Maui.Controls
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
 			{
-				ApplyChanges(_currentNavigationPage);
+				if (_currentNavigationPage is not null)
+					ApplyChanges(_currentNavigationPage);
+				else if (sender is NavigationPage navPage)
+					ApplyChanges(navPage);
 			}
 			else if (_currentPage != sender && sender == _currentNavigationPage && e.Is(NavigationPage.CurrentPageProperty))
 			{
@@ -207,8 +210,8 @@ namespace Microsoft.Maui.Controls
 			if (_currentPage == null)
 				return;
 
-			var stack = navigationPage?.Navigation?.NavigationStack;
-			if (stack is null || stack.Count == 0)
+			var stack = navigationPage.Navigation.NavigationStack;
+			if (stack.Count == 0)
 				return;
 
 			var currentPage = _currentPage;
