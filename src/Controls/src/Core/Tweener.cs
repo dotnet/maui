@@ -34,6 +34,8 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Func<long, bool> _step;
 
+
+
 		public TweenerAnimation(Func<long, bool> step)
 		{
 			_step = step;
@@ -43,6 +45,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var running = _step.Invoke((long)millisecondsSinceLastUpdate);
 			HasFinished = !running;
+
+			if (HasFinished)
+				Finished?.Invoke();
 		}
 
 		internal override void ForceFinish()
