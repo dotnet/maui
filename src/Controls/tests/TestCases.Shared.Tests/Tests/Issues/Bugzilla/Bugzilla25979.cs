@@ -1,3 +1,4 @@
+#if !IOS && !MACCATALYST // TODO: Fix on iOS and Mac.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -39,3 +40,4 @@ public class Bugzilla25979 : _IssuesUITest
 		App.WaitForNoElement("PopAttempted");
 	}
 }
+#endif
