@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler && handler.VirtualView is not null)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
-					handler.SyncPlatformCookies(sender.CoreWebView2.Source).FireAndForget();
+					handler.SyncPlatformCookies(handler.PlatformView.Source.ToString()).FireAndForget();
 				}
 			}
 
