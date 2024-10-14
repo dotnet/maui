@@ -68,7 +68,7 @@ steps:
       echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_17_X64)"
       brew install --cask microsoft-openjdk@17
     displayName: 'Setup JDK Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
   # Configure VS Mac for Xcode
   # This seems to be needed or else it will pick other xcode for example on xharness
   # - bash: |
@@ -92,12 +92,10 @@ steps:
         github_token: ${{ parameters.gitHubToken }}
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
+        SKIP_ANDROID_API_SDKS: 'true'
+        SKIP_ANDROID_API_IMAGES: 'true'
         ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-          INSTALL_DEFAULT_ANDROID_API: 'true'
+          INSTALL_DEFAULT_ANDROID_API: 'false'
 
   - pwsh: |
       if ($env:JAVA_HOME_17_X64) {
