@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		public const string TitleBarSubtitle = "PART_Subtitle";
 		public const string SubtitleVisibleState = "SubtitleVisible";
-		public const string SubtitleHiddenState = "SubTitleCollapsed";
+		public const string SubtitleHiddenState = "SubtitleCollapsed";
 
 		public const string TitleBarLeading = "PART_LeadingContent";
 		public const string LeadingVisibleState = "LeadingContentVisible";
