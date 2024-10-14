@@ -7,8 +7,16 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
-			VerticalStackLayout stackLayout = new VerticalStackLayout();
+			bool isCookieSet = false;
+			Grid grid = new Grid();
+			grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0.8, GridUnitType.Star) });
+			grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0.2, GridUnitType.Star) });
 			WebView webView = new WebView();
+
+			Label label = new Label();
+			label.Text = "Test webview";
+			label.AutomationId = "Label";
+
 			const string url = "https://httpbin.org/#/Cookies/get_cookies";
 
 			CookieContainer cookieContainer = new();
@@ -27,15 +35,32 @@ namespace Maui.Controls.Sample.Issues
 			webView.Cookies = cookieContainer;
 			webView.AutomationId = "WebView";
 			webView.Source = new UrlWebViewSource { Url = uri.ToString() };
-			Label label = new Label()
+
+
+			grid.Children.Add(webView);
+
+			webView.Navigated += (s, e) =>
 			{
-				AutomationId = "Label",
-				Text = "This is a test label"
+				var cookies = webView.Cookies.GetCookies(uri);
+				foreach (Cookie c in cookies)
+				{
+					if (c.Name == "DotNetMAUICookie")
+					{
+						isCookieSet = true;
+						grid.Children.Add(label);
+						break;
+					}
+				}
+
+
+				if (isCookieSet)
+				{
+					label.Text = "Success";
+				}
+
 			};
-			
-			stackLayout.Children.Add(webView);
-			stackLayout.Children.Add(label);
-			Content = stackLayout;
+
+			Content = grid;
 		}
 	}
 }

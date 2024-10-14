@@ -8,6 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue18452 : _IssuesUITest
 {
 	public override string Issue => "NullReferenceException throws on Windows when setting Cookies on .NET MAUI WebView";
+	string? expected = "Success";
 
 	public Issue18452(TestDevice device) : base(device)
 	{
@@ -16,6 +17,8 @@ public class Issue18452 : _IssuesUITest
 	[Test]
 	public void WebViewLoadedWithoutException()
 	{
-		App.WaitForElement("Label");
+		Task.Delay(10000).Wait();
+		string? label = App.FindElement("Label").GetText();
+		Assert.That(label, Is.EqualTo(expected));
 	}
 }
