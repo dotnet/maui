@@ -21,6 +21,7 @@ stages:
           condition: eq(variables.signingCondition, true)
           use1ESTemplate: true
           usePipelineArtifactTasks: true
+          checkoutType : 'self'
         
       - template: nuget-msi-convert/job/v4.yml@yaml-templates
         parameters:
