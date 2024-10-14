@@ -141,7 +141,12 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	Information("toolPath: {0}", dotnetToolPath);
+    var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+	DOTNET_ROOT = localDotnetRoot.ToString();
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
+	
+    Information("toolPath: {0}", dotnetToolPath);
 
 	Information("Building and publishing device test app");
 
