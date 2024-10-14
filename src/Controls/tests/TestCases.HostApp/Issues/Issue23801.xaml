@@ -8,7 +8,7 @@
       <Label.FormattedText>
         <FormattedString>
           <Span Text="I am the start of a span "/>
-          <Span Text="https://en.wikipedia.org/wiki/Maui-Lable-Control-Span-Gesture-Test"
+          <Span x:Name="LabelSpan"
                 TextColor="Blue"
                 TextDecorations="Underline">
             <Span.GestureRecognizers>
