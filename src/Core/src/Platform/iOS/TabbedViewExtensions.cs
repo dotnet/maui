@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -8,14 +9,13 @@ using UIKit;
 namespace Microsoft.Maui.Platform
 {
 	internal static class TabbedViewExtensions
-	{
+	{		
+		[UnconditionalSuppressMessage("CodeAnalysis", "AD0001", Justification = "https://github.com/xamarin/xamarin-macios/issues/21390")]
 		internal static void DisableiOS18ToolbarTabs(
 			this UITabBarController tabBarController)
 		{
-#pragma warning disable AD0001
 			// Should apply to iOS and Catalyst
             if (OperatingSystem.IsMacCatalystVersionAtLeast(18,0,-1) || //https://github.com/xamarin/xamarin-macios/issues/21390
-#pragma warning restore AD0001
 				OperatingSystem.IsIOSVersionAtLeast(18,0))
             {
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
