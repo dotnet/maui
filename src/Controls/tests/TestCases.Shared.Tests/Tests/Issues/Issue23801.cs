@@ -13,15 +13,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.Label)]
 		public void VerifyLabelSpanGestureWhenWrappedOverTwoLines()
 		{
 			var label = App.WaitForElement("Label");
 			var location = label.GetRect();
 			var endOfFirstLine = location.X + location.Width - 150;
 			App.Click(endOfFirstLine, location.Y);
-
-			Assert.That(label.GetText(), Is.EqualTo("Label Span tapped at end of first line"));
+			var testlabel = App.WaitForElement("TestLabel");
+			Assert.That(testlabel.GetText(), Is.EqualTo("Label span tapped"));
 		}
 	}
 }
