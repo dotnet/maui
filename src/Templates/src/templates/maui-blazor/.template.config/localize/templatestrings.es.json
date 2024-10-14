@@ -1,12 +1,12 @@
 {
-  "author": "Microsoft",
-  "name": "Aplicación .NET MAUI Blazor",
-  "description": "Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst, Tizen y WinUI con Blazor",
-  "postActions/openInEditor/description": "Abre Components/Pages/Home.razor en el editor.",
-  "symbols/applicationId/description": "Reemplaza $(ApplicationId) en el proyecto",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample pages",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns.",
-  "symbols/Empty/description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+    "author": "Microsoft",
+    "name": "Aplicación .NET MAUI Blazor",
+    "description": "Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst, Tizen y WinUI con Blazor",
+    "postActions/openInEditor/description": "Abre Components/Pages/Home.razor en el editor.",
+    "symbols/applicationId/description": "Reemplaza $(ApplicationId) en el proyecto",
+    "symbols/Framework/description": "The target framework for the project.",
+    "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
+    "symbols/IncludeSampleContent/displayName": "_Incluir páginas de muestra",
+    "symbols/IncludeSampleContent/description": "Configura si se deben agregar páginas de muestra y estilos para demostrar patrones de uso básicos.",
+    "symbols/Empty/description": "Configura si se deben omitir las páginas de muestra y los estilos que demuestran patrones de uso básicos."
 }
