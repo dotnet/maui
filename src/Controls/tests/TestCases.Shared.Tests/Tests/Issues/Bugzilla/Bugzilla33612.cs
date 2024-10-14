@@ -1,4 +1,4 @@
-﻿#if WINDOWS // TODO: Fix on Apple devices and Windows.
+﻿#if ANDROID // TODO: Fix on Apple devices and Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
