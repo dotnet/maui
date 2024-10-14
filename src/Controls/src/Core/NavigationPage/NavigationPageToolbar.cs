@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Controls
 			if (sender is not ContentPage cp)
 				return;
 
+			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
 
