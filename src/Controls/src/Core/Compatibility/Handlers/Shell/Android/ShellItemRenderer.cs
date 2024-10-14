@@ -13,6 +13,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -90,7 +91,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (appearance is IShellAppearanceElement appearanceElement)
 				{
-					background.Color = appearanceElement.EffectiveTabBarBackgroundColor.ToPlatform();
+					if (appearanceElement.EffectiveTabBarBackgroundColor is not null)
+					{
+						background.Color = appearanceElement.EffectiveTabBarBackgroundColor.ToPlatform();
+					}
+					else
+					{
+						background.Color = ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+					}
 				}
 			}
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
