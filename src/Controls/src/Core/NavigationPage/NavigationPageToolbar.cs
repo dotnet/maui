@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
 			RootPage = rootPage;
 			_toolbarTracker.PageAppearing += OnPageAppearing;
-			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 			_toolbarTracker.Target = RootPage;
 		}
 
@@ -58,10 +57,7 @@ namespace Microsoft.Maui.Controls
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
 			{
-				if (_currentNavigationPage is not null)
-					ApplyChanges(_currentNavigationPage);
-				else if (sender is NavigationPage navPage)
-					ApplyChanges(navPage);
+				ApplyChanges(_currentNavigationPage);
 			}
 			else if (_currentPage != sender && sender == _currentNavigationPage && e.Is(NavigationPage.CurrentPageProperty))
 			{
@@ -115,6 +111,7 @@ namespace Microsoft.Maui.Controls
 			_hasAppeared = true;
 
 			ApplyChanges(_currentNavigationPage);
+			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 		}
 
 		// This is to catch scenarios where the user
