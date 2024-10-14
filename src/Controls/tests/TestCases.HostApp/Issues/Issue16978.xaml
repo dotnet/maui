@@ -17,7 +17,9 @@
                HorizontalOptions="FillAndExpand"
                Opacity="0.7"
                VerticalOptions="FillAndExpand"
-               HasShadow="False" />
+               HasShadow="False" >
+        <Label x:Name="FrameLabel" AutomationId="FrameLabelTest" Text="Gesture is not detected" VerticalOptions="Start" HeightRequest="50"/>
+      </Frame>
     </Grid>
 
   </ContentPage.Content>

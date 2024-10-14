@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 		private void PanGestureRecognizer_PanUpdated(object sender, PanUpdatedEventArgs e)
 		{
-			(sender as Grid).BackgroundColor = Colors.GreenYellow;
+			FrameLabel.Text = "Pan Gesture Recognized";
 		}
 	}
 }

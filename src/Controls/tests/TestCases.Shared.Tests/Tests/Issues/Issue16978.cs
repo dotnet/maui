@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !WINDOWS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -21,8 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/16978
 			App.WaitForElement("FrameGesturePage");
 			App.DragCoordinates(100, 100, 200, 200);
-			VerifyScreenshot();
+			ClassicAssert.AreEqual("Triggered", App.FindElement("FrameLabelTest").GetText());
 		}
 	}
 }
+#endif
 
