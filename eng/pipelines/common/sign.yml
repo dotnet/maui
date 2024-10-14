@@ -38,6 +38,14 @@ stages:
               patterns: |
                 **/SignVerifyIgnore.txt
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.SourcesDirectory)\eng\automation\guardian
+              patterns: |
+                **/tsaoptions-v2.json
+                **/source.gdnsuppress
+
           - task: MicroBuildCodesignVerify@3
             displayName: verify signed msi content
             inputs:
