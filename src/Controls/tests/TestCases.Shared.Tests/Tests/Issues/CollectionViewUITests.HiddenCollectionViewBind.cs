@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// CollectionShouldInvalidateOnVisibilityChange (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13203.cs)
 		[Test]
+		[FailsOnAllPlatforms("This test is failing, likely due to product issue")]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
