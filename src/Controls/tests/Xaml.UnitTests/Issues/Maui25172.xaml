@@ -5,4 +5,8 @@
     xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
     x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui25172"
     x:TypeArguments="local:VM25172"
-    BackgroundColor="{StaticResource BackgroundColor}" />
+    BackgroundColor="{StaticResource BackgroundColor}">
+    <ContentPage.Resources>
+        <ResourceDictionary Source="../AppResources/Colors.xaml" x:Key="Colors" />
+    </ContentPage.Resources>
+</local:CoreContentPage>
