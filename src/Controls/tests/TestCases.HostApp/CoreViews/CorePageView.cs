@@ -135,7 +135,7 @@ namespace Maui.Controls.Sample
 				{
 					var realize = page.Realize();
 
-					Application.Current.MainPage = new NavigationPage(realize);
+					Application.Current.MainPage = realize;
 				}
 
 				SelectedItem = null;
