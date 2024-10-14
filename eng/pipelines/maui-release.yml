@@ -67,7 +67,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/dev/pjc/msi-arcade-05c72bb
+      ref: refs/heads/main
     - repository: sdk-insertions
       type: github
       name: xamarin/sdk-insertions
