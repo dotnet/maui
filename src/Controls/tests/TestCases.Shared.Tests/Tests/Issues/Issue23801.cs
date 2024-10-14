@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST || !WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,8 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var endOfFirstLine = location.X + location.Width - 150;
 			App.Click(endOfFirstLine, location.Y);
 
-			VerifyScreenshot();
+			Assert.That(label.GetText(), Is.EqualTo("Label Span tapped at end of first line"));
 		}
 	}
 }
-#endif
