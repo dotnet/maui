@@ -780,7 +780,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 				
-				_container.Tapped += OnTap;
+				_container.AddHandler(FrameworkElement.TappedEvent, new TappedEventHandler(OnTap), true);
 				_container.RightTapped += OnTap;
 			}
 			else
@@ -797,7 +797,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
-				_container.DoubleTapped += OnTap;
+				_container.AddHandler(FrameworkElement.DoubleTappedEvent, new DoubleTappedEventHandler(OnTap), true);
 			}
 			else
 			{
