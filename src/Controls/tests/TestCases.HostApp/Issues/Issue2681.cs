@@ -18,7 +18,7 @@ public class Issue2681 : TestNavigationPage
 	}
 
 	[Preserve(AllMembers = true)]
-	public partial class FreezeMe : ContentPage
+	public class FreezeMe : ContentPage
 	{
 		public List<int> Items { get; set; }
 
