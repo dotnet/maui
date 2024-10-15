@@ -1,9 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 20199, "[iOS] Page titles do not appear until navigating when pushing a modal page at startup", PlatformAffected.iOS)]
 	public partial class Issue20199 : Shell
 	{

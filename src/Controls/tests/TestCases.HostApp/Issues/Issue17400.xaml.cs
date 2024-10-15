@@ -64,7 +64,6 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 17400, "CollectionView wrong Layout", PlatformAffected.UWP)]
 	public partial class Issue17400 : ContentPage
 	{

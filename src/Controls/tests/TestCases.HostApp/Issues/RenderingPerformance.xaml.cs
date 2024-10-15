@@ -1,10 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 using ILayout = Microsoft.Maui.ILayout;
 
 namespace Maui.Controls.Sample.Issues;
@@ -55,7 +49,6 @@ public static class RenderingPerformanceExtensions
 	}
 }
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.None, 0, "Rendering performance", PlatformAffected.All)]
 public partial class RenderingPerformance : ContentPage
 {

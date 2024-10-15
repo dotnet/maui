@@ -1,12 +1,9 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, "23291", "Changing Position no longer works after navigation away then coming back", PlatformAffected.iOS)]
 	public class Issue23291NavPage : NavigationPage
 	{

@@ -1,10 +1,5 @@
-using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 19214_3, "iOS Editor Cursor stays above keyboard - Top level ScrollView", PlatformAffected.iOS)]
 public partial class Issue19214_3 : ContentPage
 {

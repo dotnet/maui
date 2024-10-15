@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 14471, "Image can disappear when going back to the page", PlatformAffected.Android)]
 	public partial class Issue14471 : Shell
 	{

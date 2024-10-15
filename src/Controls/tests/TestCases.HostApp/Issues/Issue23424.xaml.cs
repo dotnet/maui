@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, "23424", "BackButtonBehavior IsVisible=False does not hide the back button", PlatformAffected.All)]
 public partial class Issue23424 : Shell
 {

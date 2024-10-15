@@ -1,10 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 22183, "RadioButton with value cannot display selected state correctly", PlatformAffected.iOS)]
 	public partial class Issue22183 : ContentPage
 	{

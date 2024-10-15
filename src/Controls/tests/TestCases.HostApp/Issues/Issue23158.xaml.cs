@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 23158, "Respect Entry.ClearButtonVisibility on Windows", PlatformAffected.UWP)]
 public partial class Issue23158 : ContentPage
 {

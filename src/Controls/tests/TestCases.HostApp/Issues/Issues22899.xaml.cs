@@ -1,10 +1,5 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 22899, "Title not updated after OnAppearing for TabbedPage in NavigationPage", PlatformAffected.All)]
 	public class Issue22899NavPage : NavigationPage
 	{

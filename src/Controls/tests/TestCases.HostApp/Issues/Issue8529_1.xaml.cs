@@ -1,13 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
+﻿using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class Issue8529_1 : ContentPage
 	{
 		public Issue8529_1()

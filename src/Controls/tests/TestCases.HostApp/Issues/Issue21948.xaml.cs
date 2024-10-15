@@ -14,7 +14,6 @@ using CoreGraphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 21948, "Crash upon resuming the app window was already activated", PlatformAffected.iOS)]
 	public partial class Issue21948 : ContentPage
 	{

@@ -1,11 +1,5 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 7823, "In a ToolbarItems, if an item has no icon but just text, MAUI uses the icon from the previous page in the Navigation", PlatformAffected.Android)]
 	public class Issue7823NavigationPage : NavigationPage
 	{

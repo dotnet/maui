@@ -1,13 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Devices;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 18161, "Toggling FlyoutLayoutBehavior on Android causes the app to crash", PlatformAffected.Android)]
 	public partial class Issue18161 : FlyoutPage, IFlyoutPageController, IFlyoutView
 	{

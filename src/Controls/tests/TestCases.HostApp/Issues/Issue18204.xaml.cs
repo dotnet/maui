@@ -1,11 +1,5 @@
-using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 18204, "[iOS] Drawing of Borders lags behind other elements creating bizarre overlaps and glitches", PlatformAffected.iOS)]
 
 public partial class Issue18204 : ContentPage

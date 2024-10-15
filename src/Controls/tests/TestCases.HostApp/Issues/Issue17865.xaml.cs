@@ -37,7 +37,6 @@ namespace Maui.Controls.Sample.Issues
 		public ObservableCollection<Issue17865Model> Items => items;
 	}
 
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 17865, "CollectionView throws NRE when ScrollTo method is called from a handler of event Window.Created", PlatformAffected.UWP)]
 	public partial class Issue17865 : ContentPage
 	{
