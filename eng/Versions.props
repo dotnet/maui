@@ -167,7 +167,7 @@
     <AndroidSdkCmdLineToolsVersion>13.0</AndroidSdkCmdLineToolsVersion>
     
     <!-- Device Type for creating AVD's -->
-    <AndroidSdkAvdDeviceType>pixel</AndroidSdkAvdDeviceType>
+    <AndroidSdkAvdDeviceType>Nexus 5X</AndroidSdkAvdDeviceType>
   </PropertyGroup>
 
   <!-- Android API Levels to install platform sdks and emulator images for -->
