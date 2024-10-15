@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 6945, "[iOS] Wrong anchor behavior when setting HeightRequest ",
 		PlatformAffected.iOS)]
 	public class Issue6946 : TestContentPage

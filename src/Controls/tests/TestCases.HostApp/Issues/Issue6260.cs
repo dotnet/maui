@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 6260, "[Android] infinite layout loop",
 		PlatformAffected.Android)]
 	public class Issue6260 : TestContentPage

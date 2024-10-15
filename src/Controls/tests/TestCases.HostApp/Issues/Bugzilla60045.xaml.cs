@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 60045,
 	"ListView with RecycleElement strategy doesn't handle CanExecute of TextCell Command properly",
 	PlatformAffected.iOS)]

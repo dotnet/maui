@@ -5,13 +5,13 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 41271, "[UWP] Memory Leak from ListView in TabbedPage", PlatformAffected.UWP)]
 public class Bugzilla41271 : TestTabbedPage
 {
 	const string ListMain = "mainList";
 
-	[Preserve(AllMembers = true)]
+	
 	class Person
 	{
 		public Person(string firstName, string lastName, string city, string state)
@@ -26,7 +26,7 @@ public class Bugzilla41271 : TestTabbedPage
 		public string City { get; set; }
 		public string State { get; set; }
 	}
-	[Preserve(AllMembers = true)]
+	
 	class ListViewCell : ViewCell
 	{
 		Label firstNameLabel = new Label();
@@ -63,7 +63,7 @@ public class Bugzilla41271 : TestTabbedPage
 			}
 		}
 	}
-	[Preserve(AllMembers = true)]
+	
 	class ListViewPage : ContentPage
 	{
 		ListView _ListView;

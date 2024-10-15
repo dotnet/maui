@@ -56,7 +56,7 @@ public class Issue1439 : TestContentPage
 		_label3.Text = $"{((Group)e.Group).Title}";
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class ViewModel : ObservableObject
 	{
 		ObservableCollection<Group> _items;
@@ -83,7 +83,7 @@ public class Issue1439 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class Group : ObservableCollection<object>
 	{
 		public string Title { get; set; }
@@ -98,7 +98,7 @@ public class Issue1439 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class ObservableObject : INotifyPropertyChanged
 	{
 		protected virtual bool SetProperty<T>(

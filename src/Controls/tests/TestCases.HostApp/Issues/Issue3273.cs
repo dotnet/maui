@@ -6,11 +6,11 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 3273, "Drag and drop reordering not firing CollectionChanged", PlatformAffected.UWP)]
 	public class Issue3273 : TestContentPage
 	{
-		[Preserve(AllMembers = true)]
+		
 		public class SortableListView : ListView
 		{
 		}

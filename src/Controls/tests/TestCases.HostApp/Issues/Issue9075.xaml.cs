@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public partial class Issue9075ViewModel : BindableObject
 	{
 		List<int> _carouselCards = new()

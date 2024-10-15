@@ -1,13 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3089, "TextCell text doesn't change when using Recycling on ListViews")]
 	public class Issue3089 : NavigationPage
 	{
@@ -38,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 			});
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public partial class MainPageCode : TabbedPage
 		{
 			public MainPageCode()
@@ -56,7 +53,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class MainViewModel
 		{
 
@@ -82,7 +79,7 @@ namespace Maui.Controls.Sample.Issues
 			public ICommand Add2Command { get; }
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class ListViewModel : INotifyPropertyChanged
 		{
 			public ObservableCollection<string> Items { get; set; }
@@ -97,7 +94,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-			[Preserve(AllMembers = true)]
+			
 			public partial class ListPageCode : ContentPage
 			{
 				public ListPageCode()

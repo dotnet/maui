@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 41038, "FlyoutPage loses menu icon on iOS after reusing NavigationPage as Detail")]
 public class Bugzilla41038 : TestFlyoutPage
 {

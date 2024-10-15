@@ -4,7 +4,7 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2597, "Stepper control .IsEnabled doesn't work", PlatformAffected.Android)]
 public class Issue2597 : TestContentPage
 {

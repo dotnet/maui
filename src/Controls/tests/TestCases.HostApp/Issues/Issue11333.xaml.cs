@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 11333,
 		"[Bug] SwipeView does not work on Android if child has TapGestureRecognizer",
 		PlatformAffected.Android)]
@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class Issue11333Model
 	{
 		public string Title { get; set; }

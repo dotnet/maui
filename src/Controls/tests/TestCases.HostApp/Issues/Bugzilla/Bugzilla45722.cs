@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 45722, "Memory leak in Xamarin Forms ListView", PlatformAffected.UWP)]
 	public class Bugzilla45722 : TestContentPage
 	{
@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class _45722Model : INotifyPropertyChanged
 		{
 			string _text;
@@ -151,7 +151,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class _45722Label : Label
 	{
 		public static int Count;

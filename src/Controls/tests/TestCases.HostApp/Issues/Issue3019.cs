@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 3019, "Grouped ListView Header empty for adding items", PlatformAffected.UWP)]
 
 public class Issue3019 : TestContentPage
@@ -16,7 +16,7 @@ public class Issue3019 : TestContentPage
 	ListView _listViewIsGrouped;
 
 
-	[Preserve(AllMembers = true)]
+	
 	class MyHeaderViewCell : ViewCell
 	{
 		public MyHeaderViewCell()
@@ -34,7 +34,7 @@ public class Issue3019 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class Item
 	{
 		static int counter = 0;
@@ -47,7 +47,7 @@ public class Issue3019 : TestContentPage
 
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class GroupedItem : List<Item>
 	{
 		public GroupedItem()

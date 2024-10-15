@@ -51,7 +51,6 @@ public class AddingMultipleItemsListView : TestContentPage
 		Content = layout;
 	}
 
-	[Preserve(AllMembers = true)]
 	public class CustomViewCell : ViewCell
 	{
 		public CustomViewCell()

@@ -2,7 +2,7 @@
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 {
-	[Preserve(AllMembers = true)]
+	
 	public partial class BasicGrouping : ContentPage
 	{
 		public BasicGrouping()

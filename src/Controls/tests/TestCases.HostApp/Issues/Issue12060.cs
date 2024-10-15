@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 12060, "Bug] DragGestureRecognizer shows 'Copy' tag when dragging in UWP",
 		PlatformAffected.UWP)]
 	public class Issue12060 : TestContentPage

@@ -6,7 +6,7 @@ using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 40161, "Issue Bugzilla40161", PlatformAffected.Default)]
 public class Bugzilla40161 : TestContentPage
 {

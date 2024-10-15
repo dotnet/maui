@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1939, "ArgumentOutOfRangeException on clearing a group on a grouped ListView on Android", PlatformAffected.Android)]
 public class Issue1939 : TestContentPage
 {
@@ -67,7 +67,7 @@ public class Issue1939 : TestContentPage
 		results.Clear();
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class MyDataTemplateSelector : DataTemplateSelector
 	{
 		readonly DataTemplate firstGroupTemplate;
@@ -93,20 +93,20 @@ public class Issue1939 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class GroupItem
 	{
 		public string DisplayText { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class GroupedData : ObservableCollection<GroupItem>
 	{
 		public string GroupName { get; set; }
 		public bool HasHeader { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class GroupItemTemplate : ViewCell
 	{
 		public GroupItemTemplate()
@@ -123,7 +123,7 @@ public class Issue1939 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class GroupHeaderTemplate : ViewCell
 	{
 		public GroupHeaderTemplate()
@@ -144,7 +144,7 @@ public class Issue1939 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class GroupNoHeaderTemplate : ViewCell
 	{
 		public GroupNoHeaderTemplate()

@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 11214, "When adding FlyoutItems during Navigating only first one is shown", PlatformAffected.iOS)]
 public class Issue11214 : TestShell
 {

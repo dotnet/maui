@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 15542, "[Bug] Shell.TitleView does not render on iOS 16", PlatformAffected.iOS)]
 public class Issue15542 : TestShell
 {

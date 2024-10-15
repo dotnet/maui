@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2883, "ViewCell IsEnabled set to false does not disable a cell in a TableView")]
 public class Issue2883 : TestContentPage
 {

@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 5376, "Call unfocus entry crashes app", PlatformAffected.Android)]
 	public class Issue5376 : TestFlyoutPage
 	{
@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Issues
 			Detail = new ContentPage { Content = new Label { Text = "Success" } };
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class EntryPage : ContentPage
 		{
 			Entry entry;

@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 35477, "Tapped event does not fire when added to Frame in Android AppCompat",
 		PlatformAffected.Android)]
 	public class Bugzilla35477 : TestContentPage

@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 58875, "Back navigation disables Context Action in whole app, if Context Action left open", PlatformAffected.iOS)]
 public class Bugzilla58875 : TestNavigationPage
 {
@@ -18,7 +18,7 @@ public class Bugzilla58875 : TestNavigationPage
 		Navigation.PushAsync(page1);
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class ListViewPage : ContentPage
 	{
 		public ListViewPage()
@@ -57,7 +57,7 @@ public class Bugzilla58875 : TestNavigationPage
 		public ObservableCollection<string> Items { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class Page1 : ContentPage
 	{
 		public Page1()

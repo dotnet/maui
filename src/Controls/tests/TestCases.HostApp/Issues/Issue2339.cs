@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2339, "Picker not shown when .Focus() is called")]
 	public class Issue2339 : TestContentPage
 	{

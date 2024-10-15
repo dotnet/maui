@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1931,
 		"Xamarin Forms on Android: ScrollView on ListView header crashes app when closing page",
 		PlatformAffected.Android)]
@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.Issues
 				return page;
 			}
 
-			[Preserve(AllMembers = true)]
+			
 			public class Item2 : System.ComponentModel.INotifyPropertyChanged
 			{
 				public string Name

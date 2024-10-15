@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	internal class NestedItemSource
 	{
 		public List<CollectionViewGalleryTestItem> Items { get; set; }
@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	internal class NestedCollectionViewModel
 	{
 		public List<NestedItemSource> Items { get; set; }

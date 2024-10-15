@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.None, 0, "Shell Flyout Behavior",
 	PlatformAffected.All)]
 

@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2858, "Transparency Cascading", PlatformAffected.Android)]
 	public partial class Issue2858 : TestContentPage
 	{

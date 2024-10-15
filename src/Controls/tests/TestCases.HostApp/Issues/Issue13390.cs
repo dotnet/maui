@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 13390, "Custom SlideFlyoutTransition is not working",
 		PlatformAffected.iOS)]
 	public class Issue13390 : TestShell

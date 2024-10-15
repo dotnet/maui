@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1590, "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException",
 		PlatformAffected.Android)]
 	public class Issue1590 : TestContentPage
@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class RootPageViewModel
 	{
 		public IEnumerable MediaSections
@@ -64,7 +64,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class MediaListSection : ObservableCollection<FooViewModel>
 	{
 		public string SectionName { get; private set; }
@@ -75,14 +75,14 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class FooViewModel
 	{
 		public string Title { get; set; }
 		public string Description { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ModuleMediaListItemTemplate : ViewCell
 	{
 		public ModuleMediaListItemTemplate()
@@ -102,7 +102,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ModuleMediaListHeaderTemplate : ViewCell
 	{
 		public ModuleMediaListHeaderTemplate()

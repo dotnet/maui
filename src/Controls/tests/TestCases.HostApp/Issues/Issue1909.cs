@@ -7,7 +7,7 @@ using Button = Microsoft.Maui.Controls.Button;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1909, "Xamarin.forms 2.5.0.280555 and android circle button issue", PlatformAffected.Android)]
 	public class Issue1909 : TestContentPage
 	{

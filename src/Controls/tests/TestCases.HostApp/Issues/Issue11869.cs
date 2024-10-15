@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 11869, "[Bug] ShellContent.IsVisible issue on Android",
 	PlatformAffected.Android)]
 public class Issue11869 : TestShell

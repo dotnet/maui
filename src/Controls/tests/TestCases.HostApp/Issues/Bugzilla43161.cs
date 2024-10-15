@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 43161, "[iOS] Setting Accessory in ViewCellRenderer breaks layout", PlatformAffected.iOS)]
 public class Bugzilla43161 : TestContentPage
 {
@@ -13,7 +13,7 @@ public class Bugzilla43161 : TestContentPage
 	const string ListView2 = "Accessory with RecycleElement";
 	const string ListView3 = "Accessory with RetainElement";
 
-	[Preserve(AllMembers = true)]
+	
 	public class AccessoryViewCell : ViewCell
 	{
 		public AccessoryViewCell()
@@ -25,7 +25,7 @@ public class Bugzilla43161 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class AccessoryViewCellWithContextActions : AccessoryViewCell
 	{
 		public AccessoryViewCellWithContextActions()

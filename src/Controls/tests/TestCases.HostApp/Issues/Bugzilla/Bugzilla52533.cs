@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 52533, "System.ArgumentException: NaN is not a valid value for width", PlatformAffected.iOS)]
 	public class Bugzilla52533 : TestContentPage
 	{
@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Issues
 			Content = new ListView { ItemTemplate = new DataTemplate(typeof(GridViewCell)), ItemsSource = Enumerable.Range(0, 10) };
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class GridViewCell : ViewCell
 		{
 

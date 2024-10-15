@@ -7,7 +7,6 @@ using Application = Microsoft.Maui.Controls.Application;
 
 namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
 	internal class CoreNavigationPage : Microsoft.Maui.Controls.NavigationPage
 	{
 		public CoreNavigationPage()

@@ -12,7 +12,6 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = new Issue8529ViewModel();
 		}
 
-		[Preserve(AllMembers = true)]
 		public class Issue8529ViewModel
 		{
 			public ICommand BackCommand { get; set; }

@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1650, "[macOS] Completed event of Entry raised on Tab key", PlatformAffected.macOS)]
 public class GitHub1650 : TestContentPage
 {

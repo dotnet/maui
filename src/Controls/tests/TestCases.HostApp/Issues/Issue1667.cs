@@ -10,7 +10,7 @@ using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1667, "Entry: Position and color of caret", PlatformAffected.All)]
 	public class Issue1667 : TestContentPage
 	{

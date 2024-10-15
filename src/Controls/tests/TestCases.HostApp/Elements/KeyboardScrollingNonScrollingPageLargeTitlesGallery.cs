@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
+	
 	public class KeyboardScrollingNonScrollingPageLargeTitlesGallery : ContentViewGalleryPage
 	{
 		public KeyboardScrollingNonScrollingPageLargeTitlesGallery()

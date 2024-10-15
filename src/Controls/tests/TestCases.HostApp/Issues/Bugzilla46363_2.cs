@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 46363, "TapGestureRecognizer blocks List View Context Actions1",
 	PlatformAffected.Android, issueTestNumber: 1)]
 public class Bugzilla46363_2 : TestContentPage
@@ -62,7 +62,7 @@ public class Bugzilla46363_2 : TestContentPage
 		Content = layout;
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class _46363Template_2 : ViewCell
 	{
 		public _46363Template_2()

@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 10744, "[Android] WebView.Eval crashes on Android with long string",
 		PlatformAffected.Android)]
 	public class Issue10744 : TestContentPage

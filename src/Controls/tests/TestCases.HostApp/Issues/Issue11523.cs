@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 11523, "[Bug] FlyoutBehavior.Disabled removes back-button from navbar",
 	PlatformAffected.iOS)]
 public class Issue11523 : TestShell

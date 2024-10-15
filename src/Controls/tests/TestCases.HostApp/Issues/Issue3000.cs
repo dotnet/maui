@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 3000, "Horizontal ScrollView breaks scrolling when flowdirection is set to rtl")]
 	public class Issue3000 : TestContentPage
 	{

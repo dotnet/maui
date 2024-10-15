@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 58833, "ListView SelectedItem Binding does not fire", PlatformAffected.Android)]
 public class Bugzilla58833 : TestContentPage
 {
@@ -14,7 +14,7 @@ public class Bugzilla58833 : TestContentPage
 	Label _resultLabel;
 	static Label s_tapGestureFired;
 
-	[Preserve(AllMembers = true)]
+	
 	class TestCell : ViewCell
 	{
 		readonly Label _content;

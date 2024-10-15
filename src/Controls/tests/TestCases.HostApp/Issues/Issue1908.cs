@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1908, "Image reuse", PlatformAffected.Android)]
 	public class Issue1908 : TestContentPage
 	{

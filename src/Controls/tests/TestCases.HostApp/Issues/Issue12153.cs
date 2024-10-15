@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 12153, "Setting FontFamily to pre-installed fonts on UWP crashes", PlatformAffected.UWP)]
 	public class Issue12153 : TestContentPage
 	{

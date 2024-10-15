@@ -3,7 +3,6 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
 	internal class CoreRootPage : Microsoft.Maui.Controls.ContentPage
 	{
 		public CoreRootPage(Microsoft.Maui.Controls.Page rootPage)

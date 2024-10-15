@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 11247,
 	"[Bug] Shell FlyoutIsPresented not working if set in \"navigating\" handler",
 	PlatformAffected.iOS)]

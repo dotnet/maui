@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2948, "FlyoutPage Detail is interactive even when Flyout is open when in Landscape")]
 public class Issue2948 : TestFlyoutPage
 {
@@ -24,7 +24,7 @@ public class Issue2948 : TestFlyoutPage
 		Detail = new NavigationPage(new ContractsPage());
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class MenuListData : List<MenuItem>
 	{
 		public MenuListData()
@@ -59,7 +59,7 @@ public class Issue2948 : TestFlyoutPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ContractsPage : ContentPage
 	{
 		public ContractsPage()
@@ -133,7 +133,7 @@ public class Issue2948 : TestFlyoutPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class MenuListView : ListView
 	{
 		public MenuListView()
@@ -198,7 +198,7 @@ public class Issue2948 : TestFlyoutPage
 
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class MenuItem
 	{
 		public string Title { get; set; }

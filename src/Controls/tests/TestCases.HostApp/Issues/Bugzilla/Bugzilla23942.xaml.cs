@@ -1,14 +1,10 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 23942, "Cannot bind properties in BindableObjects added to static resources in XAML", PlatformAffected.All)]
 	public partial class Bugzilla23942 : TestContentPage
 	{
-		[Preserve(AllMembers = true)]
 		public class TestViewModel : ViewModelBase
 		{
 			string _doesItWork;
@@ -51,7 +47,6 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class Bugzilla23942Options : BindableObject
 	{
 		public static readonly BindableProperty TextProperty =
@@ -73,7 +68,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class Bugzilla23942Label : Label
 	{
 		public static readonly BindableProperty OptionsProperty =

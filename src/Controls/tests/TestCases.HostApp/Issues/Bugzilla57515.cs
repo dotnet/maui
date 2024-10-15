@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 57515, "PinchGestureRecognizer not getting called on Android ", PlatformAffected.Android)]
 public class Bugzilla57515 : TestContentPage
 {

@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 36788, "Truncation Issues with Relative Layouts")]
 	public class Bugzilla36788 : TestContentPage // or TestFlyoutPage, etc ...
 	{

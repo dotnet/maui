@@ -8,7 +8,7 @@ using Button = Microsoft.Maui.Controls.Button;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1436, "Button border not drawn on Android without a BorderRadius", PlatformAffected.Android)]
 	public class Issue1436 : TestContentPage
 	{

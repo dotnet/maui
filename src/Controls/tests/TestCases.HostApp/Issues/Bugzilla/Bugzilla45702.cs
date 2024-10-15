@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 45702, "Disabling back press on modal page causes app to crash", PlatformAffected.Android)]
 	public class Bugzilla45702 : NavigationPage
 	{
@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample.Issues
 				Application.Current.MainPage = new NavigationPage(new ContentPage { Content = new Label { Text = "Success" } });
 			}
 
-			[Preserve(AllMembers = true)]
+			
 			class DetailPage45702 : ContentPage
 			{
 				public DetailPage45702()

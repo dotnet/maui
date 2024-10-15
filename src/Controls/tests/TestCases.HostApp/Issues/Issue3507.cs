@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 3507, "[UWP] Scrollview with null content crashes on UWP",
 		PlatformAffected.UWP)]
 	public class Issue3507 : TestContentPage

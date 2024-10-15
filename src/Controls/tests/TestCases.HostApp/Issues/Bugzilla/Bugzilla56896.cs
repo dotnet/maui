@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 56896, "ListViews for lists with many elements regressed in performance on iOS", PlatformAffected.iOS)]
 	public class Bugzilla56896 : TestContentPage
 	{
@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 		const string ConstructorCountId = "constructorCount";
 		const string TimeId = "time";
 
-		[Preserve(AllMembers = true)]
+		
 		class MyViewModel : INotifyPropertyChanged
 		{
 			int _constructorCallCount;
@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class Fizz : ViewCell
 		{
 			readonly MyViewModel _vm;
@@ -65,7 +65,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class Buzz : ViewCell
 		{
 			readonly MyViewModel _vm;
@@ -88,7 +88,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class Fizzbuzz : ViewCell
 		{
 			readonly MyViewModel _vm;
@@ -111,7 +111,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class Number : ViewCell
 		{
 			readonly MyViewModel _vm;

@@ -8,7 +8,7 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 44166, "FlyoutPage instances do not get disposed upon GC")]
 public class Bugzilla44166 : TestContentPage
 {
@@ -63,7 +63,7 @@ public class Bugzilla44166 : TestContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class _44166MDP : FlyoutPage
 {
 	public static int Counter;
@@ -84,7 +84,7 @@ public class _44166MDP : FlyoutPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class _44166Master : ContentPage
 {
 	public static int Counter;
@@ -111,7 +111,7 @@ public class _44166Master : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class _44166Detail : NavigationPage
 {
 	public static int Counter;
@@ -132,7 +132,7 @@ public class _44166Detail : NavigationPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class _44166NavContent : ContentPage
 {
 	public static int Counter;

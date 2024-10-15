@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	public class CustomViewCell : ViewCell
 	{
 		public CustomViewCell()
@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Issues
 	}
 
 
-	[Preserve(AllMembers = true)]
+	
 	public class CustomViewCellBindingContext : CustomViewCell
 	{
 		public CustomViewCellBindingContext()
@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 935, "ViewCell.ItemTapped only fires once for ListView.SelectedItem", PlatformAffected.Android)]
 	public class Issue935 : TestContentPage
 	{

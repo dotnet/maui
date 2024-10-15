@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2004, "[Android] Xamarin caused by: android.runtime.JavaProxyThrowable: System.ObjectDisposedException: Cannot access a disposed object",
 		PlatformAffected.Android)]
 	public class Issue2004 : NavigationPage
@@ -87,7 +87,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			[Preserve(AllMembers = true)]
+			
 			public class AddressListItemView : Grid
 			{
 				public AddressListItemView()
@@ -116,7 +116,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+			
 			public class AddressListView : ContentPage
 			{
 				public AddressListView()
@@ -255,7 +255,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			[Preserve(AllMembers = true)]
+			
 			public class SettingsView : ContentPage
 			{
 				public Command AutoTest => new Command(async () =>

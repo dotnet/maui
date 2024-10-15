@@ -5,7 +5,7 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 34632, "Can't change IsPresented when setting SplitOnLandscape ")]
 public class Bugzilla34632 : TestFlyoutPage
 {
@@ -40,7 +40,7 @@ public class Bugzilla34632 : TestFlyoutPage
 		NavigationPage.SetHasBackButton(Detail, false);
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ModalRotationIssue : ContentPage
 	{
 		public ModalRotationIssue()

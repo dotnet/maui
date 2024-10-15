@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 40704, "Strange duplication of listview headers when collapsing/expanding sections")]
 public class Bugzilla40704 : TestContentPage
 {
@@ -91,7 +91,7 @@ public class Bugzilla40704 : TestContentPage
 		listview.ItemsSource = patientGroups;
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class GroupHeaderViewCell : ViewCell
 	{
 		TapGestureRecognizer tapGesture;
@@ -125,7 +125,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ItemTestViewCell : ViewCell
 	{
 		public ItemTestViewCell()
@@ -141,7 +141,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class RangeObservableCollection<T> : ObservableCollection<T>
 	{
 		private bool _suppressNotification = false;
@@ -168,7 +168,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class PatientsGroupViewModel : RangeObservableCollection<PatientViewModel>
 	{
 		public bool IsCollapsed { get; private set; }
@@ -204,7 +204,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class PatientViewModel
 	{
 		public PatientViewModel(string code)

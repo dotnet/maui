@@ -13,7 +13,7 @@ using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 59718, "Multiple issues with listview and navigation in UWP", PlatformAffected.UWP)]
 public class Bugzilla59718 : TestContentPage
 {

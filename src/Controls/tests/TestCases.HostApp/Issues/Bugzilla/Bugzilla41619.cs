@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 41619, "[WinRT/UWP] Slider binding works incorrectly", PlatformAffected.WinRT)]
 	public class Bugzilla41619 : TestContentPage
 	{
@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class Bugzilla41619ViewModel : INotifyPropertyChanged
 		{
 			private double _sliderValue = _success;

@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 32898, "Memory leak when TabbedPage is popped out ")]
 	public class Bugzilla32898 : TestContentPage
 	{

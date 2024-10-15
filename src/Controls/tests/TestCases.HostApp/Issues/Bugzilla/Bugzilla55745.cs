@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 55745, "[iOS] NRE in ListView with HasUnevenRows=true after changing content and rebinding", PlatformAffected.iOS)]
 	public class Bugzilla55745 : TestContentPage
 	{
@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Issues
 			vm.ToggleContent();
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class DataViewModel : INotifyPropertyChanged
 		{
 			string mTextOne;
@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class ViewModel : INotifyPropertyChanged
 		{
 			public List<DataViewModel> myList = new List<DataViewModel>()

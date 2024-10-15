@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.None, 1024, "Entry and Editor are leaking when used in ViewCell", PlatformAffected.iOS)]
 public class Bugzilla1024 : TestNavigationPage
 {
@@ -17,7 +17,7 @@ public class Bugzilla1024 : TestNavigationPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class LandingPage1024 : ContentPage
 {
 	public static int Counter;
@@ -78,7 +78,7 @@ public class LandingPage1024 : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class ContentPage1024 : ContentPage
 {
 	public ContentPage1024()
@@ -102,7 +102,7 @@ public class ContentPage1024 : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class InputViewDataTemplateSelector : DataTemplateSelector
 {
 	public DataTemplate EntryTemplate { get; set; }

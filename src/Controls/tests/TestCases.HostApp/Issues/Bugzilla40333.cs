@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 40333, "[Android] IllegalStateException: Recursive entry to executePendingTransactions", PlatformAffected.Android)]
 public class Bugzilla40333 : TestNavigationPage
 {
@@ -33,7 +33,7 @@ public class Bugzilla40333 : TestNavigationPage
 		PushAsync(content);
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class _40333MDP : TestFlyoutPage
 	{
 		readonly bool _showTabVersion;
@@ -57,7 +57,7 @@ public class Bugzilla40333 : TestNavigationPage
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class _40333DetailPage : ContentPage
 		{
 			public _40333DetailPage(string title)
@@ -79,7 +79,7 @@ public class Bugzilla40333 : TestNavigationPage
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class _40333NavPusher : ContentPage
 		{
 			readonly ListView _listView = new ListView();
@@ -140,7 +140,7 @@ public class Bugzilla40333 : TestNavigationPage
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class _40333TabPusher : ContentPage
 		{
 			readonly ListView _listView = new ListView();

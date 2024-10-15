@@ -6,7 +6,7 @@ using Button = Microsoft.Maui.Controls.Button;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 44044, "TabbedPage steals swipe gestures", PlatformAffected.Android)]
 public class Bugzilla44044 : TestTabbedPage
 {

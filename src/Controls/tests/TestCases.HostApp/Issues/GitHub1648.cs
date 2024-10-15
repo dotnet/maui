@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1648, "FlyoutPage throws ArgumentOutOfRangeException", PlatformAffected.UWP)]
 	public class GitHub1648 : NavigationPage
 	{

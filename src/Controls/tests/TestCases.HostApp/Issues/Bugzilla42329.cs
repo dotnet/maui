@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 42329, "ListView in Frame and FormsAppCompatActivity Memory Leak")]
 public class Bugzilla42329 : TestFlyoutPage
 {
@@ -40,7 +40,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		Reference = this;
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class RootPage : ContentPage
 	{
 		public RootPage()
@@ -86,7 +86,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		public ListView ListView { get; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class RootPageItem
 	{
 		public string IconSource { get; set; }
@@ -96,7 +96,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		public string Title { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ContentPageEx : ContentPage
 	{
 		~ContentPageEx()
@@ -106,7 +106,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class _42329_FrameWithListView : ContentPageEx
 	{
 		public _42329_FrameWithListView()
@@ -136,7 +136,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		Reference.IsPresented = true;
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class _42329_Page2 : ContentPage
 	{
 		public _42329_Page2()
@@ -162,7 +162,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class _42329_Page3 : ContentPage
 	{
 		Label lblFlag;

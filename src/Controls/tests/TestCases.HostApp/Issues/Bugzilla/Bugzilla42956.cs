@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 42956, "ListView with DataTemplateSelector can have only 17 Templates, even with CachingStrategy=RetainElement", PlatformAffected.Android)]
 	public class Bugzilla42956 : TestContentPage
 	{

@@ -2,7 +2,7 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 11209, "[Bug] [iOS][SwipeView] Swipe view not handling tap gesture events until swiped", PlatformAffected.Android)]
 	public class Issue11209NavigationPage : NavigationPage
 	{
@@ -38,7 +38,7 @@ namespace Maui.Controls.Sample.Issues
 			await Navigation.PushAsync(new Issue11209SecondPage());
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class Issue11209SecondPage : ContentPage
 		{
 			public Issue11209SecondPage()

@@ -14,7 +14,6 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	class Item
 	{
 		public string Id { get; set; }
@@ -22,7 +21,6 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 		public string Description { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
 	class ItemsViewModel : INotifyPropertyChanged
 	{
 		public ObservableCollection<Item> Items { get; set; }

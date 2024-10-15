@@ -11,7 +11,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 8801, "[Android] Attempt to read from field 'int android.view.ViewGroup$LayoutParams.width' on a null object reference",
 		PlatformAffected.Android, navigationBehavior: NavigationBehavior.SetApplicationRoot)]
 	public class Issue8801 : TestContentPage

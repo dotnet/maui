@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 12642, "[iOS] Rapid ShellContent Navigation Causes Blank Screens",
 		PlatformAffected.iOS)]
 	public class Issue12642 : TestShell

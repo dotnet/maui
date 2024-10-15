@@ -18,7 +18,6 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class SelectionSyncModel
 	{
 		public SelectionSyncModel()

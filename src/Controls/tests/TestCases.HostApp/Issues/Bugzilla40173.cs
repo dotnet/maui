@@ -9,7 +9,7 @@ using ViewCell = Microsoft.Maui.Controls.ViewCell;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 40173, "Android BoxView/Frame not clickthrough in ListView")]
 public class Bugzilla40173 : TestContentPage
 {

@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2794, "TableView does not react on underlying collection change", PlatformAffected.Android)]
 public class Issue2794 : TestContentPage
 {

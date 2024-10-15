@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Issue2354 : TestContentPage
 	{
@@ -51,7 +51,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class President
 		{
 			public President(string name, int position, string image)
@@ -69,7 +69,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 
-		[Preserve(AllMembers = true)]
+		
 		public class CustomCell : ViewCell
 		{
 			public CustomCell()
@@ -95,7 +95,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class UriConverter : IValueConverter
 		{
 

@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 11107, "[Bug][iOS] Shell Navigation implicitly adds Tabbar", PlatformAffected.iOS)]
 
 public class Issue11107 : TestShell
@@ -102,7 +102,7 @@ public class Issue11107 : TestShell
 #pragma warning restore CS0618 // Type or member is obsolete
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class Issue11107HeaderPage : ContentPage
 	{
 		public Issue11107HeaderPage()

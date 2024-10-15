@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 11962, "[iOS] Cannot access a disposed object. Object name: 'WkWebViewRenderer",
 		PlatformAffected.iOS)]
 	public class Issue11962 : TestShell

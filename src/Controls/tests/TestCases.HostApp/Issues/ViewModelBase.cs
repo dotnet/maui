@@ -203,10 +203,8 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class ExampleViewModel : ViewModelBase
 	{
-		[Preserve(AllMembers = true)]
 		public class Job : ViewModelBase
 		{
 

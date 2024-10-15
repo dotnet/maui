@@ -5,7 +5,7 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1769, "PushAsync with Switch produces NRE", PlatformAffected.Android)]
 	public class Issue1769 : NavigationPage
 	{

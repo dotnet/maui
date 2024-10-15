@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 41153, "jobject must not be IntPtr.Zero with TabbedPage and ToolbarItems")]
 public class Bugzilla41153 : TestTabbedPage
 {
@@ -19,7 +19,7 @@ public class Bugzilla41153 : TestTabbedPage
 	const string ToolbarItemText = "Toolbar Item";
 	const string Success = "Success";
 
-	[Preserve(AllMembers = true)]
+	
 	class MyViewModel : INotifyPropertyChanged
 	{
 		string _toolBarItemText;

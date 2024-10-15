@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1236, "Label binding", PlatformAffected.iOS)]
 	public class Issue1236 : TestContentPage
 	{

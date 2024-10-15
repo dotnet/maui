@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1658, "[macOS] GestureRecognizer on ListView Item not working", PlatformAffected.macOS)]
 
 public class Issue1658 : TestNavigationPage

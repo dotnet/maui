@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 			BindingContext = new HeaderFooterDemoModel();
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		class HeaderFooterDemoModel : INotifyPropertyChanged
 		{
 			readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3);

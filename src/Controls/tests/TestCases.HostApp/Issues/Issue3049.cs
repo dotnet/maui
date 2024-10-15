@@ -6,7 +6,7 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 3049, "DisplayActionSheet freezes app in iOS custom renderer (iPad only)", PlatformAffected.iOS)]
 	public class Issue3049 : TestContentPage
 	{

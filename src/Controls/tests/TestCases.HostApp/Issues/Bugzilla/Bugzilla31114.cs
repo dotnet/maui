@@ -7,7 +7,7 @@ using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 31114, "iOS ContextAction leaves blank line after swiping in ListView")]
 public class Bugzilla31114 : TestContentPage
 {
@@ -120,7 +120,7 @@ public class Bugzilla31114 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ListItem
 	{
 		public string Id { get; set; }
@@ -203,7 +203,7 @@ public class Bugzilla31114 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class TaskItemTemplate : ViewCell
 	{
 		Image _photo;

@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 8899, "Clearing CollectionView IsGrouped=\"True\" crashes application iOS ")]
 	public class Issue8899 : TestContentPage
 	{
@@ -60,7 +60,6 @@ namespace Maui.Controls.Sample.Issues
 			Content = layout;
 		}
 
-		[Preserve(AllMembers = true)]
 		public class _8899ViewModel
 		{
 			public ObservableCollection<_8899Group> Groups { get; set; }
@@ -75,7 +74,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class _8899Group : List<_8899Item>
 		{
 			public string GroupName { get; set; }

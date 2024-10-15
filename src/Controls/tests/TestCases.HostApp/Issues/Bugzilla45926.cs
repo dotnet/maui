@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 45926, "MessagingCenter prevents subscriber from being collected", PlatformAffected.All)]
 public class Bugzilla45926 : TestNavigationPage
 {
@@ -59,7 +59,7 @@ public class Bugzilla45926 : TestNavigationPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class _45926IntermediatePage : ContentPage
 {
 	public _45926IntermediatePage()
@@ -68,7 +68,7 @@ public class _45926IntermediatePage : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class _45926SecondPage : ContentPage
 {
 	public static int InstanceCounter = 0;

@@ -5,7 +5,6 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
 	internal class MultiBindingHack : INotifyPropertyChanged
 	{
 		string _labelWithBounds;

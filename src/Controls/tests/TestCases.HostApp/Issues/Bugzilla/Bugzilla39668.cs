@@ -7,11 +7,11 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 39668, "Overriding ListView.CreateDefault Does Not Work on Windows", PlatformAffected.WinRT)]
 	public class Bugzilla39668 : TestContentPage
 	{
-		[Preserve(AllMembers = true)]
+		
 		public class CustomListView : ListView
 		{
 			protected override Cell CreateDefault(object item)

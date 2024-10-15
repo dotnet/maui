@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2963, "Disabling Editor in iOS does not disable entry of text")]
 	public class Issue2963 : TestContentPage
 	{

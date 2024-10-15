@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 45125, "ListView lacks a way to get information about visible elements (such as FirstVisibleItem) to restore visual positions of elements", PlatformAffected.iOS)]
 public class Bugzilla45125 : TestContentPage
 {
@@ -47,19 +47,19 @@ public class Bugzilla45125 : TestContentPage
 		MinimumWidthRequest = 200
 	};
 
-	[Preserve(AllMembers = true)]
+	
 	class GroupItem
 	{
 		public string DisplayText { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class GroupedData : List<GroupItem>
 	{
 		public string GroupName { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class MyCell : ViewCell
 	{
 		public MyCell()
@@ -70,7 +70,7 @@ public class Bugzilla45125 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class HeaderCell : ViewCell
 	{
 		public HeaderCell()

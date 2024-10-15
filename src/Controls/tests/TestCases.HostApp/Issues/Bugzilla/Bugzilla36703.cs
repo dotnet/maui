@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 36703,
 		"TapGestureRecognizer inside initially disable Image will never fire Tapped event", PlatformAffected.All)]
 	public class Bugzilla36703 : TestContentPage

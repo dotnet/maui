@@ -83,7 +83,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ViewModel5623
 	{
 		public ObservableCollection<Model5623> Items { get; set; }
@@ -116,7 +116,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)] 
+	 
 	public class Model5623
 	{
 		Random random = new Random();

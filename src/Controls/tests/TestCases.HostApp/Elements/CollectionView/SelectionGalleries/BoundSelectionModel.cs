@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 {
-	[Preserve(AllMembers = true)]
+	
 	internal class BoundSelectionModel : INotifyPropertyChanged
 	{
 		private CollectionViewGalleryTestItem _selectedItem;

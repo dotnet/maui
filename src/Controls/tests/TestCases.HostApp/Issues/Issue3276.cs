@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 3276, "Crashing Unknown cell parent type on ContextAction Bindings")]
 public class Issue3276 : TestTabbedPage
 {
@@ -27,7 +27,7 @@ public class Issue3276 : TestTabbedPage
 		Children.Add(new ContentPage { Title = "Second" });
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class VM : ViewModel
 	{
 		public void Load()
@@ -55,7 +55,7 @@ public class Issue3276 : TestTabbedPage
 
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class CaCell : ViewCell
 	{
 		public CaCell()

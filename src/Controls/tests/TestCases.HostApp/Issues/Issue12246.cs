@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 12246, "[Bug] iOS 14 App freezes when password is entered after email", PlatformAffected.iOS)]
 public class Issue12246 : TestContentPage
 {

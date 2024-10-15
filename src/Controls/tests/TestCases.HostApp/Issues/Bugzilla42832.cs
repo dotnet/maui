@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 42832, "Scrolling a ListView with active ContextAction Items causes NRE", PlatformAffected.Android)]
 public class Bugzilla42832 : TestContentPage
 {
@@ -43,7 +43,7 @@ public class Bugzilla42832 : TestContentPage
 		};
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class TestCell : TextCell
 	{
 		public TestCell()

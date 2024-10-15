@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 43519, "[UWP] FlyoutPage ArgumentException when nested in a TabbedPage and returning from modal page"
 		, PlatformAffected.UWP)]
 	public class Bugzilla43519 : TestTabbedPage

@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 58779, "[MacOS] DisplayActionSheet on MacOS needs scroll bars if list is long", PlatformAffected.All)]
 public class Bugzilla58779 : TestContentPage
 {

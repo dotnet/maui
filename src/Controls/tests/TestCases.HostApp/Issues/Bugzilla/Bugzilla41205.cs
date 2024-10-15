@@ -7,19 +7,19 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 41205, "UWP CreateDefault passes string instead of object")]
 	public class Bugzilla41205 : TestContentPage
 	{
 		const string _success = "Pass";
 
-		[Preserve(AllMembers = true)]
+		
 		public class ViewModel
 		{
 			public string Text { get { return _success; } }
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		public class CustomListView : ListView
 		{
 			protected override Cell CreateDefault(object item)

@@ -6,7 +6,7 @@ using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1683, "Auto Capitalization Implementation")]
 	public class Issue1683 : TestContentPage
 	{

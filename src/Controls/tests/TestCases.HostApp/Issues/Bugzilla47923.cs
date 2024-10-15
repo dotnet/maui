@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 47923, "Vectors don\'t work in Images, and work badly in Buttons", PlatformAffected.Android)]
 public class Bugzilla47923 : TestNavigationPage
 {
@@ -14,7 +14,7 @@ public class Bugzilla47923 : TestNavigationPage
 		PushAsync(new LandingPage());
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class VectorImagePage : ContentPage
 	{
 		public VectorImagePage(Aspect aspect)
@@ -50,7 +50,7 @@ public class Bugzilla47923 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class CellViewPage : ContentPage
 	{
 		public CellViewPage()
@@ -69,7 +69,7 @@ public class Bugzilla47923 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class LandingPage : ContentPage
 	{
 		public LandingPage()

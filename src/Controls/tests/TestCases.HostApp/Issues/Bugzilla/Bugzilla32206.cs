@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 32206, "ContextActions cause memory leak: Page is never destroyed", PlatformAffected.iOS)]
 	public class Bugzilla32206 : TestNavigationPage
 	{
@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class LandingPage32206 : ContentPage
 	{
 		public static int Counter;
@@ -77,7 +77,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ContentPage32206 : ContentPage
 	{
 		public ContentPage32206()
@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class ViewCell32206 : ViewCell
 	{
 		public ViewCell32206()

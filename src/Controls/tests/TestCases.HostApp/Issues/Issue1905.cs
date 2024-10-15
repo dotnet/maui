@@ -9,7 +9,7 @@ using ListView = Microsoft.Maui.Controls.ListView;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 1905, "AlertView doesn't scroll when text is to large", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Issue1905 : Microsoft.Maui.Controls.NavigationPage
 	{
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+		
 		[Issue(IssueTracker.Github, 1905, "Pull to refresh doesn't work if iOS 11 large titles is enabled", PlatformAffected.iOS, NavigationBehavior.PushModalAsync, issueTestNumber: 1)]
 		public class Issue1905LargeTitles : TestNavigationPage
 		{

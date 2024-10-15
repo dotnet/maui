@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 37462, "Using App Compat/App Compat theme breaks Navigation.RemovePage on Android ", PlatformAffected.Android)]
 public class Bugzilla37462 : TestNavigationPage
 {

@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 3509, "[iOS] NavigationPage.Popped called twice when Navigation.PopAsync is called",	PlatformAffected.iOS)]
 
 public class Issue3509 : TestNavigationPage
@@ -46,7 +46,7 @@ public class Issue3509 : TestNavigationPage
 		};
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	public class TestPage : ContentPage
 	{
 		bool _popped = false;

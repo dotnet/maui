@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 57717, "Setting background color on Button in Android FormsApplicationActivity causes NRE", PlatformAffected.Android)]
 public class Bugzilla57717 : TestContentPage
 {

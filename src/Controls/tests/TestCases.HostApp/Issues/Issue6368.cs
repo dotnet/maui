@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Maui.Controls.Sample.Issues
 {
 
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 6368, "[CustomRenderer]Crash when navigating back from page with custom renderer control", PlatformAffected.iOS)]
 	public class Issue6368 : NavigationPage
 	{

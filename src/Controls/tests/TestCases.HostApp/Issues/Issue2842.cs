@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2842, "ViewCell in TableView not adapting to changed size on iOS", PlatformAffected.iOS)]
 	public class Issue2842 : TestContentPage
 	{

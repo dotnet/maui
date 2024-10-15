@@ -9,7 +9,7 @@ using Button = Microsoft.Maui.Controls.Button;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 39331, "[Android] BoxView Is InputTransparent Even When Set to False")]
 public class Bugzilla39331 : TestContentPage
 {

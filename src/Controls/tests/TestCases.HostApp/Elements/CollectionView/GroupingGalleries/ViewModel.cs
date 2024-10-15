@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 {
-	[Preserve(AllMembers = true)]
+	
 	class Team : List<Member>
 	{
 		public Team(string name, List<Member> members) : base(members)
@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class Member
 	{
 		public Member(string name) => Name = name;
@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class SuperTeams : List<Team>
 	{
 		public SuperTeams()
@@ -114,7 +114,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class ObservableTeam : ObservableCollection<Member>
 	{
 		public ObservableTeam(string name, List<Member> members) : base(members)
@@ -130,7 +130,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class ObservableSuperTeams : ObservableCollection<ObservableTeam>
 	{
 		public ObservableSuperTeams()

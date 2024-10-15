@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 5830, "[Enhancement] EntryCellTableViewCell should be public", PlatformAffected.iOS)]
 	public class Issue5830 : TestContentPage
 	{

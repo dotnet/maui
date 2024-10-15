@@ -9,11 +9,11 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 2259, "ListView.ScrollTo crashes app", PlatformAffected.iOS)]
 	public class Issue2259 : TestContentPage
 	{
-		[Preserve(AllMembers = true)]
+		
 		public class Person
 		{
 			public string Name { private set; get; }

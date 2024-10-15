@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 12652, "[Bug] NullReferenceException in the Shell on UWP when navigating back to Shell Section with multiple content items",
 	PlatformAffected.UWP)]
 public class Issue12652 : TestShell

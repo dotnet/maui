@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 53179, "Removing page during OnAppearing throws exception", PlatformAffected.Android,
 	issueTestNumber: 2)]
 public class Bugzilla53179_2 : TestContentPage
@@ -32,7 +32,7 @@ public class Bugzilla53179_2 : TestContentPage
 		return new ContentPage { Content = new Label { Text = "Intermediate page" } };
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	class PageWhichRemovesAnEarlierPageOnAppearing : ContentPage
 	{
 		public PageWhichRemovesAnEarlierPageOnAppearing()

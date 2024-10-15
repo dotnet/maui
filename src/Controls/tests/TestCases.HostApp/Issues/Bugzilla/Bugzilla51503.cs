@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Bugzilla, 51503, "NullReferenceException on VisualElement Finalize", PlatformAffected.All)]
 	public class Bugzilla51503 : NavigationPage
 	{
@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 				Navigation.PushAsync(new _51503RootPage());
 			}
 
-			[Preserve(AllMembers = true)]
+			
 			class _51503RootPage : ContentPage
 			{
 				public _51503RootPage()
@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+			
 			class ChildPage : ContentPage
 			{
 				public ChildPage()

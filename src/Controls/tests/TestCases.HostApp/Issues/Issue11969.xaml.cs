@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 11969,
 		"[Bug] Disabling Swipe view not handling tap gesture events on the content in iOS of Xamarin Forms",
 		PlatformAffected.iOS)]

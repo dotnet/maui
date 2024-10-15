@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 43941, "Memory leak with ListView's RecycleElement on iOS", PlatformAffected.iOS)]
 public class Bugzilla43941 : TestNavigationPage
 {
@@ -16,7 +16,7 @@ public class Bugzilla43941 : TestNavigationPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class ContentPage43941 : ContentPage
 {
 	public ContentPage43941()
@@ -46,7 +46,7 @@ public class ContentPage43941 : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class LandingPage43941 : ContentPage
 {
 	public static int Counter;

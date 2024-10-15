@@ -4,7 +4,6 @@ namespace Maui.Controls.Sample.Issues;
 
 public class Bugzilla25979 : TestNavigationPage
 {
-	[Preserve(AllMembers = true)]
 	internal sealed class MyPage : ContentPage
 	{
 		public MyPage()
@@ -39,7 +38,7 @@ public class Bugzilla25979 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	internal sealed class MyPage2 : ContentPage
 	{
 		public MyPage2()
@@ -79,7 +78,7 @@ public class Bugzilla25979 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+	
 	internal sealed class MyPage3 : ContentPage
 	{
 		public MyPage3()

@@ -11,7 +11,7 @@ using Button = Microsoft.Maui.Controls.Button;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2993, "[Android] Bottom Tab Bar with a navigation page is hiding content", PlatformAffected.Android)]
 public class Issue2993 : TestTabbedPage
 {

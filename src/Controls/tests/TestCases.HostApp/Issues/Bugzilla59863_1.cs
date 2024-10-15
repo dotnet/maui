@@ -4,7 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 59863, "TapGestureRecognizer extremely finicky1", PlatformAffected.Android,
 	issueTestNumber: 1)]
 public class Bugzilla59863_1 : TestContentPage

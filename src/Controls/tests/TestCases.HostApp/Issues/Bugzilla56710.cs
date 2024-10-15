@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 namespace Maui.Controls.Sample.Issues;
 
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 56710, "ContextActionsCell.OnMenuItemPropertyChanged throws NullReferenceException", PlatformAffected.iOS)]
 public class Bugzilla56710 : TestNavigationPage
 {
@@ -25,7 +25,7 @@ public class Bugzilla56710 : TestNavigationPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class TestPage : ContentPage
 {
 	ObservableCollection<Bugzilla56710TestItem> Items;
@@ -54,14 +54,14 @@ public class TestPage : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class Bugzilla56710TestItem
 {
 	public string Text { get; set; }
 	public string ItemText { get; set; }
 }
 
-[Preserve(AllMembers = true)]
+
 public class TestCell : ViewCell
 {
 	public TestCell()
