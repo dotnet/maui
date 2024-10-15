@@ -20,13 +20,12 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
 
     /**
      * Set by C#, determining if we need to call drawShadow()
+     * Intentionally invalidates the view in case shadow definition changed
      * @param hasShadow
      */
     protected final void setHasShadow(boolean hasShadow) {
-        if (this.hasShadow != hasShadow) {
-            this.hasShadow = hasShadow;
-            postInvalidate();
-        }
+        this.hasShadow = hasShadow;
+        invalidate();
     }
 
     @Override

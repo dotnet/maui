@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
-			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime, propertyChanged: OnTitlePropertyChanged);
+			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.TwoWay, propertyChanged: OnTitlePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
@@ -348,7 +348,7 @@ namespace Microsoft.Maui.Controls
 					IgnoreSafeArea = true
 				};
 
-				if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				if (OperatingSystem.IsWindows())
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
 				grid.Resources = new ResourceDictionary();
@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls
 				var selectedState = new VisualState();
 				selectedState.Name = "Selected";
 
-				if (DeviceInfo.Platform != DevicePlatform.WinUI)
+				if (!OperatingSystem.IsWindows())
 				{
 					selectedState.Setters.Add(new Setter
 					{
@@ -406,7 +406,7 @@ namespace Microsoft.Maui.Controls
 
 				defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
 
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
 				else
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
@@ -414,11 +414,11 @@ namespace Microsoft.Maui.Controls
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
 
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 					columnDefinitions.Add(new ColumnDefinition { Width = 54 });
-				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 					columnDefinitions.Add(new ColumnDefinition { Width = 50 });
-				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				else if (OperatingSystem.IsWindows())
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -432,11 +432,11 @@ namespace Microsoft.Maui.Controls
 				var image = new Image();
 
 				double sizeRequest = -1;
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 					sizeRequest = 24;
-				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 					sizeRequest = 22;
-				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				else if (OperatingSystem.IsWindows())
 					sizeRequest = 16;
 				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 					sizeRequest = 25;
@@ -447,7 +447,7 @@ namespace Microsoft.Maui.Controls
 					defaultImageClass.Setters.Add(new Setter() { Property = Image.WidthRequestProperty, Value = sizeRequest });
 				}
 
-				if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				if (OperatingSystem.IsWindows())
 				{
 					defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
@@ -464,7 +464,7 @@ namespace Microsoft.Maui.Controls
 
 				grid.Add(label, 1, 0);
 
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 				{
 					object textColor;
 
@@ -482,12 +482,12 @@ namespace Microsoft.Maui.Controls
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
-				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
-				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				else if (OperatingSystem.IsWindows())
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
@@ -537,6 +537,16 @@ namespace Microsoft.Maui.Controls
 				return grid;
 			});
 		}
+
+#if NETSTANDARD
+		sealed class OperatingSystem
+		{
+			public static bool IsAndroid() => false;
+			public static bool IsIOS() => false;
+			public static bool IsMacCatalyst() => false;
+			public static bool IsWindows() => false;
+		}
+#endif
 	}
 
 	public interface IQueryAttributable
