@@ -41,7 +41,7 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>Indicates that view will be laid out left to right. This is the default when the view has no parent.</summary>
+        <summary>Indicates that view will be arranged left to right. This is the default when the view has no parent.</summary>
       </Docs>
     </Member>
     <Member MemberName="MatchParent">
@@ -79,7 +79,7 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>Indicates that view will be laid out right to left.</summary>
+        <summary>Indicates that view will be arranged right to left.</summary>
       </Docs>
     </Member>
   </Members>

@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells get arranged according to the new layout
 				CollectionView.ReloadData();
 			}
 		}
