@@ -76,7 +76,7 @@
 	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
 
 		<!-- Get a json output list of the installed appium drivers with their version info -->
-		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True">
+		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
 		</Exec>
 
@@ -113,7 +113,7 @@
 	<Target Name="InstallAppium">
 		<!-- Get the NPM package version for appium if installed -->
 		<!-- this uses loglevel error to prevent extra noise in the console output that isn't json -->
-		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True">
+		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumNpmListOutputLines" />
 		</Exec>
 
