@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<LCX SchemaVersion="6.0" Name="D:\a\1\s\src\Controls\src\Build.Tasks\ErrorMessages.resx" PsrId="211" SrcCul="en-US" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx" TgtCul="fr-FR">
+<LCX SchemaVersion="6.0" Name="D:\a\1\s\src\Controls\src\Build.Tasks\ErrorMessages.resx" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="fr-FR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
   <OwnedComments>
     <Cmt Name="Dev" />
     <Cmt Name="LcxAdmin" />
     <Cmt Name="Rccx" />
   </OwnedComments>
+  <Settings Name="@vsLocTools@\default.lss" Type="Lss" />
   <Item ItemId=";ErrorMessages.resx" ItemType="0" PsrId="211" Leaf="false">
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
@@ -12,288 +13,375 @@
       <Item ItemId=";AdderMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No Add() method defined on "{0}{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aucune méthode Add() définie sur "{0}{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is type name, 1 is property name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";BPMissingGetter" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing a "public static Get{0}" method or a public instance property getter for the attached property "{1}.{0}Property".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Il manque une méthode "public static Get{0}" ou un getter de propriété d'instance publique pour la propriété jointe "{1}.{0}Property".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is BindableProperty name, 1 is the declaring type]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";BPName" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The name of the BindableProperty {0} does not end with "Property".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom du BindableProperty {0} ne finit pas par "Property".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is BindableProperty name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";BindingIndexerEmpty" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding: Indexer did not contain arguments.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Liaison : l'indexeur ne contient pas d'arguments.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingIndexerNotClosed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding: Indexer did not contain closing bracket.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Liaison : l'indexeur ne contient pas de crochet fermant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingIndexerParse" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding: "{0}" cannot be parsed as an index for a "{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Liaison : "{0}" ne peut pas être analysé en tant qu'index pour "{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is indexer value, 1 is property name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";BindingIndexerTypeUnsupported" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding: Unsupported indexer index type: "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Liaison : type d'index d'indexeur non pris en charge : "{0}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is indexer type name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";BindingPropertyNotFound" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding: Property "{0}" not found on "{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Liaison : propriété "{0}" introuvable sur "{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is property name, 1 is type name]]></Cmt>
-        </Cmts>
+      </Item>
+      <Item ItemId=";BindingWithNullDataType" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Binding could be compiled to improve runtime performance if x:DataType is not explicitly null. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";BindingWithSourceCompilationSkipped" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Binding was not compiled because it has an explicitly set Source property and compilation of bindings with Source is not enabled. Consider enabling this optimization by setting the <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation> in your project file and make sure the correct x:DataType is specified for this binding. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";BindingWithXDataTypeFromOuterScope" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Binding might be compiled incorrectly since the x:DataType annotation comes from an outer scope. Make sure you annotate all DataTemplate XAML elements with the correct x:DataType. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";BindingWithoutDataType" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Binding could be compiled to improve runtime performance if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ConstructorDefaultMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing default constructor for "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Constructeur par défaut manquant pour "{0}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is type name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";ConstructorXArgsMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing constructor for "{0}" with matching x:Arguments.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Constructeur manquant pour "{0}" avec un x:Arguments correspondant.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is type name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";ContentPropertyAttributeMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot set the content of "{0}" as it doesn't have a [ContentProperty]5D; attribute.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de définir le contenu de "{0}", car il n'a pas d'attribut [ContentProperty]5D;.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is type name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";Conversion" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot convert value "{0}" to "{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de convertir la valeur "{0}" en "{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is a value, 1 is a type]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";EnumValueMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enum value not found for "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Valeur enum introuvable pour "{0}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is enum value]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";InvalidXaml" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid Xaml "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Extrait XAML "{0}" non valide.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is the invalid xaml snippet]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";MarkupNotClosed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Markup expression not closed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Expression de balise non fermée.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";MarkupParsingFailed" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Error while parsing markup expression.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Erreur durant l'analyse de l'expression de balise.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";MemberResolution" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No property, BindableProperty, or event found for "{0}", or mismatching type between value and property.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Propriété, BindableProperty ou événement introuvable pour "{0}", ou type incompatible entre la valeur et la propriété.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is member name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";MethodStaticMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No static method found for "{0}::{1} ({2})".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Méthode statique introuvable pour "{0}::{1} ({2})".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is type name, 1 is methodname, 2 is type arg list]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";MissingEventHandler" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[EventHandler "{0}" with correct signature not found in type "{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de localiser un EventHandler "{0}" avec une signature correcte dans le type "{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is the handler name, 1 is the declaring type]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";NamescopeDuplicate" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[An element with the name "{0}" already exists in this NameScope.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Un élément nommé "{0}" existe déjà dans ce NameScope.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is the duplicated key]]></Cmt>
-        </Cmts>
+      </Item>
+      <Item ItemId=";ObsoleteProperty" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Property, Property setter or BindableProperty "{0}" is deprecated.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
       </Item>
       <Item ItemId=";PropertyMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing mandatory property "{0}" on "{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Propriété obligatoire "{0}" manquante sur "{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is a property name, 1 is a type]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";PropertyResolution" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve property "{0}" on type "{1} (property missing or missing accessors)".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de résoudre la propriété "{0}" sur le type "{1} (propriété manquante ou accesseurs manquants)".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is a property name, 1 is a type name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";ResourceDictDuplicateKey" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA["A resource with the key "{0}" is already present in the ResourceDictionary.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA["Une ressource avec la clé "{0}" est déjà présente dans ResourceDictionary.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is key name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";ResourceDictMissingKey" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resources in ResourceDictionary require a x:Key attribute.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les ressources de ResourceDictionary nécessitent un attribut x:Key.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ResourceMissing" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resource "{0}" not found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ressource "{0}" introuvable.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is a resourceId]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";SByteEnums" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Multi-valued enums are not valid on sbyte enum types.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les enums à valeurs multiples sont non valides sur les types enum sbyte.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";StaticResourceSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A key is required in {StaticResource}.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";StyleSheetNoSourceOrContent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[StyleSheet require either a Source or a content.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[StyleSheet nécessite Source ou un contenu.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";StyleSheetSourceNotALiteral" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Source property is not a string literal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La propriété Source n'est pas un littéral de chaîne.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";StyleSheetSourceOrContent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[StyleSheet cannot have both a Source and a content.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
+            <Val><![CDATA[StyleSheet ne peut pas avoir à la fois Source et un contenu.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[StyleSheet can not have both a Source and a content.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";StyleSheetStyleNotALiteral" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Style property or Content is not a string literal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La propriété Style ou le contenu n'est pas un littéral de chaîne.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";TypeResolution" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot resolve type "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de résoudre le type "{0}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is a type name]]></Cmt>
-        </Cmts>
+      </Item>
+      <Item ItemId=";UnattributedMarkupType" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Consider attributing the markup extension "{0}" with [RequireService]5D; or [AcceptEmptyServiceProvider]5D; if it doesn't require any.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
       </Item>
       <Item ItemId=";XDataTypeSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
+            <Val><![CDATA[x:DataType attend un littéral de chaîne, une balise {{x:Type}} ou {{x:Nul}l}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";XKeyNotLiteral" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[x:Key expects a string literal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:Key attend un littéral de chaîne.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";XStaticResolution" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[x:Static: unable to find a public -- or accessible internal -- static field, static property, const or enum value named "{0}" in "{1}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:Static : impossible de localiser un champ statique public (ou interne et accessible), une propriété statique, une valeur const ou une valeur enum portant le nom "{0}" dans "{1}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is membername, 1 is type name]]></Cmt>
-        </Cmts>
       </Item>
       <Item ItemId=";XStaticSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Syntax for x:Static is "[Member=]5D;[prefix:]5D;typeName.staticMemberName".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La syntaxe de x:Static est "[Member=]5D;[prefix:]5D;typeName.staticMemberName".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";XmlnsUndeclared" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Undeclared xmlns prefix "{0}".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Préfixe xmlns non déclaré "{0}".]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
-        <Cmts>
-          <Cmt Name="Dev"><![CDATA[0 is the xmlns prefix]]></Cmt>
-        </Cmts>
       </Item>
     </Item>
   </Item>
-<Settings Name="@vsLocTools@\default.lss" Type="Lss" /></LCX>
+</LCX>
