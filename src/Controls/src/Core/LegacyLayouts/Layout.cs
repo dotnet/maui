@@ -635,6 +635,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 					continue;
 				}
 
+				if (visual is IShapeView)
+				{
+					continue;
+				}
+
 				if (!visual.IsPlatformEnabled || !visual.IsPlatformStateConsistent)
 				{
 					return false;
