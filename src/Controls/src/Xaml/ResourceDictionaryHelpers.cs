@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		internal static void Init()
 		{
 			// This code will be trimmed in production builds
-			if (HotReload.MauiHotReloadHelper.IsSupported)
+			if (VisualDiagnostics.IsEnabled)
 			{
 #pragma warning disable IL2026, IL3050
 				ResourceDictionary.s_setAndLoadSource = ResourceDictionaryHelpers.SetAndLoadSource;
