@@ -78,7 +78,7 @@ steps:
     displayName: "Install node"
 
   - pwsh: |
-      dotnet build ./src/Provisioning/Provisioning.csproj -p:DoProvisionAppium=True -bl:"$(Build.ArtifactStagingDirectory)/logs/provision-appium.binlog"
+      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -bl:"$(LogDirectory)/provision-appium.binlog"
     displayName: "Install Appium"
     continueOnError: false
     retryCountOnTaskFailure: 1

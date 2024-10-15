@@ -10,6 +10,6 @@
       EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0" />
 
     <Message Text="Provisioning Android SDK..." Importance="high" />
-    <Exec Command="dotnet build $(RepoRoot)src/Provisioning/Provisioning.csproj -t:ProvisionAndroidSdk=True" WorkingDirectory="$(RepoRoot)" />
+    <Exec Command="dotnet build $(RepoRoot)src/Provisioning/Provisioning.csproj -t:ProvisionAndroidSdk=True -bl:&quot;$(LogDirectory)/provision-appium.binlog&quot;" WorkingDirectory="$(RepoRoot)" />
   </Target>
 </Project>
