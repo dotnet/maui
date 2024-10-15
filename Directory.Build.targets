@@ -19,8 +19,14 @@
   <Import Project="eng\NuGetVersions.targets" />
 
   <PropertyGroup>
-     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
+    <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Microsoft.Build.Msix.props" cannot be imported again -->
+    <!-- Found version-specific or distribution-specific runtime identifier(s)-->
+    <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
@@ -83,6 +89,9 @@
   <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
     <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>   
+  </PropertyGroup>
 
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
