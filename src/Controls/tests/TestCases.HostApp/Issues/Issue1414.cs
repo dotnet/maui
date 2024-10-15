@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1414, "InvalidCastException when scrolling and refreshing TableView", PlatformAffected.iOS)]
 public class Issue1414 : TestContentPage
 {

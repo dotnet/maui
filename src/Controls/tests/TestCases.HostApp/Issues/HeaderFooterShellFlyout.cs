@@ -1,22 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
 using VisualElement = Microsoft.Maui.Controls.VisualElement;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.None, 0, "Shell Flyout Header Footer",
 	PlatformAffected.All)]
 

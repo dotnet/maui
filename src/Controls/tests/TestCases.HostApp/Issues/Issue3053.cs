@@ -1,20 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 3053, "Moving items around on an Observable Collection causes the last item to disappear", PlatformAffected.UWP)]
 
 public class Issue3053 : TestContentPage
 {
 	const string _instructions = "Click me once. Item 2 should remain on bottom";
 
-	[Preserve(AllMembers = true)]
+
 	public class Item
 	{
 		public string Name { get; set; }

@@ -1,13 +1,9 @@
 ﻿using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 13616,
 		"[Bug] After updating XF 5.0.0.1931 getting Java.Lang.IllegalArgumentException: Invalid target position at Java.Interop.JniEnvironment+InstanceMethods.CallVoidMethod",
 		PlatformAffected.Android)]
@@ -24,7 +20,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Issue13616Model
 	{
 		public string Name { get; set; }
@@ -33,7 +29,7 @@ namespace Maui.Controls.Sample.Issues
 		public double Scale { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Issue13616ViewModel : BindableObject
 	{
 		int _i = 4;

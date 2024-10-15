@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 22630, "ListView Scrolled event is not triggered", PlatformAffected.iOS)]
 	public partial class Issue22630 : ContentPage
@@ -9,7 +7,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-		
+
 		void OnListViewScrolled(System.Object sender, ScrolledEventArgs e)
 		{
 			TestLabel.Text = "Success";

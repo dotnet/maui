@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 11244, "[Bug] BackButtonBehavior no longer displays on the first routed page in 4.7",
 	PlatformAffected.iOS)]
 public class Issue11244 : TestShell

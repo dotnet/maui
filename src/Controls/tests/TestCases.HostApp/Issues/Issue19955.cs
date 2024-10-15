@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 19955, "Navigating Back to FlyoutPage Renders Blank Page")]
 	public class Issue19955 : NavigationPage
@@ -25,8 +21,8 @@ namespace Maui.Controls.Sample.Issues
 				public MarkerNavigationPage() : base(new FirstPage())
 				{
 				}
-			}	
-			
+			}
+
 			class MarkerNavigationPage2 : NavigationPage
 			{
 				public MarkerNavigationPage2() : base(new FirstPage())
@@ -78,7 +74,7 @@ namespace Maui.Controls.Sample.Issues
 						Text = "Navigate back to first page",
 						Command = new Command(Button_Clicked),
 						AutomationId = "NavigateBackToFirstPageButton"
-					}	
+					}
 				};
 			}
 
