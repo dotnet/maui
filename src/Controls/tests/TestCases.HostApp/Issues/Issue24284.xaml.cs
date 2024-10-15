@@ -7,8 +7,8 @@ public partial class Issue24284 : Shell
 	{
 		InitializeComponent();
 
-		var label = new Label() 
-		{ 
+		var label = new Label()
+		{
 			AutomationId = "HeaderLabel",
 			Text = "Flyout Header",
 			MinimumHeightRequest = 30,

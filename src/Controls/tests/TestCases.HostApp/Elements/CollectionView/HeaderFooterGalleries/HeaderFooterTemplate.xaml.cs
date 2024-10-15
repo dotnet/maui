@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 {
@@ -17,7 +16,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 			BindingContext = new HeaderFooterDemoModel();
 		}
 
-		
+
 		class HeaderFooterDemoModel : INotifyPropertyChanged
 		{
 			readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3);

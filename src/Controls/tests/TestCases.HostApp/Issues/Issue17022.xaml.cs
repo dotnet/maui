@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 using FlyoutPage = Microsoft.Maui.Controls.FlyoutPage;
+using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 
 namespace Maui.Controls.Sample.Issues;
 

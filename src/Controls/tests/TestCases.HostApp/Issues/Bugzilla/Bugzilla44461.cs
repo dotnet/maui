@@ -1,8 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 44461, "ScrollToPosition.Center works differently on Android and iOS", PlatformAffected.iOS)]
 	public class Bugzilla44461 : ContentPage

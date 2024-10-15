@@ -1,9 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -50,7 +47,7 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 		BindingContext = _viewModel;
 	}
 
-	
+
 	public class _37841ViewModel : INotifyPropertyChanged
 	{
 		public int Value1

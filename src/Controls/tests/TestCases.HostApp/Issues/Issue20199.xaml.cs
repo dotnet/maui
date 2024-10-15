@@ -13,7 +13,7 @@
 			base.OnAppearing();
 
 			var closeModalPageButton = new Button() { Text = "Hide", AutomationId = "button" };
-			closeModalPageButton.Clicked += (s, e) =>  Navigation.PopAsync();
+			closeModalPageButton.Clicked += (s, e) => Navigation.PopAsync();
 
 			var modalPage = new ContentPage() { Content = closeModalPageButton };
 

@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 
 	internal class BindingErrorsViewModel
 	{
-		readonly string[] _imageOptions = 
+		readonly string[] _imageOptions =
 		{
 			"cover1.jpg",
 			"oasis.jpg",

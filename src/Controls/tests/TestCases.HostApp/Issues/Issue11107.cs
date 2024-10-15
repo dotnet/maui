@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -102,7 +94,7 @@ public class Issue11107 : TestShell
 #pragma warning restore CS0618 // Type or member is obsolete
 	}
 
-	
+
 	public class Issue11107HeaderPage : ContentPage
 	{
 		public Issue11107HeaderPage()

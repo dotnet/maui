@@ -11,7 +11,7 @@
 
 		private void OnEditorCompleted(object sender, EventArgs e)
 		{
-			Label.Text = "Triggered";	
+			Label.Text = "Triggered";
 		}
 
 		private void OnFocusButtonClicked(object sender, EventArgs e)

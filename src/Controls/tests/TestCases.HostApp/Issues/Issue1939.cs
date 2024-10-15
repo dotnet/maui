@@ -1,9 +1,4 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -67,7 +62,7 @@ public class Issue1939 : TestContentPage
 		results.Clear();
 	}
 
-	
+
 	public class MyDataTemplateSelector : DataTemplateSelector
 	{
 		readonly DataTemplate firstGroupTemplate;
@@ -93,20 +88,20 @@ public class Issue1939 : TestContentPage
 		}
 	}
 
-	
+
 	public class GroupItem
 	{
 		public string DisplayText { get; set; }
 	}
 
-	
+
 	public class GroupedData : ObservableCollection<GroupItem>
 	{
 		public string GroupName { get; set; }
 		public bool HasHeader { get; set; }
 	}
 
-	
+
 	public class GroupItemTemplate : ViewCell
 	{
 		public GroupItemTemplate()
@@ -123,7 +118,7 @@ public class Issue1939 : TestContentPage
 		}
 	}
 
-	
+
 	public class GroupHeaderTemplate : ViewCell
 	{
 		public GroupHeaderTemplate()
@@ -144,7 +139,7 @@ public class Issue1939 : TestContentPage
 		}
 	}
 
-	
+
 	public class GroupNoHeaderTemplate : ViewCell
 	{
 		public GroupNoHeaderTemplate()

@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.None, 0, "Adding Multiple Items to a ListView", PlatformAffected.All)]

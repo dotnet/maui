@@ -1,8 +1,4 @@
-using System;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -46,14 +42,14 @@ public class Issue2953 : TestContentPage
 		};
 	}
 
-	
+
 	internal class GroupedItems : ObservableCollection<string>
 	{
 		public GroupedItems(string groupName) { GroupName = groupName; }
 		public string GroupName { get; private set; }
 	}
 
-	
+
 	internal class HeaderCell : ViewCell
 	{
 		public HeaderCell()
@@ -65,7 +61,7 @@ public class Issue2953 : TestContentPage
 		}
 	}
 
-	
+
 	internal class ItemCell : ViewCell
 	{
 		public ItemCell()

@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -22,7 +16,7 @@ public class Issue3008 : TestContentPage
 	const string successEmpty3 = "List loaded and ItemSource not set: you should see nothing";
 
 
-	
+
 	class MyHeaderViewCell : ViewCell
 	{
 		public MyHeaderViewCell()
@@ -34,7 +28,7 @@ public class Issue3008 : TestContentPage
 		}
 	}
 
-	
+
 	class GroupedItem : List<Item>
 	{
 		public GroupedItem()
@@ -45,7 +39,7 @@ public class Issue3008 : TestContentPage
 	}
 
 
-	
+
 	class Item
 	{
 

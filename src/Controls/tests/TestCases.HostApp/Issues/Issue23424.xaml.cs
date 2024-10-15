@@ -8,7 +8,7 @@ public partial class Issue23424 : Shell
 		Items.Add(new ContentPage());
 		Navigation.PushAsync(new DetailPage());
 	}
-	
+
 	public class DetailPage : ContentPage
 	{
 		public DetailPage()
@@ -22,7 +22,7 @@ public partial class Issue23424 : Shell
 			SetBackButtonBehavior(this, backButtonBehavior);
 			Content = new VerticalStackLayout()
 			{
-				new Button() 
+				new Button()
 				{
 					AutomationId = "button",
 					Text = "Click to hide the back button",

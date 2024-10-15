@@ -60,7 +60,7 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	
+
 	public class Bugzilla30317Page2 : ContentPage
 	{
 		public Bugzilla30317Page2()
@@ -115,7 +115,7 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	
+
 	public class Bugzilla30317Page3TabTwo : ContentPage
 	{
 		ListView _listView;
@@ -147,7 +147,7 @@ public class Bugzilla30317 : TestNavigationPage
 			};
 		}
 	}
-	
+
 	public class Bugzilla30317Page3 : TabbedPage
 	{
 		public Bugzilla30317Page3()

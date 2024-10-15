@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Bugzilla, 23942, "Cannot bind properties in BindableObjects added to static resources in XAML", PlatformAffected.All)]
 	public partial class Bugzilla23942 : TestContentPage
@@ -68,7 +66,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	
+
 	public class Bugzilla23942Label : Label
 	{
 		public static readonly BindableProperty OptionsProperty =

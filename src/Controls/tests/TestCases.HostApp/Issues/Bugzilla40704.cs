@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -91,7 +85,7 @@ public class Bugzilla40704 : TestContentPage
 		listview.ItemsSource = patientGroups;
 	}
 
-	
+
 	public class GroupHeaderViewCell : ViewCell
 	{
 		TapGestureRecognizer tapGesture;
@@ -125,7 +119,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	
+
 	public class ItemTestViewCell : ViewCell
 	{
 		public ItemTestViewCell()
@@ -141,7 +135,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	
+
 	public class RangeObservableCollection<T> : ObservableCollection<T>
 	{
 		private bool _suppressNotification = false;
@@ -168,7 +162,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	
+
 	public class PatientsGroupViewModel : RangeObservableCollection<PatientViewModel>
 	{
 		public bool IsCollapsed { get; private set; }
@@ -204,7 +198,7 @@ public class Bugzilla40704 : TestContentPage
 		}
 	}
 
-	
+
 	public class PatientViewModel
 	{
 		public PatientViewModel(string code)

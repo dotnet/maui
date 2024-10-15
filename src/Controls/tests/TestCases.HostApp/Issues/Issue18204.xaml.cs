@@ -16,7 +16,7 @@ public partial class Issue18204 : ContentPage
 		var targetHeight = button.HeightRequest == 200.0 ? 400.0 : 200.0;
 		button.Animate("Height", new Animation(v => button.HeightRequest = v, button.Height, targetHeight, Easing.Linear));
 	}
-	
+
 	private void ShowHideClicked(object sender, EventArgs e)
 	{
 		var button = TheOtherButton;

@@ -1,10 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.Issues;
 

@@ -1,8 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -58,13 +55,13 @@ public partial class GitHub1331 : TestContentPage
 	{
 	}
 
-	
+
 	class GH1331ViewModel
 	{
 		public ObservableCollection<GH1331ItemViewModel> Items { get; set; }
 	}
 
-	
+
 	class GH1331ItemViewModel
 	{
 		public string Text { get; set; }

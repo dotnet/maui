@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	
+
 	[Issue(IssueTracker.Github, 8899, "Clearing CollectionView IsGrouped=\"True\" crashes application iOS ")]
 	public class Issue8899 : TestContentPage
 	{
@@ -74,7 +68,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		
+
 		public class _8899Group : List<_8899Item>
 		{
 			public string GroupName { get; set; }

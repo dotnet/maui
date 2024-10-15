@@ -1,6 +1,3 @@
-using System;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Bugzilla, 28001, "[Android] TabbedPage: invisible tabs are not Disposed", PlatformAffected.Android)]

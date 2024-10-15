@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -47,19 +42,19 @@ public class Bugzilla45125 : TestContentPage
 		MinimumWidthRequest = 200
 	};
 
-	
+
 	class GroupItem
 	{
 		public string DisplayText { get; set; }
 	}
 
-	
+
 	class GroupedData : List<GroupItem>
 	{
 		public string GroupName { get; set; }
 	}
 
-	
+
 	class MyCell : ViewCell
 	{
 		public MyCell()
@@ -70,7 +65,7 @@ public class Bugzilla45125 : TestContentPage
 		}
 	}
 
-	
+
 	class HeaderCell : ViewCell
 	{
 		public HeaderCell()

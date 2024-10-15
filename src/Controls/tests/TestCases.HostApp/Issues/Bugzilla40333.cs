@@ -1,7 +1,3 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -33,7 +29,7 @@ public class Bugzilla40333 : TestNavigationPage
 		PushAsync(content);
 	}
 
-	
+
 	public class _40333MDP : TestFlyoutPage
 	{
 		readonly bool _showTabVersion;
@@ -57,7 +53,7 @@ public class Bugzilla40333 : TestNavigationPage
 			}
 		}
 
-		
+
 		public class _40333DetailPage : ContentPage
 		{
 			public _40333DetailPage(string title)
@@ -79,7 +75,7 @@ public class Bugzilla40333 : TestNavigationPage
 			}
 		}
 
-		
+
 		public class _40333NavPusher : ContentPage
 		{
 			readonly ListView _listView = new ListView();
@@ -140,7 +136,7 @@ public class Bugzilla40333 : TestNavigationPage
 			}
 		}
 
-		
+
 		public class _40333TabPusher : ContentPage
 		{
 			readonly ListView _listView = new ListView();
