@@ -767,6 +767,32 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Increases the value of a Stepper control.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Stepper element to increase.</param>
+		public static void IncreaseStepper(this IApp app, string marked)
+		{
+			app.CommandExecutor.Execute("increaseStepper", new Dictionary<string, object>
+			{
+				["elementId"] = marked
+			});
+		}
+
+		/// <summary>
+		/// Decreases the value of a Stepper control.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Stepper element to decrease.</param>
+		public static void DecreaseStepper(this IApp app, string marked)
+		{
+			app.CommandExecutor.Execute("decreaseStepper", new Dictionary<string, object>
+			{
+				["elementId"] = marked
+			});
+		}
+
+		/// <summary>
 		/// Performs a continuous drag gesture between 2 points.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
