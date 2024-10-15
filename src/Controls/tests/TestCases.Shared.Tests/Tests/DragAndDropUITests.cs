@@ -151,20 +151,20 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:DragSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:DragSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
 				}
 				else
 				{
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragstart.Contains("DragStarting:Handled", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Handled", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 
@@ -178,19 +178,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:DropSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DropSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:DragEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DragEvent", StringComparison.OrdinalIgnoreCase));
 				}
 				else
 				{
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDragover.Contains("DragOver:DragEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DragEventArgs", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 
@@ -204,19 +204,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:DropSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:DragEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DragEvent", StringComparison.OrdinalIgnoreCase));
 				}
 				else
 				{
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDropcomplete.Contains("DropCompleted:DropCompletedEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropCompletedEventArgs", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 
@@ -232,20 +232,20 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					ClassicAssert.True(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrop.Contains("Drop:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrop.Contains("Drop:DropSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DropSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					ClassicAssert.True(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrop.Contains("Drop:DragEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DragEvent", StringComparison.OrdinalIgnoreCase));
 
 				}
 				else
 				{
-					ClassicAssert.True(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrop.Contains("Drop:DragEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DragEventArgs", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 		}
