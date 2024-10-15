@@ -17,11 +17,13 @@
 		{
 			_emittedDragOver = false;
 			AddEvent(nameof(DragStarting));
+			dragStartEvent.Text = "DragStarting";
 		}
 
 		void DropCompleted(object sender, DropCompletedEventArgs e)
 		{
 			AddEvent(nameof(DropCompleted));
+			dragCompletedEvent.Text = "DropCompleted";
 		}
 
 		void DragLeave(object sender, DragEventArgs e)
@@ -34,6 +36,7 @@
 			if (!_emittedDragOver) // This can generate a lot of noise, only add it once
 			{
 				AddEvent(nameof(DragOver));
+				dragOverEvent.Text = "DragOver";
 				_emittedDragOver = true;
 			}
 		}
