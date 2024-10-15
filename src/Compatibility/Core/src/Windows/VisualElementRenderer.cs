@@ -106,37 +106,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+			if (Children.Count == 0 || Control == null)
+				return new SizeRequest();
+
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
-
-			// Check if the control is null
-			if (Control is null)
-			{
-				// If control is null but there are children present, measure them and handle accordingly
-				if (Children.Count > 0)
-				{
-					double maxWidth = 0;
-					double maxHeight = 0;
-
-					foreach (var childElement in Children)
-					{
-						childElement.Measure(constraint);
-						maxWidth = Math.Max(maxWidth, childElement.DesiredSize.Width);
-						maxHeight = Math.Max(maxHeight, childElement.DesiredSize.Height);
-					}
-
-					return new SizeRequest(new Size(Math.Ceiling(maxWidth), Math.Ceiling(maxHeight)));
-
-				}
-				else
-				{
-					return new SizeRequest();
-				}
-			}
-
 			TNativeElement child = Control;
 
 			child.Measure(constraint);
 			var result = new Size(Math.Ceiling(child.DesiredSize.Width), Math.Ceiling(child.DesiredSize.Height));
+
 			return new SizeRequest(result);
 		}
 
