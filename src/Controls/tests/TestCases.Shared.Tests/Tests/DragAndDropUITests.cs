@@ -272,16 +272,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.NotNull(dragStartRelativeToScreen);
 			ClassicAssert.NotNull(dragStartRelativeToLabel);
 
-			ClassicAssert.True(dragStartRelativeToSelf!.Value.X > 0 && dragStartRelativeToSelf!.Value.Y > 0);
-			ClassicAssert.True(dragStartRelativeToScreen!.Value.X > 0 && dragStartRelativeToScreen!.Value.Y > 0);
+			Assert.That(dragStartRelativeToSelf!.Value.X > 0 && dragStartRelativeToSelf!.Value.Y > 0);
+			Assert.That(dragStartRelativeToScreen!.Value.X > 0 && dragStartRelativeToScreen!.Value.Y > 0);
 
 			// The position of the drag relative to itself should be less than that relative to the screen
 			// There are other elements in the screen, plus the ContentView of the test has some margin
-			ClassicAssert.True(dragStartRelativeToSelf!.Value.X < dragStartRelativeToScreen!.Value.X);
-			ClassicAssert.True(dragStartRelativeToSelf!.Value.Y < dragStartRelativeToScreen!.Value.Y);
+			Assert.That(dragStartRelativeToSelf!.Value.X < dragStartRelativeToScreen!.Value.X);
+			Assert.That(dragStartRelativeToSelf!.Value.Y < dragStartRelativeToScreen!.Value.Y);
 
 			// Since the label is below the the box, the Y position of the drag relative to the label should be negative
-			ClassicAssert.True(dragStartRelativeToLabel!.Value.Y < 0);
+			Assert.That(dragStartRelativeToLabel!.Value.Y < 0);
 		}
 
 		[Test]
@@ -308,19 +308,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.NotNull(dragRelativeToLabel);
 			ClassicAssert.NotNull(dragStartRelativeToScreen);
 
-			ClassicAssert.True(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
-			ClassicAssert.True(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
+			Assert.That(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
+			Assert.That(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
 
 			// The position of the drag relative to the drop location should be less than that relative to the screen
 			// There are other elements in the screen, plus the ContentView of the test has some margin
-			ClassicAssert.True(dragRelativeToDrop!.Value.X < dragRelativeToScreen!.Value.X);
-			ClassicAssert.True(dragRelativeToDrop!.Value.Y < dragRelativeToScreen!.Value.Y);
+			Assert.That(dragRelativeToDrop!.Value.X < dragRelativeToScreen!.Value.X);
+			Assert.That(dragRelativeToDrop!.Value.Y < dragRelativeToScreen!.Value.Y);
 
 			// Since the label is below the the box, the Y position of the drag relative to the label should be negative
-			ClassicAssert.True(dragRelativeToLabel!.Value.Y < 0);
+			Assert.That(dragRelativeToLabel!.Value.Y < 0);
 
 			// The drag is executed left to right, so the X value should be higher than where it started
-			ClassicAssert.True(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
+			Assert.That(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 		}
 
 		[Test]
@@ -351,23 +351,23 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.NotNull(dragRelativeToLabel);
 			ClassicAssert.NotNull(dragStartRelativeToScreen);
 
-			ClassicAssert.True(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
-			ClassicAssert.True(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
+			Assert.That(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
+			Assert.That(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
 
 			// The position of the drop relative the layout should be less than that relative to the screen
 			// There are other elements in the screen, plus the ContentView of the test has some margin
-			ClassicAssert.True(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
-			ClassicAssert.True(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
+			Assert.That(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
+			Assert.That(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
 
 			// Since the label is below the the box, the Y position of the drop relative to the label should be negative
-			ClassicAssert.True(dropRelativeToLabel!.Value.Y < 0);
+			Assert.That(dropRelativeToLabel!.Value.Y < 0);
 
 			// The drop is executed left to right, so the X value should be higher than where it started
-			ClassicAssert.True(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
+			Assert.That(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 
 			// The label receiving the coordinates of the drop is below that which receives the coordinates of the drag
 			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
-			ClassicAssert.True(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
+			Assert.That(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
 		}
 
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
