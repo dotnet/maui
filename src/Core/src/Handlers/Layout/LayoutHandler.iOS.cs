@@ -38,6 +38,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView.AddSubview(child.ToPlatform(MauiContext));
 			}
+
+			PlatformView.PropagateSetNeedsLayout();			
 		}
 
 		public void Add(IView child)
@@ -54,6 +56,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				childPlatformView.UpdateFlowDirection(child);
 			}
+
+			PlatformView.PropagateSetNeedsLayout();
 		}
 
 		public void Remove(IView child)
@@ -65,6 +69,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				childView.RemoveFromSuperview();
 			}
+
+			PlatformView.PropagateSetNeedsLayout();
 		}
 
 		public void Clear()
@@ -86,6 +92,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				childPlatformView.UpdateFlowDirection(child);
 			}
+
+			PlatformView.PropagateSetNeedsLayout();
 		}
 
 		public void Update(int index, IView child)
@@ -137,6 +145,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView.Subviews.RemoveAt(currentIndex);
 				PlatformView.InsertSubview(nativeChildView, targetIndex);
+				PlatformView.SetNeedsLayout();
 			}
 		}
 

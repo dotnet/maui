@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPropagatesSetNeedsLayout
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, ISchedulesSetNeedsLayout
 	{
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		static bool? _respondsToSafeArea;
@@ -141,28 +141,12 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
-			TryToInvalidateSuperView(false);
 		}
 
-		private protected void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
+		void ISchedulesSetNeedsLayout.ScheduleSetNeedsLayoutPropagation()
 		{
-			if (shouldOnlyInvalidateIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
-			{
-				return;
-			}
-
-			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
-			// To a SuperView that's been disposed which will cause a crash when trying to access it
-			if (Window is not null)
-			{
-				this.Superview?.SetNeedsLayout();
-				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
-			}
-			else
-			{
-				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
-			}
-		}
+			_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
+		} 
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
 		{
@@ -194,7 +178,12 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-			TryToInvalidateSuperView(true);
+
+			if (_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				Superview?.PropagateSetNeedsLayout();
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+			}
 		}
 	}
 }

@@ -16,6 +16,9 @@ namespace Microsoft.Maui.Platform
 		// verify we're using the correct subview for masking (and any other purposes)
 		internal const nint ContentTag = 0x63D2A0;
 
+		// We tag the page so we can find it later when we need to update the background
+		internal const nint PageTag = 0x63D2A1;
+
 		public ContentView()
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))

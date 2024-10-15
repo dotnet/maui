@@ -1384,13 +1384,13 @@ namespace Microsoft.Maui.Controls
 
 				if (Parent is VisualElement parentVisualElement)
 				{
-					parentVisualElement.InvalidateMeasure();
-					
 					// If layout constraint has changed, we need to recompute constraints
 					if (this is View thisView)
 					{
 						parentVisualElement.ComputeConstraintForView(thisView);
 					}
+
+					parentVisualElement.InvalidateMeasure();
 				}
 				else
 				{
@@ -1403,6 +1403,7 @@ namespace Microsoft.Maui.Controls
 			if (trigger == InvalidationTrigger.MarginChanged)
 			{
 				InvokeMeasureInvalidated(trigger);
+
 				if (Parent is VisualElement parentVisualElement)
 				{
 					parentVisualElement.InvalidateMeasure();
@@ -1418,8 +1419,12 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureCacheInternal();
 			((IView)this).InvalidateMeasure();
 			InvokeMeasureInvalidated(trigger);
-			// Notify parent chain that a child's measure has been invalidated
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+
+			// Support legacy layout invalidation
+			if (Parent is Compatibility.Layout layout)
+			{
+				layout.OnChildMeasureInvalidatedInternal(this, trigger);
+			}
 		}
 
 		/// <summary>
@@ -1429,30 +1434,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_measureCache.Clear();
 		}
-
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
-		{
-			switch (trigger)
-			{
-				case InvalidationTrigger.Undefined:
-					// We need to invalidate measures only if child is actually visible
-					InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
-					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
-					break;
-
-				default:
-					// When visibility changes `InvalidationTrigger.Undefined` is used,
-					// so here we're sure that visibility didn't change
-					if (child.IsVisible)
-					{
-						// We need to invalidate measures only if child is actually visible
-						InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
-						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
-					}
-					break;
-			}
-		}
-
+		
 		/// <inheritdoc/>
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);
 

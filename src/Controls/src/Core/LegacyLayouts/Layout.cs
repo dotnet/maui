@@ -329,10 +329,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// It is suggested to still call the base method and modify its calculated results.</remarks>
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
-			base.OnChildMeasureInvalidatedInternal(child, trigger);
+			InvokeMeasureInvalidated(trigger == InvalidationTrigger.RendererReady ? InvalidationTrigger.RendererReady : InvalidationTrigger.MeasureChanged);
+
+			// Propagate to legacy layout parent
+			if (Parent is Layout parent)
+			{
+				parent.OnChildMeasureInvalidatedInternal(this, trigger);
+			}
 		}
 
 		/// <summary>

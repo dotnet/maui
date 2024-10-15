@@ -9,7 +9,7 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IPropagatesSetNeedsLayout
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, ISchedulesSetNeedsLayout
 	{
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
@@ -236,31 +236,10 @@ namespace Microsoft.Maui.Platform
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 			return returnSize;
 		}
-
-		public override void SetNeedsLayout()
+		
+		void ISchedulesSetNeedsLayout.ScheduleSetNeedsLayoutPropagation()
 		{
-			base.SetNeedsLayout();
-			TryToInvalidateSuperView(false);
-		}
-
-		private protected void TryToInvalidateSuperView(bool onlyIfPending)
-		{
-			if (onlyIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
-			{
-				return;
-			}
-
-			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
-			// To a SuperView that's been disposed which will cause a crash when trying to access it
-			if (Window is not null)
-			{
-				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
-				this.Superview?.SetNeedsLayout();
-			}
-			else
-			{
-				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
-			}
+			_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
 		}
 
 		partial void ClipChanged()
@@ -380,7 +359,12 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-			TryToInvalidateSuperView(true);
+
+			if (_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				Superview?.PropagateSetNeedsLayout();
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+			}
 		}
 	}
 }

@@ -282,11 +282,36 @@ namespace Microsoft.Maui.Platform
 
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			platformView.SetNeedsLayout();
+			platformView.PropagateSetNeedsLayout();
+		}
 
-			if (platformView is not IPropagatesSetNeedsLayout)
+		internal static void PropagateSetNeedsLayout(this UIView? view)
+		{
+			// Bubble up the tree to the root view unless we reach a scrollable area
+			while (view != null)
 			{
-				platformView.Superview?.SetNeedsLayout();
+				view.SetNeedsLayout();
+
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (view.Window is null)
+				{
+					if (view is ISchedulesSetNeedsLayout schedulesSetNeedsLayout)
+					{
+						schedulesSetNeedsLayout.ScheduleSetNeedsLayoutPropagation();
+					}
+
+					return;
+				}
+
+				view = view.Superview;
+
+				// If we reached a scrollable area or the page, simply invalidate and stop here
+				if (view is ContentView { Tag: ContentView.PageTag } or UIScrollView { ScrollEnabled: true })
+				{
+					view.SetNeedsLayout();
+					return;
+				}
 			}
 		}
 
