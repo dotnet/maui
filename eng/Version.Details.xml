@@ -135,27 +135,27 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b030c4dfdfa1bf287f10f96006619a06bc2000ae</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.24476.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24510.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>7d5c32dbda0c6c8b9dc20cde4e1261b191896138</Sha>
+      <Sha>8c0dc6866c1b786baf476dd767323b24f102bee4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="10.0.0-prerelease.24476.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.24510.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>7d5c32dbda0c6c8b9dc20cde4e1261b191896138</Sha>
+      <Sha>8c0dc6866c1b786baf476dd767323b24f102bee4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="10.0.0-prerelease.24476.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.24510.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>7d5c32dbda0c6c8b9dc20cde4e1261b191896138</Sha>
+      <Sha>8c0dc6866c1b786baf476dd767323b24f102bee4</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.24476.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.24509.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>7e8b8f4f321c8671aa01b53567d31aaa4950706f</Sha>
+      <Sha>05c72bb3c9b38138276a8029017f2ef905dcc7fa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.24476.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24509.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>7e8b8f4f321c8671aa01b53567d31aaa4950706f</Sha>
+      <Sha>05c72bb3c9b38138276a8029017f2ef905dcc7fa</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
