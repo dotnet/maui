@@ -160,7 +160,33 @@
     <AppiumXCUITestDriverVersion>7.27.0</AppiumXCUITestDriverVersion>
     <AppiumMac2DriverVersion>1.19.1</AppiumMac2DriverVersion>
     <AppiumUIAutomator2DriverVersion>3.8.0</AppiumUIAutomator2DriverVersion>
+
+    <!-- Android SDK package versions and info -->
+    <!-- Build Tools and CmdLine Tools versions -->
+    <AndroidSdkBuildToolsVersion>33.0.0</AndroidSdkBuildToolsVersion>
+    <AndroidSdkCmdLineToolsVersion>13.0</AndroidSdkCmdLineToolsVersion>
+    
+    <!-- Device Type for creating AVD's -->
+    <AndroidSdkAvdDeviceType>pixel</AndroidSdkAvdDeviceType>
   </PropertyGroup>
+
+  <!-- Android API Levels to install platform sdks and emulator images for -->
+  <ItemGroup>
+    <AndroidSdkApiLevels Include="23" SystemImageType="google_apis" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="24" SystemImageType="google_apis" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="25" SystemImageType="google_apis" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="26" SystemImageType="google_apis" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="27" SystemImageType="default" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="28" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="29" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="30" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="31" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="32" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="33" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="34" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+    <AndroidSdkApiLevels Include="35" SystemImageType="google_apis_playstore" DeviceType="$(AndroidSdkAvdDeviceType)" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- arcade -->
     <!-- xunit -->

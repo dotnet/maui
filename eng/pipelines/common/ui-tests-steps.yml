@@ -78,10 +78,8 @@ steps:
     displayName: "Install node"
 
   - pwsh: |
-      $fullLogsDir = Join-Path "$(LogDirectory)" "npm"
-      ./eng/scripts/appium-install.ps1 -logsDir "$fullLogsDir"
-      Dir -Recurse $(APPIUM_HOME) | Get-Childitem | Select Fullname
-    displayName: "Install Appium (Drivers)"
+      dotnet build ./src/Provisioning/Provisioning.csproj -p:DoProvisionAppium=True -bl:"$(Build.ArtifactStagingDirectory)/logs/provision-appium.binlog"
+    displayName: "Install Appium"
     continueOnError: false
     retryCountOnTaskFailure: 1
     env:

@@ -1,0 +1,151 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+	<!-- Imports all the Provisioning versions -->
+	<Import Project="../../eng/Versions.props" />
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<IsWindows Condition="'$(OS)' == 'Windows_NT'">True</IsWindows>
+		<IsWindows Condition="'$(OS)' != 'Windows_NT'">False</IsWindows>
+	</PropertyGroup>
+
+	<!-- Appium Drivers -->
+	<ItemGroup>
+		<AppiumDrivers Include="uiautomator2" Version="$(AppiumUIAutomator2DriverVersion)" Condition=" '$(AppiumUIAutomator2DriverVersion)' != '' " />
+		<AppiumDrivers Include="windows" Version="$(AppiumWindowsDriverVersion)" Condition=" '$(IsWindows)' == 'True' AND '$(AppiumWindowsDriverVersion)' != '' " />
+		<AppiumDrivers Include="mac2" Version="$(AppiumMac2DriverVersion)" Condition=" '$(IsWindows)' != 'True' AND '$(AppiumMac2DriverVersion)' != '' " />
+		<AppiumDrivers Include="xcuitest" Version="$(AppiumXCUITestDriverVersion)" Condition=" '$(IsWindows)' != 'True' AND '$(AppiumXCUITestDriverVersion)' != '' " />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<!-- Get the right ABI string for android avd's based on host os this is running on -->
+		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x86_64</AndroidSdkHostAbi>
+		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64-v8a</AndroidSdkHostAbi>
+	</PropertyGroup>
+
+
+
+	<!-- ******************************************** -->
+	<!-- * Android SDK Provisioning                   -->
+	<!-- ******************************************** -->
+
+	<ItemGroup>
+		<!-- Android SDK - construct package names to install -->
+		<AndroidSdkPackages Include="build-tools%3B$(AndroidSdkBuildToolsVersion)" />
+		<AndroidSdkPackages Include="cmdline-tools%3B$(AndroidSdkCmdLineToolsVersion)" />
+		<AndroidSdkPackages Include="emulator" />
+	</ItemGroup>
+
+	<Target Name="ProvisionAndroidSdkPackages">
+		<Message Text="Provisioning Android SDK Packages" />
+
+		<!-- Assemble the platform sdk and emulator image package names to install in the sdk -->
+		<ItemGroup>
+			<!-- Platform APIs -->
+			<AndroidSdkPackages Include="platforms%3Bandroid-@(AndroidSdkApiLevels.Identity)" />
+
+			<!-- Emulator images -->
+			<AndroidSdkPackages Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)" />
+		</ItemGroup>
+
+		<!-- Install SDK Packages -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPackages.Identity)&quot;" />
+	</Target>
+
+	<Target Name="ProvisionAndroidSdkEmulators" DependsOnTargets="ProvisionAndroidSdkPackages">
+
+		<!-- Create all the AVD's we need based on the api levels specified -->
+		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkApiLevels.Identity)&quot; --sdk &quot;system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)&quot; --device &quot;%(AndroidSdkApiLevels.DeviceType)&quot; --force" />
+	</Target>
+
+	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkPackages;ProvisionAndroidSdkEmulators">
+		<Error
+			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+			Text="You should only run this target with 'dotnet build'." />
+	</Target>
+
+
+	<!-- ******************************************** -->
+	<!-- * Appium Provisioning                        -->
+	<!-- ******************************************** -->
+
+	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
+
+		<!-- Get a json output list of the installed appium drivers with their version info -->
+		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
+		</Exec>
+
+		<!-- Concatenate the item group console output lines into one single property string -->
+		<PropertyGroup>
+			<_AppiumDriverListInstalledJson>@(_AppiumDriverListInstalledJsonLines->'%(Identity)', ' ')</_AppiumDriverListInstalledJson>
+		</PropertyGroup>
+
+		<!-- Get the version of each driver from the JSON output and put it in a property -->
+		<JsonPeek Content="$(_AppiumDriverListInstalledJson)" Query="$.%(AppiumDrivers.Identity).version">
+			<Output TaskParameter="Result" PropertyName="_AppiumVersion_%(AppiumDrivers.Identity)" />
+		</JsonPeek>
+
+		<!-- Get the groups of drivers to install vs update based on the versions resolved and expected -->
+		<ItemGroup>
+			<AppiumDriversToInstall Include="@(AppiumDrivers)" KeepMetadata="Version" Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' == '' " />
+			<AppiumDriversToUpdate Include="@(AppiumDrivers)" KeepMetadata="Version" Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '' AND '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '%(AppiumDrivers.Version)' " />
+		</ItemGroup>
+
+
+		<!-- Update any drivers needing an update (if any) -->
+		<Exec Command="appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
+
+		<!-- Install any drivers not yet installed (if any) -->
+		<Exec Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
+
+		<!-- Run doctor command just so we have some output -->
+		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" />
+
+		<!-- Run driver list again for our records -->
+		<Exec Command="appium driver list --installed" />
+	</Target>
+
+	<Target Name="InstallAppium">
+		<!-- Get the NPM package version for appium if installed -->
+		<!-- this uses loglevel error to prevent extra noise in the console output that isn't json -->
+		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumNpmListOutputLines" />
+		</Exec>
+
+		<!-- Concat the console output lines into a single property -->
+		<PropertyGroup>
+			<_AppiumNpmListOutput>@(_AppiumNpmListOutputLines->'%(Identity)', ' ')</_AppiumNpmListOutput>
+		</PropertyGroup>
+
+		<!-- Peek the appium version info from the json output -->
+		<JsonPeek Content="$(_AppiumNpmListOutput)" Query="$.dependencies.appium.version">
+			<Output TaskParameter="Result" PropertyName="_AppiumNpmListVersion" />
+		</JsonPeek>
+
+		<!-- Install appium at the specified version if necessary -->
+		<Exec Command="npm i --location=global appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
+	</Target>
+
+	<Target Name="ProvisionAppium" DependsOnTargets="InstallAppium;ProvisionAppiumDrivers">
+		<Error
+			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+			Text="You should only run this target with 'dotnet build'." />
+	</Target>
+
+
+	<Target Name="ProvisionAll" DependsOnTargets="ProvisionAndroidSdk;ProvisionAppium">
+		<Error
+			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+			Text="You should only run this target with 'dotnet build'." />
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="JsonPeek" Version="1.2.0" />
+	</ItemGroup>
+</Project>
+
