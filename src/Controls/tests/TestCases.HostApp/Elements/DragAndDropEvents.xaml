@@ -22,5 +22,8 @@
                 <DropGestureRecognizer></DropGestureRecognizer>
             </Label.GestureRecognizers>
         </Label>
-    </StackLayout>
+        <Label x:Name="dragStartEvent" AutomationId="DragStartEventsLabel" Text="DragStartEvents: "/>
+        <Label x:Name="dragOverEvent"  AutomationId="DragOverEventsLabel" Text="DragOverEvents: "/>
+        <Label x:Name="dragCompletedEvent" AutomationId="DragCompletedEventsLabel" Text="DragCompletedEvents: "/>
+  </StackLayout>
 </ContentView>
