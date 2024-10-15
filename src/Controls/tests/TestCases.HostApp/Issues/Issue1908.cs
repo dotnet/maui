@@ -1,11 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	
+
 	[Issue(IssueTracker.Github, 1908, "Image reuse", PlatformAffected.Android)]
 	public class Issue1908 : TestContentPage
 	{

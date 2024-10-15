@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -11,7 +6,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Bugzilla, 60524, "NRE when rendering ListView with grouping enabled and HasUnevenRows set to true", PlatformAffected.iOS)]
 public class Bugzilla60524 : TestNavigationPage
 {
-	
+
 	public class GroupedItemsPage : ContentPage
 	{
 		private ObservableCollection<Grouping<string, GroupedItem>> model;
@@ -69,7 +64,7 @@ public class Bugzilla60524 : TestNavigationPage
 			Content = content;
 		}
 	}
-	
+
 	public class GroupedItemsDataTemplateSelector : Microsoft.Maui.Controls.DataTemplateSelector
 	{
 		private readonly DataTemplate firstGroupTemplate;
@@ -99,7 +94,7 @@ public class Bugzilla60524 : TestNavigationPage
 			return model.Group == "Group 1" ? this.firstGroupTemplate : this.secondGroupTemplate;
 		}
 	}
-	
+
 	public class GroupedItem
 	{
 		public string Group { get; set; }
@@ -112,7 +107,7 @@ public class Bugzilla60524 : TestNavigationPage
 			this.Item = item;
 		}
 	}
-	
+
 	public class Grouping<K, T> : ObservableCollection<T>
 	{
 		public K Key { get; private set; }
@@ -148,7 +143,7 @@ public class Bugzilla60524 : TestNavigationPage
 			}
 		}
 	}
-	
+
 	public class GroupingKey
 	{
 		public string Title { get; private set; }

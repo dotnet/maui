@@ -1,8 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -14,7 +9,7 @@ public class Bugzilla47923 : TestNavigationPage
 		PushAsync(new LandingPage());
 	}
 
-	
+
 	public class VectorImagePage : ContentPage
 	{
 		public VectorImagePage(Aspect aspect)
@@ -50,7 +45,7 @@ public class Bugzilla47923 : TestNavigationPage
 		}
 	}
 
-	
+
 	public class CellViewPage : ContentPage
 	{
 		public CellViewPage()
@@ -69,7 +64,7 @@ public class Bugzilla47923 : TestNavigationPage
 		}
 	}
 
-	
+
 	public class LandingPage : ContentPage
 	{
 		public LandingPage()

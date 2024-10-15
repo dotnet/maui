@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -14,7 +9,7 @@ public class Issue3053 : TestContentPage
 {
 	const string _instructions = "Click me once. Item 2 should remain on bottom";
 
-	
+
 	public class Item
 	{
 		public string Name { get; set; }

@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Microsoft.Maui.Graphics;
 using Label = Microsoft.Maui.Controls.Label;
 using ListView = Microsoft.Maui.Controls.ListView;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;

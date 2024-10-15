@@ -39,7 +39,7 @@
 	{
 		public static MauiAppBuilder Issue21109AddMappers(this MauiAppBuilder builder)
 		{
-			builder.ConfigureMauiHandlers(handlers => 
+			builder.ConfigureMauiHandlers(handlers =>
 			{
 				Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(Issue21109DecimalEntry), (handler, view) =>
 				{

@@ -18,8 +18,8 @@
 
 		public void ToggleBehaviour_Clicked(object sender, EventArgs e)
 		{
-			FlyoutLayoutBehavior = FlyoutLayoutBehavior == FlyoutLayoutBehavior.Split 
-				? FlyoutLayoutBehavior.Popover 
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior == FlyoutLayoutBehavior.Split
+				? FlyoutLayoutBehavior.Popover
 				: FlyoutLayoutBehavior.Split;
 		}
 

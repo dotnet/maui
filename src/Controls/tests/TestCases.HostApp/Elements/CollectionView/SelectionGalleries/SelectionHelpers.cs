@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 {
 	internal static class SelectionHelpers
 	{

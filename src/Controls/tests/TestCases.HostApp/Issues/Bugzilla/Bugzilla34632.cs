@@ -1,8 +1,3 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -40,7 +35,7 @@ public class Bugzilla34632 : TestFlyoutPage
 		NavigationPage.SetHasBackButton(Detail, false);
 	}
 
-	
+
 	public class ModalRotationIssue : ContentPage
 	{
 		public ModalRotationIssue()

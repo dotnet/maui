@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -24,7 +17,7 @@ public class Issue2948 : TestFlyoutPage
 		Detail = new NavigationPage(new ContractsPage());
 	}
 
-	
+
 	public class MenuListData : List<MenuItem>
 	{
 		public MenuListData()
@@ -59,7 +52,7 @@ public class Issue2948 : TestFlyoutPage
 		}
 	}
 
-	
+
 	public class ContractsPage : ContentPage
 	{
 		public ContractsPage()
@@ -133,7 +126,7 @@ public class Issue2948 : TestFlyoutPage
 		}
 	}
 
-	
+
 	public class MenuListView : ListView
 	{
 		public MenuListView()
@@ -198,7 +191,7 @@ public class Issue2948 : TestFlyoutPage
 
 	}
 
-	
+
 	public class MenuItem
 	{
 		public string Title { get; set; }

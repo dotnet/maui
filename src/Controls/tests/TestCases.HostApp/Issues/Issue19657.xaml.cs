@@ -21,14 +21,14 @@
 
 		class SampleCarouselItem1
 		{
-    		public SampleCarouselItem1(string title, string description )
-    		{
-        		Title = title;
-        		Description = description;
-    		}
+			public SampleCarouselItem1(string title, string description)
+			{
+				Title = title;
+				Description = description;
+			}
 
-    		public string Title { get; set; }
-    		public string Description { get; set; }
+			public string Title { get; set; }
+			public string Description { get; set; }
 			public Color Color { get; set; }
 		}
 	}

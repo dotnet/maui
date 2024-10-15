@@ -1,9 +1,5 @@
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -18,7 +14,7 @@ public class Bugzilla44886 : TestContentPage
 	Label _CountLabel = new Label { AutomationId = CountId, TextColor = Colors.Blue };
 	MyViewModel _vm = new MyViewModel();
 
-	
+
 	class MyViewModel : INotifyPropertyChanged
 	{
 		int _count;

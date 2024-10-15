@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	
+
 	[Issue(IssueTracker.Github, 3273, "Drag and drop reordering not firing CollectionChanged", PlatformAffected.UWP)]
 	public class Issue3273 : TestContentPage
 	{
-		
+
 		public class SortableListView : ListView
 		{
 		}

@@ -11,7 +11,7 @@
 
 			BindingContext = _vm = new Issue22750ViewModel();
 		}
-		
+
 		void OnRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			RadioButton button = sender as RadioButton;

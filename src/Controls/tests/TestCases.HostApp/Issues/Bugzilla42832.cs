@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -43,7 +38,7 @@ public class Bugzilla42832 : TestContentPage
 		};
 	}
 
-	
+
 	public class TestCell : TextCell
 	{
 		public TestCell()

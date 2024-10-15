@@ -1,8 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -19,7 +17,7 @@ public class Bugzilla41153 : TestTabbedPage
 	const string ToolbarItemText = "Toolbar Item";
 	const string Success = "Success";
 
-	
+
 	class MyViewModel : INotifyPropertyChanged
 	{
 		string _toolBarItemText;

@@ -1,8 +1,5 @@
-using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -29,7 +26,7 @@ public class Bugzilla31330 : TestContentPage
 		Content = listview;
 	}
 
-	
+
 	public class CustomTextCell : TextCell
 	{
 		public CustomTextCell()
@@ -43,7 +40,7 @@ public class Bugzilla31330 : TestContentPage
 		}
 	}
 
-	
+
 	public class ListViewModel : ViewModel
 	{
 		public void Init()
@@ -88,7 +85,7 @@ public class Bugzilla31330 : TestContentPage
 		}
 	}
 
-	
+
 	public class ListItemViewModel : ViewModel
 	{
 		public bool CanExecute = false;

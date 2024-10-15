@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 7338, "[Bug] CollectionView crash if source is empty in XF 4.2.0.709249",
 		PlatformAffected.iOS)]

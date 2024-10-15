@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 {

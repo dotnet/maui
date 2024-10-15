@@ -1,9 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 

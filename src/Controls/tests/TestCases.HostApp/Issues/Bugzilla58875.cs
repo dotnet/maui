@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -18,7 +16,7 @@ public class Bugzilla58875 : TestNavigationPage
 		Navigation.PushAsync(page1);
 	}
 
-	
+
 	class ListViewPage : ContentPage
 	{
 		public ListViewPage()
@@ -57,7 +55,7 @@ public class Bugzilla58875 : TestNavigationPage
 		public ObservableCollection<string> Items { get; set; }
 	}
 
-	
+
 	class Page1 : ContentPage
 	{
 		public Page1()

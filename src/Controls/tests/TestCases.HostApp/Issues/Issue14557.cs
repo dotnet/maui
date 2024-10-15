@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 14557, "CollectionView header and footer not displaying on Windows", PlatformAffected.UWP)]
 	class Issue14557 : TestContentPage

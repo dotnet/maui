@@ -1,8 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 {
-	
+
 	public partial class BasicGrouping : ContentPage
 	{
 		public BasicGrouping()

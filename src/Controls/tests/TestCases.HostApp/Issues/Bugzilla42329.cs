@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -40,7 +33,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		Reference = this;
 	}
 
-	
+
 	public class RootPage : ContentPage
 	{
 		public RootPage()
@@ -86,7 +79,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		public ListView ListView { get; }
 	}
 
-	
+
 	public class RootPageItem
 	{
 		public string IconSource { get; set; }
@@ -96,7 +89,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		public string Title { get; set; }
 	}
 
-	
+
 	public class ContentPageEx : ContentPage
 	{
 		~ContentPageEx()
@@ -106,7 +99,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		}
 	}
 
-	
+
 	public class _42329_FrameWithListView : ContentPageEx
 	{
 		public _42329_FrameWithListView()
@@ -136,7 +129,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		Reference.IsPresented = true;
 	}
 
-	
+
 	public class _42329_Page2 : ContentPage
 	{
 		public _42329_Page2()
@@ -162,7 +155,7 @@ public class Bugzilla42329 : TestFlyoutPage
 		}
 	}
 
-	
+
 	public class _42329_Page3 : ContentPage
 	{
 		Label lblFlag;

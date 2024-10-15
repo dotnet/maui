@@ -1,8 +1,4 @@
-using System;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
 namespace Maui.Controls.Sample.Issues;
@@ -120,7 +116,7 @@ public class Bugzilla31114 : TestContentPage
 		}
 	}
 
-	
+
 	public class ListItem
 	{
 		public string Id { get; set; }
@@ -203,7 +199,7 @@ public class Bugzilla31114 : TestContentPage
 		}
 	}
 
-	
+
 	public class TaskItemTemplate : ViewCell
 	{
 		Image _photo;

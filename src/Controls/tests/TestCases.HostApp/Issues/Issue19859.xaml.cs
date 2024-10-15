@@ -2,11 +2,11 @@
 {
 	[Issue(IssueTracker.Github, 19859, "NavigationPage: BarBackgroundColor, BarTextColor and Title not updating", PlatformAffected.Android)]
 	public partial class Issue19859 : FlyoutPage
-    {
-        public Issue19859()
-        {
-            InitializeComponent();
-        }
+	{
+		public Issue19859()
+		{
+			InitializeComponent();
+		}
 
 		private static int _count = 0;
 

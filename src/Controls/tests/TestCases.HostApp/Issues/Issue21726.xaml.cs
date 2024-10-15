@@ -8,7 +8,7 @@ public partial class Issue21726 : ContentPage
 		InitializeComponent();
 	}
 
-	void AddVC (object sender, EventArgs e)
+	void AddVC(object sender, EventArgs e)
 	{
 #if IOS
 		var window = UIKit.UIApplication.SharedApplication

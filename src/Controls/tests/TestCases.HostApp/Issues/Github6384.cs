@@ -1,9 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Github, 6384, "content page in tabbed page not showing inside shell tab", PlatformAffected.iOS | PlatformAffected.Android)]

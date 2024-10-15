@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -16,7 +10,7 @@ public class Issue3019 : TestContentPage
 	ListView _listViewIsGrouped;
 
 
-	
+
 	class MyHeaderViewCell : ViewCell
 	{
 		public MyHeaderViewCell()
@@ -34,7 +28,7 @@ public class Issue3019 : TestContentPage
 		}
 	}
 
-	
+
 	class Item
 	{
 		static int counter = 0;
@@ -47,7 +41,7 @@ public class Issue3019 : TestContentPage
 
 	}
 
-	
+
 	class GroupedItem : List<Item>
 	{
 		public GroupedItem()

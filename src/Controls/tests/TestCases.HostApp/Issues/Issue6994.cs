@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -72,7 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		
+
 		public class ItemViewModel : INotifyPropertyChanged
 		{
 			string _id;

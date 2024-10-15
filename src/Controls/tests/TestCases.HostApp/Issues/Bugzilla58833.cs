@@ -1,8 +1,3 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -14,7 +9,7 @@ public class Bugzilla58833 : TestContentPage
 	Label _resultLabel;
 	static Label s_tapGestureFired;
 
-	
+
 	class TestCell : ViewCell
 	{
 		readonly Label _content;

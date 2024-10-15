@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -139,7 +132,7 @@ public class Bugzilla32148 : TestContentPage
 		}
 	}
 
-	
+
 	public class ContactViewModel1
 	{
 		public string FirstName { get; set; }
@@ -162,7 +155,7 @@ public class Bugzilla32148 : TestContentPage
 		}
 	}
 
-	
+
 	public class Contact1
 	{
 		public string FirstName { get; set; }
@@ -178,7 +171,7 @@ public class Bugzilla32148 : TestContentPage
 		public string CountryCode { get; set; }
 	}
 
-	
+
 	public class HeaderCell : ViewCell
 	{
 		public HeaderCell()
@@ -212,7 +205,7 @@ public class Bugzilla32148 : TestContentPage
 		}
 	}
 
-	
+
 	public class ContactItemTemplate : ImageCell
 	{
 		public ContactItemTemplate()

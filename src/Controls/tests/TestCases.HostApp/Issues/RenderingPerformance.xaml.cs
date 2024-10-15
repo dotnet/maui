@@ -16,7 +16,8 @@ public class MeasuredLabel : Label
 
 	public long? LastArrangedTicks { get; set; }
 
-	public long? GetArrangeTicks() {
+	public long? GetArrangeTicks()
+	{
 		if (LastArrangedTicks is { } ticks)
 		{
 			var elapsed = Stopwatch.GetElapsedTime(ticks);
@@ -34,7 +35,7 @@ public static class RenderingPerformanceExtensions
 {
 	public static MauiAppBuilder RenderingPerformanceAddMappers(this MauiAppBuilder builder)
 	{
-		builder.ConfigureMauiHandlers(handlers => 
+		builder.ConfigureMauiHandlers(handlers =>
 		{
 			Microsoft.Maui.Handlers.LabelHandler.CommandMapper.AppendToMapping(nameof(IView.Frame), (handler, view, arg) =>
 			{

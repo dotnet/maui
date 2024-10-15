@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 {
 	public partial class NestedCollectionViewGallery : ContentPage
 	{
@@ -11,7 +9,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 		}
 	}
 
-	
+
 	internal class NestedItemSource
 	{
 		public List<CollectionViewGalleryTestItem> Items { get; set; }
@@ -34,7 +32,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 		}
 	}
 
-	
+
 	internal class NestedCollectionViewModel
 	{
 		public List<NestedItemSource> Items { get; set; }

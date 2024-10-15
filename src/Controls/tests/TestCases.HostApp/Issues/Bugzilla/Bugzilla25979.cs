@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 public class Bugzilla25979 : TestNavigationPage
@@ -38,7 +36,7 @@ public class Bugzilla25979 : TestNavigationPage
 		}
 	}
 
-	
+
 	internal sealed class MyPage2 : ContentPage
 	{
 		public MyPage2()
@@ -78,7 +76,7 @@ public class Bugzilla25979 : TestNavigationPage
 		}
 	}
 
-	
+
 	internal sealed class MyPage3 : ContentPage
 	{
 		public MyPage3()

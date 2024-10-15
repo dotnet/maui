@@ -1,10 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
-using Microsoft.Maui;
-using System.Linq;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.Maui.Platform;
 
 
 #if IOS

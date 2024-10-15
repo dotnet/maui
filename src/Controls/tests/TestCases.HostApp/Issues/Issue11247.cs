@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Shapes;
-
 namespace Maui.Controls.Sample.Issues;
 
 

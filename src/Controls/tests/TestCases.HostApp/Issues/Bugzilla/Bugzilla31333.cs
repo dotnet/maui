@@ -1,11 +1,6 @@
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -14,7 +9,7 @@ namespace Maui.Controls.Sample.Issues;
 	"Focus() on Entry in ViewCell brings up keyboard, but doesn't have cursor in EditText", PlatformAffected.Android)]
 public class Bugzilla31333 : TestContentPage
 {
-	
+
 	public class Model31333 : INotifyPropertyChanged
 	{
 		public string Data
@@ -48,13 +43,13 @@ public class Bugzilla31333 : TestContentPage
 		}
 	}
 
-	
+
 	public interface IHaveControlFocusedProperty
 	{
 		void SetBinding();
 	}
 
-	
+
 	public class ExtendedEntry : Entry, IHaveControlFocusedProperty
 	{
 		public static readonly BindableProperty IsControlFocusedProperty =
@@ -88,7 +83,7 @@ public class Bugzilla31333 : TestContentPage
 		}
 	}
 
-	
+
 	public class ExtendedEditor : Editor, IHaveControlFocusedProperty
 	{
 		public static readonly BindableProperty IsControlFocusedProperty =
@@ -122,7 +117,7 @@ public class Bugzilla31333 : TestContentPage
 		}
 	}
 
-	
+
 	public class ExtendedCell<T> : ViewCell where T : View, IHaveControlFocusedProperty
 	{
 		public ExtendedCell()

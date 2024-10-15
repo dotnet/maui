@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -11,7 +6,7 @@ public class Bugzilla41271 : TestTabbedPage
 {
 	const string ListMain = "mainList";
 
-	
+
 	class Person
 	{
 		public Person(string firstName, string lastName, string city, string state)
@@ -26,7 +21,7 @@ public class Bugzilla41271 : TestTabbedPage
 		public string City { get; set; }
 		public string State { get; set; }
 	}
-	
+
 	class ListViewCell : ViewCell
 	{
 		Label firstNameLabel = new Label();
@@ -63,7 +58,7 @@ public class Bugzilla41271 : TestTabbedPage
 			}
 		}
 	}
-	
+
 	class ListViewPage : ContentPage
 	{
 		ListView _ListView;

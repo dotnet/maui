@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -62,7 +58,7 @@ public class Bugzilla46363_2 : TestContentPage
 		Content = layout;
 	}
 
-	
+
 	class _46363Template_2 : ViewCell
 	{
 		public _46363Template_2()

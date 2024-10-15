@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		void Change_BorderWidth_Button_Clicked (object sender, System.EventArgs e)
+		void Change_BorderWidth_Button_Clicked(object sender, System.EventArgs e)
 		{
 			toggleBorderWidth = !toggleBorderWidth;
 

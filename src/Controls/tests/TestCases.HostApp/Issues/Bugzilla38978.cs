@@ -1,16 +1,10 @@
-using System;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-
 namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Bugzilla, 38978, "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)", PlatformAffected.Android)]
 public class Bugzilla38978 : TestContentPage
 {
-	
+
 	public class MyViewCell : ViewCell
 	{
 		Image _image;

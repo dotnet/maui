@@ -1,9 +1,3 @@
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 852, "Async loading of Content causes UI element to be unclickable", PlatformAffected.Android | PlatformAffected.iOS)]
@@ -94,7 +88,7 @@ namespace Maui.Controls.Sample.Issues
 			passwordEntry.Focused += (s, e) => welcomeLabel.Text = "Clicked Password";
 
 			_loginButton = new Button
-			{ 
+			{
 				AutomationId = "Login",
 				ClassId = "loginButton",
 				Text = "Login",

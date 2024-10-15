@@ -9,7 +9,7 @@
 		{
 			InitializeComponent();
 		}
-		
+
 		void OnCounterClicked(object sender, EventArgs e)
 		{
 			_count++;

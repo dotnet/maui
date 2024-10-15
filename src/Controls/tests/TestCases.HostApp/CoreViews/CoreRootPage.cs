@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	internal class CoreRootPage : Microsoft.Maui.Controls.ContentPage
 	{

@@ -1,9 +1,3 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 

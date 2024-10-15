@@ -1,9 +1,6 @@
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -63,7 +60,7 @@ public class Bugzilla31602 : TestFlyoutPage
 		}
 	}
 
-	
+
 	public class MasterViewModel1 : INotifyPropertyChanged
 	{
 		public FlyoutPage MasterPage;

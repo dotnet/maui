@@ -59,7 +59,7 @@ public class Issue22443ScrollPage : ContentPage
 
 	protected override async void OnAppearing()
 	{
-		MainThread.BeginInvokeOnMainThread(() =>_scrollView!.ScrollToAsync(0, 10000, true));
+		MainThread.BeginInvokeOnMainThread(() => _scrollView!.ScrollToAsync(0, 10000, true));
 
 		await Task.Delay(200);
 		await Navigation.PopAsync();

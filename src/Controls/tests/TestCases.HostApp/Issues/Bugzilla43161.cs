@@ -1,7 +1,3 @@
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -13,7 +9,7 @@ public class Bugzilla43161 : TestContentPage
 	const string ListView2 = "Accessory with RecycleElement";
 	const string ListView3 = "Accessory with RetainElement";
 
-	
+
 	public class AccessoryViewCell : ViewCell
 	{
 		public AccessoryViewCell()
@@ -25,7 +21,7 @@ public class Bugzilla43161 : TestContentPage
 		}
 	}
 
-	
+
 	public class AccessoryViewCellWithContextActions : AccessoryViewCell
 	{
 		public AccessoryViewCellWithContextActions()

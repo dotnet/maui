@@ -1,8 +1,3 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -35,7 +30,7 @@ public class Bugzilla43527 : TestFlyoutPage
 					{
 						Title = $"New Title: {DateTime.Now.Second}";
 						AutomationId = Title;
-					}) 
+					})
 					}
 				}
 			};
