@@ -21,11 +21,13 @@ namespace Maui.Controls.Sample
 		{
 			_emittedDragOver = false;
 			AddEvent(nameof(DragStarting));
+			dragStartEvent.Text = "DragStarting";
 		}
 
 		void DropCompleted(object sender, DropCompletedEventArgs e)
 		{
 			AddEvent(nameof(DropCompleted));
+			dragCompletedEvent.Text = "DropCompleted";
 		}
 
 		void DragLeave(object sender, DragEventArgs e)
@@ -38,6 +40,7 @@ namespace Maui.Controls.Sample
 			if (!_emittedDragOver) // This can generate a lot of noise, only add it once
 			{
 				AddEvent(nameof(DragOver));
+				dragOverEvent.Text = "DragOver";
 				_emittedDragOver = true;
 			}
 		}

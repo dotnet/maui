@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// https://github.com/dotnet/maui/issues/24914
-		#if !MACCATALYST
+		
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
@@ -32,18 +32,39 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
-			App.WaitForElement("DragEventsLabel");
 
-			var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDrag))
+			App.WaitForElement("DragStartEventsLabel");
+			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
+
+			if (string.IsNullOrEmpty(textAfterDragstart))
 			{
-				Assert.Fail("Text was expected");
+				Assert.Fail("Text was expected: Drag start event");
 			}
 			else
 			{
-				ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
+				Assert.That(textAfterDragstart, Is.EqualTo("DragStarting"));
+			}
+
+			App.WaitForElement("DragOverEventsLabel");
+			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragover))
+			{
+				Assert.Fail("Text was expected: Drag over event");
+			}
+			else
+			{
+				Assert.That(textAfterDragover, Is.EqualTo("DragOver"));
+			}
+
+			App.WaitForElement("DragCompletedEventsLabel");
+			var textAfterDragcomplete = App.FindElement("DragCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragcomplete))
+			{
+				Assert.Fail("Text was expected: Drag complete event");
+			}
+			else
+			{
+				Assert.That(textAfterDragcomplete, Is.EqualTo("DropCompleted"));
 			}
 		}
 
@@ -61,19 +82,50 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Red");
 			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
-			App.WaitForElement("DragEventsLabel");
 
-			var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDrag))
+			App.WaitForElement("DragStartEventsLabel");
+			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
+
+			if (string.IsNullOrEmpty(textAfterDragstart))
+			{
+				Assert.Fail("Text was expected: Drag start event");
+			}
+			else
+			{
+				Assert.That(textAfterDragstart, Is.EqualTo("DragStarting"));
+			}
+
+			App.WaitForElement("DragOverEventsLabel");
+			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragover))
+			{
+				Assert.Fail("Text was expected: Drag over event");
+			}
+			else
+			{
+				Assert.That(textAfterDragover, Is.EqualTo("DragOver"));
+			}
+
+			App.WaitForElement("DragCompletedEventsLabel");
+			var textAfterDragcomplete = App.FindElement("DragCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragcomplete))
+			{
+				Assert.Fail("Text was expected: Drag complete event");
+			}
+			else
+			{
+				Assert.That(textAfterDragcomplete, Is.EqualTo("DropCompleted"));
+			}
+
+			App.WaitForElement("RainBowColorsLabel");
+			var rainbowColorText = App.FindElement("RainBowColorsLabel").GetText();
+			if (string.IsNullOrEmpty(rainbowColorText))
 			{
 				Assert.Fail("Text was expected");
 			}
 			else
 			{
-				ClassicAssert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
-				ClassicAssert.True(textAfterDrag.Contains("RainbowColorsAdd:Red", StringComparison.OrdinalIgnoreCase));
+				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
 		}
 
@@ -87,77 +139,113 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
-			App.WaitForElement("DragEventsLabel");
 
-			var textAfterDrag = App.FindElement("DragEventsLabel").GetText();
+			App.WaitForElement("DragStartEventsLabel");
+			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
 
-			if (string.IsNullOrEmpty(textAfterDrag))
+			if (string.IsNullOrEmpty(textAfterDragstart))
 			{
-				Assert.Fail("Text was expected");
+				Assert.Fail("Text was expected: Drag start event");
 			}
 			else
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:DragSession", StringComparison.OrdinalIgnoreCase));
-
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:DropSession", StringComparison.OrdinalIgnoreCase));
-
-					// Until the UI test can drag over an item without placing it down
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:Sender", StringComparison.OrdinalIgnoreCase));
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:DropSession", StringComparison.OrdinalIgnoreCase));
-
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:DropSession", StringComparison.OrdinalIgnoreCase));
-
-					ClassicAssert.True(textAfterDrag.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("Drop:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("Drop:DropSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:DragSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
+				}
+				else
+				{
+					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragstart.Contains("DragStarting:Handled", StringComparison.OrdinalIgnoreCase));
+				}
+			}
 
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:DragEvent", StringComparison.OrdinalIgnoreCase));
+			App.WaitForElement("DragOverEventsLabel");
+			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragover))
+			{
+				Assert.Fail("Text was expected: Drag over event");
+			}
+			else
+			{
+				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
+				{
+					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DropSession", StringComparison.OrdinalIgnoreCase));
+				}
+				else if (Device == TestDevice.Android)
+				{
+					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DragEvent", StringComparison.OrdinalIgnoreCase));
+				}
+				else
+				{
+					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragover.Contains("DragOver:DragEventArgs", StringComparison.OrdinalIgnoreCase));
+				}
+			}
 
-					// Until the UI test can drag over an item without placing it down
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:Sender", StringComparison.OrdinalIgnoreCase));
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:DragEvent", StringComparison.OrdinalIgnoreCase));
+			App.WaitForElement("DropCompletedEventsLabel");
+			var textAfterDropcomplete = App.FindElement("DropCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDropcomplete))
+			{
+				Assert.Fail("Text was expected: Drop complete event");
+			}
+			else
+			{
+				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
+				{
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropSession", StringComparison.OrdinalIgnoreCase));
+				}
+				else if (Device == TestDevice.Android)
+				{
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DragEvent", StringComparison.OrdinalIgnoreCase));
+				}
+				else
+				{
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropCompletedEventArgs", StringComparison.OrdinalIgnoreCase));
+				}
+			}
 
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:DragEvent", StringComparison.OrdinalIgnoreCase));
+			App.WaitForElement("DropEventsLabel");
 
-					ClassicAssert.True(textAfterDrag.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("Drop:DragEvent", StringComparison.OrdinalIgnoreCase));
+			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
+
+			if (string.IsNullOrEmpty(textAfterDrop))
+			{
+				Assert.Fail("Text was expected: drop event");
+			}
+			else
+			{
+				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
+				{
+					Assert.That(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DropSession", StringComparison.OrdinalIgnoreCase));
+				}
+				else if (Device == TestDevice.Android)
+				{
+					Assert.That(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DragEvent", StringComparison.OrdinalIgnoreCase));
 
 				}
 				else
 				{
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragStarting:Handled", StringComparison.OrdinalIgnoreCase));
-
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DropCompleted:DropCompletedEventArgs", StringComparison.OrdinalIgnoreCase));
-
-					// Until the UI test can drag over an item without placing it down
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:Sender", StringComparison.OrdinalIgnoreCase));
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:DragEventArgs", StringComparison.OrdinalIgnoreCase));
-					//ClassicAssert.True(textAfterDrag.Contains("DragLeave:Handled", StringComparison.OrdinalIgnoreCase));
-
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("DragOver:DragEventArgs", StringComparison.OrdinalIgnoreCase));
-
-					ClassicAssert.True(textAfterDrag.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
-					ClassicAssert.True(textAfterDrag.Contains("Drop:DragEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDrop.Contains("Drop:DragEventArgs", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 		}
@@ -184,16 +272,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.NotNull(dragStartRelativeToScreen);
 			ClassicAssert.NotNull(dragStartRelativeToLabel);
 
-			ClassicAssert.True(dragStartRelativeToSelf!.Value.X > 0 && dragStartRelativeToSelf!.Value.Y > 0);
-			ClassicAssert.True(dragStartRelativeToScreen!.Value.X > 0 && dragStartRelativeToScreen!.Value.Y > 0);
+			Assert.That(dragStartRelativeToSelf!.Value.X > 0 && dragStartRelativeToSelf!.Value.Y > 0);
+			Assert.That(dragStartRelativeToScreen!.Value.X > 0 && dragStartRelativeToScreen!.Value.Y > 0);
 
 			// The position of the drag relative to itself should be less than that relative to the screen
 			// There are other elements in the screen, plus the ContentView of the test has some margin
-			ClassicAssert.True(dragStartRelativeToSelf!.Value.X < dragStartRelativeToScreen!.Value.X);
-			ClassicAssert.True(dragStartRelativeToSelf!.Value.Y < dragStartRelativeToScreen!.Value.Y);
+			Assert.That(dragStartRelativeToSelf!.Value.X < dragStartRelativeToScreen!.Value.X);
+			Assert.That(dragStartRelativeToSelf!.Value.Y < dragStartRelativeToScreen!.Value.Y);
 
 			// Since the label is below the the box, the Y position of the drag relative to the label should be negative
-			ClassicAssert.True(dragStartRelativeToLabel!.Value.Y < 0);
+			Assert.That(dragStartRelativeToLabel!.Value.Y < 0);
 		}
 
 		[Test]
@@ -220,19 +308,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.NotNull(dragRelativeToLabel);
 			ClassicAssert.NotNull(dragStartRelativeToScreen);
 
-			ClassicAssert.True(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
-			ClassicAssert.True(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
+			Assert.That(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
+			Assert.That(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
 
 			// The position of the drag relative to the drop location should be less than that relative to the screen
 			// There are other elements in the screen, plus the ContentView of the test has some margin
-			ClassicAssert.True(dragRelativeToDrop!.Value.X < dragRelativeToScreen!.Value.X);
-			ClassicAssert.True(dragRelativeToDrop!.Value.Y < dragRelativeToScreen!.Value.Y);
+			Assert.That(dragRelativeToDrop!.Value.X < dragRelativeToScreen!.Value.X);
+			Assert.That(dragRelativeToDrop!.Value.Y < dragRelativeToScreen!.Value.Y);
 
 			// Since the label is below the the box, the Y position of the drag relative to the label should be negative
-			ClassicAssert.True(dragRelativeToLabel!.Value.Y < 0);
+			Assert.That(dragRelativeToLabel!.Value.Y < 0);
 
 			// The drag is executed left to right, so the X value should be higher than where it started
-			ClassicAssert.True(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
+			Assert.That(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 		}
 
 		[Test]
@@ -263,25 +351,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.NotNull(dragRelativeToLabel);
 			ClassicAssert.NotNull(dragStartRelativeToScreen);
 
-			ClassicAssert.True(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
-			ClassicAssert.True(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
+			Assert.That(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
+			Assert.That(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
 
 			// The position of the drop relative the layout should be less than that relative to the screen
 			// There are other elements in the screen, plus the ContentView of the test has some margin
-			ClassicAssert.True(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
-			ClassicAssert.True(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
+			Assert.That(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
+			Assert.That(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
 
 			// Since the label is below the the box, the Y position of the drop relative to the label should be negative
-			ClassicAssert.True(dropRelativeToLabel!.Value.Y < 0);
+			Assert.That(dropRelativeToLabel!.Value.Y < 0);
 
 			// The drop is executed left to right, so the X value should be higher than where it started
-			ClassicAssert.True(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
+			Assert.That(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 
 			// The label receiving the coordinates of the drop is below that which receives the coordinates of the drag
 			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
-			ClassicAssert.True(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
+			Assert.That(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
 		}
-		#endif
 
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
 		Point? GetCoordinatesFromLabel(string? labelText)
