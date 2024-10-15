@@ -19,7 +19,6 @@ parameters:
   # publishing defaults
   artifacts: ''
   enableMicrobuild: false
-  enableMicrobuildForMacAndLinux: false
   enablePublishBuildArtifacts: false
   enablePublishBuildAssets: false
   enablePublishTestResults: false
@@ -135,26 +134,11 @@ jobs:
           signType: $(_SignType)
           zipSources: false
           feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
-          ${{ if and(eq(parameters.enableMicrobuildForMacAndLinux, 'true'), ne(variables['Agent.Os'], 'Windows_NT')) }}:
-            azureSubscription: 'MicroBuild Signing Task (DevDiv)'
         env:
           TeamName: $(_TeamName)
           MicroBuildOutputFolderOverride: '$(Agent.TempDirectory)'
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
         continueOnError: ${{ parameters.continueOnError }}
-        condition: and(
-          succeeded(),
-          or(
-            and(
-              eq(variables['Agent.Os'], 'Windows_NT'),
-              in(variables['_SignType'], 'real', 'test')
-            ),
-            and(
-              ${{ eq(parameters.enableMicrobuildForMacAndLinux, true) }},
-              ne(variables['Agent.Os'], 'Windows_NT'),
-              eq(variables['_SignType'], 'real')
-            )
-          ))
+        condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@1
@@ -187,19 +171,7 @@ jobs:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       - task: MicroBuildCleanup@1
         displayName: Execute Microbuild cleanup tasks
-        condition: and(
-          always(),
-          or(
-            and(
-              eq(variables['Agent.Os'], 'Windows_NT'),
-              in(variables['_SignType'], 'real', 'test')
-            ),
-            and(
-              ${{ eq(parameters.enableMicrobuildForMacAndLinux, true) }},
-              ne(variables['Agent.Os'], 'Windows_NT'),
-              eq(variables['_SignType'], 'real')
-            )
-          ))
+        condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
         continueOnError: ${{ parameters.continueOnError }}
         env:
           TeamName: $(_TeamName)
