@@ -49,7 +49,8 @@ Setup(context =>
 		return;
 	}
 
-	PerformCleanupIfNeeded(deviceCleanupEnabled, false);
+	bool createLogs = targetCleanup && IsCIBuild();
+	PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
 
 	// Device or simulator setup
 	if (testDevice.Contains("device"))
@@ -336,11 +337,11 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 
 void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 {
+	Information($"PerformCleanupIfNeeded: {cleanupEnabled} {createDeviceLogs}");
+	
 	if (cleanupEnabled)
 	{
 		var logDirectory = GetLogDirectory();
-		Information("Cleaning up...");
-		Information("Deleting XHarness simulator if exists...");
 		var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
 		foreach (var sim in sims)
 		{
@@ -387,6 +388,8 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 				}
 			}
 
+			Information("Cleaning up...");
+			Information("Deleting XHarness simulator if exists...");
 			Information($"Deleting XHarness simulator {sim.Name} ({sim.UDID})...");
 			StartProcess("xcrun", $"simctl shutdown {sim.UDID}");
 			ExecuteWithRetries(() => StartProcess("xcrun", $"simctl delete {sim.UDID}"), 3);

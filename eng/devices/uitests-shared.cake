@@ -10,4 +10,5 @@ if (!IsCIBuild() && GetBuildVariable("workloads", "notset") == "notset")
 
 bool deviceBoot = Argument("boot", TARGET.ToLower() != "uitest-build");
 bool targetBoot = TARGET.ToLower() == "boot";
+bool targetCleanup = TARGET.ToLower() == "cleanup";
 bool deviceBootWait = Argument("wait", true);
