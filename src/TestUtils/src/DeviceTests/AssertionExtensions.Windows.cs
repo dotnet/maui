@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
 using Windows.Storage.Streams;
+using Microsoft.UI.Xaml.Input;
 using Xunit;
 using Xunit.Sdk;
 using WColor = Windows.UI.Color;
@@ -49,7 +50,8 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
 			TaskCompletionSource focusSource = new TaskCompletionSource();
-			view.GotFocus += OnFocused;
+
+			FocusManager.GotFocus += OnFocused;
 
 			try
 			{
@@ -57,20 +59,24 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			finally
 			{
-				view.GotFocus -= OnFocused;
+				FocusManager.GotFocus -= OnFocused;
 			}
 
-			void OnFocused(object? sender, RoutedEventArgs e)
+			void OnFocused(object? sender, FocusManagerGotFocusEventArgs e)
 			{
-				view.GotFocus -= OnFocused;
-				focusSource.SetResult();
+				if (e.NewFocusedElement == view)
+				{
+					FocusManager.GotFocus -= OnFocused;
+					focusSource.SetResult();
+				}
 			}
 		}
 
 		public static async Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
 		{
 			TaskCompletionSource focusSource = new TaskCompletionSource();
-			view.LostFocus += OnUnFocused;
+
+			FocusManager.LostFocus += OnUnFocused;
 
 			try
 			{
@@ -78,13 +84,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			finally
 			{
-				view.LostFocus -= OnUnFocused;
+				FocusManager.LostFocus -= OnUnFocused;
 			}
 
-			void OnUnFocused(object? sender, RoutedEventArgs e)
+			void OnUnFocused(object? sender, FocusManagerLostFocusEventArgs e)
 			{
-				view.LostFocus -= OnUnFocused;
-				focusSource.SetResult();
+				if (e.OldFocusedElement == view)
+				{
+					FocusManager.LostFocus -= OnUnFocused;
+					focusSource.SetResult();
+				}
 			}
 		}
 
