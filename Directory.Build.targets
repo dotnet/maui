@@ -55,8 +55,8 @@
     <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!-- 
-    NOTE: The Contains('-windows10') is a bit of a hack 
+  <!--
+    NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...
     There's probably a better way we should find to infer this
   -->
