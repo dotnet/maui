@@ -48,10 +48,10 @@ namespace Maui.Controls.Sample
 					new Button()
 					{
 						Text = "Dismiss Page",
-						Command = new Command(async () =>
+						Command = new Command(() =>
 						{
 							if (_picker.SelectedIndex == 0)
-								await Navigation.PopAsync();
+								Application.Current.Quit();
 							else
 								_picker.SelectedIndex--;
 						})
