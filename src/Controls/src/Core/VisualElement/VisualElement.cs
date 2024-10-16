@@ -1345,6 +1345,12 @@ namespace Microsoft.Maui.Controls
 			FocusChangeRequested?.Invoke(this, args);
 		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
+		// Reverts the behavior changed in https://github.com/dotnet/maui/pull/23052/. This unblock customers that
+		// rely on the previous behavior or that are affected by the event propagation being slow on deep control
+		// hierarchies. This can be removed once a better fix is in place, such as https://github.com/dotnet/maui/pull/24848
+		// or https://github.com/dotnet/maui/pull/25291.
+		internal static bool UseLegacyMeasureInvalidatedBehaviorEnabled { get; } = AppContext.TryGetSwitch("Microsoft.Maui.UseLegacyMeasureInvalidatedBehavior", out var enabled) && enabled;
+
 		/// <summary>
 		/// Invalidates the measure of an element.
 		/// </summary>
@@ -1375,7 +1381,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+			if (!UseLegacyMeasureInvalidatedBehaviorEnabled)
+			{
+				(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+			}
 		}
 		
 		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
