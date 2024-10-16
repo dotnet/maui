@@ -19,7 +19,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 
 			base.ConnectHandler(platformView);
@@ -27,7 +26,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiPicker platformView)
 		{
-			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
 
 			base.DisconnectHandler(platformView);
@@ -84,25 +82,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVerticalTextAlignment(IPickerHandler handler, IPicker picker)
 		{
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
-		}
-
-		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
-		{
-			if (PlatformView == null)
-				return;
-
-			if (e.HasFocus)
-			{
-				if (PlatformView.Clickable)
-					PlatformView.CallOnClick();
-				else
-					OnClick(PlatformView, EventArgs.Empty);
-			}
-			else if (_dialog != null)
-			{
-				_dialog.Hide();
-				_dialog = null;
-			}
 		}
 
 		void OnClick(object? sender, EventArgs e)

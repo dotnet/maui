@@ -2313,7 +2313,6 @@ override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.set -> void
 override Microsoft.Maui.Platform.MauiMaterialButton.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.MauiMaterialButton.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.MauiPicker.Dispose(bool disposing) -> void
-override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
 override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.MauiScrollView.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
 override Microsoft.Maui.Platform.MauiScrollView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
