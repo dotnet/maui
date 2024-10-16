@@ -635,13 +635,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 					continue;
 				}
 
-				if (visual is IShapeView)
-				{
-					continue;
-				}
-
 				if (!visual.IsPlatformEnabled || !visual.IsPlatformStateConsistent)
 				{
+					// PlatformEnabled is set to false when adding a stroke shape inside the border because the handler for the stroke shape element was not set.
+					if (visual is IShapeView)
+					{
+						continue;
+					}
+
 					return false;
 				}
 			}

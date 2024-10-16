@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
