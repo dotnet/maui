@@ -72,8 +72,8 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
       demands:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals arm64
