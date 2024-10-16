@@ -294,6 +294,76 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a pinch gestures on the matched element to zoom the view in. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Element to zoom in.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomIn(this IApp app, string element, TimeSpan? duration = null)
+		{
+			var elementToPinchToZoomIn = app.FindElement(element);
+
+			app.CommandExecutor.Execute("pinchToZoomIn", new Dictionary<string, object>
+			{
+				{ "element", elementToPinchToZoomIn },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures to zoom the view in on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate of the center of the pinch.</param>
+		/// <param name="y">The y coordinate of the center of the pinch.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomInCoordinates(this IApp app, float x, float y, TimeSpan? duration = null)
+		{
+			app.CommandExecutor.Execute("pinchToZoomInCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures on the matched element to zoom the view out. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Element to zoom in.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomOut(this IApp app, string element, TimeSpan? duration = null)
+		{
+			var elementToPinchToZoomOut = app.FindElement(element);
+
+			app.CommandExecutor.Execute("pinchToZoomOut", new Dictionary<string, object>
+			{
+				{ "element", elementToPinchToZoomOut },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures to zoom the view out on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate of the center of the pinch.</param>
+		/// <param name="y">The y coordinate of the center of the pinch.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomOutCoordinates(this IApp app, float x, float y, TimeSpan? duration = null)
+		{
+			app.CommandExecutor.Execute("pinchToZoomOutCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
 		/// Scroll until an element that matches the toElementId is shown on the screen.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
