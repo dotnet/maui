@@ -125,7 +125,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"</Project>",
 			$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
 
-		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), "artifacts");
+		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\{Path.GetFileName(projectDir)}.binlog");
 
 		string target = shouldPack ? "Pack" : "";
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: BuildProps),
