@@ -127,11 +127,6 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 
-  <!-- Windows specific settings -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
-  </PropertyGroup>
-
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->

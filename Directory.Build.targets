@@ -85,14 +85,6 @@
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
-  <!-- Until we get net9 rtm -->
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
-  </ItemGroup>
-  <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>   
-  </PropertyGroup>
-
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
