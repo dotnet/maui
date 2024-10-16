@@ -4,17 +4,26 @@
              x:Class="Maui.Controls.Sample.Issues.Issue21368">
 
 
-        <HorizontalStackLayout Spacing="40" Padding="10">
-            <VerticalStackLayout>
-                <Image Source="dotnet_bot.png" Aspect="AspectFit" HeightRequest="40" WidthRequest="50"
-                HorizontalOptions="Center" VerticalOptions="Center"/>
-                <Label Text="AspectFit" AutomationId="Label"/>
-            </VerticalStackLayout>
-            <VerticalStackLayout>
-                <Image Source="dotnet_bot.png" Aspect="AspectFill" WidthRequest="50" HeightRequest="40"
-                HorizontalOptions="Center" VerticalOptions="Center"/>
-                <Label Text="AspectFill"/>
-            </VerticalStackLayout>
-        </HorizontalStackLayout>
+    <HorizontalStackLayout>
+        <ContentView Padding="1">
+            <ContentView Padding="2,5,2,2" BackgroundColor="CadetBlue" WidthRequest="84" HeightRequest="44">
+                <Image Source="test.png" 
+               HorizontalOptions="Center" 
+               HeightRequest="40" 
+               MinimumHeightRequest="40" 
+               Aspect="AspectFit" />
+            </ContentView>
+        </ContentView>
+
+        <ContentView Padding="1">
+            <ContentView Padding="2,5,2,2" BackgroundColor="CadetBlue" WidthRequest="84" HeightRequest="44">
+                <Image Source="test.png" 
+               HorizontalOptions="Center" 
+               HeightRequest="40" 
+               MinimumHeightRequest="40" 
+               Aspect="AspectFill" />
+            </ContentView>
+        </ContentView>
+    </HorizontalStackLayout>
 
 </ContentPage>
