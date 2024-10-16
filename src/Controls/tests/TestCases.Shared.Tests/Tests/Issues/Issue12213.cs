@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMac]
 		public void TapGestureRecognizerNotWorkingOnEntry()
 		{
-			App.WaitForElement("EntryId");
-			App.Tap("EntryId");
+			App.WaitForElement("Entry");
+			App.Tap("Entry");
 			VerifyScreenshot();
 		}
 	}
