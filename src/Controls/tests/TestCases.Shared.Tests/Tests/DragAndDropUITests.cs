@@ -268,9 +268,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DragStartRelativeScreen").GetText());
 			var dragStartRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DragStartRelativeLabel").GetText());
 
-			ClassicAssert.NotNull(dragStartRelativeToSelf);
-			ClassicAssert.NotNull(dragStartRelativeToScreen);
-			ClassicAssert.NotNull(dragStartRelativeToLabel);
+			Assert.That(dragStartRelativeToSelf, Is.Not.Null);
+			Assert.That(dragStartRelativeToScreen, Is.Not.Null);
+			Assert.That(dragStartRelativeToLabel, Is.Not.Null);
 
 			Assert.That(dragStartRelativeToSelf!.Value.X > 0 && dragStartRelativeToSelf!.Value.Y > 0);
 			Assert.That(dragStartRelativeToScreen!.Value.X > 0 && dragStartRelativeToScreen!.Value.Y > 0);
@@ -303,10 +303,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			var dragRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DragRelativeLabel").GetText());
 			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DragStartRelativeScreen").GetText());
 
-			ClassicAssert.NotNull(dragRelativeToDrop);
-			ClassicAssert.NotNull(dragRelativeToScreen);
-			ClassicAssert.NotNull(dragRelativeToLabel);
-			ClassicAssert.NotNull(dragStartRelativeToScreen);
+			Assert.That(dragRelativeToDrop, Is.Not.Null);
+			Assert.That(dragRelativeToScreen, Is.Not.Null);
+			Assert.That(dragRelativeToLabel, Is.Not.Null);
+			Assert.That(dragStartRelativeToScreen, Is.Not.Null);
 
 			Assert.That(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
 			Assert.That(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
@@ -344,12 +344,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			var dragRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DragRelativeLabel").GetText());
 			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DragStartRelativeScreen").GetText());
 
-			ClassicAssert.NotNull(dropRelativeToLayout);
-			ClassicAssert.NotNull(dropRelativeToScreen);
-			ClassicAssert.NotNull(dropRelativeToLabel);
+			Assert.That(dropRelativeToLayout, Is.Not.Null);
+			Assert.That(dropRelativeToScreen, Is.Not.Null);
+			Assert.That(dropRelativeToLabel, Is.Not.Null);
 
-			ClassicAssert.NotNull(dragRelativeToLabel);
-			ClassicAssert.NotNull(dragStartRelativeToScreen);
+			Assert.That(dragRelativeToLabel, Is.Not.Null);
+			Assert.That(dragStartRelativeToScreen, Is.Not.Null);
 
 			Assert.That(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
 			Assert.That(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
