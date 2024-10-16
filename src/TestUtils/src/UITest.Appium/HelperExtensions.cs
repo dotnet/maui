@@ -276,6 +276,21 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a continuous touch gesture on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to touch.</param>
+		/// <param name="y">The y coordinate to touch.</param>
+		public static void TouchAndHoldCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("touchAndHoldCoordinates", new Dictionary<string, object>
+			{		
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
 		/// Performs a long touch on an item, followed by dragging the item to a second item and dropping it.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
