@@ -7,7 +7,7 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFooterView : Microsoft.UI.Xaml.Controls.ContentControl
+	public partial class ShellFooterView : Microsoft.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 

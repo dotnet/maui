@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(_MauiDotNetTfm)-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-windows$(WindowsTargetFrameworkVersion)</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -20,9 +20,6 @@
   <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
     <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
-  <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>   
-  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
@@ -37,6 +34,10 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -110,7 +111,7 @@
     <None Include="Compatibility\**\*.cs" />
     <Compile Remove="Compatibility\**\*.cs" />
   </ItemGroup>
-  
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>
