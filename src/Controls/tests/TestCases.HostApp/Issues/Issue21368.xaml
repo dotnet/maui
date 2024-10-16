@@ -5,6 +5,7 @@
 
 
     <HorizontalStackLayout>
+        <Label Text="AspectFillTest" AutomationId="Label"/>
         <ContentView Padding="1">
             <ContentView Padding="2,5,2,2" BackgroundColor="CadetBlue" WidthRequest="84" HeightRequest="44">
                 <Image Source="test.png" 
