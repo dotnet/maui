@@ -30,7 +30,6 @@ public class Bugzilla39530 : _IssuesUITest
 		App.WaitForElement("frame");
 		Rectangle frameBounds = App.FindElement("frame").GetRect();
 		App.Pan(frameBounds.CenterX(), frameBounds.Y + 10, frameBounds.X + 100, frameBounds.Y + 100);
-		App.WaitForElement("Panning: Completed");
 		var result = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Panning: Completed" + "']"));
 		ClassicAssert.IsNotEmpty(result.Text);
 	}
