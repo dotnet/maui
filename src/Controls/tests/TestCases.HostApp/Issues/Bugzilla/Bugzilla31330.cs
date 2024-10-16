@@ -1,14 +1,11 @@
-using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
 // Note that this test fails on UWP due to https://bugzilla.xamarin.com/show_bug.cgi?id=59650
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 31330, "Disabled context actions appear enabled")]
 public class Bugzilla31330 : TestContentPage
 {
@@ -29,7 +26,7 @@ public class Bugzilla31330 : TestContentPage
 		Content = listview;
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class CustomTextCell : TextCell
 	{
 		public CustomTextCell()
@@ -43,7 +40,7 @@ public class Bugzilla31330 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class ListViewModel : ViewModel
 	{
 		public void Init()
@@ -88,7 +85,7 @@ public class Bugzilla31330 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class ListItemViewModel : ViewModel
 	{
 		public bool CanExecute = false;

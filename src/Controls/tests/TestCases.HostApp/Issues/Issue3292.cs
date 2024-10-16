@@ -1,13 +1,8 @@
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
 [Issue(IssueTracker.Github, 3292, "TableSection.Title property binding fails in XAML")]
 public class Issue3292 : TestContentPage
 {
@@ -28,7 +23,6 @@ public class Issue3292 : TestContentPage
 		vm.Init();
 	}
 
-	[Preserve(AllMembers = true)]
 	public class SomePageViewModel : INotifyPropertyChanged
 	{
 		string _sectionTitle;

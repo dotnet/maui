@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1704, "[Enhancement] Basic GIF animation features", PlatformAffected.UWP)]
 public class Issue1704 : TestTabbedPage
 {
@@ -31,7 +23,7 @@ public class Issue1704 : TestTabbedPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 class OnLoadAnimationPage : ContentPage
 {
 	Label _referenceImageLabel;
@@ -88,7 +80,7 @@ class OnLoadAnimationPage : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 class OnStartAnimationPage : ContentPage
 {
 	Label _referenceImageLabel;
@@ -188,7 +180,7 @@ class OnStartAnimationPage : ContentPage
 // Large animated GIF that could trigger OOM scenarios and slow load times (12 MB compressed, 240 frames).
 // http://media.giphy.com/media/mf8UbIDew7e8g/giphy.gif
 //
-[Preserve(AllMembers = true)]
+
 class LoadImageSourceAnimationPage : ContentPage
 {
 	Label _animatedImageLabel;
@@ -343,7 +335,7 @@ class LoadImageSourceAnimationPage : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 class MiscPage : ContentPage
 {
 	Label _noAnimationFallbackLabel;

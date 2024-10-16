@@ -1,12 +1,7 @@
-﻿using System;
-using System.Linq;
-using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.ScrollToGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ScrollToGroup : ContentPage
 	{
 		SuperTeams _source = new SuperTeams();

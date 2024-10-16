@@ -1,11 +1,7 @@
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
 [Issue(IssueTracker.Github, 3652, "Loses the correct reference to the cell after adding and removing items to a ListView", PlatformAffected.UWP)]
 public class Issue3652 : TestContentPage
 {
@@ -43,7 +39,6 @@ public class Issue3652 : TestContentPage
 		};
 	}
 
-	[Preserve(AllMembers = true)]
 	public class ICell : ViewCell
 	{
 		public ICell()
@@ -65,7 +60,6 @@ public class Issue3652 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class MainPageViewModel
 	{
 		int newItemNumber = 1;
@@ -95,7 +89,6 @@ public class Issue3652 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class ListItemViewModel
 	{
 		public int Number { get; set; }

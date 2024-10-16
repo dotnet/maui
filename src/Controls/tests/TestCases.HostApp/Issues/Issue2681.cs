@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2681, "[UWP] Label inside Listview gets stuck inside infinite loop", PlatformAffected.UWP)]
 public class Issue2681 : TestNavigationPage
 {
@@ -17,7 +10,7 @@ public class Issue2681 : TestNavigationPage
 		PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { Text = NavigateToPage, Command = new Command(() => this.PushAsync(new FreezeMe())) } });
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public partial class FreezeMe : ContentPage
 	{
 		public List<int> Items { get; set; }

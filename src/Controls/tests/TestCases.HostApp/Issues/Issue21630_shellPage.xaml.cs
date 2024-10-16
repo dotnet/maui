@@ -1,6 +1,3 @@
-using Microsoft.Maui.Controls;
-using System.Collections.Generic;
-
 namespace Maui.Controls.Sample.Issues
 {
 	public partial class Issue21630_shellPage : Shell
