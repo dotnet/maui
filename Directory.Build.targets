@@ -90,6 +90,19 @@
   -->
   <Import Project="src\Core\src\nuget\buildTransitive\WinUI.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
+  <!--
+    Workaround for https://github.com/MicrosoftEdge/WebView2Feedback/issues/2898
+  -->
+  <!-- Remove all 'WebView2Loader.dll' items to fix a build error -->
+  <Target Name="RemoveWebView2LoaderDllFromPackagingOutputs" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <WebView2LoaderDllPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.Filename)%(PackagingOutputs.Extension)' == 'WebView2Loader.dll'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(WebView2LoaderDllPackagingOutput)' != ''">
+      <PackagingOutputs Remove="@(WebView2LoaderDllPackagingOutput)" />
+    </ItemGroup>
+  </Target>
+
   <!-- NuGet package information -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
     <PackageTags Condition="'$(PackageTags)' == ''">$(DefaultPackageTags)</PackageTags>
