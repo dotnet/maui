@@ -1,12 +1,8 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1557, "Setting source crashes if view was detached from visual tree", PlatformAffected.iOS,
 	navigationBehavior: NavigationBehavior.PushAsync)]
 public class Issue1557 : TestContentPage

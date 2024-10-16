@@ -1,12 +1,6 @@
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1236, "Label binding", PlatformAffected.iOS)]
 	public class Issue1236 : TestContentPage
 	{

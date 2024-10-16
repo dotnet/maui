@@ -1,11 +1,6 @@
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 10608, "[Bug] [Shell] [iOS] Locked flyout causes application to freezes when quickly switching between tabs", PlatformAffected.iOS)]
 public class Issue10608 : TestShell
 {

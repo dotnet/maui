@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1567, "NRE using TapGestureRecognizer on cell with HasUnevenRows", PlatformAffected.iOS, issueTestNumber: 1)]
 	public class GitHub1567 : TestContentPage // or TestFlyoutPage, etc ...
 	{
@@ -41,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 			await FillData();
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class CustomCell : ViewCell
 		{
 			public CustomCell()
@@ -86,7 +80,7 @@ namespace Maui.Controls.Sample.Issues
 			}, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class LocalIem
 		{
 			public string Value1 { get; set; }

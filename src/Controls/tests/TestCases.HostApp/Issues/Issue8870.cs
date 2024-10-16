@@ -1,11 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8870, "[Bug] CollectionView with HTML Labels Freeze the Screen on Rotation",
 		PlatformAffected.iOS)]
 	public class Issue8870 : TestContentPage
