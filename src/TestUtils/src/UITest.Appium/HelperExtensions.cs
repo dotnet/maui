@@ -365,6 +365,28 @@ namespace UITest.Appium
 			return (IReadOnlyCollection<string>?)result.Value ?? Array.Empty<string>();
 		}
 
+		/// <summary>
+		/// Activates the context menu for the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">The identifier for the element whose context menu is to be activated.</param>
+		public static void ActivateContextMenu(this IApp app, string element)
+		{
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+			{
+				{ "element", element },
+			});
+		}
+
+		/// <summary>
+		/// Dismisses the context menu.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void DismissContextMenu(this IApp app)
+		{
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
+		}
+
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,17 +13,19 @@ public class Bugzilla59580 : _IssuesUITest
 
 	public override string Issue => "Raising Command.CanExecutChanged causes crash on Android";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
-	// public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
-	// {
-	// 	RunningApp.WaitForElement(c => c.Marked("Cell"));
+	[Test]
+	[Category(UITestCategories.TableView)]
+	[FailsOnIOS]
+	public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
+	{
+		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
+		{
+			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
+		}
 
-	// 	RunningApp.ActivateContextMenu("Cell");
-
-	// 	RunningApp.WaitForElement(c => c.Marked("Fire CanExecuteChanged"));
-	// 	RunningApp.Tap(c => c.Marked("Fire CanExecuteChanged"));
-	// 	RunningApp.WaitForElement("Cell");
-	// }
+		App.ActivateContextMenu("Cell");
+		var item = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Fire CanExecuteChanged" + "']"));
+		item.Click();
+	}
 }
+#endif
