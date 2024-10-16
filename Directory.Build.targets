@@ -19,8 +19,14 @@
   <Import Project="eng\NuGetVersions.targets" />
 
   <PropertyGroup>
-     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
+    <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Microsoft.Build.Msix.props" cannot be imported again -->
+    <!-- Found version-specific or distribution-specific runtime identifier(s)-->
+    <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
@@ -79,15 +85,23 @@
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
-  <!-- Until we get net9 rtm -->
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
-  </ItemGroup>
-
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
   <Import Project="src\Core\src\nuget\buildTransitive\WinUI.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
+
+  <!--
+    Workaround for https://github.com/MicrosoftEdge/WebView2Feedback/issues/2898
+  -->
+  <!-- Remove all 'WebView2Loader.dll' items to fix a build error -->
+  <Target Name="RemoveWebView2LoaderDllFromPackagingOutputs" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <WebView2LoaderDllPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.Filename)%(PackagingOutputs.Extension)' == 'WebView2Loader.dll'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(WebView2LoaderDllPackagingOutput)' != ''">
+      <PackagingOutputs Remove="@(WebView2LoaderDllPackagingOutput)" />
+    </ItemGroup>
+  </Target>
 
   <!-- NuGet package information -->
   <PropertyGroup Condition="'$(IsPackable)' == 'true'">
