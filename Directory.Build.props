@@ -125,9 +125,9 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>17.5</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>17.5</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>17.5</MacCatalystTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>18.0</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>18.0</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>18.0</MacCatalystTargetFrameworkVersionSdkDefault>
     <MacosTargetFrameworkVersionSdkDefault>14.5</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>34.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
