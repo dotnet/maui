@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var entry = new Entry();
 			entry.Placeholder = "Enter Your Name";
-			entry.AutomationId = "EntryId";
+			entry.AutomationId = "Entry";
 			var tapGestureRecognizer = new TapGestureRecognizer();
 			tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
 			tapGestureRecognizer.NumberOfTapsRequired = 1;
