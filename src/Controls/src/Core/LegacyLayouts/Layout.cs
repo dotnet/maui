@@ -637,7 +637,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 				if (!visual.IsPlatformEnabled || !visual.IsPlatformStateConsistent)
 				{
-					// PlatformEnabled is set to false when adding a stroke shape inside the border because the handler for the stroke shape element was not set.
+					// The PlatformEnabled property remains false when adding a stroke shape inside a border because 
+					// the handler for the stroke shape element is not generated when the shape is used within the border.
 					if (visual is IShapeView)
 					{
 						continue;
