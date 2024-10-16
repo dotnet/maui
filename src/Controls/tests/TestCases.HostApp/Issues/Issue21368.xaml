@@ -8,7 +8,7 @@
         <Label Text="AspectFillTest" AutomationId="Label"/>
         <ContentView Padding="1">
             <ContentView Padding="2,5,2,2" BackgroundColor="CadetBlue" WidthRequest="84" HeightRequest="44">
-                <Image Source="test.png" 
+                <Image Source="dotnet_bot.png" 
                HorizontalOptions="Center" 
                HeightRequest="40" 
                MinimumHeightRequest="40" 
@@ -18,7 +18,7 @@
 
         <ContentView Padding="1">
             <ContentView Padding="2,5,2,2" BackgroundColor="CadetBlue" WidthRequest="84" HeightRequest="44">
-                <Image Source="test.png" 
+                <Image Source="dotnet_bot.png" 
                HorizontalOptions="Center" 
                HeightRequest="40" 
                MinimumHeightRequest="40" 
