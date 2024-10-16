@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using CoreGraphics;
 using Microsoft.Maui.HotReload;
 using ObjCRuntime;
 using UIKit;
@@ -92,12 +93,16 @@ namespace Microsoft.Maui.Platform
 				return;
 			currentPlatformView.Frame = View!.Bounds;
 
-#if MACCATALYST
-			var window = View.Window;
-			var mauiWindow = window.GetWindow() as IWindow;
-			var titleBar = mauiWindow?.TitleBar;
-			// var titleBarFrame = titleBar?.PresentedContent?.Frame;
-			var windowHandler = mauiWindow?.Handler as WindowHandler;
+			// var window1 = WindowScene.Windows.FirstOrDefault(w => w.IsKeyWindow);
+            // if (window1 != null)
+            // {
+            //     var width = window1.Bounds.Width;
+            //     var height = window1.Bounds.Height;
+                
+            //     // Use width and height as needed
+            //     Console.WriteLine($"Window Size: Width = {width}, Height = {height}");
+            // }
+
 			// if (windowHandler is not null && titleBar is not null && mauiWindow is not null && titleBarFrame?.Height is double height)
 			// {
 			// 	// WindowHandler.MapContent(windowHandler, mauiWindow);
@@ -108,28 +113,46 @@ namespace Microsoft.Maui.Platform
 			// }
 
 
-			if (windowHandler is not null && titleBar is not null && mauiWindow is not null)
-			{
-				// Force layout update only if needed
-				if ((titleBar.PresentedContent?.Frame.Height == -1 || titleBar.PresentedContent?.Frame.Width == -1) && titleBar.PresentedContent?.Handler?.PlatformView is UIView plat)
-				{
-					plat.SetNeedsLayout();
-					plat.LayoutIfNeeded();
-				}
+			// if (windowHandler is not null && titleBar is not null && mauiWindow is not null)
+			// {
+			// 	// Force layout update only if needed
+			// 	// if ((titleBar.PresentedContent?.Frame.Height == -1 || titleBar.PresentedContent?.Frame.Width == -1) && titleBar.PresentedContent?.Handler?.PlatformView is UIView plat)
+			// 	// {
+			// 	// 	plat.SetNeedsLayout();
+			// 	// 	plat.LayoutIfNeeded();
+			// 	// }
+				
+			// 	var titleBarFrame = titleBar.PresentedContent?.Frame;
 
-				var titleBarFrame = titleBar.PresentedContent?.Frame;
+			// 	var mySize = titleBar.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			// 	Console.WriteLine($"TitleBar Size: {mySize.Width}x{mySize.Height}");
+			// 	Console.WriteLine($"size: {titleBar.Height}x{titleBar.Width}");
+			// 	Console.WriteLine($"window: {mauiWindow.Height}x{mauiWindow.Width}");
+			// 	Console.WriteLine("titleBarFrame: " + titleBarFrame);
 
-				if (titleBarFrame?.Height is double height)
-				{
-					// WindowHandler.MapContent(windowHandler, mauiWindow);
 
-					// TODO when the heightRequest is not set on the titlebar, I can't see the height
-					window.UpdateTitleBar(mauiWindow, windowHandler.MauiContext, height);
-					// this UIWindow platformWindow, IWindow window, IMauiContext? mauiContext
-				}
-					Console.WriteLine($"size: {titleBar?.Height ?? -1}x{titleBar?.Width ?? -1}");
-			}
-#endif
+			// 	if (titleBarFrame?.Height is double frameHeight && mySize.Height != frameHeight)
+			// 	// if (mySize.Height != titleBar.Height)
+			// 	{
+			// 		// WindowHandler.MapContent(windowHandler, mauiWindow);
+
+			// 		// TODO when the heightRequest is not set on the titlebar, I can't see the height
+			// 		// window.UpdateTitleBar(mauiWindow, windowHandler.MauiContext, mySize.Height);
+			// 		window.UpdateTitleBar(mauiWindow, windowHandler.MauiContext);
+			// 		// TitleBarFrame gives the right Width
+			// 		// this UIWindow platformWindow, IWindow window, IMauiContext? mauiContext
+			// 	}
+			// }
+
+			// var window = View?.Window;
+			// var mauiWindow = window.GetWindow() as IWindow;
+			// var titleBar = mauiWindow?.TitleBar;
+			// var titleBar1 = mauiWindow!.TitleBar!.ToPlatform();
+			// Console.WriteLine("TitleBar.Frame: " + titleBar1.Frame);
+			// // var titleBarFrame = titleBar?.PresentedContent?.Frame;
+			// var windowHandler = mauiWindow?.Handler as WindowHandler;
+
+
 		}
 
 		public void Reload() => SetView(CurrentView, true);

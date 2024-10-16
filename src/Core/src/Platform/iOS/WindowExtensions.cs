@@ -22,10 +22,15 @@ namespace Microsoft.Maui.Platform
 		}
 
 #if MACCATALYST
-		internal static void UpdateTitleBar(this UIWindow platformWindow, IWindow window, IMauiContext? mauiContext, double height)
+		static bool _isTitleBarVisible = true;
+
+		internal static void UpdateTitleBar(this UIWindow platformWindow, IWindow window, IMauiContext? mauiContext)
 		{
 			// TODO figure out how to get the height
-			height = 44;
+			// if (height == -1)
+			// 	height = 30;
+
+			// height = 100;
 
 			if (mauiContext is null)
 			{
@@ -35,7 +40,8 @@ namespace Microsoft.Maui.Platform
 			var mauiTitleBar = window.TitleBar?.ToPlatform(mauiContext);
 			var platformTitleBar = platformWindow?.WindowScene?.Titlebar;
 
-			if (mauiTitleBar is null || platformTitleBar is null || height <= 0)
+			// if (mauiTitleBar is null || platformTitleBar is null || height <= 0)
+			if (mauiTitleBar is null || platformTitleBar is null)
 			{
 				return;
 			}
@@ -54,99 +60,79 @@ namespace Microsoft.Maui.Platform
 			{
 				return;
 			}
+			
+			// figure out the height of the titlebar
+			var titleBar = window.TitleBar;
+			
+			var titleBarFrame = titleBar!.PresentedContent?.Frame;
+			nfloat height = 0;
 
-			var nativeContent = window.Content.ToUIViewController(mauiContext);
-
-			// Create a container view controller
-			var containerViewController = new UIViewController();
-
-			if (nativeContent?.View is null || mauiTitleBar is null)
-			{
-				// handler.PlatformView.RootViewController = nativeContent;
-				return;
-			}
-
-			// TODO this may not be correct
-			handler.PlatformView.RootViewController = new UIViewController();
-
-			// Add the native content as a child view controller
-			containerViewController.AddChildViewController(nativeContent);
-
-			if (containerViewController?.View is UIView cVCView)
-			{
-				cVCView.AddSubview(nativeContent.View);
-				nativeContent.DidMoveToParentViewController(containerViewController);
-
-				cVCView.AddSubview(mauiTitleBar);
-
-				// Set constraints for the custom title bar
-				mauiTitleBar.TranslatesAutoresizingMaskIntoConstraints = false;
-				NSLayoutConstraint.ActivateConstraints(new[]
-				{
-					mauiTitleBar.TopAnchor.ConstraintEqualTo(cVCView.TopAnchor),
-					mauiTitleBar.LeadingAnchor.ConstraintEqualTo(cVCView.LeadingAnchor),
-					mauiTitleBar.TrailingAnchor.ConstraintEqualTo(cVCView.TrailingAnchor),
-					mauiTitleBar.HeightAnchor.ConstraintEqualTo((nfloat)height) // Set the desired height
-				});
-
-				// Set constraints for the native content
-				nativeContent.View.TranslatesAutoresizingMaskIntoConstraints = false;
-				NSLayoutConstraint.ActivateConstraints(new[]
-				{
-					nativeContent.View.TopAnchor.ConstraintEqualTo(mauiTitleBar.BottomAnchor), // Adjust the top anchor to leave space for the custom title bar
-					nativeContent.View.LeadingAnchor.ConstraintEqualTo(cVCView.LeadingAnchor),
-					nativeContent.View.TrailingAnchor.ConstraintEqualTo(cVCView.TrailingAnchor),
-					nativeContent.View.BottomAnchor.ConstraintEqualTo(cVCView.BottomAnchor)
-				});
-			}
-
-			// Set the container view controller as the root view controller
-			handler.PlatformView.RootViewController = containerViewController;
-
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+			// var mySize = titleBar.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			// // Console.WriteLine($"TitleBar Size: {mySize.Width}x{mySize.Height}");
+			// // Console.WriteLine($"size: {titleBar.Height}x{titleBar.Width}");
+			// // Console.WriteLine($"window: {window.Height}x{window.Width}");
+			// // Console.WriteLine("titleBarFrame: " + titleBarFrame);
 
 
+			// // if (titleBarFrame?.Height is double frameHeight && mySize.Height != frameHeight)
+			// // // if (mySize.Height != titleBar.Height)
+			// // {
+			// // 	// window.UpdateTitleBar(mauiWindow, windowHandler.MauiContext, mySize.Height);
+			// // }
 
+			// if (titleBarFrame?.Height is double frameHeight)
+			// // if (mySize.Height != titleBar.Height)
+			// {
+			// 	// height = (nfloat)frameHeight;
+			// 	// height = (nfloat)titleBar.Height;
+			// 	height = (nfloat)mySize.Height;
+			// 	// var h = window.TitleBar?.HeightRequest;
+			// }
 
-
-
-
+			// if (!_isTitleBarVisible)
+			// {
+			// 	height = 0;
+			// }
 
 			// var nativeContent = window.Content.ToUIViewController(mauiContext);
 
 			// // Create a container view controller
-			// var containerViewController = new UIViewController();
+			// // var containerViewController = new UIViewController();
+			// var containerViewController = handler.PlatformView.RootViewController as WindowViewController;
 
-			// if (nativeContent?.View is null || mauiTitleBar is null)
+			// if (nativeContent?.View is null || mauiTitleBar is null || containerViewController is null)
 			// {
 			// 	// handler.PlatformView.RootViewController = nativeContent;
 			// 	return;
 			// }
 
+			// containerViewController.TitleBar = mauiTitleBar;
+
+			// // TODO - this code can be moved into the WindowViewController and make sure we don't keep addin gthe mauiTitleBar
+
+			// Console.WriteLine("Changing Height to: " + height);
+
+			// // TODO this may not be correct
+			// // handler.PlatformView.RootViewController = new UIViewController();
 
 			// // Add the native content as a child view controller
-			// containerViewController.AddChildViewController(nativeContent);
+			// // containerViewController.AddChildViewController(nativeContent);
 
-			// if (containerViewController?.View is UIView cVCView)
+			// if (containerViewController?.View is UIView cVCView )
 			// {
-			// 	cVCView.AddSubview(nativeContent.View);
-			// 	nativeContent.DidMoveToParentViewController(containerViewController);
+			// 	// cVCView.AddSubview(nativeContent.View);
+			// 	// nativeContent.DidMoveToParentViewController(containerViewController);
 
 			// 	cVCView.AddSubview(mauiTitleBar);
 
-			// 	// var items = window.TitleBar?.PassthroughElements;
-			// 	// if (items is not null)
-			// 	// {
-			// 	// 	foreach (var item in items)
-			// 	// 	{
-			// 	// 		var p = item.Measure(double.PositiveInfinity, double.PositiveInfinity);
-						
-			// 	// 	}
-			// 	// }
-				
-
-			// 	// var titleBarHeight = window.TitleBar.HeightRequest == -1 ? cVCView.SafeAreaLayoutGuide.Top :  window.TitleBar.HeightRequest;
+			// 	// Remove existing height constraint if any
+			// 	foreach (var constraint in mauiTitleBar.Constraints)
+			// 	{
+			// 		if (constraint.FirstAttribute == NSLayoutAttribute.Height)
+			// 		{
+			// 			mauiTitleBar.RemoveConstraint(constraint);
+			// 		}
+			// 	}
 
 			// 	// Set constraints for the custom title bar
 			// 	mauiTitleBar.TranslatesAutoresizingMaskIntoConstraints = false;
@@ -155,7 +141,8 @@ namespace Microsoft.Maui.Platform
 			// 		mauiTitleBar.TopAnchor.ConstraintEqualTo(cVCView.TopAnchor),
 			// 		mauiTitleBar.LeadingAnchor.ConstraintEqualTo(cVCView.LeadingAnchor),
 			// 		mauiTitleBar.TrailingAnchor.ConstraintEqualTo(cVCView.TrailingAnchor),
-			// 		mauiTitleBar.HeightAnchor.ConstraintEqualTo(200) // Set the desired height
+			// 		mauiTitleBar.HeightAnchor.ConstraintEqualTo(height) // Set the desired height
+			// 		// mauiTitleBar.HeightAnchor.ConstraintEqualTo(100) // Set the desired height
 			// 	});
 
 			// 	// Set constraints for the native content
@@ -167,154 +154,16 @@ namespace Microsoft.Maui.Platform
 			// 		nativeContent.View.TrailingAnchor.ConstraintEqualTo(cVCView.TrailingAnchor),
 			// 		nativeContent.View.BottomAnchor.ConstraintEqualTo(cVCView.BottomAnchor)
 			// 	});
+
+			// 	// nativeContent.View.Frame = new CoreGraphics.CGRect();
 			// }
 
+			// Set the container view controller as the root view controller
 			// handler.PlatformView.RootViewController = containerViewController;
-
-
-
-
-
-
-
-
-
-
-			// rootView.AddSubview(mauiTitleBar);
-
-			// // Disable autoresizing mask translation to use Auto Layout
-			// mauiTitleBar.TranslatesAutoresizingMaskIntoConstraints = false;
-
-			// // Set Auto Layout constraints
-			// NSLayoutConstraint.ActivateConstraints(new[]
-			// {
-			// 	mauiTitleBar.TopAnchor.ConstraintEqualTo(rootView.TopAnchor),
-			// 	mauiTitleBar.LeadingAnchor.ConstraintEqualTo(rootView.LeadingAnchor),
-			// 	mauiTitleBar.TrailingAnchor.ConstraintEqualTo(rootView.TrailingAnchor),
-			// 	mauiTitleBar.HeightAnchor.ConstraintEqualTo(200) // Set the desired height
-			// 	// mauiTitleBar.HeightAnchor.ConstraintEqualTo(mauiTitleBar.HeightRequest == -1 ? 50 : mauiTitleBar.HeightRequest) // Set the desired height
-			// });
-
-			// // Adjust the existing subviews to move them down
-			// foreach (var subview in rootView.Subviews)
-			// {
-			// 	if (subview == mauiTitleBar)
-			// 	{
-			// 		continue;
-			// 	}
-
-			// 	subview.TranslatesAutoresizingMaskIntoConstraints = false;
-
-			// 	// Adjust the top constraint of each subview
-			// 	NSLayoutConstraint.ActivateConstraints(new[]
-			// 	{
-			// 		subview.TopAnchor.ConstraintEqualTo(mauiTitleBar.BottomAnchor)
-			// 	});
-			// }
-
-
-
-
-
-
-			// var stackView = new UIStackView();
-
-			// var row1 = new UIStackView();
-			// var row2 = new UIStackView();
-
-			// // Add cells to row stack views
-			// row1.AddArrangedSubview(mauiTitleBar);
-			// row2.AddArrangedSubview(rootView);
-
-			// // Add row stack views to main stack view
-			// stackView.AddArrangedSubview(row1);
-			// stackView.AddArrangedSubview(row2);
-
-			// foreach (var subview in rootView.Subviews)
-			// {
-			// 	subview.RemoveFromSuperview();
-			// }
-			
-			
-			// // Add stackView to the view hierarchy
-			// rootView.AddSubview(stackView);
-
-			// // Set constraints to position the stackView
-			// stackView.TranslatesAutoresizingMaskIntoConstraints = false;
-			// NSLayoutConstraint.ActivateConstraints(new[]
-			// {
-			// 	stackView.TopAnchor.ConstraintEqualTo(rootView.TopAnchor),
-			// 	stackView.LeadingAnchor.ConstraintEqualTo(rootView.LeadingAnchor),
-			// 	stackView.TrailingAnchor.ConstraintEqualTo(rootView.TrailingAnchor),
-			// 	stackView.BottomAnchor.ConstraintEqualTo(rootView.SafeAreaLayoutGuide.BottomAnchor),
-			// });
-
-
-
-			// var stackView = new UIStackView
-			// {
-			// 	Axis = UILayoutConstraintAxis.Vertical,
-			// 	Distribution = UIStackViewDistribution.Fill,
-			// 	Alignment = UIStackViewAlignment.Fill,
-			// 	Spacing = 0
-			// };
-
-			// var row1 = new UIStackView
-			// {
-			// 	Axis = UILayoutConstraintAxis.Horizontal,
-			// 	Distribution = UIStackViewDistribution.Fill,
-			// 	Alignment = UIStackViewAlignment.Fill,
-			// 	Spacing = 0
-			// };
-
-			// var row2 = new UIStackView
-			// {
-			// 	Axis = UILayoutConstraintAxis.Horizontal,
-			// 	Distribution = UIStackViewDistribution.Fill,
-			// 	Alignment = UIStackViewAlignment.Fill,
-			// 	Spacing = 0
-			// };
-
-			// // Add cells to row stack views
-			// row1.AddArrangedSubview(mauiTitleBar);
-
-			// // Create a container view for the original content of rootView
-			// var contentView = new UIView();
-			// foreach (var subview in rootView.Subviews)
-			// {
-			// 	subview.RemoveFromSuperview();
-			// 	contentView.AddSubview(subview);
-			// }
-
-			// // Add contentView to row2
-			// row2.AddArrangedSubview(contentView);
-
-			// // Add row stack views to main stack view
-			// stackView.AddArrangedSubview(row1);
-			// stackView.AddArrangedSubview(row2);
-
-			// // Add stackView to the view hierarchy
-			// rootView.AddSubview(stackView);
-
-			// // Set Auto Layout constraints for stackView
-			// stackView.TranslatesAutoresizingMaskIntoConstraints = false;
-			// NSLayoutConstraint.ActivateConstraints(new[]
-			// {
-			// 	stackView.TopAnchor.ConstraintEqualTo(rootView.TopAnchor),
-			// 	stackView.LeadingAnchor.ConstraintEqualTo(rootView.LeadingAnchor),
-			// 	stackView.TrailingAnchor.ConstraintEqualTo(rootView.TrailingAnchor),
-			// 	stackView.BottomAnchor.ConstraintEqualTo(rootView.SafeAreaLayoutGuide.BottomAnchor)
-			// });
-
-			// // Set Auto Layout constraints for contentView
-			// contentView.TranslatesAutoresizingMaskIntoConstraints = false;
-			// NSLayoutConstraint.ActivateConstraints(new[]
-			// {
-			// 	contentView.WidthAnchor.ConstraintEqualTo(stackView.WidthAnchor),
-			// 	// contentView.HeightAnchor.ConstraintEqualTo(stackView.HeightAnchor, multiplier: 1.0f, constant: -60) // Adjust height based on mauiTitleBar height
-			// 	contentView.HeightAnchor.ConstraintEqualTo(stackView.HeightAnchor, multiplier: 1.0f, constant: -200) // Adjust height based on mauiTitleBar height
-			// });
 		}
+
+		internal static void SetTitleBarVisibility(this UIWindow _, bool isVisible) =>
+			_isTitleBarVisible = isVisible;
 #endif
 
 		internal static void UpdateX(this UIWindow platformWindow, IWindow window) =>

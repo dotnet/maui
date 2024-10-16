@@ -56,7 +56,8 @@ public partial class MainPage : ContentPage
 				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 				Title="{Binding Title}"
 				Subtitle="{Binding Subtitle}"
-				IsVisible="{Binding ShowTitleBar}"/>
+				IsVisible="{Binding ShowTitleBar}"
+				Icon="dotnet_bot.png"/>
 			""";
 
 		_customTitleBar = new TitleBar().LoadFromXaml(titleBarXaml);
@@ -161,11 +162,11 @@ public partial class MainPage : ContentPage
 	{
 		if (e.Value)
 		{
-			_customTitleBar.HeightRequest = 48;
+			_customTitleBar.HeightRequest = 100;
 		}
 		else
 		{
-			_customTitleBar.HeightRequest = 32;
+			_customTitleBar.HeightRequest = -1;
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 #if MACCATALYST
 		internal static void MapTitleBar(IWindowHandler handler, IWindow window)
 		{
-			handler.PlatformView.UpdateTitleBar(window, handler.MauiContext, -1);
+			handler.PlatformView.UpdateTitleBar(window, handler.MauiContext);
 			// MapContent(handler, window);
 		}
 #endif
@@ -30,7 +30,8 @@ namespace Microsoft.Maui.Handlers
 
 			var nativeContent = window.Content.ToUIViewController(handler.MauiContext);
 
-			handler.PlatformView.RootViewController = nativeContent;
+			// handler.PlatformView.RootViewController = nativeContent;
+			handler.PlatformView.RootViewController = new WindowViewController(nativeContent, window, handler.MauiContext);
 
 			if (window.VisualDiagnosticsOverlay != null)
 				window.VisualDiagnosticsOverlay.Initialize();
