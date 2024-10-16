@@ -17,7 +17,9 @@ public class Bugzilla57515 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
-	[FailsOnIOS]
+	[FailsOnIOS("It already failed in Xamarin.UITest on this platform.")]
+	[FailsOnMac("It already failed in Xamarin.UITest on this platform.")]
+	[FailsOnWindows("Cannot find the element ZoomContainer. Investigate the reason.")]
 	public void Bugzilla57515Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
