@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			hwv.InvokeJavaScriptTarget = new DotNetMethods(this);
+			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
 		}
 
 		int count;

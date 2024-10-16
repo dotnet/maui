@@ -35,10 +35,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-		public object? InvokeJavaScriptTarget
+		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
+
+		/// <inheritdoc/>
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? IHybridWebView.InvokeJavaScriptType { get; set; }
+
+		/// <inheritdoc/>
+		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
 		{
-			get;
-			set;
+			((IHybridWebView)this).InvokeJavaScriptTarget = target;
+			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
 		}
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)

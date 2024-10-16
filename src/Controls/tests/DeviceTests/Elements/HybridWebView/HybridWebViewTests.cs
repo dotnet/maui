@@ -349,8 +349,8 @@ namespace Microsoft.Maui.DeviceTests
 
 					HybridRoot = "HybridTestRoot",
 					DefaultFile = "invokedotnettests.html",
-					InvokeJavaScriptTarget = invokeJavaScriptTarget,
 				};
+				hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
 
 				var handler = CreateHandler(hybridWebView);
 

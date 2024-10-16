@@ -151,76 +151,72 @@ namespace Microsoft.Maui.Handlers
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
 		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
 		{
-#if !NETSTANDARD2_0
-			if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-#endif
+			try
 			{
-				try
+				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+				var invokeDataString = invokeQueryString["data"];
+				if (string.IsNullOrEmpty(invokeDataString))
 				{
-					var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
-					var invokeDataString = invokeQueryString["data"];
-					if (string.IsNullOrEmpty(invokeDataString))
+					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
+				}
+
+				byte[]? contentBytes = null;
+				string? contentType = null;
+
+				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
+
+				if (invokeData != null && invokeData.MethodName != null)
+				{
+					var t = ((IHybridWebView)VirtualView).InvokeJavaScriptType;
+					var result = InvokeDotNetMethod(t!, invokeTarget, invokeData);
+
+					contentType = "application/json";
+
+					DotNetInvokeResult dotNetInvokeResult;
+
+					if (result is not null)
 					{
-						throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
-					}
-
-					byte[]? contentBytes = null;
-					string? contentType = null;
-
-					var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
-
-					if (invokeData != null && invokeData.MethodName != null)
-					{
-						var result = InvokeDotNetMethod(invokeTarget, invokeData);
-
-						contentType = "application/json";
-
-						DotNetInvokeResult dotNetInvokeResult;
-
-						if (result is not null)
+						var resultType = result.GetType();
+						if (resultType.IsArray || resultType.IsClass)
 						{
-							var resultType = result.GetType();
-							if (resultType.IsArray || resultType.IsClass)
+							dotNetInvokeResult = new DotNetInvokeResult()
 							{
-								dotNetInvokeResult = new DotNetInvokeResult()
-								{
-									Result = JsonSerializer.Serialize(result),
-									IsJson = true,
-								};
-							}
-							else
-							{
-								dotNetInvokeResult = new DotNetInvokeResult()
-								{
-									Result = result,
-								};
-							}
+								Result = JsonSerializer.Serialize(result),
+								IsJson = true,
+							};
 						}
 						else
 						{
-							dotNetInvokeResult = new();
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = result,
+							};
 						}
-
-						contentBytes = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult));
+					}
+					else
+					{
+						dotNetInvokeResult = new();
 					}
 
-					return (contentBytes, contentType);
+					contentBytes = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult));
 				}
-				catch (Exception)
-				{
-					// TODO: Log this
-				}
+
+				return (contentBytes, contentType);
+			}
+			catch (Exception)
+			{
+				// TODO: Log this
 			}
 
 			return (null, null);
 		}
 
-		[UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
+		//[UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
 		[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 		[UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-		private static object? InvokeDotNetMethod(object jsInvokeTarget, JSInvokeMethodData invokeData)
+		private static object? InvokeDotNetMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, object jsInvokeTarget, JSInvokeMethodData invokeData)
 		{
-			var invokeMethod = jsInvokeTarget.GetType().GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+			var invokeMethod = t.GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
 			if (invokeMethod == null)
 			{
 				throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
