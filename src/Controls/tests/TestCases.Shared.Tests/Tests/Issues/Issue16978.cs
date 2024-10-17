@@ -1,5 +1,4 @@
-﻿#if !WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,12 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void GestureNotRecogonizedForFrame()
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/16978
-			App.WaitForElement("FrameGesturePage");
-			App.DragCoordinates(100, 100, 200, 200);
+			App.WaitForElement("FrameLabelTest");
+			App.Tap("FrameLabelTest");
 		    var result = App.WaitForElement("FrameLabelTest").GetText();
-			Assert.That(result, Is.EqualTo("Pan Gesture Recognized"));
+			Assert.That(result, Is.EqualTo("Tap Gesture Recognized"));
 		}
 	}
 }
-#endif
-

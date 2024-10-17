@@ -6,7 +6,7 @@
     <ContentPage.Content>
     <Grid BackgroundColor="Red" Margin="5">
       <Grid.GestureRecognizers>
-        <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated" />
+        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
       </Grid.GestureRecognizers>
       <Frame x:Name="getStartedFrame"
                Margin="0"
