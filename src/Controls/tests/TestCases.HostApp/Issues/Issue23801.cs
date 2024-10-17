@@ -4,19 +4,15 @@
 public partial class Issue23801 : ContentPage
 {
 	Label testLabel;
-	StackLayout stackLayout;
-	Span span;
-	Label label;
-	FormattedString formattedString;
-	TapGestureRecognizer tapGestureRecognizer;
 
 	public Issue23801()
 	{
-		stackLayout = new StackLayout();
-		label = new Label();
+		StackLayout stackLayout = new StackLayout();
+		Label label = new Label();
 		testLabel = new Label();
-		formattedString = new FormattedString();
-		tapGestureRecognizer = new TapGestureRecognizer();
+		FormattedString formattedString = new FormattedString();
+		TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
+		Span span = null;
 
 		label.AutomationId = "Label";
 		formattedString.Spans.Add(new Span { Text = "I am the start of a span " });
