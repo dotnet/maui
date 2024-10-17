@@ -30,7 +30,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static string FormatMessage(BuildExceptionCode code, IXmlLineInfo xmlinfo, object[] args)
 		{
-			var message = string.Format(ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), args);
+			var message = ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey);
+			if (args is not null)
+			{
+				message = string.Format(message, args);
+			}
+
 			var ecode = code.Code;
 			var position = xmlinfo == null || !xmlinfo.HasLineInfo() ? "" : $"({xmlinfo.LineNumber},{xmlinfo.LinePosition})";
 
