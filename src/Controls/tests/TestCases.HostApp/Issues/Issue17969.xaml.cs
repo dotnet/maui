@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -29,10 +26,6 @@ namespace Maui.Controls.Sample.Issues
 
 	}
 
-	public class TestItem
-	{
-		public string Name { get; set; }
-	}
 	public class Animal
 	{
 		public string Name { get; set; }

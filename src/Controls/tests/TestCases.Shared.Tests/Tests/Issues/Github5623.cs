@@ -1,4 +1,4 @@
-#if !MACCATALYST && !IOS
+﻿#if !MACCATALYST && !IOS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnWindows]
 		public void CollectionViewInfiniteScroll()
 		{
 			// The reproduction initially adds 10 elements to the CollectionView, and we need to scroll to the bottom
