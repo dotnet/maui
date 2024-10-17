@@ -1,10 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class SomeEmptyGroups : ContentPage
 	{
 		public SomeEmptyGroups()

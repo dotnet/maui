@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Dispatching;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries
 {
 	public record OnlineImageInfo(string Uri);
 
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class OnlineImages : ContentPage
 	{
 		public OnlineImages()

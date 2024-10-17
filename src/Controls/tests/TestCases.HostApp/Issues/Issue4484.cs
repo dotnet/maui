@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 4484, "[Android] ImageButton inside NavigationView.TitleView throw exception during device rotation",
 		PlatformAffected.Android)]

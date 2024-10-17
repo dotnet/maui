@@ -11,7 +11,7 @@ using WebResourceResponse = Android.Webkit.WebResourceResponse;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+	
 	[Issue(IssueTracker.Github, 16032, "Improve the customization of WebView on Android", PlatformAffected.Android)]
 	public class Issue16032 : ContentPage
 	{

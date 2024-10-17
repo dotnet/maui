@@ -1,13 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class Issue8529_1 : ContentPage
 	{
 		public Issue8529_1()
@@ -17,7 +11,6 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = new Issue8529ViewModel();
 		}
 
-		[Preserve(AllMembers = true)]
 		public class Issue8529ViewModel
 		{
 			public ICommand BackCommand { get; set; }
