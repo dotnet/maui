@@ -1,13 +1,10 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 37841, "TableView EntryCells and TextCells cease to update after focus change", PlatformAffected.Android)]
 public class Bugzilla37841 : TestContentPage
 {
@@ -50,7 +47,7 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 		BindingContext = _viewModel;
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class _37841ViewModel : INotifyPropertyChanged
 	{
 		public int Value1

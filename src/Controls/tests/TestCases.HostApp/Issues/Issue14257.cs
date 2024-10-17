@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 14257, "VerticalStackLayout inside Scrollview: Button at the bottom not clickable on IOS", PlatformAffected.iOS)]
 	public class Issue14257 : TestContentPage
