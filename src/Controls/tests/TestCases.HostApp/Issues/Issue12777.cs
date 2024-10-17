@@ -1,12 +1,8 @@
-using System;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 12777, "[Bug] CarouselView NRE if item template is not specified", PlatformAffected.iOS)]
 public class Issue12777 : TestContentPage
 {
@@ -41,14 +37,14 @@ public class Issue12777 : TestContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class Issue12777Model1
 {
 	public Color Color { get; set; }
 	public string Name { get; set; }
 }
 
-[Preserve(AllMembers = true)]
+
 public class Issue12777ViewModel1 : BindableObject
 {
 	ObservableCollection<Issue12777Model1> _items;

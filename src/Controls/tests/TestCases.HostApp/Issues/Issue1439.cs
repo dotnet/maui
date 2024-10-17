@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -56,7 +52,7 @@ public class Issue1439 : TestContentPage
 		_label3.Text = $"{((Group)e.Group).Title}";
 	}
 
-	[Preserve(AllMembers = true)]
+
 	class ViewModel : ObservableObject
 	{
 		ObservableCollection<Group> _items;
@@ -83,7 +79,7 @@ public class Issue1439 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	class Group : ObservableCollection<object>
 	{
 		public string Title { get; set; }
@@ -98,7 +94,7 @@ public class Issue1439 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	class ObservableObject : INotifyPropertyChanged
 	{
 		protected virtual bool SetProperty<T>(

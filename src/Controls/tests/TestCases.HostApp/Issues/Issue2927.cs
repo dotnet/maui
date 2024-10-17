@@ -1,15 +1,12 @@
-using System;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2927, "ListView item tapped not firing multiple times")]
 public class Issue2927 : TestContentPage // or TestFlyoutPage, etc .
 {
-	[Preserve(AllMembers = true)]
+
 	public class Issue2927Cell : TextCell, INotifyPropertyChanged
 	{
 		int _numberOfTimesTapped;

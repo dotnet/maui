@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2976, "Sample 'WorkingWithListviewNative' throw Exception on Xam.Android project.", PlatformAffected.Android)]
 public class Issue2976 : TestTabbedPage
 {
@@ -37,7 +30,7 @@ public class Issue2976 : TestTabbedPage
 /// It uses a built-in row/cell class provided by the native platform
 /// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 /// </summary>
-[Preserve(AllMembers = true)]
+
 public class NativeListPage : ContentPage
 {
 	public NativeListPage()
@@ -109,7 +102,7 @@ public class NativeListView : View
 /// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
 /// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 /// </summary>
-[Preserve(AllMembers = true)]
+
 public class XamarinFormsPage : ContentPage
 {
 	public XamarinFormsPage()
@@ -153,7 +146,7 @@ public class XamarinFormsPage : ContentPage
 /// It uses the built-in <c>TextCell</c> class which does not require special 'layout'
 /// and is therefore faster than building a custom ViewCell in Microsoft.Maui.Controls.
 /// </summary>
-[Preserve(AllMembers = true)]
+
 public class XamarinFormsNativeCellPage : ContentPage
 {
 	public XamarinFormsNativeCellPage()
@@ -189,7 +182,7 @@ public class XamarinFormsNativeCellPage : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class NativeCell : ViewCell
 {
 	public NativeCell()
@@ -268,7 +261,7 @@ public class DetailPage : ContentPage
 /// It uses a CUSTOM row/cell class that is defined natively which 
 /// is still faster than a Xamarin.Forms-defined ViewCell subclass.
 /// </summary>
-[Preserve(AllMembers = true)]
+
 public class NativeListViewPage2 : ContentPage
 {
 	public NativeListViewPage2()
@@ -331,7 +324,7 @@ public class NativeListView2 : View
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class DataSource
 {
 	public string Name { get; set; }

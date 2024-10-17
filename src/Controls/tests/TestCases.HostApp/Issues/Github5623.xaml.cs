@@ -1,6 +1,5 @@
 
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -83,7 +82,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class ViewModel5623
 	{
 		public ObservableCollection<Model5623> Items { get; set; }
@@ -116,7 +115,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)] 
+
 	public class Model5623
 	{
 		Random random = new Random();
@@ -129,7 +128,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public string HeightText { get; private set; }
 
-		public string AutomationId {get; set;}
+		public string AutomationId { get; set; }
 
 		public Model5623(bool isUneven)
 		{

@@ -1,12 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1331, "[Android] ViewCell shows ContextActions on tap instead of long press",
 	PlatformAffected.Android)]
 public partial class GitHub1331 : TestContentPage
@@ -58,13 +55,13 @@ public partial class GitHub1331 : TestContentPage
 	{
 	}
 
-	[Preserve(AllMembers = true)]
+
 	class GH1331ViewModel
 	{
 		public ObservableCollection<GH1331ItemViewModel> Items { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+
 	class GH1331ItemViewModel
 	{
 		public string Text { get; set; }

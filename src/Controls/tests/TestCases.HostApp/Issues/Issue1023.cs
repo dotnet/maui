@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.None, 1023, "Automate GC checks of picker disposals", PlatformAffected.iOS)]
 public class Bugzilla1023 : TestNavigationPage
 {
@@ -16,7 +10,7 @@ public class Bugzilla1023 : TestNavigationPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class LandingPage1023 : ContentPage
 {
 	public static int Counter;
@@ -77,7 +71,7 @@ public class LandingPage1023 : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class ContentPage1023 : ContentPage
 {
 	public ContentPage1023()
@@ -101,7 +95,7 @@ public class ContentPage1023 : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class DataTemplateSelector1023 : DataTemplateSelector
 {
 	public DataTemplate DatePickerTemplate { get; set; }

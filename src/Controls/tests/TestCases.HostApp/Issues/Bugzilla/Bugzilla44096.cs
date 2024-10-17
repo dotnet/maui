@@ -1,11 +1,6 @@
-﻿using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 44096, "Grid, StackLayout, and ContentView still participate in hit testing on "
 		+ "Android after IsEnabled is set to false", PlatformAffected.Android)]
 	public class Bugzilla44096 : TestContentPage

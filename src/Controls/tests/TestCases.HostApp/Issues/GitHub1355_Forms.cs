@@ -1,10 +1,6 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1355, "Setting Main Page in quick succession causes crash on Android", PlatformAffected.Android, issueTestNumber: 1)]
 public class Issue1355_Forms : TestContentPage
 {

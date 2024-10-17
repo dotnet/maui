@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2266, "Setting a different Detail page from a FlyoutPage after 2nd time on MainPage", PlatformAffected.iOS)]
 public class Issue2266 : TestContentPage
 {
@@ -84,7 +77,7 @@ public class Issue2266 : TestContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class FlyoutPageNavigation : FlyoutPage
 {
 	List<NavigationPage> _pages;

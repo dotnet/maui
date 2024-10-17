@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample;
 
 internal class ListViewCoreGalleryPage : CoreGalleryPage<ListView>

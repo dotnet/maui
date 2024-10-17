@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (ArrangeNativeChildren)
 			{
 				// in the event that a custom renderer has added native controls,
-				// we need to be sure to arrange them so that they are laid out.
+				// we need to be sure to arrange them so that they are arranged.
 				var nativeChildren = Children;
 				for (int i = 0; i < nativeChildren.Count; i++)
 				{

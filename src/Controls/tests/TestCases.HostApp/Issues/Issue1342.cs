@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Text;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1342, "[iOS] ListView throws Exception on ObservableCollection.Add/Remove for non visible list view",
 	PlatformAffected.iOS)]
 public class Issue1342 : TestNavigationPage
@@ -40,7 +35,7 @@ public class Issue1342 : TestNavigationPage
 		});
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public partial class MainPageCode : TabbedPage
 	{
 		public MainPageCode()
@@ -72,7 +67,7 @@ public class Issue1342 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class MainViewModel
 	{
 
@@ -111,7 +106,7 @@ public class Issue1342 : TestNavigationPage
 		public ICommand Add5Command { get; }
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class ListViewModel : INotifyPropertyChanged
 	{
 		public ObservableCollection<string> Items { get; set; }
@@ -133,7 +128,7 @@ public class Issue1342 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public partial class ListPageCode : ContentPage
 	{
 		public ListPageCode()

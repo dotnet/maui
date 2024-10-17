@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 58645, "[iOS] NRE Thrown When ListView Items Are Replaced By Items With a Different Template", PlatformAffected.iOS)]
 	public class Bugzilla58645 : TestContentPage
 	{
@@ -51,7 +46,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class LayoutA : ViewCell
 		{
 			public LayoutA()
@@ -80,7 +75,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class LayoutB : ViewCell
 		{
 			public LayoutB()
@@ -113,7 +108,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class LayoutTemplateSelector : DataTemplateSelector
 		{
 			public DataTemplate LayoutA { get; set; }

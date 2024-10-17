@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 3008, "Setting ListView.ItemSource to null doesn't cause it clear out its contents", PlatformAffected.UWP)]
 
 public class Issue3008 : TestContentPage
@@ -22,7 +16,7 @@ public class Issue3008 : TestContentPage
 	const string successEmpty3 = "List loaded and ItemSource not set: you should see nothing";
 
 
-	[Preserve(AllMembers = true)]
+
 	class MyHeaderViewCell : ViewCell
 	{
 		public MyHeaderViewCell()
@@ -34,7 +28,7 @@ public class Issue3008 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	class GroupedItem : List<Item>
 	{
 		public GroupedItem()
@@ -45,7 +39,7 @@ public class Issue3008 : TestContentPage
 	}
 
 
-	[Preserve(AllMembers = true)]
+
 	class Item
 	{
 

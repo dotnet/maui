@@ -1,10 +1,6 @@
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 1323, "tabbed page BarTextColor is not pervasive and can't be applied after instantiation", PlatformAffected.iOS)]
 public class Issue1323 : TestTabbedPage
 {
