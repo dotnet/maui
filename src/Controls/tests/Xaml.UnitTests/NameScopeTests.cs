@@ -12,10 +12,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TopLevelObjectsHaveANameScope()
 		{
-			var xaml = @"
+			var xaml = """
 				<View 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" />";
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />
+				""";
 
 			var view = new CustomView().LoadFromXaml(xaml);
 
@@ -26,13 +27,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void NameScopeAreSharedWithChildren()
 		{
-			var xaml = @"
+			var xaml = """
 				<StackLayout 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"" >
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" >
 					<Label />
 					<Label />
-				</StackLayout>";
+				</StackLayout>
+				""";
 
 			var layout = new Controls.Compatibility.StackLayout().LoadFromXaml(xaml);
 
@@ -51,17 +53,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-			var xaml = @"
+			var xaml = """
 				<ListView
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Name=""listview"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Name="listview">
 					<ListView.ItemTemplate>
 						<DataTemplate>
-						    <TextCell Text=""{Binding name}"" x:Name=""textcell""/>
+							<TextCell Text="{Binding name}" x:Name="textcell"/>
 						</DataTemplate>
 					</ListView.ItemTemplate>
-				</ListView>";
+				</ListView>
+				""";
 
 			var listview = new ListView();
 			listview.LoadFromXaml(xaml);
@@ -75,17 +78,18 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
-			var xaml = @"
+			var xaml = """
 				<ListView
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				x:Name=""listview"">
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+				x:Name="listview">
 					<ListView.ItemTemplate>
 						<DataTemplate>
-						    <TextCell Text=""{Binding name}"" x:Name=""textcell""/>
+							<TextCell Text="{Binding name}" x:Name="textcell"/>
 						</DataTemplate>
 					</ListView.ItemTemplate>
-				</ListView>";
+				</ListView>
+				""";
 
 			var listview = new ListView();
 			listview.LoadFromXaml(xaml);

@@ -12,19 +12,20 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		PlatformAffected.iOS)]
 	public class Bugzilla44500 : TestNavigationPage
 	{
-		const string Html = @"
-<html>
-	<head>
-		<title></title>
-	</head>
-	<body>
-		<form>
-			<p>Please select a file:<br>
-				<input type=""file"" name=""datafile"" size=""40"">
-			</p>
-		</form>
-	</body>
-</html>";
+		const string Html = """
+			<html>
+				<head>
+					<title></title>
+				</head>
+				<body>
+					<form>
+						<p>Please select a file:<br>
+							<input type="file" name="datafile" size="40">
+						</p>
+					</form>
+				</body>
+			</html>
+			""";
 
 		protected override async void Init()
 		{
