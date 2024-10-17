@@ -1,9 +1,5 @@
-﻿using System;
+using System;
 using Maui.Controls.Sample.Issues;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
 
 namespace Maui.Controls.Sample
 {
@@ -32,11 +28,11 @@ namespace Maui.Controls.Sample
 
 #if IOS || MACCATALYST
 
-			appBuilder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
-				});
+			// appBuilder.ConfigureMauiHandlers(handlers =>
+			// 	{
+			// 		handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+			// 		handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+			// 	});
 				
 #endif
 

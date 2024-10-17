@@ -1,13 +1,5 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Hosting;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.ManualTest, "18720 DatePicker", "Setting the background property of AppCompatEditText (DatePicker) in a handler mapping does not work", PlatformAffected.Android)]
 	public partial class Issue18720DatePicker : ContentPage
 	{

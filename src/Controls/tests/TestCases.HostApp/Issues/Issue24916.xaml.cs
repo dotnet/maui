@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 24916, "Image Source in Button initializes correctly", PlatformAffected.All)]
 	public partial class Issue24916 : ContentPage
 	{
