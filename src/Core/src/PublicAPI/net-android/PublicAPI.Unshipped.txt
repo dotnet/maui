@@ -1,1 +1,4 @@
 #nullable enable
+override Microsoft.Maui.Platform.ContentViewGroup.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
+Microsoft.Maui.Platform.ContentViewGroup.InputTransparent.set -> void
+Microsoft.Maui.Platform.ContentViewGroup.InputTransparent.get -> bool
