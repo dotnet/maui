@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		double _fallbackWidth;
 		double _fallbackHeight;
-		bool _isStrokeUpdated;
 
 		/// <summary>Bindable property for <see cref="Fill"/>.</summary>
 		public static readonly BindableProperty FillProperty =
@@ -60,14 +59,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
-			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0,
-				propertyChanged: (bindable, oldvalue, newvalue) =>
-				{
-					if (bindable is RoundRectangle rect && rect._isStrokeUpdated)
-					{
-						rect._isStrokeUpdated = false;
-					}
-				});
+			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0);
 
 		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
@@ -382,6 +374,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+			RectF pathBounds;
 
 			if (result.Width != 0 && result.Height != 0)
 			{
@@ -390,7 +383,15 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-			RectF pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			if (this is IRoundRectangle rect)
+			{
+				pathBounds = rect.RounRectangleInnerPath().GetBoundsByFlattening(1);
+			}
+			else
+			{
+				pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			}
+
 			SizeF boundsByFlattening = pathBounds.Size;
 
 			result.Height = boundsByFlattening.Height;
@@ -445,21 +446,8 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			if (!_isStrokeUpdated)
-			{
-				result.Height += StrokeThickness;
-				result.Width += StrokeThickness;
-
-		 		// Stroke thickness is added to the measured size during each Measure call,
-				// which could cause the height of the RoundRectangle to increase repeatedly.
-				// To prevent this, the RoundRectangle's height is updated only once during the first measure using flag.
-				// Size adjustments for other shapes, such as Rectangle and Ellipse, are handled separately in the GetPath() method of the Rectangle class.
-				if (this is RoundRectangle)
-				{
-					_isStrokeUpdated = true;
-				}
-			}
-
+			result.Height += StrokeThickness;
+			result.Width += StrokeThickness;
 			return result;
 		}
 
