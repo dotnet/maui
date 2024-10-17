@@ -99,5 +99,14 @@ namespace Microsoft.Maui.Platform
 							.Build();
 				});
 		}
+
+		#pragma warning disable RS0016
+		public static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)
+		{
+			if (platformView.Background is Android.Graphics.Drawables.RippleDrawable ripple)
+			{
+				ripple.SetColor(Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
+			};
+		}
 	}
 }
