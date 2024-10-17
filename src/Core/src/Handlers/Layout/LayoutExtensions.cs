@@ -9,15 +9,26 @@ namespace Microsoft.Maui.Handlers
 
 		public static int GetLayoutHandlerIndex(this ILayout layout, IView view)
 		{
+			bool found = false;
+			var lowerViews = GetLowerViewsCount(layout, view, ref found);
+			return found ? lowerViews : -1;
+		}
+
+		static int GetLowerViewsCount(ILayout layout, IView view, ref bool found)
+		{
 			var count = layout.Count;
 			switch (count)
 			{
 				case 0:
-					return -1;
+					return 0;
 				case 1:
-					return view == layout[0] ? 0 : -1;
+					if (view == layout[0])
+					{
+						found = true;
+						return 0;
+					}
+					return 0;
 				default:
-					var found = false;
 					var zIndex = view.ZIndex;
 					var lowerViews = 0;
 
@@ -33,11 +44,17 @@ namespace Microsoft.Maui.Handlers
 
 						if (childZIndex < zIndex || !found && childZIndex == zIndex)
 						{
+#if IOS || ANDROID || MACCATALYST
+							lowerViews += child is ICompressedLayout { IsHeadless: true } and ILayout headlessLayout
+								? GetLowerViewsCount(headlessLayout, view, ref found)
+								: 1;
+#else
 							++lowerViews;
+#endif
 						}
 					}
 
-					return found ? lowerViews : -1;
+					return lowerViews;
 			}
 		}
 	}
