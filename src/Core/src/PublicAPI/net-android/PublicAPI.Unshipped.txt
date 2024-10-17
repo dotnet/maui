@@ -1,1 +1,2 @@
 #nullable enable
+*REMOVED* override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
