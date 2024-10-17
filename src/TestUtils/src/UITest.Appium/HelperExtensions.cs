@@ -102,7 +102,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Enters text into the currently focused element.
+		/// Enters text into the element identified by the query.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
@@ -115,7 +115,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Enters text into the currently focused element.
+		/// Enters text into the element identified by the query.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
