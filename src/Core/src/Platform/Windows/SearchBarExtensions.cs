@@ -158,6 +158,16 @@ namespace Microsoft.Maui.Platform
 			queryTextBox.UpdateInputScope(searchBar);
 		}
 
+		public static void UpdateReturnType(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var queryTextBox = platformControl.GetFirstDescendant<TextBox>();
+
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.UpdateReturnType(searchBar);
+		}
+
 		private static readonly string[] CancelButtonColorKeys =
 		{
 			"TextControlButtonForeground",

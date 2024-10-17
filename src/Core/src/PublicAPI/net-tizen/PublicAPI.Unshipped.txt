@@ -60,3 +60,5 @@ static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
 static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
