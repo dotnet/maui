@@ -8,12 +8,15 @@ namespace Microsoft.Maui.Controls.Xaml
 	internal struct XmlName
 	{
 		public static readonly XmlName _CreateContent = new XmlName("_", "CreateContent");
+		public static readonly XmlName xArguments = new XmlName("x", "Arguments");
+		public static readonly XmlName xClass = new XmlName("x", "Class");
+		public static readonly XmlName xClassModifier = new XmlName("x", "ClassModifier");
+		public static readonly XmlName xDataType = new XmlName("x", "DataType");
+		public static readonly XmlName xFactoryMethod = new XmlName("x", "FactoryMethod");
+		public static readonly XmlName xFieldModifier = new XmlName("x", "FieldModifier");
 		public static readonly XmlName xKey = new XmlName("x", "Key");
 		public static readonly XmlName xName = new XmlName("x", "Name");
 		public static readonly XmlName xTypeArguments = new XmlName("x", "TypeArguments");
-		public static readonly XmlName xArguments = new XmlName("x", "Arguments");
-		public static readonly XmlName xFactoryMethod = new XmlName("x", "FactoryMethod");
-		public static readonly XmlName xDataType = new XmlName("x", "DataType");
 		public static readonly XmlName Empty = new XmlName();
 
 		public string NamespaceURI { get; }
