@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Content = new StackLayout
 			{
 				Children = {
-					new Label { Text = "The following list contains cells with and without context actions, but all of the cells should be laid out identically. If the cells do not look identical, this test has failed." },
+					new Label { Text = "The following list contains cells with and without context actions, but all of the cells should be arranged identically. If the cells do not look identical, this test has failed." },
 					list }
 			};
 		}

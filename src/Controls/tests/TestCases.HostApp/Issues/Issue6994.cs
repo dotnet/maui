@@ -1,14 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6994, "Regression in Xamarin.Forms 4.2.0-pre1 (Java.Lang.NullPointerException when using FastRenderers)", PlatformAffected.Android)]
 	public class Issue6994 : TestContentPage
 	{
@@ -77,7 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class ItemViewModel : INotifyPropertyChanged
 		{
 			string _id;

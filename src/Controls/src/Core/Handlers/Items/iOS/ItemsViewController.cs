@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells get arranged according to the new layout
 				CollectionView.ReloadData();
 			}
 		}
@@ -567,7 +567,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
-			if (view == null)
+			if (view is null && viewTemplate is null)
 			{
 				if (formsElement != null)
 				{

@@ -1,10 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6262, "[Bug] Button in Grid gets wrong z-index",
 		PlatformAffected.iOS)]
 	public class Issue6262 : TestContentPage

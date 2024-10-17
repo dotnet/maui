@@ -1,13 +1,5 @@
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-using System;
-using System.Threading.Tasks;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 22443, "App Crash on Scroll Animation while navigating away from Page", PlatformAffected.Android)]
 public partial class Issue22443NavPage : NavigationPage
 {
@@ -67,7 +59,7 @@ public class Issue22443ScrollPage : ContentPage
 
 	protected override async void OnAppearing()
 	{
-		MainThread.BeginInvokeOnMainThread(() =>_scrollView!.ScrollToAsync(0, 10000, true));
+		MainThread.BeginInvokeOnMainThread(() => _scrollView!.ScrollToAsync(0, 10000, true));
 
 		await Task.Delay(200);
 		await Navigation.PopAsync();

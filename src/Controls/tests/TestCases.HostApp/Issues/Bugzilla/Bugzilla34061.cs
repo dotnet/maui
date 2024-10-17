@@ -1,12 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 34061, "RelativeLayout - First child added after page display does not appear")]
 	public class Bugzilla34061 : TestContentPage
 	{
