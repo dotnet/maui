@@ -12,8 +12,8 @@ public class Bugzilla47923 : _IssuesUITest
 
 	public override string Issue => "TapGestureRecognizer blocks List View Context Actions1";
 
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Bugzilla47923Test()
 	// {

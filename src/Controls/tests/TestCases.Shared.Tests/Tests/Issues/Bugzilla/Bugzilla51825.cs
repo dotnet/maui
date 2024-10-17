@@ -12,25 +12,25 @@ public class Bugzilla51825 : _IssuesUITest
 
 	public override string Issue => "[iOS] Korean input in SearchBar doesn't work";
 
-// 	[Test]
-// 	[FailsOnIOS]
-// 	public void Bugzilla51825Test()
-// 	{
-// 		RunningApp.WaitForElement(q => q.Marked("Bugzilla51825SearchBar"));
-// 		RunningApp.EnterText("Bugzilla51825SearchBar", "Hello");
-// 		var label = RunningApp.WaitForFirstElement("Bugzilla51825Label");
+	// 	[Test]
+	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
+	// 	public void Bugzilla51825Test()
+	// 	{
+	// 		RunningApp.WaitForElement(q => q.Marked("Bugzilla51825SearchBar"));
+	// 		RunningApp.EnterText("Bugzilla51825SearchBar", "Hello");
+	// 		var label = RunningApp.WaitForFirstElement("Bugzilla51825Label");
 
-// 		Assert.IsNotEmpty(label.ReadText());
+	// 		Assert.IsNotEmpty(label.ReadText());
 
-// 		// Windows App Driver and the Search Bar are a bit buggy
-// 		// It randomly doesn't enter the first letter
-// #if !WINDOWS
-// 		Assert.AreEqual("Hello", label.ReadText());
-// #endif
+	// 		// Windows App Driver and the Search Bar are a bit buggy
+	// 		// It randomly doesn't enter the first letter
+	// #if !WINDOWS
+	// 		Assert.AreEqual("Hello", label.ReadText());
+	// #endif
 
-// 		RunningApp.Tap("Bugzilla51825Button");
+	// 		RunningApp.Tap("Bugzilla51825Button");
 
-// 		var labelChange2 = RunningApp.WaitForFirstElement("Bugzilla51825Label");
-// 		Assert.AreEqual("Test", labelChange2.ReadText());
-// 	}
+	// 		var labelChange2 = RunningApp.WaitForFirstElement("Bugzilla51825Label");
+	// 		Assert.AreEqual("Test", labelChange2.ReadText());
+	// 	}
 }
