@@ -609,6 +609,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			{
 				InvalidateLayout();
 			}
+
+			if (UseLegacyMeasureInvalidatedBehaviorEnabled)
+			{
+				view.MeasureInvalidated += OnChildMeasureInvalidated;
+			}
 		}
 
 		void OnInternalRemoved(View view, int oldIndex)
@@ -617,6 +622,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (ShouldInvalidateOnChildRemoved(view))
 			{
 				InvalidateLayout();
+			}
+
+			if (UseLegacyMeasureInvalidatedBehaviorEnabled)
+			{
+				view.MeasureInvalidated -= OnChildMeasureInvalidated;
 			}
 		}
 
