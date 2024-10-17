@@ -1,4 +1,3 @@
-﻿          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/Microsoft.Maui*.dll
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="..\..\..\..\..\eng\Environment.Build.props" />
@@ -35,10 +34,6 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
