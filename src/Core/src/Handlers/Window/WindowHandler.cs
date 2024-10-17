@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.TitleBarDragRectangles)] = MapTitleBarDragRectangles,
 			[nameof(IWindow.TitleBar)] = MapTitleBar
 #endif
+#if MACCATALYST
+			[nameof(IWindow.TitleBar)] = MapTitleBar
+#endif
 		};
 
 		public static CommandMapper<IWindow, IWindowHandler> CommandMapper = new(ElementCommandMapper)

@@ -1,5 +1,6 @@
 #if MACCATALYST
 using System;
+using System.Linq;
 using CoreGraphics;
 using UIKit;
 
@@ -12,6 +13,7 @@ internal class WindowViewController : UIViewController
     bool _isTitleBarVisible = true;
 
     public UIView? TitleBar { get; set; }
+    // public UIView? WindowContentView { get; set; }
     public UIViewController WindowContentViewController {get; set; }
 
 	public WindowViewController(UIViewController windowContentViewController, IWindow window, IMauiContext mauiContext)
@@ -20,65 +22,117 @@ internal class WindowViewController : UIViewController
 
         AddChildViewController(windowContentViewController);
 
-        TitleBar = window.TitleBar?.ToPlatform(mauiContext);
+        View!.AddSubview(_contentWrapperView);
+        _contentWrapperView.AddSubview(windowContentViewController.View!);
 
-        var platformWindow = window.Handler?.PlatformView;
-        if (TitleBar != null && platformWindow is UIWindow platWindow)
-        {
-            SetUpTitleBar(platWindow, mauiContext);
-            _iTitleBar = window.TitleBar;
 
-            View!.AddSubview(TitleBar);
-            View!.AddSubview(_contentWrapperView);
-            _contentWrapperView.AddSubview(windowContentViewController.View!);
-        }   
+        // WindowContentView = windowContentViewController.View!;
+        // View!.AddSubview(WindowContentView);
     }
 
     public override void ViewDidLayoutSubviews()
     {
         base.ViewDidLayoutSubviews();
+        Console.WriteLine("ViewDidLayoutSubviews Started!");
         UpdateTitleBar();
     }
 
-    public void SetUpTitleBar(UIWindow platformWindow, IMauiContext mauiContext)
+    // public override void ViewDidLoad()
+    // {
+    //     base.ViewDidLoad();
+    //     Console.WriteLine("ViewDidLoad Started!");
+    //     UpdateTitleBar();
+    // }
+
+    // public override void ViewWillLayoutSubviews()
+    // {
+    //     base.ViewWillLayoutSubviews();
+    //     UpdateTitleBar();
+    // }
+
+    public void SetUpTitleBar(IWindow window, IMauiContext mauiContext)
     {
-        if (mauiContext is null)
+        var platformWindow = window.Handler?.PlatformView as UIWindow;
+
+        if (platformWindow is null)
         {
             return;
         }
 
-        var platformTitleBar = platformWindow?.WindowScene?.Titlebar;
+        var newTitleBar = window.TitleBar?.ToPlatform(mauiContext);
 
-        if (TitleBar is not null && platformTitleBar is not null)
+        if (newTitleBar != TitleBar)
+        {
+            TitleBar?.RemoveFromSuperview();
+            _iTitleBar = null;
+
+            if (newTitleBar is not null)
+            {
+                _iTitleBar = window.TitleBar;
+
+                View!.InsertSubview(newTitleBar, 0);
+            }
+        }
+
+        var platformTitleBar = platformWindow.WindowScene?.Titlebar;
+
+        if (newTitleBar is not null && platformTitleBar is not null)
         {
             platformTitleBar.Toolbar = null;
             platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
         }
+
+        TitleBar = newTitleBar;
+        UpdateTitleBar();
+    }
+
+    public void UpdateTitleBar(IWindow window, IMauiContext mauiContext)
+    {
+        // TitleBar = window.TitleBar?.ToPlatform(mauiContext);
+        UpdateTitleBar();
     }
 
     public void UpdateTitleBar()
     {
-        if (_iTitleBar != null && View is not null)
+        Console.WriteLine("UpdateTitleBar Started!");
+        // TODO - When the TitleBar is not showing, I'd expect the whole window to move up
+        // When the titleBar is replaced, the whole window moves up to the top but not when we hide the titleBar
+        if (_iTitleBar is not null && View is not null)
         {
-            var measured = _iTitleBar.Measure(View.Bounds.Width, double.PositiveInfinity);
-            _iTitleBar.Arrange(new Graphics.Rect(0, 0, View.Bounds.Width, measured.Height));
+            var heightConstraint = !_isTitleBarVisible ? 0 : double.PositiveInfinity;
+            var widthConstraint = !_isTitleBarVisible ? 0 : View.Bounds.Width;
+
+            var measured = _iTitleBar.Measure(widthConstraint, heightConstraint);
+            var arranged = _iTitleBar.Arrange(new Graphics.Rect(0, 0, widthConstraint, measured.Height));
+
+            // TODO - see what happens when the titleBar has some height when created?
         }
 
-        var TitleBarHeight = TitleBar?.Frame.Height ?? 0;
+        // var titleBarHeight = TitleBar?.Frame.Height ?? 0;
+        var titleBarHeight = _iTitleBar?.Frame.Height ?? 0;
 
         if (!_isTitleBarVisible)
         {
-            TitleBarHeight = 0;
+            titleBarHeight = 0;
         }
 
-        var newFrame = new CGRect(0, TitleBarHeight, View!.Bounds.Width, View!.Bounds.Height - TitleBarHeight);
+        var newFrame = new CGRect(0, titleBarHeight, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
 
-        if (newFrame != _contentWrapperView.Frame)
+        if (newFrame != _contentWrapperView.Frame && _contentWrapperView.Subviews.Count() > 0)
         {
-            // TODO see what happens if we remove the ContentWrapperView
             _contentWrapperView.Frame = newFrame;
-            _contentWrapperView.Subviews[0].Frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - TitleBarHeight);
+            _contentWrapperView.Subviews[0].Frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
         }
+
+        
+        // if (WindowContentView is not null && newFrame != WindowContentView.Frame)
+        // {
+        //     WindowContentView.Frame = newFrame;
+        // }
+
+
+        Console.WriteLine("CWV Frame: " + _contentWrapperView.Frame.Height);
+        // Console.WriteLine("WCV Frame: " + WindowContentView?.Frame ?? "null");
     }
 
     public void SetTitleBarVisibility(bool isVisible) =>
