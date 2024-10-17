@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			_toolbarElement = toolbarElement;
 		}
 
-		internal void Connect(IView view, IMauiContext? mauiContext = null)
+		internal void Connect(IView? view, IMauiContext? mauiContext = null)
 		{
 			ClearPlatformParts();
 

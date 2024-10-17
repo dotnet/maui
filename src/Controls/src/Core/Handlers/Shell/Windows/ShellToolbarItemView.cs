@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellToolbarItemView : Microsoft.UI.Xaml.Controls.Button
+	public partial class ShellToolbarItemView : Microsoft.UI.Xaml.Controls.Button
 	{
 
 		public static readonly DependencyProperty ToolbarItemProperty =

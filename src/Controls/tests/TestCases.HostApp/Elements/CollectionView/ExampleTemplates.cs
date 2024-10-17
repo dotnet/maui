@@ -130,14 +130,14 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 
 				Grid.SetRow(caption, 1);
 
-				var frame = new Frame
+				var border = new Border
 				{
 					Padding = new Thickness(5),
 					BackgroundColor = Colors.Transparent,
 					Content = grid
 				};
 
-				return frame;
+				return border;
 			});
 		}
 
@@ -305,7 +305,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 
 			return new DataTemplate(() =>
 			{
-				var layout = new Frame();
+				var layout = new Border();
 
 				layout.SetBinding(VisualElement.HeightRequestProperty, new Binding("Index", converter: indexHeightConverter));
 				layout.SetBinding(VisualElement.WidthRequestProperty, new Binding("Index", converter: indexWidthConverter));
@@ -335,7 +335,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 
 			return new DataTemplate(() =>
 			{
-				var layout = new Frame();
+				var layout = new Border();
 
 				layout.SetBinding(VisualElement.HeightRequestProperty, new Binding("Index", converter: indexHeightConverter));
 				layout.SetBinding(VisualElement.WidthRequestProperty, new Binding("Index", converter: indexWidthConverter));
@@ -366,7 +366,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 					Margin = 10
 				};
 
-				var frame = new Frame
+				var frame = new Border
 				{
 					HeightRequest = 50,
 					WidthRequest = 200,

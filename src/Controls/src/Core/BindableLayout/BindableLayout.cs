@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls
 		static readonly DataTemplate DefaultItemTemplate = new DataTemplate(() =>
 		{
 			var label = new Label { HorizontalTextAlignment = TextAlignment.Center };
-			label.SetBinding(Label.TextProperty, ".");
+			label.SetBinding(Label.TextProperty, static (object o) => o);
 			return label;
 		});
 

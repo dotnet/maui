@@ -1,7 +1,6 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
@@ -10,7 +9,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs/*" />
-	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement, IMenuElement, IPropertyPropagationController
+	public partial class MenuItem : BaseMenuItem, IMenuItemController, ICommandElement, IMenuElement, IPropertyPropagationController
 	{
 		/// <summary>Bindable property for <see cref="Accelerator"/>.</summary>
 		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")]
@@ -52,14 +51,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='SetAccelerator']/Docs/*" />
 		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")]
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
-
-		internal readonly MergedStyle _mergedStyle;
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public MenuItem()
 		{
-			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='Command']/Docs/*" />
@@ -103,27 +99,6 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(IsEnabledProperty);
 			set => SetValue(IsEnabledProperty, value);
 		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='StyleClass']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> StyleClass
-		{
-			get { return @class; }
-			set { @class = value; }
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='class']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> @class
-		{
-			get { return _mergedStyle.StyleClass; }
-			set
-			{
-				_mergedStyle.StyleClass = value;
-			}
-		}
-
-		IList<string> IStyleSelectable.Classes => StyleClass;
 
 		public event EventHandler Clicked;
 

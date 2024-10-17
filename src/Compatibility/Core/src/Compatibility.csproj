@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Compatibility</AssemblyName>
     <Nullable>disable</Nullable>
@@ -8,15 +9,15 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
-    <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
+    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard')) and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">true</IsAotCompatible>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS0672;CS0618</NoWarn>
     <DefineConstants>$(DefineConstants);COMPATIBILITY</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS8305;IL2059</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
@@ -49,7 +50,16 @@
         <Link>Windows\BootstrapHelper.cs</Link>
     </Compile>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
+  <PropertyGroup>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+    <!-- https://github.com/dotnet/msbuild/issues/9785 -->
+    <CompilerResponseFile Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(CompilerResponseFile);WorkaroundXamlPreCompilePreviewFeatures.rsp</CompilerResponseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
