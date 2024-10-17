@@ -5,7 +5,7 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public static class DotnetInternal
 	{
-		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet");
+		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet");
 		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
 		const int DEFAULT_TIMEOUT = 900;
 
