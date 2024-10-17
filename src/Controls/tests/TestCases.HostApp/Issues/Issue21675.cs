@@ -18,13 +18,11 @@ namespace Maui.Controls.Sample.Issues
 
 	public class MainPage : ContentPage
 	{
-		private Label commandLabel;
-		MainPageViewModel mainPageViewModel;
 		MenuFlyoutItem menuFlyoutItem;
 
 		public MainPage()
 		{
-			mainPageViewModel = new MainPageViewModel();
+			MainPageViewModel mainPageViewModel = new MainPageViewModel();
 			mainPageViewModel.MainPage = this;
 			BindingContext = mainPageViewModel;
 
@@ -61,7 +59,7 @@ namespace Maui.Controls.Sample.Issues
 				VerticalOptions = LayoutOptions.Center,
 			};
 
-			commandLabel = new Label
+			var commandLabel = new Label
 			{
 				AutomationId = "CommandLabel",
 				HorizontalOptions = LayoutOptions.Center,
