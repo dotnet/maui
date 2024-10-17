@@ -107,6 +107,18 @@ jobs:
       displayName: Run $(PLATFORM_NAME) templates build tests
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
+    - task: CopyFiles@2
+      displayName: Copy binlogs
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)'
+        Contents: |
+          **/*.binlog
+          ../**/*.binlog
+          ../../**/*.binlog
+        TargetFolder: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
+      continueOnError: true
+      condition: succeededOrFailed()
+
     - task: PublishTestResults@2
       displayName: Publish the $(PLATFORM_NAME) templates build tests
       condition: always()

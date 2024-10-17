@@ -29,7 +29,7 @@ public class XFIssue2681 : NavigationPage
 			};
 		}
 
-		public partial class FreezeMe : ContentPage
+		public class FreezeMe : ContentPage
 		{
 			public List<int> Items { get; set; }
 

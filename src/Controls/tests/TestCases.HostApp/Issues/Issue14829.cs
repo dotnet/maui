@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class MainPage : ContentPage
+		public class MainPage : ContentPage
 		{
 			protected override void OnAppearing()
 			{

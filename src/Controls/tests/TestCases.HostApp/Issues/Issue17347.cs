@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class TestPage : ContentPage
+		public class TestPage : ContentPage
 		{
 			Label TopView;
 			static int i = 0;
