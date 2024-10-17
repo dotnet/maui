@@ -19,9 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla42956Test()
 		{
 			App.WaitForElement(Success);

@@ -14,7 +14,7 @@ public class Bugzilla32148 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla32148Test()
 	// {
 	// 	App.WaitForElement("Contact0 LastName");
