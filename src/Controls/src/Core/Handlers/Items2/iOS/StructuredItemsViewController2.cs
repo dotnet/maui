@@ -48,9 +48,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override bool IsHorizontal => (ItemsView?.ItemsLayout as ItemsLayout)?.Orientation == ItemsLayoutOrientation.Horizontal;
 
-		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
-			NSString elementKind, NSIndexPath indexPath)
+		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, NSString elementKind, NSIndexPath indexPath)
 		{
+			// We don't have a header or footer, so we don't need to do anything
+			if(ItemsView.Header is null && ItemsView.Footer is null && ItemsView.HeaderTemplate is null && ItemsView.FooterTemplate is null)
+			{
+				return null;
+			}
+
 			var reuseId = DetermineViewReuseId(elementKind);
 
 			var view = collectionView.DequeueReusableSupplementaryView(elementKind, reuseId, indexPath) as UICollectionReusableView;
@@ -68,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return view;
 		}
 
-		private protected void RegisterSupplementaryViews(UICollectionElementKindSection kind)
+		private protected virtual void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
 			if (IsHorizontal)
 			{

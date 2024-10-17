@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
-				return LayoutFactory2.CreateGrid(gridItemsLayout, groupInfo);
+				return LayoutFactory2.CreateGrid(gridItemsLayout, groupInfo, headerFooterInfo);
 			}
 
 			if (itemsLayout is LinearItemsLayout listItemsLayout)
