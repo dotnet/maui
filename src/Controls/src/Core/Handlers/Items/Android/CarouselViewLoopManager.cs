@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using AndroidX.RecyclerView.Widget;
 
@@ -9,6 +10,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public const int LoopScale = 16384;
 
 		IItemsViewSource _itemsSource;
+		bool _itemsSourceHasChanged;
+
 		readonly Queue<ScrollToRequestEventArgs> _pendingScrollTo = new Queue<ScrollToRequestEventArgs>();
 
 		public void CenterIfNeeded(RecyclerView recyclerView, bool isHorizontal)
@@ -49,6 +52,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_itemsSource is null)
 				return -1;
 
+			if(_itemsSourceHasChanged)
+			{
+				_itemsSourceHasChanged = false;
+				return newPosition < _itemsSource.Count ? newPosition : -1;
+			}
+
 			var currentCarouselPosition = carouselPosition;
 			var itemSourceCount = _itemsSource.Count;
 
@@ -74,6 +83,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return goToPosition;
 		}
 
-		public void SetItemsSource(IItemsViewSource itemsSource) => _itemsSource = itemsSource;
+		public void SetItemsSource(IItemsViewSource itemsSource)
+		{
+			_itemsSourceHasChanged = _itemsSource != null;
+			_itemsSource = itemsSource;
+		} 
 	}
 }

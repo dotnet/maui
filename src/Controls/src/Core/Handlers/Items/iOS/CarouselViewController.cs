@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _isRotating;
 
+		bool _wasUpdatedFirstTime;
+
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
@@ -153,7 +155,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UnsubscribeCollectionItemsSourceChanged(ItemsSource);
 			base.UpdateItemsSource();
 			//we don't need to Subscribe because base calls CreateItemsViewSource
-			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource);
+			_carouselViewLoopManager?.SetItemsSource(LoopItemsSource, updated: _wasUpdatedFirstTime);
+			_wasUpdatedFirstTime = true;
 
 			if (InitialPositionSet && ItemsView is CarouselView carousel)
 			{
@@ -647,6 +650,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ILoopItemsViewSource _itemsSource;
 		bool _disposed;
 
+		bool _itemsSourceHasChanged;
+
 		public CarouselViewLoopManager(UICollectionViewFlowLayout layout)
 		{
 			if (layout == null)
@@ -719,6 +724,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return NSIndexPath.FromItemSection(0, 0);
 			}
 
+			if(_itemsSourceHasChanged)
+			{
+				_itemsSourceHasChanged = false;
+				var pos = newPosition < _itemsSource.ItemCount ? newPosition : 0;
+				return NSIndexPath.FromItemSection(pos, 0);
+			}
+
 			var currentCarouselPosition = GetCorrectedIndexFromIndexPath(centerIndexPath);
 			var itemSourceCount = _itemsSource.ItemCount;
 
@@ -747,7 +759,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return goToIndexPath;
 		}
 
-		public void SetItemsSource(ILoopItemsViewSource itemsSource) => _itemsSource = itemsSource;
+		public void SetItemsSource(ILoopItemsViewSource itemsSource, bool updated = false)
+		{
+			_itemsSourceHasChanged = updated;
+			_itemsSource = itemsSource;
+		} 
 
 		void CenterVerticallyIfNeeded(UICollectionView collectionView)
 		{
