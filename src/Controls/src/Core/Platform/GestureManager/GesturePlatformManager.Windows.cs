@@ -334,6 +334,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
 					_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
+					_tappedEventHandler = null;
 					_container.RightTapped -= OnTap;
 				}
 
@@ -342,6 +343,7 @@ namespace Microsoft.Maui.Controls.Platform
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
 					_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
+					_doubleTappedEventHandler = null;
 				}
 
 				if ((_subscriptionFlags & SubscriptionFlags.ContainerPgrPointerEventsSubscribed) != 0)
