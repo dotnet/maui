@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -7,6 +8,8 @@ namespace Microsoft.Maui.Controls
 	internal class IndicatorStackLayout : StackLayout
 	{
 		readonly IndicatorView _indicatorView;
+		internal event EventHandler<(IndicatorView, double, double)>? TemplateSizeChanged;
+
 		public IndicatorStackLayout(IndicatorView indicatorView)
 		{
 			_indicatorView = indicatorView;
@@ -20,6 +23,27 @@ namespace Microsoft.Maui.Controls
 
 			if (child is View view)
 			{
+				if(!_indicatorView.templatedItemWidth.HasValue || !_indicatorView.templatedItemHeight.HasValue)
+				{
+					NotifyTemplateSizeChanged();
+
+					void OnViewSizeChanged(object? sender, EventArgs e)
+					{
+						if(sender is View view)
+						{
+							NotifyTemplateSizeChanged();
+							view.SizeChanged -= OnViewSizeChanged;
+						}
+					}
+
+					void NotifyTemplateSizeChanged()
+					{
+						var width = Math.Max(view.WidthRequest, view.Width) + view.Margin.Left + view.Margin.Right;
+						var height = Math.Max(view.HeightRequest, view.Height) + view.Margin.Top + view.Margin.Bottom;
+						TemplateSizeChanged?.Invoke(this, (_indicatorView, width, height));
+					}
+				}
+
 				var tapGestureRecognizer = new TapGestureRecognizer
 				{
 					Command = new Command(sender => _indicatorView.Position = Children.IndexOf(sender)),
