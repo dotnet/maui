@@ -101,6 +101,13 @@ namespace Microsoft.Maui.Controls.Shapes
 			return path;
 		}
 
+		PathF IRoundRectangle.RounRectangleInnerPath()
+		{
+			var stroke = (float)StrokeThickness;
+			var path = GetInnerPath(stroke);
+			return path;
+		}
+
 		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeThickness)
 		{
 			_fallbackHeight = viewBounds.Height;
