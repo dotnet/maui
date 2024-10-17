@@ -1,4 +1,6 @@
 ﻿using System;
+using CoreGraphics;
+using Foundation;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,10 +8,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		IDisposable? _frameObserver;
+		
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
-
+			// For Size Change Events on the given window.
+			_frameObserver = platformView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
 			UpdateVirtualViewFrame(platformView);
 		}
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
@@ -88,6 +93,14 @@ namespace Microsoft.Maui.Handlers
 		void UpdateVirtualViewFrame(UIWindow window)
 		{
 			VirtualView.FrameChanged(window.Bounds.ToRectangle());
+		}
+
+		void FrameAction(Foundation.NSObservedChange obj)
+		{
+			if (obj.NewValue is NSValue value)
+			{
+				VirtualView.FrameChanged(value.CGRectValue.ToRectangle());
+			}
 		}
 	}
 }
