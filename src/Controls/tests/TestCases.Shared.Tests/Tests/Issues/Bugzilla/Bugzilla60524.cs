@@ -17,6 +17,6 @@ public class Bugzilla60524 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Bugzilla60524Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Group 1"));
+	// 	App.WaitForElement(q => q.Marked("Group 1"));
 	// }
 }

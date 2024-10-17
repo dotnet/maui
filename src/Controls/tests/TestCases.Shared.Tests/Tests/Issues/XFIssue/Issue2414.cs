@@ -17,19 +17,19 @@ public class Issue2414 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void TestDoesntCrashShowingContextMenu()
 	// {
-	// 	RunningApp.ActivateContextMenu("Swipe ME");
-	// 	RunningApp.WaitForElement(c => c.Marked("Text0"));
-	// 	RunningApp.Screenshot("Didn't crash");
-	// 	RunningApp.Tap(c => c.Marked("Text0"));
+	// 	App.ActivateContextMenu("Swipe ME");
+	// 	App.WaitForElement(c => c.Marked("Text0"));
+	// 	App.Screenshot("Didn't crash");
+	// 	App.Tap(c => c.Marked("Text0"));
 	// }
 
 	// [Test]
 	// [FailsOnIOS]
 	// public void TestShowContextMenuItemsInTheRightOrder()
 	// {
-	// 	RunningApp.ActivateContextMenu("Swipe ME");
-	// 	RunningApp.WaitForElement(c => c.Marked("Text0"));
-	// 	RunningApp.Screenshot("Are the menuitems in the right order?");
-	// 	RunningApp.Tap(c => c.Marked("Text0"));
+	// 	App.ActivateContextMenu("Swipe ME");
+	// 	App.WaitForElement(c => c.Marked("Text0"));
+	// 	App.Screenshot("Are the menuitems in the right order?");
+	// 	App.Tap(c => c.Marked("Text0"));
 	// }
 }

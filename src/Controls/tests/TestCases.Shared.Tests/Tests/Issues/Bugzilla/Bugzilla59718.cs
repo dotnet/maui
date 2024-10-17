@@ -17,19 +17,19 @@ public class Bugzilla59718 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Bugzilla59718Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked(Target1));
-	// 	RunningApp.Tap(q => q.Marked(Target1));
+	// 	App.WaitForElement(q => q.Marked(Target1));
+	// 	App.Tap(q => q.Marked(Target1));
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target1b));
+	// 	App.WaitForElement(q => q.Marked(Target1b));
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target2));
-	// 	RunningApp.Tap(q => q.Marked(Target2));
+	// 	App.WaitForElement(q => q.Marked(Target2));
+	// 	App.Tap(q => q.Marked(Target2));
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target3));
+	// 	App.WaitForElement(q => q.Marked(Target3));
 
-	// 	RunningApp.WaitForElement(q => q.Marked(GoBackButtonId));
-	// 	RunningApp.Tap(q => q.Marked(GoBackButtonId));
+	// 	App.WaitForElement(q => q.Marked(GoBackButtonId));
+	// 	App.Tap(q => q.Marked(GoBackButtonId));
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target1));
+	// 	App.WaitForElement(q => q.Marked(Target1));
 	// }
 }

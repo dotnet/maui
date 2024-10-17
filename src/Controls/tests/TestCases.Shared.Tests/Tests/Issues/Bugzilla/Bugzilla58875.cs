@@ -16,21 +16,21 @@ public class Bugzilla58875 : _IssuesUITest
 // 	[Category(UITestCategories.ContextActions)]
 // 	public void Bugzilla58875Test()
 // 	{
-// 		RunningApp.WaitForElement(q => q.Marked(Button1Id));
-// 		RunningApp.Tap(q => q.Marked(Button1Id));
-// 		RunningApp.WaitForElement(q => q.Marked(Target));
-// 		RunningApp.ActivateContextMenu(Target);
-// 		RunningApp.WaitForElement(q => q.Marked(ContextAction));
-// 		RunningApp.Back();
+// 		App.WaitForElement(q => q.Marked(Button1Id));
+// 		App.Tap(q => q.Marked(Button1Id));
+// 		App.WaitForElement(q => q.Marked(Target));
+// 		App.ActivateContextMenu(Target);
+// 		App.WaitForElement(q => q.Marked(ContextAction));
+// 		App.Back();
 
 // #if ANDROID
-// 		RunningApp.Back(); // back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
+// 		App.Back(); // back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
 // #endif
 
-// 		RunningApp.WaitForElement(q => q.Marked(Button1Id));
-// 		RunningApp.Tap(q => q.Marked(Button1Id));
-// 		RunningApp.WaitForElement(q => q.Marked(Target));
-// 		RunningApp.ActivateContextMenu(Target);
-// 		RunningApp.WaitForElement(q => q.Marked(ContextAction));
+// 		App.WaitForElement(q => q.Marked(Button1Id));
+// 		App.Tap(q => q.Marked(Button1Id));
+// 		App.WaitForElement(q => q.Marked(Target));
+// 		App.ActivateContextMenu(Target);
+// 		App.WaitForElement(q => q.Marked(ContextAction));
 // 	}
 }

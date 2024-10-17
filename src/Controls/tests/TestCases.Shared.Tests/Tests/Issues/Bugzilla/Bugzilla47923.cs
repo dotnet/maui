@@ -19,9 +19,9 @@ public class Bugzilla47923 : _IssuesUITest
 	// {
 	// 	foreach (var testString in new[] { "AspectFit", "AspectFill", "Fill", "Test cell views" })
 	// 	{
-	// 		RunningApp.WaitForElement(q => q.Marked(testString));
-	// 		RunningApp.Tap(q => q.Marked(testString));
-	// 		RunningApp.Back();
+	// 		App.WaitForElement(q => q.Marked(testString));
+	// 		App.Tap(q => q.Marked(testString));
+	// 		App.Back();
 	// 	}
 	// }
 }

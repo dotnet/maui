@@ -17,8 +17,8 @@ public class Bugzilla57749 : _IssuesUITest
 	// public async Task Bugzilla57749Test()
 	// {
 	// 	await Task.Delay(500);
-	// 	RunningApp.Tap(c => c.Marked("btnClick"));
-	// 	RunningApp.WaitForElement (q => q.Marked ("Button was clicked"));
-	// 	RunningApp.Tap("Ok");
+	// 	App.Tap(c => c.Marked("btnClick"));
+	// 	App.WaitForElement (q => q.Marked ("Button was clicked"));
+	// 	App.Tap("Ok");
 	// }
 }

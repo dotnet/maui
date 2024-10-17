@@ -17,6 +17,6 @@ public class Issue13203 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void CollectionShouldInvalidateOnVisibilityChange()
 	// {
-	// 	RunningApp.WaitForElement(Success);
+	// 	App.WaitForElement(Success);
 	// }
 }

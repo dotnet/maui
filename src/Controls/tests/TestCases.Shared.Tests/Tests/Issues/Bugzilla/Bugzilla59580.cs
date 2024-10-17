@@ -17,12 +17,12 @@ public class Bugzilla59580 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 	// {
-	// 	RunningApp.WaitForElement(c => c.Marked("Cell"));
+	// 	App.WaitForElement(c => c.Marked("Cell"));
 
-	// 	RunningApp.ActivateContextMenu("Cell");
+	// 	App.ActivateContextMenu("Cell");
 
-	// 	RunningApp.WaitForElement(c => c.Marked("Fire CanExecuteChanged"));
-	// 	RunningApp.Tap(c => c.Marked("Fire CanExecuteChanged"));
-	// 	RunningApp.WaitForElement("Cell");
+	// 	App.WaitForElement(c => c.Marked("Fire CanExecuteChanged"));
+	// 	App.Tap(c => c.Marked("Fire CanExecuteChanged"));
+	// 	App.WaitForElement("Cell");
 	// }
 }
