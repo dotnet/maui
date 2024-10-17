@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 				AutosizesSubviews = true
 			};
 
-			if (true)//DeveloperTools.Enabled)
+			if (DeveloperTools.Enabled)
 			{
 				// Legacy Developer Extras setting.
 				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));

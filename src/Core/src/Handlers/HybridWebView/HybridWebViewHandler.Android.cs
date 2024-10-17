@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 			// Note that this is a per-app setting and not per-control, so if you enable
 			// this, it is enabled for all Android WebViews in the app.
-			AWebView.SetWebContentsDebuggingEnabled(enabled: true); // TODO: Get from setting
+			AWebView.SetWebContentsDebuggingEnabled(enabled: DeveloperTools.Enabled);
 
 			platformView.Settings.JavaScriptEnabled = true;
 
