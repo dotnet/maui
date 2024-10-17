@@ -23,8 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("GoBackButton");
 			App.WaitForElement("CommandButton");
 			App.Tap("CommandButton");
-
-			var label = App.WaitForElement("CommandLabel");
+			var label = App.FindElement("CommandLabel");
 			Assert.That(label.GetText(), Is.EqualTo("Menu Item Clicked"));
 		}
 	}
