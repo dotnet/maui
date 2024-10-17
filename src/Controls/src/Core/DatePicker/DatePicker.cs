@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls
 
 		static DateTime GetDefaultDate()
 		{
-			return DateTimeOffset.Now.DateTime;
+			return DateTimeOffset.Now.DateTime.Date;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
