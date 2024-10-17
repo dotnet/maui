@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMeasureInvalidatedFiredOnVisibilityChanged()
 		{
-			var view = new View { IsVisible = false };
+			var view = new View { IsVisible = false, IsPlatformEnabled = true };
 			bool signaled = false;
 			view.MeasureInvalidated += (sender, e) =>
 			{
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestPlatformSizeChanged()
 		{
-			var view = new View();
+			var view = new View { IsPlatformEnabled = true };
 
 			bool sizeChanged = false;
 			view.MeasureInvalidated += (sender, args) => sizeChanged = true;
@@ -468,7 +468,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void MinimumWidthRequest()
 		{
-			var view = new View();
+			var view = new View { IsPlatformEnabled = true };
 
 			bool signaled = false;
 			view.MeasureInvalidated += (sender, args) => signaled = true;
@@ -485,7 +485,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void MinimumHeightRequest()
 		{
-			var view = new View();
+			var view = new View { IsPlatformEnabled = true };
 
 			bool signaled = false;
 			view.MeasureInvalidated += (sender, args) => signaled = true;
