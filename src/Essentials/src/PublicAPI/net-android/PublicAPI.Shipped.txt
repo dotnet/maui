@@ -845,6 +845,8 @@ Microsoft.Maui.Media.SpeechOptions.Locale.get -> Microsoft.Maui.Media.Locale?
 Microsoft.Maui.Media.SpeechOptions.Locale.set -> void
 Microsoft.Maui.Media.SpeechOptions.Pitch.get -> float?
 Microsoft.Maui.Media.SpeechOptions.Pitch.set -> void
+Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
+Microsoft.Maui.Media.SpeechOptions.Rate.set -> void
 Microsoft.Maui.Media.SpeechOptions.SpeechOptions() -> void
 Microsoft.Maui.Media.SpeechOptions.Volume.get -> float?
 Microsoft.Maui.Media.SpeechOptions.Volume.set -> void
