@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -919,6 +920,12 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool Batched => _batched > 0;
 
+		/// <summary>
+		/// Legacy <see cref="Compatibility.Layout"/>s can force <see cref="LayoutConstraint.Fixed"/> flags on the element.
+		/// </summary>
+		/// <remarks>
+		/// This should be removed once we drop the legacy layout system, unless we decide to implement a similar functionality in the new layout system.
+		/// </remarks>
 		internal LayoutConstraint ComputedConstraint
 		{
 			get { return _computedConstraint; }
@@ -935,6 +942,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// This flag is substantially used by to avoid measure invalidation when the view is <see cref="LayoutConstraint.Fixed"/>.
+		/// </summary>
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
 
 		/// <summary>
@@ -991,7 +1001,7 @@ namespace Microsoft.Maui.Controls
 		internal event EventHandler PlatformEnabledChanged;
 
 		/// <summary>
-		/// Gets or sets a value that indicates whether this elements's platform equivalent element is enabled.
+		/// Gets or sets a value that indicates whether this element's platform equivalent element is enabled.
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1354,58 +1364,77 @@ namespace Microsoft.Maui.Controls
 		{
 			InvalidateMeasureInternal(trigger);
 		}
-
-		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		
+		internal void InvokeMeasureInvalidated(InvalidationTrigger trigger)
 		{
-			_measureCache.Clear();
-
-			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
-			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
-
-			switch (trigger)
-			{
-				case InvalidationTrigger.MarginChanged:
-				case InvalidationTrigger.HorizontalOptionsChanged:
-				case InvalidationTrigger.VerticalOptionsChanged:
-					ParentView?.InvalidateMeasure();
-					break;
-				default:
-					(this as IView)?.InvalidateMeasure();
-					break;
-			}
-
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 		}
 		
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
-			switch (trigger)
+			if (!IsPlatformEnabled)
 			{
-				case InvalidationTrigger.VerticalOptionsChanged:
-				case InvalidationTrigger.HorizontalOptionsChanged:
-					// When a child changes its HorizontalOptions or VerticalOptions
-					// the size of the parent won't change, so we don't have to invalidate the measure
-					return;
-				case InvalidationTrigger.RendererReady:
-				// Undefined happens in many cases, including when `IsVisible` changes
-				case InvalidationTrigger.Undefined:
-					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
-					return;
-				default:
-					// When visibility changes `InvalidationTrigger.Undefined` is used,
-					// so here we're sure that visibility didn't change
-					if (child.IsVisible)
+				// No need to invalidate measure if there's no platform view
+				return;
+			}
+
+			if (trigger is InvalidationTrigger.HorizontalOptionsChanged or InvalidationTrigger.VerticalOptionsChanged)
+			{
+				InvokeMeasureInvalidated(trigger);
+
+				if (Parent is VisualElement parentVisualElement)
+				{
+					// If layout constraint has changed, we need to recompute constraints
+					if (this is View thisView)
 					{
-						// We need to invalidate measures only if child is actually visible
-						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
-						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+						parentVisualElement.ComputeConstraintForView(thisView);
 					}
-					return;
+
+					parentVisualElement.InvalidateMeasure();
+				}
+				else
+				{
+					ParentView?.InvalidateMeasure();
+				}
+
+				return;
+			}
+
+			if (trigger == InvalidationTrigger.MarginChanged)
+			{
+				InvokeMeasureInvalidated(trigger);
+
+				if (Parent is VisualElement parentVisualElement)
+				{
+					parentVisualElement.InvalidateMeasure();
+				}
+				else
+				{
+					ParentView?.InvalidateMeasure();
+				}
+
+				return;
+			}
+			
+			InvalidateMeasureCacheInternal();
+			((IView)this).InvalidateMeasure();
+			InvokeMeasureInvalidated(trigger);
+
+			// Support legacy layout invalidation
+			if (Parent is Compatibility.Layout layout)
+			{
+				layout.OnChildMeasureInvalidatedInternal(this, trigger);
 			}
 		}
 
+		/// <summary>
+		/// Clears the measure cache of a visual element.
+		/// </summary>
+		internal void InvalidateMeasureCacheInternal()
+		{
+			_measureCache.Clear();
+		}
+		
 		/// <inheritdoc/>
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);
 

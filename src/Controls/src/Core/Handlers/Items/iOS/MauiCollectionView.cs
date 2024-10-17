@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items;
 internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 {
 	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
+	bool _cellMeasureInvalidated;
+
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
 	}
@@ -35,6 +37,28 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 		{
 			target.MovedToWindow(this);
 		}
+	}
+
+	public override void LayoutSubviews()
+	{
+		if (_cellMeasureInvalidated)
+		{
+			_cellMeasureInvalidated = false;
+
+			var cells = VisibleCells;
+			var cellsLength = cells.Length;
+			for (int i = 0; i < cellsLength; i++)
+			{
+				(cells[i] as TemplatedCell)?.MeasureIfNeeded();
+			}
+		}
+
+		base.LayoutSubviews();
+	}
+
+	internal void CellMeasureInvalidated()
+	{
+		_cellMeasureInvalidated = true;
 	}
 
 	internal void SetCustomDelegate(ICustomMauiCollectionViewDelegate customDelegate)

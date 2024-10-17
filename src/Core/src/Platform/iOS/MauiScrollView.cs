@@ -5,11 +5,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ISchedulesSetNeedsLayout
 	{
-		public MauiScrollView()
-		{
-		}
+		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 
 		// overriding this method so it does not automatically scroll large UITextFields
 		// while the KeyboardAutoManagerScroll is scrolling.
@@ -17,6 +15,17 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
 				base.ScrollRectToVisible(rect, animated);
+		}
+
+		public override void SetNeedsLayout()
+		{
+			// If the content container is set, we need to invalidate that too
+			if (Subviews.Length > 0 && Subviews[0] is ContentView contentContainer)
+			{
+				contentContainer.SetNeedsLayout();
+			}
+
+			base.SetNeedsLayout();
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
@@ -31,6 +40,17 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+
+			if (_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				Superview?.PropagateSetNeedsLayout();
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+			}
+		}
+
+		void ISchedulesSetNeedsLayout.ScheduleSetNeedsLayoutPropagation()
+		{
+			_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
 		}
 	}
 }

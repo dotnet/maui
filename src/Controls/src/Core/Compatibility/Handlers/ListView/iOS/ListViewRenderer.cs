@@ -20,7 +20,7 @@ using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.List
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class ListViewRenderer : ViewRenderer<ListView, UITableView>
+	public class ListViewRenderer : ViewRenderer<ListView, UITableView>, ISchedulesSetNeedsLayout
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
 				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
@@ -60,6 +60,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public ListViewRenderer() : base(Mapper, CommandMapper)
 		{
 			AutoPackage = false;
+		}
+
+		bool _pendingSuperViewSetNeedsLayout;
+
+		void ISchedulesSetNeedsLayout.ScheduleSetNeedsLayoutPropagation()
+		{
+			_pendingSuperViewSetNeedsLayout = true;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+
+			if (_pendingSuperViewSetNeedsLayout)
+			{
+				Superview?.PropagateSetNeedsLayout();
+				_pendingSuperViewSetNeedsLayout = false;
+			}
 		}
 
 		public override void LayoutSubviews()

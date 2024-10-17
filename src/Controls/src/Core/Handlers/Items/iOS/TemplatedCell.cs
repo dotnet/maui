@@ -12,6 +12,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public abstract class TemplatedCell : ItemsViewCell
 	{
 		readonly WeakEventManager _weakEventManager = new();
+		bool _measureInvalidated;
+		bool _bound;
 
 		public event EventHandler<EventArgs> ContentSizeChanged
 		{
@@ -77,9 +79,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void Unbind()
 		{
+			_bound = false;
+
 			if (PlatformHandler?.VirtualView is View view)
 			{
-				view.MeasureInvalidated -= MeasureInvalidated;
 				view.BindingContext = null;
 			}
 		}
@@ -160,7 +163,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// Remove the old view, if it exists
 				if (oldElement != null)
 				{
-					oldElement.MeasureInvalidated -= MeasureInvalidated;
 					oldElement.BindingContext = null;
 					itemsView.RemoveLogicalChild(oldElement);
 					ClearSubviews();
@@ -172,6 +174,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// Set the binding context _before_ we create the renderer; that way, it's available during OnElementChanged
 				view.BindingContext = bindingContext;
+				_bound = true;
 
 				var renderer = TemplateHelpers.GetHandler(view, itemsView.FindMauiContext());
 				SetRenderer(renderer);
@@ -190,13 +193,33 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (oldElement != null)
 				{
 					oldElement.BindingContext = bindingContext;
-					oldElement.MeasureInvalidated += MeasureInvalidated;
+					_bound = true;
 
 					UpdateCellSize();
 				}
 			}
 
 			CurrentTemplate = itemTemplate;
+		}
+
+		internal void MeasureIfNeeded()
+		{
+			if (_measureInvalidated)
+			{
+				MeasureInvalidated();
+				_measureInvalidated = false;
+			}
+		}
+
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+
+			if (!_measureInvalidated && _bound)
+			{
+				_measureInvalidated = true;
+				(Superview as MauiCollectionView)?.CellMeasureInvalidated();				
+			}
 		}
 
 		void SetRenderer(IPlatformViewHandler renderer)
@@ -211,8 +234,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			InitializeContentConstraints(platformView);
 
 			UpdateVisualStates();
-
-			(renderer.VirtualView as View).MeasureInvalidated += MeasureInvalidated;
 		}
 
 		void ClearSubviews()
@@ -230,6 +251,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ConstrainedSize = measurementCell.ConstrainedSize;
 			CurrentTemplate = measurementCell.CurrentTemplate;
 			_size = measurementCell._size;
+			_bound = true;
 			SetRenderer(measurementCell.PlatformHandler);
 		}
 
@@ -280,7 +302,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
 
-		void MeasureInvalidated(object sender, EventArgs args)
+		void MeasureInvalidated()
 		{
 			var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
 

@@ -145,9 +145,9 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 				Assert.NotNull(handler.PlatformView);
 				Assert.False(data.IsCollectionChangedEventEmpty);
+				((IElementHandler)handler).DisconnectHandler();
 			});
 
-			carouselView.Handler?.DisconnectHandler();
 
 			Assert.True(data.IsCollectionChangedEventEmpty);
 		}

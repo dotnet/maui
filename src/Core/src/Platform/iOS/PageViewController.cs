@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Platform
 		{
 			return new ContentView
 			{
-				CrossPlatformLayout = ((IContentView)view)
+				CrossPlatformLayout = (IContentView)view,
+				Tag = ContentView.PageTag
 			};
 		}
 
