@@ -579,5 +579,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Contains(customControl, page.LogicalChildrenInternal);
 			Assert.Contains(customControl, ((IVisualTreeElement)page).GetVisualChildren());
 		}
+
+		[Fact]
+		public void SendDisappearingUnsubscribesAppearingEvent()
+		{
+			var page = new ContentPage();
+			var navPage = new NavigationPage(page);
+			_ = new TestWindow(navPage);
+			
+			// This subscribes the event if the page has not appeared already
+			int invokeCounter = 0;
+			navPage.OnAppearing(() => { invokeCounter++; });
+			((IPageController)navPage).SendAppearing();
+			Assert.Equal(1, invokeCounter);
+			
+			// Navigate away
+			((IPageController)navPage).SendDisappearing();
+			
+			// This should not increment the counter when navigating back
+			navPage.OnAppearing(() => { invokeCounter++; });
+			((IPageController)navPage).SendAppearing();
+			Assert.Equal(1, invokeCounter);
+		}
 	}
 }
