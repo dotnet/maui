@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 	{
 		// Should apply to iOS and Catalyst
 		if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || //https://github.com/xamarin/xamarin-macios/issues/21390
-			OperatingSystem.IsIOSVersionAtLeast(18, 0))
+			(OperatingSystem.IsIOSVersionAtLeast(18, 0) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad))
 		{
 			tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 			tabBarController.Mode = UITabBarControllerMode.TabSidebar;
