@@ -15,9 +15,10 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-		private void PanGestureRecognizer_PanUpdated(object sender, PanUpdatedEventArgs e)
+
+		private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
 		{
-			FrameLabel.Text = "Pan Gesture Recognized";
+			FrameLabel.Text = "Tap Gesture Recognized";
 		}
 	}
 }
