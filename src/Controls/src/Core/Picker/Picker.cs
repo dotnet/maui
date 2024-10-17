@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -199,6 +200,7 @@ namespace Microsoft.Maui.Controls
 
 		BindingBase _itemDisplayBinding;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemDisplayBinding']/Docs/*" />
+		[DoesNotInheritDataType]
 		public BindingBase ItemDisplayBinding
 		{
 			get { return _itemDisplayBinding; }
