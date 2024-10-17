@@ -1,12 +1,6 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Github, 2818, "Right-to-Left FlyoutPage in Xamarin.Forms Hamburger icon issue", PlatformAffected.Android)]
 public class Issue2818 : TestFlyoutPage
 {

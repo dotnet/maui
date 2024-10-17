@@ -1,12 +1,7 @@
-using System;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 33612,
 	"(A) Removing a page from the navigation stack causes an 'Object reference' exception in Android only",
 	PlatformAffected.Android)]

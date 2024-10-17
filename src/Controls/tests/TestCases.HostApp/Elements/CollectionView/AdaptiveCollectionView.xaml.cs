@@ -1,9 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class AdaptiveCollectionView : ContentPage
 	{
 		public AdaptiveCollectionView()

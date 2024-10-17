@@ -1,14 +1,6 @@
 using Controls.Sample.UITests;
-using Maui.Controls.Sample.CollectionViewGalleries.AlternateLayoutGalleries;
-using Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries;
-using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
-using Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries;
-using Maui.Controls.Sample.CollectionViewGalleries.ReorderingGalleries;
-using Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries;
-using Maui.Controls.Sample.CollectionViewGalleries.SpacingGalleries;
-using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries
 {
