@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
 			coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged,
-			defaultValueCreator: (bindable) => DateTime.Today);
+			defaultValueCreator: (bindable) => GetDefaultDate());
 
 		/// <summary>Bindable property for <see cref="MinimumDate"/>.</summary>
 		public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime), typeof(DatePicker), new DateTime(1900, 1, 1),
@@ -150,6 +150,11 @@ namespace Microsoft.Maui.Controls
 
 		void ITextElement.OnTextTransformChanged(TextTransform oldValue, TextTransform newValue)
 		{
+		}
+
+		static DateTime GetDefaultDate()
+		{
+			return DateTimeOffset.Now.DateTime.Date;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
