@@ -17,19 +17,19 @@ public class Bugzilla45926 : _IssuesUITest
 	// [FailsOnAndroid]
 	// public void Issue45926Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("New Page"));
+	// 	App.WaitForElement(q => q.Marked("New Page"));
 
-	// 	RunningApp.Tap(q => q.Marked("New Page"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Second Page #1"));
-	// 	RunningApp.Back();
-	// 	RunningApp.WaitForElement(q => q.Marked("Intermediate Page"));
-	// 	RunningApp.Back();
-	// 	RunningApp.Tap(q => q.Marked("Do GC"));
-	// 	RunningApp.Tap(q => q.Marked("Do GC"));
-	// 	RunningApp.Tap(q => q.Marked("Send Message"));
-	// 	RunningApp.Tap(q => q.Marked("Do GC"));
+	// 	App.Tap(q => q.Marked("New Page"));
+	// 	App.WaitForElement(q => q.Marked("Second Page #1"));
+	// 	App.Back();
+	// 	App.WaitForElement(q => q.Marked("Intermediate Page"));
+	// 	App.Back();
+	// 	App.Tap(q => q.Marked("Do GC"));
+	// 	App.Tap(q => q.Marked("Do GC"));
+	// 	App.Tap(q => q.Marked("Send Message"));
+	// 	App.Tap(q => q.Marked("Do GC"));
 
-	// 	RunningApp.WaitForElement(q => q.Marked("Instances: 0"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Messages: 0"));
+	// 	App.WaitForElement(q => q.Marked("Instances: 0"));
+	// 	App.WaitForElement(q => q.Marked("Messages: 0"));
 	// }
 }

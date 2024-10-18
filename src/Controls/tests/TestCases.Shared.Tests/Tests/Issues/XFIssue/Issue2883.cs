@@ -17,13 +17,13 @@ public class Issue2883 : _IssuesUITest
 	// [Test]
 	// public void Issue2883TestDisabled ()
 	// {
-	// 	RunningApp.Screenshot ("I am at Issue 2883");
-	// 	RunningApp.Tap( c=> c.Marked("btnCustomCellTable"));
-	// 	RunningApp.WaitForNoElement( c=> c.Marked("Clicked"));
-	// 	RunningApp.Screenshot ("I dont see the disable cell");
-	// 	RunningApp.Tap( c=> c.Marked("btnCustomCellListView"));
-	// 	RunningApp.WaitForNoElement( c=> c.Marked("Clicked"));
-	// 	RunningApp.Screenshot ("I dont see the disable cell");
+	// 	App.Screenshot ("I am at Issue 2883");
+	// 	App.Tap( c=> c.Marked("btnCustomCellTable"));
+	// 	App.WaitForNoElement( c=> c.Marked("Clicked"));
+	// 	App.Screenshot ("I dont see the disable cell");
+	// 	App.Tap( c=> c.Marked("btnCustomCellListView"));
+	// 	App.WaitForNoElement( c=> c.Marked("Clicked"));
+	// 	App.Screenshot ("I dont see the disable cell");
 	// }
 
 	// [UITests.FailsOnIOS]
@@ -31,12 +31,12 @@ public class Issue2883 : _IssuesUITest
 	// public void Issue2883TestEnabled ()
 	// {
 
-	// 	RunningApp.Tap( c=> c.Marked("btnCustomCellTableEnabled"));
-	// 	RunningApp.Screenshot ("I see the cell that is enabled");
-	// 	RunningApp.WaitForElement( c=> c.Marked("Clicked"));
-	// 	RunningApp.Tap (c => c.Marked ("ok"));
-	// 	RunningApp.Tap( c=> c.Marked("btnCustomCellListViewEnabled"));
-	// 	RunningApp.WaitForElement( c=> c.Marked("Clicked"));
-	// 	RunningApp.Tap (c => c.Marked ("ok"));
+	// 	App.Tap( c=> c.Marked("btnCustomCellTableEnabled"));
+	// 	App.Screenshot ("I see the cell that is enabled");
+	// 	App.WaitForElement( c=> c.Marked("Clicked"));
+	// 	App.Tap (c => c.Marked ("ok"));
+	// 	App.Tap( c=> c.Marked("btnCustomCellListViewEnabled"));
+	// 	App.WaitForElement( c=> c.Marked("Clicked"));
+	// 	App.Tap (c => c.Marked ("ok"));
 	// }
 }

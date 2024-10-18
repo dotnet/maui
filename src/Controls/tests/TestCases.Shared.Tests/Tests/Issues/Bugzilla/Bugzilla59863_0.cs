@@ -23,23 +23,23 @@ public class Bugzilla59863_0 : _IssuesUITest
 
 	// 	int tapsToTest = 5;
 
-	// 	RunningApp.WaitForElement(SingleTapBoxId);
+	// 	App.WaitForElement(SingleTapBoxId);
 
 	// 	for (int n = 0; n < tapsToTest; n++)
 	// 	{
-	// 		RunningApp.Tap(SingleTapBoxId);
+	// 		App.Tap(SingleTapBoxId);
 	// 	}
 
-	// 	RunningApp.WaitForElement($"{tapsToTest} {Singles} on {SingleTapBoxId}");
+	// 	App.WaitForElement($"{tapsToTest} {Singles} on {SingleTapBoxId}");
 	// }
 
 	// [Test]
 	// [FailsOnIOS]
 	// public void DoubleTapWithOnlySingleTapRecognizerShouldRegisterTwoTaps()
 	// {
-	// 	RunningApp.WaitForElement(SingleTapBoxId);
-	// 	RunningApp.DoubleTap(SingleTapBoxId);
+	// 	App.WaitForElement(SingleTapBoxId);
+	// 	App.DoubleTap(SingleTapBoxId);
 
-	// 	RunningApp.WaitForElement($"2 {Singles} on {SingleTapBoxId}");
+	// 	App.WaitForElement($"2 {Singles} on {SingleTapBoxId}");
 	// }
 }

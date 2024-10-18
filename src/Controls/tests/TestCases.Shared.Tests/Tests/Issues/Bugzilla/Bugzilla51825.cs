@@ -16,9 +16,9 @@ public class Bugzilla51825 : _IssuesUITest
 // 	[FailsOnIOS]
 // 	public void Bugzilla51825Test()
 // 	{
-// 		RunningApp.WaitForElement(q => q.Marked("Bugzilla51825SearchBar"));
-// 		RunningApp.EnterText("Bugzilla51825SearchBar", "Hello");
-// 		var label = RunningApp.WaitForFirstElement("Bugzilla51825Label");
+// 		App.WaitForElement(q => q.Marked("Bugzilla51825SearchBar"));
+// 		App.EnterText("Bugzilla51825SearchBar", "Hello");
+// 		var label = App.WaitForFirstElement("Bugzilla51825Label");
 
 // 		Assert.IsNotEmpty(label.ReadText());
 
@@ -28,9 +28,9 @@ public class Bugzilla51825 : _IssuesUITest
 // 		Assert.AreEqual("Hello", label.ReadText());
 // #endif
 
-// 		RunningApp.Tap("Bugzilla51825Button");
+// 		App.Tap("Bugzilla51825Button");
 
-// 		var labelChange2 = RunningApp.WaitForFirstElement("Bugzilla51825Label");
+// 		var labelChange2 = App.WaitForFirstElement("Bugzilla51825Label");
 // 		Assert.AreEqual("Test", labelChange2.ReadText());
 // 	}
 }

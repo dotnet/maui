@@ -18,20 +18,20 @@ public class Issue2597 : _IssuesUITest
 // 	public void Issue2597Test()
 // 	{
 // #if __IOS__
-// 		RunningApp.Tap(x => x.Marked("Increment"));
+// 		App.Tap(x => x.Marked("Increment"));
 // #else
-// 		RunningApp.Tap("+");
+// 		App.Tap("+");
 // #endif
 
-// 		RunningApp.WaitForElement(q => q.Marked("Stepper value is 0"));
+// 		App.WaitForElement(q => q.Marked("Stepper value is 0"));
 
 
 // #if __IOS__
-// 		RunningApp.Tap(x => x.Marked("Decrement"));
+// 		App.Tap(x => x.Marked("Decrement"));
 // #else
-// 		RunningApp.Tap("−");
+// 		App.Tap("−");
 // #endif
 
-// 		RunningApp.WaitForElement(q => q.Marked("Stepper value is 0"));
+// 		App.WaitForElement(q => q.Marked("Stepper value is 0"));
 // 	}
 }

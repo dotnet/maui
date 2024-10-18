@@ -17,19 +17,19 @@ public class Bugzilla59863_1 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
 	// {
-	// 	RunningApp.WaitForElement(DoubleTapBoxId);
-	// 	RunningApp.Tap(DoubleTapBoxId);
+	// 	App.WaitForElement(DoubleTapBoxId);
+	// 	App.Tap(DoubleTapBoxId);
 
-	// 	RunningApp.WaitForElement($"0 {Doubles} on {DoubleTapBoxId}");
+	// 	App.WaitForElement($"0 {Doubles} on {DoubleTapBoxId}");
 	// }
 
 	// [Test]
 	// [FailsOnIOS]
 	// public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
 	// {
-	// 	RunningApp.WaitForElement(DoubleTapBoxId);
-	// 	RunningApp.DoubleTap(DoubleTapBoxId);
+	// 	App.WaitForElement(DoubleTapBoxId);
+	// 	App.DoubleTap(DoubleTapBoxId);
 
-	// 	RunningApp.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
+	// 	App.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
 	// }
 }
