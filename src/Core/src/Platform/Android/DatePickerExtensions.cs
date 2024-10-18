@@ -53,6 +53,20 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static DateTime ToUniversalTimeNative(this DateTime date)
+		{
+			if (date.Kind == DateTimeKind.Utc)
+			{
+				return date;
+			}
+			var timeZone = Java.Util.TimeZone.Default;
+			if (timeZone != null && date != DateTime.MaxValue && date != DateTime.MinValue)
+			{
+				return date.AddHours(-1 * (double)timeZone.RawOffset / 1000 / 60 / 60);
+			}
+			return date.ToUniversalTime();
+		}
+
 		internal static void SetText(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.Text = datePicker.Date.ToString(datePicker.Format);

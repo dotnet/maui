@@ -17,15 +17,10 @@ namespace Microsoft.Maui.Handlers
 				HidePicker = HidePickerDialog
 			};
 
-			var date = VirtualView?.Date;
-
-			if (date != null)
-				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
-
 			return mauiDatePicker;
 		}
 
-		internal DatePickerDialog? DatePickerDialog { get { return _dialog; } }
+		internal DatePickerDialog? DatePickerDialog { get { return _dialog ??= CreateDefaultDatePickerDialog(); } }
 
 		protected override void ConnectHandler(MauiDatePicker platformView)
 		{
@@ -64,6 +59,16 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
+		DatePickerDialog? CreateDefaultDatePickerDialog()
+		{
+			var date = VirtualView?.Date;
+			if (date != null)
+			{
+				return CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
+			}
+			return null;
+		}
+
 		protected virtual DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
 		{
 			var dialog = new DatePickerDialog(Context!, (o, e) =>
@@ -73,7 +78,11 @@ namespace Microsoft.Maui.Handlers
 					VirtualView.Date = e.Date;
 				}
 			}, year, month, day);
-
+			if (VirtualView != null)
+			{
+				dialog.DatePicker.MaxDate = (long)VirtualView.MaximumDate.ToUniversalTimeNative().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				dialog.DatePicker.MinDate = (long)VirtualView.MinimumDate.ToUniversalTimeNative().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+			}
 			return dialog;
 		}
 
