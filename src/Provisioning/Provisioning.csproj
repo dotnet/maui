@@ -199,7 +199,7 @@
 		</PropertyGroup>
 
 		<DownloadFile SourceUrl="$(_JdkUrl)" DestinationFolder="./tmp/" Retries="3" SkipUnchangedFiles="False">
-			<Output TaskParameter="DownloadedFile" ItemName="_JdkDownloadedFile" />
+			<Output TaskParameter="DownloadedFile" PropertyName="_JdkDownloadedFile" />
 		</DownloadFile>
 
 		<Exec Command="msiexec /i &quot;$(_JdkDownloadedFile)&quot; ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome INSTALLDIR=&quot;$(ProgramFiles)\Microsoft\&quot; /quiet" />
