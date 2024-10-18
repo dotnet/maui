@@ -273,6 +273,14 @@ namespace Microsoft.Maui.Controls
 
 			s_animations[key] = info;
 
+			if (self is VisualElement ve)
+			{
+				ve.Unloaded += (s, e) =>
+				{
+					s_animations.Remove(key);
+				};
+			}
+
 			info.Callback(0.0f);
 			tweener.Start();
 		}
