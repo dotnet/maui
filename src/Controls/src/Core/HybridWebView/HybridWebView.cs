@@ -37,9 +37,17 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
 
+		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? _invokeJavaScriptType;
+
 		/// <inheritdoc/>
 		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-		Type? IHybridWebView.InvokeJavaScriptType { get; set; }
+		Type? IHybridWebView.InvokeJavaScriptType
+		{
+			get => _invokeJavaScriptType;
+			set => _invokeJavaScriptType = value;
+		}
 
 		/// <inheritdoc/>
 		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
