@@ -85,7 +85,11 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+		}
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();

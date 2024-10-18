@@ -235,6 +235,7 @@
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
+      <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
@@ -260,6 +261,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
                                       Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' != ''"
                                       Value="$(MauiEnableXamlCBindingWithSourceCompilation)"
+                                      Trim="false" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
+                                      Condition="'$(MauiHybridWebViewSupported)' != ''"
+                                      Value="$(MauiHybridWebViewSupported)"
                                       Trim="false" />
     </ItemGroup>
   </Target>
