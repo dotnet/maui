@@ -94,7 +94,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			public partial class ListPageCode : ContentPage
+			public class ListPageCode : ContentPage
 			{
 				public ListPageCode()
 				{
