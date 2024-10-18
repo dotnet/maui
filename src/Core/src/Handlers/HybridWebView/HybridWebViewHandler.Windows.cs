@@ -100,6 +100,10 @@ namespace Microsoft.Maui.Handlers
 			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
@@ -206,6 +210,11 @@ Content-Length: {contentLength}";
 
 			private async Task<bool> TryInitializeWebView2(WebView2 webView)
 			{
+				if (!RuntimeFeature.IsHybridWebViewSupported)
+				{
+					throw new NotSupportedException(NotSupportedMessage);
+				}
+
 				await webView.EnsureCoreWebView2Async();
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
@@ -218,7 +227,10 @@ Content-Length: {contentLength}";
 				return true;
 			}
 
-			[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+			[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+			[RequiresDynamicCode(DynamicFeatures)]
+#endif
 			private void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs args)
 			{
 				Handler?.OnWebResourceRequested(sender, args);
