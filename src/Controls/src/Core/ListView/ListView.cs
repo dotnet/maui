@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -151,6 +152,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupDisplayBinding']/Docs/*" />
+		[DoesNotInheritDataType]
 		public BindingBase GroupDisplayBinding
 		{
 			get { return _groupDisplayBinding; }
@@ -176,6 +178,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupShortNameBinding']/Docs/*" />
+		[DoesNotInheritDataType]
 		public BindingBase GroupShortNameBinding
 		{
 			get { return _groupShortNameBinding; }
