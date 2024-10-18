@@ -154,6 +154,10 @@
 			<MauiStrictXamlCompilation Condition="'$(MauiStrictXamlCompilation)' == '' and '$(PublishAot)' == 'true'">true</MauiStrictXamlCompilation>
 			<_MauiXamlCNoWarn>$(NoWarn)</_MauiXamlCNoWarn>
 			<_MauiXamlCNoWarn Condition="'$(MauiStrictXamlCompilation)' != 'true'">$(_MauiXamlCNoWarn);XC0022;XC0023</_MauiXamlCNoWarn>
+
+      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == '' and '$(GenerateFullPaths)' == 'true'">true</_MauiXamlCGenerateFullPaths>
+      <_MauiXamlCGenerateFullPaths Condition="'$(_MauiXamlCGenerateFullPaths)' == ''">false</_MauiXamlCGenerateFullPaths>
+      <_MauiXamlCFullPathPrefix Condition="'$(_MauiXamlCFullPathPrefix)' == '' and '$(_MauiXamlCGenerateFullPaths)' == 'true'">$(MSBuildProjectDirectory)</_MauiXamlCFullPathPrefix>
 		</PropertyGroup>
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
@@ -170,7 +174,9 @@
       TreatWarningsAsErrors = "$(TreatWarningsAsErrors)"
       NoWarn = "$(_MauiXamlCNoWarn)"
       WarningsAsErrors = "$(WarningsAsErrors)"
-      WarningsNotAsErrors = "$(WarningsNotAsErrors)" />
+      WarningsNotAsErrors = "$(WarningsNotAsErrors)"
+      GenerateFullPaths = "$(_MauiXamlCGenerateFullPaths)"
+      FullPathPrefix = "$(_MauiXamlCFullPathPrefix)" />
       
 		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
 		<ItemGroup>
