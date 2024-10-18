@@ -67,6 +67,7 @@
         <Label x:Name="dragStartEvent" AutomationId="DragStartEventsLabel" Text="DragStartEvents: "/>
         <Label x:Name="dragOverEvent"  AutomationId="DragOverEventsLabel" Text="DragOverEvents: "/>
         <Label x:Name="dragCompletedEvent" AutomationId="DragCompletedEventsLabel" Text="DragCompletedEvents: "/>
+        <Label x:Name="dragLeaveEvent" AutomationId="DragLeaveEventsLabel" Text="DragLeaveEvents: "/>
         <Label x:Name="ranibowColors" AutomationId="RainBowColorsLabel" Text="RainbowColorsAdd: "/>
       
         <!-- DragStarting Labels-->
