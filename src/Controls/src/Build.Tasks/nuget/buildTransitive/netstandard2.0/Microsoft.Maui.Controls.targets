@@ -265,7 +265,7 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
                                       Condition="'$(MauiHybridWebViewSupported)' != ''"
                                       Value="$(MauiHybridWebViewSupported)"
-                                      Trim="false" />
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 
