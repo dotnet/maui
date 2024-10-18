@@ -12,7 +12,7 @@ public class Bugzilla41153 : _IssuesUITest
 
 	public override string Issue => "jobject must not be IntPtr.Zero with TabbedPage and ToolbarItems";
 
-	// [FailsOnAndroid("Times out on WaitForElement(On Tab 1)")]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest("Times out on WaitForElement(On Tab 1)")]
 	// [Test]
 	// [Category(UITestCategories.TabbedPage)]
 	// public void Bugzilla41153Test()

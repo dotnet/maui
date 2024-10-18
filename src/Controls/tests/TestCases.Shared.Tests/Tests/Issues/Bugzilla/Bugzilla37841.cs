@@ -14,7 +14,7 @@ public class Bugzilla37841 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TextAndEntryCellsDataBindInTableView()
 	// {
 	// 	App.WaitForElement("Generate");
