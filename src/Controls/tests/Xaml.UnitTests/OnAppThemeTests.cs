@@ -31,11 +31,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void OnAppThemeExtensionLightDarkColor()
 		{
-			var xaml = @"
-			<Label 
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"" TextColor=""{AppThemeBinding Light = Green, Dark = Red}
-			"">This text is green or red depending on Light (or default) or Dark</Label>";
+			var xaml = """
+				<Label 
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" TextColor="{AppThemeBinding Light = Green, Dark = Red}
+				">This text is green or red depending on Light (or default) or Dark</Label>
+				""";
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
@@ -49,15 +50,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void OnAppThemeLightDarkColor()
 		{
-			var xaml = @"
-			<Label
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			Text=""This text is green or red depending on Light(or default) or Dark"">
-                <Label.TextColor>
-                    <AppThemeBinding Light=""Green"" Dark=""Red"" />
-				</Label.TextColor>
-			</Label> ";
+			var xaml = """
+				<Label
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				Text="This text is green or red depending on Light(or default) or Dark">
+					<Label.TextColor>
+						<AppThemeBinding Light="Green" Dark="Red" />
+					</Label.TextColor>
+				</Label> 
+				""";
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
@@ -71,15 +73,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void OnAppThemeUnspecifiedThemeDefaultsToLightColor()
 		{
-			var xaml = @"
-			<Label
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			Text=""This text is green or red depending on Light(or default) or Dark"">
-                <Label.TextColor>
-                    <AppThemeBinding Light=""Green"" Dark=""Red"" />
-				</Label.TextColor>
-			</Label> ";
+			var xaml = """
+				<Label
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				Text="This text is green or red depending on Light(or default) or Dark">
+					<Label.TextColor>
+						<AppThemeBinding Light="Green" Dark="Red" />
+					</Label.TextColor>
+				</Label> 
+				""";
 
 			SetAppTheme(AppTheme.Unspecified);
 			var label = new Label().LoadFromXaml(xaml);
@@ -89,15 +92,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void OnAppThemeUnspecifiedLightColorDefaultsToDefault()
 		{
-			var xaml = @"
-			<Label
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			Text=""This text is green or red depending on Light(or default) or Dark"">
-                <Label.TextColor>
-                    <AppThemeBinding Default=""Green"" Dark=""Red"" />
-				</Label.TextColor>
-			</Label> ";
+			var xaml = """
+				<Label
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				Text="This text is green or red depending on Light(or default) or Dark">
+					<Label.TextColor>
+						<AppThemeBinding Default="Green" Dark="Red" />
+					</Label.TextColor>
+				</Label> 
+				""";
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
@@ -107,15 +111,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void AppThemeColorLightDark()
 		{
-			var xaml = @"
-			<Label
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			Text=""This text is green or red depending on Light(or default) or Dark"">
-                <Label.TextColor>
-                    <AppThemeBinding Light=""Green"" Dark=""Red"" />
-				</Label.TextColor>
-			</Label> ";
+			var xaml = """
+				<Label
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				Text="This text is green or red depending on Light(or default) or Dark">
+					<Label.TextColor>
+						<AppThemeBinding Light="Green" Dark="Red" />
+					</Label.TextColor>
+				</Label> 
+				""";
 
 			SetAppTheme(AppTheme.Light);
 			var label = new Label().LoadFromXaml(xaml);
@@ -129,15 +134,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void AppThemeColorUnspecifiedThemeDefaultsToLightColor()
 		{
-			var xaml = @"
-			<Label
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			Text=""This text is green or red depending on Light(or default) or Dark"">
-                <Label.TextColor>
-                    <AppThemeBinding Light=""Green"" Dark=""Red"" />
-				</Label.TextColor>
-			</Label> ";
+			var xaml = """
+				<Label
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				Text="This text is green or red depending on Light(or default) or Dark">
+					<Label.TextColor>
+						<AppThemeBinding Light="Green" Dark="Red" />
+					</Label.TextColor>
+				</Label> 
+				""";
 
 			SetAppTheme(AppTheme.Unspecified);
 			var label = new Label().LoadFromXaml(xaml);
@@ -147,15 +153,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void AppThemeColorUnspecifiedLightColorDefaultsToDefault()
 		{
-			var xaml = @"
-			<Label
-			xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-			xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-			Text=""This text is green or red depending on Light(or default) or Dark"">
-                <Label.TextColor>
-                    <AppThemeBinding Default=""Green"" Dark=""Red"" />
-				</Label.TextColor>
-			</Label> ";
+			var xaml = """
+				<Label
+				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				Text="This text is green or red depending on Light(or default) or Dark">
+					<Label.TextColor>
+						<AppThemeBinding Default="Green" Dark="Red" />
+					</Label.TextColor>
+				</Label> 
+				""";
 
 			SetAppTheme(AppTheme.Unspecified);
 			var label = new Label().LoadFromXaml(xaml);
