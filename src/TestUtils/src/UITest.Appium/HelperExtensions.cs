@@ -444,6 +444,62 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Repeatedly executes a query until it returns a non-empty value or the specified retry count is reached.
+		/// </summary>
+		/// <typeparam name="T">The type of the element.</typeparam>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="func">The query to execute.</param>
+		/// <param name="retryCount">The number of times to retry execution. Default is 10.</param>
+		/// <param name="delayInMs">The delay in milliseconds between retries. Default is 2000ms.</param>
+		/// <returns>An value of type T.</returns>
+		public static T QueryUntilPresent<T>(
+			this IApp app,
+			Func<T> func,
+			int retryCount = 10,
+			int delayInMs = 2000)
+		{
+			var result = func();
+
+			int counter = 0;
+			while ((result is null) && counter < retryCount)
+			{
+				Thread.Sleep(delayInMs);
+				result = func();
+				counter++;
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Repeatedly executes a query until it returns a null value or the specified retry count is reached.
+		/// </summary>
+		/// <typeparam name="T">The type of the element.</typeparam>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="func">The query to execute.</param>
+		/// <param name="retryCount">The number of times to retry execution. Default is 10.</param>
+		/// <param name="delayInMs">The delay in milliseconds between retries. Default is 2000ms.</param>
+		/// <returns>An value of type T.</returns>
+		public static T QueryUntilNotPresent<T>(
+			this IApp app,
+			Func<T> func,
+			int retryCount = 10,
+			int delayInMs = 2000)
+		{
+			var result = func();
+
+			int counter = 0;
+			while ((result is not null) && counter < retryCount)
+			{
+				Thread.Sleep(delayInMs);
+				result = func();
+				counter++;
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Presses the volume up button on the device.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
