@@ -73,15 +73,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 				.ConfigureMauiHandlers(handlers =>
 				{
 #if PLATFORM
-
-#if !WINDOWS
-#if !(MACCATALYST || MACOS)
-#endif
-#else
-#pragma warning disable CS0618 // Type or member is obsolete
-					handlers.TryAddCompatibilityRenderer(typeof(Layout), typeof(LayoutRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 					handlers.TryAddCompatibilityRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer));
 
 #pragma warning disable CS0618 // Type or member is obsolete
