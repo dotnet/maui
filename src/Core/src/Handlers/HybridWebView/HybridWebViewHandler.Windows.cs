@@ -244,6 +244,11 @@ Content-Length: {contentLength}";
 
 			public void Disconnect(WebView2 platformView)
 			{
+				if (!RuntimeFeature.IsHybridWebViewSupported)
+				{
+					throw new NotSupportedException(NotSupportedMessage);
+				}
+
 				platformView.WebMessageReceived -= OnWebMessageReceived;
 				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
 
