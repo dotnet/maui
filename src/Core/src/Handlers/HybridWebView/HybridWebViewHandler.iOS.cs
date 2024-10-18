@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override WKWebView CreatePlatformView()
 		{
-			if (!RuntimeFeature.IsHybridWebViewSupported)
-			{
-				throw new NotSupportedException(NotSupportedMessage);
-			}
-
 			var config = new WKWebViewConfiguration();
 
 			// By default, setting inline media playback to allowed, including autoplay
@@ -41,8 +36,15 @@ namespace Microsoft.Maui.Handlers
 			config.DefaultWebpagePreferences!.AllowsContentJavaScript = true;
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(this), ScriptMessageHandlerName);
-			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
-			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+			if (RuntimeFeature.IsHybridWebViewSupported)
+			{
+				// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
+				config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
+			}
+			else
+			{
+				throw new NotSupportedException(NotSupportedMessage);
+			}
 
 			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{
