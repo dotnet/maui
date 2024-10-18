@@ -62,7 +62,10 @@ steps:
 
   # Provision Additional Software (Jdk, Android SDKs, etc.)
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
-    - displayName: 'Provision Additional Software'
+    - pwsh: |
+        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog"
+        dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog"
+      displayName: 'Provision Additional Software'
       condition: succeeded()
       env:
         GITHUB_TOKEN: ${{ parameters.gitHubToken }}
@@ -72,9 +75,6 @@ steps:
           SKIP_ANDROID_API_IMAGES: 'true'
         ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
           INSTALL_DEFAULT_ANDROID_API: 'true'
-      pwsh: |
-        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog"
-        dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog"
 
   # Setup JAVA_HOME Environment variable
   - pwsh: |
