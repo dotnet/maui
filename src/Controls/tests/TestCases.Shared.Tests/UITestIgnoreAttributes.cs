@@ -78,6 +78,28 @@ namespace Microsoft.Maui.TestCases.Tests
 	}
 #endif
 
+#if IOS || MACCATALYST
+	public class FailsOnApple : IgnoreAttribute
+	{
+		public FailsOnApple() : base(nameof(FailsOnApple))
+		{
+		}
+		public FailsOnApple(string reason) : base(reason)
+		{
+		}
+	}
+#else
+	public class FailsOnApple : CategoryAttribute
+	{
+		public FailsOnApple() : base(nameof(FailsOnApple))
+		{
+		}
+		public FailsOnApple(string description) : base(description)
+		{
+		}
+	}
+#endif
+
 #if WINDOWS
 	public class FailsOnWindows : IgnoreAttribute
 	{
