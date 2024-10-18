@@ -383,13 +383,15 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-			if (this is IRoundRectangle rect)
+			// Get the inner path by subtracting the stroke thickness for a rounded rectangle, as the GetPath() method returns the path including the stroke thickness.
+			// For other shapes, the GetPath() method excludes the stroke thickness"
+			if (this is IRoundRectangle roundRectangle)
 			{
-				pathBounds = rect.RounRectangleInnerPath().GetBoundsByFlattening(1);
+				pathBounds = roundRectangle.RoundRectangleInnerPath().GetBoundsByFlattening(1);
 			}
 			else
 			{
-				pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			    pathBounds = this.GetPath().GetBoundsByFlattening(1);
 			}
 
 			SizeF boundsByFlattening = pathBounds.Size;
