@@ -68,8 +68,13 @@ steps:
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - pwsh: |
         dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
+      displayName: 'Provision JDK'
+      condition: succeeded()
+
+  - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+    - pwsh: |
         dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog" ./src/Provisioning/Provisioning.csproj
-      displayName: 'Provision Additional Software'
+      displayName: 'Provision Android SDK'
       condition: succeeded()
       env:
         GITHUB_TOKEN: ${{ parameters.gitHubToken }}
