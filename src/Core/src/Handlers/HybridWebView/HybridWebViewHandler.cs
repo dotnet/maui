@@ -33,6 +33,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Handlers
 {
+	[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(DynamicFeatures)]
+#endif
 	public partial class HybridWebViewHandler : IHybridWebViewHandler, IHybridWebViewTaskManager
 	{
 		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
@@ -149,10 +153,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
 		{
 			try
@@ -215,10 +215,6 @@ namespace Microsoft.Maui.Handlers
 			return (null, null);
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private static object? InvokeDotNetMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, object jsInvokeTarget, JSInvokeMethodData invokeData)
 		{
 			var invokeMethod = t.GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
