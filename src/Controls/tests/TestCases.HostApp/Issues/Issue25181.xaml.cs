@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 25181, "CollectionView item alignment issue in HorizontalGrid layout when only one item is present", PlatformAffected.iOS)]
 public partial class Issue25181 : ContentPage
