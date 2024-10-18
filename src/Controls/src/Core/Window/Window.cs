@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TitleProperty, value);
 		}
 
-		string? ITitledElement.Title => Title ?? (Page as Shell)?.Title;
+		string? ITitledElement.Title => Title ?? Page?.Title;
 
 		public Page? Page
 		{
