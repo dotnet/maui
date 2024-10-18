@@ -108,7 +108,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				pageToWaitFor = new ContentPage { Content = new Label() };
 				tabbedPage.Children.Add(pageToWaitFor);
 			}
-			
+
 			await navPage.Navigation.PushModalAsync(page);
 
 			references.Add(new(page));
@@ -503,5 +503,53 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, recognizerReference);
 	}
 #endif
+
+	[Fact]
+	public async Task InfiniteAnimationDoesNotLeak()
+	{
+		SetupBuilder();
+		WeakReference animationReference = null;
+		WeakReference weak = null;
+
+		var page = new NavigationPage(new ContentPage { Title = "Page 1" });
+		var page2 = new AnimationPage();
+
+		await CreateHandlerAndAddToWindow(new Window(page), async () =>
+		{
+			animationReference = new WeakReference(page2);
+			await OnLoadedAsync(page);
+			await page.Navigation.PushAsync(page2);
+			await OnLoadedAsync(page2);
+			weak = page2.Animation;
+			await Task.Delay(2_000);
+			await page2.Navigation.PopToRootAsync();
+			await OnUnloadedAsync(page2);
+			page2 = null;
+		});
+
+		await AssertionExtensions.WaitForGC(weak, animationReference);
+	}
+}
+
+
+
+sealed class AnimationPage : ContentPage
+{
+	Button CounterBtn { get; } = new();
+
+	public WeakReference Animation { get; private set; }
+
+	protected override void OnAppearing()
+	{
+		var animation = new Animation(v =>
+		{
+			int r = new Random().Next();
+			CounterBtn.Text = (r).ToString();
+
+		}, 0, 0);
+		Animation = new WeakReference (animation);
+		animation.Commit(this, "animation", 16, 250, null, null, () => true);
+
+	}
 }
 
