@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			// For other shapes, the GetPath() method excludes the stroke thickness"
 			if (this is IRoundRectangle roundRectangle)
 			{
-				pathBounds = roundRectangle.RoundRectangleInnerPath().GetBoundsByFlattening(1);
+				pathBounds = roundRectangle.InnerPath().GetBoundsByFlattening(1);
 			}
 			else
 			{
