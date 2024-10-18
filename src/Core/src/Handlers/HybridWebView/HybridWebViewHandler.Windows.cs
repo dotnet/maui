@@ -189,6 +189,10 @@ namespace Microsoft.Maui.Handlers
 $@"Content-Type: {contentType}
 Content-Length: {contentLength}";
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;
