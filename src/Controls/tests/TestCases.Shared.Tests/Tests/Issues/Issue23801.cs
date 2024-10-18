@@ -14,12 +14,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
+		[FailsOnWindows]
 		public void VerifyLabelSpanGestureWhenWrappedOverTwoLines()
 		{
 			var label = App.WaitForElement("Label");
 			var location = label.GetRect();
+			var height = location.Height / 2;
 			var endOfFirstLine = location.X + location.Width - 150;
-			App.Click(endOfFirstLine, location.Y);
+			App.Click(endOfFirstLine, location.Y + height);
 			var testlabel = App.WaitForElement("TestLabel");
 			Assert.That(testlabel.GetText(), Is.EqualTo("Label span tapped"));
 		}

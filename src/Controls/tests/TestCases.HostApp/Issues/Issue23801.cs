@@ -7,7 +7,7 @@ public partial class Issue23801 : ContentPage
 
 	public Issue23801()
 	{
-		StackLayout stackLayout = new StackLayout();
+		StackLayout stackLayout = new StackLayout { Padding = new Thickness(5, 10) };
 		Label label = new Label();
 		testLabel = new Label();
 		FormattedString formattedString = new FormattedString();
@@ -17,7 +17,6 @@ public partial class Issue23801 : ContentPage
 		label.AutomationId = "Label";
 		formattedString.Spans.Add(new Span { Text = "I am the start of a span " });
 		tapGestureRecognizer.Tapped += OnTapGestureRecognizerTapped;
-		stackLayout.VerticalOptions = LayoutOptions.Center;
 
 		if (DeviceInfo.Platform == DevicePlatform.MacCatalyst || DeviceInfo.Platform == DevicePlatform.WinUI)
 		{
