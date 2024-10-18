@@ -16,7 +16,7 @@ The following switches are toggled for applications running on Mono for `TrimMod
 
 ## MauiEnableIVisualAssemblyScanning
 
-When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registerd.
+When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registered.
 
 ## MauiShellSearchResultsRendererDisplayMemberNameSupported
 
@@ -43,6 +43,10 @@ When enabled, MAUI will enable a source generator which will identify calls to t
 This feature is a counterpart of [XAML Compiled bindings](https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings).
 
 It is necessary to use this feature instead of the string-based bindings in NativeAOT apps and in apps with full trimming enabled.
+
+## MauiHybridWebViewSupported
+
+When this feature is disabled, `HybridWebView` will not be available. This is the default for projects using `TrimMode=full` or `PublishAot=true`.
 
 ### Example use-case
 
