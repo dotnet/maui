@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
+		ListViewScrollDetector _listViewScrollDetector;
 
 		public ListViewRenderer(Context context) : base(context, Mapper, CommandMapper)
 		{
@@ -160,12 +161,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				((IListViewController)e.NewElement).ScrollToRequested += OnScrollToRequested;
-				Control?.SetOnScrollListener(new ListViewScrollDetector(this));
+				Control?.SetOnScrollListener(_listViewScrollDetector = new ListViewScrollDetector(this));
 
 				nativeListView.DividerHeight = 0;
 				nativeListView.Focusable = false;
 				nativeListView.DescendantFocusability = DescendantFocusability.AfterDescendants;
-				nativeListView.Adapter = _adapter = e.NewElement.IsGroupingEnabled && e.NewElement.OnThisPlatform().IsFastScrollEnabled() ? new GroupedListViewAdapter(Context, nativeListView, e.NewElement) : new ListViewAdapter(Context, nativeListView, e.NewElement);
+				nativeListView.Adapter = _adapter = e.NewElement.IsGroupingEnabled && e.NewElement.OnThisPlatform().IsFastScrollEnabled() ? new GroupedListViewAdapter(Context, nativeListView, e.NewElement, this) : new ListViewAdapter(Context, nativeListView, e.NewElement, this);
 				_adapter.HeaderView = _headerView;
 				_adapter.FooterView = _footerView;
 				_adapter.IsAttachedToWindow = _isAttached;
@@ -179,6 +180,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateHorizontalScrollBarVisibility();
 				UpdateVerticalScrollBarVisibility();
 			}
+		}
+
+		internal void ResetScroll()
+		{
+			_listViewScrollDetector.ResetScroll();
 		}
 
 		internal void ClickOn(AView viewCell)
@@ -789,6 +795,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						t.SyncState(view);
 					}
 				}
+			}
+
+			internal void ResetScroll()
+			{
+				foreach (TrackElement t in _trackElements)
+				{
+					t.Reset();
+				}
+				_contentOffset = 0;
 			}
 		}
 	}
