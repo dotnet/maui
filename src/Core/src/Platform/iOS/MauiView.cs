@@ -26,6 +26,11 @@ namespace Microsoft.Maui.Platform
 
 		bool RespondsToSafeArea()
 		{
+			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
+			{
+				return false;
+			}
+
 			if (_respondsToSafeArea.HasValue)
 				return _respondsToSafeArea.Value;
 			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
@@ -38,7 +43,7 @@ namespace Microsoft.Maui.Platform
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
 			}
 
-			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
+			if (!RespondsToSafeArea())
 			{
 				return bounds;
 			}
@@ -91,6 +96,12 @@ namespace Microsoft.Maui.Platform
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Size.Zero;
 		}
 
+		// SizeThatFits does not take into account the constraints set on the view.
+		// For example, if the user has set a width and height on this view, those constraints
+		// will not be reflected in the value returned from this method. This method purely returns
+		// a measure based on the size that is passed in.
+		// The constraints are all applied by ViewHandlerExtensions.GetDesiredSizeFromHandler
+		// after it calls this method.
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (_crossPlatformLayoutReference == null)
@@ -104,6 +115,27 @@ namespace Microsoft.Maui.Platform
 			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
+
+			// If for some reason the upstream measure passes in a negative contraint
+			// Lets just bypass this code
+			if (RespondsToSafeArea() && widthConstraint >= 0 && heightConstraint >= 0)
+			{
+				// During the LayoutSubViews pass, we adjust the Bounds of this view for the safe area and then pass the adjusted result to CrossPlatformArrange.
+				// The CrossPlatformMeasure call does not include the safe area, so we need to add it here to ensure the returned size is correct.
+				//
+				// For example, if this is a layout with an Entry of height 20, CrossPlatformMeasure will return a height of 20.
+				// This means the bounds will be set to a height of 20, causing AdjustForSafeArea(Bounds) to return a negative bounds once it has
+				// subtracted the safe area insets. Therefore, we need to add the safe area insets to the CrossPlatformMeasure result to ensure correct arrangement.
+				var widthSafeAreaOffset = SafeAreaInsets.Left + SafeAreaInsets.Right;
+				var heightSafeAreaOffset = SafeAreaInsets.Top + SafeAreaInsets.Bottom;
+
+				CacheMeasureConstraints(widthConstraint + widthSafeAreaOffset, heightConstraint + heightSafeAreaOffset);
+
+				var width = double.Clamp(crossPlatformSize.Width + widthSafeAreaOffset, 0, widthConstraint);
+				var height = double.Clamp(crossPlatformSize.Height + heightSafeAreaOffset, 0, heightConstraint);
+
+				return new CGSize(width, height);
+			}
 
 			return crossPlatformSize.ToCGSize();
 		}
