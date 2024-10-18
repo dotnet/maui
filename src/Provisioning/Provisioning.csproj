@@ -194,14 +194,15 @@
 			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x64</_JdkHostArchitecture>
 			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">aarch64</_JdkHostArchitecture>
 			<_JdkUrl>https://aka.ms/download-jdk/microsoft-jdk-$(_AndroidJdkVersion)-windows-$(_JdkHostArchitecture).msi</_JdkUrl>
+			<!-- https://aka.ms/download-jdk/microsoft-jdk-17.0.12-windows-x64.msi -->
 			<_JdkDownloadTempDirectory>$([System.IO.Path]::Combine($([System.IO.Path]::GetTempPath()), "microsoft-openjdk"))</_JdkDownloadTempDirectory>
 		</PropertyGroup>
 
-		<DownloadFile SourceUrl="$(_JdkUrl)" DestinationFolder="$(_JdkDownloadTempDirectory)">
+		<DownloadFile SourceUrl="$(_JdkUrl)" DestinationFolder="./tmp/" Retries="3" SkipUnchangedFiles="False">
 			<Output TaskParameter="DownloadedFile" ItemName="_JdkDownloadedFile" />
 		</DownloadFile>
 
-		<Exec Command="msiexec /i $(_JdkDownloadedFile) ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome INSTALLDIR=&quot;$(ProgramFiles)\Microsoft\&quot; /quiet" />
+		<Exec Command="msiexec /i &quot;$(_JdkDownloadedFile)&quot; ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome INSTALLDIR=&quot;$(ProgramFiles)\Microsoft\&quot; /quiet" />
 
 		<!-- <Exec Command="Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" />
 		<Exec Command="winget install Microsoft.OpenJDK.$(JavaJdkVersion)" /> -->
