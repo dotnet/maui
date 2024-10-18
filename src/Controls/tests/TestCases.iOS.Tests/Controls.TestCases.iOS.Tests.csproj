@@ -52,6 +52,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553) -->
+    <Compile Condition=" '$(_UseNativeAot)' == 'true' " Remove="../TestCases.Shared.Tests/Tests/Issues/**/*.*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
