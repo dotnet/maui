@@ -118,6 +118,8 @@ namespace Maui.Controls.Sample
 
 			SLAllColors.Background = SolidColorBrush.White;
 			SLRainbow.Background = SolidColorBrush.White;
+
+			dropEvent.Text = "Drop";
 		}
 
 		void ResetLayouts(object sender, System.EventArgs e)
@@ -158,10 +160,11 @@ namespace Maui.Controls.Sample
 
 		void ResetTestLabels()
 		{
-			dragStartEvent.Text = "DragStartEvents:";
-			dragOverEvent.Text = "DragOverEvents:";
-			dragCompletedEvent.Text = "DragCompletedEvents:";
-			ranibowColors.Text = "RainbowColorsAdd:";
+			dragStartEvent.Text = "DragStartEvents: ";
+			dragOverEvent.Text = "DragOverEvents: ";
+			dragCompletedEvent.Text = "DragCompletedEvents: ";
+			ranibowColors.Text = "RainbowColorsAdd: ";
+			dropEvent.Text = "DropEvents: ";
 
 			dragStartRelativeSelf.Text = "Drag Start relative to self:";
 			dragStartRelativeScreen.Text = "Drag Start relative to screen:";
