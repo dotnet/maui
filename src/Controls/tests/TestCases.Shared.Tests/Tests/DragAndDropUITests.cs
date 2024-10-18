@@ -138,6 +138,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
+
+			App.WaitForElement("DropEventsLabel");
+			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDrop))
+			{
+				Assert.Fail("Text was expected: Drop event");
+			}
+			else
+			{
+				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
+			}
 		}
 
 		[Test]
