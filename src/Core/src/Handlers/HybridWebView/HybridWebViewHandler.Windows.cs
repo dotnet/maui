@@ -210,11 +210,6 @@ Content-Length: {contentLength}";
 
 			private async Task<bool> TryInitializeWebView2(WebView2 webView)
 			{
-				if (!RuntimeFeature.IsHybridWebViewSupported)
-				{
-					throw new NotSupportedException(NotSupportedMessage);
-				}
-
 				await webView.EnsureCoreWebView2Async();
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
@@ -222,7 +217,14 @@ Content-Length: {contentLength}";
 				webView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
-				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
+				if (RuntimeFeature.IsHybridWebViewSupported)
+				{
+					webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
+				}
+				else
+				{
+					throw new NotSupportedException(NotSupportedMessage);
+				}
 
 				return true;
 			}
@@ -244,13 +246,15 @@ Content-Length: {contentLength}";
 
 			public void Disconnect(WebView2 platformView)
 			{
-				if (!RuntimeFeature.IsHybridWebViewSupported)
+				platformView.WebMessageReceived -= OnWebMessageReceived;
+				if (RuntimeFeature.IsHybridWebViewSupported)
+				{
+					platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
+				}
+				else
 				{
 					throw new NotSupportedException(NotSupportedMessage);
 				}
-
-				platformView.WebMessageReceived -= OnWebMessageReceived;
-				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
 
 				if (platformView.CoreWebView2 is CoreWebView2 webView2)
 				{
