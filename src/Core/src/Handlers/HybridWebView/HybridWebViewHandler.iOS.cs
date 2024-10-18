@@ -36,15 +36,8 @@ namespace Microsoft.Maui.Handlers
 			config.DefaultWebpagePreferences!.AllowsContentJavaScript = true;
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(this), ScriptMessageHandlerName);
-			if (RuntimeFeature.IsHybridWebViewSupported)
-			{
-				// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
-				config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
-			}
-			else
-			{
-				throw new NotSupportedException(NotSupportedMessage);
-			}
+			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
+			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
 
 			var webview = new MauiHybridWebView(this, RectangleF.Empty, config)
 			{

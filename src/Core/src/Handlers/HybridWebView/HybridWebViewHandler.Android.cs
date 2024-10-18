@@ -60,15 +60,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			if (RuntimeFeature.IsHybridWebViewSupported)
-			{
-				var webViewClient = new MauiHybridWebViewClient(this);
-				PlatformView.SetWebViewClient(webViewClient);
-			}
-			else
-			{
-				throw new NotSupportedException(NotSupportedMessage);
-			}
+			var webViewClient = new MauiHybridWebViewClient(this);
+			PlatformView.SetWebViewClient(webViewClient);
 
 			platformView.LoadUrl(new Uri(AppOriginUri, "/").ToString());
 		}
