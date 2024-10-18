@@ -360,7 +360,6 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		sb.AppendLine("\t\t{");
 		sb.AppendLine("#pragma warning disable IL2026, IL3050 // The body of InitializeComponent will be replaced by XamlC so LoadFromXaml will never be called in production builds");
 		sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
-		sb.AppendLine("#pragma warning restore IL2026, IL3050");
 
 		if (namedFields != null)
 		{
@@ -369,6 +368,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 				sb.AppendLine($"\t\t\t{EscapeIdentifier(fname)} = global::Microsoft.Maui.Controls.NameScopeExtensions.FindByName<{ftype}>(this, \"{fname}\");");
 			}
 		}
+		sb.AppendLine("#pragma warning restore IL2026, IL3050");
 
 		sb.AppendLine("\t\t}");
 		sb.AppendLine("\t}");
