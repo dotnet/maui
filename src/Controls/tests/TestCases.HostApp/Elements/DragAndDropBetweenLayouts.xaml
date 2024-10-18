@@ -63,7 +63,7 @@
                 </StackLayout>
             </ScrollView>
         </Grid>
-        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel: "/>
+        
         <Label x:Name="dragStartEvent" AutomationId="DragStartEventsLabel" Text="DragStartEvents: "/>
         <Label x:Name="dragOverEvent"  AutomationId="DragOverEventsLabel" Text="DragOverEvents: "/>
         <Label x:Name="dragCompletedEvent" AutomationId="DragCompletedEventsLabel" Text="DragCompletedEvents: "/>

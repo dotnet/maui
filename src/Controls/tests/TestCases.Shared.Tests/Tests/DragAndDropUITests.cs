@@ -34,37 +34,48 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
 			App.WaitForElement("DragStartEventsLabel");
-			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
+			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
-			if (string.IsNullOrEmpty(textAfterDragstart))
+			if (string.IsNullOrEmpty(textAfterDragStart))
 			{
 				Assert.Fail("Text was expected: Drag start event");
 			}
 			else
 			{
-				Assert.That(textAfterDragstart, Is.EqualTo("DragStarting"));
+				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
 			}
 
 			App.WaitForElement("DragOverEventsLabel");
-			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragover))
+			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
 				Assert.Fail("Text was expected: Drag over event");
 			}
 			else
 			{
-				Assert.That(textAfterDragover, Is.EqualTo("DragOver"));
+				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
 			}
 
 			App.WaitForElement("DragCompletedEventsLabel");
-			var textAfterDragcomplete = App.FindElement("DragCompletedEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragcomplete))
+			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragComplete))
 			{
 				Assert.Fail("Text was expected: Drag complete event");
 			}
 			else
 			{
-				Assert.That(textAfterDragcomplete, Is.EqualTo("DropCompleted"));
+				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
+			}
+
+			App.WaitForElement("DropEventsLabel");
+			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDrop))
+			{
+				Assert.Fail("Text was expected: Drop event");
+			}
+			else
+			{
+				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
 			}
 		}
 
@@ -84,37 +95,37 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DragAndDrop("Red", "Green");
 
 			App.WaitForElement("DragStartEventsLabel");
-			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
+			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
-			if (string.IsNullOrEmpty(textAfterDragstart))
+			if (string.IsNullOrEmpty(textAfterDragStart))
 			{
 				Assert.Fail("Text was expected: Drag start event");
 			}
 			else
 			{
-				Assert.That(textAfterDragstart, Is.EqualTo("DragStarting"));
+				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
 			}
 
 			App.WaitForElement("DragOverEventsLabel");
-			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragover))
+			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
 				Assert.Fail("Text was expected: Drag over event");
 			}
 			else
 			{
-				Assert.That(textAfterDragover, Is.EqualTo("DragOver"));
+				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
 			}
 
 			App.WaitForElement("DragCompletedEventsLabel");
-			var textAfterDragcomplete = App.FindElement("DragCompletedEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragcomplete))
+			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragComplete))
 			{
 				Assert.Fail("Text was expected: Drag complete event");
 			}
 			else
 			{
-				Assert.That(textAfterDragcomplete, Is.EqualTo("DropCompleted"));
+				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
 			}
 
 			App.WaitForElement("RainBowColorsLabel");
@@ -141,9 +152,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
 			App.WaitForElement("DragStartEventsLabel");
-			var textAfterDragstart = App.FindElement("DragStartEventsLabel").GetText();
+			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
-			if (string.IsNullOrEmpty(textAfterDragstart))
+			if (string.IsNullOrEmpty(textAfterDragStart))
 			{
 				Assert.Fail("Text was expected: Drag start event");
 			}
@@ -151,26 +162,26 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragstart.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragstart.Contains("DragStarting:DragSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:DragSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragstart.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
 				}
 				else
 				{
-					Assert.That(textAfterDragstart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragstart.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragstart.Contains("DragStarting:Handled", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragStart.Contains("DragStarting:Handled", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 
 			App.WaitForElement("DragOverEventsLabel");
-			var textAfterDragover = App.FindElement("DragOverEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDragover))
+			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
 				Assert.Fail("Text was expected: Drag over event");
 			}
@@ -178,25 +189,25 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragover.Contains("DragOver:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragover.Contains("DragOver:DropSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:DropSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragover.Contains("DragOver:DragEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:DragEvent", StringComparison.OrdinalIgnoreCase));
 				}
 				else
 				{
-					Assert.That(textAfterDragover.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDragover.Contains("DragOver:DragEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDragOver.Contains("DragOver:DragEventArgs", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 
 			App.WaitForElement("DropCompletedEventsLabel");
-			var textAfterDropcomplete = App.FindElement("DropCompletedEventsLabel").GetText();
-			if (string.IsNullOrEmpty(textAfterDropcomplete))
+			var textAfterDropComplete = App.FindElement("DropCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDropComplete))
 			{
 				Assert.Fail("Text was expected: Drop complete event");
 			}
@@ -204,19 +215,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				if (Device == TestDevice.iOS || Device == TestDevice.Mac)
 				{
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropInteraction", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropSession", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:DropInteraction", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:DropSession", StringComparison.OrdinalIgnoreCase));
 				}
 				else if (Device == TestDevice.Android)
 				{
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DragEvent", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:DragEvent", StringComparison.OrdinalIgnoreCase));
 				}
 				else
 				{
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
-					Assert.That(textAfterDropcomplete.Contains("DropCompleted:DropCompletedEventArgs", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:Sender", StringComparison.OrdinalIgnoreCase));
+					Assert.That(textAfterDropComplete.Contains("DropCompleted:DropCompletedEventArgs", StringComparison.OrdinalIgnoreCase));
 				}
 			}
 
