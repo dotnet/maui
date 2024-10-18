@@ -104,6 +104,11 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
+
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private sealed class WebViewScriptMessageHandler : NSObject, IWKScriptMessageHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
