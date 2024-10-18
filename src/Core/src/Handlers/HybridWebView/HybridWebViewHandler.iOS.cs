@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override WKWebView CreatePlatformView()
 		{
+			if (!RuntimeFeature.IsHybridWebViewSupported)
+			{
+				throw new NotSupportedException(NotSupportedMessage);
+			}
+
 			var config = new WKWebViewConfiguration();
 
 			// By default, setting inline media playback to allowed, including autoplay
@@ -115,6 +120,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
