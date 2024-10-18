@@ -32,13 +32,13 @@ steps:
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
-  - pwsh: |
-      dotnet tool restore
-    displayName: 'Restore .NET Tools'
-
   - ${{ if eq(parameters.clearCaches, 'true') }}:
     - pwsh: dotnet nuget locals all --clear
       displayName: 'Clear all NuGet caches'
+
+  - pwsh: |
+      dotnet tool restore
+    displayName: 'Restore .NET Tools'
 
   # Prepare macOS
   - ${{ if ne(parameters.poolName, 'Azure Pipelines') }}:
