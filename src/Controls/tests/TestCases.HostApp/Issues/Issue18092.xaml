@@ -4,7 +4,7 @@
               x:Class="Maui.Controls.Sample.Issues.Issue18092">
 
   <VerticalStackLayout VerticalOptions="Center">
-    <RoundRectangle x:Name="roundRectangle" Fill="Red" AutomationId="RoundRectangle"/>
+    <RoundRectangle Fill="Red" AutomationId="RoundRectangle"/>
     <Entry  AutomationId="Entry"/>
   </VerticalStackLayout>
 </ContentPage>
