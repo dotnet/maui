@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using Microsoft.Maui.Controls;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 24862, "Android - picker on hidden page opens after back navigation", PlatformAffected.Android)]
 	public class Issue24862 : NavigationPage
