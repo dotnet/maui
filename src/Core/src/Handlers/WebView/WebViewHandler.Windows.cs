@@ -197,6 +197,10 @@ namespace Microsoft.Maui.Handlers
 
 		internal async Task SyncPlatformCookies(string url)
 		{
+			// While setting a cookie in MAUI WebView at load time, CoreWebView2 is null before the CoreWebView2Initialized event is triggered.
+			if (PlatformView.CoreWebView2 is null)
+				return;
+				
 			var uri = CreateUriForCookies(url);
 
 			if (uri is null)
@@ -363,9 +367,10 @@ namespace Microsoft.Maui.Handlers
 				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
 
-				if (Handler is WebViewHandler handler)
+				if (Handler is WebViewHandler handler && handler.VirtualView is not null)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
+					handler.SyncPlatformCookies(handler.PlatformView.Source.ToString()).FireAndForget();
 				}
 			}
 
