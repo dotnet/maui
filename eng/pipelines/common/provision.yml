@@ -63,8 +63,8 @@ steps:
   # Provision Additional Software (Jdk, Android SDKs, etc.)
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog"
-        dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog"
+        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog" ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Additional Software'
       condition: succeeded()
       env:
