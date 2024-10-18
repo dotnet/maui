@@ -8,13 +8,6 @@ public partial class DragAndDropEventArgs : ContentView
 		InitializeComponent();
 	}
 
-	void AddEvent(string name, Label? label = null)
-	{
-		events.Text += $"{name},";
-		if (label is not null)
-			label.Text += $"{name},";
-	}
-
 	void DragStarting(object sender, DragStartingEventArgs e)
 	{
 		_emittedDragOver = false;
@@ -22,22 +15,22 @@ public partial class DragAndDropEventArgs : ContentView
 		{
 #if IOS || MACCATALYST
 			if (platformArgs.Sender is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.Sender), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragInteraction is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.DragInteraction), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.DragInteraction)},";
 			if (platformArgs.DragSession is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.DragSession), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.DragSession)},";
 #elif ANDROID
 			if (platformArgs.Sender is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.Sender), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.MotionEvent is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.MotionEvent), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.MotionEvent)},";
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.Sender), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragStartingEventArgs is not null)
-				AddEvent("DragStarting:" + nameof(platformArgs.DragStartingEventArgs), dragStartEvent);
-			AddEvent("DragStarting:" + nameof(platformArgs.Handled), dragStartEvent);
+				dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.DragStartingEventArgs)},";
+			dragStartEvent.Text += $"{"DragStarting:" + nameof(platformArgs.Handled)},";
 #endif
 		}
 	}
@@ -48,21 +41,21 @@ public partial class DragAndDropEventArgs : ContentView
 		{
 #if IOS || MACCATALYST
 			if (platformArgs.Sender is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.Sender), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DropInteraction is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.DropInteraction), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.DropInteraction)},";
 			if (platformArgs.DropSession is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.DropSession), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.DropSession)},";
 #elif ANDROID
 			if (platformArgs.Sender is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.Sender), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragEvent is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.DragEvent), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.DragEvent)},";
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.Sender), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DropCompletedEventArgs is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.DropCompletedEventArgs), dropCompletedEvent);
+				dropCompletedEvent.Text += $"{"DropCompleted:" + nameof(platformArgs.DropCompletedEventArgs)},";
 #endif
 		}
 	}
@@ -73,22 +66,22 @@ public partial class DragAndDropEventArgs : ContentView
 		{
 #if IOS || MACCATALYST
 			if (platformArgs.Sender is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.Sender));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DropInteraction is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.DropInteraction));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.DropInteraction)},";
 			if (platformArgs.DropSession is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.DropSession));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.DropSession)},";
 #elif ANDROID
 			if (platformArgs.Sender is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.Sender));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragEvent is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.DragEvent));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.DragEvent)},";
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.Sender));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragEventArgs is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.DragEventArgs));
-			AddEvent("DragLeave:" + nameof(platformArgs.Handled));
+				dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.DragEventArgs)},";
+			dragLeaveEvent.Text += $"{"DragLeave:" + nameof(platformArgs.Handled)},";
 #endif
 		}
 	}
@@ -101,21 +94,21 @@ public partial class DragAndDropEventArgs : ContentView
 			{
 #if IOS || MACCATALYST
 				if (platformArgs.Sender is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.Sender), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.Sender)},";
 				if (platformArgs.DropInteraction is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.DropInteraction), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.DropInteraction)},";
 				if (platformArgs.DropSession is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.DropSession), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.DropSession)},";
 #elif ANDROID
 				if (platformArgs.Sender is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.Sender), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.Sender)},";
 				if (platformArgs.DragEvent is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.DragEvent), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.DragEvent)},";
 #elif WINDOWS
 				if (platformArgs.Sender is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.Sender), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.Sender)},";
 				if (platformArgs.DragEventArgs is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.DragEventArgs), dragOverEvent);
+					dragOverEvent.Text += $"{"DragOver:" + nameof(platformArgs.DragEventArgs)},";
 #endif
 			}
 			_emittedDragOver = true;
@@ -128,21 +121,21 @@ public partial class DragAndDropEventArgs : ContentView
 		{
 #if IOS || MACCATALYST
 			if (platformArgs.Sender is not null)
-				AddEvent("Drop:" + nameof(platformArgs.Sender), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DropInteraction is not null)
-				AddEvent("Drop:" + nameof(platformArgs.DropInteraction), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.DropInteraction)},";
 			if (platformArgs.DropSession is not null)
-				AddEvent("Drop:" + nameof(platformArgs.DropSession), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.DropSession)},";
 #elif ANDROID
 			if (platformArgs.Sender is not null)
-				AddEvent("Drop:" + nameof(platformArgs.Sender), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragEvent is not null)
-				AddEvent("Drop:" + nameof(platformArgs.DragEvent), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.DragEvent)},";
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
-				AddEvent("Drop:" + nameof(platformArgs.Sender), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.Sender)},";
 			if (platformArgs.DragEventArgs is not null)
-				AddEvent("Drop:" + nameof(platformArgs.DragEventArgs), dropEvent);
+				dropEvent.Text += $"{"Drop:" + nameof(platformArgs.DragEventArgs)},";
 #endif
 		}
 	}
