@@ -74,10 +74,7 @@ static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microso
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
-Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
-Microsoft.Maui.Platform.MauiScrollView.CrossPlatformLayout.set -> void
 override Microsoft.Maui.Platform.MauiCALayer.AddAnimation(CoreAnimation.CAAnimation! animation, string? key) -> void
 *REMOVED*override Microsoft.Maui.Handlers.BorderHandler.ConnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
-override Microsoft.Maui.Platform.MauiScrollView.LayoutSubviews() -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Platform.MauiScrollView.SetNeedsLayout() -> void
