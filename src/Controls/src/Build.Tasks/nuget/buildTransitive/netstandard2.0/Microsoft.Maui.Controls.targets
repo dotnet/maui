@@ -254,15 +254,15 @@
                                       Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
                                       Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
                                       Condition="'$(_MauiBindingInterceptorsSupport)' != ''"
                                       Value="$(_MauiBindingInterceptorsSupport)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
                                       Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' != ''"
                                       Value="$(MauiEnableXamlCBindingWithSourceCompilation)"
                                       Trim="false" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
                                       Condition="'$(MauiHybridWebViewSupported)' != ''"
                                       Value="$(MauiHybridWebViewSupported)"
                                       Trim="true" />
