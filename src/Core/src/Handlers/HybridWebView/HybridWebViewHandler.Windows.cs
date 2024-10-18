@@ -213,14 +213,7 @@ Content-Length: {contentLength}";
 				webView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
-				if (RuntimeFeature.IsHybridWebViewSupported)
-				{
-					webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
-				}
-				else
-				{
-					throw new NotSupportedException(NotSupportedMessage);
-				}
+				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
 
 				return true;
 			}
@@ -239,14 +232,7 @@ Content-Length: {contentLength}";
 			public void Disconnect(WebView2 platformView)
 			{
 				platformView.WebMessageReceived -= OnWebMessageReceived;
-				if (RuntimeFeature.IsHybridWebViewSupported)
-				{
-					platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
-				}
-				else
-				{
-					throw new NotSupportedException(NotSupportedMessage);
-				}
+				platformView.CoreWebView2.WebResourceRequested -= OnWebResourceRequested;
 
 				if (platformView.CoreWebView2 is CoreWebView2 webView2)
 				{
