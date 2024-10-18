@@ -161,6 +161,9 @@
     <AppiumMac2DriverVersion>1.19.1</AppiumMac2DriverVersion>
     <AppiumUIAutomator2DriverVersion>3.8.0</AppiumUIAutomator2DriverVersion>
 
+    <!-- Java JDK Version -->
+    <JavaJdkVersion>17</JavaJdkVersion>
+
     <!-- Android SDK package versions and info -->
     <!-- Build Tools and CmdLine Tools versions -->
     <AndroidSdkBuildToolsVersion>33.0.0</AndroidSdkBuildToolsVersion>

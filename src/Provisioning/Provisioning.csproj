@@ -9,16 +9,17 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<IsWindows Condition="'$(OS)' == 'Windows_NT'">True</IsWindows>
-		<IsWindows Condition="'$(OS)' != 'Windows_NT'">False</IsWindows>
+		<IsWindows>$([System.OperatingSystem]::IsWindows())</IsWindows>
+		<IsMacOS>$([System.OperatingSystem]::IsMacOS())</IsMacOS>
+		<IsLinux>$([System.OperatingSystem]::IsLinux())</IsLinux>
 	</PropertyGroup>
 
 	<!-- Appium Drivers -->
 	<ItemGroup>
 		<AppiumDrivers Include="uiautomator2" Version="$(AppiumUIAutomator2DriverVersion)" Condition=" '$(AppiumUIAutomator2DriverVersion)' != '' " />
 		<AppiumDrivers Include="windows" Version="$(AppiumWindowsDriverVersion)" Condition=" '$(IsWindows)' == 'True' AND '$(AppiumWindowsDriverVersion)' != '' " />
-		<AppiumDrivers Include="mac2" Version="$(AppiumMac2DriverVersion)" Condition=" '$(IsWindows)' != 'True' AND '$(AppiumMac2DriverVersion)' != '' " />
-		<AppiumDrivers Include="xcuitest" Version="$(AppiumXCUITestDriverVersion)" Condition=" '$(IsWindows)' != 'True' AND '$(AppiumXCUITestDriverVersion)' != '' " />
+		<AppiumDrivers Include="mac2" Version="$(AppiumMac2DriverVersion)" Condition=" '$(IsMacOS)' == 'True' AND '$(AppiumMac2DriverVersion)' != '' " />
+		<AppiumDrivers Include="xcuitest" Version="$(AppiumXCUITestDriverVersion)" Condition=" '$(IsMacOS)' == 'True' AND '$(AppiumXCUITestDriverVersion)' != '' " />
 	</ItemGroup>
 
 	<PropertyGroup>
@@ -137,8 +138,63 @@
 			Text="You should only run this target with 'dotnet build'." />
 	</Target>
 
+	<!-- ******************************************** -->
+	<!-- * Java JDK Provisioning                   -->
+	<!-- ******************************************** -->
+	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion;ProvisionJdkMacOS;ProvisionJdkWindows">
+		<!-- Call Detect again if we provisioned so we can get the installed path -->
+		<CallTarget Targets="DetectJdkVersion" Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' " />
+		
+		<!-- Set the preferred JDK path -->
+		<Exec Command="dotnet android jdk dotnet-prefer --home &quot;$(_AndroidJdkPath)&quot;" />
+	</Target>
 
-	<Target Name="ProvisionAll" DependsOnTargets="ProvisionAndroidSdk;ProvisionAppium">
+	<Target Name="DetectJdkVersion">
+		<!-- Concat the console output lines into a single property -->
+		<PropertyGroup>
+			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
+			<_AndroidJdkVersion>$(JavaJdkVersion)</_AndroidJdkVersion>
+			<!-- Version parsing requires more than just a single major version number -->
+			<_AndroidJdkVersion Condition=" '$(_AndroidJdkVersion)' != '' AND !$(_AndroidJdkVersion.Contains('.')) ">$(JavaJdkVersion).0</_AndroidJdkVersion>
+			<_AndroidJdkMajorVersion>$([System.Version]::Parse($(_AndroidJdkVersion)).Major)</_AndroidJdkMajorVersion>
+			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1))</_AndroidJdkVersionNextMajor>
+		</PropertyGroup>
+
+		<!-- Find a JDK installed that is >= the JavaJdkVersion but not > the major version specified (eg: [17.0,18.0]) -->
+		<Exec Command="dotnet android jdk list --version &quot;[$(_AndroidJdkVersion),$(_AndroidJdkVersionNextMajor)]&quot; --format=json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_AndroidJdkListOutputLines" />
+		</Exec>
+
+		<!-- Concat the console output lines into a single property -->
+		<PropertyGroup>
+			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
+		</PropertyGroup>
+
+		<!-- Peek the appium version info from the json output -->
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Version">
+			<Output TaskParameter="Result" ItemName="_AndroidJdkVersions" />
+		</JsonPeek>
+
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Home">
+			<Output TaskParameter="Result" ItemName="_AndroidJdkPaths" />
+		</JsonPeek>
+
+		<PropertyGroup>
+			<_AndroidJdkRequiresProvisioning Condition=" '@(_AndroidJdkVersions)' == '' ">True</_AndroidJdkRequiresProvisioning>
+			<_AndroidJdkPath>%(_AndroidJdkPaths.Identity)</_AndroidJdkPath>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" />
+	</Target>
+
+	<Target Name="ProvisionJdkWindows" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsWindows)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+		<Exec Command="winget install Microsoft.OpenJDK.$(JavaJdkVersion)" />
+	</Target>
+
+
+	<Target Name="ProvisionAll" DependsOnTargets="ProvisionAndroidSdk;ProvisionAppium;ProvisionJdk">
 		<Error
 			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
 			Text="You should only run this target with 'dotnet build'." />
