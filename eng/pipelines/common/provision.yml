@@ -77,9 +77,7 @@ steps:
         dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog"
 
   # Setup JAVA_HOME Environment variable
-  - displayName: 'Setup JDK Paths'
-    condition: succeeded()
-    pwsh: |
+  - pwsh: |
       # Execute the command and capture the JSON output
       $jsonOutput = & android jdk list --format=Json | ConvertFrom-Json
       # Find the first item with DotNetPreferred set to True
@@ -92,10 +90,10 @@ steps:
       } else {
         echo "Unable to set JAVA_HOME"
       }
+    displayName: 'Setup JDK Paths'
+    condition: succeeded()
 
-  - displayName: 'Setup ANDROID_SDK_ROOT Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-    pwsh: |
+  - pwsh: |
       if ($env:ANDROID_SDK_ROOT) {
         echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
       } else {
@@ -109,7 +107,8 @@ steps:
           echo "Unable to set ANDROID_SDK_ROOT"
         }
       }
-
+    displayName: 'Setup ANDROID_SDK_ROOT Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
