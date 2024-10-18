@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class TestWindow : Window
 	{
+		TestApp _testApp;
 		public TestWindow()
 		{
 
@@ -24,8 +25,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			if (propertyName == PageProperty.PropertyName &&
 				Parent == null)
 			{
-				var app = new TestApp(this);
-				_ = (app as IApplication).CreateWindow(null);
+				_testApp = new TestApp(this);
+				_ = (_testApp as IApplication).CreateWindow(null);
 			}
 		}
 
