@@ -111,7 +111,7 @@ public class Issue9088 : TestShell
 		// Define Swipe Content
 		var swipeContent = new ContentView
 		{
-			Content = stackLayout;
+			Content = stackLayout
 		};
 
 		// Create SwipeView
