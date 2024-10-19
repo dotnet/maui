@@ -429,10 +429,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushXmlLineInfo(this INode node, ILContext context)
 		{
-			if (context.ValidateOnly)
-			{
-				yield break;
-			}
 			var module = context.Body.Method.Module;
 
 			var xmlLineInfo = node as IXmlLineInfo;
@@ -458,10 +454,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushParentObjectsArray(this INode node, ILContext context)
 		{
-			if (context.ValidateOnly)
-			{
-				yield break;
-			}
 			var module = context.Body.Method.Module;
 
 			var nodes = new List<IElementNode>();
@@ -600,10 +592,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context, TypeReference[] requiredServices, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference declaringTypeReference = null)
 		{
-			if (context.ValidateOnly)
-			{
-				yield break;
-			}
 			var module = context.Body.Method.Module;
 
 			var createAllServices = requiredServices is null;
