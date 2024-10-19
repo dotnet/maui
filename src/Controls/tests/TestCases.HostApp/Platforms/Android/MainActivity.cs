@@ -1,7 +1,8 @@
 using Android.App;
 using Android.Content.PM;
+using Android.OS;
 using Android.Runtime;
-using Microsoft.Maui;
+using AndroidX.Lifecycle;
 
 namespace Maui.Controls.Sample.Platform
 {
@@ -16,5 +17,10 @@ namespace Maui.Controls.Sample.Platform
 	[Register("com.microsoft.maui.uitests.MainActivity")]
 	public class MainActivity : MauiAppCompatActivity
 	{
+		protected override void OnCreate(Bundle savedInstanceState)
+		{
+			Lifecycle.AddObserver(new Issue14037LifecycleObserver(ActivityResultRegistry));
+			base.OnCreate(savedInstanceState);
+		}
 	}
 }

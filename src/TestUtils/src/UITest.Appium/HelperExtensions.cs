@@ -1114,5 +1114,11 @@ namespace UITest.Appium
 		{
 			Wait(query, i => i == null, timeoutMessage, timeout, retryFrequency);
 		}
+
+		/// <summary>
+		/// Sets one or more properties for the device.
+		/// </summary>
+		public static CommandResponse SetProperties(this IApp app, IDictionary<string, object> properties) 
+			=> app.CommandExecutor.Execute("setProperties", properties);
 	}
 }

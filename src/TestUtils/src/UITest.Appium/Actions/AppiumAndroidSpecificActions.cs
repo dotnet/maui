@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium.Android;
+﻿using System.Diagnostics;
+using OpenQA.Selenium.Appium.Android;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -8,15 +9,17 @@ namespace UITest.Appium
 		const string ToggleAirplaneModeCommand = "toggleAirplaneMode";
 		const string ToggleWifiCommand = "toggleWifi";
 		const string GetPerformanceDataCommand = "getPerformanceData";
+		const string SetPropertiesCommand = "setProperties";
 
 		readonly AppiumApp _appiumApp;
 
-		readonly List<string> _commands = new()
-		{
+		readonly List<string> _commands =
+		[
 			ToggleAirplaneModeCommand,
 			ToggleWifiCommand,
 			GetPerformanceDataCommand,
-		};
+			SetPropertiesCommand
+		];
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
 		{
@@ -35,8 +38,32 @@ namespace UITest.Appium
 				ToggleAirplaneModeCommand => ToggleAirplaneMode(parameters),
 				ToggleWifiCommand => ToggleWifi(parameters),
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
+				SetPropertiesCommand => SetProperties(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
+		}
+
+		static CommandResponse SetProperties(IDictionary<string, object> properties)
+		{
+			if (properties.Count <= 0)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			try
+			{
+				foreach (var property in properties)
+				{
+					ExecuteAdbCommand($"adb shell settings put global {property.Key} {property.Value.ToString()}");
+				}
+
+			}
+			catch (Exception ex)
+			{
+				return new CommandResponse(ex.Message, CommandResponseResult.Failed);
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
 		}
 
 		CommandResponse ToggleAirplaneMode(IDictionary<string, object> parameters)
@@ -84,5 +111,37 @@ namespace UITest.Appium
 
 			return CommandResponse.FailedEmptyResponse;
 		}
+
+		// TODO: Make this part of a base class. Too much repetition across tests.
+		static void ExecuteAdbCommand(string command, CancellationToken cancellationToken = default)
+		{
+			var shell = GetShell();
+			var shellArgument = GetShellArgument(shell, command);
+			var processInfo = new ProcessStartInfo(shell, shellArgument)
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true
+			};
+
+			using var process = new Process { StartInfo = processInfo };
+			process.Start();
+
+			var output = process.StandardOutput.ReadToEnd();
+			var error = process.StandardError.ReadToEnd();
+
+			process.WaitForExit();
+
+			if (process.ExitCode != 0)
+			{
+				throw new Exception($"Command failed with exit code {process.ExitCode}: {error}");
+			}
+
+			Console.WriteLine(output);
+		}
+
+		static string GetShell() => Environment.OSVersion.Platform == PlatformID.Win32NT ? "cmd.exe" : "/bin/bash";
+		static string GetShellArgument(string shell, string command) => shell == "cmd.exe" ? $"/C {command}" : $"-c \"{command}\"" ;
 	}
 }

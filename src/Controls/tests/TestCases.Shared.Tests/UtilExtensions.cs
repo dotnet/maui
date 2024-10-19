@@ -35,6 +35,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			NavigateTo(app, page);
 		}
 
+		public static void GoToTest(this IApp app, string text)
+		{
+			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
+			app.Tap(goToTestButtonId);
+			app.WaitForElement("Bug Repro's");
+			NavigateTo(app, text);
+		}
+
 		public static void NavigateTo(this IApp app, string text)
 		{
 			app.WaitForElement("SearchBar");
