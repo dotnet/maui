@@ -148,57 +148,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 
-		// [Fact]
-		// public async Task InsertPageFromNavigationSetsCorrectNavigationSource()
-		// {
-		// 	Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
-		// 	Routing.RegisterRoute("page", typeof(ContentPage));
-		// 	var shell = new TestShell(
-		// 		CreateShellItem(shellItemRoute: "item")
-		// 	);
+		[Fact]
+		public async Task InsertPageFromNavigationSetsCorrectNavigationSource()
+		{
+			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
+			Routing.RegisterRoute("page", typeof(ContentPage));
+			var shell = new TestShell(
+				CreateShellItem(shellItemRoute: "item")
+			);
 
-		// 	await shell.GoToAsync("//item/page");
-		// 	ContentPage contentPage = new ContentPage();
-		// 	Routing.SetRoute(contentPage, "pagemiddle");
-		// 	shell.Navigation.InsertPageBefore(contentPage, shell.Navigation.NavigationStack.Last());
+			await shell.GoToAsync("//item/page");
+			ContentPage contentPage = new ContentPage();
+			Routing.SetRoute(contentPage, "pagemiddle");
+			shell.Navigation.InsertPageBefore(contentPage, shell.Navigation.NavigationStack.Last());
 
-		// 	await shell.TestNavigationArgs(ShellNavigationSource.Insert,
-		// 		"//item/page", "//item/pagemiddle/page");
-		// }
-
-
-		// [Fact]
-		// public async Task RemovePageFromNavigationSetsCorrectNavigationSource()
-		// {
-		// 	Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
-		// 	Routing.RegisterRoute("page", typeof(ContentPage));
-		// 	var shell = new TestShell(
-		// 		CreateShellItem(shellItemRoute: "item")
-		// 	);
-
-		// 	await shell.GoToAsync("//item/pagemiddle/page");
-		// 	shell.Navigation.RemovePage(shell.Navigation.NavigationStack[1]);
-
-		// 	await shell.TestNavigationArgs(ShellNavigationSource.Remove,
-		// 		"//item/pagemiddle/page", "//item/page");
-		// }
-
-		// [Fact]
-		// public async Task RemovePageSetsCorrectNavigationSource()
-		// {
-		// 	Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
-		// 	Routing.RegisterRoute("page", typeof(ContentPage));
-		// 	var shell = new TestShell(
-		// 		CreateShellItem(shellItemRoute: "item")
-		// 	);
-
-		// 	await shell.GoToAsync("//item/pagemiddle/page");
-		// 	await shell.GoToAsync("//item/page");
+			await shell.TestNavigationArgs(ShellNavigationSource.Insert,
+				"//item/page", "//item/pagemiddle/page");
+		}
 
 
-		// 	await shell.TestNavigationArgs(ShellNavigationSource.Remove,
-		// 		"//item/pagemiddle/page", "//item/page");
-		// }
+		[Fact]
+		public async Task RemovePageFromNavigationSetsCorrectNavigationSource()
+		{
+			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
+			Routing.RegisterRoute("page", typeof(ContentPage));
+			var shell = new TestShell(
+				CreateShellItem(shellItemRoute: "item")
+			);
+
+			await shell.GoToAsync("//item/pagemiddle/page");
+			shell.Navigation.RemovePage(shell.Navigation.NavigationStack[1]);
+
+			await shell.TestNavigationArgs(ShellNavigationSource.Remove,
+				"//item/pagemiddle/page", "//item/page");
+		}
+
+		[Fact]
+		public async Task RemovePageSetsCorrectNavigationSource()
+		{
+			Routing.RegisterRoute("pagemiddle", typeof(ContentPage));
+			Routing.RegisterRoute("page", typeof(ContentPage));
+			var shell = new TestShell(
+				CreateShellItem(shellItemRoute: "item")
+			);
+
+			await shell.GoToAsync("//item/pagemiddle/page");
+			await shell.GoToAsync("//item/page");
+
+
+			await shell.TestNavigationArgs(ShellNavigationSource.Remove,
+				"//item/pagemiddle/page", "//item/page");
+		}
 
 		[Fact]
 		public async Task InitialNavigatingArgs()
