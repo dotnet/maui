@@ -29,7 +29,7 @@ public class MapsModalCrash : TestContentPage
 
 	static ContentPage MapPage()
 	{
-		var map = new Map();
+		var map = new Microsoft.Maui.Controls.Maps.Map();
 
 		var button = new Button { Text = DisplayModal };
 		button.Clicked += (sender, args) => button.Navigation.PushModalAsync(new NavigationPage(SuccessPage()));
