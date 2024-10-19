@@ -38,7 +38,7 @@ public partial class Maui23989
         public void ItemDisplayBindingWithoutDataTypeFails([Values(false, true)] bool useCompiledXaml)
         {
             if (useCompiledXaml)
-                Assert.Throws(new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)), ()=> MockCompiler.Compile(typeof(Maui23989), null, true));
+                Assert.Throws(new BuildExceptionConstraint(12, 13, s => s.Contains("0045", StringComparison.Ordinal)), ()=> MockCompiler.Compile(typeof(Maui23989), null, true));
 
             var layout = new Maui23989(useCompiledXaml);
             //without x:DataType, bindings aren't compiled

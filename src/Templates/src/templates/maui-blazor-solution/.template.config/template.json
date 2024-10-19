@@ -23,19 +23,15 @@
       "path": "MauiApp.1.sln"
     },
     {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
       "path": "MauiApp.1/MauiApp.1.csproj"
     },
     {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
       "path": "MauiApp.1.Shared/MauiApp.1.Shared.csproj"
     },
     {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
       "path": "MauiApp.1.Web/MauiApp.1.Web.csproj"
     },
     {
-      "condition": "(UseWebAssembly && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
       "path": "MauiApp.1.Web.Client/MauiApp.1.Web.Client.csproj"
     }
   ],
