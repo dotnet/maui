@@ -36,5 +36,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapMaxLength(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapIsReadOnly(IViewHandler handler, ISearchBar searchBar) { }
 		public static void MapKeyboard(IViewHandler handler, ISearchBar searchBar) { }
+		public static void MapReturnType(IViewHandler handler, ISearchBar searchBar) { }
 	}
 }

@@ -186,5 +186,10 @@ namespace Microsoft.Maui.Platform
 
 			uiSearchBar.ReloadInputViews();
 		}
+
+		public static void UpdateReturnType(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			uiSearchBar.ReturnKeyType = searchBar.ReturnType.ToPlatform();
+		}
 	}
 }
