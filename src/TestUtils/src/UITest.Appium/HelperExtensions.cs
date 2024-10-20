@@ -25,6 +25,19 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element.
+		/// For mobile, this will tap the element.
+		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
+		/// https://github.com/dotnet/maui/issues/19754
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void Tap(this IApp app, IQuery query)
+		{
+			app.FindElement(query).Tap();
+		}
+
+		/// <summary>
 		/// Performs a mouse click on the matched element.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -32,6 +45,16 @@ namespace UITest.Appium
 		public static void Click(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
+		}
+
+		/// <summary>
+		/// Performs a mouse click on the matched element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void Click(this IApp app, IQuery query)
+		{
+			app.FindElement(query).Click();
 		}
 
 		public static void RightClick(this IApp app, string element)
@@ -82,7 +105,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Enters text into the currently focused element.
+		/// Enters text into the element identified by the query.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="element">Target Element.</param>
@@ -93,6 +116,20 @@ namespace UITest.Appium
 			appElement.SendKeys(text);
 			app.DismissKeyboard();
 		}
+
+		/// <summary>
+		/// Enters text into the element identified by the query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void EnterText(this IApp app, IQuery query, string text)
+		{
+			var appElement = app.FindElement(query);
+			appElement.SendKeys(text);
+			app.DismissKeyboard();
+		}
+
 
 		/// <summary>
 		/// Hides soft keyboard if present.
@@ -146,6 +183,16 @@ namespace UITest.Appium
 		public static void ClearText(this IApp app, string element)
 		{
 			app.FindElement(element).Clear();
+		}
+
+		/// <summary>
+		/// Clears text from the currently focused element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void ClearText(this IApp app, IQuery query)
+		{
+			app.FindElement(query).Clear();
 		}
 
 		/// <summary>
@@ -383,6 +430,16 @@ namespace UITest.Appium
 			return (IReadOnlyCollection<string>?)result.Value ?? Array.Empty<string>();
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Target Element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
@@ -391,6 +448,33 @@ namespace UITest.Appium
 			return results;
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static IUIElement WaitForElement(this IApp app, IQuery query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => app.FindElement(query);
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Entry point for the fluent API to specify the element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
 		public static IUIElement WaitForElement(
 			this IApp app,
 			Func<IUIElement?> query,
@@ -403,12 +487,47 @@ namespace UITest.Appium
 			return results;
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Target Element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static void WaitForNoElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			IUIElement result() => app.FindElement(marked);
 			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
 		}
 
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static void WaitForNoElement(this IApp app, IQuery query, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => app.FindElement(query);
+			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
+		}
+
+		/// <summary>
+		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Entry point for the fluent API to specify the element.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
 		public static void WaitForNoElement(
 			this IApp app,
 			Func<IUIElement?> query,
