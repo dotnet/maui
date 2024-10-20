@@ -112,7 +112,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				return GridLength.Auto;
 			}
 
-			return new GridLength(double.Parse(gridLength));
+			return new GridLength(double.Parse(gridLength, CultureInfo.InvariantCulture));
 		}
 
 		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)

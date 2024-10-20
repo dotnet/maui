@@ -4,18 +4,22 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(_MauiDotNetTfm)-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-windows$(WindowsTargetFrameworkVersion)</TargetFramework>
     <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <NoWarn>1701;1702;CS8305;8305;CA1416;0612</NoWarn>
+    <NoWarn>1701;1702;CS8305;8305;CA1416;0612;CS0672;CS0618</NoWarn>
     <EnableDefaultPageItems>true</EnableDefaultPageItems>
     <EnableDefaultXamlItems>false</EnableDefaultXamlItems>
-
+    <PublishReadyToRun>false</PublishReadyToRun>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>MSIX</WindowsPackageType>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Compatibility.ControlGallery.Core.csproj" />
@@ -30,6 +34,10 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,7 +111,7 @@
     <None Include="Compatibility\**\*.cs" />
     <Compile Remove="Compatibility\**\*.cs" />
   </ItemGroup>
-  
+
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>
