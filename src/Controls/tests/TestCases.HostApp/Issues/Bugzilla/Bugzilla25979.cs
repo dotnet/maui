@@ -4,12 +4,11 @@ namespace Maui.Controls.Sample.Issues;
 public class Bugzilla25979 : NavigationPage
 {
 	public Bugzilla25979()
-	{      
+	{
 		// Initialize ui here instead of ctor
 		Navigation.PushAsync(new MyPage());
 	}
 
-	[Preserve(AllMembers = true)]
 	internal sealed class MyPage : ContentPage
 	{
 		public MyPage()
