@@ -17,22 +17,22 @@ public class Issue2499 : _IssuesUITest
 	// [FailsOnIOS]
 	// 	public void Issue2499Test()
 	// 	{
-	// 		RunningApp.WaitForElement("picker");
-	// 		RunningApp.Tap("picker");
-	// 		RunningApp.WaitForElement("cat");
+	// 		App.WaitForElement("picker");
+	// 		App.Tap("picker");
+	// 		App.WaitForElement("cat");
 
-	// 		AppResult[] items = RunningApp.Query("cat");
+	// 		AppResult[] items = App.Query("cat");
 	// 		Assert.AreNotEqual(items.Length, 0);
-	// 		RunningApp.WaitForElement(q => q.Marked("mouse"));
-	// 		RunningApp.Tap("mouse");
+	// 		App.WaitForElement(q => q.Marked("mouse"));
+	// 		App.Tap("mouse");
 	// #if __IOS__
 	// 		System.Threading.Tasks.Task.Delay(500).Wait();
 	// 		var cancelButtonText = "Done";
-	// 		RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
-	// 		RunningApp.Tap(q => q.Marked(cancelButtonText));
+	// 		App.WaitForElement(q => q.Marked(cancelButtonText));
+	// 		App.Tap(q => q.Marked(cancelButtonText));
 	// 		System.Threading.Tasks.Task.Delay(1000).Wait();
 	// #endif
-	// 		items = RunningApp.Query("cat");
+	// 		items = App.Query("cat");
 	// 		Assert.AreEqual(items.Length, 0);
 	// 	}
 }

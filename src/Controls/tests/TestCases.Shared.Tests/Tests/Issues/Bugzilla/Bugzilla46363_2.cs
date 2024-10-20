@@ -17,12 +17,12 @@ public class Bugzilla46363_2 : _IssuesUITest
 	// [Test]
 	// public void _46363_2_Tap_Succeeds()
 	// {
-	// 	RunningApp.WaitForElement(Testing);
-	// 	RunningApp.Tap(Target);
-	// 	RunningApp.WaitForElement(TapSuccess);
+	// 	App.WaitForElement(Testing);
+	// 	App.Tap(Target);
+	// 	App.WaitForElement(TapSuccess);
 
 	// 	// Verify that we aren't also opening the context menu
-	// 	RunningApp.WaitForNoElement(ContextAction);
+	// 	App.WaitForNoElement(ContextAction);
 	// }
 
 	// [FailsOnAndroid]
@@ -30,10 +30,10 @@ public class Bugzilla46363_2 : _IssuesUITest
 	// [Test]
 	// public void _46363_2_ContextAction_Succeeds()
 	// {
-	// 	RunningApp.WaitForElement(Testing);
-	// 	RunningApp.ActivateContextMenu(Target);
-	// 	RunningApp.WaitForElement(ContextAction);
-	// 	RunningApp.Tap(ContextAction);
-	// 	RunningApp.WaitForElement(ContextSuccess);
+	// 	App.WaitForElement(Testing);
+	// 	App.ActivateContextMenu(Target);
+	// 	App.WaitForElement(ContextAction);
+	// 	App.Tap(ContextAction);
+	// 	App.WaitForElement(ContextSuccess);
 	// }
 }

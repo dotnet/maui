@@ -17,9 +17,9 @@ public class Bugzilla57515 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Bugzilla57515Test()
 	// {
-	// 	RunningApp.WaitForElement(ZoomContainer);
-	// 	RunningApp.WaitForElement("1");
-	// 	RunningApp.PinchToZoomIn(ZoomContainer);
-	// 	RunningApp.WaitForNoElement("1"); // The scale should have changed during the zoom
+	// 	App.WaitForElement(ZoomContainer);
+	// 	App.WaitForElement("1");
+	// 	App.PinchToZoomIn(ZoomContainer);
+	// 	App.WaitForNoElement("1"); // The scale should have changed during the zoom
 	// }
 }

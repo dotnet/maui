@@ -17,7 +17,7 @@ public class Issue2993 : _IssuesUITest
 	// [Category(UITestCategories.Layout)]
 	// public void BottomContentVisibleWithBottomBarAndNavigationPage()
 	// {
-	// 	RunningApp.WaitForElement("Bottom Text");
+	// 	App.WaitForElement("Bottom Text");
 	// }
 }
 #endif

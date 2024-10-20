@@ -17,18 +17,18 @@ public class Issue2266 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void SwapMainPageWithFlyoutPages()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Text("FlyoutPage Navigation"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation"));
-	// 	RunningApp.Tap(q => q.Marked("OpenMaster"));
-	// 	RunningApp.Tap(q => q.Text("Page 1"));
-	// 	RunningApp.Tap(q => q.Text("START"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 1"));
-	// 	RunningApp.WaitForElement(q => q.Text("Page 1"));
-	// 	RunningApp.Tap(q => q.Text("START"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 2"));
-	// 	RunningApp.WaitForElement(q => q.Text("Page 2"));
-	// 	RunningApp.Tap(q => q.Text("START"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 3"));
-	// 	RunningApp.WaitForElement(q => q.Text("Page 3"));
+	// 	App.WaitForElement(q => q.Text("FlyoutPage Navigation"));
+	// 	App.Tap(q => q.Text("FlyoutPage Navigation"));
+	// 	App.Tap(q => q.Marked("OpenMaster"));
+	// 	App.Tap(q => q.Text("Page 1"));
+	// 	App.Tap(q => q.Text("START"));
+	// 	App.Tap(q => q.Text("FlyoutPage Navigation ->> Page 1"));
+	// 	App.WaitForElement(q => q.Text("Page 1"));
+	// 	App.Tap(q => q.Text("START"));
+	// 	App.Tap(q => q.Text("FlyoutPage Navigation ->> Page 2"));
+	// 	App.WaitForElement(q => q.Text("Page 2"));
+	// 	App.Tap(q => q.Text("START"));
+	// 	App.Tap(q => q.Text("FlyoutPage Navigation ->> Page 3"));
+	// 	App.WaitForElement(q => q.Text("Page 3"));
 	// }
 }

@@ -16,8 +16,8 @@ public class Issue3276 : _IssuesUITest
 	// [Category(UITestCategories.ContextActions)]
 	// public void Issue3276Test()
 	// {
-	// 	RunningApp.Tap(q => q.Marked("Second"));
-	// 	RunningApp.Tap(q => q.Marked("First"));
-	// 	RunningApp.WaitForElement(q => q.Marked("second 1"));
+	// 	App.Tap(q => q.Marked("Second"));
+	// 	App.Tap(q => q.Marked("First"));
+	// 	App.WaitForElement(q => q.Marked("second 1"));
 	// }
 }

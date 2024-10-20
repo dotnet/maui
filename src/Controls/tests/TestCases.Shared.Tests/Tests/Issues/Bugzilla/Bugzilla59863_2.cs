@@ -17,19 +17,19 @@ public class Bugzilla59863_2 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void DoubleTapWithMixedRecognizersShouldRegisterDoubleTap()
 	// {
-	// 	RunningApp.WaitForElement(MixedTapBoxId);
-	// 	RunningApp.DoubleTap(MixedTapBoxId);
+	// 	App.WaitForElement(MixedTapBoxId);
+	// 	App.DoubleTap(MixedTapBoxId);
 
-	// 	RunningApp.WaitForElement($"1 {Doubles} on {MixedTapBoxId}");
+	// 	App.WaitForElement($"1 {Doubles} on {MixedTapBoxId}");
 	// }
 
 	// [Test]
 	// [FailsOnIOS]
 	// public void SingleTapWithMixedRecognizersShouldRegisterSingleTap()
 	// {
-	// 	RunningApp.WaitForElement(MixedTapBoxId);
-	// 	RunningApp.Tap(MixedTapBoxId);
+	// 	App.WaitForElement(MixedTapBoxId);
+	// 	App.Tap(MixedTapBoxId);
 
-	// 	RunningApp.WaitForElement($"1 {Singles} on {MixedTapBoxId}");
+	// 	App.WaitForElement($"1 {Singles} on {MixedTapBoxId}");
 	// }
 }

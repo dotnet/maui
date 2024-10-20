@@ -21,9 +21,9 @@ public class Bugzilla60122 : _IssuesUITest
 	// [Category(UITestCategories.Gestures)]
 	// public void LongClickFiresOnCustomImageRenderer()
 	// {
-	// 	RunningApp.WaitForElement(ImageId);
-	// 	RunningApp.TouchAndHold(ImageId);
-	// 	RunningApp.WaitForElement(Success);
+	// 	App.WaitForElement(ImageId);
+	// 	App.TouchAndHold(ImageId);
+	// 	App.WaitForElement(Success);
 	// }
 }
 

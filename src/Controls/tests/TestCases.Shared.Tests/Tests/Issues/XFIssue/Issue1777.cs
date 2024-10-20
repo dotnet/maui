@@ -17,11 +17,11 @@ public class Issue1777 : _IssuesUITest
 	// [Category(UITestCategories.TableView)]
 	// public void Issue1777Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Button(_btnText));
-	// 	RunningApp.Tap(q => q.Button(_btnText));
-	// 	RunningApp.Tap(q => q.Marked(_pickerTableId));
-	// 	RunningApp.WaitForElement(q => q.Marked("test 0"));
-	// 	RunningApp.Screenshot("Picker is displayed correctly in the ViewCell");
+	// 	App.WaitForElement(q => q.Button(_btnText));
+	// 	App.Tap(q => q.Button(_btnText));
+	// 	App.Tap(q => q.Marked(_pickerTableId));
+	// 	App.WaitForElement(q => q.Marked("test 0"));
+	// 	App.Screenshot("Picker is displayed correctly in the ViewCell");
 	// }
 }
 #endif
