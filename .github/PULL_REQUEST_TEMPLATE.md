@@ -1,5 +1,5 @@
 <!--
-!!!!!!! MAKE SURE THIS PR IS TARGETING MAIN !!!!!!! 
+!!!!!!! MAIN IS THE ONLY ACTIVE BRANCH. MAKE SURE THIS PR IS TARGETING MAIN. !!!!!!! 
 -->
 
 ### Description of Change
