@@ -20,16 +20,8 @@ public class Bugzilla25662 : _IssuesUITest
 	[FailsOnWindows]
 	public void Bugzilla25662Test()
 	{
-		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-		{
-			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-		}
-
-		App.WaitForNoElement("One");
-
-		var item = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "One" + "']"));
-		item.Click();
-
+		App.WaitForElement("One");
+		App.Tap("One");
 		App.WaitForNoElement("FAIL");
 	}
 }

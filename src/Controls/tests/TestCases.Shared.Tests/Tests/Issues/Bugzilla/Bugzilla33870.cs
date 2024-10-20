@@ -18,18 +18,11 @@ public class Bugzilla33870 : _IssuesUITest
 	[FailsOnIOS]
 	public void Bugzilla33870Test()
 	{
-		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-		{
-			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-		}
-
 		App.WaitForElement("PageContentAutomatedId");
 		App.WaitForElement("ListViewAutomatedId");
+		App.Tap("CLEAR SELECTION");
 
-		var clearSelectionButton = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "CLEAR SELECTION" + "']"));
-		clearSelectionButton.Click();
-
-		App.WaitForNoElement("Cleared");
+		App.WaitForElement("Cleared");
 	}
 }
 #endif
