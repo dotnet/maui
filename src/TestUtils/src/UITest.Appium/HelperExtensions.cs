@@ -883,6 +883,19 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a pan gesture between 2 points.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="fromX">The x coordinate to start panning from.</param>
+		/// <param name="fromY">The y coordinate to start panning from.</param>
+		/// <param name="toX">The x coordinate to pan to.</param>
+		/// <param name="toY">The y coordinate to pan to.</param>
+		public static void Pan(this IApp app, float fromX, float fromY, float toX, float toY)
+		{
+			app.DragCoordinates(fromX, fromY, toX, toY);
+		}
+
+		/// <summary>
 		/// Navigate back on the device.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
