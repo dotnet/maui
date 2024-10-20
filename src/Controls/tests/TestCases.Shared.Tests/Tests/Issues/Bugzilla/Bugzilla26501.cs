@@ -16,13 +16,7 @@ public class Bugzilla26501 : _IssuesUITest
 	[Category(UITestCategories.InputTransparent)]
 	public void TestCellsShowAfterRefresh()
 	{
-		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-		{
-			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-		}
-
-		var item = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Refresh" + "']"));
-		item.Click();
+		App.Tap("Refresh");
 
 		App.WaitForNoElement("ZOOMER robothund 2");
 	}
