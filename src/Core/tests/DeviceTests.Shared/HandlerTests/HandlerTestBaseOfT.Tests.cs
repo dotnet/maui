@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Setting Semantic Description makes element accessible"
-#if IOS
+#if MACCATALYST
 			, Skip = "This test fails sometimes on iOS"
 #endif			
 		)]
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Setting Semantic Hint makes element accessible"
-#if IOS
+#if MACCATALYST
 			, Skip = "This test fails sometimes on iOS"
 #endif			
 		)]
@@ -125,8 +125,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Semantic Description is set correctly"
 #if ANDROID
 			, Skip = "This value can't be validated through automated tests"
-#elif IOS
-			, Skip = "This test fails sometimes on iOS"
+#elif MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif
 		)]
 		public async Task SetSemanticDescription()
@@ -140,8 +140,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Semantic Hint is set correctly"
 #if ANDROID
 			, Skip = "This value can't be validated through automated tests"
-#elif IOS
-			, Skip = "This test fails sometimes on iOS"
+#elif MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif
 		)]
 		public async Task SetSemanticHint()
@@ -153,8 +153,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Heading is set correctly"
-#if IOS
-			, Skip = "This test fails sometimes on iOS"
+#if MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif		
 		)]
 		public async Task SetSemanticHeading()
