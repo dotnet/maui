@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using UIKit;
 using Xunit;
 
@@ -22,6 +23,24 @@ public partial class FontManagerTests : TestBase
 			manager.GetFont(Font.OfSize(fontName, manager.DefaultFontSize)));
 
 		Assert.Equal(expectedFamilyName, font.FamilyName);
+	}
+
+	[Fact]
+	public async Task CanLoadEmbeddedFont()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var fontName = "FooBarFont";
+			var fontWeight = FontWeight.Regular;
+
+			var registrar = new FontRegistrar(new EmbeddedFontLoader());
+			registrar.Register("dokdo_regular.ttf", fontName, GetType().Assembly);
+			var manager = new FontManager(registrar);
+			var actual = manager.GetFont(Font.OfSize(fontName, 12, fontWeight));
+
+			Assert.Equal("Dokdo", actual.FamilyName);
+			Assert.Equal("Dokdo-Regular", actual.Name);
+		});
 	}
 
 }
