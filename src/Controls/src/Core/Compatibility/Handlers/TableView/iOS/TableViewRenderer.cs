@@ -9,7 +9,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
+	public class TableViewRenderer : ViewRenderer<TableView, UITableView>, IPropagatesSetNeedsLayout
 	{
 		const int DefaultRowHeight = 44;
 		UIView _originalBackgroundView;
@@ -31,6 +31,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (_previousFrame != Frame)
 				_previousFrame = Frame;
+		}
+
+		bool _pendingSuperViewSetNeedsLayout;
+
+		public override void SetNeedsLayout()
+		{
+			base.SetNeedsLayout();
+
+			if (Window is not null)
+			{
+				_pendingSuperViewSetNeedsLayout = false;
+				Superview?.SetNeedsLayout();
+			}
+			else {
+				_pendingSuperViewSetNeedsLayout = true;
+			}
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (_pendingSuperViewSetNeedsLayout)
+			{
+				Superview?.SetNeedsLayout();
+			}
+
+			_pendingSuperViewSetNeedsLayout = false;
 		}
 
 		protected override void Dispose(bool disposing)
