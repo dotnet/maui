@@ -28,6 +28,30 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var Context = MauiContext?.Context;
+			var platformView = PlatformView;
+			var virtualView = VirtualView;
+
+			if (double.IsInfinity(virtualView.MaximumWidth) || double.IsInfinity(virtualView.MaximumHeight))
+			{
+				if (platformView == null || virtualView == null || Context == null)
+					return Size.Zero;
+
+				// Create a spec to handle the native measure
+				var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.Frame.Width);
+				var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.Frame.Height);
+
+				platformView.Measure(widthSpec, heightSpec);
+
+				// Convert back to xplat sizes for the return value
+				return Context.FromPixels(platformView.MeasuredWidth, platformView.MeasuredHeight);
+			}
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
 		static void UpdateContent(IRefreshViewHandler handler) =>
 			handler.PlatformView.UpdateContent(handler.VirtualView.Content, handler.MauiContext);
 
