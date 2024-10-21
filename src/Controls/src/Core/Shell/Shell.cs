@@ -935,6 +935,12 @@ namespace Microsoft.Maui.Controls
 			var modalStack = shellSection?.Navigation?.ModalStack;
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
+			var existing = (ShellRouteParameters)shellContent.GetValue(ShellContent.QueryAttributesProperty);
+			if (shellItem.GetType() != typeof(FlyoutItem) || existing == null)
+			{
+				ShellNavigationManager.ApplyQueryAttributes(shellContent, new ShellRouteParameters(), false, false);
+			}
+
 			if (result?.Location != oldState?.Location)
 			{
 				SetValueFromRenderer(CurrentStatePropertyKey, result);
