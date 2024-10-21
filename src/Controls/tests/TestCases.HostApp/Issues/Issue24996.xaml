@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue24996"
+             Title="Issue24996"
+             x:Reference="Self">
+  <issues:ObservedLayout24996 x:Name="Root" BackgroundColor="DarkSlateBlue">
+    <issues:ObservedLayout24996.GestureRecognizers>
+      <TapGestureRecognizer Tapped="OnTapped" />
+    </issues:ObservedLayout24996.GestureRecognizers>
+    <issues:ObservedLayout24996 x:Name="Lvl1" BackgroundColor="BlueViolet">
+      <issues:ObservedLayout24996 x:Name="Lvl2" BackgroundColor="AliceBlue">
+        <issues:ObservedLayout24996 x:Name="Lvl3"
+                                    BackgroundColor="Aqua"
+                                    HeightRequest="200"
+                                    WidthRequest="200">
+          <Border BackgroundColor="GreenYellow" HeightRequest="100" WidthRequest="100" />
+        </issues:ObservedLayout24996>
+        </issues:ObservedLayout24996>
+      </issues:ObservedLayout24996>
+    <Label x:Name="Stats" 
+           AutomationId="Stats"
+           HeightRequest="80"
+           WidthRequest="{Binding Width, Source={x:Reference Root}}"
+           AbsoluteLayout.LayoutFlags="PositionProportional"
+           AbsoluteLayout.LayoutBounds="0,1,-1,-1"
+           BackgroundColor="#222222"
+           TextColor="White"/>
+  </issues:ObservedLayout24996>
+</ContentPage>
