@@ -225,7 +225,10 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				if (platformView is WrapperView wrapperView)
+				{
 					wrapperView.Shadow = view.Shadow;
+					wrapperView.SetShadow(shadow);
+				}
 			}
 		}
 
