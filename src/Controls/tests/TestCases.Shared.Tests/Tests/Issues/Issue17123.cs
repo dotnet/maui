@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         }
 
         [Test]
-		[Category(UITestCategories.Frame)]
+		[Category(UITestCategories.TableView)]
 		public void ValidateTableViewTitles()
         {
 			App.WaitForElement("TableView");
