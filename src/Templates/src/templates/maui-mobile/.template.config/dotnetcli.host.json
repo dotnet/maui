@@ -3,6 +3,16 @@
     "symbolInfo": {
       "Framework": {
         "longName": "framework"
+      },
+      "Empty": {
+        "longName": "empty"
+      },
+      "IncludeSampleContent": {
+        "isHidden": true
+      },
+      "skipRestore": {
+        "longName": "no-restore",
+        "shortName": ""
       }
     },
     "usageExamples": [
