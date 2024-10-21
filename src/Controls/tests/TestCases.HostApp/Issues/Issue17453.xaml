@@ -47,10 +47,9 @@
             </Border>
         </VerticalStackLayout>
 
-        <VerticalStackLayout Grid.Row="2"
-                             FlowDirection="RightToLeft">
+        <VerticalStackLayout Grid.Row="2">
             <Label Text="#25225 (Entry with margin):"/>
-            <VerticalStackLayout Margin="30">
+            <VerticalStackLayout Margin="0,30">
                 <Entry
                     Text="Simple text"
                     AutomationId="EntryWithMargin"
