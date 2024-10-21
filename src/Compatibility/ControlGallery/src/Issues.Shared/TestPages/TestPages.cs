@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 			get
 			{
-				var directories = Directory.GetDirectories("../../../../../src/Android/bin/Debug/", "*android*");
+				var directories = Directory.GetDirectories("../../../Compatibility.ControlGallery.Android/Debug", "*android*");
 
 				if (directories.Length == 0)
-					throw new Exception("Unable to locate apk path");
+					throw new Exception($"Unable to locate apk path");
 
 				return $"{directories[0]}/com.microsoft.mauicompatibilitygallery-Signed.apk";
 			}
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 			get
 			{
-				var directories = Directory.GetDirectories("../../../../../src/iOS/bin/Debug/", "*ios*");
+				var directories = Directory.GetDirectories("../../../Compatibility.ControlGallery.iOS/Debug/net9.0-ios", "*ios*");
 
 				if (directories.Length == 0)
 					throw new Exception("Unable to locate ios path");
@@ -103,6 +103,9 @@ namespace Microsoft.Maui.Controls.ControlGallery
 																: envApkPath;
 
 			System.Diagnostics.Debug.WriteLine($"FullAppPath: {fullApkPath}");
+
+			//throw new Exception(fullApkPath);
+
 			var appConfiguration = ConfigureApp.Android.ApkFile(fullApkPath).Debug();
 
 			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
@@ -153,7 +156,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 
 			var enviOSPath = Environment.GetEnvironmentVariable("iOS_APP");
-			var UDID = Environment.GetEnvironmentVariable("DEVICE_UDID");
+			var UDID = "06059A10-9AAE-4C0C-9F67-3DE1E951D201";//Environment.GetEnvironmentVariable("DEVICE_UDID");
 
 			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
 																: enviOSPath;

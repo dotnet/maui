@@ -10,6 +10,8 @@
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <NoWarn>IL2036;0618;0612;CS0672;CS0618</NoWarn>
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <AndroidFastDeploymentType>None</AndroidFastDeploymentType>
   </PropertyGroup>
 
   <!--
