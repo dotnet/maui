@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 			page.Handler?.DisconnectHandler();
 		}
 
+		IDisposable? _waitingForIncomingPage;
 		void SetCurrent(
 			Page newPage,
 			Page previousPage,
@@ -79,6 +80,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			try
 			{
+				_waitingForIncomingPage?.Dispose();
+
 				if (popping)
 				{
 					RemovePage(previousPage, popping);
@@ -108,7 +111,9 @@ namespace Microsoft.Maui.Controls.Platform
 						wrv.SetTitleBarBackgroundToTransparent(false);
 					}
 
-					windowManager.Connect(newPage.ToPlatform(modalContext));
+					var platform = newPage.ToPlatform(modalContext);
+					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
+					windowManager.Connect(platform);
 					Container.AddPage(windowManager.RootView);
 				}
 				// popping modal
@@ -117,10 +122,10 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowManager = newPage.FindMauiContext()?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
+					var platform = newPage.ToPlatform();
+					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
 					Container.AddPage(windowManager.RootView);
 				}
-
-				completedCallback?.Invoke();
 			}
 			catch (Exception error) when (error.HResult == -2147417842)
 			{

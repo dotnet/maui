@@ -18,8 +18,11 @@ namespace Microsoft.Maui.Controls
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
+		internal readonly MergedStyle _mergedStyle;
+		
 		protected ImageSource()
 		{
+			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />

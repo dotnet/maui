@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable CS0618 // Type or member is obsolete
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -531,3 +532,4 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	}
 }
+#pragma warning restore CS0618 // Type or member is obsolete

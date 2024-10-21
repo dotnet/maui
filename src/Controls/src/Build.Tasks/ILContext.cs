@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			ParentContextValues = parentContextValues;
 			Module = module;
 			Cache = cache;
+			CompileBindingsWithSource = false;
 		}
 
 		public XamlCache Cache { get; private set; }
@@ -46,5 +47,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public TaskLoggingHelper LoggingHelper { get; internal set; }
 
 		public bool ValidateOnly { get; set; }
+
+		public bool CompileBindingsWithSource { get; set; }
 	}
 }

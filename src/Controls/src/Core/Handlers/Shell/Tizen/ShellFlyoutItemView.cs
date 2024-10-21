@@ -1,8 +1,11 @@
+using Microsoft.Maui.Controls.Internals;
 using GColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	class ShellFlyoutItemView : Frame
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView), false, propertyChanged: (b, o, n) => ((ShellFlyoutItemView)b).UpdateSelectedState());
 
@@ -33,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 			};
-			icon.SetBinding(Image.SourceProperty, new Binding("Icon"));
+			icon.SetBinding(Image.SourceProperty, static (BaseShellItem item) => item.Icon);
 
 			var label = new Label
 			{
@@ -41,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 				FontSize = 16,
 				VerticalTextAlignment = TextAlignment.Center,
 			};
-			label.SetBinding(Label.TextProperty, new Binding("Title"));
+			label.SetBinding(Label.TextProperty, static (BaseShellItem item) => item.Title);
 
 			_grid = new Grid
 			{
