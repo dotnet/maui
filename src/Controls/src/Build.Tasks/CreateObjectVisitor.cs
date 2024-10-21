@@ -124,17 +124,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return;
 			}
 
-			if (IsXaml2009LanguagePrimitive(node))
-			{
-				var vardef = new VariableDefinition(typeref);
-				Context.Variables[node] = vardef;
-				Context.Body.Variables.Add(vardef);
-
-				Context.IL.Append(PushValueFromLanguagePrimitive(typedef, node));
-				Context.IL.Emit(Stloc, vardef);
-				return;
-			}
-
 			MethodDefinition factoryCtorInfo = null;
 			MethodDefinition factoryMethodInfo = null;
 			MethodDefinition parameterizedCtorInfo = null;
@@ -214,7 +203,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					(vardef.VariableType.IsValueType || isColor))
 				{
 					//<Color>Purple</Color>
-					Context.IL.Append(vnode.PushConvertedValue(Context, typeref, new ICustomAttributeProvider[] { typedef },
+					Context.IL.Append(vnode.PushConvertedValue(Context, typeref, [typedef],
 						(requiredServices) => node.PushServiceProvider(Context, requiredServices),
 						false, true));
 					Context.IL.Emit(OpCodes.Stloc, vardef);
@@ -324,7 +313,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
 						parameter.ParameterType,
-						new ICustomAttributeProvider[] { parameter, parameter.ParameterType.ResolveCached(Context.Cache) },
+						[parameter, parameter.ParameterType.ResolveCached(Context.Cache)],
 						(requiredServices) => enode.PushServiceProvider(Context, requiredServices),
 						false, true))
 						yield return instruction;
@@ -362,7 +351,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					foreach (var instruction in vnode.PushConvertedValue(Context,
 						parameter.ParameterType,
-						new ICustomAttributeProvider[] { parameter, parameter.ParameterType.ResolveCached(Context.Cache) },
+						[parameter, parameter.ParameterType.ResolveCached(Context.Cache)],
 						(requiredServices) => enode.PushServiceProvider(Context, requiredServices),
 						false, true))
 						yield return instruction;
