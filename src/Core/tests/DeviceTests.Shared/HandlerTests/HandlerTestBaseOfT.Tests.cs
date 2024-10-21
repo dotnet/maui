@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "Setting Semantic Description makes element accessible"
 #if MACCATALYST
-			, Skip = "This test fails sometimes on iOS"
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif			
 		)]
 		public async virtual Task SettingSemanticDescriptionMakesElementAccessible()
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "Setting Semantic Hint makes element accessible"
 #if MACCATALYST
-			, Skip = "This test fails sometimes on iOS"
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif			
 		)]
 		public async virtual Task SettingSemanticHintMakesElementAccessible()
