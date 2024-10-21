@@ -67,25 +67,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public void EntryWithMarginClearButtonWorks()
+		public async Task EntryWithMarginClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/25225
 
 			App.WaitForElement("WaitForStubControl");
 
 			string? entryText = App.FindElement("EntryWithMargin").GetText();
-
 			if (String.IsNullOrWhiteSpace(entryText))
 				App.EnterText("EntryWithMargin", "Simple Text");
 
 			var entryRect = App.FindElement("EntryWithMargin").GetRect();
 
 			// Set focus
-			App.TapCoordinates(entryRect.X, entryRect.Y);
-
+			App.TapCoordinates(entryRect.Width, entryRect.Y);
+			await Task.Delay(500);
+			
 			// Tap Clear Button
-			var margin = 30;
-			App.TapCoordinates(entryRect.X + margin, entryRect.Y + margin);
+			App.TapCoordinates(entryRect.Width, entryRect.Y);
 
 			entryText = App.FindElement("EntryWithMargin").GetText();
 
