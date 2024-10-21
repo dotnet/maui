@@ -102,7 +102,7 @@ public abstract partial class PlatformBehavior<TView, TPlatformView> : Behavior<
 
 	void OnLoaded(object? sender, EventArgs e)
 	{
-		if (sender is TView view && view.Handler.PlatformView is TPlatformView platformView)
+		if (sender is TView { Handler.PlatformView: TPlatformView platformView } view)
 		{
 			OnAttachedTo(view, platformView);
 			_platformView = platformView;
