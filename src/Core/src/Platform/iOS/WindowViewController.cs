@@ -104,8 +104,6 @@ internal class WindowViewController : UIViewController
 
             var measured = _iTitleBar.Measure(widthConstraint, heightConstraint);
             var arranged = _iTitleBar.Arrange(new Graphics.Rect(0, 0, widthConstraint, measured.Height));
-
-            // TODO - see what happens when the titleBar has some height when created?
         }
 
         // var titleBarHeight = TitleBar?.Frame.Height ?? 0;
@@ -122,6 +120,7 @@ internal class WindowViewController : UIViewController
         {
             _contentWrapperView.Frame = newFrame;
             _contentWrapperView.Subviews[0].Frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
+            // View.SetNeedsLayout();
         }
 
         
