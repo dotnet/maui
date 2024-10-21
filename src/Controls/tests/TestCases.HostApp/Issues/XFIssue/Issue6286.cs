@@ -1,24 +1,24 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 6286, "ObjectDisposedException in Android WebView.EvaluateJavascriptAsync ", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 6286, "ObjectDisposedException in Android WebView.EvaluateJavascriptAsync", PlatformAffected.Android)]
 public class Issue6286 : TestNavigationPage
 {
-	WebView webview;
-	WebView webview2;
-	ContentPage page1;
-	ContentPage page2;
+	WebView _webview;
+	WebView _webview2;
+	ContentPage _page1;
+	ContentPage _page2;
 
 	protected override void Init()
 	{
-		webview = new WebView { Source = "https://microsoft.com" };
-		webview.Navigated += Webview_Navigated;
-		page1 = new ContentPage { Content = webview };
+		_webview = new WebView { Source = "https://microsoft.com" };
+		_webview.Navigated += OnWebviewNavigated;
+		_page1 = new ContentPage { Content = _webview };
 
-		webview2 = new WebView { Source = "https://xamarin.com" };
-		webview2.Navigated += Webview_Navigated;
-		page2 = new ContentPage { Content = webview2 };
+		_webview2 = new WebView { Source = "https://google.com" };
+		_webview2.Navigated += OnWebviewNavigated;
+		_page2 = new ContentPage { Content = _webview2 };
 
-		Navigation.PushAsync(page1);
+		Navigation.PushAsync(_page1);
 		RunTest();
 	}
 
@@ -32,26 +32,25 @@ public class Issue6286 : TestNavigationPage
 				await Task.Delay(2000);
 				count++;
 
-				webview.Source = "https://xamarin.com";
-				await Navigation.PushAsync(page2);
+				_webview.Source = "https://google.com";
+				await Navigation.PushAsync(_page2);
 
-				webview2.Source = "https://microsoft.com";
+				_webview2.Source = "https://microsoft.com";
 				await Navigation.PopAsync();
 			}
 
-			page1.Content = new Label { Text = "success", AutomationId = "success" };
-
+			_page1.Content = new Label { Text = "success", AutomationId = "success" };
 		}
 		catch (Exception exc)
 		{
-			page1.Content = new Label { Text = $"{exc}", AutomationId = "failure" };
+			_page1.Content = new Label { Text = $"{exc}", AutomationId = "failure" };
 		}
 	}
 
-	async void Webview_Navigated(object sender, WebNavigatedEventArgs e)
+	async void OnWebviewNavigated(object sender, WebNavigatedEventArgs e)
 	{
-		await webview.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
+		await _webview.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
 
-		await webview2.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
+		await _webview2.EvaluateJavaScriptAsync("document.write('i executed this javascript woohoo');");
 	}
 }
