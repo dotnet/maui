@@ -14,6 +14,7 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAndroidContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidStepperActions(this));
 		}
 
