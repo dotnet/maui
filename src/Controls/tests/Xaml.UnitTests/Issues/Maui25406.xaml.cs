@@ -9,14 +9,14 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-public partial class Maui25XXX : ContentPage
+public partial class Maui25406 : ContentPage
 {
-    public Maui25XXX()
+    public Maui25406()
     {
         InitializeComponent();
     }
 
-    public Maui25XXX(bool useCompiledXaml)
+    public Maui25406(bool useCompiledXaml)
     {
         //this stub will be replaced at compile time
     }
@@ -39,13 +39,13 @@ public partial class Maui25XXX : ContentPage
         [Test]
         public void WhenBindingIsCompiledBindingExtensionDoesNotReceiveServiceProviderWithXamlTypeResolver()
         {
-            MockCompiler.Compile(typeof(Maui25XXX), out var md);
+            MockCompiler.Compile(typeof(Maui25406), out var md);
             Assert.That(!md.Body.Instructions.Any(static i => i.OpCode == OpCodes.Newobj && i.Operand.ToString().Contains("XamlServiceProvider", StringComparison.Ordinal)));
         }
     }
 }
 
-public class Maui25XXXViewModel
+public class Maui25406ViewModel
 {
     public string Text { get; set; }
 }
