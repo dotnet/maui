@@ -12,13 +12,13 @@ public class Issue1875 : _IssuesUITest
 
 	public override string Issue => "NSRangeException adding items through ItemAppearing";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void NSRangeException()
-	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Load"));
-	// 	RunningApp.Tap(q => q.Marked("Load"));
-	// 	RunningApp.WaitForElement(q => q.Marked("5"));
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	[FailsOnIOS]
+	public void NSRangeException()
+	{
+		RunningApp.WaitForElement("Load");
+		RunningApp.Tap("Load");
+		RunningApp.WaitForElement("5");
+	}
 }

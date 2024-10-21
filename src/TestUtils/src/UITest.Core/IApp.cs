@@ -7,8 +7,10 @@
 		ApplicationState AppState { get; }
 
 		IUIElement FindElement(string id);
+		IUIElement FindElementByText(string text);
 		IUIElement FindElement(IQuery query);
-		IReadOnlyCollection<IUIElement> FindElements(string id);
+		IReadOnlyCollection<IUIElement> FindElements(string id); 
+		IReadOnlyCollection<IUIElement> FindElementsByText(string text);
 		IReadOnlyCollection<IUIElement> FindElements(IQuery query);
 		string ElementTree { get; }
 
