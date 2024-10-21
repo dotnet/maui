@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public int Start { get; set; }
 			public int End => Start + Length;
 		}
-		public GroupedListViewAdapter(Context context, AListView realListView, ListView listView) : base(context, realListView, listView)
+		public GroupedListViewAdapter(Context context, AListView realListView, ListView listView,  ListViewRenderer renderer) : base(context, realListView, listView, renderer)
 		{
 
 		}
