@@ -1,6 +1,7 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
+	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.Button;
 
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button']/Docs/*" />
@@ -62,6 +63,37 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		public static IPlatformElementConfiguration<Android, FormsElement> SetUseDefaultShadow(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetUseDefaultShadow(config.Element, value);
+			return config;
+		}
+		#endregion
+	
+		#region RippleColor
+		#pragma warning disable RS0016
+		/// <summary>Bindable property for <see cref="RippleColor"/>.</summary>
+		public static readonly BindableProperty RippleColorProperty = BindableProperty.Create("RippleColor", typeof(Color), typeof(Button), default);
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='GetRippleColor']/Docs/*" />
+		public static Color GetRippleColor(BindableObject element)
+		{
+			return (Color)element.GetValue(RippleColorProperty);
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetRippleColor'][1]/Docs/*" />
+		public static void SetRippleColor(BindableObject element, Color value)
+		{
+			element.SetValue(RippleColorProperty, value);
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='RippleColor']/Docs/*" />
+		public static Color RippleColor(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetRippleColor(config.Element);
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='SetRippleColor'][2]/Docs/*" />
+		public static IPlatformElementConfiguration<Android, FormsElement> SetRippleColor(this IPlatformElementConfiguration<Android, FormsElement> config, Color value)
+		{
+			SetRippleColor(config.Element, value);
 			return config;
 		}
 		#endregion
