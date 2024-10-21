@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 24434, "Modifying a layout while view isn't part of the Window fails to update the layout visually",
 		PlatformAffected.iOS)]

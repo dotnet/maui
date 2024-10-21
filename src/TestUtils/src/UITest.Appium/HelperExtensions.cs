@@ -276,6 +276,21 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a continuous touch gesture on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to touch.</param>
+		/// <param name="y">The y coordinate to touch.</param>
+		public static void TouchAndHoldCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("touchAndHoldCoordinates", new Dictionary<string, object>
+			{		
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
 		/// Performs a long touch on an item, followed by dragging the item to a second item and dropping it.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -401,11 +416,10 @@ namespace UITest.Appium
 			Wait(query, i => i is null, timeoutMessage, timeout, retryFrequency);
 		}
 
-		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text)
+		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
 		{
-			TimeSpan timeout = DefaultTimeout;
+			timeout ??= DefaultTimeout;
 			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
-			string timeoutMessage = $"Timed out on {nameof(WaitForTextToBePresentInElement)}.";
 
 			DateTime start = DateTime.Now;
 
@@ -418,9 +432,9 @@ namespace UITest.Appium
 				}
 
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
-				if (elapsed >= timeout.Ticks)
+				if (elapsed >= timeout.Value.Ticks)
 				{
-					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Ticks}");
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
 
 					return false;
 				}
@@ -764,6 +778,32 @@ namespace UITest.Appium
 				{ "value", value },
 				{ "minimum", minimum },
 				{ "maximum", maximum },
+			});
+		}
+
+		/// <summary>
+		/// Increases the value of a Stepper control.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Stepper element to increase.</param>
+		public static void IncreaseStepper(this IApp app, string marked)
+		{
+			app.CommandExecutor.Execute("increaseStepper", new Dictionary<string, object>
+			{
+				["elementId"] = marked
+			});
+		}
+
+		/// <summary>
+		/// Decreases the value of a Stepper control.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Stepper element to decrease.</param>
+		public static void DecreaseStepper(this IApp app, string marked)
+		{
+			app.CommandExecutor.Execute("decreaseStepper", new Dictionary<string, object>
+			{
+				["elementId"] = marked
 			});
 		}
 

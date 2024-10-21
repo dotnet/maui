@@ -5,7 +5,6 @@
     <TargetFrameworks Condition="'$(IncludePreviousTfmsGraphics)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiGraphicsPreviousPlatforms)</TargetFrameworks>
     <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
     <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
     <Product>Microsoft.Maui.Graphics</Product>
@@ -36,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
   </ItemGroup>

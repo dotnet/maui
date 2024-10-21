@@ -9,12 +9,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public static class MockCompiler
 	{
-		public static void Compile(Type type, string targetFramework = null, bool treatWarningsAsErrors = false)
+		public static void Compile(
+			Type type,
+			string targetFramework = null,
+			bool treatWarningsAsErrors = false,
+			bool compileBindingsWithSource = true)
 		{
-			Compile(type, out _, targetFramework, treatWarningsAsErrors);
+			Compile(type, out _, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
 		}
 
-		public static void Compile(Type type, out MethodDefinition methodDefinition, string targetFramework = null, bool treatWarningsAsErrors = false)
+		public static void Compile(
+			Type type,
+			out MethodDefinition methodDefinition,
+			string targetFramework = null,
+			bool treatWarningsAsErrors = false,
+			bool compileBindingsWithSource = true)
 		{
 			methodDefinition = null;
 			var assembly = type.Assembly.Location;
@@ -33,6 +42,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Type = type.FullName,
 				TargetFramework = targetFramework,
 				TreatWarningsAsErrors = treatWarningsAsErrors,
+				CompileBindingsWithSource = compileBindingsWithSource,
 				BuildEngine = new MSBuild.UnitTests.DummyBuildEngine()
 			};
 

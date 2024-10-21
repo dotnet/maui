@@ -9,7 +9,7 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
-    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsAotCompatible>
+    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard')) and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">true</IsAotCompatible>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;CS0672;CS0618</NoWarn>
@@ -50,9 +50,6 @@
         <Link>Windows\BootstrapHelper.cs</Link>
     </Compile>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-  </ItemGroup>
-
   <PropertyGroup>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
     <!-- https://github.com/dotnet/msbuild/issues/9785 -->

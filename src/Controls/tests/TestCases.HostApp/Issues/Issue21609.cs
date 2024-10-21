@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 21609, "Changing the dimensions of the CarouselView doesn't update Item Dimensions")]
 public class Issue21609 : TestContentPage

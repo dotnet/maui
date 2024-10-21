@@ -309,16 +309,15 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == HeightProperty.PropertyName ||
-				propertyName == StrokeThicknessProperty.PropertyName ||
-				propertyName == StrokeShapeProperty.PropertyName ||
-				propertyName == WidthProperty.PropertyName)
+			if (propertyName == StrokeThicknessProperty.PropertyName || propertyName == StrokeShapeProperty.PropertyName)
 			{
-				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
 				UpdateStrokeShape();
+				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
 			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
+			}
 		}
 
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)

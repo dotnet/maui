@@ -1,10 +1,5 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using System.Threading.Tasks;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 22633, "[iOS] Crash on when initializing a TabbedPage without children", PlatformAffected.iOS)]
 public partial class Issue22633 : TabbedPage
 {
