@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType ожидает строковый литерал, разметку {{x:Type}} или {{x:Nul}l}.</value>
+    <value>x:DataType ожидает строковый литерал, разметку {{x:Type}} или {{x:Null}}.</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Необъявленный префикс xmlns "{0}".</value>

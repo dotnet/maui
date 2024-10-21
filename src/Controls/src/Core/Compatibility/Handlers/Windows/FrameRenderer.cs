@@ -11,7 +11,8 @@ using WRect = Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class FrameRenderer : ViewRenderer<Frame, WBorder>
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
+	public partial class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)

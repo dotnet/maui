@@ -65,7 +65,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetActiveWindow();
 			if (throwOnNull && window == null)
-				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+				throw new NullReferenceException("The active Window cannot be detected. Ensure that you have called Init in your Application class.");
 
 			return window;
 		}
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetActiveWindow();
 			if (throwOnNull && window == null)
-				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+				throw new NullReferenceException("The active Window cannot be detected. Ensure that you have called Init in your Application class.");
 
 			if (window == null)
 				return IntPtr.Zero;
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetActiveWindow();
 			if (throwOnNull && window == null)
-				throw new NullReferenceException("The active Window can not be detected. Ensure that you have called Init in your Application class.");
+				throw new NullReferenceException("The active Window cannot be detected. Ensure that you have called Init in your Application class.");
 
 			if (window == null)
 				return null;

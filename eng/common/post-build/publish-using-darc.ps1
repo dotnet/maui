@@ -9,7 +9,12 @@ param(
 )
 
 try {
-  . $PSScriptRoot\post-build-utils.ps1
+  # `tools.ps1` checks $ci to perform some actions. Since the post-build
+  # scripts don't necessarily execute in the same agent that run the
+  # build.ps1/sh script this variable isn't automatically set.
+  $ci = $true
+  $disableConfigureToolsetImport = $true
+  . $PSScriptRoot\..\tools.ps1
 
   $darc = Get-Darc
 
@@ -37,6 +42,7 @@ try {
     --azdev-pat "$AzdoToken" `
     --bar-uri "$MaestroApiEndPoint" `
     --ci `
+    --verbose `
 	@optionalParams
 
   if ($LastExitCode -ne 0) {

@@ -27,6 +27,11 @@ namespace Microsoft.Maui.Handlers
 					ViewCompat.SetAccessibilityDelegate(platformView, null);
 				}
 			}
+
+			if (VirtualView is IToolbarElement te)
+			{
+				te.Toolbar?.Handler?.DisconnectHandler();
+			}
 		}
 
 		void OnRootViewSet(object? sender, EventArgs e)

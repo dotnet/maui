@@ -104,8 +104,10 @@ namespace Microsoft.Maui.Platform
 			if (view is RecyclerView recyclerView)
 				return recyclerView.ComputeVerticalScrollOffset() > 0;
 
+#pragma warning disable XAOBS001 // Obsolete
 			if (view is NestedScrollView nestedScrollView)
 				return nestedScrollView.ComputeVerticalScrollOffset() > 0;
+#pragma warning restore XAOBS001 // Obsolete
 
 			if (view is AWebView webView)
 				return webView.ScrollY > 0;

@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			public partial class MainPageCode : TabbedPage
+			public class MainPageCode : TabbedPage
 			{
 				public MainPageCode()
 				{
@@ -94,7 +94,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			public partial class ListPageCode : ContentPage
+			public class ListPageCode : ContentPage
 			{
 				public ListPageCode()
 				{

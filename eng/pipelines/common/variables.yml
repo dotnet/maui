@@ -8,11 +8,11 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 8.0.300
+  value: 9.0.100-preview.4.24267.66
 - name: REQUIRED_XCODE
-  value: 15.4.0
+  value: 16.0.0
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 15.4.0
+  value: 16.0.0
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: isMainBranch
@@ -48,9 +48,9 @@ variables:
 - name: provisionator.extraArguments
   value: '-vvvv'
 - name: DotNet.Dir
-  value: $(System.DefaultWorkingDirectory)/bin/dotnet
+  value: $(System.DefaultWorkingDirectory)/.dotnet
 - name: DotNet.Path
-  value: $(System.DefaultWorkingDirectory)/bin/dotnet/dotnet
+  value: $(System.DefaultWorkingDirectory)/.dotnet/dotnet
 - name: TeamName
   value: Maui
 - name: POWERSHELL_VERSION
@@ -58,11 +58,33 @@ variables:
 - name: Codeql.Enabled
   value: false
 - group: Xamarin-Secrets
-# Variable groups required for private builds
-# - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
-#   - name: PrivateBuild
-#     value: true
-#   # For eng/common/SetupNugetSources.ps1
-#   - group: DotNetBuilds storage account read tokens
-#   - group: AzureDevOps-Artifact-Feeds-Pats
 
+# Variable groups required for private builds
+- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    - name: PrivateBuild
+      value: false
+    - name: _RunAsPublic
+      value: False
+    - name: _RunAsInternal
+      value: True
+    - name: _SignType
+      value: real
+    # - name: PostBuildSign
+    #   value: true
+    # For eng/common/SetupNugetSources.ps1
+    - group: DotNetBuilds storage account read tokens
+    - group: AzureDevOps-Artifact-Feeds-Pats
+    - name: _InternalBuildArgs
+      value: /p:DotNetSignType=$(_SignType)
+        /p:TeamName=$(_TeamName)
+        /p:DotNetPublishUsingPipelines=true
+        /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+
+- ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+    # DotNet-HelixApi-Access provides: HelixApiAccessToken
+    - group: Publish-Build-Assets
+    - group: DotNet-HelixApi-Access
+    - group: SDL_Settings
