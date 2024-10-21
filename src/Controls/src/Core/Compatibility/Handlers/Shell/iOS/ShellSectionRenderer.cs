@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellSectionRootRenderer _renderer;
 		ShellSection _shellSection;
 		bool _ignorePopCall;
+		bool _currentItemPopped;
 
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
@@ -101,9 +102,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		[Export("navigationBar:shouldPopItem:")]
 		[Internals.Preserve(Conditional = true)]
-		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __) =>
-			SendPop();
+		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
+		{
+			_currentItemPopped = true;
+			return SendPop();
+		}
 
+#pragma warning disable RS0016
+// todo remove this^ if this PR makes sense
+		[Export("navigationBar:didPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		public bool DidPopItem(UINavigationBar _, UINavigationItem __)
+		{
+			if(!_currentItemPopped)
+				SendPop();
+
+			_currentItemPopped = false;
+			return true;
+		}
+			
 		internal bool SendPop()
 		{
 			// this means the pop is already done, nothing we can do
