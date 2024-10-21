@@ -32,6 +32,9 @@
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
+<!--#if (SampleContent) -->
+		<WindowsSdkPackageVersion>10.0.19041.41</WindowsSdkPackageVersion>
+<!--#endif -->
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
@@ -64,4 +67,14 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
 
+<!--#if (SampleContent) -->
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
+		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.8" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />
+		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.1" />
+	</ItemGroup>
+	
+<!--#endif -->
 </Project>
