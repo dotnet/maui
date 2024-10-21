@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAspect(this ImageView imageView, IImage image)
 		{
+			if (image.Aspect is Aspect.AspectFill)
+				imageView.SetAdjustViewBounds(false);
+			else
+				imageView.SetAdjustViewBounds(true);
+
 			imageView.SetScaleType(image.Aspect.ToScaleType());
 		}
 
