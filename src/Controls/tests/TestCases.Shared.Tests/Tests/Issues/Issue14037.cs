@@ -1,48 +1,46 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue14037 : UITest
+public class Issue14037 : _IssuesUITest
 {
-	const string ALWAYS_FINISH_ACTIVITIES_PROPERTY = "always_finish_activities";
+	readonly AppiumQuery _keyQuery = AppiumQuery.ByClass("android.widget.EditText");
+	readonly AppiumQuery _valueQuery = AppiumQuery.ByClass("android.widget.EditText");
+	readonly AppiumQuery _returnQuery = AppiumQuery.ByClass("android.widget.Button");
 
-	static readonly KeyValuePair<string, object> ENABLE_ALWAYS_FINISH_ACTIVITIES = new(ALWAYS_FINISH_ACTIVITIES_PROPERTY, 1);
-	static readonly KeyValuePair<string, object> DISABLE_ALWAYS_FINISH_ACTIVITIES = new(ALWAYS_FINISH_ACTIVITIES_PROPERTY, 0);
+	protected AppiumAndroidApp? AndroidApp { get; private set; }
 
-	public string Issue => "[Android] MauiAppCompatActivity default prevents getting result from an Activity.";
+	public override string Issue => "MauiAppCompatActivity.AllowFragmentRestore=False prevents getting result from Activity";
 
 	public Issue14037(TestDevice device) : base(device) { }
 
-	protected override void FixtureSetup()
+	public override void TestSetup()
 	{
-		App.GoToTest(Issue);
+		base.TestSetup();
+
+		AndroidApp = App is AppiumAndroidApp androidApp
+			? androidApp
+			: throw new InvalidOperationException($"Invalid App Type For this Test: {App}. Expected {nameof(AppiumAndroidApp)}.");
 	}
 
 	[Test]
 	[Category(UITestCategories.Visual)]
 	public void GetResultFromActivity()
 	{
-		var dict = new Dictionary<string, object>()
-		{
-			{ ENABLE_ALWAYS_FINISH_ACTIVITIES.Key, ENABLE_ALWAYS_FINISH_ACTIVITIES.Value },
-		};
-		App.SetProperties(dict);
-
 		App.WaitForElement("LaunchActivityForResult");
 		App.Tap("LaunchActivityForResult");
 
-		var end = "END";
-		Console.WriteLine(end);
+		AndroidApp?.WaitForElement(() => _keyQuery.FindElements(AndroidApp).FirstOrDefault());
+		_keyQuery.FindElements(AndroidApp)?.FirstOrDefault()?.SendKeys("A_KEY");
 
-		var dict2 = new Dictionary<string, object>()
-		{
-			{ DISABLE_ALWAYS_FINISH_ACTIVITIES.Key, DISABLE_ALWAYS_FINISH_ACTIVITIES.Value },
-		};
-		App.SetProperties(dict2);
+		AndroidApp?.WaitForElement(() => _valueQuery.FindElements(AndroidApp).LastOrDefault());
+		_valueQuery.FindElements(AndroidApp)?.LastOrDefault()?.SendKeys("A_VALUE");
+
+		_returnQuery.FindElements(AndroidApp)?.FirstOrDefault()?.Tap();
+		App.WaitForElement("LaunchActivityForResult");
+
+		VerifyScreenshot();
 	}
 }
-
-#endif

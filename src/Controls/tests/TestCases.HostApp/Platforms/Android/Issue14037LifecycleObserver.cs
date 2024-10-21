@@ -8,13 +8,13 @@ namespace Maui.Controls.Sample.Platform;
 
 public class Issue14037LifecycleObserver(ActivityResultRegistry registry) : JavaObject, IDefaultLifecycleObserver
 {
-	readonly ActivityResultRegistry Registry = registry;
+	readonly ActivityResultRegistry _registry = registry;
 
 	static ActivityResultLauncher Launcher;
 	static TaskCompletionSource<ActivityResult> Tcs = null;
 
 	public void OnCreate(ILifecycleOwner owner) =>
-		Launcher = Registry?.Register(
+		Launcher = _registry.Register(
 			nameof(ActivityResultContracts.StartActivityForResult),
 			owner,
 			new ActivityResultContracts.StartActivityForResult(),

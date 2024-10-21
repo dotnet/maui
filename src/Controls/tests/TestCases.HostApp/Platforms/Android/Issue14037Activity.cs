@@ -9,8 +9,6 @@ namespace Maui.Controls.Sample.Platform;
 [Activity(Label = nameof(Issue14037Activity))]
 public class Issue14037Activity : Activity
 {
-	private const int TEXTSIZE = 16;
-
 	protected override void OnCreate(Bundle savedInstanceState)
 	{
 		base.OnCreate(savedInstanceState);
@@ -25,7 +23,6 @@ public class Issue14037Activity : Activity
 		var button = new AButton(this)
 		{
 			Text = "Return Result",
-			TextSize = TEXTSIZE,
 		};
 		button.Click += (sender, e) =>
 		{
@@ -55,12 +52,10 @@ public class Issue14037Activity : Activity
 		var label = new TextView(this)
 		{
 			Text = labelText,
-			TextSize = TEXTSIZE,
 		};
 
 		var value = new EditText(this)
 		{
-			TextSize = TEXTSIZE,
 			LayoutParameters = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WrapContent, 1)
 		};
 
