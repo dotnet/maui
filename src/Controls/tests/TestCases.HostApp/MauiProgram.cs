@@ -1,5 +1,7 @@
 using Maui.Controls.Sample.Issues;
 
+[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+
 namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
