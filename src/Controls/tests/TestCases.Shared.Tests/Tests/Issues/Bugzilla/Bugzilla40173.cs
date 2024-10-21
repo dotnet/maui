@@ -12,24 +12,24 @@ public class Bugzilla40173 : _IssuesUITest
 
 	public override string Issue => "Android BoxView/Frame not clickthrough in ListView";
 
-// 	[FailsOnAndroid]
-// 	[FailsOnIOS]
-// 	[Test]
-// 	[Category(UITestCategories.InputTransparent)]
-// 	public void ButtonBlocked()
-// 	{
-// 		App.Tap("CantTouchButtonId");
+	// 	[FailsOnAndroidWhenRunningOnXamarinUITest]
+	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
+	// 	[Test]
+	// 	[Category(UITestCategories.InputTransparent)]
+	// 	public void ButtonBlocked()
+	// 	{
+	// 		App.Tap("CantTouchButtonId");
 
-// 		Assert.That(App.FindElement("outputlabel").GetText()?
-// 			.Equals("Failed", StringComparison.OrdinalIgnoreCase),
-// 			Is.False);
+	// 		Assert.That(App.FindElement("outputlabel").GetText()?
+	// 			.Equals("Failed", StringComparison.OrdinalIgnoreCase),
+	// 			Is.False);
 
-// 		App.Tap("CanTouchButtonId");
+	// 		App.Tap("CanTouchButtonId");
 
-// 		App.WaitForTextToBePresentInElement("outputlabel", "ButtonTapped");
-// #if !__MACOS__
-// 		App.Tap("ListTapTarget");
-// 		App.WaitForTextToBePresentInElement("outputlabel", "ItemTapped");
-// #endif
-// 	}
+	// 		App.WaitForTextToBePresentInElement("outputlabel", "ButtonTapped");
+	// #if !__MACOS__
+	// 		App.Tap("ListTapTarget");
+	// 		App.WaitForTextToBePresentInElement("outputlabel", "ItemTapped");
+	// #endif
+	// 	}
 }

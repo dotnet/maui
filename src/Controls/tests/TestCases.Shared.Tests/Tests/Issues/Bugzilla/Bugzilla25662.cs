@@ -13,9 +13,9 @@ public class Bugzilla25662 : _IssuesUITest
     public override string Issue => "Setting IsEnabled does not disable SwitchCell";
 
 	// [Test]
-    // [Category(UITestCategories.Cells)]
-	// [FailsOnIOS]
-	// [FailsOnWindows]
+	// [Category(UITestCategories.Cells)]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
+	// [FailsOnWindowsWhenRunningOnXamarinUITest]
 	// public void Bugzilla25662Test()
 	// {
 	// 	App.WaitForElement("One");
