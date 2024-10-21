@@ -16,13 +16,11 @@ public class Issue24864 : ContentPage
 				BackgroundColor = Colors.Transparent,
 				Text = "Hello World",
 				Margin = new Thickness(10)
-			}
-			,new Button
+			},
+			new ImageButton
 			{
 				BorderWidth = 1,
-				TextColor = Colors.Black,
 				BackgroundColor = Colors.Transparent,
-				Text = "Hello World"
 			}
 		};
 	}
