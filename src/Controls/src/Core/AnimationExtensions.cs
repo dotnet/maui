@@ -67,6 +67,12 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.Commit(animationManager);
+
+			animation.Finished += () =>
+			{
+				s_tweeners.TryRemove(id, out _);
+				animation.Finished = null;
+			};
 			return id;
 		}
 
@@ -81,6 +87,13 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.Commit(animationManager);
+
+			animation.Finished += () =>
+			{
+				s_tweeners.TryRemove(id, out _);
+				animation.Finished = null;
+			};
+
 			return id;
 		}
 
@@ -259,6 +272,14 @@ namespace Microsoft.Maui.Controls
 			info.Owner = new WeakReference<IAnimatable>(self);
 
 			s_animations[key] = info;
+
+			if (self is VisualElement ve)
+			{
+				ve.Unloaded += (s, e) =>
+				{
+					s_animations.Remove(key);
+				};
+			}
 
 			info.Callback(0.0f);
 			tweener.Start();
