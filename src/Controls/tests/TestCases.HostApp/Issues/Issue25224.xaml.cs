@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
@@ -27,7 +26,6 @@ namespace Maui.Controls.Sample.Issues
 			return query.Equals("xamarin", StringComparison.OrdinalIgnoreCase) ? OtherTemplate : DefaultTemplate;
 		}
 	}
-
 
 	public class Issue25224ViewModel : INotifyPropertyChanged
 	{
