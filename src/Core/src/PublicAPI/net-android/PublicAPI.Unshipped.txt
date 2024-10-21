@@ -61,6 +61,7 @@ override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Web
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Platform.MauiAppCompatEditText.OnSelectionChanged(int selStart, int selEnd) -> void
+override Microsoft.Maui.Handlers.RefreshViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
 override Microsoft.Maui.Platform.MauiWebViewClient.OnRenderProcessGone(Android.Webkit.WebView? view, Android.Webkit.RenderProcessGoneDetail? detail) -> bool
