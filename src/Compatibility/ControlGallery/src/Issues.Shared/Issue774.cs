@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 						Text = "Hi"
 					},
 					new Button {
+						AutomationId = "ShowActionSheet",
 						Text = "Show ActionSheet",
 						Command = new Command (async () => await DisplayActionSheet ("What's up", "Dismiss", "Destroy"))
 					}
