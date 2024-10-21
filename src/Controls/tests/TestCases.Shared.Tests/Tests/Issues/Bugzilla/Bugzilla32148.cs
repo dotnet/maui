@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if !MACCATALYST && !WINDOWS // TODO: Fix on Mac and Windows. Randomly crashing in the Teardown process.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,13 +15,20 @@ public class Bugzilla32148 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnApple]
-	[FailsOnWindows("Sometimes the Teardown process fails after running the test.")]
+	[FailsOnIOS]
 	public void Bugzilla32148Test()
 	{
+		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
+		{
+			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
+		}
+
 		App.WaitForNoElement("Contact0 LastName");
-		App.Tap(AppiumQuery.ByXPath("//*[@text='" + "Search" + "']"));
+		var searchButton = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Search" + "']"));
+		searchButton.Click();
+
 		App.WaitForNoElement("Contact0 LastName");
 		App.Screenshot("For manual review, verify that the first cell is visible");
 	}
 }
+#endif
