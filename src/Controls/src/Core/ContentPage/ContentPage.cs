@@ -73,6 +73,15 @@ namespace Microsoft.Maui.Controls
 			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
 		}
 
+		[Obsolete("Use ArrangeOverride instead")]
+		protected override void LayoutChildren(double x, double y, double width, double height)
+		{
+			// This call is redundant when a handler is attached because the handler just calls
+			// CrossPlatformArrange
+			if (Handler is null)
+				base.LayoutChildren(x, y, width, height);
+		}
+
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);

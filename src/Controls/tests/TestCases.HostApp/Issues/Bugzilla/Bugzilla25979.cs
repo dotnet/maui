@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Bugzilla, 25979, "https://bugzilla.xamarin.com/show_bug.cgi?id=25979")]
@@ -46,7 +44,7 @@ public class Bugzilla25979 : NavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	internal sealed class MyPage2 : ContentPage
 	{
 		public MyPage2()
@@ -86,7 +84,7 @@ public class Bugzilla25979 : NavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	internal sealed class MyPage3 : ContentPage
 	{
 		public MyPage3()

@@ -26,6 +26,7 @@ public class Bugzilla32148 : _IssuesUITest
 		App.WaitForNoElement("Contact0 LastName");
 		var searchButton = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Search" + "']"));
 		searchButton.Click();
+
 		App.WaitForNoElement("Contact0 LastName");
 		App.Screenshot("For manual review, verify that the first cell is visible");
 	}

@@ -59,7 +59,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
 				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName ||
 				e.PropertyName == VisualElement.OpacityProperty.PropertyName ||
-				e.PropertyName == Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName)
+#pragma warning disable CS0618 // Type or member is obsolete
+				e.PropertyName == Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName
+#pragma warning restore CS0618 // Type or member is obsolete
+				)
 			{
 				UpdateNativeWidget();
 			}

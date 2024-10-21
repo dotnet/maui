@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// Issue12848 (src\ControlGallery\src\Issues.Shared\Issue12848.cs
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 12848, "[Bug] CarouselView position resets when visibility toggled", PlatformAffected.Android)]
 	public partial class CarouselViewPositionVisibility : ContentPage
 	{

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	public static class GarbageCollectionHelper
 	{
@@ -57,20 +54,20 @@ namespace Maui.Controls.Sample
 				throw new Exception(message);
 			}
 		}
-		
+
 		public static void RunMemoryTest(this INavigation navigationPage, Func<VisualElement> elementToTest)
 		{
-        	ContentPage rootPage = new ContentPage { Title = "Page 1" };
+			ContentPage rootPage = new ContentPage { Title = "Page 1" };
 			navigationPage.PushAsync(rootPage);
 			rootPage.Content = new VerticalStackLayout()
-            {
-                new Label
-                {
-                    Text = "If you don't see a success label this test has failed"
-                }
-            };
+			{
+				new Label
+				{
+					Text = "If you don't see a success label this test has failed"
+				}
+			};
 
-            rootPage.Loaded += OnPageLoaded;
+			rootPage.Loaded += OnPageLoaded;
 
 			async void OnPageLoaded(object sender, EventArgs e)
 			{
@@ -102,7 +99,7 @@ namespace Maui.Controls.Sample
 						{
 							Text = "Waiting for resources to cleanup",
 							AutomationId = "Waiting"
-							
+
 						}
 					};
 
@@ -118,7 +115,7 @@ namespace Maui.Controls.Sample
 				}
 				catch
 				{
-					var stillAlive = references.Where(x=> x.IsAlive).Select(x=> x.Target).ToList();
+					var stillAlive = references.Where(x => x.IsAlive).Select(x => x.Target).ToList();
 					rootPage.Content = new VerticalStackLayout()
 					{
 						new Label

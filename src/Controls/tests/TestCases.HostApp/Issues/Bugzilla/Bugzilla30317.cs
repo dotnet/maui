@@ -1,18 +1,13 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
 [Issue(IssueTracker.Bugzilla, 30317, "https://bugzilla.xamarin.com/show_bug.cgi?id=30137")]
 public class Bugzilla30317 : TestNavigationPage
 {
-	[Preserve(AllMembers = true)]
 	public class Bugzilla30317ListItem
 	{
 		public string Label { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
 	public class Bugzilla30317ListCell : ViewCell
 	{
 		public Bugzilla30317ListCell()
@@ -25,7 +20,6 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class Bugzilla30317Page1 : ContentPage
 	{
 		ListView _listView;
@@ -66,7 +60,7 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Bugzilla30317Page2 : ContentPage
 	{
 		public Bugzilla30317Page2()
@@ -99,7 +93,6 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class Bugzilla30317Page3TabOne : ContentPage
 	{
 		public Bugzilla30317Page3TabOne()
@@ -122,7 +115,7 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Bugzilla30317Page3TabTwo : ContentPage
 	{
 		ListView _listView;
@@ -155,7 +148,6 @@ public class Bugzilla30317 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class Bugzilla30317Page3 : TabbedPage
 	{
 		public Bugzilla30317Page3()

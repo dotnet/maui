@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Style))]
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StyleSheetProvider")]
+	[RequireService([typeof(IXmlLineInfoProvider), typeof(IRootObjectProvider)])]
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		public string Style { get; set; }
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			IXmlLineInfo lineInfo;
 
 			if (!string.IsNullOrEmpty(Style) && Source != null)
-				throw new XamlParseException($"StyleSheet can not have both a Source and a content", serviceProvider);
+				throw new XamlParseException($"StyleSheet cannot have both a Source and a content", serviceProvider);
 
 			if (Source != null)
 			{
