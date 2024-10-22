@@ -25,7 +25,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 		static void OnLayoutChange(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
 		{
 			if (sender is IVisualElementRenderer renderer && renderer.View is ImageView imageView)
+#pragma warning disable CS0618 // Obsolete
 				AViewCompat.SetClipBounds(imageView, imageView.GetScaleType() == AScaleType.CenterCrop ? new ARect(0, 0, e.Right - e.Left, e.Bottom - e.Top) : null);
+#pragma warning restore CS0618 // Obsolete
+
 		}
 
 		public static void Dispose(IVisualElementRenderer renderer)

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var layout = new StackLayout();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var frame = new Frame()
 			{
 				HeightRequest = 300,
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 					Text = "Content"
 				}
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var button = new Button()
 			{
@@ -73,6 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			double contentSize = 50;
+#pragma warning disable CS0618 // Type or member is obsolete
 			var innerFrame = new Frame()
 			{
 				BorderColor = Colors.Black,
@@ -92,6 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = contentSize,
 				HeightRequest = contentSize
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new StackLayout()
 			{

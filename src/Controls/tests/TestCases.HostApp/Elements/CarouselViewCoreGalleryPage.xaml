@@ -102,12 +102,14 @@
                                     Aspect="AspectFit" />
                                 <Label 
                                     Text="{Binding Index}"  Grid.Row="1"
-                                    FontSize="Large"
+                                    FontSize="14"
+                                    TextColor="Black"
                                     HorizontalOptions="Start" 
                                     VerticalOptions="Center" />
                                 <Label 
                                     Text="{Binding Title}"  Grid.Row="1"
-                                    FontSize="Large"
+                                    FontSize="14"
+                                    TextColor="Black"
                                     HorizontalOptions="End" 
                                     VerticalOptions="Center" />
                             </Grid>

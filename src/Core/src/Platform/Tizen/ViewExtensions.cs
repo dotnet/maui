@@ -128,6 +128,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[Obsolete("IBorder is not used and will be removed in a future release.")]
 		public static void UpdateBorder(this NView platformView, IView view)
 		{
 			if (view is IBorder border && platformView is WrapperView wrapperView)

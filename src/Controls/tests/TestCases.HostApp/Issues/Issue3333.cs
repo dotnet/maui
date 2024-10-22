@@ -20,7 +20,7 @@
 			}
 
 
-			public partial class TestPage : ContentPage
+			public class TestPage : ContentPage
 			{
 				Label content = new Label();
 				public TestPage()

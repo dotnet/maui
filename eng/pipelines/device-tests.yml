@@ -72,17 +72,17 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+      name: $(iosDeviceTestsVmPool)
+      vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
-
+        - Agent.OSVersion -equals 14.5
+        - Agent.OSArchitecture -equals ARM64
+        
   - name: catalystPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
@@ -93,6 +93,11 @@ parameters:
       name: $(windowsTestsVmPool)
       vmImage: $(windowsTestsVmImage)
 
+  - name: targetFrameworkVersions
+    type: object
+    default:
+      - tfm: net9.0
+
 resources:
   repositories:
     - repository: yaml-templates
@@ -102,7 +107,7 @@ resources:
       ref: refs/heads/main
 
 stages:
-
+- ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
@@ -110,15 +115,16 @@ stages:
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
+      targetFrameworkVersion: ${{ targetFrameworkVersion }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-        iosVersions: [ 'simulator-17.2']
+        iosVersions: [ 'simulator-18.0']
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
+      ${{ else }}:
         androidApiLevels: [ 33, 23 ]
-        iosVersions: [ 'simulator-17.2' ]
+        iosVersions: [ 'simulator-18.0' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -126,6 +132,7 @@ stages:
         - name: essentials
           desc: Essentials
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidConfiguration: 'Release'
           windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
@@ -134,6 +141,7 @@ stages:
         - name: graphics
           desc: Graphics
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidConfiguration: 'Release'
           windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
@@ -142,6 +150,7 @@ stages:
         - name: core
           desc: Core
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidConfiguration: 'Release'
           windowsPackageId: 'com.microsoft.maui.core.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
@@ -150,6 +159,7 @@ stages:
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [27, 25] # Ignore for now API25 since the runs's are not stable
+          androidConfiguration: 'Debug'
           windowsPackageId: 'com.microsoft.maui.controls.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
@@ -157,7 +167,8 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
-          androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          androidApiLevelsExclude: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          androidConfiguration: 'Release'
           windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj

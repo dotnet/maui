@@ -145,11 +145,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			SizeRequest desiredSize = base.OnMeasure(double.PositiveInfinity, double.PositiveInfinity);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
+#pragma warning restore CS0672 // Member overrides obsolete member
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, ImageButton> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();

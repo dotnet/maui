@@ -9,7 +9,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class MauiCommandBar : CommandBar
+	public partial class MauiCommandBar : CommandBar
 	{
 		Microsoft.UI.Xaml.Controls.Button _moreButton;
 		Microsoft.UI.Xaml.Controls.ItemsControl _primaryItemsControl;
