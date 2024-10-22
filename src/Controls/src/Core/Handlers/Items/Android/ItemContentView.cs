@@ -170,8 +170,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Even though we already know the size we still need to pass the measure through to the children.
 			if (_pixelSize is not null)
 			{
-				var w = (int)this.FromPixels(_pixelSize.Value.Width);
-				var h = (int)this.FromPixels(_pixelSize.Value.Height);
+				var w = (int)_pixelSize.Value.Width;
+				var h = (int)_pixelSize.Value.Height;
 
 				// If the platform childs measure has been invalidated, it's going to still want to
 				// participate in the measure lifecycle in order to update its internal
