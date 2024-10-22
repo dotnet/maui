@@ -617,6 +617,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		object FindBoundItem(ScrollToRequestEventArgs args)
 		{
+			if (ItemCount == 0 || args.Index < 0)
+			{
+				return null;
+			}
+
 			if (args.Mode == ScrollToMode.Position)
 			{
 				if (args.Index >= ItemCount)
