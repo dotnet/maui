@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType için bir dize sabit değeri, {{x:Type}} işaretlemesi veya {{x:Nul}l} bekleniyor.</value>
+    <value>x:DataType için bir dize sabit değeri, {{x:Type}} işaretlemesi veya {{x:Null}} bekleniyor.</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>"{0}" xmlns ön eki bildirilmedi.</value>

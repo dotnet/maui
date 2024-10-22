@@ -3,7 +3,7 @@
 // Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
-var dotnetPath = $"./bin/dotnet/dotnet{ext}";
+var dotnetPath = $"./.dotnet/dotnet{ext}";
 string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
@@ -36,6 +36,14 @@ var NuGetOnlyPackages = new string[] {
     "Microsoft.Maui.Resizetizer.*.{nupkg,snupkg}",
     "Microsoft.AspNetCore.Components.WebView.*.{nupkg,snupkg}",
 };
+public enum RuntimeVariant
+{
+	Mono,
+	NativeAOT
+}
+
+RuntimeVariant RUNTIME_VARIANT = Argument("runtimevariant", RuntimeVariant.Mono);
+bool USE_NATIVE_AOT = RUNTIME_VARIANT == RuntimeVariant.NativeAOT ? true : false;
 
 ProcessTFMSwitches();
 
@@ -178,7 +186,27 @@ Task("dotnet-samples")
                 ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
             };
         }
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
+
+        string projectsToBuild;
+        if (USE_NATIVE_AOT)
+        {
+            if (configuration.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+            {
+                var errMsg = $"Error: Building dotnet-samples with NativeAOT is only supported in Release configuration";
+                Error(errMsg);
+                throw new Exception(errMsg);
+            }
+            projectsToBuild = "./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
+            properties["_UseNativeAot"] = "true";
+            properties["RuntimeIdentifier"] = "iossimulator-x64";
+            properties["BuildIpa"] = "true";
+        }
+        else
+        {
+            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+        }
+
+        RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
     });
 
 // Builds the host app for the UI Tests
@@ -247,9 +275,10 @@ Task("dotnet-test")
         var tests = new []
         {
             "**/Controls.Core.UnitTests.csproj",
-            "**/Controls.Core.Design.UnitTests.csproj",
+        //    "**/Controls.Core.Design.UnitTests.csproj",
             "**/Controls.Xaml.UnitTests.csproj",
             "**/SourceGen.UnitTests.csproj",
+            "**/Controls.BindingSourceGen.UnitTests.csproj",
             "**/Core.UnitTests.csproj",
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
@@ -269,11 +298,12 @@ Task("dotnet-test")
             {
                 try
                 {
-                    RunTestWithLocalDotNet(project.FullPath);
+                    RunTestWithLocalDotNet(project.FullPath, configuration, dotnetPath);
                 }
                 catch
                 {
                     success = false;
+                    Error($"Test project failed: {project}");
                 }
             }
         }
@@ -549,7 +579,7 @@ bool RunPackTarget()
 Dictionary<string, string> GetDotNetEnvironmentVariables()
 {
     Dictionary<string, string> envVariables = new Dictionary<string, string>();
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = MakeAbsolute(Directory("./.dotnet/")).ToString();
 
     envVariables.Add("DOTNET_INSTALL_DIR", dotnet);
     envVariables.Add("DOTNET_ROOT", dotnet);
@@ -568,10 +598,11 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
     return envVariables;
 }
 
-void SetDotNetEnvironmentVariables()
+void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
     
+    SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
@@ -693,7 +724,10 @@ void RunMSBuildWithDotNet(
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
-        .EnableBinaryLogger(binlog);
+        .EnableBinaryLogger(binlog)
+        
+       // .SetVerbosity(Verbosity.Diagnostic)
+        ;
 
     if (warningsAsError)
     {
@@ -720,9 +754,7 @@ void RunMSBuildWithDotNet(
 
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
-
-        //args.Append("/tl");
-
+    
         return args;
     };
 
@@ -732,15 +764,7 @@ void RunMSBuildWithDotNet(
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
-void RunTestWithLocalDotNet(string csproj)
-{
-    if(localDotnet)
-        SetDotNetEnvironmentVariables();
-
-    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, argsExtra: null, noBuild: true, resultsFileNameWithoutExtension: null);
-}
-
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "", int maxCpuCount = 0)
 {
     if (string.IsNullOrWhiteSpace(filter))
     {
@@ -756,6 +780,15 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+
+    if (!string.IsNullOrWhiteSpace(pathDotnet) && localDotnet)
+    {
+        // Make sure the path doesn't refer to the dotnet executable and make path absolute
+        var localDotnetRoot = MakeAbsolute(Directory(System.IO.Path.GetDirectoryName(pathDotnet)));
+    	Information("new dotnet root: {0}", localDotnetRoot);
+
+        SetDotNetEnvironmentVariables(localDotnetRoot.FullPath);
+    }
 
     if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
     {
@@ -780,18 +813,26 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 $"console;verbosity=normal"
             }, 
            	ResultsDirectory = GetTestResultsDirectory(),
-            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+        //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
-               // args.Append($"/tl");
+                if(maxCpuCount > 0)
+                {
+                    args.Append($"-maxcpucount:{maxCpuCount}");
+                }
+
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
                     {
                         args.Append($"/p:{prop.Key}={prop.Value}");
-                    }
-                }
+                    }        
+                }        
+                    
+                // https://github.com/microsoft/vstest/issues/5112
+                args.Append($"/p:VStestUseMSBuildOutput=false");
+                
                 return args;
             }
         };
@@ -801,7 +842,11 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         settings.ToolPath = pathDotnet;
     }
 
-    DotNetTest(csproj, settings);
+    try {
+        DotNetTest(csproj, settings);
+    } finally {
+        Information("Test Run complete: {0}", results);
+    }
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)

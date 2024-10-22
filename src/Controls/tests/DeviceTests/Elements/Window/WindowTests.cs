@@ -73,7 +73,10 @@ namespace Microsoft.Maui.DeviceTests
 			if (useAppMainPage)
 			{
 				var app = ApplicationServices.GetService<IApplication>() as ApplicationStub;
-				app.MainPage = rootPage;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+				await InvokeOnMainThreadAsync(() => app.MainPage = rootPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 				window = await InvokeOnMainThreadAsync(() => (app as IApplication).CreateWindow(null));
 
 			}

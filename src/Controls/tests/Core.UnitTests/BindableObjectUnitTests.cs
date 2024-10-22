@@ -1407,6 +1407,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotEqual(-42, bindable.GetValue(prop));
 		}
 
+		[TypeConverter(typeof(CastFromStringTypeConverter))]
 		class CastFromString
 		{
 			public string Result { get; private set; }
@@ -1415,6 +1416,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var o = new CastFromString();
 				o.Result = source;
 				return o;
+			}
+
+			private sealed class CastFromStringTypeConverter : TypeConverter
+			{
+				public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+					=> sourceType == typeof(string);
+
+				public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+					=> value switch
+					{
+						string s => (CastFromString)s,
+						_ => throw new NotSupportedException(),
+					};
+
+				public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
+				public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) => throw new NotSupportedException();
 			}
 		}
 
@@ -1430,6 +1447,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("foo", ((CastFromString)bindable.GetValue(prop)).Result);
 		}
 
+		[TypeConverter(typeof(CastToStringTypeConverter))]
 		class CastToString
 		{
 			string Result { get; set; }
@@ -1447,6 +1465,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public override string ToString()
 			{
 				throw new InvalidOperationException();
+			}
+
+			private sealed class CastToStringTypeConverter : TypeConverter
+			{
+				public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => false;
+				public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => throw new NotSupportedException();
+
+				public override bool CanConvertTo(ITypeDescriptorContext context, Type sourceType)
+					=> sourceType == typeof(CastToString);
+				public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+					=> value switch
+					{
+						CastToString cts when destinationType == typeof(string) => (string)cts,
+						_ => throw new NotSupportedException(),
+					};
 			}
 		}
 

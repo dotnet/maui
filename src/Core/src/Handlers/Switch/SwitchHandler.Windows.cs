@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ToggleSwitch>
 	{
-		protected override ToggleSwitch CreatePlatformView() => new ToggleSwitch();
+		protected override ToggleSwitch CreatePlatformView() => new ToggleSwitch() { OffContent = null, OnContent = null };
 
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
 		{

@@ -78,7 +78,7 @@ namespace Maui.Controls.Sample.Issues
 						() =>
 						{
 							var image = new Image();
-							image.SetBinding(Image.SourceProperty, new Binding("."));
+							image.SetBinding(Image.SourceProperty, new Binding(nameof(PhotoItem.Image)));
 							return image;
 						}
 					)
@@ -100,19 +100,18 @@ namespace Maui.Controls.Sample.Issues
 				Content = grid;
 			}
 
-			public ObservableCollection<string> Items { get; set; }
+			public ObservableCollection<PhotoItem> Items { get; set; }
 
 			public void LoadData()
 			{
-				var images = new List<string>();
+				var images = new List<PhotoItem>();
 
-				images.Add("oasis.jpg");
-				images.Add("dotnet_bot.jpg");
-				images.Add("shopping_cart.jpg");
-				images.Add("groceries.png");
+				for (int i = 0; i < 4; i++)
+				{
+					images.Add(new PhotoItem { Image = "oasis.jpg", Title = $"Title {i}" });
+				}
 
-
-				Items = new ObservableCollection<string>(images);
+				Items = new ObservableCollection<PhotoItem>(images);
 				Photos.ItemsSource = Items;
 			}
 
@@ -127,6 +126,12 @@ namespace Maui.Controls.Sample.Issues
 			{
 				get; set;
 			}
+		}
+	
+		class PhotoItem
+		{
+			public string Image { get; set; }
+			public string Title { get; set; }
 		}
 	}
 }
