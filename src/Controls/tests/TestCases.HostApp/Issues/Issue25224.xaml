@@ -14,12 +14,12 @@
                  FontAttributes="Bold"
                  FontSize="18"
                  HorizontalOptions="Fill"
-                 HorizontalTextAlignment="Center" />
+                 HorizontalTextAlignment="Center"/>
         <Label Text="Try a broader filter?"
                  FontAttributes="Italic"
                  FontSize="12"
                  HorizontalOptions="Fill"
-                 HorizontalTextAlignment="Center" />
+                 HorizontalTextAlignment="Center"/>
       </StackLayout>
     </DataTemplate>
 
@@ -29,7 +29,7 @@
              FontAttributes="Bold"
              FontSize="18"
              HorizontalOptions="Fill"
-             HorizontalTextAlignment="Center" />
+             HorizontalTextAlignment="Center"/>
     </DataTemplate>
 
     <local:SearchTermDataTemplateSelector x:Key="SearchSelector"
@@ -50,6 +50,7 @@
              SearchCommandParameter="{Binding Source={x:Reference searchBar}, Path=Text}"
              Placeholder="Filter" />
     <CollectionView Grid.Row="2"
+                  AutomationId="Success"
                   ItemsSource="{Binding Monkeys}"
                   EmptyView="{Binding Source={x:Reference searchBar}, Path=Text}"
                   EmptyViewTemplate="{StaticResource SearchSelector}">
