@@ -802,10 +802,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)
 		{
-			if(Element is null)
-			{
-			  return;
-			}
+			if (Element is null)
+				return;
 
 			bool areEqual = false;
 

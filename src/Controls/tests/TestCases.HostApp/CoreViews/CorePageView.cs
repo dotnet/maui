@@ -111,8 +111,6 @@ namespace Maui.Controls.Sample
 			template.SetBinding(TextCell.TextProperty, "Title");
 			template.SetBinding(TextCell.AutomationIdProperty, "TitleAutomationId");
 
-			//Since the ListView already has _pages as its ItemsSource, there is no need to set the BindingContext.
-			//BindingContext = _pages;
 			ItemTemplate = template;
 			ItemsSource = _pages;
 
