@@ -1,5 +1,6 @@
 #nullable disable
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
@@ -73,8 +74,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CS0612 // Type or member is obsolete
 			};
 
-			text.SetBinding(Label.TextProperty, new Binding("Text", source: sectionCell));
-			text.SetBinding(Label.TextColorProperty, new Binding("TextColor", source: sectionCell));
+			text.SetBinding(Label.TextProperty, static (SectionCell cell) => cell.Text, source: sectionCell);
+			text.SetBinding(Label.TextColorProperty, static (SectionCell cell) => cell.TextColor, source: sectionCell);
 
 			var layout = new Controls.StackLayout
 			{
@@ -92,15 +93,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static View CreateContent(TextCell textcell)
 		{
 			var text = new Label();
-			text.SetBinding(Label.TextProperty, new Binding("Text", source: textcell));
-			text.SetBinding(Label.TextColorProperty, new Binding("TextColor", source: textcell));
+			text.SetBinding(Label.TextProperty, static (TextCell cell) => cell.Text, source: textcell);
+			text.SetBinding(Label.TextColorProperty, static (TextCell cell) => cell.TextColor, source: textcell);
 #pragma warning disable CS0612 // Type or member is obsolete
 			text.FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
 
 			var detail = new Label();
-			detail.SetBinding(Label.TextProperty, new Binding("Detail", source: textcell));
-			detail.SetBinding(Label.TextColorProperty, new Binding("DetailColor", source: textcell));
+			detail.SetBinding(Label.TextProperty, static (TextCell cell) => cell.Detail, source: textcell);
+			detail.SetBinding(Label.TextColorProperty, static (TextCell cell) => cell.DetailColor, source: textcell);
 #pragma warning disable CS0612 // Type or member is obsolete
 			detail.FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -138,7 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				Aspect = Aspect.AspectFit,
 			};
-			img.SetBinding(Image.SourceProperty, new Binding("ImageSource", source: imageCell));
+			img.SetBinding(Image.SourceProperty, static (ImageCell cell) => cell.ImageSource, source: imageCell);
 			layout.Add(img, 0, 0);
 			layout.Add(textcell, 1, 0);
 			return layout;
@@ -147,15 +148,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		static View CreateContent(EntryCell entryCell)
 		{
 			var entry = new Entry();
-			entry.SetBinding(Entry.TextProperty, new Binding("Text", BindingMode.TwoWay, source: entryCell));
-			entry.SetBinding(Entry.PlaceholderProperty, new Binding("Placeholder", source: entryCell));
-			entry.SetBinding(InputView.KeyboardProperty, new Binding("Keyboard", source: entryCell));
-			entry.SetBinding(Entry.HorizontalTextAlignmentProperty, new Binding("HorizontalTextAlignment", source: entryCell));
-			entry.SetBinding(Entry.VerticalTextAlignmentProperty, new Binding("VerticalTextAlignment", source: entryCell));
+			entry.SetBinding(Entry.TextProperty, static (EntryCell cell) => cell.Text, mode: BindingMode.TwoWay, source: entryCell);
+			entry.SetBinding(Entry.PlaceholderProperty, static (EntryCell cell) => cell.Placeholder, source: entryCell);
+			entry.SetBinding(InputView.KeyboardProperty, static (EntryCell cell) => cell.Keyboard, source: entryCell);
+			entry.SetBinding(Entry.HorizontalTextAlignmentProperty, static (EntryCell cell) => cell.HorizontalTextAlignment, source: entryCell);
+			entry.SetBinding(Entry.VerticalTextAlignmentProperty, static (EntryCell cell) => cell.VerticalTextAlignment, source: entryCell);
 
 			var label = new Label();
-			label.SetBinding(Label.TextProperty, new Binding("Label", source: entryCell));
-			label.SetBinding(Label.TextColorProperty, new Binding("LabelColor", source: entryCell));
+			label.SetBinding(Label.TextProperty, static (EntryCell cell) => cell.Label, source: entryCell);
+			label.SetBinding(Label.TextColorProperty, static (EntryCell cell) => cell.LabelColor, source: entryCell);
 #pragma warning disable CS0612 // Type or member is obsolete
 			label.FontSize = Device.GetNamedSize(NamedSize.Micro, typeof(Label));
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -182,14 +183,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				HorizontalOptions = LayoutOptions.StartAndExpand,
 			};
 #pragma warning restore CS0618
-			text.SetBinding(Label.TextProperty, new Binding("Text", source: switchCell));
+			text.SetBinding(Label.TextProperty, static (SwitchCell cell) => cell.Text, source: switchCell);
 
 			var sw = new Switch
 			{
 				HorizontalOptions = LayoutOptions.End
 			};
-			sw.SetBinding(Switch.IsToggledProperty, new Binding("On", BindingMode.TwoWay, source: switchCell));
-			sw.SetBinding(Switch.OnColorProperty, new Binding("OnColor", source: switchCell));
+			sw.SetBinding(Switch.IsToggledProperty, static (SwitchCell cell) => cell.On, mode: BindingMode.TwoWay, source: switchCell);
+			sw.SetBinding(Switch.OnColorProperty, static (SwitchCell cell) => cell.OnColor, source: switchCell);
 
 			var layout = new Controls.StackLayout
 			{

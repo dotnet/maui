@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 10744, "[Android] WebView.Eval crashes on Android with long string",
 		PlatformAffected.Android)]
 	public class Issue10744 : TestContentPage

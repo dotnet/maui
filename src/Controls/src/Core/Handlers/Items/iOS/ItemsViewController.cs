@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells get arranged according to the new layout
 				CollectionView.ReloadData();
 			}
 		}
@@ -541,13 +541,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (IsHorizontal)
 			{
-				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height, MeasureFlags.IncludeMargins);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, request.Request.Width, CollectionView.Frame.Height));
+				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
+				formsElement.Arrange(new Rect(0, 0, request.Width, CollectionView.Frame.Height));
 			}
 			else
 			{
-				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, CollectionView.Frame.Width, request.Request.Height));
+				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
+				formsElement.Arrange(new Rect(0, 0, CollectionView.Frame.Width, request.Height));
 			}
 		}
 
@@ -567,7 +567,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
-			if (view == null)
+			if (view is null && viewTemplate is null)
 			{
 				if (formsElement != null)
 				{

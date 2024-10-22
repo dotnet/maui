@@ -13,10 +13,6 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		[Obsolete("Use ToolbarHandler.Mapper instead.")]
-		public static IPropertyMapper<Toolbar, ToolbarHandler> ControlsToolbarMapper =
-			new ControlsMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper);
-
 		internal static void RemapForControls()
 		{
 #if ANDROID || WINDOWS || TIZEN

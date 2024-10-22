@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.iOS</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS0672;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

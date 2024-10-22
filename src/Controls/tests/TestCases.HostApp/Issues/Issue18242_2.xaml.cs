@@ -1,11 +1,5 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.ManualTest, "18242_2", "Button ImageSource not Scaling as expected - manual test", PlatformAffected.iOS)]
 	public partial class Issue18242_2 : ContentPage
 	{
@@ -20,9 +14,9 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnSliderPaddingValueChanged(object sender, ValueChangedEventArgs e)
 		{
-			TopButton.Padding = 
-			BottonButton.Padding = 
-			LeftButton.Padding = 
+			TopButton.Padding =
+			BottonButton.Padding =
+			LeftButton.Padding =
 			RightButton.Padding = new Thickness(e.NewValue);
 		}
 

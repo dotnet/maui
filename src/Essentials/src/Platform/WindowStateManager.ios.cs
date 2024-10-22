@@ -59,7 +59,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var vc = manager.GetCurrentUIViewController();
 			if (throwOnNull && vc == null)
-				throw new NullReferenceException("The current view controller can not be detected.");
+				throw new NullReferenceException("The current view controller cannot be detected.");
 
 			return vc;
 		}
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var window = manager.GetCurrentUIWindow();
 			if (throwOnNull && window == null)
-				throw new NullReferenceException("The current window can not be detected.");
+				throw new NullReferenceException("The current window cannot be detected.");
 
 			return window;
 		}

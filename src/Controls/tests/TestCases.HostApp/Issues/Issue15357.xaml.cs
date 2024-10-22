@@ -1,11 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 15357, "IsVisible binding not showing items again if Shadow is set", PlatformAffected.Android)]
 	public partial class Issue15357 : ContentPage
 	{

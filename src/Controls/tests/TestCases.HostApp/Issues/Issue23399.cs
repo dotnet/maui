@@ -1,13 +1,13 @@
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 23399, "Closing Modal While App is Backgrounded Fails", PlatformAffected.Android)]
-	public class Issue23399: NavigationPage
+	public class Issue23399 : NavigationPage
 	{
-		
+
 		public Issue23399() : base(new TestPage())
 		{
 		}
-		
+
 		public class TestPage : TestContentPage
 		{
 			protected override void Init()
@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 				};
 			}
-			
+
 			ContentPage CreateDestinationPage()
 			{
 				return new ContentPage()

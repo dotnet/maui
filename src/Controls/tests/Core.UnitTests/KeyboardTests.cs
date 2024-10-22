@@ -20,6 +20,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(Keyboard.Telephone is TelephoneKeyboard);
 			Assert.True(Keyboard.Text is TextKeyboard);
 			Assert.True(Keyboard.Url is UrlKeyboard);
+			Assert.True(Keyboard.Date is DateKeyboard);
+			Assert.True(Keyboard.Time is TimeKeyboard);
+			Assert.True(Keyboard.Password is PasswordKeyboard);
 		}
 	}
 
@@ -39,6 +42,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"Keyboard.Url", Keyboard.Url},
 				{"Keyboard.Telephone", Keyboard.Telephone},
 				{"Keyboard.Chat", Keyboard.Chat},
+				{"Keyboard.Date", Keyboard.Date},
+				{"Keyboard.Time", Keyboard.Time},
+				{"Keyboard.Password", Keyboard.Password},
 			})
 				Assert.Same(kvp.Value, converter.ConvertFromInvariantString(kvp.Key));
 		}

@@ -219,10 +219,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid out in a layout cycle. This is a bindable property.
+		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets arranged in a layout cycle. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// Assigning <see cref="HorizontalOptions"/> modifies how the element is laid out when there is excess space available along the X axis from the parent layout.
+		/// Assigning <see cref="HorizontalOptions"/> modifies how the element is arranged when there is excess space available along the X axis from the parent layout.
 		/// If multiple elements inside a layout are set to expand, the extra space is distributed proportionally.
 		/// </remarks>
 		public LayoutOptions HorizontalOptions
@@ -241,10 +241,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid out in a layout cycle. This is a bindable property.
+		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets arrange in a layout cycle. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// Assigning <see cref="VerticalOptions"/> modifies how the element is laid out when there is excess space available along the Y axis from the parent layout.
+		/// Assigning <see cref="VerticalOptions"/> modifies how the element is arrange when there is excess space available along the Y axis from the parent layout.
 		/// If multiple elements inside a layout are set to expand, the extra space is distributed proportionally.
 		/// </remarks>
 		public LayoutOptions VerticalOptions

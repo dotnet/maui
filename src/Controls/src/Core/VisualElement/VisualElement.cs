@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
-		/// <summary>Bindable property for <see cref="NavigableElement.Style"/>.</summary>
+		/// <inheritdoc/>
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
 		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
@@ -490,7 +490,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(WindowPropertyKey, value);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
@@ -1115,6 +1117,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<FocusEventArgs> Focused;
 
+		[Obsolete]
 		SizeRequest GetSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			var constraintSize = new Size(widthConstraint, heightConstraint);
@@ -1167,6 +1170,20 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
+		/// Returns the minimum size that an element needs in order to be displayed on the device. Margins are excluded from the measurement, but returned with the size.
+		/// It is not recommended to call this method outside of the `MeasureOverride` pass on the parent element.
+		/// </summary>
+		/// <param name="widthConstraint">The suggested maximum width constraint for the element to render.</param>
+		/// <param name="heightConstraint">The suggested maximum height constraint for the element to render.</param>
+		/// <returns>The minimum size that an element needs in order to be displayed on the device. </returns>
+		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
+		public Size Measure(double widthConstraint, double heightConstraint)
+		{
+			var result = (this as IView).Measure(widthConstraint, heightConstraint);
+			return result;
+		}
+
+		/// <summary>
 		/// Returns the minimum size that an element needs in order to be displayed on the device.
 		/// </summary>
 		/// <param name="widthConstraint">The suggested maximum width constraint for the element to render.</param>
@@ -1174,6 +1191,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="flags">A value that controls whether margins are included in the returned size.</param>
 		/// <returns>The minimum size that an element needs in order to be displayed on the device.</returns>
 		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
+		[Obsolete("Use Measure with no flags.")]
 		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
@@ -1279,24 +1297,19 @@ namespace Microsoft.Maui.Controls
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
-		IPlatformSizeService _platformSizeService;
-
 		/// <summary>
 		/// Method that is called when a layout measurement happens.
 		/// </summary>
 		/// <param name="widthConstraint">The width constraint to request.</param>
 		/// <param name="heightConstraint">The height constraint to request.</param>
 		/// <returns>The requested size that the element requires in order to be displayed on the device.</returns>
+		[Obsolete("Use MeasureOverride instead")]
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
 				return new SizeRequest(new Size(-1, -1));
 
-			if (Handler != null)
-				return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
-
-			_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
-			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
+			return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 		}
 
 		/// <summary>
@@ -1350,6 +1363,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use InvalidateMeasure instead.")]
 		public void InvalidateMeasureNonVirtual(InvalidationTrigger trigger)
 		{
 			InvalidateMeasureInternal(trigger);
@@ -1745,6 +1759,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the frame this element resides in on screen.
 		/// </summary>
+		/// <remarks>Setting this property outside of <see cref="ArrangeOverride"/> won't do anything. If you want to influence this property you'll need to override <see cref="ArrangeOverride"/></remarks>
 		public Rect Frame
 		{
 			get => _frame;
@@ -1849,10 +1864,13 @@ namespace Microsoft.Maui.Controls
 		/// Positions child objects and determines a size for an element.
 		/// </summary>
 		/// <param name="bounds">The final size that the parent computes for the child in layout, provided as a <see cref="Rect"/> value.</param>
-		/// <remarks>Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.</remarks>
+		/// <remarks>
+		/// Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.
+		/// Prior to .NET 9, this method simply called <see cref="Layout"/>. If you need to revert to the old behavior, just call <see cref="Layout"/>.
+		/// </remarks>
 		public void Arrange(Rect bounds)
 		{
-			Layout(bounds);
+			ArrangeOverride(bounds);
 		}
 
 		/// <inheritdoc/>
@@ -1862,11 +1880,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Allows subclasses to override <see cref="Arrange(Rect)"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the old <see cref="Arrange(Rect)"/> method.
+		/// Allows subclasses to implement custom Arrange logic during a controls layout pass.
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this element's frame by the platform.</returns>
+		/// <remarks>Subclasses will stil want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
@@ -1891,8 +1909,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Provides a way to allow subclasses (e.g., Layout) to override <see cref="InvalidateMeasure"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the <see cref="InvalidateMeasure"/> method.
+		/// Provides a way to allow subclasses (e.g., Layout) to override <see cref="InvalidateMeasure"/>
 		/// </summary>
 		protected virtual void InvalidateMeasureOverride() => Handler?.Invoke(nameof(IView.InvalidateMeasure));
 
@@ -1909,8 +1926,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Provides a way to allow subclasses to override <see cref="Measure"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the old Measure method.
+		/// Allows subclasses to implement custom Measure logic during a controls measure pass.
 		/// </summary>
 		/// <param name="widthConstraint">The width constraint to request.</param>
 		/// <param name="heightConstraint">The height constraint to request.</param>
@@ -1969,17 +1985,17 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
-		private protected override void UpdateHandlerValue(string property)
+		private protected override void UpdateHandlerValue(string property, bool valueChanged)
 		{
 			// The HeightProperty and WidthProperty are not designed to propagate back to the handler.
 			// Instead, we use WidthRequestProperty and HeightRequestProperty to propagate changes to the handler.
 			// HeightProperty and WidthProperty are readonly and only update when the VisualElement.Frame property is set
 			// during an arrange pass, which indicates the actual width and height of the platform element.
 			// Changes to WidthRequestProperty and HeightRequestProperty will propagate to the handler via the `OnRequestChanged` method.
-			if (this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
+			if (valueChanged && this.Batched && (property == HeightProperty.PropertyName || property == WidthProperty.PropertyName))
 				return;
 
-			base.UpdateHandlerValue(property);
+			base.UpdateHandlerValue(property, valueChanged);
 		}
 
 		/// <inheritdoc/>

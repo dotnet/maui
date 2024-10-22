@@ -1237,7 +1237,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}60x60@3x.png", 180, 180);
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}ItunesArtwork.png", 1024, 1024);
 
-				AssertFileExists($"Assets.xcassets/{outputName}.appiconset/Contents.json");
+				AssertFileMatches($"Assets.xcassets/{outputName}.appiconset/Contents.json", [name, alias, outputName]);
 
 				AssertFileContains($"Assets.xcassets/{outputName}.appiconset/Contents.json",
 					$"\"filename\": \"{outputName}20x20@2x.png\"",
@@ -1290,7 +1290,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}60x60@3x.png", 180, 180);
 				AssertFileSize($"Assets.xcassets/{outputName}.appiconset/{outputName}ItunesArtwork.png", 1024, 1024);
 
-				AssertFileExists($"Assets.xcassets/{outputName}.appiconset/Contents.json");
+				AssertFileMatches($"Assets.xcassets/{outputName}.appiconset/Contents.json", [name, alias, outputName]);
 
 				AssertFileContains($"Assets.xcassets/{outputName}.appiconset/Contents.json",
 					$"\"filename\": \"{outputName}20x20@2x.png\"",

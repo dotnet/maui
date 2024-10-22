@@ -531,7 +531,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
+#pragma warning disable CS0618 // Obsolete
 			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
+#pragma warning restore CS0618 // Obsolete
 
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.
@@ -567,11 +569,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					itemCount++;
 			}
 
-			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == itemCount;
+			var showEmptyView = (ItemsView?.EmptyView is not null || ItemsView?.EmptyViewTemplate is not null) && ItemsViewAdapter.ItemCount == itemCount;
 
 			var currentAdapter = GetAdapter();
 			if (showEmptyView && currentAdapter != _emptyViewAdapter)
 			{
+				GetRecycledViewPool().Clear();
 				SwapAdapter(_emptyViewAdapter, true);
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
@@ -580,6 +583,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
+				GetRecycledViewPool().Clear();
 				SwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}

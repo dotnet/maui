@@ -25,16 +25,17 @@
 	<ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.5" PrivateAssets="all" GeneratePathProperty="true" />
 		<PackageReference Include="System.CodeDom" Version="7.0.0" PrivateAssets="all" GeneratePathProperty="true" />
-		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build" Version="17.8.3" PrivateAssets="all" Condition=" '$(_IncludeMicrosoftBuildPackage)' == 'true' "/>
+		<PackageReference Include="Microsoft.Build.Framework" Version="17.8.3" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.8.3" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.8.3" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Controls.Core.csproj" />
 		<ProjectReference Include="..\Xaml\Controls.Xaml.csproj" />
 		<ProjectReference Include="..\SourceGen\Controls.SourceGen.csproj" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\BindingSourceGen\Controls.BindingSourceGen.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -49,6 +50,8 @@
 		<None Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(ArtifactsBinDir)Controls.SourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(ArtifactsBinDir)Controls.BindingSourceGen\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.BindingSourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
 	</ItemGroup>

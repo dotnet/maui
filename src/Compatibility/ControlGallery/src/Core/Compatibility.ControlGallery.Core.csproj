@@ -4,11 +4,12 @@
     <AssemblyName>Microsoft.Maui.Controls.Compatibility.ControlGallery</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.Compatibility.ControlGallery</RootNamespace>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612</NoWarn>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429;0618;0612;CS0672;CS0618</NoWarn>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0023</WarningsNotAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>

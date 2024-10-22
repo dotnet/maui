@@ -14,28 +14,35 @@
         x:Key="MauiAppTitleBarContainerTemplateSelector"/>
 
     <DataTemplate x:Key="MauiAppTitleBarTemplateDefault">
-        <Border
+        <Grid
             Canvas.ZIndex="1" 
             VerticalAlignment="Stretch"
-            Margin="0,0,0,0">
-            <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="RootStackPanel">
-                <Image 
-                    x:Name="AppFontIcon"
-                    HorizontalAlignment="Left" 
-                    VerticalAlignment="Center"
-                    Source="Square44x44Logo.png"
-                    Visibility="{Binding WindowTitleIconVisibility}"
-                    Width="16" 
-                    Height="16"/>
-                <TextBlock 
-                    x:Name="AppTitle"
-                    VerticalAlignment="Center"
-                    Margin="{Binding WindowTitleMargin}"
-                    Text="{Binding WindowTitle}"
-                    Foreground="{Binding WindowTitleForeground}"
-                    Style="{StaticResource CaptionTextBlockStyle}" />
-            </StackPanel>
-        </Border>
+            HorizontalAlignment="Stretch"
+            Margin="{Binding WindowTitleMargin}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image 
+                x:Name="AppFontIcon"
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Center"
+                Source="Square44x44Logo.png"
+                Visibility="{Binding WindowTitleIconVisibility}"
+                Width="16" 
+                Height="16"
+                Margin="8,0,0,0"/>
+            <TextBlock x:Name="AppTitle"
+                 VerticalAlignment="Center"
+                 Margin="16,0,0,0"
+                 MinWidth="48"
+                 Text="{Binding WindowTitle}"
+                 Foreground="{Binding WindowTitleForeground}"
+                 Style="{StaticResource CaptionTextBlockStyle}"
+                 Grid.Column="1"
+                 TextTrimming="CharacterEllipsis"
+                 TextWrapping="NoWrap"/>
+        </Grid>
     </DataTemplate>
 
     <DataTemplate x:Key="MauiAppTitleBarContainerTemplateDefault">

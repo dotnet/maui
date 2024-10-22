@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 57910, "ObjectDisposedException in Microsoft.Maui.Controls.Platform.Android.Renderers.ProgressBarRenderer", PlatformAffected.Android)]
 	public class Bugzilla57910 : NavigationPage
 	{
@@ -27,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 				Navigation.PushAsync(new HomePage());
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class HomePage : ContentPage
 			{
 				public HomePage()
@@ -46,7 +42,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class ListItemView : ViewCell
 			{
 				public ListItemView()
@@ -63,7 +59,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class ListHeaderView : ContentView
 			{
 				public ListHeaderView()
@@ -74,7 +70,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class ListFooterView : ContentView
 			{
 				public ListFooterView()
@@ -87,7 +83,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class ListPageViewModel : INotifyPropertyChanged
 			{
 				ObservableCollection<ListItemViewModel> _items;
@@ -154,7 +150,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class ListItemViewModel : INotifyPropertyChanged
 			{
 				double _downloadProgressPercentage;
@@ -217,7 +213,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class ListPage : ContentPage
 			{
 				public ListPage()

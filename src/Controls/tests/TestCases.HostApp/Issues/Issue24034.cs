@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 24034, "Shadow is not updating on change of parent control", PlatformAffected.All)]
 public partial class Issue24034 : ContentPage
 {

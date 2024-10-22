@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2004, "[Android] Xamarin caused by: android.runtime.JavaProxyThrowable: System.ObjectDisposedException: Cannot access a disposed object",
 		PlatformAffected.Android)]
 	public class Issue2004 : NavigationPage
@@ -87,7 +77,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			[Preserve(AllMembers = true)]
+
 			public class AddressListItemView : Grid
 			{
 				public AddressListItemView()
@@ -116,7 +106,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			public class AddressListView : ContentPage
 			{
 				public AddressListView()
@@ -255,7 +245,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 
 
-			[Preserve(AllMembers = true)]
+
 			public class SettingsView : ContentPage
 			{
 				public Command AutoTest => new Command(async () =>
