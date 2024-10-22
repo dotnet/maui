@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 7823, "[Bug] Frame corner radius.", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, "7823_XF", "[Bug] Frame corner radius.", PlatformAffected.Android)]
 public class Issue7823_XF : TestContentPage
 {
 	const string GetClipToOutline = "getClipToOutline";
