@@ -81,3 +81,4 @@ namespace Maui.Controls.Sample.Issues
 		}
 		#endregion
 	}
+}
