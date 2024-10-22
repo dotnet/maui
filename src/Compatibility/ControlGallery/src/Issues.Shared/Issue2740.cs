@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Detail = new NavigationPage(page);
 		}
 
-		public partial class AddressListView : ContentPage
+		public class AddressListView : ContentPage
 		{
 
 			public AddressListView()
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			}
 		}
 
-		public partial class UnitViolationView : ContentPage
+		public class UnitViolationView : ContentPage
 		{
 			public UnitViolationView()
 			{

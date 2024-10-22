@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
 			TypeReference targetTypeRef, IEnumerable<ICustomAttributeProvider> attributeProviders,
-			IEnumerable<Instruction> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
+			Func<TypeReference[],IEnumerable<Instruction>> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
 		{
 			TypeReference typeConverter = null;
 			foreach (var attributeProvider in attributeProviders)
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context, FieldReference bpRef,
-			IEnumerable<Instruction> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
+			Func<TypeReference[],IEnumerable<Instruction>> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
 			var targetTypeRef = bpRef.GetBindablePropertyType(context.Cache, node, module);
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
-			TypeReference targetTypeRef, TypeReference typeConverter, IEnumerable<Instruction> pushServiceProvider,
+			TypeReference targetTypeRef, TypeReference typeConverter, Func<TypeReference[],IEnumerable<Instruction>> pushServiceProvider,
 			bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
@@ -197,7 +197,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (isExtendedConverter)
 				{
-					foreach (var instruction in pushServiceProvider)
+					var requiredServiceType = typeConverter.GetRequiredServices(context.Cache, module);
+					foreach (var instruction in pushServiceProvider(requiredServiceType))
 						yield return instruction;
 				}
 
@@ -324,6 +325,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Newobj, module.ImportReference(nullableCtor));
 			if (originalTypeRef.IsValueType && boxValueTypes)
 				yield return Create(Box, module.ImportReference(originalTypeRef));
+		}
+
+		public static TypeReference[] GetRequiredServices(this TypeReference type, XamlCache cache, ModuleDefinition module)
+		{
+			var requireServiceAttribute = type.GetCustomAttribute(cache, module, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "RequireServiceAttribute"));
+			return (requireServiceAttribute?.ConstructorArguments[0].Value as CustomAttributeArgument[])?.Select(ca => ca.Value as TypeReference).ToArray();
 		}
 
 		static Instruction PushParsedEnum(XamlCache cache, TypeReference enumRef, string value, IXmlLineInfo lineInfo)
@@ -591,7 +598,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference declaringTypeReference = null)
+		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context, TypeReference[] requiredServices, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference declaringTypeReference = null)
 		{
 			if (context.ValidateOnly)
 			{
@@ -599,10 +606,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			var module = context.Body.Method.Module;
 
-#if NOSERVICEPROVIDER
-			yield return Instruction.Create (OpCodes.Ldnull);
-			yield break;
-#endif
+			var createAllServices = requiredServices is null;
+			var alreadyContainsProvideValueTarget = false;
 
 			var addService = module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XamlServiceProvider"),
 														  methodName: "Add",
@@ -613,43 +618,76 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XamlServiceProvider"), parameterTypes: null));
 
-			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget and IReferenceProvider
-			var pushParentIl = node.PushParentObjectsArray(context).ToList();
-			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull)
+			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget, IReferenceProvider and IProvideParentValues
+			if (   createAllServices
+				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideParentValues")), TypeRefComparer.Default)
+				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")), TypeRefComparer.Default))
+			{
+				alreadyContainsProvideValueTarget = true;
+				var pushParentIl = node.PushParentObjectsArray(context).ToList();
+				if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull)
+				{
+					yield return Create(Dup); //Keep the serviceProvider on the stack
+					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")));
+					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+
+					foreach (var instruction in pushParentIl)
+						yield return instruction;
+
+					foreach (var instruction in PushTargetProperty(context, bpRef, propertyRef, declaringTypeReference, module))
+						yield return instruction;
+
+					foreach (var instruction in PushNamescopes(node, context, module))
+						yield return instruction;
+
+					yield return Create(Ldc_I4_0); //don't ask
+					yield return Create(Newobj, module.ImportCtorReference(context.Cache,
+						("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
+
+					//store the provider so we can register it again with a different key
+					yield return Create(Dup);
+					var refProvider = new VariableDefinition(module.ImportReference(context.Cache, ("mscorlib", "System", "Object")));
+					context.Body.Variables.Add(refProvider);
+					yield return Create(Stloc, refProvider);
+					yield return Create(Callvirt, addService);
+
+					yield return Create(Dup); //Keep the serviceProvider on the stack
+					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")));
+					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+					yield return Create(Ldloc, refProvider);
+					yield return Create(Callvirt, addService);
+				}
+			}
+
+			//Add an even simpler ValueTargetProvider and register it as IProvideValueTarget
+			if (!alreadyContainsProvideValueTarget && requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")), TypeRefComparer.Default))
 			{
 				yield return Create(Dup); //Keep the serviceProvider on the stack
 				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideValueTarget")));
 				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 
-				foreach (var instruction in pushParentIl)
-					yield return instruction;
+				if (node.Parent is IElementNode elementNode &&
+					context.Variables.TryGetValue(elementNode, out VariableDefinition variableDefinition))
+				{
+					foreach (var instruction in variableDefinition.LoadAs(context.Cache, module.TypeSystem.Object, module))
+					{
+						yield return instruction;
+					}
+				}
+				else
+				{
+					yield return Create(Ldnull);
+				}
 
 				foreach (var instruction in PushTargetProperty(context, bpRef, propertyRef, declaringTypeReference, module))
 					yield return instruction;
 
-				foreach (var instruction in PushNamescopes(node, context, module))
-					yield return instruction;
-
-				yield return Create(Ldc_I4_0); //don't ask
-				yield return Create(Newobj, module.ImportCtorReference(context.Cache,
-					("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 4));
-
-				//store the provider so we can register it again with a different key
-				yield return Create(Dup);
-				var refProvider = new VariableDefinition(module.ImportReference(context.Cache, ("mscorlib", "System", "Object")));
-				context.Body.Variables.Add(refProvider);
-				yield return Create(Stloc, refProvider);
-				yield return Create(Callvirt, addService);
-
-				yield return Create(Dup); //Keep the serviceProvider on the stack
-				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")));
-				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Ldloc, refProvider);
+				yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "ValueTargetProvider"), paramCount: 2));
 				yield return Create(Callvirt, addService);
 			}
 
-			//Add a XamlTypeResolver
-			if (node.NamespaceResolver != null)
+			//Add a IXamlTypeResolver
+			if (node.NamespaceResolver != null && createAllServices || requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXamlTypeResolver")), TypeRefComparer.Default))
 			{
 				yield return Create(Dup); //Duplicate the serviceProvider
 				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXamlTypeResolver")));
@@ -674,7 +712,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Callvirt, addService);
 			}
 
-			if (node is IXmlLineInfo)
+			if (node is IXmlLineInfo && createAllServices || requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")), TypeRefComparer.Default))
 			{
 				yield return Create(Dup); //Duplicate the serviceProvider
 				yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IXmlLineInfoProvider")));
@@ -684,6 +722,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XmlLineInfoProvider"), parameterTypes: new[] { ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
 				yield return Create(Callvirt, addService);
 			}
+
+			//and... we end up with the serviceProvider on the stack, as expected
 		}
 	}
 }

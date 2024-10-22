@@ -9,7 +9,7 @@
     <Nullable>disable</Nullable>
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <!--<MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>-->
-    <NoWarn>0612</NoWarn>
+    <NoWarn>0612;CS0672;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
