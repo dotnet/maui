@@ -2,40 +2,14 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
+    Background="lightblue"
+    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+    ios:Page.UseSafeArea="False"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
-	<!-- <Window.TitleBar>
-		<TitleBar
-			x:Name="TeamsTitleBar"
-			HeightRequest="46"
-			Title="Hello World">
-			<TitleBar.Content>
-			<Entry
-				x:Name="SearchTitleBar"
-				Placeholder="Search"
-				VerticalOptions="Center"
-				MinimumWidthRequest="300"
-				MaximumWidthRequest="450"
-				HeightRequest="32"/>
-			</TitleBar.Content>
-		</TitleBar>
-	</Window.TitleBar> -->
-
-
-
-	<!-- <StackLayout Background="lightblue">
-		<Label Text="Welcome to GPT-Generated Page" 
-			VerticalOptions="CenterAndExpand" 
-			HorizontalOptions="CenterAndExpand" />
-		<Entry Placeholder="Username" />
-		<Entry Placeholder="Password" IsPassword="True" />
-		<Button Text="Submit" />
-	</StackLayout> -->
-
-
-	<Grid
+	<Grid   IgnoreSafeArea="True"
         ColumnDefinitions="*,*">
-        <VerticalStackLayout
+        <VerticalStackLayout  IgnoreSafeArea="True"
             Spacing="16"
             Margin="16"
             Grid.Column="0">
@@ -44,7 +18,7 @@
                 Text="Content Options"
                 FontSize="24"/>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout  IgnoreSafeArea="True">
                 <CheckBox 
                     x:Name="SetIconCheckBox"
                     IsChecked="False"
@@ -67,7 +41,7 @@
                 Text="{Binding Subtitle, Mode=TwoWay}"
                 WidthRequest="120" />
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout  IgnoreSafeArea="True">
                 <CheckBox
                     x:Name="LeadingContentCheckBox"
                     IsChecked="False"
@@ -77,7 +51,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout  IgnoreSafeArea="True">
                 <CheckBox 
                     x:Name="ContentCheckBox"
                     IsChecked="False"
@@ -87,7 +61,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout  IgnoreSafeArea="True">
                 <CheckBox 
                     x:Name="TrailingContentCheckBox"
                     IsChecked="False"
@@ -97,7 +71,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout  IgnoreSafeArea="True">
                 <CheckBox
                     x:Name="TallModeCheckBox"
                     IsChecked="False"
@@ -107,7 +81,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox
                     IsChecked="{Binding ShowTitleBar, Mode=TwoWay}"/>
                 <Label
@@ -116,7 +90,7 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
 
-        <VerticalStackLayout
+        <VerticalStackLayout IgnoreSafeArea="True"
             Spacing="16"
             Margin="16"
             Grid.Column="1">
@@ -124,7 +98,7 @@
                 Text="Color Options"
                 FontSize="24"/>
 
-            <HorizontalStackLayout
+            <HorizontalStackLayout IgnoreSafeArea="True"
                 Spacing="8">
                 <Entry 
                     x:Name="ColorTextBox"
@@ -137,7 +111,7 @@
                     Clicked="ColorButton_Clicked" />
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout
+            <HorizontalStackLayout IgnoreSafeArea="True"
                 Spacing="8">
                 <Entry 
                     x:Name="ForegroundColorTextBox"

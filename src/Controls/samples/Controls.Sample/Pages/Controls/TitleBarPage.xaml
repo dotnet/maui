@@ -4,7 +4,10 @@
              x:Class="Maui.Controls.Sample.Pages.TitleBarPage"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="False"
+             Shell.NavBarIsVisible="True"
+             Background="yellow"
              Title="TitleBarPage">
+
     <Grid IgnoreSafeArea="True"
           RowDefinitions="Auto,*"
         ColumnDefinitions="*,*">
@@ -17,7 +20,7 @@
                 Text="Content Options"
                 FontSize="24"/>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox 
                     x:Name="SetIconCheckBox"
                     IsChecked="False"
@@ -40,7 +43,7 @@
                 Text="{Binding Subtitle, Mode=TwoWay}"
                 WidthRequest="120" />
           
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox
                     x:Name="LeadingContentCheckBox"
                     IsChecked="False"
@@ -50,7 +53,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox 
                     x:Name="ContentCheckBox"
                     IsChecked="False"
@@ -60,7 +63,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox 
                     x:Name="TrailingContentCheckBox"
                     IsChecked="False"
@@ -70,7 +73,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox
                     x:Name="TallModeCheckBox"
                     IsChecked="False"
@@ -80,7 +83,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout>
+            <HorizontalStackLayout IgnoreSafeArea="True">
                 <CheckBox
                     IsChecked="{Binding ShowTitleBar, Mode=TwoWay}"/>
                 <Label
@@ -89,7 +92,7 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
   
-        <VerticalStackLayout IgnoreSafeArea="True"
+        <VerticalStackLayout  IgnoreSafeArea="True"
             Spacing="16"
             Margin="16"
             Grid.Column="1">
@@ -97,7 +100,7 @@
                 Text="Color Options"
                 FontSize="24"/>
       
-            <HorizontalStackLayout
+            <HorizontalStackLayout IgnoreSafeArea="True"
                 Spacing="8">
                 <Entry 
                     x:Name="ColorTextBox"
@@ -110,7 +113,7 @@
                     Clicked="ColorButton_Clicked" />
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout
+            <HorizontalStackLayout IgnoreSafeArea="True"
                 Spacing="8">
                 <Entry 
                     x:Name="ForegroundColorTextBox"

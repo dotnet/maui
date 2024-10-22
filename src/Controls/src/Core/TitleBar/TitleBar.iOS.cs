@@ -16,12 +16,10 @@ namespace Microsoft.Maui.Controls
             var platformWindow = Window.Handler.PlatformView;
 
 			if (platformWindow is UIWindow platWindow
-				&& platWindow.GetWindow() is IWindow window
-				&& mauiContext is IMauiContext context
 				&& platWindow.RootViewController is WindowViewController windowViewController)
 			{
 				windowViewController.SetTitleBarVisibility(newValue);
-				windowViewController.UpdateTitleBar(window, context);
+				windowViewController.UpdateTitleBar();
 			}
 #endif
 		}

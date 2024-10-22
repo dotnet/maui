@@ -90,9 +90,6 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(TimePickerPage), "TimePicker",
 				"A view that allows the user to select a time."),
 
-			new SectionModel(typeof(TitleBarPage), "TitleBar",
-				"Add a customizable title bar to your window."),
-
 			new SectionModel(typeof(WebViewPage), "WebView",
 				"WebView is a view for displaying web and HTML content in your app.")
 		};

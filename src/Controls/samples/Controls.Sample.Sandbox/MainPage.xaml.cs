@@ -56,8 +56,7 @@ public partial class MainPage : ContentPage
 				xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 				Title="{Binding Title}"
 				Subtitle="{Binding Subtitle}"
-				IsVisible="{Binding ShowTitleBar}"
-				Icon="dotnet_bot.png"/>
+				IsVisible="{Binding ShowTitleBar}"/>
 			""";
 
 		_customTitleBar = new TitleBar().LoadFromXaml(titleBarXaml);
