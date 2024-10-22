@@ -5,63 +5,79 @@ using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform;
+
 internal class WindowViewController : UIViewController
 {
 #pragma warning disable MEM0002 // Reference type members in NSObject subclasses can cause memory leaks
-	UIView _contentWrapperView = new();
-    IView? _iTitleBar;
+
+    WeakReference<IView?> _iTitleBarRef;
     bool _isTitleBarVisible = true;
 
-    public UIView? TitleBar { get; set; }
-    // public UIView? WindowContentView { get; set; }
-    public UIViewController WindowContentViewController {get; set; }
+    UIView? _titleBar;
+    UIView? _contentWrapperView;
 
+    /// <summary>
+    /// Instantiate a new <see cref="WindowViewController"/> object.
+    /// </summary>
+    /// <param name="windowContentViewController">An instance of the <see cref="UIViewController"/> that is the RootViewController.</param>
+    /// <param name="window">An instance of the <see cref="IWindow"/>.</param>
+    /// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
 	public WindowViewController(UIViewController windowContentViewController, IWindow window, IMauiContext mauiContext)
     {
-        WindowContentViewController = windowContentViewController;
-
         AddChildViewController(windowContentViewController);
-
-        View!.AddSubview(_contentWrapperView);
-        _contentWrapperView.AddSubview(windowContentViewController.View!);
-
-
-        // WindowContentView = windowContentViewController.View!;
-        // View!.AddSubview(WindowContentView);
+        _iTitleBarRef = new WeakReference<IView?>(null);
+        SetUpTitleBar(window, mauiContext);
     }
 
-    public override void ViewDidLayoutSubviews()
+    public override void ViewWillLayoutSubviews()
     {
-        base.ViewDidLayoutSubviews();
-        UpdateTitleBar();
+        base.ViewWillLayoutSubviews();
+        LayoutTitleBar();
     }
 
+    /// <summary>
+    /// Sets up the TitleBar in the ViewController.
+    /// </summary>
+    /// <param name="window">An instance of the <see cref="IWindow"/>.</param>
+    /// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
     public void SetUpTitleBar(IWindow window, IMauiContext mauiContext)
     {
         var platformWindow = window.Handler?.PlatformView as UIWindow;
 
-        if (platformWindow is null)
+        if (platformWindow is null || View is null)
         {
             return;
         }
 
+        if (_contentWrapperView is null && ChildViewControllers.Count() > 0 
+            && ChildViewControllers?[0]?.View is UIView rootView)
+        {
+            _contentWrapperView = new();
+            View.AddSubview(_contentWrapperView);
+            _contentWrapperView.AddSubview(rootView);
+        }
+
         var newTitleBar = window.TitleBar?.ToPlatform(mauiContext);
 
-        if (newTitleBar != TitleBar)
+        IView? iTitleBar = null;
+        _iTitleBarRef?.TryGetTarget(out iTitleBar);
+
+        if (newTitleBar != iTitleBar)
         {
-            TitleBar?.RemoveFromSuperview();
-            _iTitleBar = null;
+            _titleBar?.RemoveFromSuperview();
+            iTitleBar = null;
 
             if (newTitleBar is not null)
             {
-                _iTitleBar = window.TitleBar;
-
-                View!.AddSubview(newTitleBar);
+                iTitleBar = window.TitleBar;
+                View.AddSubview(newTitleBar);
             }
-        }
-        // _iTitleBar = null;
 
-        var platformTitleBar = platformWindow.WindowScene?.Titlebar;
+            _titleBar = newTitleBar;
+            _iTitleBarRef = new WeakReference<IView?>(iTitleBar);
+        }
+
+        var platformTitleBar = platformWindow?.WindowScene?.Titlebar;
 
         if (newTitleBar is not null && platformTitleBar is not null)
         {
@@ -69,22 +85,24 @@ internal class WindowViewController : UIViewController
             platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
         }
 
-        TitleBar = newTitleBar;
-        UpdateTitleBar();
+        LayoutTitleBar();
+        View.LayoutIfNeeded();
     }
 
-    public void UpdateTitleBar()
+    /// <summary>
+    /// Measures and arranges the TitleBar and adjusts the frame for the window content to make space for the TitleBar.
+    /// </summary>
+    public void LayoutTitleBar()
     {
-        if (_iTitleBar is not null && View is not null)
-        {
-            var heightConstraint = !_isTitleBarVisible ? 0 : double.PositiveInfinity;
-            var widthConstraint = !_isTitleBarVisible ? 0 : View.Bounds.Width;
+        _iTitleBarRef.TryGetTarget(out var iTitleBar);
 
-            var measured = _iTitleBar.Measure(widthConstraint, heightConstraint);
-            var arranged = _iTitleBar.Arrange(new Graphics.Rect(0, 0, widthConstraint, measured.Height));
+        if (iTitleBar is not null && View is not null)
+        {
+            var measured = iTitleBar.Measure(View.Bounds.Width, double.PositiveInfinity);
+            iTitleBar.Arrange(new Graphics.Rect(0, 0, View.Bounds.Width, measured.Height));
         }
 
-        var titleBarHeight = _iTitleBar?.Frame.Height ?? 0;
+        var titleBarHeight = iTitleBar?.Frame.Height ?? 0;
 
         if (!_isTitleBarVisible)
         {
@@ -93,11 +111,10 @@ internal class WindowViewController : UIViewController
 
         var newFrame = new CGRect(0, titleBarHeight, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
 
-        if (newFrame != _contentWrapperView.Frame && _contentWrapperView.Subviews.Count() > 0)
+        if (_contentWrapperView is not null && newFrame != _contentWrapperView.Frame && _contentWrapperView.Subviews.Count() > 0)
         {
             _contentWrapperView.Frame = newFrame;
             _contentWrapperView.Subviews[0].Frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
-            View.LayoutIfNeeded();
         }
     }
 

@@ -5,6 +5,7 @@
     Background="lightblue"
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     ios:Page.UseSafeArea="False"
+    NavigationPage.HasNavigationBar="False"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
 	<Grid   IgnoreSafeArea="True"

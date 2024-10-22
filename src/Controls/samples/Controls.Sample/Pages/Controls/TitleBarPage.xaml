@@ -5,7 +5,6 @@
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="False"
              Shell.NavBarIsVisible="True"
-             Background="yellow"
              Title="TitleBarPage">
 
     <Grid IgnoreSafeArea="True"

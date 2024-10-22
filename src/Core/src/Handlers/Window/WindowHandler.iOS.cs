@@ -21,7 +21,6 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView.RootViewController is WindowViewController controller && handler?.MauiContext is IMauiContext mauiContext)
 			{
 				controller.SetUpTitleBar(window, mauiContext);
-				controller.UpdateTitleBar();
 			}
 		}
 #endif
@@ -45,10 +44,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.RootViewController = nativeContent;
 #endif
 
-			if (window.VisualDiagnosticsOverlay != null)
-			{
-				window.VisualDiagnosticsOverlay.Initialize();
-			}
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
