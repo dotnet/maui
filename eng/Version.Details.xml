@@ -8,25 +8,25 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>9c52987919f0223531191d4cfaa6487647bbf52c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.1-ci.main.50">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.1-rtm.61">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>3849cae0c1bb8bb9f0cbb56a6990635935871923</Sha>
+      <Sha>b90c55905de2f5703a8660952816cf3767b027a7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.0" Version="18.0.9608-net9-rtm">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.0" Version="18.0.9612">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ce966490f5467ed490b6fc048b0a2127958761bb</Sha>
+      <Sha>a351bc9fa99af0406c7e1291ba565e232767c648</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net9.0_15.0" Version="15.0.9608-net9-rtm">
+    <Dependency Name="Microsoft.macOS.Sdk.net9.0_15.0" Version="15.0.9612">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ce966490f5467ed490b6fc048b0a2127958761bb</Sha>
+      <Sha>a351bc9fa99af0406c7e1291ba565e232767c648</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net9.0_18.0" Version="18.0.9608-net9-rtm">
+    <Dependency Name="Microsoft.iOS.Sdk.net9.0_18.0" Version="18.0.9612">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ce966490f5467ed490b6fc048b0a2127958761bb</Sha>
+      <Sha>a351bc9fa99af0406c7e1291ba565e232767c648</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_18.0" Version="18.0.9608-net9-rtm">
+    <Dependency Name="Microsoft.tvOS.Sdk.net9.0_18.0" Version="18.0.9612">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>ce966490f5467ed490b6fc048b0a2127958761bb</Sha>
+      <Sha>a351bc9fa99af0406c7e1291ba565e232767c648</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
