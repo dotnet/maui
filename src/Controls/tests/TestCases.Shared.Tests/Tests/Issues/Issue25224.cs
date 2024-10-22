@@ -13,9 +13,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewEmptyViewWithDataTemplateSelectorShouldNotCrash()
+		public void CollectionViewEmptyViewBehaviorWithDataTemplateSelectorDefaultTemplate()
 		{
-			App.WaitForNoElement("Success");
+			App.WaitForElement("SearchBar");
+			App.EnterText("SearchBar", "test");
+			App.PressEnter();
+			// On UI test, pressing Enter twice performs filtering and shows the empty view.
+			// This code is necessary due to the app's behavior on UI test, which differs from simple samples.
+			App.PressEnter();
+			App.WaitForElement("Success");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void CollectionViewEmptyViewBehaviorWithDataTemplateSelectorOtherTemplate()
+		{
+			App.WaitForElement("SearchBar");
+			App.EnterText("SearchBar", "xamarin");
+			App.PressEnter();
+			App.WaitForElement("Success");
 		}
 	}
 }
