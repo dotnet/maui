@@ -85,6 +85,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[Obsolete("IBorder is not used and will be removed in a future release.")]
 		public static void UpdateBorder(this FrameworkElement platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;

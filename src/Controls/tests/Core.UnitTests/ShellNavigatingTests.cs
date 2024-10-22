@@ -499,10 +499,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("page2");
 			await shell.Navigation.PopAsync();
 
-			shell.TestNavigatingArgs(ShellNavigationSource.Pop,
+			await shell.TestNavigatingArgs(ShellNavigationSource.Pop,
 				"//item1/page1/page2", $"..");
 
-			shell.TestNavigatedArgs(ShellNavigationSource.Pop,
+			await shell.TestNavigatedArgs(ShellNavigationSource.Pop,
 				"//item1/page1/page2", $"//item1/page1");
 		}
 
@@ -629,8 +629,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddTransient<Dependency>();
-			serviceCollection.AddTransient<PageWithDependency>();
-			serviceCollection.AddTransient<PageWithDependencyAndMultipleConstructors>();
 			IServiceProvider services = serviceCollection.BuildServiceProvider();
 			var fakeMauiContext = Substitute.For<IMauiContext>();
 			var fakeHandler = Substitute.For<IElementHandler>();

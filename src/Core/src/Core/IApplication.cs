@@ -33,6 +33,17 @@ namespace Microsoft.Maui
 		void CloseWindow(IWindow window);
 
 		/// <summary>
+		/// Request that the application brings to the front the given window.
+		/// </summary>
+		/// <param name="window">The window to bring to the front.</param>
+#if NETSTANDARD2_0
+		void ActivateWindow(IWindow window);
+#else
+		void ActivateWindow(IWindow window) { }
+#endif
+		
+
+		/// <summary>
 		/// Gets the current requested theme by the system for your application. 
 		/// The return value will be one of the following:
 		/// - Unspecified

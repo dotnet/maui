@@ -126,42 +126,51 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				? actualFilename
 				: Path.Combine(DestinationDirectory, actualFilename);
 
-			var expectedFilename = GetTestImageFileName(args, methodName);
+			var expectedFilename = GetTestImageFileName(args, methodName, Path.GetExtension(actualFilename));
 
-			using var actual = SKImage.FromEncodedData(actualFilename);
-			using var expected = SKImage.FromEncodedData(expectedFilename);
-
-			var similarity = SKPixelComparer.Compare(actual, expected);
-
-			var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
-
-			if (!isSimilar)
+			if (Path.GetExtension(actualFilename).Equals(".json", StringComparison.OrdinalIgnoreCase))
 			{
-				var root = GetTestProjectRoot();
-				var filename = GetTestImageFileName(args, methodName);
+				var actual = File.ReadAllText(actualFilename);
+				var expected = File.ReadAllText(expectedFilename);
 
-				var maskFilename = Path.Combine(root, "errors", filename);
-				maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
+				Assert.Equal(expected, actual);
+			}
+			else
+			{
+				using var actual = SKImage.FromEncodedData(actualFilename);
+				using var expected = SKImage.FromEncodedData(expectedFilename);
 
-				Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
+				var similarity = SKPixelComparer.Compare(actual, expected);
 
-				using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
-				using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
-				using (var maskFile = File.Create(maskFilename))
+				var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
+
+				if (!isSimilar)
 				{
-					data.SaveTo(maskFile);
-				}
+					var root = GetTestProjectRoot();
 
-				Assert.True(
-					isSimilar,
-					$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
+					var maskFilename = Path.Combine(root, "errors", expectedFilename);
+					maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
+
+					Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
+
+					using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
+					using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
+					using (var maskFile = File.Create(maskFilename))
+					{
+						data.SaveTo(maskFile);
+					}
+
+					Assert.True(
+						isSimilar,
+						$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
+				}
 			}
 		}
 
 		void SaveImageResultFileReal(string destinationFilename, object[] args = null, [CallerMemberName] string methodName = null)
 		{
 			var root = GetTestProjectRoot();
-			var imagePath = GetTestImageFileName(args, methodName);
+			var imagePath = GetTestImageFileName(args, methodName, Path.GetExtension(destinationFilename));
 			var path = Path.Combine(root, imagePath);
 
 			var dir = Path.GetDirectoryName(path);
@@ -174,7 +183,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			File.Copy(src, path, true);
 		}
 
-		private string GetTestImageFileName(object[] args, string methodName)
+		private string GetTestImageFileName(object[] args, string methodName, string extension)
 		{
 			var strsSelect = args?.Select(a => string
 				.Format(CultureInfo.InvariantCulture, "{0}", a ?? "NULL")
@@ -186,7 +195,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			var sepStr = strs?.Length > 0 ? "-" : "";
 			var argStr = strs?.Length > 0 ? string.Join("-", strs) : "";
 
-			var filename = $"output{sepStr}{argStr}.png";
+			var filename = $"output{sepStr}{argStr}{extension}";
 
 			var name = GetType().FullName;
 			if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))
