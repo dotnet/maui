@@ -218,7 +218,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
 			Task.WhenAll(
 				view.WaitForLayout(timeout),
+#pragma warning disable CS0618 // Obsolete
 				AssertEventually(() => ViewCompat.IsLaidOut(view), timeout,
+#pragma warning restore CS0618 // Obsolete
 					message: $"Timed out waiting for {view} to have {nameof(view.Width)} and {nameof(view.Height)} greater than zero"));
 
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
@@ -691,6 +693,7 @@ namespace Microsoft.Maui.DeviceTests
 			MColor expectedColor,
 			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
 
+#pragma warning disable XAOBS001 // Obsolete
 		static BottomNavigationItemView GetTab(
 			this BottomNavigationView bottomView, string tabText)
 		{
@@ -709,5 +712,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			return navItemView;
 		}
+#pragma warning restore XAOBS001 // Obsolete
 	}
 }

@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages
 
 			SetNewMainPage(bottomTabs);
 			AndroidSpecific.TabbedPage.SetToolbarPlacement(bottomTabs, AndroidSpecific.ToolbarPlacement.Bottom);
-			Application.Current!.MainPage = bottomTabs;
+			this.Window!.Page = bottomTabs;
 		}
 
 		void OnChangeTabIndex(object sender, EventArgs e)

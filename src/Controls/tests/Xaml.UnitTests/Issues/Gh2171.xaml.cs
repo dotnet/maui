@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	[AcceptEmptyServiceProvider]
 	public class Gh2171Extension : IMarkupExtension
 	{
 		public string Foo { get; set; }

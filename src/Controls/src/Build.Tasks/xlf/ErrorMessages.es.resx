@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType espera un literal de cadena, una marca {{x:Type}} o {{x:Nul}l}.</value>
+    <value>x:DataType espera un literal de cadena, una marca {{x:Type}} o {{x:Null}}.</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Prefijo xmlns no declarado "{0}".</value>

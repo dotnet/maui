@@ -85,10 +85,9 @@ namespace Maui.Controls.Sample.Issues
 				layout.Children.Add(nameLabel);
 				layout.Children.Add(numberLabel);
 
-				return new Frame
+				return new Border
 				{
-					Content = layout,
-					HasShadow = false
+					Content = layout
 				};
 			});
 		}

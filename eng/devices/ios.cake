@@ -1,7 +1,7 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "./uitests-shared.cake"
 
-const string DefaultVersion = "17.2";
+const string DefaultVersion = "18.0";
 const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
 
 // Required arguments
@@ -37,6 +37,7 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
+Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
 
@@ -139,13 +140,10 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 		{
 			args
 				.Append("/p:BuildIpa=true")
+				.Append($"/p:RuntimeIdentifier={rid}")
 				.Append("/bl:" + binlog)
 				.Append("/tl");
 
-			if (device.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
 			return args;
 		}
 	});
@@ -212,12 +210,14 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 void ExecutePrepareUITests(string project, string app, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath)
 {
 	Information("Preparing UI Tests...");
-	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
-
 	Information($"Testing Device: {device}");
 	Information($"Testing App Project: {app}");
-	Information($"Testing App: {testApp}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
+	
+	var testApp = GetTestApplications(app, device, config, tfm, rid).FirstOrDefault();
 
+	Information($"Testing App found: {testApp}");
+	
 	if (string.IsNullOrEmpty(testApp))
 	{
 		throw new Exception("UI Test application path not specified.");
@@ -243,6 +243,7 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
 			.Append("/p:ExtraDefineConstants=IOSUITEST")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
 			.Append("/bl:" + binlog)
 	});
 
@@ -256,8 +257,18 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
 {
 	Information($"Building UI Test app: {appProject}");
+	Information($"USE_NATIVE_AOT: {USE_NATIVE_AOT}");
+
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
 	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+
+	if (USE_NATIVE_AOT && config.Equals("Debug", StringComparison.OrdinalIgnoreCase))
+	{
+		var errMsg = $"Error: Running UI tests with NativeAOT is only supported in Release configuration";
+		Error(errMsg);
+		throw new Exception(errMsg);
+	}
+
 
 	DotNetBuild(appProject, new DotNetBuildSettings
 	{
@@ -268,14 +279,10 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 		{
 			args
 			.Append("/p:BuildIpa=true")
+			.Append($"/p:_UseNativeAot={USE_NATIVE_AOT}")
+			.Append($"/p:RuntimeIdentifier={rid}")
 			.Append("/bl:" + binlog)
 			.Append("/tl");
-
-			// if we building for a device
-			if (device.ToLower().Contains("device"))
-			{
-				args.Append("/p:RuntimeIdentifier=ios-arm64");
-			}
 
 			return args;
 		}
@@ -291,7 +298,7 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 	CleanDirectories(resultsDir);
 
 	Information("Starting Compatibility Gallery UI Tests...");
-
+	
 	var testApp = GetTestApplications(appProject, device, config, tfm, rid).FirstOrDefault();
 
 	Information($"Testing Device: {device}");
@@ -321,7 +328,7 @@ void ExecuteCGLegacyUITests(string project, string appProject, string device, st
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{testApp}");
 
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
+	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}";
 	Information("Run UITests project {0}", resultName);
 	RunTestWithLocalDotNet(
 		project,
@@ -344,6 +351,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 		var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
 		foreach (var sim in sims)
 		{
+			var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 			if(createDeviceLogs)
 			{
 				try
@@ -353,7 +361,7 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}.zip")
+							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}_{timestamp}.zip")
 							.AppendQuoted($"{homeDirectory}/Library/Logs/DiagnosticReports/"),
 						RedirectStandardOutput = false
 					});
@@ -362,28 +370,28 @@ void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}.zip")
+							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}_{timestamp}.zip")
 							.AppendQuoted($"{homeDirectory}/Library/Logs/CoreSimulator/{sim.UDID}"),
 						RedirectStandardOutput = false
 					});
 
-					StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_log.logarchive");
+					StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
 
 					StartProcess("zip", new ProcessSettings {
 						Arguments = new ProcessArgumentBuilder()
 							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/{sim.UDID}_log.logarchive.zip")
-							.AppendQuoted($"{homeDirectory}/{sim.UDID}_log.logarchive"),
+							.AppendQuoted($"{logDirectory}/{sim.UDID}_{timestamp}_log.logarchive.zip")
+							.AppendQuoted($"{homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive"),
 						RedirectStandardOutput = false
 					});
 
-					var screenshotPath = $"{testResultsPath}/{sim.UDID}_screenshot.png";
+					var screenshotPath = $"{testResultsPath}/{sim.UDID}_{timestamp}_screenshot.png";
 					StartProcess("xcrun", $"simctl io {sim.UDID} screenshot {screenshotPath}");
 				}
 				catch(Exception ex)
 				{
 					Information($"Failed to collect logs for simulator {sim.Name} ({sim.UDID}): {ex.Message}");
-					Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_log.logarchive");
+					Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
 				}
 			}
 

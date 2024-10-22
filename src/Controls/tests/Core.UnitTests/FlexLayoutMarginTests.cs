@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginLeft()
 		{
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(10, 0, 0, 0), };
+			var view0 = MockPlatformSizeService.Sub<View>(width: 10, margin: new(10, 0, 0, 0));
 			var layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginTop()
 		{
-			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 10, 0, 0), };
+			var view0 = MockPlatformSizeService.Sub<View>(height: 10, margin: new(0, 10, 0, 0));
 			var layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginRight()
 		{
-			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(0, 0, 10, 0), };
+			var view0 = MockPlatformSizeService.Sub<View>(width: 10, margin: new(0, 0, 10, 0));
 			var layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginBottom()
 		{
-			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 0, 0, 10), };
+			var view0 = MockPlatformSizeService.Sub<View>(height: 10, margin: new(0, 0, 0, 10));
 			var layout = new FlexLayout
 			{
 				IsPlatformEnabled = true,
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginAndFlexRow()
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0), };
+			var view0 = MockPlatformSizeService.Sub<View>(margin: new(10, 0, 10, 0));
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout
 			{
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginAndFlexColumn()
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
+			var view0 = MockPlatformSizeService.Sub<View>(margin: new(0, 10, 0, 10));
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout
 			{
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginAndStretchRow()
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
+			var view0 = MockPlatformSizeService.Sub<View>(margin: new(0, 10, 0, 10));
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout
 			{
@@ -151,8 +151,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginAndStretchColumn()
 		{
-
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0) };
+			var view0 = MockPlatformSizeService.Sub<View>(margin: new(10, 0, 10, 0));
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout
 			{
@@ -171,11 +170,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginWithSiblingRow()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (visual, width, height) => new SizeRequest(new Size(0, 0));
+			static SizeRequest GetSize(VisualElement _, double w, double h) => new(new(0, 0));
 
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 10, 0) };
+			var view0 = MockPlatformSizeService.Sub<View>(GetSize, margin: new(0, 0, 10, 0));
 			FlexLayout.SetGrow(view0, 1);
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>(GetSize);
 			FlexLayout.SetGrow(view1, 1);
 			var layout = new FlexLayout
 			{
@@ -197,9 +196,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestMarginWithSiblingColumn()
 		{
-			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 0, 10) };
+			var view0 = MockPlatformSizeService.Sub<View>(margin: new(0, 0, 0, 10));
 			FlexLayout.SetGrow(view0, 1);
-			var view1 = new View { IsPlatformEnabled = true };
+			var view1 = MockPlatformSizeService.Sub<View>();
 			FlexLayout.SetGrow(view1, 1);
 
 			var layout = new FlexLayout

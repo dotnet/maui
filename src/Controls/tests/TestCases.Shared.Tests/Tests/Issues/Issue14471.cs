@@ -13,6 +13,7 @@ public class Issue14471 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Image)]
+	[FailsOnAndroid("Suddenly failing. https://github.com/dotnet/maui/issues/24243")]
 	public void ImageDoesntDisappearWhenNavigatingBack()
 	{
 		App.WaitForElement("image");

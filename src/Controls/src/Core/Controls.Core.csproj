@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfms)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiPreviousPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>enable</Nullable>
@@ -21,6 +22,14 @@
     <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the core C# and XAML objects used by .NET MAUI. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <!-- TODO: Remove once XamlTypeInfo.g.cs generates trimming-friendly code -->
+    <NoWarn Condition="$(TargetFramework.Contains('-windows'))">$(NoWarn);IL2059</NoWarn>
+  </PropertyGroup>
+
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
@@ -35,6 +44,18 @@
 
   <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' and '$(TargetFramework)' == '$(_MauiDotNetTfm)'">
     <ProjectReference Include="..\..\..\Controls\src\Core.Design\Controls.Core.Design.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+    <!-- https://github.com/dotnet/msbuild/issues/9785 -->
+    <CompilerResponseFile Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(CompilerResponseFile);WorkaroundXamlPreCompilePreviewFeatures.rsp</CompilerResponseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
