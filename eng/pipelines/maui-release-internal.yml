@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
     - main
+    - net9.0
     - release/*
   tags:
     include:
@@ -30,11 +31,11 @@ schedules:
     
 variables:
   - template: /eng/pipelines/common/variables.yml@self
+  - template: /eng/common/templates-official/variables/pool-providers.yml@self
+
   - group: DotNetBuilds storage account read tokens
   - group: AzureDevOps-Artifact-Feeds-Pats
-  - name: _InternalRuntimeDownloadArgs
-    value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal
-           /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+           
   # needed for darc (dependency flow) publishing
   - name: _BuildConfig
     value: Release
@@ -44,18 +45,38 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-  - name: _PublishArgs
-    value: >-
-          /p:DotNetPublishUsingPipelines=true
-  - name: _OfficialBuildIdArgs
-    value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-  # needed for signing
-  - name: _SignType
-    value: real
-  - name: _SignArgs
-    value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign)
-  - name: _Sign
-    value: true
+ 
+  # Produce test-signed build for PR and Public builds
+  - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: ''
+    - name: _OfficialBuildIdArgs
+      value: ''
+    # needed for signing
+    - name: _SignType
+      value: test
+    - name: _SignArgs
+      value: ''
+    - name: _Sign
+      value: false
+
+  # Set up non-PR build from internal project
+  - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: >-
+            /p:DotNetPublishUsingPipelines=true
+    # - name: _OfficialBuildIdArgs
+    #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+    # needed for signing
+    - name: _SignType
+      value: real
+    - name: _SignArgs
+      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
+    - name: _Sign
+      value: true
+
 
 parameters:
   - name: pushMauiPackagesToMaestro
@@ -116,115 +137,98 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-    - stage: pack_net
+    - stage: Pack
       displayName: Pack .NET MAUI
       dependsOn: []
       jobs:
       - template: /eng/common/templates-official/jobs/jobs.yml@self
         parameters:
+          enableMicrobuild: true
           helixRepo: dotnet/maui
           pool: ${{ parameters.VM_IMAGE_HOST }}
           enablePublishUsingPipelines: true
           enablePublishBuildAssets: true
           enableTelemetry: true
+          enableSourceBuild: false
           enableSourceIndex: false
-          # Publish build logs
+          publishAssetsImmediately: true
+           # Publish build logs
           enablePublishBuildArtifacts: true
           # Publish test logs
-          enablePublishTestResults: false
+          enablePublishTestResults: true
           workspace:
             clean: all
           jobs:
           - job: pack_net_${{ parameters.PackPlatform.name }}
             displayName: ${{ parameters.PackPlatform.name }}
+            
             timeoutInMinutes: 240
            
-            templateContext:
-               outputs:
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.artifact }}
-                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/nuget'
+            # templateContext:
+            #    outputs:
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.artifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.artifact }}
+            #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/nuget'
                 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
-                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.binariesArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.binariesArtifact }}
+            #       targetPath: '$(System.DefaultWorkingDirectory)/artifacts/binaries'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.docsArtifact }}
-                  targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.docsArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.docsArtifact }}
+            #       targetPath: '$(System.DefaultWorkingDirectory)/artifacts/docs-packs'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
-                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/metadata'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.metadataArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.metadataArtifact }}
+            #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/metadata'
 
-                - output: pipelineArtifact
-                  displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
-                  artifactName: ${{ parameters.PackPlatform.logsArtifact }}
-                  targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
+            #     - output: pipelineArtifact
+            #       displayName: 'Publish the ${{ parameters.PackPlatform.logsArtifact }} artifacts'
+            #       artifactName: ${{ parameters.PackPlatform.logsArtifact }}
+            #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
         
             variables:
               - name: _buildScript
                 value: $(Build.SourcesDirectory)/build.cmd -ci
-              - name: _BuildConfig
-                value: Release
               - name: _BuildOfficalId
                 value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
-                
+              - name: TreatWarningsAsErrors
+                value: false
+              - name: _OfficialBuildIdArgs
+                value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+            
             preSteps:
               - checkout: self
                 fetchDepth: 1
                 clean: true
 
             steps:
-              - template: /eng/pipelines/common/pack.yml@self
+              - template: /eng/pipelines/common/build-test-pack.yml@self
                 parameters:
-                  publishArtifacts: false
-                  platform: ${{ parameters.PackPlatform.name }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  artifact: ${{ parameters.PackPlatform.artifact }}
-                  artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
-                  artifactsPath: ${{ parameters.PackPlatform.artifactsPath }}
-                  buildConfiguration: $(_BuildConfig)
                   dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
+                  buildConfig: $(_BuildConfig)
                   repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
                   repoLogPath: $(Build.Arcade.LogsPath)
                   repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-                  officialBuildId: $(_BuildOfficalId)
-                  # prepareSteps:
-                  #   - template: /eng/pipelines/common/provision.yml@self
-                  #     parameters:
-                  #       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-                  #       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                  #       gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                  #       skipAndroidImages: true
-
-              # - task: DotNetCoreCLI@2
-              #   displayName: Generate and publish BAR manifest
-              #   inputs:
-              #     projects: $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
-              #     arguments: >-
-              #       -t:PushManifestToBuildAssetRegistry
-              #       -p:BuildAssetRegistryToken=$(MaestroAccessToken)
-              #       -p:OutputPath=$(Build.StagingDirectory)\nuget\
-              #       -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
-              #   condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
-              
-              # - powershell: |
-              #     $versionEndpoint = 'https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16'
-              #     $darcVersion = $(Invoke-WebRequest -Uri $versionEndpoint -UseBasicParsing).Content
-              #     $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
-              #     & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
-              #     & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --publishing-infra-version 3 --skip-assets-publishing --password $(MaestroAccessToken) --azdev-pat $(publishing-dnceng-devdiv-code-r-build-re)
+                  isWindows: true
 
       # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
         publishingInfraVersion: 3
+        enableSymbolValidation: true
+        enableSigningValidation: true
+        # Disable for now as we test the new signing process
+        enableSourceLinkValidation: false
         validateDependsOn:
-          - pack_net
-        enableSourceLinkValidation: true
+        - Pack
+        publishDependsOn:
+        - Validate
+        # This is to enable SDL runs part of Post-Build Validation Stage
+        SDLValidationParameters:
+          enable: false

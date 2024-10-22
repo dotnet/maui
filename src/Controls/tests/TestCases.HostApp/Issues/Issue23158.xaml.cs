@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 23158, "Respect Entry.ClearButtonVisibility on Windows", PlatformAffected.UWP)]
 public partial class Issue23158 : ContentPage
 {
@@ -11,8 +10,8 @@ public partial class Issue23158 : ContentPage
 
 	private void AddEntryButton_Clicked(object sender, EventArgs e)
 	{
-		Entry entry = new Entry() 
-		{ 
+		Entry entry = new Entry()
+		{
 			Text = "Some Text",
 			AutomationId = "Entry3"
 		};

@@ -2,6 +2,7 @@ trigger:
   branches:
     include:
     - main
+    - net9.0
     - release/*
   tags:
     include:
@@ -26,7 +27,6 @@ schedules:
   branches:
     include:
     - main
-    - net9.0
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
@@ -171,6 +171,8 @@ extends:
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                         skipAndroidImages: true
+                        skipAndroidSdks: true
+                        installDefaultAndroidApi: true
 
       - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
         - template: /eng/pipelines/common/sign.yml@self                                 
@@ -199,6 +201,7 @@ extends:
             tsaUploadEnabled: true
             tsaConfigFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
             scanArtifacts: ['${{ parameters.PackPlatform.binariesArtifact }}']
+            softwareVersion: 9.0
 
         - ${{ if eq(variables['Build.Reason'], 'Schedule') }}:
           - template: /eng/pipelines/common/push-nightly.yml@self

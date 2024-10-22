@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -56,6 +55,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
+
+		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
+		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
+			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
 
 		public BaseShellItem()
 		{
@@ -116,10 +119,11 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsVisibleProperty, value);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutItemIsVisible']/Docs/*" />
 		public bool FlyoutItemIsVisible
 		{
-			get => (bool)GetValue(Shell.FlyoutItemIsVisibleProperty);
-			set => SetValue(Shell.FlyoutItemIsVisibleProperty, value);
+			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
+			set => SetValue(FlyoutItemIsVisibleProperty, value);
 		}
 
 
@@ -223,6 +227,11 @@ namespace Microsoft.Maui.Controls
 
 			var shellItem = (BaseShellItem)bindable;
 			shellItem.FlyoutIcon = (ImageSource)newValue;
+		}
+
+		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+		{	
+			Shell.SetFlyoutItemIsVisible(bindable, (bool)newValue);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -339,7 +348,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		internal static DataTemplate CreateDefaultFlyoutItemCell(BindableObject bo)
 		{
 			return new DataTemplate(() =>
 			{
@@ -426,8 +435,21 @@ namespace Microsoft.Maui.Controls
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
 
-				Binding automationIdBinding = new Binding(Element.AutomationIdProperty.PropertyName);
+				BindingBase automationIdBinding = Binding.Create(static (Element element) => element.AutomationId);
 				defaultGridClass.Setters.Add(new Setter { Property = Element.AutomationIdProperty, Value = automationIdBinding });
+
+				BindingBase imageBinding = null;
+				BindingBase labelBinding = null;
+				if (bo is MenuItem)
+				{
+					imageBinding = Binding.Create(static (MenuItem item) => item.IconImageSource);
+					labelBinding = Binding.Create(static (MenuItem item) => item.Text);
+				}
+				else
+				{
+					imageBinding = Binding.Create(static (BaseShellItem item) => item.FlyoutIcon);
+					labelBinding = Binding.Create(static (BaseShellItem item) => item.Title);
+				}
 
 				var image = new Image();
 
@@ -453,13 +475,11 @@ namespace Microsoft.Maui.Controls
 					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
 				}
 
-				Binding imageBinding = new Binding(iconBinding);
 				defaultImageClass.Setters.Add(new Setter { Property = Image.SourceProperty, Value = imageBinding });
 
 				grid.Add(image);
 
 				var label = new Label();
-				Binding labelBinding = new Binding(textBinding);
 				defaultLabelClass.Setters.Add(new Setter { Property = Label.TextProperty, Value = labelBinding });
 
 				grid.Add(label, 1, 0);
@@ -527,7 +547,7 @@ namespace Microsoft.Maui.Controls
 							// just bind the semantic description to the title
 							if (!g.IsSet(SemanticProperties.DescriptionProperty))
 							{
-								g.SetBinding(SemanticProperties.DescriptionProperty, TitleProperty.PropertyName);
+								g.SetBinding(SemanticProperties.DescriptionProperty, static (BaseShellItem item) => item.Title);
 							}
 						}
 					}

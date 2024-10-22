@@ -56,16 +56,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			renderer?.UpdateLayout();
 
 			// If we're using a PageContainer (i.e., we've wrapped our contents in a Fragment),
-			// Make sure that it gets laid out
+			// Make sure that it gets arranged
 			if (_pageContainer != null)
 			{
 				if (_isFlyout)
 				{
 					var controller = (IFlyoutPageController)_parent;
 					var width = (int)Context.ToPixels(controller.FlyoutBounds.Width);
-					// When the base class computes the size of the Flyout container, it starts at the top of the 
+					// When the base carrangedss computes the size of the Flyout container, it starts at the top of the 
 					// screen and adds padding (_parent.FlyoutBounds.Top) to leave room for the status bar
-					// When this container is laid out, it's already starting from the adjusted y value of the parent,
+					// When this container is arranged, it's already starting from the adjusted y value of the parent,
 					// so we subtract _parent.FlyoutBounds.Top from our starting point (to get 0) and add it to the 
 					// bottom (so the flyout page stretches to the bottom of the screen)
 					var height = (int)Context.ToPixels(controller.FlyoutBounds.Height + controller.FlyoutBounds.Top);

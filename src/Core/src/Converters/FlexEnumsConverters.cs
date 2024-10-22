@@ -226,13 +226,18 @@ namespace Microsoft.Maui.Converters
 	public class FlexBasisTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string) || sourceType == typeof(float);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> true;
+			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (value is float floatValue)
+			{
+				return (FlexBasis)floatValue;
+			}
+
 			var strValue = value?.ToString();
 
 			if (strValue != null)

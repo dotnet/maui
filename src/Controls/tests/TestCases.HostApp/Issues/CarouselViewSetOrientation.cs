@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// Issue12193 (src\ControlGallery\src\Issues.Shared\Issue12193.cs
 	[Issue(IssueTracker.None, 12193, "[Bug] CarouselView content disappears after 2 rotations if TextType=Html is used", PlatformAffected.iOS)]

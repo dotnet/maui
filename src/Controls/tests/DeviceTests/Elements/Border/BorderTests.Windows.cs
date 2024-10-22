@@ -24,7 +24,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			var border = new Border()
 			{
-				Content = new Label { Text = "Background", TextColor = Colors.White },
+				Content = new Label 
+				{ 
+					Text = "Background", 
+					TextColor = Colors.Red, 
+					FontFamily = "Segoe UI", 
+					HorizontalOptions =  LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				},
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
 				StrokeShape = new RoundRectangle { CornerRadius = cornerRadius },
 				Background = new SolidPaint(expected),
 				StrokeThickness = 0,

@@ -1,11 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// Issue11224 (src\ControlGallery\src\Issues.Shared\Issue11224.cs
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.None, 11224, "[Bug] CarouselView Position property fails to update visual while control isn't visible", PlatformAffected.Android)]
 	public partial class CarouselViewUpdatePosition : ContentPage
 	{

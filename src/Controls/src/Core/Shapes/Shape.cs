@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				var width = Width;
 
-				// If the shape has never been laid out, then Width won't actually have a value;
+				// If the shape has never been arranged, then Width won't actually have a value;
 				// use the fallback value instead.
 				return width == -1 ? _fallbackWidth : width;
 			}
@@ -461,7 +461,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				var height = Height;
 
-				// If the shape has never been laid out, then Height won't actually have a value;
+				// If the shape has never been arranged, then Height won't actually have a value;
 				// use the fallback value instead.
 				return height == -1 ? _fallbackHeight : height;
 			}

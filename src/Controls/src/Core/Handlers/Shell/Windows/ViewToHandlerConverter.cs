@@ -7,7 +7,7 @@ using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ViewToHandlerConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public partial class ViewToHandlerConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object? Convert(object value, Type targetType, object parameter, string language)
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 			throw new NotSupportedException();
 		}
 
-		internal class WrapperControl : Panel
+		internal partial class WrapperControl : Panel
 		{
 			readonly View _view;
 			IView View => _view;

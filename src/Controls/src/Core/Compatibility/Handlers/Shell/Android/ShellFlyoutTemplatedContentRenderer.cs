@@ -127,6 +127,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				void InitialLoad(GenericGlobalLayoutListener listener, AView view)
 				{
+					// This means the handler was disconnected before the flyout was loaded
+					if (_shellContext?.Shell is null)
+					{
+						listener.Invalidate();
+						sfl.LayoutChanging -= OnFlyoutViewLayoutChanging;
+						return;
+					}
+
 					OnFlyoutViewLayoutChanging();
 
 					if (_flyoutContentView == null || ggll == null)

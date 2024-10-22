@@ -8,13 +8,19 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
+  runtimeVariant : "Mono"
   testFilter: ''
 
 steps:
   - task: DownloadPipelineArtifact@2
-    condition: ne('${{ parameters.platform }}' , 'windows')
+    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'Mono'))
     inputs:
       artifact: ui-tests-samples
+  
+  - task: DownloadPipelineArtifact@2
+    condition: and(ne('${{ parameters.platform }}' , 'windows'), eq('${{ parameters.runtimeVariant }}' , 'NativeAOT'))
+    inputs:
+      artifact: ui-tests-samples-nativeaot
 
   - task: DownloadPipelineArtifact@2
     condition: eq('${{ parameters.platform }}' , 'windows')
@@ -84,6 +90,7 @@ steps:
   - pwsh: |
       $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
       $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
+      $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
       $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
       
       $testFilter = ""

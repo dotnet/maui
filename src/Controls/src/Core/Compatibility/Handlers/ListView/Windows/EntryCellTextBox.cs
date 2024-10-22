@@ -5,7 +5,7 @@ using Windows.System;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class EntryCellTextBox : TextBox
+	public partial class EntryCellTextBox : TextBox
 	{
 		protected override void OnKeyUp(KeyRoutedEventArgs e)
 		{

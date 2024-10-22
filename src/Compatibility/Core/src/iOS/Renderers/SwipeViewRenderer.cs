@@ -706,7 +706,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				catch (Exception)
 				{
 					// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Can not load SwipeItem Icon");
+					Forms.MauiContext?.CreateLogger<SwipeViewRenderer>()?.LogWarning("Cannot load SwipeItem Icon");
 				}
 			}
 		}

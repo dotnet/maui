@@ -255,12 +255,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			try
 			{
+#pragma warning disable XAOBS001 // Obsolete
 				var menuView = bottomNavigationView.GetChildAt(0) as BottomNavigationMenuView;
 				if (menuView is null)
 				{
 					System.Diagnostics.Debug.WriteLine("Unable to find BottomNavigationMenuView");
 					return;
 				}
+#pragma warning restore XAOBS001 // Obsolete
 
 #if __ANDROID_28__
 				if (enableShiftMode)
@@ -277,7 +279,9 @@ namespace Microsoft.Maui.Controls.Platform
 				for (int i = 0; i < menuView.ChildCount; i++)
 				{
 					var child = menuView.GetChildAt(i);
+#pragma warning disable XAOBS001 // Obsolete
 					var item = child as BottomNavigationItemView;
+#pragma warning restore XAOBS001 // Obsolete
 					if (item != null)
 					{
 #if __ANDROID_28__

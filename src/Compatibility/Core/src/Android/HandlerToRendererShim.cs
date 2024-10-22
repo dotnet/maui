@@ -82,10 +82,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			if (_defaultLabelFor == null)
 			{
+#pragma warning disable CS0618 // Obsolete
 				_defaultLabelFor = ViewCompat.GetLabelFor(View);
+#pragma warning restore CS0618 // Obsolete
 			}
 
+#pragma warning disable CS0618 // Obsolete
 			ViewCompat.SetLabelFor(View, (int)(id ?? _defaultLabelFor));
+#pragma warning restore CS0618 // Obsolete
 		}
 
 		public void UpdateLayout()

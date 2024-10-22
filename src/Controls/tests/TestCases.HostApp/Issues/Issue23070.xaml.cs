@@ -1,17 +1,11 @@
-using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 23070, "[iOS] Border redraws with 1 frame lag", PlatformAffected.iOS)]
 
 public partial class Issue23070 : ContentPage
 {
 	int t = 0;
-	
+
 	public Issue23070()
 	{
 		InitializeComponent();
@@ -22,7 +16,7 @@ public partial class Issue23070 : ContentPage
 	private async void ButtonClicked(object sender, EventArgs e)
 	{
 		TheButton.IsEnabled = false;
-		
+
 		TheGrid.RemoveAt(1);
 		t = (t + 1) % 2;
 		var template = (DataTemplate)Resources[$"T{t}"];

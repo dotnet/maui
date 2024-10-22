@@ -1,9 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 20199, "[iOS] Page titles do not appear until navigating when pushing a modal page at startup", PlatformAffected.iOS)]
 	public partial class Issue20199 : Shell
 	{
@@ -17,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 			base.OnAppearing();
 
 			var closeModalPageButton = new Button() { Text = "Hide", AutomationId = "button" };
-			closeModalPageButton.Clicked += (s, e) =>  Navigation.PopAsync();
+			closeModalPageButton.Clicked += (s, e) => Navigation.PopAsync();
 
 			var modalPage = new ContentPage() { Content = closeModalPageButton };
 
