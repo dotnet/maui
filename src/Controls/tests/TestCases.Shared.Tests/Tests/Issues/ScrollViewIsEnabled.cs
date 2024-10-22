@@ -23,6 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
+#if WINDOWS || ANDROID
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		[FailsOnIOS("This test is failing, likely due to product issue")]
@@ -120,6 +121,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			this.Back();
 		}
+#endif
 	}
 }
 #endif

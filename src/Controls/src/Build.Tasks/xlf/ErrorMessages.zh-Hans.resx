@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType 需要字符串文本、{{x:Type}} 标记或 {{x:Nul}l}。</value>
+    <value>x:DataType 需要字符串文本、{{x:Type}} 标记或 {{x:Null}}。</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>xmlns 前缀“{0}”未经过声明。</value>

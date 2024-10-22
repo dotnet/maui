@@ -10,6 +10,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 	public class FlexLayout : Layout<View>
 	{
 		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
@@ -310,7 +311,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 					var sizeConstrains = item.GetConstraints();
 					sizeConstrains.Width = (_measuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
 					sizeConstrains.Height = (_measuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
-					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height).Request;
+					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height, MeasureFlags.None).Request;
 					w = (float)request.Width;
 					h = (float)request.Height;
 				};
@@ -409,7 +410,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0672 // Member overrides obsolete member
 		{
 			if (_root == null)
 				return;
@@ -429,8 +432,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		bool _measuring;
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
+#pragma warning restore CS0672 // Member overrides obsolete member
 			if (_root == null)
 				return new SizeRequest(new Size(widthConstraint, heightConstraint));
 

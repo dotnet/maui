@@ -1,14 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media;
-using Windows.Foundation;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
-using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
@@ -258,7 +251,8 @@ namespace Microsoft.Maui.Platform
 		#endregion
 
 		#region NavigationBackButtonHeight/Width
-		internal static double DefaultNavigationBackButtonHeight => (double)Application.Current.Resources["NavigationBackButtonHeight"];
+		// Note: this value is normaly 36, but we're using 32 to match the default titlebar height
+		internal static double DefaultNavigationBackButtonHeight => 32; // (double)Application.Current.Resources["NavigationBackButtonHeight"];
 		internal static double DefaultNavigationBackButtonWidth => (double)Application.Current.Resources["NavigationBackButtonWidth"];
 
 		internal static readonly DependencyProperty NavigationBackButtonHeightProperty
@@ -324,7 +318,8 @@ namespace Microsoft.Maui.Platform
 		#endregion
 
 		#region PaneToggleButton
-		internal static double DefaultPaneToggleButtonHeight => (double)Application.Current.Resources["PaneToggleButtonHeight"];
+		// Note: this value is normaly 36, but we're using 32 to match the default titlebar height
+		internal static double DefaultPaneToggleButtonHeight => 32; // (double)Application.Current.Resources["PaneToggleButtonHeight"];
 
 		// The resource is set to 40 but it appears that the NavigationView manually sets the width to 48
 		internal static double DefaultPaneToggleButtonWidth => 48;//(double)Application.Current.Resources["PaneToggleButtonWidth"];

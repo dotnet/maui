@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Handlers
 			var previousRootView = windowManager.RootView;
 
 			windowManager.Disconnect();
-			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
+			windowManager.Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
 
 			if (handler.PlatformView.Content is WindowRootViewContainer container)
 			{
@@ -186,6 +186,13 @@ namespace Microsoft.Maui.Handlers
 
 				titleBar.SetDragRectangles(dragRects);
 			}
+		}
+
+		internal static void MapTitleBar(IWindowHandler handler, IWindow window)
+		{
+			handler
+				.PlatformView
+				.UpdateTitleBar(window, handler.MauiContext);
 		}
 
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
