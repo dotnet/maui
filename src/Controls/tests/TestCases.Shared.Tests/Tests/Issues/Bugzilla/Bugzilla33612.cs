@@ -30,7 +30,7 @@ public class Bugzilla33612 : _IssuesUITest
 		App.Screenshot("At Page 3");
 		App.Tap("Return To Page 2");
 
-		App.WaitForElement("If you're seeing this, nothing crashed. Yay!");
+		App.WaitForElement("If you are seeing this, nothing crashed.");
 		App.Screenshot("Success Page");
 	}
 }

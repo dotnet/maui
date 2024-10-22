@@ -76,7 +76,7 @@ public class Bugzilla33612 : TestNavigationPage
 			Content = new StackLayout()
 			{
 				Children = {
-					new Label { Text = "If you're seeing this, nothing crashed. Yay!" }
+					new Label { Text = "If you are seeing this, nothing crashed." }
 				}
 			};
 		}
