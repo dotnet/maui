@@ -5,8 +5,10 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
+internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IMauiPlatformView
 {
+	bool _invalidateParentWhenMovedToWindow;
+
 	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
@@ -18,8 +20,14 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 			base.ScrollRectToVisible(rect, animated);
 	}
 
+	void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+	{
+		_invalidateParentWhenMovedToWindow = true;
+	}
+
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 	EventHandler? _movedToWindow;
+
 	event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 	{
 		add => _movedToWindow += value;
@@ -34,6 +42,12 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 		if(_customDelegate?.TryGetTarget(out var target) == true)
 		{
 			target.MovedToWindow(this);
+		}
+
+		if (_invalidateParentWhenMovedToWindow)
+		{
+			_invalidateParentWhenMovedToWindow = false;
+			this.InvalidateAncestorsMeasures();
 		}
 	}
 
