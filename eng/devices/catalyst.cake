@@ -171,7 +171,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 		Framework = tfm,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
-			.Append("/t:Restore;Build")
 			.Append($"/bl:{binlog}")
 	});
 

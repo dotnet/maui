@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 12374, "[Bug] iOS XF 5.0-pre1 crash with CollectionView when using EmptyView",
 		PlatformAffected.iOS)]
 	public partial class Issue12374 : TestContentPage
@@ -102,7 +96,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Issue12374Model : IEquatable<Issue12374Model>
 	{
 		public Guid Guid { get; set; }

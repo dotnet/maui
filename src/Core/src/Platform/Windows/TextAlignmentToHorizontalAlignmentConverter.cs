@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Platform
 			{
 				case Microsoft.UI.Xaml.TextAlignment.Center:
 					return HorizontalAlignment.Center;
+				case Microsoft.UI.Xaml.TextAlignment.Justify:
+					return HorizontalAlignment.Stretch;
 				case Microsoft.UI.Xaml.TextAlignment.Left:
 					return HorizontalAlignment.Left;
 				case Microsoft.UI.Xaml.TextAlignment.Right:
@@ -32,6 +34,8 @@ namespace Microsoft.Maui.Platform
 					return Microsoft.UI.Xaml.TextAlignment.Left;
 				case HorizontalAlignment.Center:
 					return Microsoft.UI.Xaml.TextAlignment.Center;
+				case HorizontalAlignment.Stretch:
+					return Microsoft.UI.Xaml.TextAlignment.Justify;
 				case HorizontalAlignment.Right:
 					return Microsoft.UI.Xaml.TextAlignment.Right;
 				default:

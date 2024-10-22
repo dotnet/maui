@@ -18,4 +18,14 @@ namespace Microsoft.Maui.Controls.Xaml
 	public sealed class AcceptEmptyServiceProviderAttribute : Attribute
 	{
 	}
+
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+	public sealed class RequireServiceAttribute : Attribute
+	{
+		public RequireServiceAttribute(Type[] serviceTypes)
+		{
+			ServiceTypes = serviceTypes;
+		}
+		public Type[] ServiceTypes { get; }
+	}
 }

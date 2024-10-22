@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	public class NativeBindingService : INativeBindingService
 	{
-		[UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmerConstants.NativeBindingService)]
+		[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{
 			var view = target as FrameworkElement;

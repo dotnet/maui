@@ -21,5 +21,4 @@
     <RuntimeIdentifier Condition="'$(UseRidGraph)' != 'true'">win-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
-
 </Project>

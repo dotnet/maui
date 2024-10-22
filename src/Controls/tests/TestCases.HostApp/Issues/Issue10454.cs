@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 10454, "CollectionView ChildAdded", PlatformAffected.All)]
 	public class Issue10454 : TestContentPage
 	{
@@ -67,7 +62,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Issue10454ViewModel : BindableObject
 	{
 		public Issue10454ViewModel()

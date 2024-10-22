@@ -30,7 +30,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
+	public partial class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
 				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			AutoPackage = false;
 		}
 
-		internal sealed class ListViewTransparent : WListView
+		internal sealed partial class ListViewTransparent : WListView
 		{
 			internal ListViewRenderer ListViewRenderer { get; }
 			public ListViewTransparent(ListViewRenderer listViewRenderer) : base()

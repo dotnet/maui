@@ -60,10 +60,10 @@ namespace BlazorWinFormsApp
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show(
-				owner: this,
-				text: $"Current counter value is: {_appState.Counter}",
-				caption: "Counter");
+			//MessageBox.Show(
+			//	owner: this,
+			//	text: $"Current counter value is: {_appState.Counter}",
+			//	caption: "Counter");
 		}
 
 		private void _webViewActionButton_Click(object sender, EventArgs e)
@@ -100,7 +100,7 @@ namespace BlazorWinFormsApp
 
 			if (!called)
 			{
-				MessageBox.Show(this, "Couldn't call TryDispatchAsync!");
+			//s	MessageBox.Show(this, "Couldn't call TryDispatchAsync!");
 			}
 		}
 	}

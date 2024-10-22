@@ -47,6 +47,7 @@ Information("Android SDK Root: {0}", androidSdkRoot);
 Information("Project File: {0}", projectPath);
 Information("Build Binary Log (binlog): {0}", binlogDirectory);
 Information("Build Configuration: {0}", configuration);
+Information("Build Target Framework: {0}", targetFramework);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
@@ -250,6 +251,11 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	}
 	finally
 	{
+		if (testsFailed)
+		{
+			// uncomment if you want to copy the test app to the results directory for any reason
+			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
+		}
 
 		HandleTestResults(resultsDir, testsFailed, false);
 	}

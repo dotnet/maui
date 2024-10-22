@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Controls.Sample.UITests;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
+﻿using Controls.Sample.UITests;
 using Maui.Controls.Sample.CollectionViewGalleries;
 
 namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
 	internal class CorePageView : ListView
 	{
-		[Preserve(AllMembers = true)]
 		internal class GalleryPageFactory
 		{
 			public GalleryPageFactory(Func<Page> create, string title)
