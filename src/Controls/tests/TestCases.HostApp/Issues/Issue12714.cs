@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 12714,
 		"[Bug] iOS application suspended at UICollectionViewFlowLayout.PrepareLayout() when using IsVisible = false",

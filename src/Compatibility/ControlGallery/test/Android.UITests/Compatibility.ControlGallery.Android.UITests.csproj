@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);__ANDROID__;UITEST;__SHELL__;ANDROID</DefineConstants>
-    <NoWarn>1701;1702;0618;0612;CA1307;CA1309</NoWarn>
+    <NoWarn>1701;1702;0618;0612;CA1307;CA1309;CS0672;CS0618</NoWarn>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
     <PackageReference Include="Xamarin.UITest" Version="4.3.4" />

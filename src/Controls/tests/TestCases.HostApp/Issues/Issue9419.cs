@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 9419, "Crash when toolbar item removed then page changed", PlatformAffected.Android)]
 	public class Issue9419 : TestFlyoutPage
 	{

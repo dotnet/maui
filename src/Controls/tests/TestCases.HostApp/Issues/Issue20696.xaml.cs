@@ -1,10 +1,5 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 20696, "[iOS] FlyoutHeader does not change its size after adding new content", PlatformAffected.iOS)]
 public class Issue20696Test : ContentPage
 {
@@ -18,7 +13,7 @@ public class Issue20696Test : ContentPage
 					{
 						Text = "Go To Test",
 						AutomationId = "GoToTest",
-						Command = new Command(() => Application.Current.MainPage = new Issue20696())
+						Command = new Command(() => this.Window.Page = new Issue20696())
 					}
 				}
 		};

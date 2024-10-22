@@ -1,14 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Net;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 12134, "[iOS] WkWebView does not handle cookies consistently",
 		PlatformAffected.iOS)]
 	public class Issue12134 : TestContentPage

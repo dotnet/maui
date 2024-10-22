@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Bugzilla, 25662, "Setting IsEnabled does not disable SwitchCell")]

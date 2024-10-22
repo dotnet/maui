@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MultipleBoundSelection : ContentPage
 	{
 		readonly BoundSelectionModel _vm;
