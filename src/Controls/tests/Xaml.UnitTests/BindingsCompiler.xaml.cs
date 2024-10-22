@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
@@ -55,8 +56,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				var layout = new BindingsCompiler(useCompiledXaml)
 				{
-					BindingContext = vm
+					BindingContext = new GlobalViewModel(),
 				};
+				layout.stack.BindingContext = vm;
 				layout.label6.BindingContext = new MockStructViewModel
 				{
 					Model = new MockViewModel
@@ -112,9 +114,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				vm.Model = null;
 				layout.entry1.BindingContext = null;
 
+				//testing standalone bindings
+				if (useCompiledXaml)
+				{
+					var binding = layout.picker0.ItemDisplayBinding;
+					Assert.That(binding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
+				}
+
 				//testing invalid bindingcontext type
-				layout.BindingContext = new object();
+				layout.stack.BindingContext = new object();
 				Assert.AreEqual(null, layout.label0.Text);
+
+				//testing source
+				Assert.That(layout.label12.Text, Is.EqualTo("Text for label12"));
+
+				//testing binding with path that cannot be statically compiled (we don't support casts in the Path)
+				Assert.That(layout.label13.Text, Is.EqualTo("Global Text"));
 			}
 			
 			[Test] 
@@ -135,6 +150,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 		public int I { get; set; }
 		public MockViewModel Model { get; set; }
+	}
+
+	class GlobalViewModel
+	{
+		public string GlobalText { get; set; } = "Global Text";
 	}
 
 	class MockViewModel : INotifyPropertyChanged
@@ -213,6 +233,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 		}
 
+		MockItemViewModel[] _items;
+		public MockItemViewModel[] Items
+		{
+			get { return _items; }
+			set
+			{
+				_items = value;
+				OnPropertyChanged();
+			}
+		}
+
+		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
 		public void SetIndexerValueAndCallOnPropertyChangedWithoutIndex(int v, string value)
 		{
 			if (values[v] == value)
@@ -220,6 +256,22 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			values[v] = value;
 			OnPropertyChanged("Indexer");
+		}
+	}
+
+	class MockItemViewModel : INotifyPropertyChanged
+	{
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private string _title { get; set; }
+		public string Title
+		{
+			get => _title;
+			set
+			{
+				_title = value;
+				OnPropertyChanged();
+			}
 		}
 
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public static class DotnetInternal
 	{
-		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet");
+		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet");
 		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
 		const int DEFAULT_TIMEOUT = 900;
 
@@ -46,9 +46,9 @@ namespace Microsoft.Maui.IntegrationTests
 			return buildArgs;
 		}
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false)
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "")
 		{
-			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath);
+			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
 
 			if (msbuildWarningsAsErrors)
 			{
@@ -80,12 +80,16 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("publish", $"{buildArgs}");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework = "")
+		public static bool New(string shortName, string outputDirectory, string framework = "", string? additionalDotNetNewParams = null)
 		{
 			var args = $"{shortName} -o \"{outputDirectory}\"";
 
 			if (!string.IsNullOrEmpty(framework))
+			{
 				args += $" -f {framework}";
+			}
+
+			args += $" {additionalDotNetNewParams}";
 
 			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
 			TestContext.WriteLine(output);
@@ -105,11 +109,10 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
+			TestContext.WriteLine($"Running: '{DotnetTool}' with '{command}'");
+			TestContext.WriteLine($"Args list: {args}");
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-			//Workaround: https://github.com/dotnet/linker/issues/3012
-			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
-
 			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
 
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);

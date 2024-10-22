@@ -59,6 +59,7 @@ public partial class Maui18697 : ContentPage
     }
 }
 
+[AcceptEmptyServiceProvider]
 [ContentProperty(nameof(Name))]
 public class Maui18697TranslateExtension : IMarkupExtension<BindingBase>
 {

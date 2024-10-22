@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			var stack = new StackLayout
 			{
 				Padding = 100,
-				Children = { new Label { Text = "Turn on the Screen Reader. Click the button. Another label should appear. If you can not swipe to access and hear the text of the new label, this test has failed." }, label2, button },
+				Children = { new Label { Text = "Turn on the Screen Reader. Click the button. Another label should appear. If you cannot swipe to access and hear the text of the new label, this test has failed." }, label2, button },
 			};
 
 			Content = stack;

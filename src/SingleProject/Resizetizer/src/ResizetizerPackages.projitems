@@ -23,8 +23,6 @@
     <!-- build task dependencies -->
     <PackageReference Include="System.Memory" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Buffers" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Text.Json" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="System.Text.Encodings.Web" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.IO.UnmanagedMemoryStream" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Numerics.Vectors" GeneratePathProperty="true" PrivateAssets="all" />
@@ -35,8 +33,6 @@
   <ItemGroup>
     <_ResizetizerFiles Include="$(PkgSystem_Memory)\lib\netstandard2.0\System.Memory.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Buffers)\lib\netstandard2.0\System.Buffers.dll" />
-    <_ResizetizerFiles Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" />
-    <_ResizetizerFiles Include="$(PkgSystem_Text_Encodings_Web)\lib\netstandard2.0\System.Text.Encodings.Web.dll" />
     <_ResizetizerFiles Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Numerics_Vectors)\lib\netstandard2.0\System.Numerics.Vectors.dll" />
     <_ResizetizerFiles Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" />

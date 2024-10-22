@@ -150,7 +150,7 @@ steps:
       condition: succeeded()
       inputs:
         Contents: |
-          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/*.dll
+          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/Microsoft.Maui*.dll
         TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
         flattenFolders: false
 
@@ -165,6 +165,7 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/**/vs-workload.props
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
         ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
+        ${{ parameters.checkoutDirectory }}/eng/automation/guardian/**
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
         !${{ parameters.checkoutDirectory}}/artifacts/binaries/**
         !${{ parameters.checkoutDirectory}}/artifacts/**/res.zip

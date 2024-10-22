@@ -6,7 +6,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty("Platforms")]
-	public class OnPlatform<T>
+	public class OnPlatform<T> : IWrappedValue
 	{
 		public OnPlatform()
 		{
@@ -54,6 +54,9 @@ namespace Microsoft.Maui.Controls
 
 			return onPlatform.hasDefault ? onPlatform.@default : default(T);
 		}
+
+		object IWrappedValue.Value => (T)this;
+		System.Type IWrappedValue.ValueType => typeof(T);
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/On.xml" path="Type[@FullName='Microsoft.Maui.Controls.On']/Docs/*" />

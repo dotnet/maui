@@ -36,6 +36,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			_windows.Remove(window);
 		}
 
+		public void ActivateWindow(IWindow window) { }
+		
 		public void ThemeChanged() { }
 
 		public void SetSingleWindow(IWindow window)

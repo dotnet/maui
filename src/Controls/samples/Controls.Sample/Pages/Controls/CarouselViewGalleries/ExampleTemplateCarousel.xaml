@@ -25,10 +25,10 @@
             </VisualState>
         </VisualStateGroup>
     </VisualStateManager.VisualStateGroups>
-    <Frame x:Name="frame" HasShadow="True" Padding="0" HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Yellow">
+    <Border x:Name="frame" Padding="0" HorizontalOptions="Center" VerticalOptions="Center" BackgroundColor="Yellow">
         <Grid>
             <Image Source="{Binding FeaturedImage}" InputTransparent="true" Aspect="AspectFit" />
             <Label Text="{Binding Index}" HorizontalOptions="Center" VerticalOptions="End" ></Label>
         </Grid>
-    </Frame>
+    </Border>
 </Grid>

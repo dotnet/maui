@@ -1,0 +1,7 @@
+{
+  "author": "Майкрософт",
+  "name": ".NET MAUI Window (XAML)",
+  "description": "A window for displaying a page using XAML.",
+  "postActions/openInEditor/description": "Открывает NewWindow1.xaml в редакторе.",
+  "symbols/namespace/description": "пространство имен для созданного кода"
+}

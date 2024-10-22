@@ -1,0 +1,20 @@
+name: Inclusive Heat Sensor
+on:
+  issues:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created, edited]
+  pull_request:
+    types: [reopened]
+  pull_request_review_comment:
+    types: [created, edited]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  detect-heat:
+    uses: jonathanpeppers/inclusive-heat-sensor/.github/workflows/comments.yml@v0.1
+    secrets: inherit

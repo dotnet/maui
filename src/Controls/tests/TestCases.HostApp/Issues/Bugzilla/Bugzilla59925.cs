@@ -1,10 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 59925, "Font size does not change vertical height of Entry on iOS", PlatformAffected.Default)]
 	public class Bugzilla59925 : TestContentPage // or TestFlyoutPage, etc ...
 	{

@@ -39,7 +39,10 @@ public class NewTaskSceneDelegate : UIWindowSceneDelegate
 			return;
 
 		var toolbar = new NSToolbar();
+		
+#pragma warning disable CA1422 
 		toolbar.ShowsBaselineSeparator = false;
+#pragma warning restore CA1422
 
 		var titlebar = Window.WindowScene.Titlebar;
 		titlebar.Toolbar = toolbar;
