@@ -29,6 +29,7 @@ pr:
     - release/*
     - net9.0
     - net8.0
+    - net9.0
   paths:
     include:
     - '*'
@@ -87,7 +88,7 @@ parameters:
         vmImage: $(macOSXVmImage)
         artifact: nuget-macos
 
-  - name: BuilTemplatePlatforms
+  - name: BuildTemplatePlatforms
     type: object
     default:
       - name: Windows
@@ -122,8 +123,8 @@ parameters:
     default:
       - name: default
         tfm: default
-      - name: net8
-        tfm: net8.0
+      - name: net9
+        tfm: net9.0
 
 resources:
   repositories:
@@ -166,6 +167,9 @@ stages:
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  skipAndroidSdks: true
+                  skipAndroidImages: true
+                  installDefaultAndroidApi: false
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -233,7 +237,9 @@ stages:
                       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                      skipAndroidSdks: true
                       skipAndroidImages: true
+                      installDefaultAndroidApi: true
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -255,6 +261,9 @@ stages:
             - template: common/provision.yml
               parameters:
                 poolName: ${{ BuildPlatform.poolName }}
+                skipAndroidSdks: true
+                skipAndroidImages: true
+                installDefaultAndroidApi: true
 
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'
@@ -272,7 +281,7 @@ stages:
                 PRIVATE_BUILD: $(PrivateBuild)
             - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
               displayName: Build Microsoft.Maui.IntegrationTests
-            - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests" --resultsfilename="integration-samples" --verbosity=diagnostic
+            - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=Samples" --resultsfilename="integration-samples" --verbosity=diagnostic
               displayName: Run ${{ BuildPlatform.name }} sample build tests
             - task: PublishTestResults@2
               displayName: Publish the ${{ BuildPlatform.name }} sample build tests
@@ -281,6 +290,11 @@ stages:
                 testRunner: VSTest
                 testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
                 testRunTitle: ${{ BuildPlatform.name }} sample build tests
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: build_net_${{ BuildPlatform.name }}_samples
 
   - stage: templates_net
     displayName: Test Templates
@@ -289,7 +303,7 @@ stages:
     - template: common/maui-templates.yml
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
-        BuildPlatforms: ${{ parameters.BuilTemplatePlatforms }}
+        BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

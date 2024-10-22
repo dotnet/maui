@@ -12,19 +12,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException";
+		public override string Issue => "ObservableCollection.RemoveAt(index) with a valid index raises ArgumentOutOfRangeException";
 
-		// Issue10300 (src\ControlGallery\src\Issues.Shared\Issue10300.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488")]
 		public void Issue10300Test()
 		{
 			App.Click("Add");
 			App.Click("Delete");
 			App.WaitForElement("Close");
 			App.Click("Close");
-			App.WaitForNoElement("2");
+			App.WaitForElement("2");
 		}
 	}
 }

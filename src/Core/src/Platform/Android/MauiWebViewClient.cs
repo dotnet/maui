@@ -82,6 +82,18 @@ namespace Microsoft.Maui.Platform
 			base.OnReceivedError(view, request, error);
 		}
 
+		// The render process was observed to crash or killed by the system.
+		[System.Runtime.Versioning.SupportedOSPlatform("android26.0")]
+		public override bool OnRenderProcessGone(WebView? view, RenderProcessGoneDetail? detail)
+		{
+			if (_handler.TryGetTarget(out var handler))
+			{
+				handler.VirtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(view, detail));
+			}
+
+			return base.OnRenderProcessGone(view, detail);
+		}
+
 		bool NavigatingCanceled(string? url) =>
 			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url);
 

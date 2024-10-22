@@ -227,7 +227,7 @@ label.AddBinding (new Binding (Label.TextProperty, "Price") {
       <Docs>
         <summary>Throws an <see cref="T:System.InvalidOperationException" /> if the binding has been applied.</summary>
         <remarks>
-          <para>Use this method in property setters as bindings can not be changed once applied.</para>
+          <para>Use this method in property setters as bindings cannot be changed once applied.</para>
         </remarks>
       </Docs>
     </Member>

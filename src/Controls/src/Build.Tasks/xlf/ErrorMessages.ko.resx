@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType에는 {{x:Type}} 태그 또는 {{x:Nul}l} 문자열 리터럴이 필요합니다.</value>
+    <value>x:DataType에는 {{x:Type}} 태그 또는 {{x:Null}} 문자열 리터럴이 필요합니다.</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>선언되지 않은 xmlns 접두사 "{0}"입니다.</value>

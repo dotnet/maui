@@ -1,10 +1,5 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class EmptyViewRTLGallery : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource();

@@ -11,6 +11,7 @@ using Microsoft.Maui.Layouts;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.AbsoluteLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 	public class AbsoluteLayout : Layout<View>, IElementConfiguration<AbsoluteLayout>
 	{
 		/// <summary>Bindable property for attached property <c>LayoutFlags</c>.</summary>
@@ -64,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			bindable.SetValue(LayoutFlagsProperty, flags);
 		}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0672 // Member overrides obsolete member
 		{
 			foreach (View child in LogicalChildrenInternal)
 			{
@@ -88,6 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.OnChildRemoved(child, oldLogicalIndex);
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var bestFitSize = new Size();

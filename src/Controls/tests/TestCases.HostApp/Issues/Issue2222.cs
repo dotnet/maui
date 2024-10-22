@@ -1,9 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2222, "NavigationBar.ToolbarItems.Add() crashes / breaks app in iOS7. works fine in iOS8", PlatformAffected.iOS)]
 	public class Issue2222 : NavigationPage
 	{
@@ -21,7 +18,7 @@ namespace Maui.Controls.Sample.Issues
 				Navigation.PushAsync(new Issue22221());
 			}
 
-			[Preserve(AllMembers = true)]
+
 			public class Issue22221 : ContentPage
 			{
 				public Issue22221()

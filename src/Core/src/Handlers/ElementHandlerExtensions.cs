@@ -16,9 +16,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui
 {
-	static class ElementHandlerExtensions
+	public static class ElementHandlerExtensions
 	{
-		public static PlatformView ToPlatform(this IElementHandler elementHandler) =>
+		internal static PlatformView ToPlatform(this IElementHandler elementHandler) =>
 			(elementHandler.VirtualView?.ToPlatform() as PlatformView) ??
 				throw new InvalidOperationException($"Unable to convert {elementHandler} to {typeof(PlatformView)}");
 
@@ -71,21 +71,21 @@ namespace Microsoft.Maui
 			return service;
 		}
 
-		public static Task<T> InvokeAsync<T>(this IElementHandler handler, string commandName,
+		internal static Task<T> InvokeAsync<T>(this IElementHandler handler, string commandName,
 			TaskCompletionSource<T> args)
 		{
 			handler?.Invoke(commandName, args);
 			return args.Task;
 		}
 
-		public static T InvokeWithResult<T>(this IElementHandler handler, string commandName,
+		internal static T InvokeWithResult<T>(this IElementHandler handler, string commandName,
 			RetrievePlatformValueRequest<T> args)
 		{
 			handler?.Invoke(commandName, args);
 			return args.Result;
 		}
 
-		public static bool CanInvokeMappers(this IElementHandler viewHandler)
+		internal static bool CanInvokeMappers(this IElementHandler viewHandler)
 		{
 #if ANDROID
 			var platformView = viewHandler?.PlatformView;
@@ -96,7 +96,7 @@ namespace Microsoft.Maui
 			return true;
 		}
 
-		internal static bool IsConnected(this IElementHandler handler) =>
+		public static bool IsConnected(this IElementHandler handler) =>
 			handler.PlatformView is not null;
 
 	}

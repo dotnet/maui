@@ -168,15 +168,15 @@ namespace Microsoft.Maui
 				}
 				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
 				{
-					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
 					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
 					{
-						bool hasTitleBar = (styleChange.StyleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
+						var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+						bool hasTitleBar = PlatformMethods.HasStyle(styleChange.StyleNew, PlatformMethods.WindowStyles.WS_CAPTIONANDSYSTEMMENU);
 
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
 						if (rootManager != null)
 						{
-							rootManager?.SetTitleBarVisibility(this, hasTitleBar);
+							rootManager?.SetTitleBarVisibility(hasTitleBar);
 						}
 					}
 				}

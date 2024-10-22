@@ -9,7 +9,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFlyoutItemView : ContentControl
+	public partial class ShellFlyoutItemView : ContentControl
 	{
 		public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
 			nameof(IsSelected), typeof(bool), typeof(ShellFlyoutItemView),

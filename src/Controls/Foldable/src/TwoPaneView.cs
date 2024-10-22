@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Foldable
 				{
 					if (_twoPaneViewLayoutGuide.Mode == TwoPaneViewMode.Wide)
 					{
-						// Regions are laid out horizontally
+						// Regions are arranged horizontally
 						if (WideModeConfiguration != TwoPaneViewWideModeConfiguration.SinglePane)
 						{
 							newMode = (WideModeConfiguration == TwoPaneViewWideModeConfiguration.LeftRight) ? ViewMode.LeftRight : ViewMode.RightLeft;
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Foldable
 					}
 					else if (_twoPaneViewLayoutGuide.Mode == TwoPaneViewMode.Tall)
 					{
-						// Regions are laid out vertically
+						// Regions are arranged vertically
 						if (TallModeConfiguration != TwoPaneViewTallModeConfiguration.SinglePane)
 						{
 							newMode = (TallModeConfiguration == TwoPaneViewTallModeConfiguration.TopBottom) ? ViewMode.TopBottom : ViewMode.BottomTop;

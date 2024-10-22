@@ -256,7 +256,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			// Cache the size for next time
 			_size = toSize;
 
-			// Let the controller know that things need to be laid out again
+			// Let the controller know that things need to be arranged again
 			OnContentSizeChanged();
 		}
 

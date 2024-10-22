@@ -65,6 +65,13 @@ namespace Microsoft.Maui.Platform
 				// to gravity, because Android will simply ignore text alignment
 				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				textView.JustificationMode = text.HorizontalTextAlignment == TextAlignment.Justify
+					? Android.Text.JustificationMode.InterWord
+					: Android.Text.JustificationMode.None;
+			}
 		}
 
 		public static void UpdateVerticalTextAlignment(this TextView textView, ITextAlignment textAlignment)

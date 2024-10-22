@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:DataType="local:Maui25141ViewModel"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui25141">
+    <ContentPage.Resources>
+        <MultiBinding
+            x:Key="MultiBinding"
+            Mode="TwoWay">
+            <Binding Path="Text"/>
+        </MultiBinding>
+
+        <DataTrigger
+            x:Key="DataTrigger"
+            Binding="{Binding TriggerFlag}"
+            TargetType="Label"
+            Value="True">
+            <Setter Property="Text" Value="TRIGGERED" />
+        </DataTrigger>
+    </ContentPage.Resources>
+
+    <StackLayout>
+        <Label x:Name="LabelA">
+            <Label.Text>
+                <MultiBinding Mode="TwoWay">
+                    <Binding Path="Text"/>
+                </MultiBinding>
+            </Label.Text>
+        </Label>
+
+        <Label x:Name="LabelB">
+            <Label.Triggers>
+                <DataTrigger
+                    Binding="{Binding TriggerFlag}"
+                    TargetType="Button"
+                    Value="True">
+            <Setter Property="Text" Value="TRIGGERED" />
+                </DataTrigger>
+            </Label.Triggers>
+        </Label>
+    </StackLayout>
+</ContentPage>

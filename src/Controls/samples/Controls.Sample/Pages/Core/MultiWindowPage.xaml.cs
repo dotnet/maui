@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Maui.Controls.Sample.Pages.Base;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
@@ -22,6 +23,25 @@ namespace Maui.Controls.Sample.Pages
 		void OnCloseWindowClicked(object sender, EventArgs e)
 		{
 			Application.Current!.CloseWindow(Window);
+		}
+
+		void ActivateWindowClicked(object sender, EventArgs e)
+		{
+			IReadOnlyList<Window> windows = Application.Current!.Windows;
+
+			// Window number is one-based, not zero-based.
+			if (!int.TryParse(windowToActivateEntry.Text, out int windowNumber))
+			{
+				windowNumber = 1;
+			}
+
+			windowNumber = Math.Min(windowNumber, windows.Count);
+			windowNumber = Math.Max(1, windowNumber);
+			
+			int windowIndex = windowNumber - 1;
+
+			Window windowToActivate = windows[windowIndex];
+			Application.Current!.ActivateWindow(windowToActivate);
 		}
 
 		async void OnOpenDialogClicked(object sender, EventArgs e)

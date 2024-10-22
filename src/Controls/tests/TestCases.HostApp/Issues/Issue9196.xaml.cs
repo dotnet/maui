@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 9196, "[Bug] [iOS] CollectionView EmptyView causes the application to crash",
 		PlatformAffected.iOS)]

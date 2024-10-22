@@ -313,7 +313,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to StyleSheet can not have both a Source and a content..
+        ///   Looks up a localized string similar to StyleSheet cannot have both a Source and a content..
         /// </summary>
         internal static string StyleSheetSourceOrContent {
             get {
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}..
+        ///   Looks up a localized string similar to x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}..
         /// </summary>
         internal static string XDataTypeSyntax {
             get {
@@ -381,6 +381,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
         internal static string XStaticSyntax {
             get {
                 return ResourceManager.GetString("XStaticSyntax", resourceCulture);
+            }
+        }        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Consider attributing the markup extension with [AcceptEmptyServiceProvider] or [RequireService]..
+        /// </summary>
+        internal static string UnattributedMarkupType {
+            get {
+                return ResourceManager.GetString("UnattributedMarkupType", resourceCulture);
             }
         }
 
