@@ -228,5 +228,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(passed);
 		}
+
+		[Fact]
+		public async Task ReuseSamePageWithNewWindow()
+		{
+			SetupBuilder();
+
+			var window = new Window(new NavigationPage(new ContentPage()));
+
+			/*await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, (_) =>
+			{
+				var page = new ContentPage();
+				window.Page = page;
+			});*/
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				window.ToPlatform();
+				var page = window.Page?.Handler;
+
+				var newWindow = new Window();
+				
+			});
+		}
 	}
 }

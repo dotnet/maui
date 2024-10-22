@@ -657,6 +657,10 @@ namespace Microsoft.Maui.Controls
 
 		void OnPageHandlerChanged(object? sender, EventArgs e)
 		{
+			// Window isn't ready yet to wire up to modals or alerts
+			if (this.Handler is null)
+				return;
+
 			ModalNavigationManager.PageAttachedHandler();
 			AlertManager.Subscribe();
 		}

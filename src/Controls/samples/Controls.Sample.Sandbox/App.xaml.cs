@@ -7,6 +7,8 @@ public partial class App : Application
 		InitializeComponent();
 	}
 
+	Page? page = null;
+
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
 		// To test shell scenarios, change this to true
@@ -14,7 +16,12 @@ public partial class App : Application
 
 		if (!useShell)
 		{
-			return new Window(new NavigationPage(new MainPage()));
+			var previousWindow = page?.Window;
+			var newWindow = new Window(page ??= new NavigationPage(new MainPage()));
+
+			var pages = previousWindow?.Page;
+
+			return newWindow;
 		}
 		else
 		{

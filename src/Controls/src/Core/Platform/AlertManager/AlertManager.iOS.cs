@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		readonly List<AlertRequestHelper> Subscriptions = new List<AlertRequestHelper>();
 
-		internal void Subscribe(Window window)
+		internal void 	Subscribe(Window window)
 		{
 			var platformWindow = window?.MauiContext.GetPlatformWindow();
 
