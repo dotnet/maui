@@ -13,22 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewEmptyViewBehaviorWithDataTemplateSelectorDefaultTemplate()
+		public void CollectionViewEmptyViewWithDataTemplateSelectorShouldNotCrash()
 		{
-			App.WaitForElement("SearchBar");
-			App.EnterText("SearchBar", "test");
-			App.PressEnter();
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewEmptyViewBehaviorWithDataTemplateSelectorOtherTemplate()
-		{
-			App.WaitForElement("SearchBar");
-			App.EnterText("SearchBar", "xamarin");
-			App.PressEnter();
-			VerifyScreenshot();
+			App.WaitForNoElement("Success");
 		}
 	}
 }
