@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void GetEffectFromContainer()
 		{
 			string effectName = "anEffect";
-			Internals.Registrar.Effects[effectName] = typeof(MockEffect);
+			Internals.Registrar.Effects[effectName] = new Registrar.EffectType(typeof(MockEffect));
 			var effect = new MockEffect();
 			_container.Register(typeof(MockEffect), effect);
 			var result = Effect.Resolve(effectName);

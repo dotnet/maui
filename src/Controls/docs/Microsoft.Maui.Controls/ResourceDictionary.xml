@@ -447,11 +447,11 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetAndLoadSource">
-      <MemberSignature Language="C#" Value="public void SetAndLoadSource (Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetAndLoadSource(class System.Uri value, string resourcePath, class System.Reflection.Assembly assembly, class System.Xml.IXmlLineInfo lineInfo) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri,System.String,System.Reflection.Assembly,System.Xml.IXmlLineInfo)" />
-      <MemberSignature Language="F#" Value="member this.SetAndLoadSource : Uri * string * System.Reflection.Assembly * System.Xml.IXmlLineInfo -&gt; unit" Usage="resourceDictionary.SetAndLoadSource (value, resourcePath, assembly, lineInfo)" />
+    <Member MemberName="SetAndCreateSource&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public void SetAndCreateSource&lt;T&gt; (Uri value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetAndCreateSource&lt;string&gt;(class System.Uri value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource``1(System.Uri)" />
+      <MemberSignature Language="F#" Value="member this.SetAndCreateSource : Uri -&gt; unit" Usage="resourceDictionary.SetAndCreateSource (value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -466,17 +466,20 @@
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <BaseTypeName>Microsoft.Maui.Controls.ResourceDictionary</BaseTypeName>
+            <ParameterAttribute>DefaultConstructorConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
       <Parameters>
         <Parameter Name="value" Type="System.Uri" />
-        <Parameter Name="resourcePath" Type="System.String" />
-        <Parameter Name="assembly" Type="System.Reflection.Assembly" />
-        <Parameter Name="lineInfo" Type="System.Xml.IXmlLineInfo" />
       </Parameters>
       <Docs>
+        <typeparam name="T">To be added.</typeparam>
         <param name="value">To be added.</param>
-        <param name="resourcePath">To be added.</param>
-        <param name="assembly">To be added.</param>
-        <param name="lineInfo">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

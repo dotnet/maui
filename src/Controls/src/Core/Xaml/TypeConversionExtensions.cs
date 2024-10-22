@@ -67,38 +67,37 @@ namespace Microsoft.Maui.Controls.Xaml
 				TypeConverter converter = null;
 				if (minfoRetriever != null && minfoRetriever() is MemberInfo memberInfo)
 				{
-					if (!s_converterCache.TryGetValue(memberInfo, out converter))
-					{
-						if (memberInfo.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType() is Type converterType)
-						{
-							converter = (TypeConverter)Activator.CreateInstance(converterType);
-						}
-
-						// cache the result, even if it is null
-						s_converterCache[memberInfo] = converter;
-					}
-
-					if (converter is not null)
+					if (TryGetTypeConverter(memberInfo, out converter))
 					{
 						return converter;
 					}
 				}
 
-				if (!s_converterCache.TryGetValue(toType, out converter))
+				if (TryGetTypeConverter(toType, out converter))
 				{
-					if (toType.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType() is Type converterType)
-					{
-						converter = (TypeConverter)Activator.CreateInstance(converterType);
-					}
-
-					// cache the result, even if it is null
-					s_converterCache[toType] = converter;
+					return converter;
 				}
 
-				return converter;
+				return null;
 			};
 
 			return ConvertTo(value, toType, getConverter, serviceProvider, out exception);
+		}
+
+		internal static bool TryGetTypeConverter(this MemberInfo memberInfo, [NotNullWhen(true)] out TypeConverter converter)
+		{
+			if (!s_converterCache.TryGetValue(memberInfo, out converter))
+			{
+				if (memberInfo.GetCustomAttribute<TypeConverterAttribute>()?.GetConverterType() is Type converterType)
+				{
+					converter = (TypeConverter)Activator.CreateInstance(converterType);
+				}
+
+				// cache the result, even if it is null
+				s_converterCache[memberInfo] = converter;
+			}
+
+			return converter is not null;
 		}
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
@@ -217,16 +216,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			//if the value is not assignable and there's an implicit conversion, convert
 			if (value != null && !toType.IsAssignableFrom(value.GetType()))
 			{
-				var opImplicit = value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: toType)
-								?? toType.GetImplicitConversionOperator(fromType: value.GetType(), toType: toType);
-
-				if (opImplicit != null)
+				if (TypeConversionHelper.TryConvert(value, toType, out var convertedValue))
 				{
-					value = opImplicit.Invoke(null, new[] { value });
-					return value;
+					return convertedValue;
 				}
 			}
 
@@ -237,48 +231,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				return platformValue;
 
 			return value;
-		}
-
-		internal static MethodInfo GetImplicitConversionOperator(this Type onType, Type fromType, Type toType)
-		{
-			var bindingAttr = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-			IEnumerable<MethodInfo> mis = null;
-			try
-			{
-				mis = new[] { onType.GetMethod("op_Implicit", bindingAttr, null, new[] { fromType }, null) };
-			}
-			catch (AmbiguousMatchException)
-			{
-				mis = new List<MethodInfo>();
-				foreach (var mi in onType.GetMethods(bindingAttr))
-				{
-					if (mi.Name != "op_Implicit")
-						break;
-					var parameters = mi.GetParameters();
-					if (parameters.Length == 0)
-						continue;
-					if (!parameters[0].ParameterType.IsAssignableFrom(fromType))
-						continue;
-					((List<MethodInfo>)mis).Add(mi);
-				}
-			}
-
-			foreach (var mi in mis)
-			{
-				if (mi == null)
-					continue;
-				if (!mi.IsSpecialName)
-					continue;
-				if (!mi.IsPublic)
-					continue;
-				if (!mi.IsStatic)
-					continue;
-				if (!toType.IsAssignableFrom(mi.ReturnType))
-					continue;
-
-				return mi;
-			}
-			return null;
 		}
 	}
 }

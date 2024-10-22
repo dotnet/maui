@@ -1,13 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
+﻿using System.Diagnostics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 55912, "Tap event not always propagated to containing Grid/StackLayout",
 		PlatformAffected.Android)]
 	public class Bugzilla55912 : TestContentPage

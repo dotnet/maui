@@ -1,9 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// Uses a custom renderer on Android to override SetupPageTransition.
 	// While these transitions are often desired, they can appear to cause the "flash"
@@ -16,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 32830, "Hiding navigation bar causes layouts to shift during navigation", PlatformAffected.iOS)]
 	public class Bugzilla32830 : NoFlashTestNavigationPage
 	{
@@ -24,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 		const string Button2 = "button2";
 		const string BottomLabel = "I am visible at the bottom of the page";
 
-		[Preserve(AllMembers = true)]
+
 		class Page1 : ContentPage
 		{
 			public Page1()
@@ -69,7 +64,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class Page2 : ContentPage
 		{
 			public Page2()

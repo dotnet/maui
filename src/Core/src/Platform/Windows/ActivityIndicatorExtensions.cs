@@ -2,6 +2,7 @@
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformActivityIndicator.IsActive = virtualView.IsRunning;
 		}
+
 		public static void UpdateColor(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator)
 		{
 			platformActivityIndicator.UpdateColor(activityIndicator, null);
@@ -18,18 +20,37 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateColor(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator, object? foregroundDefault)
 		{
-			Color color = activityIndicator.Color;
+			var color = activityIndicator.Color;
+			Brush? brush = null;
 
 			if (color.IsDefault())
 			{
-				if (foregroundDefault != null)
-					platformActivityIndicator.RestoreForegroundCache(foregroundDefault);
+				if(foregroundDefault is Brush defaultBrush)
+					brush = defaultBrush;
 			}
 			else
 			{
-				platformActivityIndicator.Foreground = color.ToPlatform();
+				brush = color.ToPlatform();
 			}
+
+			if (brush is null)
+			{
+				platformActivityIndicator.Resources.RemoveKeys(ProgressRingForegroundResourceKeys);
+				platformActivityIndicator.ClearValue(ProgressRing.ForegroundProperty);
+			}
+			else
+			{
+				platformActivityIndicator.Resources.SetValueForAllKey(ProgressRingForegroundResourceKeys, brush);
+				platformActivityIndicator.Foreground = brush;
+			}
+
+			platformActivityIndicator.RefreshThemeResources();
 		}
+
+		static readonly string[] ProgressRingForegroundResourceKeys =
+		{
+			"ProgressRingForegroundThemeBrush"
+		};
 
 		public static void UpdateWidth(this ProgressRing platformActivityIndicator, IActivityIndicator activityIndicator)
 		{

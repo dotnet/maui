@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Maui.Controls;
+﻿using System.Diagnostics;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -102,7 +100,7 @@ namespace Maui.Controls.Sample.Issues
 			// Build the page.
 			Content = new StackLayout
 			{
-				Children = 
+				Children =
 				{
 					makeBig,
 					header,

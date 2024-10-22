@@ -21,6 +21,7 @@ stages:
           condition: eq(variables.signingCondition, true)
           use1ESTemplate: true
           usePipelineArtifactTasks: true
+          checkoutType : 'self'
         
       - template: nuget-msi-convert/job/v4.yml@yaml-templates
         parameters:
@@ -36,6 +37,14 @@ stages:
               downloadPath: $(Build.ArtifactStagingDirectory)\sign-verify
               patterns: |
                 **/SignVerifyIgnore.txt
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.SourcesDirectory)\eng\automation\guardian
+              patterns: |
+                **/tsaoptions-v2.json
+                **/source.gdnsuppress
 
           - task: MicroBuildCodesignVerify@3
             displayName: verify signed msi content

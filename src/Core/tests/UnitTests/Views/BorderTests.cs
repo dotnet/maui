@@ -106,31 +106,27 @@ namespace Microsoft.Maui.UnitTests.Views
 
 			strokeShape = null;
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "Border should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "Border should not be alive!");
 		}
 
 		[Fact]
 		public void TestSetChild()
 		{
-			Frame frame = new Frame();
+			Border border = new Border();
 
 			var child1 = new Label();
 
 			bool added = false;
 
-			frame.ChildAdded += (sender, e) => added = true;
+			border.ChildAdded += (sender, e) => added = true;
 
-			frame.Content = child1;
+			border.Content = child1;
 
 			Assert.True(added);
-			Assert.Equal(child1, frame.Content);
+			Assert.Equal(child1, border.Content);
 
 			added = false;
-			frame.Content = child1;
+			border.Content = child1;
 
 			Assert.False(added);
 		}
@@ -138,24 +134,24 @@ namespace Microsoft.Maui.UnitTests.Views
 		[Fact]
 		public void TestReplaceChild()
 		{
-			Frame frame = new Frame();
+			Border border = new Border();
 
 			var child1 = new Label();
 			var child2 = new Label();
 
-			frame.Content = child1;
+			border.Content = child1;
 
 			bool removed = false;
 			bool added = false;
 
-			frame.ChildRemoved += (sender, e) => removed = true;
-			frame.ChildAdded += (sender, e) => added = true;
+			border.ChildRemoved += (sender, e) => removed = true;
+			border.ChildAdded += (sender, e) => added = true;
 
-			frame.Content = child2;
+			border.Content = child2;
 
 			Assert.True(removed);
 			Assert.True(added);
-			Assert.Equal(child2, frame.Content);
+			Assert.Equal(child2, border.Content);
 		}
 	}
 }

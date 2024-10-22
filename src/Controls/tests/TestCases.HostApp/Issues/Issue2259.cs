@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2259, "ListView.ScrollTo crashes app", PlatformAffected.iOS)]
 	public class Issue2259 : TestContentPage
 	{
-		[Preserve(AllMembers = true)]
+
 		public class Person
 		{
 			public string Name { private set; get; }

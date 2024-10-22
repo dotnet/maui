@@ -1,10 +1,5 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 25943,
 		"[Android] TapGestureRecognizer does not work with a nested StackLayout", PlatformAffected.Android)]
 	public class Bugzilla25943 : TestContentPage
