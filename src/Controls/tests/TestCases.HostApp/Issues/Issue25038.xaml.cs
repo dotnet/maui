@@ -1,9 +1,6 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 25038, "MAUI Entry in Windows always shows ClearButton if initially hidden and shown even if ClearButtonVisibility set to 'Never'", PlatformAffected.UWP)]
 	public partial class Issue25038 : ContentPage
 	{

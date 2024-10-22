@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 9796, "[Android]Editor controls don't raise Completed event consistently",
 		PlatformAffected.Android)]
 	public partial class Issue9796 : ContentPage
@@ -12,7 +11,7 @@
 
 		private void OnEditorCompleted(object sender, EventArgs e)
 		{
-			Label.Text = "Triggered";	
+			Label.Text = "Triggered";
 		}
 
 		private void OnFocusButtonClicked(object sender, EventArgs e)

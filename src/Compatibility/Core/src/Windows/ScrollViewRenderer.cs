@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			ClearRtlScrollCheck();
 
 			// Adding items into the view while scrolling to the end can cause it to fail, as
-			// the items have not actually been laid out and return incorrect scroll position
+			// the items have not actually been arranged and return incorrect scroll position
 			// values. The ScrollViewRenderer for Android does something similar by waiting up
 			// to 10ms for layout to occur.
 			int cycle = 0;

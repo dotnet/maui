@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 
 		public delegate bool ValidateValueDelegate<in TPropertyType>(BindableObject bindable, TPropertyType value);
 
-		static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type, TypeConverter>
+		internal static readonly Dictionary<Type, TypeConverter> KnownTypeConverters = new Dictionary<Type, TypeConverter>
 		{
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
@@ -48,14 +48,14 @@ namespace Microsoft.Maui.Controls
 			{ typeof(ImageSource), new ImageSourceConverter() }
 		};
 
-		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
+		internal static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
 		{
 			{ typeof(string), new ToStringValueConverter() },
 		};
 
 		// more or less the encoding of this, without the need to reflect
 		// http://msdn.microsoft.com/en-us/library/y5b434w4.aspx
-		static readonly Dictionary<Type, Type[]> SimpleConvertTypes = new Dictionary<Type, Type[]>
+		internal static readonly Dictionary<Type, Type[]> SimpleConvertTypes = new Dictionary<Type, Type[]>
 		{
 			{ typeof(sbyte), new[] { typeof(string), typeof(short), typeof(int), typeof(long), typeof(float), typeof(double), typeof(decimal) } },
 			{ typeof(byte), new[] { typeof(string), typeof(short), typeof(ushort), typeof(int), typeof(uint), typeof(ulong), typeof(float), typeof(double), typeof(decimal) } },
@@ -232,24 +232,10 @@ namespace Microsoft.Maui.Controls
 			if (returnType.IsAssignableFrom(valueType))
 				return true;
 
-			// Don't look for implicit conversion operators on BCL-types
-			if (ShouldCheckForImplicitConversionOperator(returnType))
+			if (TypeConversionHelper.TryConvert(value, returnType, out var convertedValue))
 			{
-				var cast = returnType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
-				if (cast != null)
-				{
-					value = cast.Invoke(null, [value]);
-					return true;
-				}
-			}
-			if (ShouldCheckForImplicitConversionOperator(valueType))
-			{
-				var cast = valueType.GetImplicitConversionOperator(fromType: valueType, toType: returnType);
-				if (cast != null)
-				{
-					value = cast.Invoke(null, [value]);
-					return true;
-				}
+				value = convertedValue;
+				return true;
 			}
 			if (KnownIValueConverters.TryGetValue(returnType, out IValueConverter valueConverter))
 			{
@@ -259,9 +245,6 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
-
-		static bool ShouldCheckForImplicitConversionOperator(Type type) =>
-			type != typeof(string) && !SimpleConvertTypes.ContainsKey(type);
 
 		internal delegate void BindablePropertyBindingChanging(BindableObject bindable, BindingBase oldValue, BindingBase newValue);
 	}

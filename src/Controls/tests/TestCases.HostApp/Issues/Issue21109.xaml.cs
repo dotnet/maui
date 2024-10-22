@@ -1,12 +1,5 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Hosting;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 21109, "[Android] MAUI 8.0.3 -> 8.0.6 regression: custom handler with key listener no longer works", PlatformAffected.All)]
 	public partial class Issue21109 : ContentPage
 	{
@@ -46,7 +39,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public static MauiAppBuilder Issue21109AddMappers(this MauiAppBuilder builder)
 		{
-			builder.ConfigureMauiHandlers(handlers => 
+			builder.ConfigureMauiHandlers(handlers =>
 			{
 				Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(Issue21109DecimalEntry), (handler, view) =>
 				{

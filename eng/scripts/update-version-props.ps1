@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 
 Updates the Versions.props variables.

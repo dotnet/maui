@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,10 @@ using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 	class CreateValuesVisitor : IXamlNodeVisitor
 	{
 		public CreateValuesVisitor(HydrationContext context)
@@ -56,9 +61,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			Context.Types[node] = type;
 			if (IsXaml2009LanguagePrimitive(node))
+			{
 				value = CreateLanguagePrimitive(type, node);
+			}
 			else if (node.Properties.ContainsKey(XmlName.xArguments) || node.Properties.ContainsKey(XmlName.xFactoryMethod))
+			{
 				value = CreateFromFactory(type, node);
+			}
 			else if (
 				type.GetTypeInfo()
 					.DeclaredConstructors.Any(
@@ -66,7 +75,9 @@ namespace Microsoft.Maui.Controls.Xaml
 							ci.IsPublic && ci.GetParameters().Length != 0 &&
 							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute)))) &&
 				ValidateCtorArguments(type, node, out string ctorargname))
+			{
 				value = CreateFromParameterizedConstructor(type, node);
+			}
 			else if (!type.GetTypeInfo().DeclaredConstructors.Any(ci => ci.IsPublic && ci.GetParameters().Length == 0) &&
 					 !ValidateCtorArguments(type, node, out ctorargname))
 			{
@@ -184,7 +195,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public void Visit(ListNode node, INode parentNode)
 		{
 			//this is a gross hack to keep ListNode alive. ListNode must go in favor of Properties
-			if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+			if (node.TryGetPropertyName(parentNode, out XmlName name))
 				node.XmlName = name;
 		}
 
@@ -253,12 +264,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					if ((p[i].ParameterType.IsAssignableFrom(types[i])))
 						continue;
-					var op_impl = p[i].ParameterType.GetImplicitConversionOperator(fromType: types[i], toType: p[i].ParameterType)
-								?? types[i].GetImplicitConversionOperator(fromType: types[i], toType: p[i].ParameterType);
 
-					if (op_impl == null)
+					if (!TypeConversionHelper.TryConvert(arguments[i], p[i].ParameterType, out var convertedValue))
+					{
 						return false;
-					arguments[i] = op_impl.Invoke(null, new[] { arguments[i] });
+					}
+
+					arguments[i] = convertedValue;
 				}
 				return true;
 			}

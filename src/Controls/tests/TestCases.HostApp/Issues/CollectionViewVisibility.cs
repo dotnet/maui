@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// InitiallyInvisbleCollectionViewSurvivesiOSLayoutNonsense(src\Compatibility\ControlGallery\src\Issues.Shared\Issue12714.cs)
 	[Issue(IssueTracker.None, 12714, "iOS application suspended at UICollectionViewFlowLayout.PrepareLayout() when using IsVisible = false", PlatformAffected.iOS)]

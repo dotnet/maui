@@ -116,6 +116,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			throw new NotImplementedException();
 		}
 
+		public void ActivateWindow(IWindow window) 
+		{ 
+			throw new NotImplementedException();
+		}
+
 		public void ThemeChanged()
 		{
 			throw new NotImplementedException();
