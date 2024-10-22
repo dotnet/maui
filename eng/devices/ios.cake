@@ -49,8 +49,8 @@ Setup(context =>
 	{
 		return;
 	}
-
-	PerformCleanupIfNeeded(deviceCleanupEnabled, false);
+	bool createLogs = targetCleanup && IsCIBuild();
+	PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
 
 	// Device or simulator setup
 	if (testDevice.Contains("device"))
@@ -234,8 +234,8 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
-	var appiumLog = $"{binDir}/appium_ios.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
+	var appiumLog = $"{binDir}/appium_ios_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
