@@ -1,12 +1,5 @@
-using System;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using System.Threading.Tasks;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 21726, "Modal with a bottom sheet should not crash iOS Keyboard Scroll", PlatformAffected.iOS)]
 public partial class Issue21726 : ContentPage
 {
@@ -15,7 +8,7 @@ public partial class Issue21726 : ContentPage
 		InitializeComponent();
 	}
 
-	void AddVC (object sender, EventArgs e)
+	void AddVC(object sender, EventArgs e)
 	{
 #if IOS
 		var window = UIKit.UIApplication.SharedApplication

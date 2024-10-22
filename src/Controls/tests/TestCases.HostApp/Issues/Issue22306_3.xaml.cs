@@ -1,9 +1,5 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 22306_3, "Verify many different button examples", PlatformAffected.iOS)]
 public partial class Issue22306_3 : ContentPage
 {
@@ -12,7 +8,7 @@ public partial class Issue22306_3 : ContentPage
 		InitializeComponent();
 	}
 
-	void Button1_Pressed (object sender, System.EventArgs e)
+	void Button1_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page1_1.IsVisible = true;
@@ -21,7 +17,7 @@ public partial class Issue22306_3 : ContentPage
 		Page1_4.IsVisible = true;
 	}
 
-	void Button2_Pressed (object sender, System.EventArgs e)
+	void Button2_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page2_1.IsVisible = true;
@@ -29,7 +25,7 @@ public partial class Issue22306_3 : ContentPage
 		Page2_3.IsVisible = true;
 	}
 
-	void Button3_Pressed (object sender, System.EventArgs e)
+	void Button3_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page3_1.IsVisible = true;
@@ -42,7 +38,7 @@ public partial class Issue22306_3 : ContentPage
 		Page3_8.IsVisible = true;
 	}
 
-	void Button4_Pressed (object sender, System.EventArgs e)
+	void Button4_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page4_1.IsVisible = true;
@@ -52,7 +48,7 @@ public partial class Issue22306_3 : ContentPage
 		Page4_5.IsVisible = true;
 	}
 
-	void Button5_Pressed (object sender, System.EventArgs e)
+	void Button5_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page5_1.IsVisible = true;
@@ -60,7 +56,7 @@ public partial class Issue22306_3 : ContentPage
 		Page5_3.IsVisible = true;
 	}
 
-	void Button6_Pressed (object sender, System.EventArgs e)
+	void Button6_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page6_1.IsVisible = true;
@@ -68,7 +64,7 @@ public partial class Issue22306_3 : ContentPage
 		Page6_3.IsVisible = true;
 	}
 
-	void Button7_Pressed (object sender, System.EventArgs e)
+	void Button7_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page7_1.IsVisible = true;
@@ -76,7 +72,7 @@ public partial class Issue22306_3 : ContentPage
 		Page7_3.IsVisible = true;
 	}
 
-	void Button8_Pressed (object sender, System.EventArgs e)
+	void Button8_Pressed(object sender, System.EventArgs e)
 	{
 		ClearAll();
 		Page8_1.IsVisible = true;
@@ -88,7 +84,7 @@ public partial class Issue22306_3 : ContentPage
 		Page8_7Button.IsVisible = true;
 	}
 
-	void ClearAll ()
+	void ClearAll()
 	{
 		Page1_1.IsVisible = false;
 		Page1_2Button.IsVisible = false;
@@ -128,12 +124,12 @@ public partial class Issue22306_3 : ContentPage
 		Page8_7Button.IsVisible = false;
 	}
 
-	void Page1_2Button_Pressed (object sender, System.EventArgs e)
+	void Page1_2Button_Pressed(object sender, System.EventArgs e)
 	{
 		Page1_1.BorderWidth = 75;
 	}
 
-	async void ScrollToMiddlePressed (object sender, System.EventArgs e)
+	async void ScrollToMiddlePressed(object sender, System.EventArgs e)
 	{
 		var scroll1 = Page8_1 as ScrollView;
 		var scroll2 = Page8_3 as ScrollView;

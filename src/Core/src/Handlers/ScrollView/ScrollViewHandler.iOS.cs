@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			// If the UIScrollView hasn't been laid out yet, this will basically do nothing.
+			// If the UIScrollView hasn't been arranged yet, this will basically do nothing.
 			// If it has been, we can just update the ContentSize here and get the new orientation working
 			// without having to re-layout the ScrollView
 
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Handlers
 			var viewportWidth = Math.Min(crossPlatformContentSize.Width, widthConstraint);
 			var viewportHeight = Math.Min(crossPlatformContentSize.Height, heightConstraint);
 
-			// Since the UIScrollView might not be laid out yet, we can't rely on its Bounds for the viewport height/width
+			// Since the UIScrollView might not be arranged yet, we can't rely on its Bounds for the viewport height/width
 			// So we'll use the constraints instead.
 			SetContentSizeForOrientation(platformView, widthConstraint, heightConstraint, virtualView.Orientation, crossPlatformContentSize);
 

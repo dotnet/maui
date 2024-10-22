@@ -25,6 +25,8 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -33,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 		// Using an IP address means that the web view doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		private static readonly string AppHostAddress = "0.0.0.0";
+		private static readonly string AppHostAddress = "0.0.0.1";
 
 		private static readonly string AppHostScheme =
 #if IOS || MACCATALYST
@@ -43,8 +45,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 
 		/// <summary>
-		/// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c> on Windows and Android,
-		/// and <c>app://0.0.0.0/</c> on iOS and MacCatalyst (because <c>https</c> is reserved).
+		/// Gets the application's base URI. Defaults to <c>https://0.0.0.1/</c> on Windows and Android,
+		/// and <c>app://0.0.0.1/</c> on iOS and MacCatalyst (because <c>https</c> is reserved).
 		/// </summary>
 		internal static readonly string AppOrigin = $"{AppHostScheme}://{AppHostAddress}/";
 
@@ -74,6 +76,7 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView IHybridWebViewHandler.PlatformView => PlatformView;
 
+		internal HybridWebViewDeveloperTools DeveloperTools => MauiContext?.Services.GetService<HybridWebViewDeveloperTools>() ?? new HybridWebViewDeveloperTools();
 
 
 		/// <summary>
