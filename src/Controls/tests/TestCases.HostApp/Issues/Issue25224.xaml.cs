@@ -32,7 +32,6 @@ namespace Maui.Controls.Sample.Issues
 	{
 		readonly IList<Monkey> source;
 		public ObservableCollection<Monkey> Monkeys { get; set; }
-
 		public ICommand FilterCommand => new Command<string>(FilterItems);
 
 		public Issue25224ViewModel()
@@ -47,8 +46,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Name = "Baboon",
 				Location = "Africa & Asia",
-				Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae.",
-				ImageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Papio_anubis_%28Serengeti%2C_2009%29.jpg/200px-Papio_anubis_%28Serengeti%2C_2009%29.jpg"
+				Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."
 			});
 			Monkeys = new ObservableCollection<Monkey>(source);
 		}
