@@ -72,7 +72,7 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: build-windows
       - name: macOS
-        name: $(macosTestsVmPool)
+        poolName: $(macosTestsVmPool)
         vmImage: $(macosTestsVmImage)
         artifact: build-macos
  
@@ -84,7 +84,7 @@ parameters:
         vmImage: $(windowsVmImage)
         artifact: nuget
       - name: macOS
-        name: $(macosTestsVmPool)
+        poolName: $(macosTestsVmPool)
         vmImage: $(macosTestsVmImage)
         artifact: nuget-macos
 
