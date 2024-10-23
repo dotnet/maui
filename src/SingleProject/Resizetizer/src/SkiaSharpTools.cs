@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Resizetizer
 						case UnauthorizedAccessException:
 						case IOException:
 							var code = Marshal.GetHRForException(ex);
-							if ((code != ERROR_ACCESS_DENIED && code  != ERROR_SHARING_VIOLATION) || attempt == attempts)
+							if ((code != ERROR_ACCESS_DENIED && code  != ERROR_SHARING_VIOLATION) || attempt >= attempts)
 							{
 								throw;
 							}
