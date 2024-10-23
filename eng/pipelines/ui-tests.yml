@@ -73,11 +73,11 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+      name: $(iosDeviceTestsVmPool)
+      vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 14.5
+        - Agent.OSArchitecture -equals ARM64
   
   - name: windowsBuildPool
     type: object

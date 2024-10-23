@@ -90,8 +90,8 @@ parameters:
   - name: windowsPool
     type: object
     default:
-      name: $(windowsTestsVmPool)
-      vmImage: $(windowsTestsVmImage)
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
 
   - name: targetFrameworkVersions
     type: object
