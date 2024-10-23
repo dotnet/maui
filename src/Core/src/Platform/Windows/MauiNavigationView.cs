@@ -51,8 +51,6 @@ namespace Microsoft.Maui.Platform
 			this.RegisterPropertyChangedCallback(MenuItemsSourceProperty, (_, __) => UpdateMenuItemsContainerHeight());
 			this.RegisterPropertyChangedCallback(MenuItemsProperty, (_, __) => UpdateMenuItemsContainerHeight());
 			RegisterPropertyChangedCallback(PaneDisplayModeProperty, PaneDisplayModeChanged);
-
-			this.Loaded += (s, e) => UpdatePaneDisplayMode();
 		}
 
 		void PaneDisplayModeChanged(DependencyObject sender, DependencyProperty dp) =>
@@ -165,14 +163,6 @@ namespace Microsoft.Maui.Platform
 
 			_currentFlyoutBehavior = (int)flyoutBehavior;
 
-			if (IsLoaded || PaneCustomContent != null)
-			{
-				UpdatePaneDisplayMode();
-			}
-		}
-
-		private void UpdatePaneDisplayMode()
-		{
 			switch ((FlyoutBehavior)_currentFlyoutBehavior)
 			{
 				case FlyoutBehavior.Flyout:
