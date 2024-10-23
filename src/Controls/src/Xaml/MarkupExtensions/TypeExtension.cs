@@ -4,6 +4,7 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(TypeName))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.TypeExtension")]
+	[RequireService([typeof(IXamlTypeResolver), typeof(IXmlLineInfoProvider)])]
 	public class TypeExtension : IMarkupExtension<Type>
 	{
 		public string TypeName { get; set; }

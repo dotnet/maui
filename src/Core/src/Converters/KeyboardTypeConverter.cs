@@ -62,6 +62,12 @@ namespace Microsoft.Maui.Converters
 				return nameof(Keyboard.Text);
 			if (keyboard == Keyboard.Url)
 				return nameof(Keyboard.Url);
+			if (keyboard == Keyboard.Date)
+				return nameof(Keyboard.Date);
+			if (keyboard == Keyboard.Time)
+				return nameof(Keyboard.Time);
+			if (keyboard == Keyboard.Password)
+				return nameof(Keyboard.Password);
 
 			throw new NotSupportedException();
 		}

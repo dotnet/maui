@@ -37,8 +37,11 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<Frame, FrameRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
+				handlers.AddHandler<HybridWebView, HybridWebViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
 				handlers.AddHandler<Layout, LayoutHandler>();
@@ -137,9 +140,12 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Ellipse))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(Frame))]
+#pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+	[InlineData(typeof(HybridWebView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
@@ -172,6 +178,11 @@ public class MemoryTests : ControlsHandlerTestBase
 		// NOTE: skip certain controls on older Android devices
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
+
+		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
+		{
+			return;
+		}
 #endif
 
 #if IOS
@@ -223,6 +234,11 @@ public class MemoryTests : ControlsHandlerTestBase
 			else if (view is WebView webView)
 			{
 				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
+				await Task.Delay(1000);
+			}
+			else if (view is HybridWebView hybridWebView)
+			{
+				hybridWebView.HybridRoot = "HybridTestRoot";
 				await Task.Delay(1000);
 			}
 			else if (view is TemplatedView templated)

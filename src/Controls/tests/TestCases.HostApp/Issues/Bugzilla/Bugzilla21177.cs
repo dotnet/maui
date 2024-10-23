@@ -1,6 +1,3 @@
-using Microsoft.Maui.Controls.Internals;
-
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Bugzilla, 21177, "Using a UICollectionView in a ViewRenderer results in issues with selection")]

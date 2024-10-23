@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Graphics;
 using ListView = Microsoft.Maui.Controls.ListView;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 56298, "Changing ListViews HasUnevenRows at runtime on iOS has no effect", PlatformAffected.iOS)]
 	public class Bugzilla56298 : TestContentPage // or TestFlyoutPage, etc ...
 	{
@@ -75,7 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			list.HasUnevenRows = !list.HasUnevenRows;
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class UnevenViewCell : ViewCell
 		{
 			public UnevenViewCell()
@@ -90,7 +86,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class Person1
 		{
 			public string FullName { get; set; }

@@ -579,7 +579,9 @@ namespace Microsoft.Maui.DeviceTests
 			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
 			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
 
+#pragma warning disable XAOBS001 // Obsolete
 			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+#pragma warning restore XAOBS001 // Obsolete
 			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
 			await Task.Delay(10);
 

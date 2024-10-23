@@ -1,10 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
-using Microsoft.Maui;
-using System.Linq;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.Maui.Platform;
 
 
 #if IOS
@@ -14,7 +8,6 @@ using CoreGraphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 16321, "Alerts Open on top of current presented view", PlatformAffected.All)]
 	public class Issue16321NavPage : NavigationPage
 	{
