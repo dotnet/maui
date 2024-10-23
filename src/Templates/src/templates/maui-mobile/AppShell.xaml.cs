@@ -1,6 +1,6 @@
 ﻿#if (SampleContent)
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
+using MauiApp._1.Maui.Alerts;
+using MauiApp._1.Maui.Core;
 using Font = Microsoft.Maui.Font;
 #endif
 namespace MauiApp._1;
