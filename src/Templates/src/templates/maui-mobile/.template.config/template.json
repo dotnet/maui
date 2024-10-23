@@ -177,14 +177,14 @@
       "IncludeSampleContent": {
         "type": "parameter",
         "datatype": "bool",
-        "defaultValue": "true",
+        "defaultValue": "false",
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
       },  
       "Empty": {
         "type": "parameter",
         "datatype": "bool",
-        "defaultValue": "false",
+        "defaultValue": "true",
         "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
       },
       "SampleContent": {

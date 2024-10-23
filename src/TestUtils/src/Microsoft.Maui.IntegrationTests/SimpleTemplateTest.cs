@@ -11,6 +11,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "--IncludeSampleContent")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--IncludeSampleContent")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
