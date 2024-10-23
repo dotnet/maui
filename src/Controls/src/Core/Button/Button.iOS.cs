@@ -14,10 +14,9 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button : ICrossPlatformLayout
 	{
-		// _originalImageSize and _originalImageSource are used to ensure we don't resize the image
-		// larger than the original image size and to ensure if a new image is loaded, we use that image's size for resizing.
-		CGSize _originalImageSize = CGSize.Empty;
-		string _originalImageSource = string.Empty;
+		// _originalImage is used to ensure we don't resize the image larger than the original image size
+		// and to ensure if a new image is loaded, we use that image's size for resizing.
+		WeakReference<UIImage> _originalImageRef = new WeakReference<UIImage>(null);
 
 		/// <summary>
 		/// Measure the desired size of the button based on the image and title size taking into account
@@ -81,20 +80,28 @@ namespace Microsoft.Maui.Controls
 			}
 			platformButton.UpdateContentEdgeInsets(button, contentEdgeInsets);
 
+			_originalImageRef.TryGetTarget(out var _originalImage);
+
 			if (image is not null)
 			{
-				// Save the original image size for later image resizing
-				if (_originalImageSize == CGSize.Empty || _originalImageSource == string.Empty || _originalImageSource != button.ImageSource.ToString())
+				// Save the original image for later image resizing
+				if (_originalImage is null || image != _originalImage)
 				{
-					_originalImageSource = button.ImageSource.ToString();
-					_originalImageSize = image.Size;
+					_originalImage = image;
+					_originalImageRef = new WeakReference<UIImage>(_originalImage);
 				}
 
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint, _originalImage))
 				{
 					image = platformButton.CurrentImage;
 				}
+			}
+
+			else
+			{
+				_originalImage = null;
+				_originalImageRef = new WeakReference<UIImage>(null);
 			}
 
 			platformButton.ImageView.ContentMode = contentMode;
@@ -334,9 +341,9 @@ namespace Microsoft.Maui.Controls
 		/// <param name="borderWidth"></param>
 		/// <param name="widthConstraint"></param>
 		/// <param name="heightConstraint"></param>
-		/// <param name="originalImageSize"></param>
+		/// <param name="originalImage"></param>
 		/// <returns></returns>
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
+		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint, UIImage originalImage)
 		{
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
@@ -387,15 +394,15 @@ namespace Microsoft.Maui.Controls
 				// if the image is too large then we will size it smaller
 				if (currentImageHeight - availableHeight > buffer || currentImageWidth - availableWidth > buffer)
 				{
-					image = ResizeImageSource(image, availableWidth, availableHeight, originalImageSize);
+					image = ResizeImageSource(image, availableWidth, availableHeight, originalImage);
 				}
 				// if the image is already sized down but now has more space, we will size it up no more than the original image size
 				else if (availableHeight - additionalVerticalSpace - currentImageHeight > buffer
 					&& availableWidth - additionalHorizontalSpace - currentImageWidth > buffer
-					&& currentImageHeight != originalImageSize.Height
-					&& currentImageWidth != originalImageSize.Width)
+					&& currentImageHeight != originalImage.Size.Height
+					&& currentImageWidth != originalImage.Size.Width)
 				{
-					image = ResizeImageSource(image, (nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, originalImageSize, true);
+					image = ResizeImageSource(image, (nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, originalImage, true);
 				}
 				else
 				{
@@ -422,16 +429,16 @@ namespace Microsoft.Maui.Controls
 		/// <param name="sourceImage"></param>
 		/// <param name="maxWidth"></param>
 		/// <param name="maxHeight"></param>
-		/// <param name="originalImageSize"></param>
+		/// <param name="originalImage"></param>
 		/// <param name="shouldScaleUp"></param>
 		/// <returns></returns>
-		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
+		static UIImage ResizeImageSource(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, UIImage originalImage, bool shouldScaleUp = false)
 		{
 			if (sourceImage is null || sourceImage.CGImage is null)
 				return null;
 
-			maxWidth = (nfloat)Math.Min(maxWidth, originalImageSize.Width);
-			maxHeight = (nfloat)Math.Min(maxHeight, originalImageSize.Height);
+			maxWidth = (nfloat)Math.Min(maxWidth, originalImage.Size.Width);
+			maxHeight = (nfloat)Math.Min(maxHeight, originalImage.Size.Height);
 
 			var sourceSize = sourceImage.Size;
 
