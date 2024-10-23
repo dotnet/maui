@@ -69,7 +69,6 @@
         <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
         <_ResizetizerPlatformIsTizen Condition="'$(_ResizetizerPlatformIdentifier)' == 'tizen'">True</_ResizetizerPlatformIsTizen>
 
-        <_ResizetizerIntermediateOutputPath Condition=" '$(_ResizetizerIntermediateOutputPath)' == '' And '$(_ResizetizerPlatformIsAndroid)' == 'True' And '$(DesignTimeBuild)' == 'True' ">$(IntermediateOutputPath)designtime</_ResizetizerIntermediateOutputPath>
         <_ResizetizerIntermediateOutputPath Condition=" '$(_ResizetizerIntermediateOutputPath)' == '' " >$(IntermediateOutputPath)</_ResizetizerIntermediateOutputPath>
 
         <_ResizetizerInputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
