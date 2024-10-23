@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Gestures)]
-		[FailsOnMac]
+		[FailsOnMac("VerifyScreenshot method is not implemented on macOS")]
 		public void TapGestureRecognizerNotWorkingOnEntry()
 		{
 			App.WaitForElement("Entry");
