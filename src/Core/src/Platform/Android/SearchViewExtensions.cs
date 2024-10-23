@@ -1,5 +1,7 @@
-﻿using Android.Content.Res;
+﻿using Android.Content;
+using Android.Content.Res;
 using Android.Text;
+using Android.Views.InputMethods;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -160,6 +162,12 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateKeyboard(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.SetInputType(searchBar);
+		}
+
+		public static void UpdateReturnType(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.SetInputType(searchBar);
+			searchView.ImeOptions = (int)searchBar.ReturnType.ToPlatform();
 		}
 
 		internal static void SetInputType(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)

@@ -132,6 +132,11 @@ namespace Microsoft.Maui.Handlers
 				handler.QueryEditor?.Focus(request);
 		}
 
+		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateReturnType(searchBar);
+		}
+
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
