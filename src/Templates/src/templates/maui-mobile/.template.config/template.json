@@ -189,7 +189,7 @@
       },
       "SampleContent": {
         "type": "computed",
-        "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+        "value": "((IncludeSampleContent && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")))"
       },
       "skipRestore": {
         "type": "parameter",
