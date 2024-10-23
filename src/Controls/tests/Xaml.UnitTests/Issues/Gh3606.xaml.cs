@@ -8,6 +8,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	// related to https://github.com/dotnet/maui/issues/23711
 	public partial class Gh3606 : ContentPage
 	{
 		public Gh3606()
@@ -28,9 +29,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
 			[TestCase(true)]
-			public void BindingsWithSourceArentCompiled(bool useCompiledXaml)
+			[TestCase(false)]
+			public void BindingsWithSourceAndInvalidPathAreNotCompiled(bool useCompiledXaml)
 			{
-				new Gh3606(useCompiledXaml);
+				if (useCompiledXaml)
+					MockCompiler.Compile(typeof(Gh3606));
+
+				var view = new Gh3606(useCompiledXaml);
+
+				var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
+				Assert.That(binding, Is.TypeOf<Binding>());
 			}
 		}
 	}

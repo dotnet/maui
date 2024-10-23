@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public ShellItemRenderer(IShellContext context)
 		{
+			this.DisableiOS18ToolbarTabs();
 			_context = context;
 		}
 

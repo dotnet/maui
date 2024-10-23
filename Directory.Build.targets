@@ -19,14 +19,20 @@
   <Import Project="eng\NuGetVersions.targets" />
 
   <PropertyGroup>
-     <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
+    <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Microsoft.Build.Msix.props" cannot be imported again -->
+    <!-- Found version-specific or distribution-specific runtime identifier(s)-->
+    <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>11.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
@@ -37,14 +43,14 @@
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
-    <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
-    <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>10.14</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>12.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True'">
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
@@ -55,8 +61,8 @@
     <TargetPlatformMinVersion>6.5</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!-- 
-    NOTE: The Contains('-windows10') is a bit of a hack 
+  <!--
+    NOTE: The Contains('-windows10') is a bit of a hack
     because we don't want to set these properties for WPF projects...
     There's probably a better way we should find to infer this
   -->
@@ -65,7 +71,7 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-<!--
+  <!--
     Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
     Enable this individually in projects that declare/use AndroidResource IDs.
   -->
@@ -79,9 +85,9 @@
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
-  <!-- Until we get a new enough dotnet -->
-  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.31" TargetingPackVersion="10.0.19041.31" />
+  <!-- Until we get net9 rtm -->
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' AND '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
   <!--

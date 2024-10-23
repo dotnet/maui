@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
 public class ContactsPage : ContentPage
 {
 	public ContactsPage()
@@ -49,7 +41,7 @@ public class ContactsPage : ContentPage
 	}
 }
 
-[Preserve(AllMembers = true)]
+
 public class ContactViewModel : ViewModelBase2
 {
 	string _name;
@@ -68,7 +60,6 @@ public class ContactViewModel : ViewModelBase2
 	}
 }
 
-[Preserve(AllMembers = true)]
 public class Group<TItem> : ObservableCollection<TItem>
 {
 	public Group(string name, IEnumerable<TItem> items)
@@ -81,7 +72,6 @@ public class Group<TItem> : ObservableCollection<TItem>
 	public string Name { get; set; }
 }
 
-[Preserve(AllMembers = true)]
 public class ViewModelBase2 : INotifyPropertyChanged
 {
 	public event PropertyChangedEventHandler PropertyChanged;

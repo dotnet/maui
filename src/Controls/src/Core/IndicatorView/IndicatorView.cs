@@ -130,20 +130,15 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		IPlatformSizeService _platformSizeService;
-
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (IndicatorTemplate == null)
 			{
-				if (Handler != null)
-					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
-
-				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
-				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
+				return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 			}
-			else
-				return base.OnMeasure(widthConstraint, heightConstraint);
+
+			return base.OnMeasure(widthConstraint, heightConstraint);
 		}
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)

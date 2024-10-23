@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 45722, "Memory leak in Xamarin Forms ListView", PlatformAffected.UWP)]
 	public class Bugzilla45722 : TestContentPage
 	{
@@ -102,7 +96,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class _45722Model : INotifyPropertyChanged
 		{
 			string _text;
@@ -151,7 +145,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class _45722Label : Label
 	{
 		public static int Count;

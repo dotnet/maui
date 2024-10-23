@@ -1,9 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 22750, "Using radiobuttons in a group, pressing one button works fine, but pressing the second does not reset the first hence", PlatformAffected.Android)]
 	public partial class Issue22750 : ContentPage
 	{
@@ -15,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 
 			BindingContext = _vm = new Issue22750ViewModel();
 		}
-		
+
 		void OnRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			RadioButton button = sender as RadioButton;
