@@ -7,11 +7,12 @@
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         x:Class="MauiApp._1.Pages.Controls.ProjectCardView"
-        Style="{StaticResource CardStyle}">
+        Style="{StaticResource CardStyle}"
+        x:DataType="models:Project">
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
         VerticalOptions="FillAndExpand"
-        IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}, x:DataType=pageModels:IProjectTaskPageModel}}">
+        IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
         <shimmer:SfShimmer.CustomView>
             <VerticalStackLayout Spacing="15">
                 <BoxView 

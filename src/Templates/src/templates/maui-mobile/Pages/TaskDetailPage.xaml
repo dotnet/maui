@@ -34,10 +34,11 @@
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
+                    IsVisible="{Binding IsExistingProject}" 
                     Hint="Project">
                     <Picker 
                         ItemsSource="{Binding Projects}"
-                        ItemDisplayBinding="{Binding Name}"
+                        ItemDisplayBinding="{Binding Name, x:DataType=models:Project}"
                         SelectedItem="{Binding Project}"
                         SelectedIndex="{Binding SelectedProjectIndex}" />
                 </sf:SfTextInputLayout>

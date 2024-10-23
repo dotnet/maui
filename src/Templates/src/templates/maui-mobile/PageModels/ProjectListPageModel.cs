@@ -9,14 +9,14 @@ namespace MauiApp._1.PageModels;
 
 public partial class ProjectListPageModel : ObservableObject
 {
-	[ObservableProperty] private List<Project> _projects;
 	private readonly ProjectRepository _projectRepository;
-	private readonly ModalErrorHandler _errorHandler;
 
-	public ProjectListPageModel(ProjectRepository projectRepository, ModalErrorHandler errorHandler)
+	[ObservableProperty]
+	private List<Project> _projects = [];
+
+	public ProjectListPageModel(ProjectRepository projectRepository)
 	{
 		_projectRepository = projectRepository;
-		_errorHandler = errorHandler;
 	}
 
 	[RelayCommand]
@@ -26,15 +26,12 @@ public partial class ProjectListPageModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private Task NavigateToProject(Project project)
+	Task NavigateToProject(Project project)
 		=> Shell.Current.GoToAsync($"project?id={project.ID}");
 
 	[RelayCommand]
-	private async Task AddProject()
+	async Task AddProject()
 	{
-		var project = new Project();
-		Projects.Add(project);
-		await _projectRepository.SaveItemAsync(project);
-		await Shell.Current.GoToAsync($"project?id={project.ID}");
+		await Shell.Current.GoToAsync($"project");
 	}
 }

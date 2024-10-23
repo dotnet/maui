@@ -22,7 +22,6 @@ public static class MauiProgram
 			{
 #if IOS || MACCATALYST
 				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-				handlers.AddHandler<Shell, AppShellRenderer>();
 #endif
 			})
 #endif

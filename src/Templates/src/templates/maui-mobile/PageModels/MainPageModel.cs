@@ -157,13 +157,6 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 		=> Shell.Current.GoToAsync($"task?id={task.ID}");
 
 	[RelayCommand]
-	private async Task SaveTask(ProjectTask task)
-	{
-		await _taskRepository.SaveItemAsync(task);
-		OnPropertyChanged(nameof(HasCompletedTasks));
-	}
-
-	[RelayCommand]
 	private async Task CleanTasks()
 	{
 		var completedTasks = Tasks.Where(t => t.IsCompleted).ToList();

@@ -8,13 +8,37 @@
              x:Class="MauiApp._1.Pages.ManageMetaPage"
              Title="Categories and Tags">
 
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior
+                EventName="Appearing"                
+                Command="{Binding AppearingCommand}" />
+    </ContentPage.Behaviors>
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
             <Setter Property="TextColor" Value="Red" />
         </Style>
 
         <Style TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="FontFamily" Value="OpenSansRegular"/>
             <Setter Property="FontSize" Value="{OnIdiom 16,Desktop=24}" />
+            <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+            <Setter Property="MinimumHeightRequest" Value="44"/>
+            <Setter Property="MinimumWidthRequest" Value="44"/>
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
         </Style>
     </ContentPage.Resources>
 
@@ -51,7 +75,7 @@
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
 
-            <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto">
+            <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto" Margin="0,10">
                 <Button Text="Save" Command="{Binding SaveCategoriesCommand}" HeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0"/>
                 <Button ImageSource="{StaticResource IconAdd}" Command="{Binding AddCategoryCommand}" Grid.Column="1"/>
             </Grid>
@@ -84,7 +108,7 @@
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
 
-            <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto">
+            <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="*,Auto" Margin="0,10">
                 <Button Text="Save" Command="{Binding SaveTagsCommand}" HeightRequest="{OnIdiom 44,Desktop=60}" Grid.Column="0"/>
                 <Button ImageSource="{StaticResource IconAdd}" Command="{Binding AddTagCommand}" Grid.Column="1"/>
             </Grid>

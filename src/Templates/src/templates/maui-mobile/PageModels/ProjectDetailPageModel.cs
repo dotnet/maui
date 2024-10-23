@@ -7,25 +7,43 @@ namespace MauiApp._1.PageModels;
 
 public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributable, IProjectTaskPageModel
 {
+	private Project? _project;
 	private readonly ProjectRepository _projectRepository;
 	private readonly TaskRepository _taskRepository;
 	private readonly CategoryRepository _categoryRepository;
 	private readonly TagRepository _tagRepository;
 	private readonly ModalErrorHandler _errorHandler;
 
-	private Project _project;
-	[ObservableProperty] private string _name;
-	[ObservableProperty] private string _description;
-	[ObservableProperty] private List<ProjectTask> _tasks;
-	[ObservableProperty] private List<Category> _categories;
-	[ObservableProperty] private Category _category;
-	[ObservableProperty] private int _categoryIndex = -1;
-	[ObservableProperty] private List<Tag> _tags;
-
-	[ObservableProperty] private List<Tag> _allTags;
+	[ObservableProperty]
+	private string _name = string.Empty;
 
 	[ObservableProperty]
-	private List<string> _icons = new(){
+	private string _description = string.Empty;
+
+	[ObservableProperty]
+	private List<ProjectTask> _tasks = [];
+
+	[ObservableProperty]
+	private List<Category> _categories = [];
+
+	[ObservableProperty]
+	private Category? _category;
+
+	[ObservableProperty]
+	private int _categoryIndex = -1;
+
+	[ObservableProperty]
+	private List<Tag> _allTags = [];
+
+	[ObservableProperty]
+	private string _icon = FluentUI.ribbon_24_regular;
+
+	[ObservableProperty]
+	bool _isBusy;
+
+	[ObservableProperty]
+	private List<string> _icons =
+	[
 		FluentUI.ribbon_24_regular,
 		FluentUI.ribbon_star_24_regular,
 		FluentUI.trophy_24_regular,
@@ -33,12 +51,10 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		FluentUI.book_24_regular,
 		FluentUI.people_24_regular,
 		FluentUI.bot_24_regular
-	};
-	[ObservableProperty] private string _icon;
-	[ObservableProperty] private bool _isBusy;
+	];
 
 	public bool HasCompletedTasks
-		=> Tasks?.Any(t => t.IsCompleted) ?? false;
+		=> _project?.Tasks.Any(t => t.IsCompleted) ?? false;
 
 	public ProjectDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, CategoryRepository categoryRepository, TagRepository tagRepository, ModalErrorHandler errorHandler)
 	{
@@ -47,6 +63,8 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_categoryRepository = categoryRepository;
 		_tagRepository = tagRepository;
 		_errorHandler = errorHandler;
+
+		Tasks = [];
 	}
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -60,10 +78,34 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		{
 			RefreshData().FireAndForgetSafeAsync(_errorHandler);
 		}
+		else
+		{
+			Task.WhenAll(LoadCategories(), LoadTags()).FireAndForgetSafeAsync(_errorHandler);
+			_project = new();
+			_project.Tags = [];
+			_project.Tasks = [];
+			Tasks = _project.Tasks;
+		}
 	}
 
-	private async Task RefreshData() =>
+	private async Task LoadCategories() =>
+		Categories = await _categoryRepository.ListAsync();
+
+	private async Task LoadTags() =>
+		AllTags = await _tagRepository.ListAsync();
+
+	private async Task RefreshData()
+	{
+		if (_project.IsNullOrNew())
+		{
+			if (_project is not null)
+				Tasks = new(_project.Tasks);
+
+			return;
+		}
+
 		Tasks = await _taskRepository.ListAsync(_project.ID);
+	}
 
 	private async Task LoadData(int id)
 	{
@@ -72,21 +114,27 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			IsBusy = true;
 
 			_project = await _projectRepository.GetAsync(id);
+
+			if (_project.IsNullOrNew())
+			{
+				_errorHandler.HandleError(new Exception($"Project with id {id} could not be found."));
+				return;
+			}
+
 			Name = _project.Name;
 			Description = _project.Description;
-			Tasks = await _taskRepository.ListAsync(id);
+			Tasks = _project.Tasks;
 
 			Icon = _project.Icon;
 
 			Categories = await _categoryRepository.ListAsync();
 			Category = Categories?.FirstOrDefault(c => c.ID == _project.CategoryID);
-			CategoryIndex = Categories.FindIndex(c => c.ID == _project.CategoryID);
+			CategoryIndex = Categories?.FindIndex(c => c.ID == _project.CategoryID) ?? -1;
 
-			Tags = await _tagRepository.ListAsync(id);
 			var allTags = await _tagRepository.ListAsync();
 			foreach (var tag in allTags)
 			{
-				tag.IsSelected = Tags.Any(t => t.ID == tag.ID);
+				tag.IsSelected = _project.Tags.Any(t => t.ID == tag.ID);
 			}
 			AllTags = new(allTags);
 		}
@@ -102,17 +150,46 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	}
 
 	[RelayCommand]
-	private Task TaskCompleted(ProjectTask task) =>
-		_taskRepository.SaveItemAsync(task);
+	private async Task TaskCompleted(ProjectTask task)
+	{
+		await _taskRepository.SaveItemAsync(task);
+		OnPropertyChanged(nameof(HasCompletedTasks));
+	}
+
 
 	[RelayCommand]
 	private async Task Save()
 	{
+		if (_project is null)
+		{
+			_errorHandler.HandleError(
+				new Exception("Project is null. Cannot Save."));
+
+			return;
+		}
+
 		_project.Name = Name;
 		_project.Description = Description;
 		_project.CategoryID = Category?.ID ?? 0;
 		_project.Icon = Icon;
-		_ = _projectRepository.SaveItemAsync(_project);
+		await _projectRepository.SaveItemAsync(_project);
+
+		foreach (var tag in AllTags)
+		{
+			if (tag.IsSelected)
+			{
+				await _tagRepository.SaveItemAsync(tag, _project.ID);
+			}
+		}
+
+		foreach (var task in _project.Tasks)
+		{
+			if (task.ID == 0)
+			{
+				task.ProjectID = _project.ID;
+				await _taskRepository.SaveItemAsync(task);
+			}
+		}
 
 		await Shell.Current.GoToAsync("..");
 		await AppShell.DisplayToastAsync("Project saved");
@@ -121,40 +198,55 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	[RelayCommand]
 	private async Task AddTask()
 	{
-		await Shell.Current.GoToAsync($"task?projectid={_project.ID}");
+		if (_project is null)
+		{
+			_errorHandler.HandleError(
+				new Exception("Project is null. Cannot navigate to task."));
+
+			return;
+		}
+
+		// Pass the project so if this is a new project we can just add
+		// the tasks to the project and then save them all from here.
+		await Shell.Current.GoToAsync($"task",
+			new ShellNavigationQueryParameters(){
+				{TaskDetailPageModel.ProjectQueryKey, _project}
+			});
 	}
 
 	[RelayCommand]
 	private async Task Delete()
 	{
+		if (_project.IsNullOrNew())
+		{
+			await Shell.Current.GoToAsync("..");
+			return;
+		}
+
 		await _projectRepository.DeleteItemAsync(_project);
 		await Shell.Current.GoToAsync("..");
 		await AppShell.DisplayToastAsync("Project deleted");
 	}
 
 	[RelayCommand]
-	private async Task SaveTask(ProjectTask task)
-	{
-		await _taskRepository.SaveItemAsync(task);
-		OnPropertyChanged(nameof(HasCompletedTasks));
-	}
-
-	[RelayCommand]
-	private Task NavigateToTask(ProjectTask task)
-		=> Shell.Current.GoToAsync($"task?id={task.ID}");
-
+	private Task NavigateToTask(ProjectTask task) =>
+		Shell.Current.GoToAsync($"task?id={task.ID}");
 
 	[RelayCommand]
 	private async Task ToggleTag(Tag tag)
 	{
 		tag.IsSelected = !tag.IsSelected;
-		if (tag.IsSelected)
+
+		if (!_project.IsNullOrNew())
 		{
-			await _tagRepository.SaveItemAsync(tag, _project.ID);
-		}
-		else
-		{
-			await _tagRepository.DeleteItemAsync(tag, _project.ID);
+			if (tag.IsSelected)
+			{
+				await _tagRepository.SaveItemAsync(tag, _project.ID);
+			}
+			else
+			{
+				await _tagRepository.DeleteItemAsync(tag, _project.ID);
+			}
 		}
 
 		AllTags = new(AllTags);

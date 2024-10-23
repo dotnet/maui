@@ -7,7 +7,8 @@
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
-        Style="{StaticResource CardStyle}">
+        Style="{StaticResource CardStyle}"
+        x:DataType="pageModels:MainPageModel">
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
         VerticalOptions="FillAndExpand"

@@ -4,10 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:effectsView="clr-namespace:Syncfusion.Maui.Toolkit.EffectsView;assembly=Syncfusion.Maui.Toolkit"
     xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
+    xmlns:models="clr-namespace:MauiApp._1.Models"
     xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
     x:Class="MauiApp._1.Pages.Controls.TaskView"
     StrokeShape="RoundRectangle 20"
-    Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}">
+    Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
+    x:DataType="models:ProjectTask">
     
     <effectsView:SfEffectsView
         TouchDownEffects="Highlight"
@@ -15,7 +17,7 @@
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
             VerticalOptions="FillAndExpand"               
-            IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}, x:DataType=pageModels:IProjectTaskPageModel}}">
+            IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
             <shimmer:SfShimmer.CustomView>
                 <Grid 
                     ColumnDefinitions="Auto,*"
@@ -36,7 +38,7 @@
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="15" Padding="{OnIdiom 15, Desktop=20}">
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer 
-                            Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}, x:DataType=pageModels:IProjectTaskPageModel}}" 
+                            Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}" 
                             CommandParameter="{Binding .}"/>
                     </Grid.GestureRecognizers>
                     <CheckBox Grid.Column="0" IsChecked="{Binding IsCompleted, Mode=OneTime}" VerticalOptions="Center" CheckedChanged="CheckBox_CheckedChanged"/>

@@ -22,7 +22,7 @@
                             <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
                         </Border.GestureRecognizers>
                         <Label Text="{Binding Title}"
-                            TextColor="{AppThemeBinding Light={StaticResource LightBackground},Dark={StaticResource DarkBackground}}" 
+                            TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"
                             FontSize="{OnIdiom 16,Desktop=18}" 
                             VerticalOptions="Center"
                             VerticalTextAlignment="Center"/>

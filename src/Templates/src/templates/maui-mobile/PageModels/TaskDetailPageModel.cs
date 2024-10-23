@@ -8,6 +8,7 @@ namespace MauiApp._1.PageModels;
 
 public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 {
+	public const string ProjectQueryKey = "project";
 	private ProjectTask? _task;
 	private bool _canDelete;
 	private readonly ProjectRepository _projectRepository;
@@ -29,6 +30,10 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	[ObservableProperty]
 	private int _selectedProjectIndex = -1;
 
+
+	[ObservableProperty]
+	private bool _isExistingProject;
+
 	public TaskDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, ModalErrorHandler errorHandler)
 	{
 		_projectRepository = projectRepository;
@@ -38,51 +43,69 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 
 	public void ApplyQueryAttributes(IDictionary<string, object> query)
 	{
+		LoadTaskAsync(query).FireAndForgetSafeAsync(_errorHandler);
+	}
+
+	private async Task LoadTaskAsync(IDictionary<string, object> query)
+	{
+		if (query.TryGetValue(ProjectQueryKey, out var project))
+			Project = (Project)project;
+
+		int taskId = 0;
+
 		if (query.ContainsKey("id"))
 		{
-			int id = Convert.ToInt32(query["id"]);
-			LoadTaskAsync(id).FireAndForgetSafeAsync(_errorHandler);
+			taskId = Convert.ToInt32(query["id"]);
+			_task = await _taskRepository.GetAsync(taskId);
+
+			if (_task is null)
+			{
+				_errorHandler.HandleError(new Exception($"Task Id {taskId} isn't valid."));
+				return;
+			}
+
+			Project = await _projectRepository.GetAsync(_task.ProjectID);
 		}
 		else
 		{
-			int id = -1;
-			if (query.ContainsKey("projectid"))
+			_task = new ProjectTask();
+		}
+
+		// If the project is new, we don't need to load the project dropdown
+		if (Project is not null && Project.ID != 0)
+		{
+			Projects = await _projectRepository.ListAsync();
+			IsExistingProject = true;
+		}
+		else
+		{
+			IsExistingProject = false;
+		}
+
+		if (Project is not null)
+			SelectedProjectIndex = Projects.FindIndex(p => p.ID == Project.ID);
+		else if (_task?.ProjectID > 0)
+			SelectedProjectIndex = Projects.FindIndex(p => p.ID == _task.ProjectID);
+
+		if (taskId > 0)
+		{
+			if (_task is null)
 			{
-				id = Convert.ToInt32(query["projectid"]);
+				_errorHandler.HandleError(new Exception($"Task with id {taskId} could not be found."));
+				return;
 			}
 
-			CreateNewTaskAsync(id).FireAndForgetSafeAsync(_errorHandler);
+			Title = _task.Title;
+			IsCompleted = _task.IsCompleted;
+			CanDelete = true;
 		}
-	}
-
-	private async Task CreateNewTaskAsync(int projectID = -1)
-	{
-		Projects = await _projectRepository.ListAsync();
-		_task = new ProjectTask();
-
-		if (projectID != -1)
+		else
 		{
-			_task.ProjectID = projectID;
-			Project = Projects.FirstOrDefault(p => p.ID == projectID);
-			SelectedProjectIndex = Projects.FindIndex(p => p.ID == projectID);
+			_task = new ProjectTask()
+			{
+				ProjectID = Project?.ID ?? 0
+			};
 		}
-	}
-
-	private async Task LoadTaskAsync(int id)
-	{
-		_task = await _taskRepository.GetAsync(id);
-
-		if (_task is null)
-		{
-			_errorHandler.HandleError(new Exception($"Task with id {id} could not be found."));
-			return;
-		}
-
-		Title = _task.Title;
-		IsCompleted = _task.IsCompleted;
-		Projects = await _projectRepository.ListAsync();
-		SelectedProjectIndex = Projects.FindIndex(p => p.ID == _task.ProjectID);
-		CanDelete = true;
 	}
 
 	public bool CanDelete
@@ -98,7 +121,7 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	[RelayCommand]
 	async Task Save()
 	{
-		if (_task is null || Project is null)
+		if (_task is null)
 		{
 			_errorHandler.HandleError(
 				new Exception("Task or project is null. The task could not be saved."));
@@ -107,12 +130,24 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 		}
 
 		_task.Title = Title;
-		_task.ProjectID = Project.ID;
+
+		int projectId = Project?.ID ?? 0;
+
+		if (Projects.Count > SelectedProjectIndex && SelectedProjectIndex >= 0)
+			_task.ProjectID = projectId = Projects[SelectedProjectIndex].ID;
+
 		_task.IsCompleted = IsCompleted;
-		_ = _taskRepository.SaveItemAsync(_task);
+
+		if (Project?.ID == projectId && !Project.Tasks.Contains(_task))
+			Project.Tasks.Add(_task);
+
+		if (_task.ProjectID > 0)
+			_ = _taskRepository.SaveItemAsync(_task);
 
 		await Shell.Current.GoToAsync("..?refresh=true");
-		await AppShell.DisplayToastAsync("Task saved");
+
+		if (_task.ID > 0)
+			await AppShell.DisplayToastAsync("Task saved");
 	}
 
 	[RelayCommand(CanExecute = nameof(CanDelete))]
@@ -126,7 +161,12 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 			return;
 		}
 
-		await _taskRepository.DeleteItemAsync(_task);
+		if (Project.Tasks.Contains(_task))
+			Project.Tasks.Remove(_task);
+
+		if (_task.ID > 0)
+			await _taskRepository.DeleteItemAsync(_task);
+
 		await Shell.Current.GoToAsync("..?refresh=true");
 		await AppShell.DisplayToastAsync("Task deleted");
 	}
