@@ -97,26 +97,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var sectionHeaderTextColor = table.Model.GetSectionTextColor((int)section);
 				var sectionHeaderTitle = TableView?.Model.GetSectionTitle((int)section);
-				if (sectionHeaderTextColor is not null || sectionHeaderTitle is not null)
+
+				if (UIDevice.CurrentDevice.CheckSystemVersion(14, 0))
 				{
-					if (UIDevice.CurrentDevice.CheckSystemVersion(14, 0))
+					// iOS 14.0 and later
+					var configuration = UIListContentConfiguration.CellConfiguration;
+					if (sectionHeaderTitle is not null)
 					{
-						// iOS 14.0 and later
-						var configuration = UIListContentConfiguration.CellConfiguration;
 						configuration.Text = sectionHeaderTitle;
-						configuration.TextProperties.Color = sectionHeaderTextColor.ToPlatform();
-						header.ContentConfiguration = configuration;
 					}
-					else
+
+					if (sectionHeaderTextColor is not null)
 					{
-#pragma warning disable CA1416, CA1422 // 'UITableViewHeaderFooterView.TextLabel' is unsupported on: 'ios' 14.0 and later
-						if (header.TextLabel is not null)
-						{
-							header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
-						}
-#pragma warning restore CA1416, CA1422
+						configuration.TextProperties.Color = sectionHeaderTextColor.ToPlatform();
 					}
+
+					header.ContentConfiguration = configuration;
 				}
+				else
+				{
+#pragma warning disable CA1416, CA1422 // 'UITableViewHeaderFooterView.TextLabel' is unsupported on: 'ios' 14.0 and later
+					if (sectionHeaderTextColor is not null && header.TextLabel is not null)
+					{
+						header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
+					}
+#pragma warning restore CA1416, CA1422
+				}
+
 			}
 		}
 
