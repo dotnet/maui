@@ -1,4 +1,4 @@
-﻿#if !WINDOWS // TODO: Cannot find the element ZoomContainer on Windows. Investigate the reason.
+﻿#if ANDROID || IOS // TODO: Cannot find the element ZoomContainer on Desktop. Investigate the reason.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -19,7 +19,6 @@ public class Bugzilla57515 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Gestures)]
 	[FailsOnIOS("It already failed in Xamarin.UITest on this platform.")]
-	[FailsOnMac("It already failed in Xamarin.UITest on this platform.")]
 	public void Bugzilla57515Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
