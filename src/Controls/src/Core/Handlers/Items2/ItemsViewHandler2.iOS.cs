@@ -41,10 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			_layout = null;
-			MauiContext?.GetDispatcher()?.Dispatch(() =>
-			{
-				Controller?.DisposeItemsSource();
-			});
+			Controller?.DisposeItemsSource();
 			base.DisconnectHandler(platformView);
 		}
 

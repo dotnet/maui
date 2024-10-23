@@ -149,8 +149,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					headerFooterInfo.FooterView = footerView;
 				}
-				headerFooterInfo.HasHeader = structuredItemsView.Header is not null;
-				headerFooterInfo.HasFooter = structuredItemsView.Footer is not null;
+				headerFooterInfo.HasHeader = structuredItemsView.Header is not null || structuredItemsView.HeaderTemplate is not null;
+				headerFooterInfo.HasFooter = structuredItemsView.Footer is not null || structuredItemsView.FooterTemplate is not null;
 			}
 
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
