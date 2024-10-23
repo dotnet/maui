@@ -2,6 +2,7 @@
 using System;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -11,19 +12,52 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class ButtonExtensions
 	{
-		static CGRect GetTitleBoundingRect(this UIButton platformButton)
+		/// <summary>
+		/// Compute the <see cref="CGRect"/> for the title of the button.
+		/// </summary>
+		/// <param name="platformButton"></param>
+		/// <param name="widthConstraint"></param>
+		/// <param name="heightConstraint"></param>
+		/// <returns>Returns the <see cref="CGRect"/> that contains the button's title.</returns>
+		/// <remarks>The <see cref="NSStringDrawingOptions.UsesDeviceMetrics"/> flag is useful for when there is truncation in the title so we will take the max width of the two bounding rects. The GetBoundingRect method does not always give a great representation of what characters will be visible on the button but will not be needed when the UIButton.Configuration API is implemented. </remarks>
+		internal static CGRect GetTitleBoundingRect(this UIButton platformButton, double widthConstraint, double heightConstraint)
 		{
-			if (platformButton.CurrentAttributedTitle != null ||
-					   platformButton.CurrentTitle != null)
+			if ((platformButton.CurrentAttributedTitle != null || platformButton.CurrentTitle != null)
+				&& widthConstraint > 0 && heightConstraint > 0)
 			{
 				var title =
 					   platformButton.CurrentAttributedTitle ??
 					   new NSAttributedString(platformButton.CurrentTitle, new UIStringAttributes { Font = platformButton.TitleLabel.Font });
 
-				return title.GetBoundingRect(
-					platformButton.Bounds.Size,
+				// Use the available height when calculating the bounding rect
+				var lineHeight = platformButton.TitleLabel.Font.LineHeight;
+				var availableHeight = heightConstraint;
+
+				// If the line break mode is one of the truncation modes, limit the height to the line height
+				if (platformButton.TitleLabel.LineBreakMode == UILineBreakMode.HeadTruncation ||
+					platformButton.TitleLabel.LineBreakMode == UILineBreakMode.MiddleTruncation ||
+					platformButton.TitleLabel.LineBreakMode == UILineBreakMode.TailTruncation ||
+					platformButton.TitleLabel.LineBreakMode == UILineBreakMode.Clip)
+				{
+					availableHeight = Math.Min(lineHeight, heightConstraint);
+				}
+
+				var availableSize = new CGSize(widthConstraint, availableHeight);
+
+				var boundingRect = title.GetBoundingRect(
+					availableSize,
 					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
 					null);
+
+				// The width is more usually more accurate when using the device metrics with truncatated text
+				var boundingRectWithDeviceMetrics = title.GetBoundingRect(
+					availableSize,
+					NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading | NSStringDrawingOptions.UsesDeviceMetrics,
+					null);
+
+				return new CGRect(boundingRectWithDeviceMetrics.Location,
+					new CGSize(Math.Ceiling(Math.Max(boundingRect.Width, boundingRectWithDeviceMetrics.Width)),
+						Math.Ceiling(Math.Min(availableHeight, boundingRect.Height))));
 			}
 
 			return CGRect.Empty;
@@ -31,172 +65,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdatePadding(this UIButton platformButton, Button button)
 		{
-			double spacingVertical = 0;
-			double spacingHorizontal = 0;
-
-			if (button.ImageSource != null)
-			{
-				if (button.ContentLayout.IsHorizontal())
-				{
-					spacingHorizontal = button.ContentLayout.Spacing;
-				}
-				else
-				{
-					var imageHeight = platformButton.ImageView.Image?.Size.Height ?? 0f;
-
-					if (imageHeight < platformButton.Bounds.Height)
-					{
-						spacingVertical = button.ContentLayout.Spacing +
-							platformButton.GetTitleBoundingRect().Height;
-					}
-
-				}
-			}
-
 			var padding = button.Padding;
 			if (padding.IsNaN)
 				padding = ButtonHandler.DefaultPadding;
 
-			padding += new Thickness(spacingHorizontal / 2, spacingVertical / 2);
-
 			platformButton.UpdatePadding(padding);
+		}
+
+		internal static void UpdateContentEdgeInsets(this UIButton platformButton, Button button, Thickness thickness)
+		{
+			platformButton.UpdateContentEdgeInsets(thickness);
 		}
 
 		public static void UpdateContentLayout(this UIButton platformButton, Button button)
 		{
-			if (platformButton.Bounds.Width == 0)
-			{
-				return;
-			}
-
-			var imageInsets = new UIEdgeInsets();
-			var titleInsets = new UIEdgeInsets();
-
-			var layout = button.ContentLayout;
-			var spacing = (nfloat)layout.Spacing;
-
-			var image = platformButton.CurrentImage;
-
-
-			// if the image is too large then we just position at the edge of the button
-			// depending on the position the user has picked
-			// This makes the behavior consistent with android
-			var contentMode = UIViewContentMode.Center;
-
-			if (image != null && !string.IsNullOrEmpty(platformButton.CurrentTitle))
-			{
-				// TODO: Do not use the title label as it is not yet updated and
-				//       if we move the image, then we technically have more
-				//       space and will require a new layout pass.
-
-				var titleRect = platformButton.GetTitleBoundingRect();
-				var titleWidth = titleRect.Width;
-				var titleHeight = titleRect.Height;
-				var imageWidth = image.Size.Width;
-				var imageHeight = image.Size.Height;
-				var buttonWidth = platformButton.Bounds.Width;
-				var buttonHeight = platformButton.Bounds.Height;
-				var sharedSpacing = spacing / 2;
-
-				// These are just used to shift the image and title to center
-				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidth / 2;
-				imageInsets.Right -= titleWidth / 2;
-				titleInsets.Left -= imageWidth / 2;
-				titleInsets.Right += imageWidth / 2;
-
-				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
-				{
-					if (imageHeight > buttonHeight)
-					{
-						contentMode = UIViewContentMode.Top;
-					}
-					else
-					{
-						imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
-						imageInsets.Bottom += titleHeight / 2;
-
-						titleInsets.Top += imageHeight / 2;
-						titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
-					}
-				}
-				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
-				{
-					if (imageHeight > buttonHeight)
-					{
-						contentMode = UIViewContentMode.Bottom;
-					}
-					else
-					{
-						imageInsets.Top += titleHeight / 2;
-						imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
-					}
-
-					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
-					titleInsets.Bottom += imageHeight / 2;
-				}
-				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
-				{
-					if (imageWidth > buttonWidth)
-					{
-						contentMode = UIViewContentMode.Left;
-					}
-					else
-					{
-						imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
-						imageInsets.Right += titleWidth / 2;
-					}
-
-					titleInsets.Left += imageWidth / 2;
-					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
-				}
-				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
-				{
-					if (imageWidth > buttonWidth)
-					{
-						contentMode = UIViewContentMode.Right;
-					}
-					else
-					{
-						imageInsets.Left += titleWidth / 2;
-						imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
-					}
-
-					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right += imageWidth / 2;
-				}
-			}
-
-			platformButton.ImageView.ContentMode = contentMode;
-
-			// This is used to match the behavior between platforms.
-			// If the image is too big then we just hide the label because
-			// the image is pushing the title out of the visible view.
-			// We can't use insets because then the title shows up outside the 
-			// bounds of the UIButton. We could set the UIButton to clip bounds
-			// but that feels like it might cause confusing side effects
-			if (contentMode == UIViewContentMode.Center)
-				platformButton.TitleLabel.Layer.Hidden = false;
-			else
-				platformButton.TitleLabel.Layer.Hidden = true;
-
-			platformButton.UpdatePadding(button);
-
-#pragma warning disable CA1416, CA1422 // TODO: [UnsupportedOSPlatform("ios15.0")]
-			if (platformButton.ImageEdgeInsets != imageInsets ||
-				platformButton.TitleEdgeInsets != titleInsets)
-			{
-				platformButton.ImageEdgeInsets = imageInsets;
-				platformButton.TitleEdgeInsets = titleInsets;
-				platformButton.Superview?.SetNeedsLayout();
-			}
-#pragma warning restore CA1416, CA1422
+			(button as IView)?.InvalidateMeasure();
 		}
 
 		public static void UpdateText(this UIButton platformButton, Button button)
 		{
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.SetTitle(text, UIControlState.Normal);
+
+			// The TitleLabel retains its previous text value even after a new value is assigned. As a result, the label does not display the updated text and reverts to the old value when the button is re-measured
+			if (string.IsNullOrEmpty(button.Text))
+			{
+				platformButton.TitleLabel.Text = string.Empty;
+			}
 
 			// Content layout depends on whether or not the text is empty; changing the text means
 			// we may need to update the content layout

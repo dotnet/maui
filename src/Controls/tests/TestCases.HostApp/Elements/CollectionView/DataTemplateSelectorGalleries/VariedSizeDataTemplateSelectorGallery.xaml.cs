@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class VariedSizeDataTemplateSelectorGallery : ContentPage
 	{
 		string _index = "1";

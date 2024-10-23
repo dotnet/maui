@@ -31,6 +31,10 @@ namespace UITest.Appium.NUnit
 		public virtual void TestSetup()
 		{
 			RecordTestSetup();
+			if (ResetAfterEachTest)
+			{
+				FixtureSetup();
+			}
 		}
 
 		[TearDown]
@@ -41,7 +45,6 @@ namespace UITest.Appium.NUnit
 			if (ResetAfterEachTest)
 			{
 				Reset();
-				FixtureSetup();
 			}
 		}
 
@@ -136,6 +139,26 @@ namespace UITest.Appium.NUnit
 					SaveDeviceDiagnosticInfo();
 					SaveUIDiagnosticInfo();
 				}
+			}
+		}
+
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			InitialSetup(UITestContextSetupFixture.ServerContext);
+			try
+			{
+				if (!ResetAfterEachTest)
+				{
+					//SaveDiagnosticLogs("BeforeFixtureSetup");
+					FixtureSetup();
+				}
+			}
+			catch
+			{
+				SaveDeviceDiagnosticInfo();
+				SaveUIDiagnosticInfo();
+				throw;
 			}
 		}
 

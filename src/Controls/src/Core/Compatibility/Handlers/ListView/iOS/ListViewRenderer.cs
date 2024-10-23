@@ -932,7 +932,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					// Let the EstimatedHeight method know to use this value.
 					// Much more efficient than checking the value each time.
 					//_useEstimatedRowHeight = true;
-					var height = (nfloat)req.Request.Height;
+					var height = (nfloat)req.Height;
 					return height > 1 ? height : DefaultRowHeight;
 				}
 
@@ -959,10 +959,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_prototype != null)
 				{
-					var element = _prototype.VirtualView;
-					element?.Handler?.DisconnectHandler();
-					//_prototype?.Dispose();
-					//_prototype = null;
+					_prototype?.DisconnectHandler();
+					_prototype = null;
 				}
 			}
 		}

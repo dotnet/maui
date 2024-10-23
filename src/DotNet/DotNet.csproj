@@ -3,26 +3,34 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
+    <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
     <DotNetFeedUrl>https://dotnetcli.azureedge.net/dotnet</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
+    <PublicSdk Condition=" '$(PublicSdk)' == ''">true</PublicSdk>
+    <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
+    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+    <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
-    <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
+    <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'false' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
-    <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
+    <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -34,12 +42,12 @@
     </_ProvisionDependsOn>
   </PropertyGroup>
 
-  <!-- Build target provisions ./bin/dotnet/ -->
+  <!-- Build target provisions ./.dotnet/ -->
   <Target Name="_Provision" BeforeTargets="Build" DependsOnTargets="$(_ProvisionDependsOn)" />
 
   <!--
     Install target takes artifacts/*.nupkg and installs them to the current 'dotnet'.
-    Running this with ./bin/dotnet/dotnet will work without elevation.
+    Running this with ./.dotnet/dotnet will work without elevation.
     For a system install, you will need to run this in an admin command-prompt on Windows, or use 'sudo' on Mac.
   -->
   <Target Name="Install">
@@ -81,7 +89,7 @@
   </Target>
 
   <PropertyGroup>
-    <!-- These files should invalidate ./bin/dotnet completely -->
+    <!-- These files should invalidate ./.dotnet/ completely -->
     <_Inputs>
       $(MSBuildThisFile);
       ../../eng/Versions.props;
@@ -90,10 +98,11 @@
 
   <Target Name="_DownloadDotNetInstallScript"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetInstallScriptPath)">
+      Outputs="$(DotNetInstallScriptPath)"
+      Condition=" '$(InstallDotNet)' == 'true' ">
     <DownloadFile
         SourceUrl="$(DotNetInstallScriptUrl)"
-        DestinationFolder="$(DotNetOutputPath)"
+        DestinationFolder="$(DotNetTempDirectory)"
         DestinationFileName="$(DotNetInstallScriptName)"
     />
   </Target>
@@ -126,7 +135,9 @@
 
   <Target Name="_InstallDotNet"
       Inputs="$(_Inputs)"
-      Outputs="$(DotNetDirectory).stamp">
+      Outputs="$(DotNetDirectory).stamp"
+      Condition=" '$(InstallDotNet)' == 'true' ">
+
     <RemoveDir Directories="$(DotNetDirectory)" />
     <Exec Command="$(DotNetInstallCommand)" />
     <Exec Condition=" '$(VersionFromAndroid)' != '' " Command="$(DotNetXARuntimeInstallCommand)" />
@@ -173,7 +184,7 @@
     <MakeDir Directories="$(_WorkloadManifestDir)" />
     <Exec
         Command="&quot;$(DotNetToolPath)&quot; restore &quot;$(MSBuildThisFileDirectory)Dependencies/Workloads.csproj&quot; -bl:$(ArtifactsLogDir)/DotNetWorkloads.binlog"
-        EnvironmentVariables="MSBuildSDKsPath=;NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
+        EnvironmentVariables="NUGET_PACKAGES=$(_WorkloadManifestDir);DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1"
     />
     <!--
       NOTE: Workloads need to go in dotnet/sdk-manifests/6.0.100/microsoft.net.*/
@@ -197,7 +208,72 @@
       Inputs="$(_Inputs)"
       Outputs="$(DotNetPacksDirectory).stamp">
     <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install ios --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install maccatalyst --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install macos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload install tvos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+		<ItemGroup>
+			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
+		</ItemGroup>
+		<PropertyGroup>
+			<_XCSyncFileToRemove>%(_XCSyncFileToRemove.RelativeDir)</_XCSyncFileToRemove>
+		</PropertyGroup>
+		<ItemGroup>
+			<_XCSyncFileToRemove Remove="@(_XCSyncFileToRemove)" />
+		</ItemGroup>
+		<RemoveDir Directories="$(_XCSyncFileToRemove)" Condition="Exists('$(_XCSyncFileToRemove)')" />
+    <Exec
         Command="&quot;$(DotNetToolPath)&quot; workload install %(_WorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
+        WorkingDirectory="$(MauiRootDirectory)"
+        EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+    />
+    <Exec
+        Command="&quot;$(DotNetToolPath)&quot; workload update --print-rollback"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
     />

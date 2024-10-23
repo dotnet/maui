@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class NestedCollectionViewGallery : ContentPage
 	{
 		public NestedCollectionViewGallery()
@@ -20,7 +9,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	internal class NestedItemSource
 	{
 		public List<CollectionViewGalleryTestItem> Items { get; set; }
@@ -43,7 +32,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.NestedGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	internal class NestedCollectionViewModel
 	{
 		public List<NestedItemSource> Items { get; set; }

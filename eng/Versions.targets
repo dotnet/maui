@@ -52,7 +52,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true' or '$(IsPackable)' == 'false'">true</_SkipUpdateBuildNumber>
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true' or '$(IsPackable)' == 'false' or '_SkipUpdateBuildNumber' == 'true' ">true</_SkipUpdateBuildNumber>
       <_UpdateBuildNumber Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' AND '$(_SkipUpdateBuildNumber)' != 'true'">$(PackageVersion)</_UpdateBuildNumber>
     </PropertyGroup>
 

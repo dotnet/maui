@@ -1,12 +1,12 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue186751 : _IssuesUITest
+	public class Issue18675 : _IssuesUITest
 	{
-		public Issue186751(TestDevice device) : base(device)
+		public Issue18675(TestDevice device) : base(device)
 		{
 		}
 

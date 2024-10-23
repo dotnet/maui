@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
 			RootPage = rootPage;
 			_toolbarTracker.PageAppearing += OnPageAppearing;
-			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 			_toolbarTracker.Target = RootPage;
 		}
 
@@ -44,10 +43,26 @@ namespace Microsoft.Maui.Controls
 
 		void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (_currentPage != sender)
-				return;
-
-			OnPropertyChanged(sender, e);
+			if (e.IsOneOf(NavigationPage.HasNavigationBarProperty,
+				NavigationPage.HasBackButtonProperty,
+				NavigationPage.TitleIconImageSourceProperty,
+				NavigationPage.TitleViewProperty,
+				NavigationPage.IconColorProperty) ||
+				e.IsOneOf(Page.TitleProperty,
+				PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty,
+				NavigationPage.BarBackgroundColorProperty,
+				NavigationPage.BarBackgroundProperty,
+				NavigationPage.BarTextColorProperty) ||
+				e.IsOneOf(
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
+					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
+			{
+				ApplyChanges(_currentNavigationPage);
+			}
+			else if (_currentPage != sender && sender == _currentNavigationPage && e.Is(NavigationPage.CurrentPageProperty))
+			{
+				ApplyChanges(_currentNavigationPage);
+			}
 		}
 
 		void OnPageAppearing(object sender, EventArgs e)
@@ -55,6 +70,7 @@ namespace Microsoft.Maui.Controls
 			if (sender is not ContentPage cp)
 				return;
 
+			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
 
@@ -96,6 +112,7 @@ namespace Microsoft.Maui.Controls
 			_hasAppeared = true;
 
 			ApplyChanges(_currentNavigationPage);
+			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 		}
 
 		// This is to catch scenarios where the user
@@ -247,30 +264,6 @@ namespace Microsoft.Maui.Controls
 			DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(_currentPage);
 		}
 
-		void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (sender == _currentNavigationPage && e.Is(NavigationPage.CurrentPageProperty))
-			{
-				ApplyChanges(_currentNavigationPage);
-			}
-			else if (e.IsOneOf(NavigationPage.HasNavigationBarProperty,
-				NavigationPage.HasBackButtonProperty,
-				NavigationPage.TitleIconImageSourceProperty,
-				NavigationPage.TitleViewProperty,
-				NavigationPage.IconColorProperty) ||
-				e.IsOneOf(Page.TitleProperty,
-				PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty,
-				NavigationPage.BarBackgroundColorProperty,
-				NavigationPage.BarBackgroundProperty,
-				NavigationPage.BarTextColorProperty) ||
-				e.IsOneOf(
-					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
-					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty))
-			{
-				ApplyChanges(_currentNavigationPage);
-			}
-		}
-
 		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
 		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
 
@@ -281,7 +274,7 @@ namespace Microsoft.Maui.Controls
 				return string.Empty;
 			}
 
-			return _currentNavigationPage?.CurrentPage?.Title;
+			return _currentNavigationPage?.CurrentPage?.Title ?? _currentNavigationPage?.Title;
 		}
 
 		VisualElement GetTitleView()

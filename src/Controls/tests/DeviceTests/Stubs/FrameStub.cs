@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿#pragma warning disable CS0618 // Type or member is obsolete
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 
@@ -109,3 +110,4 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 	}
 }
+#pragma warning restore CS0618 // Type or member is obsolete

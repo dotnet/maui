@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
 {
 	// Issue9827 (src\ControlGallery\src\Issues.Shared\Issue9827.cs
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 9827, "CarouselView doesn't update the CurrentItem on Swipe under strange condition", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 9827, "CarouselView does not update the CurrentItem on Swipe under strange condition", PlatformAffected.Android)]
 	public partial class CarouselViewUpdateCurrentItem : ContentPage
 	{
 		public CarouselViewUpdateCurrentItem()
@@ -20,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
 			BindingContext = new ViewModelIssue9827();
 		}
-		
+
 		ViewModelIssue9827 ViewModel => BindingContext as ViewModelIssue9827;
 
 		protected override void OnAppearing()

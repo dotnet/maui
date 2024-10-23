@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public ShellItemRenderer(IShellContext context)
 		{
+			this.DisableiOS18ToolbarTabs();
 			_context = context;
 		}
 
@@ -345,7 +346,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UITableViewCell[] GetMoreNavigationCells()
 			{
-				if (MoreNavigationController.TopViewController.View is UITableView uITableView)
+				if (MoreNavigationController.TopViewController.View is UITableView uITableView && uITableView.Window is not null)
 					return uITableView.VisibleCells;
 
 				return EmptyUITableViewCellArray;

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(MauiSamplePlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
@@ -14,6 +15,7 @@
     <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
     <EmbedAssembliesIntoApk Condition="$(TargetFramework.Contains('-android'))">True</EmbedAssembliesIntoApk>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,6 +25,16 @@
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
+    <!-- TODO: remove these obsolete nowarns and fix it in code -->
+    <NoWarn>$(NoWarn);CS0618;CS0672</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">
+    <PublishAot>true</PublishAot>
+    <_IsPublishing>true</_IsPublishing>
+    <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
+    <WarningsNotAsErrors>IL3050;XC0022</WarningsNotAsErrors>
+    <DefineConstants>$(DefineConstants);NATIVE_AOT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -50,6 +62,8 @@
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized.svg" Color="#FFFFFF" BaseSize="20,20" />
+    <MauiImage Update="Resources\Images\dotnet_bot_resized2.svg" Color="#FFFFFF" BaseSize="40,40" />
+    <MauiImage Update="Resources\Images\dotnet_bot_resized3.svg" Color="#FFFFFF" BaseSize="70,70" />
     <MauiImage Include="Resources\Images\dotnet_bot.svg" Link="Resources\Images\small_dotnet_bot.svg" Color="#FFFFFF" BaseSize="64,64" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />

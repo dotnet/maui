@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 		{
 			_windowManager = WindowMessageManager.Get(this);
 			_viewSettings = new ViewManagement.UISettings();
-
+			
 			Activated += OnActivated;
 			Closed += OnClosedPrivate;
 			VisibilityChanged += OnVisibilityChanged;
@@ -95,6 +95,9 @@ namespace Microsoft.Maui
 		{
 			OnClosed(sender, args);
 
+			Activated -= OnActivated;
+			Closed -= OnClosedPrivate;
+			VisibilityChanged -= OnVisibilityChanged;
 			_viewSettings.ColorValuesChanged -= _viewSettings_ColorValuesChanged;
 
 			if (_windowIcon != IntPtr.Zero)
@@ -165,15 +168,15 @@ namespace Microsoft.Maui
 				}
 				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
 				{
-					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
 					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
 					{
-						bool hasTitleBar = (styleChange.StyleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
+						var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+						bool hasTitleBar = PlatformMethods.HasStyle(styleChange.StyleNew, PlatformMethods.WindowStyles.WS_CAPTIONANDSYSTEMMENU);
 
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
 						if (rootManager != null)
 						{
-							rootManager?.SetTitleBarVisibility(this, hasTitleBar);
+							rootManager?.SetTitleBarVisibility(hasTitleBar);
 						}
 					}
 				}

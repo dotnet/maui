@@ -19,49 +19,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TestPackWithoutChild()
-		{
-			Frame frame = new Frame();
-
-			var parent = new NaiveLayout();
-
-			bool thrown = false;
-			try
-			{
-				parent.Children.Add(frame);
-			}
-			catch
-			{
-				thrown = true;
-			}
-
-			Assert.False(thrown);
-		}
-
-		[Fact]
-		public void TestPackWithChild()
-		{
-			Frame frame = new Frame
-			{
-				Content = new View()
-			};
-
-			var parent = new NaiveLayout();
-
-			bool thrown = false;
-			try
-			{
-				parent.Children.Add(frame);
-			}
-			catch
-			{
-				thrown = true;
-			}
-
-			Assert.False(thrown);
-		}
-
-		[Fact]
 		public void TestSetChild()
 		{
 			Frame frame = new Frame();
@@ -124,7 +81,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			Assert.Equal(new Size(140, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(140, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request);
 
 			frame.Layout(new Rect(0, 0, 300, 300));
 
@@ -152,7 +109,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				WidthRequest = 20
 			};
 
-			Assert.Equal(new Size(60, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(60, 240), frame.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request);
 		}
 
 		[Fact]
@@ -170,7 +127,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				HeightRequest = 20
 			};
 
-			Assert.Equal(new Size(140, 60), frame.Measure(double.PositiveInfinity, double.PositiveInfinity).Request);
+			Assert.Equal(new Size(140, 60), frame.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request);
 		}
 
 		[Fact]

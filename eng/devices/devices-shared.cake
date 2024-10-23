@@ -1,6 +1,6 @@
 //This assumes that this is always running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
-const string DotnetVersion = "net8.0";
+string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net9.0");
 const string TestFramework = "net472";
 
 // Map project types to specific subdirectories under artifacts
@@ -21,13 +21,9 @@ string TARGET = Argument("target", "Test");
 string DEFAULT_PROJECT = "";
 string DEFAULT_APP_PROJECT = "";
 
-if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
-{
-    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
-}
 
-if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
+// "uitest", "uitest-build", and "uitest-prepare" all trigger this case
+if (TARGET.StartsWith("uitest", StringComparison.OrdinalIgnoreCase))
 {
     DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
     DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
@@ -207,7 +203,18 @@ void LogSetupInfo(string toolPath)
 string GetDotnetToolPath()
 {
     var isLocalDotnet = GetBuildVariable("workloads", "local") == "local";
-    var toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    string toolPath;
+    
+    
+    if(IsRunningOnWindows())
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet.exe" : null;
+    }
+    else
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    }
+
     Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");
     return toolPath;
 }
