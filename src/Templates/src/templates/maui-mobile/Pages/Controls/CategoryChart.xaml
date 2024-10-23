@@ -4,6 +4,7 @@
         xmlns:chart="clr-namespace:Syncfusion.Maui.Toolkit.Charts;assembly=Syncfusion.Maui.Toolkit"
         xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls" 
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
+        xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
