@@ -13,23 +13,23 @@ public class Bugzilla59863_1 : _IssuesUITest
 
 	public override string Issue => "TapGestureRecognizer extremely finicky1";
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
-	// {
-	// 	RunningApp.WaitForElement(DoubleTapBoxId);
-	// 	RunningApp.Tap(DoubleTapBoxId);
+	[Test]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindows]
+	public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
+	{
+		RunningApp.WaitForElement(DoubleTapBoxId);
+		RunningApp.Tap(DoubleTapBoxId);
+		RunningApp.WaitForElement($"0 {Doubles} on {DoubleTapBoxId}");
+	}
 
-	// 	RunningApp.WaitForElement($"0 {Doubles} on {DoubleTapBoxId}");
-	// }
-
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
-	// {
-	// 	RunningApp.WaitForElement(DoubleTapBoxId);
-	// 	RunningApp.DoubleTap(DoubleTapBoxId);
-
-	// 	RunningApp.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
-	// }
+	[Test]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindows]
+	public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
+	{
+		RunningApp.WaitForElement(DoubleTapBoxId);
+		RunningApp.DoubleTap(DoubleTapBoxId);
+		RunningApp.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
+	}
 }

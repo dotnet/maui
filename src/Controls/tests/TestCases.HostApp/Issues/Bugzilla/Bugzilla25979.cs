@@ -1,5 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
+[Issue(IssueTracker.Bugzilla, 25979, "https://bugzilla.xamarin.com/show_bug.cgi?id=25979")]
 public class Bugzilla25979 : TestNavigationPage
 {
 	internal sealed class MyPage : ContentPage

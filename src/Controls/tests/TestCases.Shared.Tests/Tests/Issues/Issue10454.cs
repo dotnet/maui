@@ -14,14 +14,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView ChildAdded";
 
-		// [Test]
-		// [Category(UITestCategories.CollectionView)]
-		// [Category(UITestCategories.Compatibility)]
-		// [FailsOnIOS]
-		// [FailsOnMac]
-		// public void ChildAddedShouldFire()
-		// {
-		// 	App.WaitForNoElement(Success);
-		// }
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOS]
+		[FailsOnMac]
+		public void ChildAddedShouldFire()
+		{
+			App.WaitForNoElement(Success);
+		}
 	}
 }

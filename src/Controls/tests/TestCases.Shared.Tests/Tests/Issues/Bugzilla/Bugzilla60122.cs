@@ -9,6 +9,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla60122 : _IssuesUITest
 {
+	//const string ImageId = "60122Image";
+	//const string Success = "Success";
+
 	public Bugzilla60122(TestDevice testDevice) : base(testDevice)
 	{
 	}

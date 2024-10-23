@@ -13,13 +13,14 @@ public class Bugzilla59863_0 : _IssuesUITest
 
 	public override string Issue => "TapGestureRecognizer extremely finicky";
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void TapsCountShouldMatch()
-	// {
-	// 	// Gonna add this test because we'd want to know if it _did_ start failing
-	// 	// But it doesn't really help much with this issue; UI test can't tap fast enough to demonstrate the 
-	// 	// problem we're trying to solve
+	[Test]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindows]
+	public void TapsCountShouldMatch()
+	{
+		// Gonna add this test because we'd want to know if it _did_ start failing
+		// 	But it doesn't really help much with this issue; UI test can't tap fast enough to demonstrate the 
+		// 	problem we're trying to solve
 
 	// 	int tapsToTest = 5;
 
@@ -33,13 +34,13 @@ public class Bugzilla59863_0 : _IssuesUITest
 	// 	RunningApp.WaitForElement($"{tapsToTest} {Singles} on {SingleTapBoxId}");
 	// }
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void DoubleTapWithOnlySingleTapRecognizerShouldRegisterTwoTaps()
-	// {
-	// 	RunningApp.WaitForElement(SingleTapBoxId);
-	// 	RunningApp.DoubleTap(SingleTapBoxId);
-
-	// 	RunningApp.WaitForElement($"2 {Singles} on {SingleTapBoxId}");
-	// }
+	[Test]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindows]
+	public void DoubleTapWithOnlySingleTapRecognizerShouldRegisterTwoTaps()
+	{
+		RunningApp.WaitForElement(SingleTapBoxId);
+		RunningApp.DoubleTap(SingleTapBoxId);
+		RunningApp.WaitForElement($"2 {Singles} on {SingleTapBoxId}");
+	}
 }
