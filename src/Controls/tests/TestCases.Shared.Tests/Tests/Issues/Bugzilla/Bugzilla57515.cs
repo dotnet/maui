@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !WINDOWS // TODO: Cannot find the element ZoomContainer on Windows. Investigate the reason.
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -19,7 +20,6 @@ public class Bugzilla57515 : _IssuesUITest
 	[Category(UITestCategories.Gestures)]
 	[FailsOnIOS("It already failed in Xamarin.UITest on this platform.")]
 	[FailsOnMac("It already failed in Xamarin.UITest on this platform.")]
-	[FailsOnWindows("Cannot find the element ZoomContainer. Investigate the reason.")]
 	public void Bugzilla57515Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -35,3 +35,4 @@ public class Bugzilla57515 : _IssuesUITest
 		ClassicAssert.AreEqual(0, elements.Count); // The scale should have changed during the zoom
 	}
 }
+#endif
