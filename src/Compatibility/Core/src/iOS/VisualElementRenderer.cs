@@ -252,11 +252,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				if (_blur.Superview == null)
 					Superview.Add(_blur);
 			}
-
-			bool hasBackground = Element?.Background != null && !Element.Background.IsEmpty;
-
-			if (hasBackground)
-				NativeView.UpdateBackgroundLayer();
 		}
 
 #else
