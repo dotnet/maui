@@ -7,76 +7,82 @@ namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 25224, "CollectionView - EmptyView with EmptyViewTemplate for Data template selector page throws an exception", PlatformAffected.iOS)]
-	public partial class Issue25224
+	public partial class Issue25224: ContentPage
 	{
 		public Issue25224()
 		{
 			InitializeComponent();
+			var emptyViewTemplateSelector = new SearchTermDataTemplateSelector
+			{
+				DefaultTemplate = (DataTemplate)Resources["AdvancedTemplate"],
+				OtherTemplate = (DataTemplate)Resources["BasicTemplate"]
+			};
+			collectionView.EmptyViewTemplate = emptyViewTemplateSelector;
 			BindingContext = new Issue25224ViewModel();
 		}
-	}
 
-	public class SearchTermDataTemplateSelector : DataTemplateSelector
-	{
-		public DataTemplate DefaultTemplate { get; set; }
-		public DataTemplate OtherTemplate { get; set; }
-
-		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+		public class SearchTermDataTemplateSelector : DataTemplateSelector
 		{
-			string query = (string)item;
-			return query.Equals("xamarin", StringComparison.OrdinalIgnoreCase) ? OtherTemplate : DefaultTemplate;
-		}
-	}
+			public DataTemplate DefaultTemplate { get; set; }
+			public DataTemplate OtherTemplate { get; set; }
 
-	public class Issue25224ViewModel : INotifyPropertyChanged
-	{
-		readonly IList<Monkey> source;
-		public ObservableCollection<Monkey> Monkeys { get; set; }
-		public ICommand FilterCommand => new Command<string>(FilterItems);
-
-		public Issue25224ViewModel()
-		{
-			source = new List<Monkey>();
-			CreateMonkeyCollection();
-		}
-
-		void CreateMonkeyCollection()
-		{
-			source.Add(new Monkey
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 			{
-				Name = "Baboon",
-				Location = "Africa & Asia",
-				Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."
-			});
-			Monkeys = new ObservableCollection<Monkey>(source);
-		}
-
-		void FilterItems(string filter)
-		{
-			var filteredItems = source.Where(monkey => monkey.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
-			foreach (var monkey in source)
-			{
-				if (!filteredItems.Contains(monkey))
-				{
-					Monkeys.Remove(monkey);
-				}
-				else
-				{
-					if (!Monkeys.Contains(monkey))
-					{
-						Monkeys.Add(monkey);
-					}
-				}
+				string query = (string)item;
+				return query.Equals("xamarin", StringComparison.OrdinalIgnoreCase) ? OtherTemplate : DefaultTemplate;
 			}
 		}
 
-		#region INotifyPropertyChanged
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		internal class Issue25224ViewModel : INotifyPropertyChanged
 		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			private readonly IList<Monkey> source;
+			public ObservableCollection<Monkey> Monkeys { get; set; }
+			public ICommand FilterCommand => new Command<string>(FilterItems);
+
+			public Issue25224ViewModel()
+			{
+				source = new List<Monkey>();
+				CreateMonkeyCollection();
+			}
+
+			private void CreateMonkeyCollection()
+			{
+				source.Add(new Monkey
+				{
+					Name = "Baboon",
+					Location = "Africa & Asia",
+					Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."
+				});
+				Monkeys = new ObservableCollection<Monkey>(source);
+			}
+
+			private void FilterItems(string filter)
+			{
+				var filteredItems = source.Where(monkey => monkey.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+				foreach (var monkey in source)
+				{
+					if (!filteredItems.Contains(monkey))
+					{
+						Monkeys.Remove(monkey);
+					}
+					else
+					{
+						if (!Monkeys.Contains(monkey))
+						{
+							Monkeys.Add(monkey);
+						}
+					}
+				}
+			}
+
+			#region INotifyPropertyChanged
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
+			#endregion
 		}
-		#endregion
 	}
 }
