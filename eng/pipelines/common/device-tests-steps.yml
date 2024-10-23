@@ -90,6 +90,9 @@ steps:
       continueOnError: true
       timeoutInMinutes: 5
 
+  - pwsh: ps auxww
+    displayName: 'Dump running processes'
+
   # Everything should be release but doing android for now to work around an xharness issue
   - ${{ if eq(parameters.platform, 'android')}}:
     - pwsh: |
