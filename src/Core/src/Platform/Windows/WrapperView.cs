@@ -339,37 +339,14 @@ namespace Microsoft.Maui.Platform
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 
-			//if (Child is ContentPanel panel)
-			//{
-			//	dropShadow.Mask = GetCompositionAlphaMask();
-			//}
-			//else
+			if (Child is ContentPanel panel)
+			{
+				dropShadow.Mask = panel.GetAlphaMask();
+			}
+			else
 			{
 				dropShadow.Mask = await this.GetAlphaMaskAsync();
 			}
-		}
-
-		CompositionSurfaceBrush? GetCompositionAlphaMask()
-		{
-			if (Child is ContentPanel contentPanel)
-			{
-				var compositor = ElementCompositionPreview.GetElementVisual(contentPanel).Compositor;
-				var panelShapeGeo = contentPanel.CompositionPathGeometry;
-
-				var geoShape = compositor.CreateSpriteShape(panelShapeGeo);
-				geoShape.FillBrush = compositor.CreateColorBrush(UI.Colors.Black);
-		
-				var shapeVisual = compositor.CreateShapeVisual();
-				shapeVisual.Shapes.Add(geoShape);
-		
-				var visualSurface = compositor.CreateVisualSurface();
-				visualSurface.SourceVisual = shapeVisual;
-		
-				var surfacebrush = compositor.CreateSurfaceBrush(visualSurface);
-				visualSurface.SourceSize = shapeVisual.Size = contentPanel.RenderSize.ToVector2();
-				return surfacebrush;
-			}
-			return null;
 		}
 	}
 }

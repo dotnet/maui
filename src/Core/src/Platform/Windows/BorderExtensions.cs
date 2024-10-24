@@ -14,10 +14,10 @@ namespace Microsoft.Maui.Platform
 			borderPath.UpdatePath(borderShape, width, height);
 		}
 
-		internal static void UpdatePath(this Path borderPath, IShape? borderShape, double width, double height)
+		internal static PathF UpdatePath(this Path borderPath, IShape? borderShape, double width, double height)
 		{
 			if (borderShape is null || width <= 0 || height <= 0)
-				return;
+				return new PathF();
 
 			var strokeThickness = borderPath?.StrokeThickness ?? 0;
 			var pathSize = new Graphics.Rect(0, 0, width - strokeThickness, height - strokeThickness);
@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Platform
 				borderPath.Data = geometry;
 				borderPath.RenderTransform = new TranslateTransform() { X = strokeThickness / 2, Y = strokeThickness / 2 };
 			}
+
+			return shapePath;
 		}
 
 		public static void UpdateBackground(this Path borderPath, Paint? background)
