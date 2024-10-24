@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using CoreAnimation;
@@ -284,12 +285,48 @@ namespace Microsoft.Maui.Platform
 
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			platformView.SetNeedsLayout();
-
-			// MauiView/WrapperView already propagates the SetNeedsLayout to the parent
-			if (platformView is not MauiView && platformView is not WrapperView)
+			if (platformView is MauiScrollView scrollView)
 			{
-				platformView.Superview?.SetNeedsLayout();
+				// To correctly invalidate the measure of a ScrollView, we need to include its content
+				scrollView.Subviews.FirstOrDefault(platformView)?.SetNeedsLayout();
+			}
+
+			platformView.SetNeedsLayout();
+			platformView.InvalidateAncestorsMeasures();
+		}
+
+		internal static void InvalidateAncestorsMeasures(this UIView child)
+		{
+			var childMauiPlatformLayout = child as IMauiPlatformView;
+
+			while (true)
+			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (child.Window is null)
+				{
+					childMauiPlatformLayout?.InvalidateAncestorsMeasuresWhenMovedToWindow();
+					return;
+				}
+
+				var superview = child.Superview;
+				// Potential improvement: if the MAUI view (child here) is constrained to a fixed size, we could stop propagating
+				// when doing this, we must pay attention to a scenario where a non-fixed-size view becomes fixed-size
+				if (superview is null or PageView or UIScrollView)
+				{
+					// We reached the root view or a scrollable area (includes collection view), stop propagating
+					return;
+				}
+
+				// We're only interested in invalidating the parent if it's a MAUI layout or a parent of a MAUI layout
+				var superviewMauiPlatformLayout = superview as IMauiPlatformView;
+				if (childMauiPlatformLayout != null || superviewMauiPlatformLayout != null)
+				{
+					superview.SetNeedsLayout();
+				}
+
+				child = superview;
+				childMauiPlatformLayout = superviewMauiPlatformLayout;
 			}
 		}
 
