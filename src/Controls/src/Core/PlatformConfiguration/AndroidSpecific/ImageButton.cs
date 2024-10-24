@@ -120,5 +120,36 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 		#endregion
+
+		#region RippleColor
+		#pragma warning disable RS0016
+		/// <summary>Bindable property for <see cref="RippleColor"/>.</summary>
+		public static readonly BindableProperty RippleColorProperty = BindableProperty.Create("RippleColor", typeof(Color), typeof(ImageButton), default);
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetRippleColor']/Docs/*" />
+		public static Color GetRippleColor(BindableObject element)
+		{
+			return (Color)element.GetValue(RippleColorProperty);
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetRippleColor'][1]/Docs/*" />
+		public static void SetRippleColor(BindableObject element, Color value)
+		{
+			element.SetValue(RippleColorProperty, value);
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='RippleColor']/Docs/*" />
+		public static Color RippleColor(this IPlatformElementConfiguration<Android, FormsImageButton> config)
+		{
+			return GetRippleColor(config.Element);
+		}
+
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='SetRippleColor'][2]/Docs/*" />
+		public static IPlatformElementConfiguration<Android, FormsImageButton> SetRippleColor(this IPlatformElementConfiguration<Android, FormsImageButton> config, Color value)
+		{
+			SetRippleColor(config.Element, value);
+			return config;
+		}
+		#endregion
 	}
 }
