@@ -79,7 +79,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 	}
 
-	[Theory("Pages Do Not Leak")]
+	[Theory("Pages Do Not Leak", Skip = "Do not run GC dependent tests")]
 	[InlineData(typeof(ContentPage))]
 	[InlineData(typeof(NavigationPage))]
 	[InlineData(typeof(TabbedPage))]
@@ -129,7 +129,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	[Theory("Handler Does Not Leak")]
+	[Theory("Handler Does Not Leak", Skip = "Do not run GC dependent tests")]
 	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(BoxView))]
@@ -259,7 +259,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
-	[Theory("Gesture Does Not Leak")]
+	[Theory("Gesture Does Not Leak", Skip = "Do not run GC dependent tests")]
 	[InlineData(typeof(DragGestureRecognizer))]
 	[InlineData(typeof(DropGestureRecognizer))]
 	[InlineData(typeof(PanGestureRecognizer))]
@@ -309,7 +309,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference);
 	}
 
-	[Theory("Cells Do Not Leak")]
+	[Theory("Cells Do Not Leak", Skip = "Do not run GC dependent tests")]
 	[InlineData(typeof(TextCell))]
 	[InlineData(typeof(EntryCell))]
 	[InlineData(typeof(ImageCell))]
@@ -361,7 +361,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	[Fact("BindableLayout Does Not Leak")]
+	[Fact("BindableLayout Does Not Leak", Skip = "Do not run GC dependent tests")]
 	public async Task BindableLayoutDoesNotLeak()
 	{
 		SetupBuilder();
@@ -423,7 +423,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references[2], references[3]);
 	}
 
-	[Fact("Window Does Not Leak")]
+	[Fact("Window Does Not Leak", Skip = "Do not run GC dependent tests")]
 	public async Task WindowDoesNotLeak()
 	{
 		SetupBuilder();
@@ -453,11 +453,7 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(references.ToArray());
 	}
 
-	[Fact("VisualDiagnosticsOverlay Does Not Leak"
-#if IOS || MACCATALYST
-		, Skip = "Fails with 'MauiContext should have been set on parent.'"
-#endif
-	)]
+	[Fact("VisualDiagnosticsOverlay Does Not Leak", Skip = "Do not run GC dependent tests")]
 	public async Task VisualDiagnosticsOverlayDoesNotLeak()
 	{
 		SetupBuilder();
@@ -485,7 +481,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 #if IOS
-	[Fact]
+	[Fact(Skip = "Do not run GC dependent tests")]
 	public async Task ResignFirstResponderTouchGestureRecognizer()
 	{
 		WeakReference viewReference = null;

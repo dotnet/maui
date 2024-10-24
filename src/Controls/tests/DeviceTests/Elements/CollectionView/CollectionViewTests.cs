@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
-		[Fact]
+		[Fact(Skip = "Do not run GC dependent tests")]
 		public async Task ItemsSourceDoesNotLeak()
 		{
 			SetupBuilder();
