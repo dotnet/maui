@@ -17,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ValidateTableViewTitles()
         {
 			App.WaitForElement("TableView");
-			App.WaitForElement("TableRootLabel");
 			var tableViewRootText = App.FindElement("TableRootLabel").GetText();
 			if (string.IsNullOrEmpty(tableViewRootText))
 			{
@@ -28,7 +27,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				Assert.That(tableViewRootText, Is.EqualTo("TableRoot Title Text"));
 			}
 
-			App.WaitForElement("TableSectionLabel");
 			var tableViewSelectionText = App.FindElement("TableSectionLabel").GetText();
 			if (string.IsNullOrEmpty(tableViewSelectionText))
 			{
