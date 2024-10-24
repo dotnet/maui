@@ -14,7 +14,7 @@ public class Issue3840 : _IssuesUITest
 
 	// TODO: The _ variables need to be AutomationId values
 //		[Test]
-//		[FailsOnIOS]
+//		[FailsOnIOSWhenRunningOnXamarinUITest]
 //		[Category(UITestCategories.ScrollView)]
 //		public void TranslatingViewKeepsScrollViewPosition()
 //		{

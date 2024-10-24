@@ -16,8 +16,8 @@ public class Issue3667 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Label)]
-	[FailsOnIOS]
-	[FailsOnWindows]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Issue3667Tests()
 	{
 		RunningApp.WaitForElement(text);

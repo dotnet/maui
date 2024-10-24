@@ -74,7 +74,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 //	}
 
 //	[Test]
-//	[FailsOnIOS]
+//	[FailsOnIOSWhenRunningOnXamarinUITest]
 //	public void BackButtonSetToTextStillNavigatesBack()
 //	{
 //		RunningApp.Tap(PushPageId);
@@ -85,7 +85,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 //	}
 
 //	[Test]
-//	[FailsOnIOS]
+//	[FailsOnIOSWhenRunningOnXamarinUITest]
 //	public void BackButtonSetToTextStillOpensFlyout()
 //	{
 //		RunningApp.Tap(ToggleTextId);
@@ -108,7 +108,7 @@ public class ShellBackButtonBehavior : _IssuesUITest
 //	}
 //#else
 //	[Test]
-//	[FailsOnIOS]
+//	[FailsOnIOSWhenRunningOnXamarinUITest]
 //	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 //	{
 //		RunningApp.WaitForElement("ToggleFlyoutBehavior");

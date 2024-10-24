@@ -14,7 +14,7 @@ public class Issue2414 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TestDoesntCrashShowingContextMenu()
 	// {
 	// 	RunningApp.ActivateContextMenu("Swipe ME");
@@ -24,7 +24,7 @@ public class Issue2414 : _IssuesUITest
 	// }
 
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TestShowContextMenuItemsInTheRightOrder()
 	// {
 	// 	RunningApp.ActivateContextMenu("Swipe ME");

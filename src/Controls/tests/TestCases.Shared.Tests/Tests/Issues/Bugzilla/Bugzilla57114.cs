@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITestWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest]
 		public void _57114BothTypesOfGesturesFire()
 		{
 			App.WaitForNoElement(Testing);

@@ -14,8 +14,9 @@ public class Bugzilla32148 : _IssuesUITest
   
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnApple]
-	[FailsOnWindows("Sometimes the Teardown process fails after running the test.")]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Sometimes the Teardown process fails after running the test.")]
 	public void Bugzilla32148Test()
 	{
 		App.WaitForNoElement("Contact0 LastName");

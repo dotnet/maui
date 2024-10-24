@@ -14,7 +14,7 @@ public class Issue2266 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Navigation)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void SwapMainPageWithFlyoutPages()
 	// {
 	// 	RunningApp.WaitForElement(q => q.Text("FlyoutPage Navigation"));

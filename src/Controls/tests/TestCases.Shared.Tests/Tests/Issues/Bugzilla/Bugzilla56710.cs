@@ -20,7 +20,7 @@ public class Bugzilla56710 : _IssuesUITest
 	// [Category(UITestCategories.ListView)]
 	// [Category(UITestCategories.Compatibility)]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [FailsOnMacWhenRunningOnXamarinUITest]
+	// [FailsOnMacWhenRunningOnXamarinUITestWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest]
 	// public void Bugzilla56771Test()
 	// {
 	// 	App.WaitForElement(BtnAdd);

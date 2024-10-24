@@ -14,7 +14,7 @@ public class Issue4973 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Navigation)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue4973Test()
 	//{
 	//	RunningApp.Tap(q => q.Text("Tab5"));

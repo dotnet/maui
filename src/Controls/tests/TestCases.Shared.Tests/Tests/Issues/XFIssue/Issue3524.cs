@@ -17,8 +17,8 @@ public class Issue3524 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
-	[FailsOnIOS]
-	[FailsOnWindows]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void SpanGestureCommand()
 	{
 		RunningApp.WaitForElement(kText);

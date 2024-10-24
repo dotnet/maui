@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS("Fails sometimes")]
-		[FailsOnMac("Fails sometimes")]
+		[FailsOnIOSWhenRunningOnXamarinUITestWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest("Fails sometimes")]
+		[FailsOnMacWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest("Fails sometimes")]
 		public void Bugzilla35736Test()
 		{
 			App.WaitForElement("Bugzilla35736Editor");

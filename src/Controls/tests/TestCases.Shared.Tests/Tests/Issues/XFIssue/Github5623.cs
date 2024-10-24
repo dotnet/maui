@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void CollectionViewInfiniteScroll()
 		{
 			// The reproduction initially adds 10 elements to the CollectionView, and we need to scroll to the bottom

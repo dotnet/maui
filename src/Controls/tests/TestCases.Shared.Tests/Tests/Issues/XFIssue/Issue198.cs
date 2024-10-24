@@ -14,7 +14,7 @@ public class Issue198 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	public void Issue198TestsNREWithPopModal()
 	// 	{
 	// 		RunningApp.WaitForElement(q => q.Marked("Page One"));
