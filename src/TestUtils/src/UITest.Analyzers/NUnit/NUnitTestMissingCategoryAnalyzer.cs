@@ -39,8 +39,9 @@ namespace UITest.Analyzers.NUnit
 		{
 			var methodSymbol = (IMethodSymbol)context.Symbol;
 
-			// Check if the method has the [Test] attribute.
-			var hasTestAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "TestAttribute");
+			// Check if the method has the [Test] or [TestCase] attribute.
+			var hasTestAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "TestAttribute"
+				|| attr?.AttributeClass?.Name == "TestCaseAttribute");
 
 			// Check if the method has the [Category] attribute.
 			var hasCategoryAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "CategoryAttribute");
@@ -51,7 +52,7 @@ namespace UITest.Analyzers.NUnit
 				hasCategoryAttribute = containingClass.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "CategoryAttribute");
 			}
 
-			// If it has [Test] but not [Category], report a diagnostic.
+			// If it has [Test] or [TestCase] but not [Category], report a diagnostic.
 			if (hasTestAttribute && !hasCategoryAttribute)
 			{
 				var diagnostic = Diagnostic.Create(Rule, methodSymbol.Locations[0], methodSymbol.Name);
