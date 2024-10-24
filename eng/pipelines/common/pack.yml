@@ -89,8 +89,8 @@ steps:
         ${{ pair.key }}: ${{ pair.value }}
 
   - pwsh: |
-      if ($env:JAVA_HOME_11_X64) {
-        $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+      if ($env:JAVA_HOME_17_X64) {
+        $env:JAVA_HOME = $env:JAVA_HOME_17_X64
       } else {
         $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
         if ($path -and (Test-Path $path)) {
