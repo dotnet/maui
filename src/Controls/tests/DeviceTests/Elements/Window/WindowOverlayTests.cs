@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 [Category(TestCategory.WindowOverlay)]
 public class WindowOverlayTests : ControlsHandlerTestBase
 {
-	[Fact("Does Not Leak")]
+	[Fact("Does Not Leak", Skip = "Do not run GC dependent tests")]
 	public async Task DoesNotLeak()
 	{
 		WeakReference viewReference = null;

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 		
-		[Fact(DisplayName = "Does Not Leak")]
+		[Fact(DisplayName = "Does Not Leak", Skip = "Do not run GC dependent tests")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();

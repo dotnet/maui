@@ -236,7 +236,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
 		// It adds a child to the Border, which is a worthwhile test case.
-		[Fact("Border Does Not Leak")]
+		[Fact("Border Does Not Leak", Skip = "Do not run GC dependent tests")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();

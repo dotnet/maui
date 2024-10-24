@@ -90,6 +90,9 @@ steps:
       continueOnError: true
       timeoutInMinutes: 5
 
+  - bash: ps auxww
+    displayName: 'Dump running processes before'
+
   # Everything should be release but doing android for now to work around an xharness issue
   - ${{ if eq(parameters.platform, 'android')}}:
     - pwsh: |
@@ -125,6 +128,9 @@ steps:
       condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
       retryCountOnTaskFailure: 1
   # Everything should be release but doing android for now to work around an xharness issue
+
+  - bash: ps auxww
+    displayName: 'Dump running processes after'
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |

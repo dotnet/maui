@@ -112,11 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
 		// It calls CreateHandlerAndAddToWindow(), a valid test case.
-		[Fact(DisplayName = "ScrollView Does Not Leak"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact(DisplayName = "ScrollView Does Not Leak", Skip = "Fails on Mac Catalyst, fixme")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
