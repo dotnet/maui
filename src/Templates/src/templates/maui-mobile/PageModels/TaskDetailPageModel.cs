@@ -119,7 +119,7 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	}
 
 	[RelayCommand]
-	async Task Save()
+	private async Task Save()
 	{
 		if (_task is null)
 		{
@@ -151,7 +151,7 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 	}
 
 	[RelayCommand(CanExecute = nameof(CanDelete))]
-	async Task Delete()
+	private async Task Delete()
 	{
 		if (_task is null || Project is null)
 		{

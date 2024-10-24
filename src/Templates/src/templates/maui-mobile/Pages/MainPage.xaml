@@ -21,11 +21,6 @@
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
-    
-    <!-- <ContentPage.Behaviors>
-        <toolkit:StatusBarBehavior 
-            StatusBarColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
-    </ContentPage.Behaviors> -->
 
     <ContentPage.Resources>
         <ResourceDictionary>

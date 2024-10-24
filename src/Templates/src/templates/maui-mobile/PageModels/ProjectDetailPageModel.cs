@@ -254,7 +254,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	[RelayCommand]
 	private async Task CleanTasks()
 	{
-		var completedTasks = Tasks.Where(t => t.IsCompleted).ToList();
+		var completedTasks = Tasks.Where(t => t.IsCompleted).ToArray();
 		foreach (var task in completedTasks)
 		{
 			await _taskRepository.DeleteItemAsync(task);
