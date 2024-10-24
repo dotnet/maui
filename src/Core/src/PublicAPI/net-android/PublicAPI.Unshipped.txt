@@ -52,6 +52,7 @@ Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
+override Microsoft.Maui.Handlers.RefreshViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiHybridWebViewClient.ShouldInterceptRequest(Android.Webkit.WebView? view, Android.Webkit.IWebResourceRequest? request) -> Android.Webkit.WebResourceResponse?
 override Microsoft.Maui.Platform.MauiWebViewClient.OnRenderProcessGone(Android.Webkit.WebView? view, Android.Webkit.RenderProcessGoneDetail? detail) -> bool
