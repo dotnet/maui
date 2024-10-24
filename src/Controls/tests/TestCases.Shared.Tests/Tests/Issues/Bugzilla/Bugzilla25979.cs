@@ -1,4 +1,4 @@
-#if !IOS && !MACCATALYST // TODO: Fix on iOS and Mac.
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,7 +21,7 @@ public class Bugzilla25979 : _IssuesUITest
 		App.Screenshot("At page one");
 
 		App.Tap("PageOneButtonId");
-#if __MACOS__
+#if MACCATALYST
  		System.Threading.Thread.Sleep(2000);
 #endif
 
@@ -29,7 +29,7 @@ public class Bugzilla25979 : _IssuesUITest
 		App.Screenshot("At page two - I didn't crash");
 
 		App.Tap("PageTwoButtonId");
-#if __MACOS__
+#if MACCATALYST
  		System.Threading.Thread.Sleep(2000);
 #endif
 

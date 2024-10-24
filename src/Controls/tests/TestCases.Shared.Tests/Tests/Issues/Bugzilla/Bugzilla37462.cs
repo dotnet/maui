@@ -1,4 +1,4 @@
-﻿#if ANDROID // TODO: Fix on Apple devices and Windows.
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
