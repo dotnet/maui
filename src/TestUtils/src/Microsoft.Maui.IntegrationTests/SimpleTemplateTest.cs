@@ -40,8 +40,19 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
+		string[]? warningsToIgnore = null;
+
+		if (additionalDotNetNewParams.Contains("IncludeSampleContent", StringComparison.OrdinalIgnoreCase))
+		{
+			warningsToIgnore = new string[]
+			{
+				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
+			};
+		}
+
+
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
