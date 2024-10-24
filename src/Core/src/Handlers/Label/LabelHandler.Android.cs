@@ -1,4 +1,5 @@
 using Android.Views;
+using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
 
@@ -7,7 +8,11 @@ namespace Microsoft.Maui.Handlers
 	public partial class LabelHandler : ViewHandler<ILabel, AppCompatTextView>
 	{
 		protected override AppCompatTextView CreatePlatformView()
-			=> new MauiTextView(Context);
+			=> new MauiTextView(Context)
+			{
+				TextAlignment = Android.Views.TextAlignment.ViewStart,
+				Gravity = GravityFlags.Top,
+			};
 
 		public override void PlatformArrange(Rect frame)
 		{
