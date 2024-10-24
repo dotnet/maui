@@ -12,6 +12,7 @@
         <item name="checkboxStyle">@style/MauiCheckBox</item>
         <item name="android:textAllCaps">false</item>
         <item name="alertDialogTheme">@style/MauiAlertDialogTheme</item>
+        <item name="android:windowBackground">@null</item>
     </style>
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
         <item name="windowActionBar">false</item>
