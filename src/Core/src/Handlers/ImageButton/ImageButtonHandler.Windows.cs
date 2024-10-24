@@ -78,11 +78,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.PlatformView as Button)?.UpdateStrokeThickness(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			(handler.PlatformView as Button)?.UpdateCornerRadius(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapBackground(IImageButtonHandler handler, IImageButton imageButton)
