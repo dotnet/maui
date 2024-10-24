@@ -7,8 +7,8 @@ namespace UITest.Appium
 {
 	public class AppiumAndroidApp : AppiumApp, IAndroidApp
 	{
-		private AppiumAndroidApp(Uri remoteAddress, IConfig config)
-			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
+		private AppiumAndroidApp(Uri remoteAddress, IConfig config, bool useBrowserStack)
+			: base(new AndroidDriver(remoteAddress, GetOptions(config, useBrowserStack)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAndroidThemeChangeAction());
 			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
@@ -19,6 +19,12 @@ namespace UITest.Appium
 
 		public static AppiumAndroidApp CreateAndroidApp(Uri remoteAddress, IConfig config)
 		{
+			// When using BrowserStack, the driver is configured a bit differently
+			if (config.GetProperty<bool>("UseBrowserStack"))
+			{
+				return CreateAndroidAppBrowserStack(remoteAddress, config);
+			}
+
 			var device = config.GetProperty<string>("EmulatorDeviceName");
 			var apkPath = config.GetProperty<string>("AppPath");
 			var pkgName = config.GetProperty<string>("AppId");
@@ -37,8 +43,14 @@ namespace UITest.Appium
 			//AndroidEmulator.StartEmulator(device);
 			//// TODO: Check for installed package first?
 			//AndroidEmulator.InstallPackage(apkPath, pkgName, outDir);
-			var androidApp = new AppiumAndroidApp(remoteAddress, config);
+			var androidApp = new AppiumAndroidApp(remoteAddress, config, useBrowserStack:false);
 			androidApp.Driver.ActivateApp(pkgName);
+			return androidApp;
+		}
+
+		public static AppiumAndroidApp CreateAndroidAppBrowserStack(Uri remoteAddress, IConfig config)
+		{
+			var androidApp = new AppiumAndroidApp(remoteAddress, config, useBrowserStack:true);
 			return androidApp;
 		}
 
@@ -78,8 +90,18 @@ namespace UITest.Appium
 			}
 		}
 
-		private static AppiumOptions GetOptions(IConfig config)
+		private static AppiumOptions GetOptions(IConfig config, bool useBrowserStack)
 		{
+			if (useBrowserStack)
+			{
+				return new AppiumOptions
+				{
+					DeviceName = "Samsung Galaxy S20",
+					PlatformName = "Android",
+					PlatformVersion = "10"
+				};
+			}
+
 			config.SetProperty("PlatformName", "Android");
 			config.SetProperty("AutomationName", "UIAutomator2");
 			var appId = config.GetProperty<string>("AppId");

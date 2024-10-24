@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿#if !USE_BROWSERSTACK
+using Microsoft.Maui.Controls;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -16,3 +17,4 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
+#endif
