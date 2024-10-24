@@ -100,7 +100,6 @@ namespace Microsoft.Maui.Controls
 
 			else
 			{
-				_originalImage = null;
 				_originalImageRef = new WeakReference<UIImage>(null);
 			}
 
