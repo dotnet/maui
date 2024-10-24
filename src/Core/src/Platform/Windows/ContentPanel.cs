@@ -19,8 +19,11 @@ namespace Microsoft.Maui.Platform
 		readonly Path? _borderPath;
 		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
+		CompositionPathGeometry? _compositionPathGeometry;
 
 		internal Path? BorderPath => _borderPath;
+
+		internal CompositionPathGeometry? CompositionPathGeometry => _compositionPathGeometry;
 
 		internal FrameworkElement? Content
 		{
@@ -162,6 +165,43 @@ namespace Microsoft.Maui.Platform
 			UpdateClip(strokeShape, width, height);
 		}
 
+		void UpdateCompositionPathGeometry(IShape? borderShape, double width, double height)
+		{
+			if (ActualWidth <= 0 && ActualHeight <= 0)
+			{
+				return;
+			}
+
+			if (borderShape == null)
+			{
+				return;
+			}
+
+			var visual = ElementCompositionPreview.GetElementVisual(this);
+			var compositor = visual.Compositor;
+
+			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+			// The path size should consider the space taken by the border (top and bottom, left and right)
+			var pathSize = new Rect(0, 0, width - strokeThickness * 2, height - strokeThickness * 2);
+
+			PathF? clipPath;
+			if (borderShape is IRoundRectangle roundedRectangle)
+			{
+				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2.0f);
+				IsInnerPath = true;
+			}
+			else
+			{
+				clipPath = borderShape.PathForBounds(pathSize);
+				IsInnerPath = false;
+			}
+
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+			var path = new CompositionPath(geometry);
+			_compositionPathGeometry = compositor.CreatePathGeometry(path);
+		}
+
 		void UpdateClip(IShape? borderShape, double width, double height)
 		{
 			if (Content is null)
@@ -174,37 +214,20 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			UpdateCompositionPathGeometry(borderShape, width, height);
+
 			var clipGeometry = borderShape;
 
-			if (clipGeometry is null)
+			if (clipGeometry is null || _compositionPathGeometry is null)
 			{
 				return;
 			}
 
+			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;
 
-			PathF? clipPath;
-			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
-			// The path size should consider the space taken by the border (top and bottom, left and right)
-			var pathSize = new Rect(0, 0, width - strokeThickness * 2, height - strokeThickness * 2);
-
-			if (clipGeometry is IRoundRectangle roundedRectangle)
-			{
-				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
-				IsInnerPath = true;
-			}
-			else
-			{
-				clipPath = clipGeometry.PathForBounds(pathSize);
-				IsInnerPath = false;
-			}
-
-			var device = CanvasDevice.GetSharedDevice();
-			var geometry = clipPath.AsPath(device);
-			var path = new CompositionPath(geometry);
-			var pathGeometry = compositor.CreatePathGeometry(path);
-			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+			var geometricClip = compositor.CreateGeometricClip(_compositionPathGeometry);
 
 			// The clip needs to consider the content's offset in case it is in a different position because of a different alignment.
 			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);

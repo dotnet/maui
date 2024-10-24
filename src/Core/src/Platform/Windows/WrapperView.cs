@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Platform
 		Canvas? _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		SpriteVisual? _shadowAlphaMaskVisual;
-		RenderTargetBitmap? _shadowAlphaMaskRT;
 		DropShadow? _dropShadow;
 		Rectangle? _shadowHost;
 		WSize _shadowHostSize;
@@ -339,60 +338,36 @@ namespace Microsoft.Maui.Platform
 			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-			dropShadow.Mask = await GetAlphaMask();
+
+			//if (Child is ContentPanel panel)
+			//{
+			//	dropShadow.Mask = GetCompositionAlphaMask();
+			//}
+			//else
+			{
+				dropShadow.Mask = await this.GetAlphaMaskAsync();
+			}
 		}
 
-		private async Task<CompositionBrush?> GetAlphaMask()
+		CompositionSurfaceBrush? GetCompositionAlphaMask()
 		{
-			if (Child is TextBlock textElement)
+			if (Child is ContentPanel contentPanel)
 			{
-				return textElement.GetAlphaMask();
-			}
-			if (Child is Image image)
-			{
-				return image.GetAlphaMask();
-			}
-			if (Child is Shape shape)
-			{
-				return shape.GetAlphaMask();
-			}
-			else if (Child is FrameworkElement frameworkElement)
-			{
-				var height = (int)frameworkElement.ActualHeight;
-				var width = (int)frameworkElement.ActualWidth;
+				var compositor = ElementCompositionPreview.GetElementVisual(contentPanel).Compositor;
+				var panelShapeGeo = contentPanel.CompositionPathGeometry;
 
-				if (height > 0 && width > 0)
-				{
-					if (_shadowAlphaMaskVisual is null)
-					{
-						var visual = ElementCompositionPreview.GetElementVisual(Child);
-						_shadowAlphaMaskVisual = visual.Compositor.CreateSpriteVisual();
-					}
-					_shadowAlphaMaskVisual.Size = frameworkElement.RenderSize.ToVector2();
-
-					_shadowAlphaMaskRT ??= new RenderTargetBitmap();
-					await _shadowAlphaMaskRT.RenderAsync(frameworkElement, width, height);
-
-					if (_shadowAlphaMaskRT.PixelWidth == 0 && _shadowAlphaMaskRT.PixelHeight == 0)
-					{
-						return null;
-					}
-
-					var pixels = await _shadowAlphaMaskRT.GetPixelsAsync();
-
-					using var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(
-						pixels,
-						BitmapPixelFormat.Bgra8,
-						_shadowAlphaMaskRT.PixelWidth,
-						_shadowAlphaMaskRT.PixelHeight,
-						BitmapAlphaMode.Premultiplied);
-
-					var brush = CompositionImageBrush.FromBGRASoftwareBitmap(
-						_shadowAlphaMaskVisual.Compositor,
-						softwareBitmap,
-						new WSize(_shadowAlphaMaskRT.PixelWidth, _shadowAlphaMaskRT.PixelHeight));
-					return brush.Brush;
-				}
+				var geoShape = compositor.CreateSpriteShape(panelShapeGeo);
+				geoShape.FillBrush = compositor.CreateColorBrush(UI.Colors.Black);
+		
+				var shapeVisual = compositor.CreateShapeVisual();
+				shapeVisual.Shapes.Add(geoShape);
+		
+				var visualSurface = compositor.CreateVisualSurface();
+				visualSurface.SourceVisual = shapeVisual;
+		
+				var surfacebrush = compositor.CreateSurfaceBrush(visualSurface);
+				visualSurface.SourceSize = shapeVisual.Size = contentPanel.RenderSize.ToVector2();
+				return surfacebrush;
 			}
 			return null;
 		}
