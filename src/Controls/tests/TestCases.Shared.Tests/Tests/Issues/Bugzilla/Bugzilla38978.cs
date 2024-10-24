@@ -13,7 +13,7 @@ public class Bugzilla38978 : _IssuesUITest
 	public override string Issue => "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)";
 
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Category(UITestCategories.ManualReview)]
 	// public void Bugzilla38978Test ()
 	// {
