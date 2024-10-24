@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -227,6 +228,8 @@ namespace Microsoft.Maui.Platform
 					wrapperView.Shadow = view.Shadow;
 			}
 		}
+
+		[Obsolete("IBorder is not used and will be removed in a future release.")]
 		public static void UpdateBorder(this UIView platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;
@@ -245,37 +248,49 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
-		public static void UpdateBackgroundLayerFrame(this UIView view)
+		public static void UpdateBackgroundLayerFrame(this UIView view) =>
+			view.UpdateBackgroundLayerFrame(BackgroundLayerName);
+
+		internal static void UpdateBackgroundLayerFrame(this UIView view, string layerName)
 		{
-			if (view == null || view.Frame.IsEmpty)
-				return;
-
-			var sublayers = view.Layer?.Sublayers;
-			if (sublayers is null || sublayers.Length == 0)
-				return;
-
-			foreach (var sublayer in sublayers)
+			if (view.Frame.IsEmpty)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
-				{
-					sublayer.Frame = view.Bounds;
-					break;
-				}
+				return;
+			}
+
+			var layer = view.Layer;
+			if (layer?.Sublayers is { Length: > 0 } sublayers)
+			{
+				var bounds = view.Bounds;
+				UpdateBackgroundLayers(sublayers, layerName, bounds);
 			}
 		}
 
-		internal static UIView? GetSuperViewIfWindowSet(this UIView? view)
+		static void UpdateBackgroundLayers(this CALayer[] layers, string layerName, CGRect bounds)
 		{
-			if (view?.Window is null)
-				return null;
+			foreach (var layer in layers)
+			{
+				if (layer.Sublayers is { Length: > 0 } sublayers)
+				{
+					UpdateBackgroundLayers(sublayers, layerName, bounds);
+				}
 
-			return view.Superview;
+				if (layer.Name == layerName && layer.Frame != bounds)
+				{
+					layer.Frame = bounds;
+				}
+			}
 		}
 
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
 			platformView.SetNeedsLayout();
-			platformView.GetSuperViewIfWindowSet()?.SetNeedsLayout();
+
+			// MauiView/WrapperView already propagates the SetNeedsLayout to the parent
+			if (platformView is not MauiView && platformView is not WrapperView)
+			{
+				platformView.Superview?.SetNeedsLayout();
+			}
 		}
 
 		public static void UpdateWidth(this UIView platformView, IView view)

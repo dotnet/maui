@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 18251, "IllegalArgumentException when changing number of tabbar pages", PlatformAffected.Android)]
 	public partial class Issue18251 : Shell

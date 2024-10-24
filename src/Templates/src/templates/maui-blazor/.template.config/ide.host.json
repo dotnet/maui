@@ -19,6 +19,12 @@
       "id": "Framework",
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
+    },
+    {
+      "id": "IncludeSampleContent",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
     }
   ]
 }

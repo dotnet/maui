@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.Maui.Graphics;
 
 #nullable disable
 
@@ -10,13 +11,24 @@ namespace Microsoft.Maui.Converters
 	public class ThicknessTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string)
+				|| sourceType == typeof(Size)
+				|| PrimitiveTypeConversions.IsImplicitlyConvertibleToDouble(sourceType);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (PrimitiveTypeConversions.TryGetDouble(value, out double d))
+			{
+				return (Thickness)d;
+			}
+			else if (value is Size s)
+			{
+				return (Thickness)s;
+			}
+
 			// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 

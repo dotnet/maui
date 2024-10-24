@@ -19,7 +19,7 @@
     <summary>A Flexbox-like layout that lays out child elements in optionally wrappable rows or columns of child elements.</summary>
     <remarks>
       <para>FlexLayout is a <see cref="T:Microsoft.Maui.Controls.Layout" /> that efficiently lays out it's <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> in a manner similar to that of <format type="text/html"><a href="https://www.w3.org/TR/css-flexbox-1/">CSS Flexbox</a></format>.</para>
-      <para>The <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> property determines the primary axis of the layout. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> property determines how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are laid out along the primary axis. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> property specifies how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are laid out along the cross axis; the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> property works similarly, but applies to entire rows or columns, not individual elements.</para>
+      <para>The <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> property determines the primary axis of the layout. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> property determines how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are arranged along the primary axis. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> property specifies how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are arranged along the cross axis; the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> property works similarly, but applies to entire rows or columns, not individual elements.</para>
       <para>The initial size of a child element is set with <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetBasis(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.FlexBasis)" /> and its resizing behavior is set with  <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetGrow(Microsoft.Maui.Controls.BindableObject,System.Single)" /> and <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetShrink(Microsoft.Maui.Controls.BindableObject,System.Single)" />.</para>
     </remarks>
     <related type="article" href="https://learn.microsoft.com/dotnet/maui/user-interface/layouts/flexlayout">The .NET MAUI FlexLayout</related>
@@ -100,8 +100,8 @@
         <ReturnType>Microsoft.Maui.Layouts.FlexAlignItems</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets a value that controls how child elements are laid out within their row or column.</summary>
-        <value>A value that controls how child elements are laid out within their row or column.</value>
+        <summary>Gets or sets a value that controls how child elements are arranged within their row or column.</summary>
+        <value>A value that controls how child elements are arranged within their row or column.</value>
         <remarks>
           <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexJustify.Start" />:</para>
           <para>

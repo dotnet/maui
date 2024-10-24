@@ -1,13 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3089, "TextCell text doesn't change when using Recycling on ListViews")]
 	public class Issue3089 : NavigationPage
 	{
@@ -16,89 +12,89 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		public class MainPage : ContentPage
-	{
-		const string Reload = "reload";
-		const string Success = "success";
+		{
+			const string Reload = "reload";
+			const string Success = "success";
 
 			public MainPage()
-		{
-			var oc = new ObservableCollection<string>(new[] { $"Click {Reload}", "and this text should go away" });
-
-			Enumerable.Range(0, 100).ToList().ForEach(x => oc.Add(x.ToString()));
-
-			Navigation.PushAsync(new MainPageCode
 			{
-				BindingContext = new MainViewModel
+				var oc = new ObservableCollection<string>(new[] { $"Click {Reload}", "and this text should go away" });
+
+				Enumerable.Range(0, 100).ToList().ForEach(x => oc.Add(x.ToString()));
+
+				Navigation.PushAsync(new MainPageCode
 				{
-					ViewModel1 = new ListViewModel
+					BindingContext = new MainViewModel
 					{
-						Items = oc
+						ViewModel1 = new ListViewModel
+						{
+							Items = oc
+						}
 					}
-				}
-			});
-		}
-
-		[Preserve(AllMembers = true)]
-		public partial class MainPageCode : TabbedPage
-		{
-			public MainPageCode()
-			{
-				ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "add1" });
-
-				ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { AutomationId = "reload", Text = "reload" });
-
-				ToolbarItems[0].SetBinding(ToolbarItem.CommandProperty, "Add1Command");
-				ToolbarItems[1].SetBinding(ToolbarItem.CommandProperty, "Add2Command");
-
-				ListPageCode page = new ListPageCode();
-				page.SetBinding(ListPageCode.BindingContextProperty, "ViewModel1");
-				Children.Add(page);
-			}
-		}
-
-		[Preserve(AllMembers = true)]
-		public class MainViewModel
-		{
-
-			void AddItems(ObservableCollection<string> list)
-			{
-				list.Add("new item");
-				list.Add(Success);
-			}
-
-			public MainViewModel()
-			{
-				Add1Command = new Command(() => AddItems(ViewModel1.Items));
-				Add2Command = new Command(() =>
-				{
-					ViewModel1.ReloadData();
-					AddItems(ViewModel1.Items);
 				});
 			}
 
-			public ListViewModel ViewModel1 { get; set; }
 
-			public ICommand Add1Command { get; }
-			public ICommand Add2Command { get; }
-		}
-
-		[Preserve(AllMembers = true)]
-		public class ListViewModel : INotifyPropertyChanged
-		{
-			public ObservableCollection<string> Items { get; set; }
-			public bool IsVisible { get; set; } = true;
-
-			public event PropertyChangedEventHandler PropertyChanged;
-
-			public void ReloadData()
+			public class MainPageCode : TabbedPage
 			{
-				Items = new ObservableCollection<string>();
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Items)));
-			}
-		}
+				public MainPageCode()
+				{
+					ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "add1" });
 
-			[Preserve(AllMembers = true)]
-			public partial class ListPageCode : ContentPage
+					ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { AutomationId = "reload", Text = "reload" });
+
+					ToolbarItems[0].SetBinding(ToolbarItem.CommandProperty, "Add1Command");
+					ToolbarItems[1].SetBinding(ToolbarItem.CommandProperty, "Add2Command");
+
+					ListPageCode page = new ListPageCode();
+					page.SetBinding(ListPageCode.BindingContextProperty, "ViewModel1");
+					Children.Add(page);
+				}
+			}
+
+
+			public class MainViewModel
+			{
+
+				void AddItems(ObservableCollection<string> list)
+				{
+					list.Add("new item");
+					list.Add(Success);
+				}
+
+				public MainViewModel()
+				{
+					Add1Command = new Command(() => AddItems(ViewModel1.Items));
+					Add2Command = new Command(() =>
+					{
+						ViewModel1.ReloadData();
+						AddItems(ViewModel1.Items);
+					});
+				}
+
+				public ListViewModel ViewModel1 { get; set; }
+
+				public ICommand Add1Command { get; }
+				public ICommand Add2Command { get; }
+			}
+
+
+			public class ListViewModel : INotifyPropertyChanged
+			{
+				public ObservableCollection<string> Items { get; set; }
+				public bool IsVisible { get; set; } = true;
+
+				public event PropertyChangedEventHandler PropertyChanged;
+
+				public void ReloadData()
+				{
+					Items = new ObservableCollection<string>();
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Items)));
+				}
+			}
+
+
+			public class ListPageCode : ContentPage
 			{
 				public ListPageCode()
 				{

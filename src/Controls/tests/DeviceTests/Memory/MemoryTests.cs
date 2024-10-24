@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
@@ -36,8 +37,11 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<Frame, FrameRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
+				handlers.AddHandler<HybridWebView, HybridWebViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
 				handlers.AddHandler<Layout, LayoutHandler>();
@@ -132,13 +136,16 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(CarouselView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
-	[InlineData(typeof(DatePicker))]
+	// [InlineData(typeof(DatePicker))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(Ellipse))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(Frame))]
+#pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+	[InlineData(typeof(HybridWebView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
@@ -161,7 +168,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
 	[InlineData(typeof(TableView))]
-	[InlineData(typeof(WebView))]
+	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(CollectionView))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
@@ -171,6 +178,11 @@ public class MemoryTests : ControlsHandlerTestBase
 		// NOTE: skip certain controls on older Android devices
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
+
+		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
+		{
+			return;
+		}
 #endif
 
 #if IOS
@@ -222,6 +234,11 @@ public class MemoryTests : ControlsHandlerTestBase
 			else if (view is WebView webView)
 			{
 				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
+				await Task.Delay(1000);
+			}
+			else if (view is HybridWebView hybridWebView)
+			{
+				hybridWebView.HybridRoot = "HybridTestRoot";
 				await Task.Delay(1000);
 			}
 			else if (view is TemplatedView templated)
@@ -355,6 +372,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			new { Name = "One" },
 			new { Name = "Two" },
 			new { Name = "Three" },
+			new { Name = "Four" },
 		};
 
 		var layout = new VerticalStackLayout();
@@ -395,14 +413,14 @@ public class MemoryTests : ControlsHandlerTestBase
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(page), async _ =>
 			{
 				await OnLoadedAsync(page);
-				BindableLayout.SetItemsSource(layout, new ObservableCollection<object>(observable));
+				BindableLayout.SetItemsSource(layout, new ObservableCollection<object>(observable.Take(2)));
 				page.Content = null;
 			});
 		}
 
-		// 6 Ellipses total: first 3 should not leak, last 3 should still be in the layout & alive
-		Assert.Equal(6, references.Count);
-		await AssertionExtensions.WaitForGC(references[0], references[1], references[2]);
+		// 4 Ellipses total: last 2 should not leak, first 2 should still be in the layout & alive
+		Assert.Equal(4, references.Count);
+		await AssertionExtensions.WaitForGC(references[2], references[3]);
 	}
 
 	[Fact("Window Does Not Leak")]

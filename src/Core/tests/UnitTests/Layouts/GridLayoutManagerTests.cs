@@ -112,7 +112,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				return GridLength.Auto;
 			}
 
-			return new GridLength(double.Parse(gridLength));
+			return new GridLength(double.Parse(gridLength, CultureInfo.InvariantCulture));
 		}
 
 		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)
@@ -2798,7 +2798,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		 * is determined to return a measure size larger than the constraints it's given. We have to ensure 
 		 * that the sizes of the containing * row/column don't expand beyond their natural confines even if 
 		 * the containing control asks for it. (The control itself may still be larger than the row/column 
-		 * size, and when laid out it may exceed the boundaries of the row/column. But the row/column itself
+		 * size, and when arranged it may exceed the boundaries of the row/column. But the row/column itself
 		 * must still adhere to the constraints given by the column definitions and grid size constraints.)
 		 */
 

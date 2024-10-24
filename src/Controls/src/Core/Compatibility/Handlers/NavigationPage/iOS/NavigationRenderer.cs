@@ -76,11 +76,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return VisualElementRenderer<NavigationPage>.GetDesiredSize(this, widthConstraint, heightConstraint,
 				new Size(0, 0));
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public UIView NativeView
 		{
@@ -192,6 +194,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
+			// TODO .NET 10
+			// This is required in order to set the "Frame" property on NavigationPage
+			// It'd be good to see if we can optimize this a bit better.
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
@@ -499,7 +504,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateUseLargeTitles();
 			}
-			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
 				var pack = (ParentingViewController)TopViewController;
 				pack?.UpdateTitleArea(pack.Child);
@@ -893,7 +898,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
 				if (_uiRequestedPop)
 				{
-					NavPage?.SendNavigatedFromHandler(pageBeingRemoved);
+					NavPage?.SendNavigatedFromHandler(pageBeingRemoved, NavigationType.Pop);
 				}
 			}
 
@@ -1100,8 +1105,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (r.Element is NavigationPage np && !_finishedWithInitialNavigation)
 					{
-						_finishedWithInitialNavigation = true;
-						np.SendNavigatedFromHandler(null);
+						_finishedWithInitialNavigation = true;						
+						np.SendNavigatedFromHandler(null, NavigationType.Push);
 					}
 
 					if (WaitingForNavigationToFinish)
@@ -1230,6 +1235,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						newAdditionalSafeArea.Top = offset;
 						vc.AdditionalSafeAreaInsets = newAdditionalSafeArea;
 					}
+				}
+			}
+
+			public override void ViewWillLayoutSubviews()
+			{
+				base.ViewWillLayoutSubviews();
+
+				var childView = (Child?.Handler as IPlatformViewHandler)?.ViewController?.View;
+
+				if (childView is not null)
+				{
+					childView.Frame = View.Bounds;
 				}
 			}
 
@@ -1493,16 +1510,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
 					backButtonText = "";
 
+				_navigation.TryGetTarget(out NavigationRenderer n);
+
 				// First page and we have a flyout detail to contend with
 				UpdateLeftBarButtonItem();
-				UpdateBackButtonTitle(page.Title, backButtonText);
+				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText);
 
 				//var hadTitleView = NavigationItem.TitleView != null;
 				ClearTitleViewContainer();
 				if (needContainer)
 				{
-					NavigationRenderer n;
-					if (!_navigation.TryGetTarget(out n))
+					if (n is null)
 						return;
 
 					Container titleViewContainer = new Container(titleView, n.NavigationBar);
@@ -1998,7 +2016,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (disposing)
 				{
 
-					if (_child != null)
+					if (_child?.IsConnected() == true)
 					{
 						(_child.ContainerView ?? _child.PlatformView).RemoveFromSuperview();
 						_child.DisconnectHandler();

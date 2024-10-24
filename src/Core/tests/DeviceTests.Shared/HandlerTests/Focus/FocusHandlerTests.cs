@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(inputControl1.IsFocused);
 				Assert.False(inputControl2.IsFocused);
 
-				// UNfocus the first control (revert the focus)
+				// Unfocus the first control (revert the focus)
 				inputControl1.Handler.Invoke(nameof(IView.Unfocus));
 
 				// assert

@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
+	[RequireService([typeof(IReferenceProvider), typeof(IProvideValueTarget)])]
 	public class ConstraintExpression : IMarkupExtension<Constraint>
 	{
 		public ConstraintExpression()

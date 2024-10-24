@@ -1,5 +1,6 @@
 #nullable disable
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 using Microsoft.Maui.Controls.Internals;
@@ -8,6 +9,7 @@ using Microsoft.Maui.Controls.StyleSheets;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields)]
 	public partial class VisualElement : IStylable
 	{
 		BindableProperty IStylable.GetProperty(string key, bool inheriting)

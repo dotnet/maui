@@ -85,6 +85,7 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
+		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
@@ -121,7 +122,9 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
 #endif
 		handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
+#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
 #if WINDOWS || MACCATALYST
@@ -166,7 +169,6 @@ public static partial class AppHostBuilderExtensions
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 		// initialize compatibility DependencyService
 		DependencyService.SetToInitialized();
-		DependencyService.Register<PlatformSizeService>();
 
 #pragma warning disable CS0612, CA1416 // Type or member is obsolete, 'ResourcesProvider' is unsupported on: 'iOS' 14.0 and later
 		DependencyService.Register<ResourcesProvider>();
@@ -252,6 +254,7 @@ public static partial class AppHostBuilderExtensions
 		Shape.RemapForControls();
 		WebView.RemapForControls();
 		ContentPage.RemapForControls();
+
 		return builder;
 	}
 }

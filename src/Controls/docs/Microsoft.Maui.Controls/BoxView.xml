@@ -29,61 +29,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.View" /> used to draw a solid colored rectangle.</summary>
-    <remarks>
-      <para>BoxView is a useful stand-in for images or custom elements when doing initial prototyping. BoxView has a default size request of 40x40. If you need a different size, assign the <see cref="P:Microsoft.Maui.Controls.VisualElement.WidthRequest" /> and <see cref="P:Microsoft.Maui.Controls.VisualElement.HeightRequest" /> properties.</para>
-      <example>
-        <para>The example below creates a red <see cref="T:Microsoft.Maui.Controls.BoxView" /> with the default width and height.</para>
-        <code lang="XAML"><![CDATA[<BoxView Color="Red" />]]></code>
-      </example>
-      <para>The following example shows a basic use:</para>
-      <example>
-        <code lang="csharp lang-csharp"><![CDATA[
-using System;
-using Microsoft.Maui.Controls;
-    
-namespace FormsGallery
-{
-    class BoxViewDemoPage : ContentPage
-    {
-        public BoxViewDemoPage()
-        {
-            Label header = new Label
-            {
-                Text = "BoxView",
-                Font = Font.BoldSystemFontOfSize(50),
-                HorizontalOptions = LayoutOptions.Center
-            };
-    
-            BoxView boxView = new BoxView
-            {
-                Color = Color.Accent,
-                WidthRequest = 150,
-                HeightRequest = 150,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.CenterAndExpand
-            };
-    
-            // Accomodate iPhone status bar.
-            this.Padding = new Thickness(10, Device.OnPlatform(20, 0, 0), 10, 5);
-    
-            // Build the page.
-            this.Content = new StackLayout
-            {
-                Children = 
-                {
-                    header,
-                    boxView
-                }
-            };
-        }
-    }
-}
-]]></code>
-      </example>
-      <para>
-        <img href="~/xml/Microsoft.Maui.Controls/_images/BoxView.TripleScreenShot.png" />
-      </para>
-    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

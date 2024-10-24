@@ -138,6 +138,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapBarTextColor(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBarTextColor(arg2);
+			arg2.UpdateMenu();
 		}
 
 		public static void MapBarBackground(IToolbarHandler arg1, Toolbar arg2)

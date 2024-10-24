@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
@@ -127,22 +127,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				switch (_testDevice)
 				{
 					case TestDevice.Android:
-						if (deviceName == "Nexus 5X")
+						environmentName = "android";
+						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
+						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
+						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+
+						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
-							environmentName = "android";
-						}
-						else
-						{
-							Assert.Fail($"Android visual tests should be run on an Nexus 5X (API 30) emulator image, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
 						break;
 
 					case TestDevice.iOS:
-
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
 						{
 							environmentName = "ios";
 						}
@@ -152,7 +156,6 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-
 							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
@@ -198,10 +201,12 @@ namespace Microsoft.Maui.TestCases.Tests
 				};
 
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped)
+				// app itself and the button color can vary (the buttons change clear briefly when tapped).
+				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
 					TestDevice.Android => 125,
+					TestDevice.iOS => 40,
 					_ => 0,
 				};
 
@@ -225,7 +230,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			var device = App.GetTestDevice();
 			if(device == TestDevice.Android || device == TestDevice.iOS)
 			{
-				App.SetOrientationPortrait();
+				try
+				{
+					App.SetOrientationPortrait();
+				}
+				catch
+				{
+					// The app might not be ready
+					// Probably reduce this value if this works
+					Thread.Sleep(1000);
+					App.SetOrientationPortrait();
+				}
+				
 			}
 		}
 	}
