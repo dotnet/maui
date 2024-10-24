@@ -80,19 +80,10 @@ namespace Microsoft.Maui.Controls
 			}
 			platformButton.UpdateContentEdgeInsets(button, contentEdgeInsets);
 
-			_originalImageRef.TryGetTarget(out var _originalImage);
-
 			if (image is not null)
 			{
-				// Save the original image for later image resizing
-				if (_originalImage is null || image != _originalImage)
-				{
-					_originalImage = image;
-					_originalImageRef = new WeakReference<UIImage>(_originalImage);
-				}
-
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint, _originalImage))
+				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint))
 				{
 					image = platformButton.CurrentImage;
 				}
@@ -340,10 +331,18 @@ namespace Microsoft.Maui.Controls
 		/// <param name="borderWidth"></param>
 		/// <param name="widthConstraint"></param>
 		/// <param name="heightConstraint"></param>
-		/// <param name="originalImage"></param>
 		/// <returns></returns>
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint, UIImage originalImage)
+		bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint)
 		{
+			_originalImageRef.TryGetTarget(out var _originalImage);
+
+			// Save the original image for later image resizing
+			if (_originalImage is null || image != _originalImage)
+			{
+				_originalImage = image;
+				_originalImageRef = new WeakReference<UIImage>(_originalImage);
+			}
+
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
 
