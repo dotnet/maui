@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIncrement(IStepperHandler handler, IStepper stepper)
 		{
-			handler.PlatformView?.UpdateInterval(stepper);
+			handler.PlatformView?.UpdateIncrement(stepper);
 		}
 
 		public static void MapValue(IStepperHandler handler, IStepper stepper)
