@@ -17,11 +17,11 @@ public class Issue2954 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue2954Test()
 	// {
-	// 	RunningApp.Screenshot("I am at Issue 2954");
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell2"));
-	// 	RunningApp.Screenshot("I see the Cell2");
-	// 	RunningApp.Tap(c => c.Marked("Add new"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell2"));
-	// 	RunningApp.Screenshot("I still see the Cell2");
+	// 	App.Screenshot("I am at Issue 2954");
+	// 	App.WaitForElement(q => q.Marked("Cell2"));
+	// 	App.Screenshot("I see the Cell2");
+	// 	App.Tap(c => c.Marked("Add new"));
+	// 	App.WaitForElement(q => q.Marked("Cell2"));
+	// 	App.Screenshot("I still see the Cell2");
 	// }
 }

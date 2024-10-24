@@ -17,8 +17,8 @@ public class Issue3524 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void SpanGestureCommand()
 	// {
-	// 	RunningApp.WaitForElement(kText);
-	// 	RunningApp.Tap(kText);
-	// 	RunningApp.WaitForElement($"{kText}: 1");
+	// 	App.WaitForElement(kText);
+	// 	App.Tap(kText);
+	// 	App.WaitForElement($"{kText}: 1");
 	// }
 }

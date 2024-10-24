@@ -17,8 +17,8 @@ public class Issue12320 : _IssuesUITest
 	// [Category(UITestCategories.Shell)]
 	// public void PopLogicExecutesWhenUsingBackButtonBehavior()
 	// {
-	// 	RunningApp.WaitForElement("TestReady");
+	// 	App.WaitForElement("TestReady");
 	// 	base.TapBackArrow();
-	// 	RunningApp.WaitForElement("Tab 1");
+	// 	App.WaitForElement("Tab 1");
 	// }
 }
