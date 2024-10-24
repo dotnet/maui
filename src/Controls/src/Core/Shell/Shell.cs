@@ -1862,7 +1862,7 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyFlyoutBehaviorObservers()
 		{
-			if (CurrentItem == null || GetVisiblePage() == null)
+			if (CurrentItem is null || CurrentItem.CurrentItem is not IShellSectionController)
 				return;
 
 			var behavior = (this as IFlyoutView).FlyoutBehavior;
