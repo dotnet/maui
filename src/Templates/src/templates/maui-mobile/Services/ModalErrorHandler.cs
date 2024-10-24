@@ -5,7 +5,8 @@ namespace MauiApp._1.Services;
 /// </summary>
 public class ModalErrorHandler : IErrorHandler
 {
-	Task? _currentTask;
+	SemaphoreSlim _semaphore = new(1, 1);
+
 	/// <summary>
 	/// Handle error in UI.
 	/// </summary>
@@ -17,15 +18,8 @@ public class ModalErrorHandler : IErrorHandler
 
 	async Task DisplayAlert(Exception ex)
 	{
-		// Only display one error at a time
-		if (_currentTask is null)
-			return;
-
+		await _semaphore.WaitAsync();
 		if (Shell.Current is Shell shell)
-		{
-			_currentTask = shell.DisplayAlert("Error", ex.Message, "OK");
-			await (_currentTask ?? Task.CompletedTask);
-			_currentTask = null;
-		}
+			await shell.DisplayAlert("Error", ex.Message, "OK");
 	}
 }
