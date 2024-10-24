@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,6 +8,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 [Category(UITestCategories.Gestures)]
 public class Bugzilla59863_1 : _IssuesUITest
 {
+	const string DoubleTapBoxId = "doubleTapView";
+	const string Doubles = "double(s)";
+
 	public Bugzilla59863_1(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -15,7 +19,6 @@ public class Bugzilla59863_1 : _IssuesUITest
 
 	[Test]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnWindows]
 	public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
 	{
 		RunningApp.WaitForElement(DoubleTapBoxId);
@@ -25,7 +28,6 @@ public class Bugzilla59863_1 : _IssuesUITest
 
 	[Test]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnWindows]
 	public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
 	{
 		RunningApp.WaitForElement(DoubleTapBoxId);
@@ -33,3 +35,4 @@ public class Bugzilla59863_1 : _IssuesUITest
 		RunningApp.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
 	}
 }
+#endif

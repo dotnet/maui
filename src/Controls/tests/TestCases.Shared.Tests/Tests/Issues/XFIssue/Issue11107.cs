@@ -15,8 +15,7 @@ public class Issue11107 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[FailsOnIOS]
-	[FailsOnMac]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void TabShouldntBeVisibleWhenThereIsOnlyOnePage()
 	{
 		RunTests();

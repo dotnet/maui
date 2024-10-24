@@ -1,4 +1,4 @@
-﻿#if !WINDOWS // TODO: Investigate the reason for the failure in Windows.
+﻿#if TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

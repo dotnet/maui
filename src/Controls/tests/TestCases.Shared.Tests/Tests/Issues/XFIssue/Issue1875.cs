@@ -15,7 +15,7 @@ public class Issue1875 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void NSRangeException()
 	{
 		RunningApp.WaitForElement("Load");
