@@ -16,7 +16,7 @@
 
     <!-- When bumping, you'll also need to mirror the latest version via https://github.com/dotnet/arcade/blob/main/Documentation/MirroringPackages.md -->
     <!-- Note that BrowserStack.TestAdapter also pulls in, at build time, the latest version https://www.nuget.org/packages/browserstack-sdk -->
-    <PackageReference Include="BrowserStack.TestAdapter" Version="0.11.4" />
+    <PackageReference Include="BrowserStack.TestAdapter" Version="0.13.2" />
   </ItemGroup>
 
   <ItemGroup>
