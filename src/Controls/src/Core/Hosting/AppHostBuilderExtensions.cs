@@ -92,6 +92,7 @@ public static partial class AppHostBuilderExtensions
 		}
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
+		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
 		handlersCollection.AddHandler<Shapes.Line, LineHandler>();
 		handlersCollection.AddHandler<Shapes.Path, PathHandler>();
