@@ -149,13 +149,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestInXaml()
 		{
-			var xaml = @"
-			<Label 
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-				Text=""{local:AppendMarkupExtension Value0=Foo, Value1=Bar}""
-			/>";
+			var xaml = """
+				<Label 
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+					Text="{local:AppendMarkupExtension Value0=Foo, Value1=Bar}"
+				/>
+				""";
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
@@ -165,13 +166,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestMarkupExtensionInDefaultNamespace()
 		{
-			var xaml = @"
-			<forms:Label 
-				xmlns=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:forms=""http://schemas.microsoft.com/dotnet/2021/maui""
-				Text=""{AppendMarkupExtension Value0=Foo, Value1=Bar}""
-			/>";
+			var xaml = """
+				<forms:Label 
+					xmlns="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:forms="http://schemas.microsoft.com/dotnet/2021/maui"
+					Text="{AppendMarkupExtension Value0=Foo, Value1=Bar}"
+				/>
+				""";
 
 			var label = new Label();
 			label.LoadFromXaml(xaml);
@@ -181,12 +183,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[Test]
 		public void TestDocumentationCode()
 		{
-			var xaml = @"
-			<Label
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-				xmlns:local=""clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests""
-				TextColor=""{local:ColorMarkup R=100, G=80, B=60}""/>";
+			var xaml = """
+				<Label
+					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+					TextColor="{local:ColorMarkup R=100, G=80, B=60}"/>
+				""";
 
 			var label = new Label().LoadFromXaml(xaml);
 			Assert.AreEqual(Color.FromRgb(100, 80, 60), label.TextColor);
