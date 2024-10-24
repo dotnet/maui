@@ -1816,7 +1816,7 @@ namespace Microsoft.Maui.Controls
 			return defaultValue();
 		}
 
-		ShellAppearance GetAppearanceForPivot(Element pivot)
+		internal ShellAppearance GetAppearanceForPivot(Element pivot)
 		{
 			// this algorithm is pretty simple
 			// 1) Get the "CurrentPage" by walking down from the pivot
