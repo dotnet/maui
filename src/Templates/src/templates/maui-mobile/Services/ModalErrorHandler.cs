@@ -18,8 +18,13 @@ public class ModalErrorHandler : IErrorHandler
 
 	async Task DisplayAlert(Exception ex)
 	{
-		await _semaphore.WaitAsync();
-		if (Shell.Current is Shell shell)
-			await shell.DisplayAlert("Error", ex.Message, "OK");
+		try{
+			await _semaphore.WaitAsync();
+			if (Shell.Current is Shell shell)
+				await shell.DisplayAlert("Error", ex.Message, "OK");
+		}
+		finally{
+			_semaphore.Release();
+		}
 	}
 }
