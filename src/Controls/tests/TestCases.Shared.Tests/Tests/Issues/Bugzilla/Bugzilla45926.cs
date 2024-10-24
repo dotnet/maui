@@ -14,7 +14,7 @@ public class Bugzilla45926 : _IssuesUITest
 
 	// TODO Xamarin.UITest Migration
 	// [Test]
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// public void Issue45926Test()
 	// {
 	// 	RunningApp.WaitForElement(q => q.Marked("New Page"));

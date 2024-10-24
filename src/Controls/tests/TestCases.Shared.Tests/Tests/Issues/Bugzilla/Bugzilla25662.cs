@@ -16,8 +16,8 @@ public class Bugzilla25662 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Cells)]
-	[FailsOnIOS]
-	[FailsOnWindows]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Bugzilla25662Test()
 	{
 		App.WaitForElement("One");

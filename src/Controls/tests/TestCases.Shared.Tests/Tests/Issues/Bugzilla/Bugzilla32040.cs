@@ -15,8 +15,8 @@ public class Bugzilla32040 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Cells)]
-	[FailsOnIOS]
- 	[FailsOnWindows]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+ 	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void TappedWorksForEntryAndSwithCellTest()
 	{ 	
 		App.WaitForElement("blahblah");

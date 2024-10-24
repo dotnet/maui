@@ -15,7 +15,7 @@ public class Bugzilla32462 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla36729Test()
 	{
 		App.WaitForElement("Click!");

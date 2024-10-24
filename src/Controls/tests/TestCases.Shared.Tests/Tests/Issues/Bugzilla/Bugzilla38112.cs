@@ -15,7 +15,7 @@ public class Bugzilla38112 : _IssuesUITest
 	public override string Issue => "Switch becomes reenabled when previous ViewCell is removed from TableView";
 
 	[Test]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla38112_SwitchIsStillOnScreen()
 	{
 		App.WaitForElement("Click");
