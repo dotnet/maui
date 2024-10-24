@@ -113,6 +113,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			NSIndexPath DetermineIndex(ScrollToRequestEventArgs args)
 			{
+				if ((Controller?.ItemsSource?.ItemCount ?? 0) == 0)
+				{
+					return NSIndexPath.Create(0, -1);
+				}
+
 				if (args.Mode == ScrollToMode.Position)
 				{
 					if (args.GroupIndex == -1)
