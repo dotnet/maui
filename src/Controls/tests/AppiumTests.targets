@@ -1,0 +1,40 @@
+<Project>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0" />
+    <PackageReference Include="NUnit" Version="4.0.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Graphics\src\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj"
+      PrivateAssets="all"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.46-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.46-beta" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)CustomAttributes\Controls.CustomAttributes.csproj" />
+    <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
+  </ItemGroup>
+
+</Project> 

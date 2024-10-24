@@ -9,8 +9,8 @@
     <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\AppiumTests.targets" />
-  
+  <Import Project="..\..\AppiumTests.targets" />
+ 
   <ItemGroup>
     <Content Include="snapshots\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
