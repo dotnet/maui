@@ -104,6 +104,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
+			foreach (var subview in View.Subviews)
+			{
+				if (subview == TabBar)
+					continue;
+
+				var frame = subview.Frame;
+				frame.Height = TabBar.Frame.Y;
+				subview.Frame = frame;
+			}
+
 			_appearanceTracker?.UpdateLayout(this);
 		}
 

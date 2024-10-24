@@ -127,6 +127,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
+
+			foreach (var subview in View.Subviews)
+			{
+				if (subview == TabBar)
+					continue;
+
+				var frame = subview.Frame;
+				frame.Height = TabBar.Frame.Y;
+				subview.Frame = frame;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
