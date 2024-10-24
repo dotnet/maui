@@ -19,12 +19,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("searchBar");
 			App.SetOrientationLandscape();
-			Task.Delay(1000); // Wait to complete the device rotation animation.
 			var searchBarRect = App.FindElement("searchBar").GetRect();
 			// Set focus
             App.TapCoordinates(searchBarRect.X+10, searchBarRect.Y+10);
    			App.PressEnter();
-			Task.Delay(1000); // Wait to complete the device rotation animation.
             VerifyScreenshot();
 		}
 	}
