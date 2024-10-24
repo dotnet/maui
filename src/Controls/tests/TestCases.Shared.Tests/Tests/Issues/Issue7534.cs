@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void ExpectingPageNotToBreak()
 		{
 			App.Screenshot("Test passed, label is showing as it should!");

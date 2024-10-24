@@ -13,13 +13,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] SwipeView does not work on Android if child has TapGestureRecognizer";
 		
-		/*
 		const string SwipeViewId = "SwipeViewId";
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
 		public void SwipeWithChildGestureRecognizer()
 		{
 			App.WaitForElement(SwipeViewId);
@@ -27,7 +25,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(SwipeViewId);
 			App.WaitForElement("ResultLabel");
 		}
-		*/
 	}
 }
 #endif

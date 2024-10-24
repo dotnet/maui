@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.FlyoutPage)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205")]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21205")]
 		public void Bugzilla41842Test()
 		{
 			App.WaitForElement("Success");

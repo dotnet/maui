@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void TabbedModalNavigation()
 		{
 			App.WaitForElement(Page2);

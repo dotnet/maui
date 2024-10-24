@@ -14,7 +14,7 @@ public class Issue8291 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Editor)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
 	//{
 	//	RunningApp.TouchAndHold("PressEditor");

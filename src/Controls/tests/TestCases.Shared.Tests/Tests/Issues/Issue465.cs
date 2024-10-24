@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void Issue465TestsPushPopModal()
 		{
 			App.WaitForElement("PopPage");

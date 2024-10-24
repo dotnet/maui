@@ -14,7 +14,7 @@ public class TabbedPageWithList : _IssuesUITest
 	public override string Issue => "TabbedPage with list";
 
 	//	[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithListViewIssueTestsAllElementsPresent()
 	//{
 	//	RunningApp.WaitForElement(q => q.Marked("Tab Two"));
@@ -23,7 +23,7 @@ public class TabbedPageWithList : _IssuesUITest
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
 	//{
 	//	RunningApp.Tap(q => q.Marked("List Page"));

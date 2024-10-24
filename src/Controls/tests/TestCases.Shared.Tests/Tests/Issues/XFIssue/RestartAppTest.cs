@@ -14,7 +14,7 @@ public class RestartAppTest : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.LifeCycle)]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void ForcingRestartDoesNotCauseCrash()
 	//{
 	//	RunningApp.WaitForElement(RestartButton);

@@ -14,7 +14,7 @@ public class Issue2597 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Stepper)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 // 	public void Issue2597Test()
 // 	{
 // #if __IOS__

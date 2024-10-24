@@ -40,7 +40,7 @@ public class Issue5159 : _IssuesUITest
 	//	RunningApp.TapCoordinates(5, 100);
 	//}
 
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//[Test]
 	//public void InvisiblePickerShowsDialogOnFocus()
 	//{

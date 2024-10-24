@@ -14,7 +14,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
     public override string Issue => "Adding Multiple Items to a ListView";
 
     // [Test]
-    // [FailsOnIOS]
+    // [FailsOnIOSWhenRunningOnXamarinUITest]
     // public void AddingMultipleListViewTests1AllElementsPresent()
     // {
     //     App.WaitForElement("Big Job");
@@ -32,7 +32,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
     // }
 
     // [Test]
-    // [FailsOnIOS]
+    // [FailsOnIOSWhenRunningOnXamarinUITest]
     // public void AddingMultipleListViewTests2AddOneElementToList()
     // {
     //     App.Tap("Add One");
@@ -42,7 +42,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
     // }
 
     // [Test]
-    // [FailsOnIOS]
+    // [FailsOnIOSWhenRunningOnXamarinUITest]
     // public void AddingMultipleListViewTests3AddTwoElementToList()
     // {
     //     App.Screenshot("Click 'Add Two'");

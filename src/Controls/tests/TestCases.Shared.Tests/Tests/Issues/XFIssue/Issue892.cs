@@ -14,7 +14,7 @@ public class Issue892 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.FlyoutPage)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//[Description("Change pages in the Flyout ListView, and navigate to the end and back")]
 	//public void Issue892TestsNavigateChangePagesNavigate()
 	//{

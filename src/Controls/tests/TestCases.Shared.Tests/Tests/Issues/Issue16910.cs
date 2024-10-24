@@ -19,7 +19,7 @@ public class Issue16910 : _IssuesUITest
 
 #if !MACCATALYST
 	[Test]
-	[FailsOnMac("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
+	[FailsOnMacWhenRunningOnXamarinUITest("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");

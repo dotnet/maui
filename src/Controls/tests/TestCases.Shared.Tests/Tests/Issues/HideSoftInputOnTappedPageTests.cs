@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[TestCase("Entry", true)]
 		[TestCase("Editor", true)]
 		[TestCase("SearchBar", true)]
-		[FailsOnWindows("Test ignored on Windows")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Test ignored on Windows")]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
 		{   
 			App.WaitForElement("HideSoftInputOnTappedTrue");
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[FailsOnWindows("Test ignored on Windows")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Test ignored on Windows")]
 		public void TogglingHideSoftInputOnTapped()
 		{   
 			App.WaitForElement("HideSoftInputOnTappedFalse");

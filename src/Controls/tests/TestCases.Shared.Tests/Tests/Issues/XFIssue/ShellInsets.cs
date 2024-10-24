@@ -14,7 +14,7 @@ public class ShellInsets : _IssuesUITest
 	public override string Issue => "Shell Inset Test";
 
 	//	[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void EntryScrollTest()
 	//{
 	//	RunningApp.Tap(EntryTest);
@@ -64,7 +64,7 @@ public class ShellInsets : _IssuesUITest
 	//}
 
 	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
+	//[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void SafeAreaOnBlankPage()
 	//{
 	//	RunningApp.Tap(EmptyPageSafeAreaTest);
@@ -73,7 +73,7 @@ public class ShellInsets : _IssuesUITest
 	//}
 
 	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
+	//[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void SafeArea()
 	//{
 	//	RunningApp.Tap(SafeAreaTest);

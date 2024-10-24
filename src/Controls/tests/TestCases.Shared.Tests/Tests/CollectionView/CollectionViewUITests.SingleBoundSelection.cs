@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		/*
 		// SelectionShouldUpdateBinding (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundSingleSelection.cs)
 		[Test]
-		[FailsOnAllPlatforms("Click does not find CollectionView elements")]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("Click does not find CollectionView elements")]
 		[Description("Single Selection Binding")]
 		public void SelectionShouldUpdateBinding()
 		{

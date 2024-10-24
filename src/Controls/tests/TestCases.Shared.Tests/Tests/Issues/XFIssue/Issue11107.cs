@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,10 +13,9 @@ public class Issue11107 : _IssuesUITest
 
 	public override string Issue => "[Bug][iOS] Shell Navigation implicitly adds Tabbar";
 
-	/*
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void TabShouldntBeVisibleWhenThereIsOnlyOnePage()
 	{
 		RunTests();
@@ -24,14 +24,16 @@ public class Issue11107 : _IssuesUITest
 		RunningApp.Tap("RunTestTwoTabs");
 		RunTests();
 
+		RunningApp.Back();
+
 		void RunTests()
 		{
 			RunningApp.WaitForElement("SecondPageLoaded");
 			RunningApp.WaitForNoElement("Tab1AutomationId");
-			TapBackArrow();
+			RunningApp.Back();
 			RunningApp.WaitForElement("Page1Loaded");
 			RunningApp.WaitForNoElement("Tab1AutomationId");
 		}
 	}
-	*/
 }
+#endif
