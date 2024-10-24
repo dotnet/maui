@@ -286,8 +286,7 @@ namespace Microsoft.Maui.Platform
 		{
 			platformView.SetNeedsLayout();
 
-			// MauiView/WrapperView already propagates the SetNeedsLayout to the parent
-			if (platformView is not MauiView && platformView is not WrapperView)
+			if (platformView is not IPropagatesSetNeedsLayout)
 			{
 				platformView.Superview?.SetNeedsLayout();
 			}
