@@ -64,5 +64,18 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
+
+		protected override void OnPropertyChanged(string propertyName)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == nameof(Parent) && Parent is VisualElement visualElement)
+			{
+				if (!visualElement.IsSet(VisualElement.WidthRequestProperty))
+					visualElement.WidthRequest = Size;
+
+				if (!visualElement.IsSet(VisualElement.HeightRequestProperty))
+					visualElement.HeightRequest = Size;
+			}
+		}
 	}
 }
