@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <!-- Opts out of edge to edge enforcement on API 35+ -->
+	<!-- https://github.com/dotnet/maui/issues/24742 -->
+    <style name="OptOutEdgeToEdgeEnforcement">
+      <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+
+</resources>

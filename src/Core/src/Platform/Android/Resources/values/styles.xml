@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+
+    <!-- Empty Matching style for values-v35/styles.xml -->
+    <style name="OptOutEdgeToEdgeEnforcement">
+    </style>
+
     <!-- Base application theme. -->
     <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
         <item name="colorPrimary">@color/colorPrimary</item>
