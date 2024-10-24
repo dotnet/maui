@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Platform
 		DropShadow? _dropShadow;
 		Rectangle? _shadowHost;
 		WSize _shadowHostSize;
+		WSize _shadowMaskSize;
 		Path? _borderPath;
 
 		FrameworkElement? _child;
@@ -339,13 +340,10 @@ namespace Microsoft.Maui.Platform
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 
-			if (Child is ContentPanel panel)
-			{
-				dropShadow.Mask = panel.GetAlphaMask();
-			}
-			else
+			if (_shadowHostSize != _shadowMaskSize) // Only update the Mask if the Host size changes
 			{
 				dropShadow.Mask = await this.GetAlphaMaskAsync();
+				_shadowMaskSize = _shadowHostSize;
 			}
 		}
 	}

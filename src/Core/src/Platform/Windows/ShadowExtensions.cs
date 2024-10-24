@@ -38,7 +38,12 @@ namespace Microsoft.Maui.Platform
 				{
 					return shape.GetAlphaMask();
 				}
-				else if (element is FrameworkElement frameworkElement)
+				if (element is WrapperView wrapper && wrapper.Child is ContentPanel panel)
+				{
+					// ContentPanel (borders) has a special case for getting the AlphaMask
+					return panel.GetAlphaMask();
+				}
+				if (element is FrameworkElement frameworkElement)
 				{
 					var height = (int)frameworkElement.ActualHeight;
 					var width = (int)frameworkElement.ActualWidth;
