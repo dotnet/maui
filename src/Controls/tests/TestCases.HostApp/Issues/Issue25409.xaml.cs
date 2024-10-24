@@ -8,7 +8,9 @@ public partial class Issue25409 : ContentPage
 		InitializeComponent();
 	}
 
+#if IOS
 	int count = 0;
+#endif
 
 	private void OnCounterClicked(object sender, EventArgs e)
 	{
