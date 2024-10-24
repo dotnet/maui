@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void OnModalPage(object sender, EventArgs e)
 		{
-			var modalPage = new NavigationPage(new MainPage() { Title = "Modal Page" ,AutomationId = "PageSheetModalPage" });
+			var modalPage = new NavigationPage(new Issue23411() { Title = "Modal Page" ,AutomationId = "PageSheetModalPage" });
 			modalPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.PageSheet);
 			Navigation.PushModalAsync(modalPage);
 		}
