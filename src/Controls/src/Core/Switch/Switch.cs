@@ -23,11 +23,7 @@ namespace Microsoft.Maui.Controls
 		}, defaultBindingMode: BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
-		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), null,
-			propertyChanged: (bindable, oldValue, newValue) =>
-			{
-				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
-			});
+		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), null);
 
 		/// <summary>Bindable property for <see cref="ThumbColor"/>.</summary>
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);
@@ -47,6 +43,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		readonly Lazy<PlatformConfigurationRegistry<Switch>> _platformConfigurationRegistry;
+
+		// Colors used for tracking changes in visual state.
+		Color _visualStateOnThumbColor;
+		Color _visualStateOffThumbColor;
+		Color _visualStateOnTrackColor;
+		Color _visualStateOffTrackColor;
+		Color _overridenTrackColor;
+		Color _overridenThumbColor;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Switch()
@@ -68,6 +72,34 @@ namespace Microsoft.Maui.Controls
 				VisualStateManager.GoToState(this, SwitchOnVisualState);
 			else if (IsEnabled && !IsToggled)
 				VisualStateManager.GoToState(this, SwitchOffVisualState);
+
+			// Update thumb and track colors based on the switch state and any overridden colors.
+			if (IsEnabled)
+			{
+				if (IsToggled)
+				{
+					_visualStateOnThumbColor = ThumbColor;
+					_visualStateOnTrackColor = OnColor;
+				}
+				else
+				{
+					_visualStateOffThumbColor = ThumbColor;
+					_visualStateOffTrackColor = OnColor;
+				}
+
+				// Apply overridden thumb color if available.
+				if (_overridenThumbColor != null)
+				{
+					ThumbColor = _overridenThumbColor;
+				}
+
+				// Apply overridden track color if available.
+				if (_overridenTrackColor != null)
+				{
+					OnColor = _overridenTrackColor;
+				}
+				
+			}
 		}
 
 		public event EventHandler<ToggledEventArgs> Toggled;
@@ -85,6 +117,56 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == IsToggledProperty.PropertyName)
 				Handler?.UpdateValue(nameof(ISwitch.IsOn));
+
+			if (propertyName == ThumbColorProperty.PropertyName)
+			{
+				if (IsEnabled)
+				{
+					// Handle overridden thumb color based on switch state.
+					if (!VisualStateManager.HasVisualStateGroups(this))
+					{
+						_overridenThumbColor = ThumbColor;
+					}
+					else
+					{	
+						if (IsToggled && _visualStateOnThumbColor != null && ThumbColor != _visualStateOnThumbColor)
+						{
+							_overridenThumbColor = ThumbColor;
+						}
+						else if (!IsToggled && _visualStateOffThumbColor != null && ThumbColor != _visualStateOffThumbColor)
+						{
+							_overridenThumbColor = ThumbColor;
+						}
+					}
+				}
+
+				Handler?.UpdateValue(nameof(ISwitch.ThumbColor));
+			}
+
+			if (propertyName == OnColorProperty.PropertyName) 
+			{
+				if (IsEnabled)
+				{
+					// Handle overridden thumb color based on switch state.
+					if (!VisualStateManager.HasVisualStateGroups(this))
+					{
+						_overridenTrackColor = OnColor;
+					}
+					else
+					{
+						if (IsToggled && _visualStateOnTrackColor != null && OnColor != _visualStateOnTrackColor)
+						{
+							_overridenTrackColor = OnColor;
+						}
+						else if (!IsToggled && _visualStateOffTrackColor != null && OnColor != _visualStateOffTrackColor)
+						{
+							_overridenTrackColor = OnColor;
+						}
+					}
+				}
+
+				Handler?.UpdateValue(nameof(ISwitch.TrackColor));
+			}
 		}
 
 		Color ISwitch.TrackColor

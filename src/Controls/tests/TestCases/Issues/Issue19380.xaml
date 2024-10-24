@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19380"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <ContentPage.Resources>
+        <Style TargetType="Switch">
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="OnColor" Value="Red" />
+                            <Setter Property="ThumbColor" Value="Red" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="On">
+                        <VisualState.Setters>
+                            <Setter Property="OnColor" Value="Green" />
+                            <Setter Property="ThumbColor" Value="White" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Off">
+                        <VisualState.Setters>
+                            <Setter Property="ThumbColor" Value="White" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    </ContentPage.Resources>
+
+    <StackLayout>
+       <Label Text="Switch with OnColor and Thumb Color explicitly set"/>
+       <Switch AutomationId="switch1" OnColor="red" ThumbColor="Blue"/>
+       <Label Text="Switch with OnColor and Thumb Color controlled by the visual state manager"/>
+       <Switch AutomationId="switch2"/>
+    </StackLayout>
+</ContentPage>
