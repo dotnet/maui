@@ -16,7 +16,7 @@ public class Bugzilla39530 : _IssuesUITest
 	public override string Issue => "Frames do not handle pan or pinch gestures under AppCompat";
 
 	[Test]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[FailsOnMac]
 	[FailsOnWindows("Fails finding the frame element. Investigate the cause.")]
 	public void Bugzilla39530PanTest()
@@ -37,7 +37,7 @@ public class Bugzilla39530 : _IssuesUITest
 
 	/*
 	[Test]
-	[FailsOnIOS]	
+	[FailsOnIOSWhenRunningOnXamarinUITest]	
 	[FailsOnMac]
 	public void Bugzilla39530PinchTest()
 	{
@@ -46,7 +46,7 @@ public class Bugzilla39530 : _IssuesUITest
 	}
 
 	[Test]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[FailsOnMac]
 	public void Bugzilla39530TapTest()
 	{

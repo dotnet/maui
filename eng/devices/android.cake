@@ -328,8 +328,8 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-{platform}.binlog";
-	var appiumLog = $"{binDir}/appium_{platform}.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
+	var appiumLog = $"{binDir}/appium_{platform}_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

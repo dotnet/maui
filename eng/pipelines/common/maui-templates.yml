@@ -24,12 +24,12 @@ parameters:
   - name: BuildCategories
     type: object
     default:
-    - WindowsTemplates 
-    - macOSTemplates 
-    - Build 
-    - Blazor 
-    - MultiProject 
-    - AOT 
+    - WindowsTemplates
+    - macOSTemplates
+    - Build
+    - Blazor
+    - MultiProject
+    - AOT
 
   - name: RunPlatforms
     type: object
@@ -118,6 +118,14 @@ jobs:
         TargetFolder: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
       continueOnError: true
       condition: succeededOrFailed()
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifacts
+      condition: always()
+      continueOnError: true
+      inputs:
+        PathToPublish: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
+        ArtifactName: BuildTemplateBuildLogs
 
     - task: PublishTestResults@2
       displayName: Publish the $(PLATFORM_NAME) templates build tests

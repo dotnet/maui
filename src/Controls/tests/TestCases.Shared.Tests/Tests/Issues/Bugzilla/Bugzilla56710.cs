@@ -19,8 +19,8 @@ public class Bugzilla56710 : _IssuesUITest
 	// [Test]
 	// [Category(UITestCategories.ListView)]
 	// [Category(UITestCategories.Compatibility)]
-	// [FailsOnIOS]
-	// [FailsOnMac]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
+	// [FailsOnMacWhenRunningOnXamarinUITest]
 	// public void Bugzilla56771Test()
 	// {
 	// 	App.WaitForElement(BtnAdd);
