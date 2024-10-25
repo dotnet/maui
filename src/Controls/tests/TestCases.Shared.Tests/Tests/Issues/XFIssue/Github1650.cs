@@ -18,12 +18,12 @@ public class Github1650 : _IssuesUITest
 	// [Category(UITestCategories.Entry)]
 	// public void GitHub1650Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("CompletedTargetEntry"));
-	// 	RunningApp.Tap(q => q.Marked("CompletedTargetEntry"));
+	// 	App.WaitForElement(q => q.Marked("CompletedTargetEntry"));
+	// 	App.Tap(q => q.Marked("CompletedTargetEntry"));
 
 	// 	Assert.AreEqual(0, _completedCount, "Completed should not have been fired");
 
-	// 	RunningApp.PressEnter();
+	// 	App.PressEnter();
 
 	// 	Assert.AreEqual(1, _completedCount, "Completed should have been fired once");
 	// }

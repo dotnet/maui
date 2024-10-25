@@ -17,8 +17,8 @@ public class RadioButtonTemplateFromStyle : _IssuesUITest
 	//[Category(UITestCategories.RadioButton)]
 	//public void ContentRenderers()
 	//{
-	//	RunningApp.WaitForElement("A");
-	//	RunningApp.WaitForElement("B");
-	//	RunningApp.WaitForElement("C");
+	//	App.WaitForElement("A");
+	//	App.WaitForElement("B");
+	//	App.WaitForElement("C");
 	//}
 }

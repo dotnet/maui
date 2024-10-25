@@ -17,10 +17,10 @@ public class RestartAppTest : _IssuesUITest
 	//[FailsOnIOS]
 	//public void ForcingRestartDoesNotCauseCrash()
 	//{
-	//	RunningApp.WaitForElement(RestartButton);
-	//	RunningApp.Tap(RestartButton);
+	//	App.WaitForElement(RestartButton);
+	//	App.Tap(RestartButton);
 
 	//	// If the app hasn't crashed, this test has passed
-	//	RunningApp.WaitForElement(Success);
+	//	App.WaitForElement(Success);
 	//}
 }

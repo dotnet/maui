@@ -16,7 +16,7 @@ public class Issue2681 : _IssuesUITest
 	// [Category(UITestCategories.ListView)]
 	// public void ListViewDoesntFreezeApp()
 	// {
-	// 	RunningApp.Tap(x => x.Marked(NavigateToPage));
-	// 	RunningApp.WaitForElement("3");
+	// 	App.Tap(x => x.Marked(NavigateToPage));
+	// 	App.WaitForElement("3");
 	// }
 }

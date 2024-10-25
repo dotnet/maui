@@ -16,8 +16,8 @@ public class Issue416 : _IssuesUITest
 	//[Category(UITestCategories.Navigation)]
 	//public void Issue416TestsNavBarPresent()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Test Page"));
-	//	RunningApp.WaitForElement(q => q.Marked("I should have a nav bar"));
-	//	RunningApp.Screenshot("All element present");
+	//	App.WaitForElement(q => q.Marked("Test Page"));
+	//	App.WaitForElement(q => q.Marked("I should have a nav bar"));
+	//	App.Screenshot("All element present");
 	//}
 }

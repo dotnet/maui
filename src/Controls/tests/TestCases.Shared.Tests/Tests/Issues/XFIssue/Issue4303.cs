@@ -16,9 +16,9 @@ public class Issue4303 : _IssuesUITest
 	//[Category(UITestCategories.LifeCycle)]
 	//public void Issue4303Test()
 	//{
-	//	RunningApp.WaitForElement(c => c.Text(Success));
-	//	RunningApp.WaitForElement(c => c.Marked(btnAutomationID));
-	//	RunningApp.Tap(c => c.Marked(btnAutomationID));
-	//	RunningApp.WaitForElement(c => c.Text(ChildSuccess));
+	//	App.WaitForElement(c => c.Text(Success));
+	//	App.WaitForElement(c => c.Marked(btnAutomationID));
+	//	App.Tap(c => c.Marked(btnAutomationID));
+	//	App.WaitForElement(c => c.Text(ChildSuccess));
 	//}
 }

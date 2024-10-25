@@ -19,8 +19,8 @@ public class Issue1342 : _IssuesUITest
 	// [Ignore("Fails sometimes - needs a better test")]
 	// public void AddingItemsToNonVisibleListViewDoesntCrash()
 	// {
-	// 	RunningApp.Tap(add2);
-	// 	RunningApp.Tap(add3);
-	// 	RunningApp.WaitForElement(success);
+	// 	App.Tap(add2);
+	// 	App.Tap(add3);
+	// 	App.WaitForElement(success);
 	// }
 }

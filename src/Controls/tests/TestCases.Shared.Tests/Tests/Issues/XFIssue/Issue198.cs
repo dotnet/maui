@@ -17,25 +17,25 @@ public class Issue198 : _IssuesUITest
 	// [FailsOnIOS]
 	// 	public void Issue198TestsNREWithPopModal()
 	// 	{
-	// 		RunningApp.WaitForElement(q => q.Marked("Page One"));
-	// 		RunningApp.WaitForElement(q => q.Button("Leave"));
-	// 		RunningApp.Screenshot("All Elements Present");
+	// 		App.WaitForElement(q => q.Marked("Page One"));
+	// 		App.WaitForElement(q => q.Button("Leave"));
+	// 		App.Screenshot("All Elements Present");
 
-	// 		RunningApp.Tap(q => q.Marked("Leave"));
-	// 		RunningApp.Screenshot("Clicked Leave");
+	// 		App.Tap(q => q.Marked("Leave"));
+	// 		App.Screenshot("Clicked Leave");
 
-	// 		RunningApp.WaitForElement(q => q.Marked("Bug Repro's"));
+	// 		App.WaitForElement(q => q.Marked("Bug Repro's"));
 	// #if !__MACOS__
-	// 		RunningApp.ClearText(q => q.Raw("* marked:'SearchBarGo'"));
-	// 		RunningApp.EnterText(q => q.Raw("* marked:'SearchBarGo'"), "G198");
+	// 		App.ClearText(q => q.Raw("* marked:'SearchBarGo'"));
+	// 		App.EnterText(q => q.Raw("* marked:'SearchBarGo'"), "G198");
 	// #endif
-	// 		RunningApp.Tap(q => q.Marked("SearchButton"));
-	// 		RunningApp.Screenshot("Navigate into gallery again");
+	// 		App.Tap(q => q.Marked("SearchButton"));
+	// 		App.Screenshot("Navigate into gallery again");
 
-	// 		RunningApp.WaitForElement(q => q.Marked("Page Three"));
-	// 		RunningApp.Tap(q => q.Marked("Page Three"));
+	// 		App.WaitForElement(q => q.Marked("Page Three"));
+	// 		App.Tap(q => q.Marked("Page Three"));
 
-	// 		RunningApp.WaitForElement(q => q.Marked("No Crash"));
-	// 		RunningApp.Screenshot("App did not crash");
+	// 		App.WaitForElement(q => q.Marked("No Crash"));
+	// 		App.Screenshot("App did not crash");
 	// 	}
 }

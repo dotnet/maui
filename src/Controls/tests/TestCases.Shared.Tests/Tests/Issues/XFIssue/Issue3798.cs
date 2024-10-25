@@ -16,9 +16,9 @@ public class Issue3798 : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void Issue3798Test()
 	//{
-	//	RunningApp.WaitForElement("listViewSeparatorColor");
-	//	RunningApp.Screenshot("Green ListView Separator");
-	//	RunningApp.Tap(q => q.Marked("item1"));
-	//	RunningApp.Screenshot("Red ListView Separator");
+	//	App.WaitForElement("listViewSeparatorColor");
+	//	App.Screenshot("Green ListView Separator");
+	//	App.Tap(q => q.Marked("item1"));
+	//	App.Screenshot("Red ListView Separator");
 	//}
 }
