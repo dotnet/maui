@@ -4,6 +4,8 @@
     <!-- Empty Matching style for values-v35/styles.xml -->
     <style name="OptOutEdgeToEdgeEnforcement">
     </style>
+    <style name="DisableOptOutEdgeToEdgeEnforcement">
+    </style>
 
     <!-- Base application theme. -->
     <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
