@@ -1,10 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 22183, "RadioButton with value cannot display selected state correctly", PlatformAffected.iOS)]
 	public partial class Issue22183 : ContentPage
 	{
@@ -22,7 +19,7 @@ namespace Maui.Controls.Sample.Issues
 			[new Issue22183Model()
 			{
 				GroupId = 0,
-			}, 
+			},
 			new Issue22183Model()
 			{
 				GroupId = 1,
@@ -37,7 +34,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public string True => $"True_{GroupId}";
 
-		public static readonly BindableProperty ShowOptionsProperty =	
+		public static readonly BindableProperty ShowOptionsProperty =
 			BindableProperty.Create(nameof(ShowOptions), typeof(bool), typeof(Issue22183Model));
 
 		public bool ShowOptions

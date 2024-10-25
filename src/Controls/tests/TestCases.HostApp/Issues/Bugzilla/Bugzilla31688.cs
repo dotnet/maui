@@ -1,11 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 31688, "'Navigation.InsertPageBefore()' does not work for more than two pages, \"throws java.lang.IndexOutOfBoundsException: index=3 count=2", PlatformAffected.Android)]
 	public class Bugzilla31688 : NavigationPage // or TestFlyoutPage, etc ...
 	{

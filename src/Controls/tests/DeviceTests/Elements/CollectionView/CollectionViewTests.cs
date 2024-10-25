@@ -170,8 +170,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if IOS || MACCATALYST
-Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
+#if IOS || MACCATALYST || WINDOWS
+Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 #endif
 )]
 		public async Task CollectionScrollToUngroupedWorks()

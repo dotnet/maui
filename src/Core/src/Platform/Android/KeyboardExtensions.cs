@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.Xml.Schema;
+using Android.Content;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -26,6 +27,12 @@ namespace Microsoft.Maui.Platform
 				result = InputTypes.ClassPhone;
 			else if (self == Keyboard.Url)
 				result = InputTypes.ClassText | InputTypes.TextVariationUri;
+			else if (self == Keyboard.Date)
+				result = InputTypes.ClassDatetime | InputTypes.DatetimeVariationNormal;
+			else if (self == Keyboard.Time)
+				result = InputTypes.ClassDatetime | InputTypes.DatetimeVariationTime;
+			else if (self == Keyboard.Password)
+				result = InputTypes.ClassText | InputTypes.TextVariationPassword;
 			else if (self is CustomKeyboard custom)
 			{
 				var capitalizedSentenceEnabled = (custom.Flags & KeyboardFlags.CapitalizeSentence) == KeyboardFlags.CapitalizeSentence;

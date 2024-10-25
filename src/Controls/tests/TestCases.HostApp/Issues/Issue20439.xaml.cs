@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 20439, "[iOS] Double dash in Entry or Editor crashes the app", PlatformAffected.iOS)]
 	public class Issue20439Test : ContentPage
@@ -10,16 +7,16 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Content = new VerticalStackLayout()
 			{
-				Children = 
+				Children =
 				{
-					new Button() 
-					{ 
-						Text = "Go To Test", 
-						AutomationId = "GoToTest", 
-						Command = new Command(() => Application.Current.MainPage = new Issue20439()) 
+					new Button()
+					{
+						Text = "Go To Test",
+						AutomationId = "GoToTest",
+						Command = new Command(() => Application.Current.MainPage = new Issue20439())
 					}
 				}
-			};			
+			};
 		}
 	}
 

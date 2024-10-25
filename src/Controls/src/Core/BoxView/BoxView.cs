@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			return new SizeRequest(new Size(40, 40));

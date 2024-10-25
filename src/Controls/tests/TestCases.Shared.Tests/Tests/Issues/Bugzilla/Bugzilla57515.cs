@@ -14,7 +14,7 @@ public class Bugzilla57515 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Gestures)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla57515Test()
 	// {
 	// 	RunningApp.WaitForElement(ZoomContainer);

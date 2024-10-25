@@ -1,11 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 18702, "When the CollectionView has a group footer template it should not crash the application")]
 	public class Issue18702 : TestContentPage
 	{
@@ -79,7 +78,7 @@ namespace Maui.Controls.Sample.Issues
 			public ObservableCollection<_18702Group> Data { get; set; } = [new("group A", [1, 2, 3])];
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class _18702Group : Grouping<string, int>
 		{
 			public _18702Group(string key, IEnumerable<int> items) : base(key, items)
@@ -89,7 +88,7 @@ namespace Maui.Controls.Sample.Issues
 			public int Total => Items.Sum();
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class Grouping<TKey, TItem> : ObservableRangeCollection<TItem>, INotifyPropertyChanged
 		{
 			public TKey Key { get; }
@@ -107,7 +106,7 @@ namespace Maui.Controls.Sample.Issues
 		/// Represents a dynamic data collection that provides notifications when items get added, removed, or when the whole list is refreshed. 
 		/// </summary> 
 		/// <typeparam name="T"></typeparam> 
-		[Preserve(AllMembers = true)]
+
 		public class ObservableRangeCollection<T> : ObservableCollection<T>
 		{
 

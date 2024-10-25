@@ -1,4 +1,5 @@
-﻿
+﻿using System.Globalization;
+
 namespace Microsoft.Maui.IntegrationTests
 {
 	public enum RuntimeVariant
@@ -7,15 +8,26 @@ namespace Microsoft.Maui.IntegrationTests
 		NativeAOT
 	}
 
-	public class BaseBuildTest
+	public abstract class BaseBuildTest
 	{
-		public const string DotNetCurrent = "net8.0";
-		public const string DotNetPrevious = "net7.0";
+		public const string DotNetCurrent = "net9.0";
+		public const string DotNetPrevious = "net8.0";
 
-		public const string MauiVersionCurrent = "8.0.0-rc.1.9171"; // this should not be the same as the last release
-		public const string MauiVersionPrevious = "7.0.86"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+		public const string MauiVersionCurrent = "9.0.0-rc.1.24453.9"; // this should not be the same as the last release
+		public const string MauiVersionPrevious = "8.0.72"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+
+		public string MauiPackageVersion
+		{
+			get
+			{
+				var version = Environment.GetEnvironmentVariable("MAUI_PACKAGE_VERSION");
+				if (string.IsNullOrWhiteSpace(version))
+					throw new Exception("MAUI_PACKAGE_VERSION was not set.");
+				return version;
+			}
+		}
 
 		public string TestName
 		{
@@ -26,7 +38,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					result = result.Replace(c, '_');
 				}
-				return result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+				if (result.Length > 20)
+				{
+					// If the test name is too long, hash it to avoid path length issues
+					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+				}
+				return result;
 			}
 		}
 

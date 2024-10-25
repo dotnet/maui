@@ -310,6 +310,11 @@ namespace Microsoft.Maui.Handlers
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
 				dl.ViewAttachedToWindow -= DrawerLayoutAttached;
 			}
+
+			if (VirtualView is IToolbarElement te)
+			{
+				te.Toolbar?.Handler?.DisconnectHandler();
+			}
 		}
 
 		void DrawerLayoutAttached(object? sender, View.ViewAttachedToWindowEventArgs e)

@@ -12,8 +12,8 @@ public class Bugzilla28001 : _IssuesUITest
 
     public override string Issue => "[Android] TabbedPage: invisible tabs are not Disposed";
 
-	// [FailsOnIOS]
-	// [FailsOnAndroid]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// [Test]
 	// [Category(UITestCategories.TabbedPage)]		
 	// public void Bugzilla28001Test()

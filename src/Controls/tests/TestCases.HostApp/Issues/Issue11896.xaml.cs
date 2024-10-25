@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System.Collections.Specialized;
 
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 11896, "CollectionView Header/Footer/EmptyView issues when adding/removing items", PlatformAffected.Android)]
 	public partial class Issue11896
 	{

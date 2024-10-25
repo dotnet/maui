@@ -15,7 +15,7 @@ public class Bugzilla32801 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla32801Test()
 	// {
 	// 	App.Tap("btnAdd");

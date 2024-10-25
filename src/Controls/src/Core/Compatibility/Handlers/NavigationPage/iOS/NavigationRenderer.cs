@@ -76,11 +76,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return VisualElementRenderer<NavigationPage>.GetDesiredSize(this, widthConstraint, heightConstraint,
 				new Size(0, 0));
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public UIView NativeView
 		{
@@ -896,7 +898,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
 				if (_uiRequestedPop)
 				{
-					NavPage?.SendNavigatedFromHandler(pageBeingRemoved);
+					NavPage?.SendNavigatedFromHandler(pageBeingRemoved, NavigationType.Pop);
 				}
 			}
 
@@ -1103,8 +1105,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (r.Element is NavigationPage np && !_finishedWithInitialNavigation)
 					{
-						_finishedWithInitialNavigation = true;
-						np.SendNavigatedFromHandler(null);
+						_finishedWithInitialNavigation = true;						
+						np.SendNavigatedFromHandler(null, NavigationType.Push);
 					}
 
 					if (WaitingForNavigationToFinish)
@@ -2014,7 +2016,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (disposing)
 				{
 
-					if (_child != null)
+					if (_child?.IsConnected() == true)
 					{
 						(_child.ContainerView ?? _child.PlatformView).RemoveFromSuperview();
 						_child.DisconnectHandler();
