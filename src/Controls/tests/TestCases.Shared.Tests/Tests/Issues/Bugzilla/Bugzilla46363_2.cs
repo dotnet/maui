@@ -12,8 +12,8 @@ public class Bugzilla46363_2 : _IssuesUITest
 
 	public override string Issue => "TapGestureRecognizer blocks List View Context Actions1";
 
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void _46363_2_Tap_Succeeds()
 	// {
@@ -25,8 +25,8 @@ public class Bugzilla46363_2 : _IssuesUITest
 	// 	RunningApp.WaitForNoElement(ContextAction);
 	// }
 
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void _46363_2_ContextAction_Succeeds()
 	// {

@@ -14,7 +14,7 @@ public class Bugzilla59580 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 	// {
 	// 	RunningApp.WaitForElement(c => c.Marked("Cell"));

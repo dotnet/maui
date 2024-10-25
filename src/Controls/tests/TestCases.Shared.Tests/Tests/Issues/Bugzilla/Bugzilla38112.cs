@@ -15,7 +15,7 @@ public class Bugzilla38112 : _IssuesUITest
 
 	// TODO from Xamarin.UITest migration, test fails, look into it later
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla38112_SwitchIsStillOnScreen ()
 	// {
 	// 	App.WaitForElement("Click");
@@ -24,7 +24,7 @@ public class Bugzilla38112 : _IssuesUITest
 	// }
 
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla38112_SwitchIsStillDisabled ()
 	// {
 	// 	App.WaitForElement("Click");
