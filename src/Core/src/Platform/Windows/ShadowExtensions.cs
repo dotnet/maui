@@ -38,10 +38,9 @@ namespace Microsoft.Maui.Platform
 				{
 					return shape.GetAlphaMask();
 				}
-				if (element is WrapperView wrapper && wrapper.Child is ContentPanel panel)
+				if (element is WrapperView wrapper && wrapper.Child is IAlphaMaskProvider maskProvider)
 				{
-					// ContentPanel (borders) has a special case for getting the AlphaMask
-					return panel.GetAlphaMask();
+					return maskProvider.GetAlphaMask();
 				}
 				if (element is FrameworkElement frameworkElement)
 				{

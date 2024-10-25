@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -6,10 +7,22 @@ using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
 using WSize = global::Windows.Foundation.Size;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
+using VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Hosting;
+using Microsoft.Graphics.Canvas;
+using System.Numerics;
+
+#if MAUI_GRAPHICS_WIN2D
+using Microsoft.Maui.Graphics.Win2D;
+#else
+using Microsoft.Maui.Graphics.Platform;
+#endif
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiButton : Button
+	public class MauiButton : Button, IAlphaMaskProvider
 	{
 		public MauiButton()
 		{
@@ -22,6 +35,50 @@ namespace Microsoft.Maui.Platform
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
 			return new MauiButtonAutomationPeer(this);
+		}
+
+		CompositionBrush? IAlphaMaskProvider.GetAlphaMask()
+		{
+			var compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+			CompositionSpriteShape spriteShape;
+
+			// Uniform corner radius, use rounded rectangle
+			if (CornerRadius.TopLeft == CornerRadius.TopRight &&
+				CornerRadius.TopLeft == CornerRadius.BottomLeft &&
+				CornerRadius.TopLeft == CornerRadius.BottomRight)
+			{
+				var rect = compositor.CreateRoundedRectangleGeometry();
+				rect.CornerRadius = new Vector2((float)CornerRadius.TopLeft);
+				rect.Size = new Vector2((float)ActualWidth, (float)ActualHeight);
+				spriteShape = compositor.CreateSpriteShape(rect);
+			}
+			else
+			{
+				var pathF = new PathF();
+				pathF.AppendRoundedRectangle(
+					new RectF(0, 0, (float)ActualWidth, (float)ActualHeight),
+					(float)CornerRadius.TopLeft,
+					(float)CornerRadius.TopRight,
+					(float)CornerRadius.BottomLeft,
+					(float)CornerRadius.BottomRight);
+
+				var device = CanvasDevice.GetSharedDevice();
+				var compositionPath = new CompositionPath(pathF.AsPath(device));
+				var geo = compositor.CreatePathGeometry(compositionPath);
+
+				spriteShape = compositor.CreateSpriteShape(geo);
+			}
+			spriteShape.FillBrush = compositor.CreateColorBrush(UI.Colors.Black);
+
+			var shapeVisual = compositor.CreateShapeVisual();
+			shapeVisual.Shapes.Add(spriteShape);
+
+			var visualSurface = compositor.CreateVisualSurface();
+			visualSurface.SourceVisual = shapeVisual;
+
+			var surfaceBrush = compositor.CreateSurfaceBrush(visualSurface);
+			visualSurface.SourceSize = shapeVisual.Size = RenderSize.ToVector2();
+			return surfaceBrush;
 		}
 	}
 

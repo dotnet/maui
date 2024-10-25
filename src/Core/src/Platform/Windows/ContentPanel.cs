@@ -14,13 +14,11 @@ using Microsoft.UI.Xaml.Shapes;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentPanel : MauiPanel
+	public class ContentPanel : MauiPanel, IAlphaMaskProvider
 	{
 		readonly Path? _borderPath;
 		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
-		PathF _cachedPath = new();
-		CompositionPathGeometry? _compositionPathGeometry;
 
 		internal Path? BorderPath => _borderPath;
 
@@ -90,7 +88,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			UpdateBorder(_borderStroke?.Shape);
+			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
 			UpdateClip(_borderStroke?.Shape, width, height);
 		}
 
@@ -151,6 +149,8 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
+
 			var width = ActualWidth;
 			var height = ActualHeight;
 
@@ -159,7 +159,6 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			_cachedPath = _borderPath.UpdatePath(_borderStroke?.Shape, ActualWidth, ActualHeight);
 			UpdateClip(strokeShape, width, height);
 		}
 
@@ -175,16 +174,37 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			UpdateCompositionPathGeometry(borderShape, width, height);
-			if (_compositionPathGeometry is null)
+			var clipGeometry = borderShape;
+
+			if (clipGeometry is null)
 			{
 				return;
 			}
 
-			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;
-			var geometricClip = compositor.CreateGeometricClip(_compositionPathGeometry);
+
+			PathF? clipPath;
+			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+			// The path size should consider the space taken by the border (top and bottom, left and right)
+			var pathSize = new Rect(0, 0, width - strokeThickness * 2, height - strokeThickness * 2);
+
+			if (clipGeometry is IRoundRectangle roundedRectangle)
+			{
+				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
+				IsInnerPath = true;
+			}
+			else
+			{
+				clipPath = clipGeometry.PathForBounds(pathSize);
+				IsInnerPath = false;
+			}
+
+			var device = CanvasDevice.GetSharedDevice();
+			var geometry = clipPath.AsPath(device);
+			var path = new CompositionPath(geometry);
+			var pathGeometry = compositor.CreatePathGeometry(path);
+			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
 			// The clip needs to consider the content's offset in case it is in a different position because of a different alignment.
 			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
@@ -192,52 +212,13 @@ namespace Microsoft.Maui.Platform
 			visual.Clip = geometricClip;
 		}
 
-		void UpdateCompositionPathGeometry(IShape? borderShape, double width, double height)
+		CompositionBrush? IAlphaMaskProvider.GetAlphaMask()
 		{
-			if (ActualWidth <= 0 && ActualHeight <= 0)
+			if (BorderPath is not null)
 			{
-				return;
+				return BorderPath.GetAlphaMask();
 			}
-
-			if (borderShape == null)
-			{
-				return;
-			}
-
-			var visual = ElementCompositionPreview.GetElementVisual(this);
-			var compositor = visual.Compositor;
-
-			if (borderShape is IRoundRectangle)
-			{
-				IsInnerPath = true;
-			}
-			else
-			{
-				IsInnerPath = false;
-			}
-
-			var device = CanvasDevice.GetSharedDevice();
-			var geometry = _cachedPath.AsPath(device);
-			var path = new CompositionPath(geometry);
-			_compositionPathGeometry = compositor.CreatePathGeometry(path);
-		}
-
-		internal CompositionSurfaceBrush? GetAlphaMask()
-		{
-			var compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
-
-			var geoShape = compositor.CreateSpriteShape(_compositionPathGeometry);
-			geoShape.FillBrush = compositor.CreateColorBrush(UI.Colors.Black);
-
-			var shapeVisual = compositor.CreateShapeVisual();
-			shapeVisual.Shapes.Add(geoShape);
-
-			var visualSurface = compositor.CreateVisualSurface();
-			visualSurface.SourceVisual = shapeVisual;
-
-			var surfaceBrush = compositor.CreateSurfaceBrush(visualSurface);
-			visualSurface.SourceSize = shapeVisual.Size = RenderSize.ToVector2();
-			return surfaceBrush;
+			return null;
 		}
 	}
 }
