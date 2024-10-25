@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,6 @@ public class Issue17782 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Editor)]
-	[FailsOnMac]
 	public void VerifyEditorCharacterSpacingWithText()
 	{
 		App.WaitForElement("SliderCharacterSpacing");
@@ -26,3 +26,4 @@ public class Issue17782 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
