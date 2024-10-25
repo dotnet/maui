@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 {
-	[Preserve(AllMembers = true)]
+
 	internal class BoundSelectionModel : INotifyPropertyChanged
 	{
 		private CollectionViewGalleryTestItem _selectedItem;

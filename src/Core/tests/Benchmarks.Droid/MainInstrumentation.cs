@@ -9,6 +9,7 @@ public class MainInstrumentation : Instrumentation
 	const string Tag = "MAUI";
 
 	public static MainInstrumentation? Instance { get; private set; }
+	public static string ExternalDataDirectory { get; private set; } = string.Empty;
 
 	protected MainInstrumentation(IntPtr handle, JniHandleOwnership transfer)
 		: base(handle, transfer) { }
@@ -18,6 +19,13 @@ public class MainInstrumentation : Instrumentation
 		base.OnCreate(arguments);
 
 		Instance = this;
+		ExternalDataDirectory = Context?.GetExternalFilesDir(null)?.ToString() ?? string.Empty;
+		if (string.IsNullOrEmpty(ExternalDataDirectory))
+		{
+			Log.Error(Tag, "ExternalDataDirectory is failed to be set");
+			return;
+		}
+		Log.Debug(Tag, $"ExternalDataDirectory: {ExternalDataDirectory}");
 
 		Start();
 	}
@@ -40,7 +48,7 @@ public class MainInstrumentation : Instrumentation
 		Environment.SetEnvironmentVariable("PERFLAB_QUEUE", "REPLACE_PERFLAB_QUEUE");
 		Environment.SetEnvironmentVariable("PERFLAB_BUILDARCH", "REPLACE_PERFLAB_BUILDARCH");
 		Environment.SetEnvironmentVariable("PERFLAB_LOCALE", "REPLACE_PERFLAB_LOCALE");
-		Directory.CreateDirectory("/storage/emulated/0/Android/data/com.microsoft.maui.benchmarks/files");
+		Directory.CreateDirectory(ExternalDataDirectory);
 #endif
 
 		var success = await Task.Factory.StartNew(Run);

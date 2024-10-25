@@ -1,10 +1,5 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ScrollModeTestGallery : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(20);

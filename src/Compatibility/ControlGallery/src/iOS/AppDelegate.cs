@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 
 			button.TouchUpInside += (sender, e) =>
 			{
-				Maui.Controls.Application.Current.MainPage = new ContentPage { Content = new Label { Text = "40911 Success" } };
+				Maui.Controls.Application.Current.Windows[0].Page = new ContentPage { Content = new Label { Text = "40911 Success" } };
 				loginViewController.DismissViewController(true, null);
 			};
 

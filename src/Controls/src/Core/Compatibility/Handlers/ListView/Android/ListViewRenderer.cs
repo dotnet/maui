@@ -252,7 +252,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		 * This will most likely cause the user to be frustrated that the ListView doesn't scroll :-) but at least now
 		 * it's consistent between platforms and for cases where it doesn't need to scroll (TableView).
 		 * */
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (double.IsInfinity(heightConstraint))
 			{

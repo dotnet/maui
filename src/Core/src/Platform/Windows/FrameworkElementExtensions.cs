@@ -1,87 +1,24 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI.ViewManagement;
-using WBinding = Microsoft.UI.Xaml.Data.Binding;
-using WBindingExpression = Microsoft.UI.Xaml.Data.BindingExpression;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WPoint = Windows.Foundation.Point;
 
 namespace Microsoft.Maui.Platform
 {
 	internal static class FrameworkElementExtensions
 	{
-		static readonly Lazy<ConcurrentDictionary<Type, DependencyProperty>> ForegroundProperties =
-			new Lazy<ConcurrentDictionary<Type, DependencyProperty>>(() => new ConcurrentDictionary<Type, DependencyProperty>());
-
 		public static T? GetResource<T>(this FrameworkElement element, string key, T? def = default)
 		{
 			if (element.Resources.TryGetValue(key, out var resource))
 				return (T?)resource;
 
 			return def;
-		}
-
-		public static WBrush GetForeground(this FrameworkElement element)
-		{
-			if (element == null)
-				throw new ArgumentNullException(nameof(element));
-
-			return (WBrush)element.GetValue(GetForegroundProperty(element));
-		}
-
-		public static WBinding? GetForegroundBinding(this FrameworkElement element)
-		{
-			WBindingExpression expr = element.GetBindingExpression(GetForegroundProperty(element));
-
-			if (expr == null)
-				return null;
-
-			return expr.ParentBinding;
-		}
-
-		public static object GetForegroundCache(this FrameworkElement element)
-		{
-			WBinding? binding = GetForegroundBinding(element);
-
-			if (binding != null)
-				return binding;
-
-			return GetForeground(element);
-		}
-
-		public static void RestoreForegroundCache(this FrameworkElement element, object cache)
-		{
-			var binding = cache as WBinding;
-			if (binding != null)
-				SetForeground(element, binding);
-			else
-				SetForeground(element, (WBrush)cache);
-		}
-
-		public static void SetForeground(this FrameworkElement element, WBrush foregroundBrush)
-		{
-			if (element == null)
-				throw new ArgumentNullException(nameof(element));
-
-			element.SetValue(GetForegroundProperty(element), foregroundBrush);
-		}
-
-		public static void SetForeground(this FrameworkElement element, WBinding binding)
-		{
-			if (element == null)
-				throw new ArgumentNullException(nameof(element));
-
-			element.SetBinding(GetForegroundProperty(element), binding);
 		}
 
 		public static void UpdateVerticalTextAlignment(this Control platformControl, ITextAlignment textAlignment)
@@ -166,29 +103,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			element?.RefreshThemeResources();
-		}
-
-		static DependencyProperty? GetForegroundProperty(FrameworkElement element)
-		{
-			if (element is Control)
-				return Control.ForegroundProperty;
-			if (element is TextBlock)
-				return TextBlock.ForegroundProperty;
-
-			Type type = element.GetType();
-
-			if (!ForegroundProperties.Value.TryGetValue(type, out var foregroundProperty))
-			{
-				if (ReflectionExtensions.GetFields(type).FirstOrDefault(f => f.Name == "ForegroundProperty") is not FieldInfo field)
-					throw new ArgumentException("type is not a Foregroundable type");
-
-				if (field.GetValue(null) is DependencyProperty property)
-					ForegroundProperties.Value.TryAdd(type, property);
-
-				return null;
-			}
-
-			return foregroundProperty;
 		}
 
 		internal static IEnumerable<T?> GetChildren<T>(this DependencyObject parent) where T : DependencyObject
