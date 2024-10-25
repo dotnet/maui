@@ -42,6 +42,8 @@
     <ThirdPartyScript Include="OpenSans-Regular.ttf" />
     <ThirdPartyScript Include="OpenSans-Semibold.ttf" />
     <ThirdPartyScript Include="open-iconic.ttf" />
+    <ThirdPartyScript Include="FluentSystemIcons-Regular.ttf" />
+    <ThirdPartyScript Include="SegoeUI-Semibold.ttf " />
   </ItemGroup>
 
   <ItemGroup>
