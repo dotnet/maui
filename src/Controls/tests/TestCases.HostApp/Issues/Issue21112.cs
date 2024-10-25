@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample.Issues
 		public MainPage()
 		{
 			var stackLayout = new StackLayout();
-			BindingContext = new MainViewModel();
+			BindingContext = new Issue21112ViewModel();
 
 			var headerTextCell = new TextCell
 			{
@@ -92,11 +92,11 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class MainViewModel
+	public class Issue21112ViewModel
 	{
 		public ICommand NavigateCommand { get; set; }
 
-		public MainViewModel()
+		public Issue21112ViewModel()
 		{
 			NavigateCommand = new Command<Type>(async (Type pageType) =>
 			{
