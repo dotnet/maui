@@ -16,11 +16,11 @@ public class Issue1414 : _IssuesUITest
 	// [Category(UITestCategories.TableView)]
 	// public void InvalidCastExceptionWhenScrollingAndRefreshingTableView()
 	// {
-	// 	RunningApp.Screenshot("Start G1414");
-	// 	var tableFrame = RunningApp.WaitForElement(q => q.Marked("TableView"))[0].Rect;
-	// 	RunningApp.ScrollForElement("* marked:'Row-4-24'", new Drag(tableFrame, Drag.Direction.BottomToTop, Drag.DragLength.Long));
-	// 	RunningApp.Screenshot("Scrolled to end without crashing!");
-	// 	RunningApp.ScrollForElement("* marked:'Row-0-0'", new Drag(tableFrame, Drag.Direction.TopToBottom, Drag.DragLength.Long));
-	// 	RunningApp.Screenshot("Scrolled to top without crashing!");
+	// 	App.Screenshot("Start G1414");
+	// 	var tableFrame = App.WaitForElement(q => q.Marked("TableView"))[0].Rect;
+	// 	App.ScrollForElement("* marked:'Row-4-24'", new Drag(tableFrame, Drag.Direction.BottomToTop, Drag.DragLength.Long));
+	// 	App.Screenshot("Scrolled to end without crashing!");
+	// 	App.ScrollForElement("* marked:'Row-0-0'", new Drag(tableFrame, Drag.Direction.TopToBottom, Drag.DragLength.Long));
+	// 	App.Screenshot("Scrolled to top without crashing!");
 	// }
 }

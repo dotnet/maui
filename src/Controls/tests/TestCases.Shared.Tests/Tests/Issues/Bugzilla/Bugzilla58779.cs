@@ -13,13 +13,13 @@ public class Bugzilla58779 : _IssuesUITest
 	public override string Issue => "[MacOS] DisplayActionSheet on MacOS needs scroll bars if list is long";
 
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla58779Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked(ButtonId));
-	// 	RunningApp.Tap(q => q.Marked(ButtonId));
-	// 	RunningApp.Screenshot("Check list fits on screen");
-	// 	RunningApp.WaitForElement(q => q.Marked(CancelId));
-	// 	RunningApp.Tap(q => q.Marked(CancelId));
+	// 	App.WaitForElement(q => q.Marked(ButtonId));
+	// 	App.Tap(q => q.Marked(ButtonId));
+	// 	App.Screenshot("Check list fits on screen");
+	// 	App.WaitForElement(q => q.Marked(CancelId));
+	// 	App.Tap(q => q.Marked(CancelId));
 	// }
 }

@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-			UpdateChildrenLayout();
+			(this as IView).InvalidateMeasure();
 		}
 
 		/// <summary>
@@ -411,6 +411,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="y">Y-coordinate of the top left corner of the bounding rectangle.</param>
 		/// <param name="width">Width of the bounding rectangle.</param>
 		/// <param name="height">Height of the bounding rectangle.</param>
+		[Obsolete("Use ArrangeOverride instead")]
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
 			var area = new Rect(x, y, width, height);
@@ -434,10 +435,12 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				var page = child as Page;
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (page != null && page.IgnoresContainerArea)
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
 					Maui.Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(child, area);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -543,12 +546,19 @@ namespace Microsoft.Maui.Controls
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			base.OnSizeAllocated(width, height);
-			UpdateChildrenLayout();
+
+			if (Handler is null)
+			{
+#pragma warning disable CS0618 // Type or member is obsolete
+				UpdateChildrenLayout();
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
 		}
 
 		/// <summary>
 		/// Requests that the child <see cref="Element"/>s of the page update their layouts.
 		/// </summary>
+		[Obsolete("Use ArrangeOverride instead")]
 		protected void UpdateChildrenLayout()
 		{
 			if (!ShouldLayoutChildren())
@@ -844,12 +854,30 @@ namespace Microsoft.Maui.Controls
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
 
-		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
+		internal void SendNavigatedFrom(NavigatedFromEventArgs args, bool disconnectHandlers = true)
 		{
 			HasNavigatedTo = false;
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args, false);
+
+			if (!disconnectHandlers)
+			{
+				return;
+			}
+
+			if (args.NavigationType == NavigationType.Pop || 
+				args.NavigationType == NavigationType.PopToRoot)
+			{
+				if (!this.IsLoaded)
+				{
+					this.DisconnectHandlers();
+				}
+				else
+				{
+					this.OnUnloaded(() => this.DisconnectHandlers());
+				}
+			}
 		}
 
 		/// <summary>

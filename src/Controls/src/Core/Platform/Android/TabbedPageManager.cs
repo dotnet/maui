@@ -659,8 +659,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 			else
 			{
+#pragma warning disable XAOBS001 // Obsolete
 				var styledAttributes = 
 					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
+#pragma warning restore XAOBS001 // Obsolete
 
 				try
 				{

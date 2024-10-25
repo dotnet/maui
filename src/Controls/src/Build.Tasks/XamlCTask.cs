@@ -26,16 +26,26 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			public IList<int> WarningsAsErrors { get; set; }
 			public IList<int> WarningsNotAsErrors { get; set; }
 			public IList<int> NoWarn { get; set; }
+			public string PathPrefix { get; set; }
 		}
 
 		static LoggingHelperContext Context { get; set; }
+		internal static List<BuildException> LoggedErrors { get; set; }
 
-		public static void SetContext(this TaskLoggingHelper loggingHelper, int warningLevel, bool treatWarningsAsErrors, string noWarn, string warningsAsErrors, string warningsNotAsErrors)
+		public static void SetContext(
+			this TaskLoggingHelper loggingHelper,
+			int warningLevel,
+			bool treatWarningsAsErrors,
+			string noWarn,
+			string warningsAsErrors,
+			string warningsNotAsErrors,
+			string pathPrefix)
 		{
 			if (Context == null)
 				Context = new LoggingHelperContext();
 			Context.WarningLevel = warningLevel;
 			Context.TreatWarningsAsErrors = treatWarningsAsErrors;
+			Context.PathPrefix = pathPrefix;
 
 			Context.NoWarn = noWarn?.Split([';', ','], StringSplitOptions.RemoveEmptyEntries).Select(s =>
 			{
@@ -83,11 +93,30 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context = new LoggingHelperContext();
 			if (Context.NoWarn != null && Context.NoWarn.Contains(code.CodeCode))
 				return;
+			xamlFilePath = loggingHelper.GetXamlFilePath(xamlFilePath);
 			if ((Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code.CodeCode)))
 				|| (Context.WarningsAsErrors != null && Context.WarningsAsErrors.Contains(code.CodeCode)))
-				loggingHelper.LogError($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			{
+				loggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+				LoggedErrors ??= new();
+				LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineNumber, linePosition), innerException: null, messageArgs));
+			}
 			else
-				loggingHelper.LogWarning($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			{
+				loggingHelper.LogWarning("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			}
+		}
+
+		public static string GetXamlFilePath(this TaskLoggingHelper loggingHelper, string xamlFilePath)
+		{
+			Context ??= new LoggingHelperContext();
+
+			if (Context.PathPrefix is string prefix)
+			{
+				xamlFilePath = IOPath.Combine(prefix, xamlFilePath);
+			}
+
+			return xamlFilePath;
 		}
 	}
 
@@ -99,6 +128,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool OptimizeIL { get; set; } = true;
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
+		public bool CompileBindingsWithSource { get; set; }
 		public string TargetFramework { get; set; }
 
 		public int WarningLevel { get; set; } = 4; //unused so far
@@ -107,6 +137,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public string WarningsNotAsErrors { get; set; }
 		public string NoWarn { get; set; }
 
+		public bool GenerateFullPaths { get; set; }
+		public string FullPathPrefix { get; set; }
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
 
@@ -122,7 +154,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
 			thrownExceptions = null;
-			LoggingHelper.SetContext(WarningLevel, TreatWarningsAsErrors, NoWarn, WarningsAsErrors, WarningsNotAsErrors);
+			LoggingHelper.SetContext(WarningLevel, TreatWarningsAsErrors, NoWarn, WarningsAsErrors, WarningsNotAsErrors, GenerateFullPaths ? FullPathPrefix : null);
 			LoggingHelper.LogMessage(Normal, $"{new string(' ', 0)}Compiling Xaml, assembly: {Assembly}");
 			var skipassembly = !DefaultCompile;
 			bool success = true;
@@ -131,6 +163,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				LoggingHelper.LogMessage(Normal, $"{new string(' ', 2)}Assembly file not found. Skipping XamlC.");
 				return true;
+			}
+
+			if (GenerateFullPaths && string.IsNullOrEmpty(FullPathPrefix))
+			{
+				LoggingHelper.LogMessage(Low, "  GenerateFullPaths is enabled but FullPathPrefix is missing or empty.");
 			}
 
 			using (var fallbackResolver = DefaultAssemblyResolver == null ? new XamlCAssemblyResolver() : null)
@@ -260,6 +297,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								success = false;
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 								(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
+								xamlFilePath = LoggingHelper.GetXamlFilePath(xamlFilePath);
 								if (e is BuildException be)
 									LoggingHelper.LogError("XamlC", be.Code.Code, be.HelpLink, xamlFilePath, be.XmlInfo?.LineNumber ?? 0, be.XmlInfo?.LinePosition ?? 0, 0, 0, ErrorMessages.ResourceManager.GetString(be.Code.ErrorMessageKey), be.MessageArgs);
 								else if (e is XamlParseException xpe) //shouldn't happen anymore
@@ -270,6 +308,29 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									LoggingHelper.LogError("XamlC", null, e.HelpLink, xamlFilePath, 0, 0, 0, 0, e.Message);
 								LoggingHelper.LogMessage(Low, e.StackTrace);
 								continue;
+							}
+							else
+							{
+								if (LoggingHelperExtensions.LoggedErrors is List<BuildException> errors)
+								{
+									foreach (var error in errors)
+									{
+										success = false;
+										(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(error);
+									}
+
+									LoggingHelperExtensions.LoggedErrors = null;
+								}
+							}
+							
+							if (initComp.HasCustomAttributes)
+							{
+								var suppressMessageAttribute = initComp.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute");
+								if (suppressMessageAttribute != null)
+								{
+									LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Removing UnconditionalSuppressMessageAttribute from InitializeComponent()");
+									initComp.CustomAttributes.Remove(suppressMessageAttribute);
+								}
 							}
 							if (Type != null)
 								InitCompForType = initComp;
@@ -355,6 +416,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					XamlFilePath = xamlFilePath,
 					LoggingHelper = loggingHelper,
 					ValidateOnly = ValidateOnly,
+					CompileBindingsWithSource = CompileBindingsWithSource,
 				};
 
 

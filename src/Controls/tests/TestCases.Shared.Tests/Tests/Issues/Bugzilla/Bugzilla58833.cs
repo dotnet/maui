@@ -18,29 +18,29 @@ public class Bugzilla58833 : _IssuesUITest
 // 	public void Bugzilla58833Test()
 // 	{
 // 		// Item #1 should not have a tap gesture, so it should be selectable
-// 		RunningApp.WaitForElement(q => q.Marked("Item #1"));
-// 		RunningApp.Tap(q => q.Marked("Item #1"));
-// 		RunningApp.WaitForElement(q => q.Marked(ItemSelectedSuccess));
+// 		App.WaitForElement(q => q.Marked("Item #1"));
+// 		App.Tap(q => q.Marked("Item #1"));
+// 		App.WaitForElement(q => q.Marked(ItemSelectedSuccess));
 
 // 		// Item #2 should have a tap gesture
-// 		RunningApp.WaitForElement(q => q.Marked("Item #2"));
-// 		RunningApp.Tap(q => q.Marked("Item #2"));
-// 		RunningApp.WaitForElement(q => q.Marked(TapGestureSucess));
+// 		App.WaitForElement(q => q.Marked("Item #2"));
+// 		App.Tap(q => q.Marked("Item #2"));
+// 		App.WaitForElement(q => q.Marked(TapGestureSucess));
 
 // 		// Both items should allow access to the context menu
-// 		RunningApp.ActivateContextMenu("Item #2");
-// 		RunningApp.WaitForElement("2 Action");
+// 		App.ActivateContextMenu("Item #2");
+// 		App.WaitForElement("2 Action");
 // #if __ANDROID__
-// 		RunningApp.Back();
+// 		App.Back();
 // #else
-// 		RunningApp.Tap(q => q.Marked("Item #3"));
+// 		App.Tap(q => q.Marked("Item #3"));
 
 
-// 		RunningApp.ActivateContextMenu("Item #1");
-// 		RunningApp.WaitForElement("1 Action");
+// 		App.ActivateContextMenu("Item #1");
+// 		App.WaitForElement("1 Action");
 // #if __ANDROID__
-// 		RunningApp.Back();
+// 		App.Back();
 // #else
-// 		RunningApp.Tap(q => q.Marked("Item #3"));
+// 		App.Tap(q => q.Marked("Item #3"));
 // 	}
 }

@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
 
+using Microsoft.Maui.Controls.Xaml;
+
 namespace Microsoft.Maui.Controls.StyleSheets
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.StyleSheets/StyleSheet.xml" path="Type[@FullName='Microsoft.Maui.Controls.StyleSheets.StyleSheet']/Docs/*" />
@@ -24,7 +26,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		public static StyleSheet FromResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo = null)
 		{
 			var styleSheet = new StyleSheet();
-			var resString = DependencyService.Get<IResourcesLoader>().GetResource(resourcePath, assembly, styleSheet, lineInfo);
+			var resString = GetResource(resourcePath, assembly, styleSheet, lineInfo);
 			using (var textReader = new StringReader(resString))
 			using (var cssReader = new CssReader(textReader))
 				Parse(styleSheet, cssReader);
@@ -114,5 +116,31 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		}
 
 		void IStyle.UnApply(BindableObject bindable) => throw new NotImplementedException();
+
+		private static string GetResource(string resourcePath, Assembly assembly, object target, IXmlLineInfo lineInfo)
+		{
+			var resourceLoadingResponse = Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
+			{
+				AssemblyName = assembly.GetName(),
+				ResourcePath = resourcePath,
+				Instance = target
+			});
+
+			var alternateResource = resourceLoadingResponse?.ResourceContent;
+			if (alternateResource != null)
+				return alternateResource;
+
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
+			if (resourceId == null)
+				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
+
+			using (var stream = assembly.GetManifestResourceStream(resourceId))
+			{
+				if (stream == null)
+					throw new XamlParseException($"No resource found for '{resourceId}'.", lineInfo);
+				using (var reader = new StreamReader(stream))
+					return reader.ReadToEnd();
+			}
+		}
 	}
 }

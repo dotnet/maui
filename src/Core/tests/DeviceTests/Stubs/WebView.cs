@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			=> NavigatingDelegate?.Invoke(evnt, url) ?? false;
 		public void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result)
 			=> NavigatedDelegate?.Invoke(evnt, url, result);
-
+		public void ProcessTerminated(WebProcessTerminatedEventArgs WebProcessTerminatedEventArgs) { }
 
 #pragma warning disable CS1998 // Ignore method lacks 'await' - Not all platforms need an await
 		public async Task<PlatformImage> Capture()
