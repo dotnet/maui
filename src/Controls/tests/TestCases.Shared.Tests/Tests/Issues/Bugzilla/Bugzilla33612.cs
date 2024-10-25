@@ -22,7 +22,7 @@ public class Bugzilla33612 : _IssuesUITest
 
 		App.WaitForElement("This is Page 2");
 		App.Screenshot("At Page 2");
-		App.Tap("Go to Page 3");
+		App.Tap("Go To Page 3");
 
 		App.WaitForElement("This is Page 3");
 		App.WaitForElement("Return To Page 2",
