@@ -392,6 +392,28 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
+  
+    <Style TargetType="TitleBar">
+        <Setter Property="MinimumHeightRequest" Value="32"/>
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="TitleActiveStates">
+                     <VisualState x:Name="TitleBarTitleActive">
+                         <VisualState.Setters>
+                             <Setter Property="BackgroundColor" Value="Transparent" />
+                             <Setter Property="ForegroundColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                         </VisualState.Setters>
+                     </VisualState>
+                     <VisualState x:Name="TitleBarTitleInactive">
+                         <VisualState.Setters>
+                             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
+                             <Setter Property="ForegroundColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
+                         </VisualState.Setters>
+                     </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
 
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>

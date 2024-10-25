@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 19955, "Navigating Back to FlyoutPage Renders Blank Page")]
 	public class Issue19955 : NavigationPage
@@ -12,7 +8,7 @@ namespace Maui.Controls.Sample.Issues
 
 		}
 
-		public partial class MainFlyout : FlyoutPage
+		public class MainFlyout : FlyoutPage
 		{
 			public MainFlyout()
 			{
@@ -25,8 +21,8 @@ namespace Maui.Controls.Sample.Issues
 				public MarkerNavigationPage() : base(new FirstPage())
 				{
 				}
-			}	
-			
+			}
+
 			class MarkerNavigationPage2 : NavigationPage
 			{
 				public MarkerNavigationPage2() : base(new FirstPage())
@@ -35,7 +31,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class MainFlyoutMenu : ContentPage
+		public class MainFlyoutMenu : ContentPage
 		{
 			public MainFlyoutMenu()
 			{
@@ -49,7 +45,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class FirstPage : ContentPage
+		public class FirstPage : ContentPage
 		{
 			public FirstPage()
 			{
@@ -64,11 +60,11 @@ namespace Maui.Controls.Sample.Issues
 
 			async void Button_Clicked()
 			{
-				await Application.Current.MainPage.Navigation.PushAsync(new SecondPage());
+				await this.Window.Page.Navigation.PushAsync(new SecondPage());
 			}
 		}
 
-		public partial class SecondPage : ContentPage
+		public class SecondPage : ContentPage
 		{
 			public SecondPage()
 			{
@@ -78,13 +74,13 @@ namespace Maui.Controls.Sample.Issues
 						Text = "Navigate back to first page",
 						Command = new Command(Button_Clicked),
 						AutomationId = "NavigateBackToFirstPageButton"
-					}	
+					}
 				};
 			}
 
 			async void Button_Clicked()
 			{
-				await Application.Current.MainPage.Navigation.PopAsync();
+				await this.Window.Page.Navigation.PopAsync();
 			}
 		}
 	}

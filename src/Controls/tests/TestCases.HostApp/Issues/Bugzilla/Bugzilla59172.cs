@@ -1,11 +1,6 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla,
 			59172, "[iOS] Popped page does not appear on top of current navigation stack, please file a bug.",
 			PlatformAffected.iOS)]
@@ -23,7 +18,7 @@ namespace Maui.Controls.Sample.Issues
 				Navigation.PushAsync(firstPage);
 			}
 
-			[Preserve(AllMembers = true)]
+
 			public class TestPage : ContentPage
 			{
 				TestPage parent;

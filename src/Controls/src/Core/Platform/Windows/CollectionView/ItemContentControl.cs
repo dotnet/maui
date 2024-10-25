@@ -10,7 +10,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ItemContentControl : ContentControl
+	public partial class ItemContentControl : ContentControl
 	{
 		VisualElement _visualElement;
 		IViewHandler _handler;
@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal VisualElement GetVisualElement() => _visualElement;
 
-		class ContentLayoutPanel : Panel
+		partial class ContentLayoutPanel : Panel
 		{
 			IView _view;
 			public ContentLayoutPanel(IView view)

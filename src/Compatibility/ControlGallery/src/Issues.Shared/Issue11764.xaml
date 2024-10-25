@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
     mc:Ignorable="d"
     x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11764"
     x:Name="Issue11764Page"
@@ -26,13 +27,13 @@
                             BackgroundColor="Red">
                             <SwipeView.GestureRecognizers>
                                 <TapGestureRecognizer
-                                    Command="{Binding BindingContext.TapCommand, Source={x:Reference Issue11764Page}}"
+                                    Command="{Binding TapCommand, Source={x:Reference Issue11764Page}, x:DataType=local:Issue11764}"
                                     CommandParameter="{Binding}" />
                             </SwipeView.GestureRecognizers>
                             <SwipeView.RightItems>
                                 <SwipeItems>
                                     <SwipeItemView
-                                        Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Issue11764Page}}"
+                                        Command="{Binding DeleteCommand, Source={x:Reference Issue11764Page}, x:DataType=local:Issue11764}"
                                         CommandParameter="{Binding}">
                                         <Grid
                                             BackgroundColor="LightSlateGray">
@@ -58,7 +59,7 @@
                                         </Grid>
                                     </SwipeItemView>
                                     <SwipeItemView
-                                        Command="{Binding BindingContext.PinCommand, Source={x:Reference Issue11764Page}}"
+                                        Command="{Binding PinCommand, Source={x:Reference Issue11764Page}, x:DataType=local:Issue11764}"
                                         CommandParameter="{Binding}">
                                         <Grid
                                             BackgroundColor="LightSlateGray">

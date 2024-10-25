@@ -1,0 +1,170 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+    - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - '**.md'
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    - feature/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - '**.md'
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+
+  - name: _BuildConfig
+    value: Release
+  - name: Build.Arcade.ArtifactsPath
+    value: $(Build.SourcesDirectory)/artifacts/
+  - name: Build.Arcade.LogsPath
+    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  - name: Build.Arcade.TestResultsPath
+    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+
+  # needed for darc (dependency flow) publishing
+  - name: _PublishArgs
+    value: ''
+  - name: _OfficialBuildIdArgs
+    value: ''
+  # needed for signing
+  - name: _SignType
+    value: test
+  - name: _SignArgs
+    value: ''
+  - name: _Sign
+    value: false
+  - name: HelixApiAccessToken
+    value: ''
+  - name: _InternalBuildArgs
+    value: ''
+
+
+stages:
+
+# ----------------------------------------------------------------
+# This stage performs build, test, packaging
+# ----------------------------------------------------------------
+- stage: build
+  displayName: Build
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      artifacts:
+        publish:
+          artifacts: false
+          logs:
+            name: 'Logs_Build_$(Agent.JobName)_$(_BuildConfig)'
+          manifests: true
+      enableMicrobuild: true
+      enablePublishUsingPipelines: true
+      publishAssetsImmediately: true
+      enablePublishTestResults: true
+      enableSourceBuild: true
+      testResultsFormat: vstest
+      enableSourceIndex: false
+      workspace:
+        clean: all
+
+      jobs:
+
+      - ${{ each testVariant in split(',_helix_tests', ',') }}:
+        - job: Windows${{ testVariant }}
+
+          # timeout accounts for wait times for helix agents up to 30mins
+          timeoutInMinutes: 90
+
+          pool:
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals windows.vs2022preview.amd64.open
+
+          variables:
+            - name: _buildScript
+              value: $(Build.SourcesDirectory)/build.cmd -ci
+
+          preSteps:
+            - checkout: self
+              fetchDepth: 1
+              clean: true
+
+          steps:
+            - template: /eng/pipelines/common/build-test-pack.yml
+              parameters:
+                runAsPublic: true
+                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                buildScript: $(_buildScript)
+                buildConfig: $(_BuildConfig)
+                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                isWindows: true
+                runHelixTests: ${{ contains(testVariant, 'helix') }}
+
+# ----------------------------------------------------------------
+# This stage performs quality gates checks
+# ----------------------------------------------------------------
+- stage: codecoverage
+  displayName: CodeCoverage
+  dependsOn:
+    - build
+  condition: succeeded('build')
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enableTelemetry: true
+      runAsPublic: false
+      workspace:
+        clean: all
+
+      # ----------------------------------------------------------------
+      # This stage downloads the code coverage reports from the build jobs,
+      # merges those and validates the combined test coverage.
+      # ----------------------------------------------------------------
+      jobs:
+      - job: CodeCoverageReport
+        timeoutInMinutes: 10
+
+        pool:
+          name: $(DncEngPublicBuildPool)
+          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+
+        preSteps:
+          - checkout: self
+            fetchDepth: 1
+            clean: true
+
+        steps:
+        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
+          displayName: Init toolset
+
+        - template: /eng/pipelines/templates/VerifyCoverageReport.yml
+          parameters:
+            # matches what is used in the conditions for the build/test jobs
+            testVariants: ',_helix_tests'

@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 3333, "[UWP] with ListView on page, Navigation.PopAsync() throws exception",
 		PlatformAffected.UWP)]
 	public class Issue3333 : NavigationPage
@@ -23,8 +19,8 @@ namespace Maui.Controls.Sample.Issues
 				this.Navigation.PushAsync(testPage);
 			}
 
-			[Preserve(AllMembers = true)]
-			public partial class TestPage : ContentPage
+
+			public class TestPage : ContentPage
 			{
 				Label content = new Label();
 				public TestPage()
@@ -47,7 +43,6 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
 			public class TestPage2 : ContentPage
 			{
 				public List<string> Items
