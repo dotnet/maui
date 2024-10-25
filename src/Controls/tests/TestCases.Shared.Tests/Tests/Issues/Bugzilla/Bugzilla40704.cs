@@ -13,15 +13,15 @@ public class Bugzilla40704 : _IssuesUITest
 
 	public override string Issue => "Strange duplication of listview headers when collapsing/expanding sections";
 
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Bugzilla40704HeaderPresentTest()
 	// {
 	// 	App.WaitForElement("Menu - 0");
 	// }
 
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Bugzilla40704Test()
 	// {
