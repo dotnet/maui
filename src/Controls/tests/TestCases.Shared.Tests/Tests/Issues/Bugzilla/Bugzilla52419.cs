@@ -15,7 +15,7 @@ public class Bugzilla52419 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// public void Bugzilla52419Test()
 	// {
 	// 	RunningApp.WaitForElement(q => q.Marked("Push new page"));
