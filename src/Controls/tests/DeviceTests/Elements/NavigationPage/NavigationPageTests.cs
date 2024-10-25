@@ -351,7 +351,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Does Not Leak", Skip = "Failing")]
+		[Fact(DisplayName = "Does Not Leak"
+#if WINDOWS
+			, Skip = "Failing"
+#endif
+		)]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
@@ -376,7 +380,11 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
 
-		[Fact(DisplayName = "Child Pages Do Not Leak", Skip = "Failing/unstable")]
+		[Fact(DisplayName = "Child Pages Do Not Leak"
+#if WINDOWS
+			, Skip = "Failing/unstable"
+#endif
+		)]
 		public async Task ChildPagesDoNotLeak()
 		{
 

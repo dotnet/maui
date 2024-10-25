@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
 		// It sets image.Source and waits for it to load, a valid test case.
-		[Fact("Image Does Not Leak", Skip = "Do not run GC dependent tests")]
+		[Fact("Image Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();

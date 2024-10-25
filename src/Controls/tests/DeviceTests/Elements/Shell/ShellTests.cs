@@ -933,7 +933,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Fact(DisplayName = "Pages Do Not Leak", Skip = "Do not run GC dependent tests")]
+		[Fact(DisplayName = "Pages Do Not Leak")]
 		public async Task PagesDoNotLeak()
 		{
 			SetupBuilder();

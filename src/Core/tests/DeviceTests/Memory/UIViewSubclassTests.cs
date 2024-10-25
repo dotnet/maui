@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 		void DoAction() { }
 		void DoAction(object data) { }
 
-		[Fact(Skip = "Do not run GC dependent tests")]
+		[Fact]
 		public async Task MauiDoneAccessoryView_Ctor()
 		{
 			WeakReference reference = null;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			await AssertionExtensions.WaitForGC(reference);
 		}
 
-		[Fact(Skip = "Do not run GC dependent tests")]
+		[Fact]
 		public async Task MauiDoneAccessoryView_SetDoneClicked()
 		{
 			WeakReference reference = null;
