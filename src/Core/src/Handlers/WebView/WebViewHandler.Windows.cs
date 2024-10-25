@@ -197,10 +197,6 @@ namespace Microsoft.Maui.Handlers
 
 		internal async Task SyncPlatformCookies(string url)
 		{
-			// While setting a cookie in MAUI WebView at load time, CoreWebView2 is null before the CoreWebView2Initialized event is triggered.
-			if (PlatformView.CoreWebView2 is null)
-				return;
-				
 			var uri = CreateUriForCookies(url);
 
 			if (uri is null)
@@ -221,8 +217,8 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (Cookie cookie in cookies)
 			{
-				var createdCookie = PlatformView.CoreWebView2.CookieManager.CreateCookie(cookie.Name, cookie.Value, cookie.Domain, cookie.Path);
-				PlatformView.CoreWebView2.CookieManager.AddOrUpdateCookie(createdCookie);
+				var createdCookie = PlatformView.CoreWebView2?.CookieManager.CreateCookie(cookie.Name, cookie.Value, cookie.Domain, cookie.Path);
+				PlatformView.CoreWebView2?.CookieManager.AddOrUpdateCookie(createdCookie);
 			}
 
 			foreach (CoreWebView2Cookie cookie in retrieveCurrentWebCookies)
@@ -230,7 +226,7 @@ namespace Microsoft.Maui.Handlers
 				if (cookies[cookie.Name] is not null)
 					continue;
 
-				PlatformView.CoreWebView2.CookieManager.DeleteCookie(cookie);
+				PlatformView.CoreWebView2?.CookieManager.DeleteCookie(cookie);
 			}
 		}
 
@@ -272,6 +268,8 @@ namespace Microsoft.Maui.Handlers
 
 		Task<IReadOnlyList<CoreWebView2Cookie>> GetCookiesFromPlatformStore(string url)
 		{
+			if (PlatformView.CoreWebView2 is null)
+				return Task.FromResult<IReadOnlyList<CoreWebView2Cookie>>(new List<CoreWebView2Cookie>());
 			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url).AsTask();
 		}
 
@@ -370,7 +368,10 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler && handler.VirtualView is not null)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
-					handler.SyncPlatformCookies(handler.PlatformView.Source.ToString()).FireAndForget();
+					if (handler.PlatformView.Source is not null)
+					{
+						handler.SyncPlatformCookies(handler.PlatformView.Source.ToString()).FireAndForget();
+					}
 				}
 			}
 
