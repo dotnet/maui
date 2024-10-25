@@ -10,7 +10,6 @@ public class Issue24864 : ContentPage
 		{
 			new Button
 			{
-				AutomationId = "button",
 				BorderWidth = 10,
 				TextColor = Colors.Black,
 				BackgroundColor = Colors.Transparent,
@@ -21,6 +20,11 @@ public class Issue24864 : ContentPage
 			{
 				BorderWidth = 1,
 				BackgroundColor = Colors.Transparent,
+			},
+			new Label()
+			{
+				TextColor = Colors.White,
+				AutomationId = "label"
 			}
 		};
 	}
