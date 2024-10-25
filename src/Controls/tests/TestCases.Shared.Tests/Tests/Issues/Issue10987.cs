@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		public void EditorPlaceholderRuntimeTextAlignmentChanged()
 		{
-			App.WaitForElement("Editor");
+			App.WaitForElement("RTLEditor");
 			App.Tap("Button");
 			VerifyScreenshot();
 		}
@@ -22,10 +22,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		public void EditorRuntimeTextAlignmentChanged()
 		{
-			App.WaitForElement("Editor");
+			App.WaitForElement("RTLEditor");
 			App.EnterText("Editor", "Editor Text");
+			App.EnterText("RTLEditor", "RTL Editor");
+			var app = App as AppiumApp;
+			KeyboardScrolling.HideKeyboard(app!, app!.Driver, true);
 			App.Tap("ResetButton");
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
