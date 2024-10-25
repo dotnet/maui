@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Gestures)]
-		[FailsOnMac("VerifyScreenshot method is not implemented on macOS")]
 		public void TapGestureRecognizerNotWorkingOnEntry()
 		{
 			App.WaitForElement("Entry");
@@ -24,3 +24,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
