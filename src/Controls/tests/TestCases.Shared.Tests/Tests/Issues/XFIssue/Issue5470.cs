@@ -18,6 +18,6 @@ public class Issue5470 : _IssuesUITest
 	//public void Issue5470Test()
 	//{
 	//	Thread.Sleep(500); // give it time to crash
-	//	RunningApp.WaitForElement(q => q.Marked("IssuePageLabel"));
+	//	App.WaitForElement(q => q.Marked("IssuePageLabel"));
 	//}
 }

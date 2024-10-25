@@ -18,13 +18,13 @@ public class Issue2794 : _IssuesUITest
 	// [FailsOnAndroid]
 	// public void Issue2794Test()
 	// {
-	// 	RunningApp.TouchAndHold(x => x.Marked("Cell2"));
-	// 	RunningApp.Tap(x => x.Text("Delete me first"));
-	// 	RunningApp.WaitForNoElement(q => q.Marked("Cell2"));
+	// 	App.TouchAndHold(x => x.Marked("Cell2"));
+	// 	App.Tap(x => x.Text("Delete me first"));
+	// 	App.WaitForNoElement(q => q.Marked("Cell2"));
 
-	// 	RunningApp.TouchAndHold(x => x.Marked("Cell1"));
-	// 	RunningApp.Tap(x => x.Text("Delete me after"));
-	// 	RunningApp.WaitForNoElement(q => q.Marked("Cell1"));
+	// 	App.TouchAndHold(x => x.Marked("Cell1"));
+	// 	App.Tap(x => x.Text("Delete me after"));
+	// 	App.WaitForNoElement(q => q.Marked("Cell1"));
 	// }
 }
 #endif

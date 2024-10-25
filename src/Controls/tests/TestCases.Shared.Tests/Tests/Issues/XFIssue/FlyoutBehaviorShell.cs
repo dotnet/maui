@@ -17,54 +17,54 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	// public void FlyoutTests()
 	// {
 	// 	// Flyout is visible
-	// 	RunningApp.WaitForElement(EnableFlyoutBehavior);
+	// 	App.WaitForElement(EnableFlyoutBehavior);
 
 	// 	// Starting shell out as disabled correctly disables flyout
-	// 	RunningApp.WaitForNoElement(FlyoutIconAutomationId, "Flyout Icon Visible on Startup");
+	// 	App.WaitForNoElement(FlyoutIconAutomationId, "Flyout Icon Visible on Startup");
 	// 	ShowFlyout(usingSwipe: true, testForFlyoutIcon: false);
-	// 	RunningApp.WaitForNoElement(FlyoutItem, "Flyout Visible on Startup");
+	// 	App.WaitForNoElement(FlyoutItem, "Flyout Visible on Startup");
 
 	// 	// Enable Flyout Test
-	// 	RunningApp.Tap(EnableFlyoutBehavior);
+	// 	App.Tap(EnableFlyoutBehavior);
 	// 	ShowFlyout(usingSwipe: true);
-	// 	RunningApp.WaitForElement(FlyoutItem, "Flyout Not Visible after Enabled");
-	// 	RunningApp.Tap(FlyoutItem);
+	// 	App.WaitForElement(FlyoutItem, "Flyout Not Visible after Enabled");
+	// 	App.Tap(FlyoutItem);
 
 	// 	// Flyout Icon is not visible but you can still swipe open
-	// 	RunningApp.Tap(DisableFlyoutBehavior);
-	// 	RunningApp.WaitForNoElement(FlyoutIconAutomationId, "Flyout Icon Visible after being Disabled");
+	// 	App.Tap(DisableFlyoutBehavior);
+	// 	App.WaitForNoElement(FlyoutIconAutomationId, "Flyout Icon Visible after being Disabled");
 	// 	ShowFlyout(usingSwipe: true, testForFlyoutIcon: false);
-	// 	RunningApp.WaitForNoElement(FlyoutItem, "Flyout Visible after being Disabled");
+	// 	App.WaitForNoElement(FlyoutItem, "Flyout Visible after being Disabled");
 
 
 	// 	// enable flyout and make sure disabling back button behavior doesn't hide icon
-	// 	RunningApp.Tap(EnableFlyoutBehavior);
-	// 	RunningApp.WaitForElement(FlyoutIconAutomationId);
-	// 	RunningApp.Tap(DisableBackButtonBehavior);
+	// 	App.Tap(EnableFlyoutBehavior);
+	// 	App.WaitForElement(FlyoutIconAutomationId);
+	// 	App.Tap(DisableBackButtonBehavior);
 	// 	ShowFlyout(usingSwipe: true);
-	// 	RunningApp.WaitForElement(FlyoutItem, "Flyout swipe not working after Disabling Back Button Behavior");
-	// 	RunningApp.Tap(FlyoutItem);
+	// 	App.WaitForElement(FlyoutItem, "Flyout swipe not working after Disabling Back Button Behavior");
+	// 	App.Tap(FlyoutItem);
 
 	// 	// make sure you can still open flyout via code
-	// 	RunningApp.Tap(EnableFlyoutBehavior);
-	// 	RunningApp.Tap(EnableBackButtonBehavior);
-	// 	RunningApp.Tap(OpenFlyout);
-	// 	RunningApp.WaitForElement(FlyoutItem, "Flyout not opening via code");
-	// 	RunningApp.Tap(FlyoutItem);
+	// 	App.Tap(EnableFlyoutBehavior);
+	// 	App.Tap(EnableBackButtonBehavior);
+	// 	App.Tap(OpenFlyout);
+	// 	App.WaitForElement(FlyoutItem, "Flyout not opening via code");
+	// 	App.Tap(FlyoutItem);
 
 	// 	// make sure you can still open flyout via code if flyout behavior is disabled
-	// 	RunningApp.Tap(DisableFlyoutBehavior);
-	// 	RunningApp.Tap(EnableBackButtonBehavior);
-	// 	RunningApp.Tap(OpenFlyout);
-	// 	RunningApp.WaitForElement(FlyoutItem, "Flyout not opening via code when flyout behavior disabled");
-	// 	RunningApp.Tap(FlyoutItem);
+	// 	App.Tap(DisableFlyoutBehavior);
+	// 	App.Tap(EnableBackButtonBehavior);
+	// 	App.Tap(OpenFlyout);
+	// 	App.WaitForElement(FlyoutItem, "Flyout not opening via code when flyout behavior disabled");
+	// 	App.Tap(FlyoutItem);
 
 	// 	// make sure you can still open flyout via code if back button behavior is disabled
-	// 	RunningApp.Tap(EnableFlyoutBehavior);
-	// 	RunningApp.Tap(DisableBackButtonBehavior);
-	// 	RunningApp.Tap(OpenFlyout);
-	// 	RunningApp.WaitForElement(FlyoutItem, "Flyout not opening via code when back button behavior is disabled");
-	// 	RunningApp.Tap(FlyoutItem);
+	// 	App.Tap(EnableFlyoutBehavior);
+	// 	App.Tap(DisableBackButtonBehavior);
+	// 	App.Tap(OpenFlyout);
+	// 	App.WaitForElement(FlyoutItem, "Flyout not opening via code when back button behavior is disabled");
+	// 	App.Tap(FlyoutItem);
 
 	// }
 
@@ -72,10 +72,10 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	// public void WhenFlyoutIsLockedButtonsAreStillVisible()
 	// {
 	// 	// FlyoutLocked ensure that the flyout and buttons are still visible
-	// 	RunningApp.Tap(EnableBackButtonBehavior);
-	// 	RunningApp.Tap(LockFlyoutBehavior);
-	// 	RunningApp.WaitForElement(title, "Flyout Locked hiding content");
-	// 	RunningApp.Tap(EnableFlyoutBehavior);
-	// 	RunningApp.WaitForNoElement(FlyoutItem);
+	// 	App.Tap(EnableBackButtonBehavior);
+	// 	App.Tap(LockFlyoutBehavior);
+	// 	App.WaitForElement(title, "Flyout Locked hiding content");
+	// 	App.Tap(EnableFlyoutBehavior);
+	// 	App.WaitForNoElement(FlyoutItem);
 	// }
 }

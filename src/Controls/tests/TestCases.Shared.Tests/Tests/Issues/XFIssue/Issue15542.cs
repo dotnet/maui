@@ -16,8 +16,8 @@ public class Issue15542 : _IssuesUITest
 	// [Category(UITestCategories.TitleView)]
 	// public void TitleViewHeightDoesntOverflow()
 	// {
-	// 	var titleView = RunningApp.WaitForElement("TitleViewId")[0].Rect;
-	// 	var topTab = RunningApp.WaitForElement("page 1")[0].Rect;
+	// 	var titleView = App.WaitForElement("TitleViewId")[0].Rect;
+	// 	var topTab = App.WaitForElement("page 1")[0].Rect;
 
 	// 	var titleViewBottom = titleView.Y + titleView.Height;
 	// 	var topTabTop = topTab.Y;
