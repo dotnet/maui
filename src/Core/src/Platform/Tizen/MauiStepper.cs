@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateIncrement(IStepper stepper)
 		{
-			Increment = stepper.Increment;
+			Increment = stepper.Interval;
 		}
 
 		public void UpdateValue(IStepper stepper)

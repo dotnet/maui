@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IStepper, IStepperHandler> Mapper = new PropertyMapper<IStepper, StepperHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(IStepper.Increment)] = MapIncrement,
+			[nameof(IStepper.Interval)] = MapIncrement,
 			[nameof(IStepper.Maximum)] = MapMaximum,
 			[nameof(IStepper.Minimum)] = MapMinimum,
 			[nameof(IStepper.Value)] = MapValue,

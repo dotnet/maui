@@ -68,8 +68,4 @@ static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void
-static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
-Microsoft.Maui.IStepper.Increment.get -> double
-*REMOVED*Microsoft.Maui.IStepper.Interval.get -> double
-*REMOVED*static Microsoft.Maui.Platform.StepperExtensions.UpdateInterval(this Microsoft.Maui.Platform.MauiStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
