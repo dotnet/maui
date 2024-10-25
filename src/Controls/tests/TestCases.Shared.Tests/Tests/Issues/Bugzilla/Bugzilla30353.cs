@@ -15,7 +15,7 @@ public class Bugzilla30353 : _IssuesUITest
 
 	// There is 2 "Toggle" in the UI, which is which? They also need AutomationIds
 	// [Test]
-	// [FailsOnMacWhenRunningOnXamarinUITestWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest]
+	// [FailsOnMacWhenRunningOnXamarinUITest]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Category(UITestCategories.FlyoutPage)]
 	// public void FlyoutPageIsPresentedChangedRaised()

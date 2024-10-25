@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("Currently fails on Android; see https://github.com/dotnet/maui/issues/19213")]
-		[FailsOnIOSWhenRunningOnXamarinUITestWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest("Currently fails https://github.com/dotnet/maui/pull/19181")]
-		[FailsOnMacWhenRunningOnXamarinUITestWhenRunningOnXamarinUITest("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails https://github.com/dotnet/maui/pull/19181")]
+		[FailsOnMacWhenRunningOnXamarinUITest("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails https://github.com/dotnet/maui/pull/19181")]
 		public void ScrollDisabled()
 		{
