@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Button)]
 		public void ButtonShouldHaveTransparentBorder()
 		{
-			App.WaitForElement("button");
-
+			App.WaitForElement("label");
 			VerifyScreenshot();
 		}
 	}
