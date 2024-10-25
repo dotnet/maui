@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[FailsOnWindows]
 		public void VerifyLabelSpanGestureWhenWrappedOverTwoLines()
 		{
 			var label = App.WaitForElement("Label");
@@ -27,3 +27,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
