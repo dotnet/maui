@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -20,6 +24,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler<HybridWebView, HybridWebViewHandler>();
 				});
+
+				builder.Services.AddHybridWebViewDeveloperTools();
 			});
 		}
 
@@ -60,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					const string TestRawMessage = "Hybrid\"\"'' {Test} with chars!";
 					hybridWebView.SendRawMessage(TestRawMessage);
@@ -113,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var x = 123.456m;
 					var y = 654.321m;
@@ -121,8 +127,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
 						"AddNumbersWithNulls",
 						HybridWebViewTestContext.Default.ComputationResult,
-						new object[] { x, null, y, null },
-						new[] { HybridWebViewTestContext.Default.Decimal, null, HybridWebViewTestContext.Default.Decimal, null });
+						[x, null, y, null],
+						[HybridWebViewTestContext.Default.Decimal, null, HybridWebViewTestContext.Default.Decimal, null]);
 
 					Assert.NotNull(result);
 					Assert.Equal(777.777m, result.result);
@@ -161,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var x = 123.456m;
 					var y = 654.321m;
@@ -169,8 +175,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
 						"EvaluateMeWithParamsAndReturn",
 						HybridWebViewTestContext.Default.Decimal,
-						new object[] { x, y },
-						new[] { HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal });
+						[x, y],
+						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
 					Assert.Equal(777.777m, result);
 				});
@@ -207,7 +213,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var x = 123.456m;
 					var y = 654.321m;
@@ -215,8 +221,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
 						"AddNumbers",
 						HybridWebViewTestContext.Default.ComputationResult,
-						new object[] { x, y },
-						new[] { HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal });
+						[x, y],
+						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
 					Assert.NotNull(result);
 					Assert.Equal(777.777m, result.result);
@@ -255,7 +261,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					var s1 = "new_key";
 					var s2 = "new_value";
@@ -263,8 +269,8 @@ namespace Microsoft.Maui.DeviceTests
 					var result = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
 						"EvaluateMeWithParamsAndAsyncReturn",
 						HybridWebViewTestContext.Default.DictionaryStringString,
-						new object[] { s1, s2 },
-						new[] { HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String });
+						[s1, s2],
+						[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
 
 					Assert.NotNull(result);
 					Assert.Equal(3, result.Count);
@@ -305,7 +311,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Set up the view to be displayed/parented and run our tests on it
 				await AttachAndRun(hybridWebView, async (handler) =>
 				{
-					await WaitForHybridWebViewLoaded(hybridWebView);
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 					// Run some JavaScript to call a method and get result
 					var result1 = await hybridWebView.EvaluateJavaScriptAsync("EvaluateMeWithParamsAndReturn('abc', 'def')");
@@ -316,6 +322,153 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal("test_value", result2);
 				});
 			});
+		}
+
+		[Theory]
+		[ClassData(typeof(InvokeJavaScriptAsyncTestData))]
+		public async Task InvokeDotNet(string methodName, string expectedReturnValue)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var invokeJavaScriptTarget = new TestDotNetMethods();
+
+				var hybridWebView = new HybridWebView()
+				{
+					WidthRequest = 100,
+					HeightRequest = 100,
+
+					HybridRoot = "HybridTestRoot",
+					DefaultFile = "invokedotnettests.html",
+				};
+				hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
+
+				var handler = CreateHandler(hybridWebView);
+
+				var platformView = handler.PlatformView;
+
+				// Set up the view to be displayed/parented and run our tests on it
+				await AttachAndRun(hybridWebView, async (handler) =>
+				{
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+
+					//await Task.Delay(15_000);
+
+					// Tell JavaScript to invoke the method
+					hybridWebView.SendRawMessage(methodName);
+
+					// Wait for method invocation to complete
+					await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
+
+					// Run some JavaScript to see if it got the expected result
+					var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
+					Assert.Equal(expectedReturnValue, result);
+					Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
+				});
+			});
+		}
+
+		private class TestDotNetMethods
+		{
+			public string LastMethodCalled { get; private set; }
+
+			public void Invoke_NoParam_NoReturn()
+			{
+				UpdateLastMethodCalled();
+			}
+
+			public object Invoke_NoParam_ReturnNull()
+			{
+				UpdateLastMethodCalled();
+				return null;
+			}
+
+			public int Invoke_OneParam_ReturnValueType(Dictionary<string, int> dict)
+			{
+				Assert.NotNull(dict);
+				Assert.Equal(2, dict.Count);
+				Assert.Equal(111, dict["first"]);
+				Assert.Equal(222, dict["second"]);
+				UpdateLastMethodCalled();
+				return dict.Count;
+			}
+
+			public Dictionary<string, int> Invoke_OneParam_ReturnDictionary(Dictionary<string, int> dict)
+			{
+				Assert.NotNull(dict);
+				Assert.Equal(2, dict.Count);
+				Assert.Equal(111, dict["first"]);
+				Assert.Equal(222, dict["second"]);
+				UpdateLastMethodCalled();
+				dict["third"] = 333;
+				return dict;
+			}
+
+			public ComputationResult Invoke_NullParam_ReturnComplex(object obj)
+			{
+				Assert.Null(obj);
+				UpdateLastMethodCalled();
+				return new ComputationResult { result = 123, operationName = "Test" };
+			}
+
+			public void Invoke_ManyParams_NoReturn(Dictionary<string, int> dict, string str, object obj, ComputationResult computationResult, int[] arr)
+			{
+				Assert.NotNull(dict);
+				Assert.Equal(2, dict.Count);
+				Assert.Equal(111, dict["first"]);
+				Assert.Equal(222, dict["second"]);
+
+				Assert.Equal("hello", str);
+
+				Assert.Null(obj);
+
+				Assert.NotNull(computationResult);
+				Assert.Equal("invoke_method", computationResult.operationName);
+				Assert.Equal(123.456m, computationResult.result, 6);
+
+				Assert.NotNull(arr);
+				Assert.Equal(2, arr.Length);
+				Assert.Equal(111, arr[0]);
+				Assert.Equal(222, arr[1]);
+
+				UpdateLastMethodCalled();
+			}
+
+			private void UpdateLastMethodCalled([CallerMemberName] string methodName = null)
+			{
+				LastMethodCalled = methodName;
+			}
+		}
+
+		private class InvokeJavaScriptAsyncTestData : IEnumerable<object[]>
+		{
+			public IEnumerator<object[]> GetEnumerator()
+			{
+				// Test variations of:
+				// 1. Data type: ValueType, RefType, string, complex type
+				// 2. Containers of those types: array, dictionary
+				// 3. Methods with different return values (none, simple, complex, etc.)
+				yield return new object[] { "Invoke_NoParam_NoReturn", null };
+				yield return new object[] { "Invoke_NoParam_ReturnNull", null };
+				yield return new object[] { "Invoke_OneParam_ReturnValueType", 2 };
+				yield return new object[] { "Invoke_OneParam_ReturnDictionary", "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}" };
+				yield return new object[] { "Invoke_NullParam_ReturnComplex", "{\\\"result\\\":123,\\\"operationName\\\":\\\"Test\\\"}" };
+				yield return new object[] { "Invoke_ManyParams_NoReturn", null };
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
 		}
 
 		public class ComputationResult
@@ -333,25 +486,42 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		private async Task WaitForHybridWebViewLoaded(HybridWebView hybridWebView)
+		public static partial class WebViewHelpers
 		{
-			const int NumRetries = 40;
-			const int RetryDelay = 500;
-			for (var i = 0; i < NumRetries; i++)
-			{
-				// 1. Check that the window.HybridWebView object exists (as set by HybridWebView.js)
-				// 2. Check that the test page's HTML is loaded by checking for the HTML element defined in the Resources\Raw\HybridTestRoot\index.html test page
+			const int MaxWaitTimes = 60;
+			const int WaitTimeInMS = 250;
 
-				var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
-				if (loaded == "true")
+			private static async Task Retry(Func<Task<bool>> tryAction, Func<int, Task<Exception>> createExceptionWithTimeoutMS)
+			{
+				for (var i = 0; i < MaxWaitTimes; i++)
 				{
-					return;
+					if (await tryAction())
+					{
+						return;
+					}
+					await Task.Delay(WaitTimeInMS);
 				}
 
-				await Task.Delay(RetryDelay);
+				throw await createExceptionWithTimeoutMS(MaxWaitTimes * WaitTimeInMS);
 			}
 
-			Assert.Fail($"Waited {NumRetries * RetryDelay:N0}ms for the HybridWebView test page to be ready, but it wasn't.");
+			public static async Task WaitForHybridWebViewLoaded(HybridWebView hybridWebView)
+			{
+				await Retry(async () =>
+				{
+					var loaded = await hybridWebView.EvaluateJavaScriptAsync("('HybridWebView' in window && Object.prototype.hasOwnProperty.call(window, 'HybridWebView')) && (document.getElementById('htmlLoaded') !== null)");
+					return loaded == "true";
+				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get the HybridWebView test page to be ready.")));
+			}
+
+			public static async Task WaitForHtmlStatusSet(HybridWebView hybridWebView)
+			{
+				await Retry(async () =>
+				{
+					var controlValue = await hybridWebView.EvaluateJavaScriptAsync("document.getElementById('status').innerText");
+					return !string.IsNullOrEmpty(controlValue);
+				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get status element to have a non-empty value.")));
+			}
 		}
 	}
 }
