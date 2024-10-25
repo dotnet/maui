@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 
 			Background =
 				new Microsoft.UI.Xaml.Media.LinearGradientBrush(
-					new Microsoft.UI.Xaml.Media.GradientStopCollection { new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Green, Offset = 0.5 }, new Microsoft.UI.Xaml.Media.GradientStop { Color = Colors.Blue, Offset = 1 } }, 0);
+					new Microsoft.UI.Xaml.Media.GradientStopCollection { new Microsoft.UI.Xaml.Media.GradientStop { Color = global::Microsoft.UI.Colors.Green, Offset = 0.5 }, new Microsoft.UI.Xaml.Media.GradientStop { Color = global::Microsoft.UI.Colors.Blue, Offset = 1 } }, 0);
 		}
 
 		public static readonly DependencyProperty TextProperty = DependencyProperty.Register(

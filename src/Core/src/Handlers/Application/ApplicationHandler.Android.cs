@@ -31,6 +31,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				// TODO.
+			}
+		}
+
 		internal static partial void MapAppTheme(ApplicationHandler handler, IApplication application)
 		{
 			application?.UpdateNightMode();

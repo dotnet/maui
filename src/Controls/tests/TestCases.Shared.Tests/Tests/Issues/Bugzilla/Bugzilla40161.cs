@@ -14,7 +14,7 @@ public class Bugzilla40161 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Layout)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Issue1Test()
 	// {
 	// 	App.Screenshot("I am at Issue 40161");

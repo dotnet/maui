@@ -228,6 +228,8 @@ namespace Microsoft.Maui.Platform
 					wrapperView.Shadow = view.Shadow;
 			}
 		}
+
+		[Obsolete("IBorder is not used and will be removed in a future release.")]
 		public static void UpdateBorder(this UIView platformView, IView view)
 		{
 			var border = (view as IBorder)?.Border;

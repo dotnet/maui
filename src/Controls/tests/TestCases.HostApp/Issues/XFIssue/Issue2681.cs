@@ -11,7 +11,7 @@ public class Issue2681 : TestNavigationPage
 	}
 
 
-	public partial class FreezeMe : ContentPage
+	public class FreezeMe : ContentPage
 	{
 		public List<int> Items { get; set; }
 

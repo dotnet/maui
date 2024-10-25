@@ -1,3 +1,4 @@
+/*#if (SampleContent)*/
 .page {
     position: relative;
     display: flex;
@@ -75,3 +76,4 @@ main {
         padding-right: 1.5rem !important;
     }
 }
+/*#endif*/

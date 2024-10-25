@@ -150,7 +150,7 @@ steps:
       condition: succeeded()
       inputs:
         Contents: |
-          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/*.dll
+          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/Microsoft.Maui*.dll
         TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
         flattenFolders: false
 

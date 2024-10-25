@@ -189,6 +189,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler RemainingItemsThresholdReached;
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			// TODO hartez 2018-05-22 05:04 PM This 40,40 is what LV1 does; can we come up with something less arbitrary?

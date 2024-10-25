@@ -8,3 +8,4 @@
 # Blazor Desktop
 /src/BlazorWebView/                                     @dotnet/dotnet-maui-blazor-eng
 /src/Templates/src/templates/maui-blazor/               @dotnet/dotnet-maui-blazor-eng
+/src/Templates/src/templates/maui-blazor-solution/      @dotnet/dotnet-maui-blazor-eng

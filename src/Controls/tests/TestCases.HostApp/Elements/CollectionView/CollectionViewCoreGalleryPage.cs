@@ -1,4 +1,6 @@
 using Controls.Sample.UITests;
+using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
+using Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries;
 
@@ -35,6 +37,8 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 						// VisitAndUpdateItemsSource (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\CollectionViewUITests.cs)
 						TestBuilder.NavButton("Default Text Galleries", () => new DefaultTextGallery(), Navigation),
 						TestBuilder.NavButton("DataTemplate Galleries", () => new DataTemplateGallery(), Navigation),
+						TestBuilder.NavButton("Grouping Galleries", () => new GroupingGallery(), Navigation),
+						TestBuilder.NavButton("Header Footer Galleries", () => new HeaderFooterGallery(), Navigation),
 						TestBuilder.NavButton("Observable Collection Galleries", () => new ObservableCollectionGallery(), Navigation),
 						// SelectionShouldUpdateBinding (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundSingleSelection.cs)
 						// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)

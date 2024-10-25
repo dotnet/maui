@@ -5,6 +5,7 @@ parameters:
   skipProvisioning: $(skipProvisionator)
   skipAndroidSdks: false
   skipAndroidImages: false
+  installDefaultAndroidApi: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -12,6 +13,10 @@ parameters:
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
   certPass: $(pass--components-mac-ios-certificate-p12)
+  federatedServiceConnection: 'dotnetbuilds-internal-read'
+  outputVariableName: 'dotnetbuilds-internal-container-read-token'
+  expiryInHours: 1
+  base64Encode: false
 
 steps:
   # Prepare macOS
@@ -54,23 +59,26 @@ steps:
           SKIP_ANDROID_API_SDKS: 'true'
         ${{ if eq(parameters.skipAndroidImages, true) }}:
           SKIP_ANDROID_API_IMAGES: 'true'
+        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+          INSTALL_DEFAULT_ANDROID_API: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
-      echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
-      echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
+      echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_17_X64)"
+      echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_17_X64)"
+    #  brew install --cask microsoft-openjdk@17
     displayName: 'Setup JDK Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
   # Configure VS Mac for Xcode
   # This seems to be needed or else it will pick other xcode for example on xharness
-  - bash: |
-      set -x
-      mkdir -p ~/Library/Preferences/Xamarin
-      rm -f ~/Library/Preferences/Xamarin/Settings.plist
-      /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-      cat ~/Library/Preferences/Xamarin/Settings.plist || true
-    displayName: 'Configure Visual Studio'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+  # - bash: |
+  #     set -x
+  #     mkdir -p ~/Library/Preferences/Xamarin
+  #     rm -f ~/Library/Preferences/Xamarin/Settings.plist
+  #     /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+  #     cat ~/Library/Preferences/Xamarin/Settings.plist || true
+  #   displayName: 'Configure Visual Studio'
+  #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
   # Prepare Windows
   # Provision Additional Software
@@ -88,12 +96,14 @@ steps:
           SKIP_ANDROID_API_SDKS: 'true'
         ${{ if eq(parameters.skipAndroidImages, true) }}:
           SKIP_ANDROID_API_IMAGES: 'true'
+        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+          INSTALL_DEFAULT_ANDROID_API: 'true'
 
   - pwsh: |
-      if ($env:JAVA_HOME_11_X64) {
-        $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+      if ($env:JAVA_HOME_17_X64) {
+        $env:JAVA_HOME = $env:JAVA_HOME_17_X64
       } else {
-        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-17.*\bin\java.exe) | Select-Object -First 1
         if ($path -and (Test-Path $path)) {
           $env:JAVA_HOME = $path.Directory.Parent.FullName
         }
@@ -130,6 +140,7 @@ steps:
     inputs:
       packageType: sdk
       version: $(DOTNET_VERSION)
+      includePreviewVersions: true
 
   - pwsh: |
       dotnet --version
@@ -141,11 +152,11 @@ steps:
       displayName: 'Clear all NuGet caches'
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: PowerShell@2
-      condition: eq(variables['PrivateBuild'], 'true')
-      displayName: Setup Private Feeds Credentials
-      inputs:
-        filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-        arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-      env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+    - template: ../../common/templates-official/steps/enable-internal-sources.yml
+
+    - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
+      parameters:
+        federatedServiceConnection: ${{ parameters.federatedServiceConnection }}
+        outputVariableName: ${{ parameters.outputVariableName }}
+        expiryInHours: ${{ parameters.expiryInHours }}
+        base64Encode: ${{ parameters.base64Encode }}

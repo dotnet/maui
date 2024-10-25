@@ -3,7 +3,7 @@
 namespace Maui.Controls.Sample.Issues
 {
 	// Issue10300 (src\ControlGallery\src\Issues.Shared\Issue10300.cs
-	[Issue(IssueTracker.None, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException", PlatformAffected.iOS)]
+	[Issue(IssueTracker.None, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgumentOutOfRangeException", PlatformAffected.iOS)]
 	public class CarouselViewRemoveAt : ContentPage
 	{
 		readonly CarouselView _carousel;

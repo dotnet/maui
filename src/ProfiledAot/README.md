@@ -12,8 +12,8 @@ sure to build with `--configuration=Release`.
 Run the `Record` target on each project:
 
 ```bash
-$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui
-$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui-blazor
+$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui
+$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui-blazor
 ```
 
 You can also use `-r android-x64`, if you'd prefer an x86_64 emulator.
@@ -52,6 +52,25 @@ $ adb logcat -d | grep Displayed
 ```
 
 You can also use [profile-android.ps1][1] in this repo, or [profile.ps1][2].
+
+### Notes about NuGet caches
+
+To get a clear picture of before & after, you can copy over top of the
+previous profile with a command such as:
+
+```powershell
+cp -Verbose src\Controls\src\Build.Tasks\nuget\buildTransitive\netstandard2.0\*.aotprofile ~\.nuget\packages\microsoft.maui.controls.build.tasks\9.0.100-preview.2-dev\buildTransitive\netstandard2.0\
+```
+
+Note that sometimes stale builds of MAUI can exist in your
+`%NUGET_PACKAGES%` directory, sometimes I even run a command to
+manually clear it completely of all `*-dev` directories:
+
+```powershell
+rm -r ~\.nuget\packages\*\*-dev\
+```
+
+### How to verify specific methods are AOT'd
 
 To verify what methods are AOT'd, clear the log and enable AOT logging:
 

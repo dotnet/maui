@@ -14,7 +14,7 @@ public class Bugzilla33870 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla33870Test()
 	// {
 	// 	App.WaitForElement("PageContentAutomatedId");

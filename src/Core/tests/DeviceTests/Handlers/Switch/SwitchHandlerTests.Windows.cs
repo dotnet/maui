@@ -1,12 +1,30 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Xunit;
 using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwitchHandlerTests
 	{
+		[Fact(DisplayName = "On and Off Content is null")]
+		public async Task OnOffNullContent()
+		{
+			var switchStub = new SwitchStub()
+			{
+				IsOn = true
+			};
+			await AttachAndRun(switchStub, (handler) =>
+			{
+				var toggleSwitch = handler.PlatformView;
+				Assert.NotNull(toggleSwitch);
+				Assert.Null(toggleSwitch.OffContent);
+				Assert.Null(toggleSwitch.OnContent);
+			});
+		}
+
 		void SetIsOn(SwitchHandler switchHandler, bool value) =>
 			GetNativeSwitch(switchHandler).IsOn = value;
 

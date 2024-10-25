@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issue20443"
+              xmlns:local="clr-namespace:Controls.TestCases.HostApp.Issues"
+              x:DataType="local:Issue20443ViewModel"
+             Title="Issue20443">
+  <ContentPage.BindingContext>
+        <local:Issue20443ViewModel/>
+    </ContentPage.BindingContext>
+    <Grid>
+        <RefreshView
+            IsRefreshing="{Binding IsRefreshing}"
+            Command="{Binding RefreshCommand}">
+            <CollectionView
+                ItemSizingStrategy="MeasureAllItems"
+                ItemsSource="{Binding Items}">
+                <CollectionView.ItemTemplate>
+                    <local:Issue20443TemplateSelector>
+                        <local:Issue20443TemplateSelector.ItemATemplate>
+                            <DataTemplate>
+                                <Grid
+                                    HeightRequest="20"
+                                    BackgroundColor="Aqua">
+                                    <Label Text="20"/>
+                                </Grid>
+                            </DataTemplate>
+                        </local:Issue20443TemplateSelector.ItemATemplate>
+                        <local:Issue20443TemplateSelector.ItemBTemplate>
+                            <DataTemplate>
+                                <Grid
+                                    HeightRequest="100"
+                                    BackgroundColor="Pink">
+                                    <Label Text="100"/>
+                                </Grid>
+                            </DataTemplate>
+                        </local:Issue20443TemplateSelector.ItemBTemplate>
+                    </local:Issue20443TemplateSelector>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

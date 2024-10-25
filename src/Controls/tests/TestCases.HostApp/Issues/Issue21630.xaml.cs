@@ -14,17 +14,17 @@ public partial class Issue21630 : ContentPage
 
 	private void OnLoaded(object sender, EventArgs e)
 	{
-		_page = Application.Current.MainPage;
+		_page = this.Window.Page;
 		_modalStack = Navigation.ModalStack.ToList();
 	}
 
 	void SwapMainPageNav(object sender, EventArgs e)
 	{
-		Application.Current.MainPage = new NavigationPage(new Issue21630_navPage(_page, _modalStack));
+		this.Window.Page = new NavigationPage(new Issue21630_navPage(_page, _modalStack));
 	}
 
 	void SwapMainPageShell(object sender, EventArgs e)
 	{
-		Application.Current.MainPage = new Issue21630_shellPage(_page, _modalStack);
+		this.Window.Page = new Issue21630_shellPage(_page, _modalStack);
 	}
 }

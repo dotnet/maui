@@ -42,9 +42,9 @@ namespace Maui.Controls.Sample.Issues
 				{
 
 					var stacklayout = new StackLayout();
-					var labelId = new Label();
-					var labelText = new Label();
-					var labelDescription = new Label();
+					var labelId = new Label { TextColor = Colors.Black };
+					var labelText = new Label { TextColor = Colors.Black };
+					var labelDescription = new Label { TextColor = Colors.Black };
 					labelId.SetBinding(Label.TextProperty, "Id");
 					labelText.SetBinding(Label.TextProperty, "Text");
 					labelDescription.SetBinding(Label.TextProperty, "Description");

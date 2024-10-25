@@ -13,7 +13,7 @@ public class Bugzilla57749 : _IssuesUITest
 	public override string Issue => "After enabling a disabled button it is not clickable";
 
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public async Task Bugzilla57749Test()
 	// {
 	// 	await Task.Delay(500);

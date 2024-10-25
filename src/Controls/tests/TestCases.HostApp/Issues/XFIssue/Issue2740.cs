@@ -20,7 +20,7 @@ public class Issue2740 : TestFlyoutPage
 		Detail = new NavigationPage(page);
 	}
 
-	public partial class AddressListView : ContentPage
+	public class AddressListView : ContentPage
 	{
 
 		public AddressListView()
@@ -39,7 +39,7 @@ public class Issue2740 : TestFlyoutPage
 		}
 	}
 
-	public partial class UnitViolationView : ContentPage
+	public class UnitViolationView : ContentPage
 	{
 		public UnitViolationView()
 		{

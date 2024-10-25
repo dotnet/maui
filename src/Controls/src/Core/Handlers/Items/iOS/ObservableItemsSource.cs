@@ -178,8 +178,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return IndexPathHelpers.GenerateIndexPathRange(_section, startIndex, count);
 		}
 
+		private protected virtual bool ShouldReload(NotifyCollectionChangedEventArgs args)
+		{
+			if (args.Action == NotifyCollectionChangedAction.Remove)
+			{
+				// INCC implementation isn't giving us enough information to know where the removed items were in the
+				// collection. So the best we can do is a ReloadData()
+				var startIndex = args.OldStartingIndex;
+				if (startIndex < 0)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
+			if (ShouldReload(args))
+			{
+				Reload();
+				return;
+			}
+
 			var count = args.NewItems.Count;
 			Count += count;
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
@@ -192,10 +213,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var startIndex = args.OldStartingIndex;
 
-			if (startIndex < 0)
+			if (ShouldReload(args))
 			{
-				// INCC implementation isn't giving us enough information to know where the removed items were in the
-				// collection. So the best we can do is a ReloadData()
 				Reload();
 				return;
 			}

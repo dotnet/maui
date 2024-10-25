@@ -8,7 +8,7 @@
 
 		}
 
-		public partial class MainFlyout : FlyoutPage
+		public class MainFlyout : FlyoutPage
 		{
 			public MainFlyout()
 			{
@@ -31,7 +31,7 @@
 			}
 		}
 
-		public partial class MainFlyoutMenu : ContentPage
+		public class MainFlyoutMenu : ContentPage
 		{
 			public MainFlyoutMenu()
 			{
@@ -45,7 +45,7 @@
 			}
 		}
 
-		public partial class FirstPage : ContentPage
+		public class FirstPage : ContentPage
 		{
 			public FirstPage()
 			{
@@ -60,11 +60,11 @@
 
 			async void Button_Clicked()
 			{
-				await Application.Current.MainPage.Navigation.PushAsync(new SecondPage());
+				await this.Window.Page.Navigation.PushAsync(new SecondPage());
 			}
 		}
 
-		public partial class SecondPage : ContentPage
+		public class SecondPage : ContentPage
 		{
 			public SecondPage()
 			{
@@ -80,7 +80,7 @@
 
 			async void Button_Clicked()
 			{
-				await Application.Current.MainPage.Navigation.PopAsync();
+				await this.Window.Page.Navigation.PopAsync();
 			}
 		}
 	}
