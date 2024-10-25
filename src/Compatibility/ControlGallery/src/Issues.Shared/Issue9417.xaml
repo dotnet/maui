@@ -40,7 +40,7 @@
                         <SwipeView.RightItems>
                             <SwipeItems>
                                 <SwipeItem
-                                    Command="{Binding Source={x:Reference Issue9417Page}, Path=BindingContext.DeleteCommand}" 
+                                    Command="{Binding DeleteCommand, Source={x:Reference Issue9417Page}, x:DataType=local:Issue9417}" 
                                     CommandParameter="{Binding .}" 
                                     Text="Delete" 
                                     IconImageSource="{StaticResource TrashCanImage}"
@@ -50,7 +50,7 @@
                         <SwipeView.LeftItems>
                             <SwipeItems>
                                 <SwipeItem
-                                    Command="{Binding Source={x:Reference Issue9417Page}, Path=BindingContext.EditCommand}"
+                                    Command="{Binding EditCommand, Source={x:Reference Issue9417Page}, x:DataType=local:Issue9417}"
                                     CommandParameter="{Binding .}"
                                     Text="Edit"
                                     IconImageSource="{StaticResource EditImage}"

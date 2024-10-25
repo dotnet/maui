@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 				});
 			});
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
 				await navPage.PushAsync(flyoutPage);
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>

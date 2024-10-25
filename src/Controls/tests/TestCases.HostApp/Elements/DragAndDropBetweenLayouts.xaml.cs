@@ -1,12 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DragAndDropBetweenLayouts : ContentView
 	{
 		bool _emittedDragOver = false;

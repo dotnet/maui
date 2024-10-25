@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType には、文字列リテラル、{{x:Type}} マークアップ、または {{x:Nul}l} を指定する必要があります。</value>
+    <value>x:DataType には、文字列リテラル、{{x:Type}} マークアップ、または {{x:Null}} を指定する必要があります。</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>宣言されていない xmlns プレフィックス "{0}" です。</value>

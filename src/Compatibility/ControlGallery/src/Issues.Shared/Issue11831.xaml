@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
     mc:Ignorable="d"
     x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11831"
     x:Name="Issue11831Page"
@@ -54,7 +55,7 @@
                             <SwipeView.RightItems>
                                 <SwipeItems>
                                     <SwipeItemView
-                                        Command="{Binding BindingContext.DeleteCommand, Source={x:Reference Issue11831Page}}"
+                                        Command="{Binding DeleteCommand, Source={x:Reference Issue11831Page}, x:DataType=local:Issue11831}"
                                         CommandParameter="{Binding}">
                                         <Grid
                                             BackgroundColor="LightSlateGray">

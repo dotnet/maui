@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -254,13 +253,13 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateNavigationAndPaneButtonHolderGridStyles()
 		{
-			var buttonHeight = Math.Min(_appBarTitleHeight, DefaultNavigationBackButtonHeight);
+			var buttonHeight = Math.Max(_appBarTitleHeight, DefaultNavigationBackButtonHeight);
 			var buttonRatio = buttonHeight / DefaultNavigationBackButtonHeight;
 
 			NavigationBackButtonHeight = buttonHeight;
 			NavigationBackButtonWidth = DefaultNavigationBackButtonWidth * buttonRatio;
 
-			var paneToggleHeight = Math.Min(_appBarTitleHeight, DefaultPaneToggleButtonHeight);
+			var paneToggleHeight = Math.Max(_appBarTitleHeight, DefaultPaneToggleButtonHeight);
 			var paneToggleRatio = paneToggleHeight / DefaultPaneToggleButtonHeight;
 
 			PaneToggleButtonHeight = paneToggleHeight;
