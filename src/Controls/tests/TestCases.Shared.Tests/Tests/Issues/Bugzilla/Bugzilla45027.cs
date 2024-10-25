@@ -15,38 +15,38 @@ public class Bugzilla45027 : _IssuesUITest
 
 	public override string Issue => "App crashes when double tapping on ToolbarItem or MenuItem very quickly";
 
-// #if ANDROID
-// 	[Test]
-// 	public void Bugzilla45027Test()
-// 	{
-// 		var firstItemList = "0";
-// 		App.WaitForElement(firstItemList);
+	// #if ANDROID
+	// 	[Test]
+	// 	public void Bugzilla45027Test()
+	// 	{
+	// 		var firstItemList = "0";
+	// 		App.WaitForElement(firstItemList);
 
-// 		App.TouchAndHold(firstItemList);
-// 		App.WaitForElement(BUTTON_ACTION_TEXT);
-// 		App.DoubleTap(BUTTON_ACTION_TEXT);
+	// 		App.TouchAndHold(firstItemList);
+	// 		App.WaitForElement(BUTTON_ACTION_TEXT);
+	// 		App.DoubleTap(BUTTON_ACTION_TEXT);
 
-// 		App.TouchAndHold(firstItemList);
-// 		App.WaitForElement(BUTTON_DELETE_TEXT);
-// 		App.DoubleTap(BUTTON_DELETE_TEXT);
-// 	}
-// #endif
+	// 		App.TouchAndHold(firstItemList);
+	// 		App.WaitForElement(BUTTON_DELETE_TEXT);
+	// 		App.DoubleTap(BUTTON_DELETE_TEXT);
+	// 	}
+	// #endif
 
-// #if IOS
-// 	[Test]
-// 	[FailsOnIOS]
-// 	public void Bugzilla45027Test()
-// 	{
-// 		var firstItemList = "0";
-// 		App.WaitForElement(firstItemList);
+	// #if IOS
+	// 	[Test]
+	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
+	// 	public void Bugzilla45027Test()
+	// 	{
+	// 		var firstItemList = "0";
+	// 		App.WaitForElement(firstItemList);
 
-// 		App.SwipeRightToLeft(firstItemList);
-// 		App.WaitForElement(BUTTON_ACTION_TEXT);
-// 		App.DoubleTap(BUTTON_ACTION_TEXT);
+	// 		App.SwipeRightToLeft(firstItemList);
+	// 		App.WaitForElement(BUTTON_ACTION_TEXT);
+	// 		App.DoubleTap(BUTTON_ACTION_TEXT);
 
-// 		App.SwipeRightToLeft(firstItemList);
-// 		App.WaitForElement(BUTTON_DELETE_TEXT);
-// 		App.DoubleTap(BUTTON_DELETE_TEXT);
-// 	}
-// #endif
+	// 		App.SwipeRightToLeft(firstItemList);
+	// 		App.WaitForElement(BUTTON_DELETE_TEXT);
+	// 		App.DoubleTap(BUTTON_DELETE_TEXT);
+	// 	}
+	// #endif
 }
