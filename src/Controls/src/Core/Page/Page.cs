@@ -207,7 +207,19 @@ namespace Microsoft.Maui.Controls
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		/// <inheritdoc/>
-		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
+		bool ISafeAreaView.IgnoreSafeArea
+		{
+			get
+			{
+				if (IsSet(PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty))
+					return !On<PlatformConfiguration.iOS>().UsingSafeArea();
+				else if(InternalChildren[0] is ISafeAreaView safeArea)
+					return safeArea.IgnoreSafeArea;
+				else
+					return !On<PlatformConfiguration.iOS>().UsingSafeArea();
+			}
+		} 
+
 
 #if IOS
 		/// <inheritdoc/>

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaView
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -136,6 +136,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
+
+		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		public bool IgnoreSafeArea { get; set;}
 
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;

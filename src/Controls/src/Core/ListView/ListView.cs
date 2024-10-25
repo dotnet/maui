@@ -16,7 +16,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
-	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
+	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement, ISafeAreaView
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
 		// https://github.com/xamarin/Xamarin.Forms/pull/12057
@@ -81,6 +81,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
+
+		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		public bool IgnoreSafeArea { get; set; }
 
 		static readonly ToStringValueConverter _toStringValueConverter = new ToStringValueConverter();
 
