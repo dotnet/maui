@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (headerView is UITableViewHeaderFooterView header && TableView is TableView table)
 			{
 				var sectionHeaderTextColor = table.Model.GetSectionTextColor((int)section);
-				var sectionHeaderTitle = table?.Model.GetSectionTitle((int)section);
+				var sectionHeaderTitle = table.Model.GetSectionTitle((int)section);
 
 				if (UIDevice.CurrentDevice.CheckSystemVersion(14, 0))
 				{
