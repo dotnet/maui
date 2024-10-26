@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue23014">
+    <VerticalStackLayout x:Name="Stack"
+                         Padding="30,0"
+                         Spacing="25">
+        <Button x:Name="CounterBtn"
+                AutomationId="button"
+                Text="Click to add/remove CollectionView"
+                Clicked="OnButtonClicked"
+                HorizontalOptions="Fill"/>
+        <CollectionView x:Name="ItemList"
+                        ItemsSource="{Binding Items}"
+                        SelectedItem="{Binding SelectedItem}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Border Stroke="Green"
+                            Margin="2"
+                            Padding="4">
+                        <Label Text="{Binding}"/>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
