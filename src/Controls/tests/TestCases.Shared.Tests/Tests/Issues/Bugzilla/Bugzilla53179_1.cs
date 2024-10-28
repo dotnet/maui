@@ -19,9 +19,9 @@ public class Bugzilla53179_1 : _IssuesUITest
 	[Category(UITestCategories.Navigation)]
 	public void PopAsyncAfterRemovePageDoesNotCrash()
 	{
-		RunningApp.WaitForElement(StartTest);
-		RunningApp.Tap(StartTest);
-		RunningApp.WaitForElement(RootLabel);
+		App.WaitForElement(StartTest);
+		App.Tap(StartTest);
+		App.WaitForElement(RootLabel);
 	}
 }
 #endif

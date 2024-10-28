@@ -17,15 +17,15 @@ public class Issue4314 : _IssuesUITest
 	//[Category(UITestCategories.ContextActions)]
 	//public void Issue4341Test()
 	//{
-	//	RunningApp.WaitForElement(c => c.Marked("Email"));
-	//	RunningApp.ActivateContextMenu("Subject Line 0");
-	//	RunningApp.WaitForElement("Delete");
-	//	RunningApp.Tap("Delete");
-	//	RunningApp.ActivateContextMenu("Subject Line 1");
-	//	RunningApp.Tap("Delete");
-	//	RunningApp.WaitForElement(c => c.Marked(Success));
-	//	RunningApp.Back();
-	//	RunningApp.WaitForElement(c => c.Marked("Email"));
-	//	RunningApp.SwipeRightToLeft();
+	//	App.WaitForElement(c => c.Marked("Email"));
+	//	App.ActivateContextMenu("Subject Line 0");
+	//	App.WaitForElement("Delete");
+	//	App.Tap("Delete");
+	//	App.ActivateContextMenu("Subject Line 1");
+	//	App.Tap("Delete");
+	//	App.WaitForElement(c => c.Marked(Success));
+	//	App.Back();
+	//	App.WaitForElement(c => c.Marked("Email"));
+	//	App.SwipeRightToLeft();
 	//}
 }

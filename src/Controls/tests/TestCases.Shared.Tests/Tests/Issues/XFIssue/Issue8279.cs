@@ -16,55 +16,55 @@ public class Issue8279 : _IssuesUITest
 	//[Test]
 	//public void ScrollWithNoItemButGroupTest()
 	//{
-	//	RunningApp.WaitForElement(Reset);
-	//	RunningApp.Tap(Reset);
-	//	RunningApp.WaitForElement(ScrollWithNoItemButGroup);
-	//	RunningApp.Tap(ScrollWithNoItemButGroup);
+	//	App.WaitForElement(Reset);
+	//	App.Tap(Reset);
+	//	App.WaitForElement(ScrollWithNoItemButGroup);
+	//	App.Tap(ScrollWithNoItemButGroup);
 	//	// This will fail if the list didn't scroll. If it did scroll, it will succeed
-	//	RunningApp.WaitForElement(q => q.Marked("Header 3"), timeout: TimeSpan.FromSeconds(2));
+	//	App.WaitForElement(q => q.Marked("Header 3"), timeout: TimeSpan.FromSeconds(2));
 	//}
 
 	//[Test]
 	//public void ScrollWithItemButNoGroupTest()
 	//{
-	//	RunningApp.WaitForElement(Reset);
-	//	RunningApp.Tap(Reset);
-	//	RunningApp.WaitForElement(ScrollWithItemButNoGroup);
-	//	RunningApp.Tap(ScrollWithItemButNoGroup);
+	//	App.WaitForElement(Reset);
+	//	App.Tap(Reset);
+	//	App.WaitForElement(ScrollWithItemButNoGroup);
+	//	App.Tap(ScrollWithItemButNoGroup);
 	//	// This will fail if the list didn't scroll. If it did scroll, it will succeed
-	//	RunningApp.WaitForElement(q => q.Marked("title 1"), timeout: TimeSpan.FromSeconds(2));
+	//	App.WaitForElement(q => q.Marked("title 1"), timeout: TimeSpan.FromSeconds(2));
 	//}
 
 	//[Test]
 	//public void ScrollWithItemWithGroupTest()
 	//{
-	//	RunningApp.WaitForElement(Reset);
-	//	RunningApp.Tap(Reset);
-	//	RunningApp.WaitForElement(ScrollWithItemWithGroup);
-	//	RunningApp.Tap(ScrollWithItemWithGroup);
+	//	App.WaitForElement(Reset);
+	//	App.Tap(Reset);
+	//	App.WaitForElement(ScrollWithItemWithGroup);
+	//	App.Tap(ScrollWithItemWithGroup);
 	//	// This will fail if the list didn't scroll. If it did scroll, it will succeed
-	//	RunningApp.WaitForElement(q => q.Marked("Header 3"), timeout: TimeSpan.FromSeconds(2));
+	//	App.WaitForElement(q => q.Marked("Header 3"), timeout: TimeSpan.FromSeconds(2));
 	//}
 
 	//[Test]
 	//public void ScrollWithNoItemNoGroupTest()
 	//{
-	//	RunningApp.WaitForElement(Reset);
-	//	RunningApp.Tap(Reset);
-	//	RunningApp.WaitForElement(ScrollWithNoItemNoGroup);
-	//	RunningApp.Tap(ScrollWithNoItemNoGroup);
+	//	App.WaitForElement(Reset);
+	//	App.Tap(Reset);
+	//	App.WaitForElement(ScrollWithNoItemNoGroup);
+	//	App.Tap(ScrollWithNoItemNoGroup);
 	//	// This will pass if the list didn't scroll and remain on the same state
-	//	RunningApp.WaitForElement(q => q.Marked("Header 1"), timeout: TimeSpan.FromSeconds(2));
+	//	App.WaitForElement(q => q.Marked("Header 1"), timeout: TimeSpan.FromSeconds(2));
 	//}
 
 	//[Test]
 	//public void ScrollWithNoItemEmptyGroupTest()
 	//{
-	//	RunningApp.WaitForElement(Reset);
-	//	RunningApp.Tap(Reset);
-	//	RunningApp.WaitForElement(ScrollWithNoItemEmptyGroup);
-	//	RunningApp.Tap(ScrollWithNoItemEmptyGroup);
+	//	App.WaitForElement(Reset);
+	//	App.Tap(Reset);
+	//	App.WaitForElement(ScrollWithNoItemEmptyGroup);
+	//	App.Tap(ScrollWithNoItemEmptyGroup);
 	//	// This will fail if the list didn't scroll. If it did scroll, it will succeed
-	//	RunningApp.WaitForElement(q => q.Marked("Header 2"), timeout: TimeSpan.FromSeconds(2));
+	//	App.WaitForElement(q => q.Marked("Header 2"), timeout: TimeSpan.FromSeconds(2));
 	//}
 }

@@ -24,20 +24,20 @@ public class Bugzilla59718 : _IssuesUITest
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla59718Test()
 	{
-		RunningApp.WaitForElement(Target1);
-		RunningApp.Tap(Target1);
+		App.WaitForElement(Target1);
+		App.Tap(Target1);
 
-		RunningApp.WaitForElement(Target1b);
+		App.WaitForElement(Target1b);
 
-		RunningApp.WaitForElement(Target2);
-		RunningApp.Tap(Target2);
+		App.WaitForElement(Target2);
+		App.Tap(Target2);
 
-		RunningApp.WaitForElement(Target3);
+		App.WaitForElement(Target3);
 
-		RunningApp.WaitForElement(GoBackButtonId);
-		RunningApp.Tap(GoBackButtonId);
+		App.WaitForElement(GoBackButtonId);
+		App.Tap(GoBackButtonId);
 
-		RunningApp.WaitForElement(Target1);
+		App.WaitForElement(Target1);
 	}
 }
 #endif

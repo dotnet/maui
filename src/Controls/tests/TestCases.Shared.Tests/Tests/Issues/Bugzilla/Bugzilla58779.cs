@@ -21,11 +21,11 @@ public class Bugzilla58779 : _IssuesUITest
 	[Category(UITestCategories.DisplayAlert)]
 	public void Bugzilla58779Test()
 	{
-		RunningApp.WaitForElement(ButtonId);
-		RunningApp.Tap(ButtonId);
-		RunningApp.Screenshot("Check list fits on screen");
-		RunningApp.WaitForElement(CancelId);
-		RunningApp.Tap(CancelId);
+		App.WaitForElement(ButtonId);
+		App.Tap(ButtonId);
+		App.Screenshot("Check list fits on screen");
+		App.WaitForElement(CancelId);
+		App.Tap(CancelId);
 	}
 }
 #endif

@@ -20,14 +20,14 @@ public class Issue3667 : _IssuesUITest
 	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Issue3667Tests()
 	{
-		RunningApp.WaitForElement(text);
-		RunningApp.Tap("Change TextTransform");
-		RunningApp.WaitForElement(text);
-		RunningApp.Tap("Change TextTransform");
-		RunningApp.WaitForElement(text.ToLowerInvariant());
-		RunningApp.Tap("Change TextTransform");
-		RunningApp.WaitForElement(text.ToUpperInvariant());
-		RunningApp.Tap("Change TextTransform");
-		RunningApp.WaitForElement(text);
+		App.WaitForElement(text);
+		App.Tap("Change TextTransform");
+		App.WaitForElement(text);
+		App.Tap("Change TextTransform");
+		App.WaitForElement(text.ToLowerInvariant());
+		App.Tap("Change TextTransform");
+		App.WaitForElement(text.ToUpperInvariant());
+		App.Tap("Change TextTransform");
+		App.WaitForElement(text);
 	}
 }

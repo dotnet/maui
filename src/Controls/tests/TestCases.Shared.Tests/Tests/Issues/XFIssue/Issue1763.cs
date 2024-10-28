@@ -18,10 +18,10 @@ public class Issue1763 : _IssuesUITest
 	// [FailsOnAndroid]
 	// public void TestIssue1763ItemTappedFiring()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Contacts"));
-	// 	RunningApp.Tap(q => q.Marked("Egor1"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Tapped a List item"));
-	// 	RunningApp.Tap(q => q.Marked("Destruction"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Contacts"));
+	// 	App.WaitForElement(q => q.Marked("Contacts"));
+	// 	App.Tap(q => q.Marked("Egor1"));
+	// 	App.WaitForElement(q => q.Marked("Tapped a List item"));
+	// 	App.Tap(q => q.Marked("Destruction"));
+	// 	App.WaitForElement(q => q.Marked("Contacts"));
 	// }
 }

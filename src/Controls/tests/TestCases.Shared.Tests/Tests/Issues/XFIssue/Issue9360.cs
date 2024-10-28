@@ -17,6 +17,6 @@ public class Issue9360 : _IssuesUITest
 	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void NavigationPageRendererMenuItemIconOverrideWorks()
 	//{
-	//	RunningApp.WaitForElement("HEART");
+	//	App.WaitForElement("HEART");
 	//}
 }

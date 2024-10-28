@@ -16,6 +16,6 @@ public class Issue6484 : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void RemovingIntermediatePagesBreaksShell()
 	//{
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
 	//}
 }

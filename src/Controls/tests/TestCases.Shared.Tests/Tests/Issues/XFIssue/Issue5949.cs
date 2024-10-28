@@ -16,12 +16,12 @@ public class Issue5949 : _IssuesUITest
 	//[Category(UITestCategories.CollectionView)]
 	//public void DoNotAccessDisposedCollectionView()
 	//{
-	//	RunningApp.WaitForElement("Login");
-	//	RunningApp.Tap("Login");
+	//	App.WaitForElement("Login");
+	//	App.Tap("Login");
 
-	//	RunningApp.WaitForElement(Issue5949_2.BackButton);
-	//	RunningApp.Tap(Issue5949_2.BackButton);
+	//	App.WaitForElement(Issue5949_2.BackButton);
+	//	App.Tap(Issue5949_2.BackButton);
 
-	//	RunningApp.WaitForElement("Login");
+	//	App.WaitForElement("Login");
 	//}
 }

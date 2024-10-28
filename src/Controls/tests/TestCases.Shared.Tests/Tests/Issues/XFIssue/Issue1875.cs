@@ -18,9 +18,9 @@ public class Issue1875 : _IssuesUITest
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void NSRangeException()
 	{
-		RunningApp.WaitForElement("Load");
-		RunningApp.Tap("Load");
-		RunningApp.WaitForElement("5");
+		App.WaitForElement("Load");
+		App.Tap("Load");
+		App.WaitForElement("5");
 	}
 }
 #endif

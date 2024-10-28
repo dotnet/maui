@@ -307,6 +307,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, out var instructions))
 						{
+							// if the binding is compiled, there's no need to pass the ServiceProvider to the extension
+							acceptEmptyServiceProvider = true;
+
 							foreach (var instruction in instructions)
 								yield return instruction;
 						}

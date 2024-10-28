@@ -21,18 +21,18 @@ public class Bugzilla59863_1 : _IssuesUITest
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
 	{
-		RunningApp.WaitForElement(DoubleTapBoxId);
-		RunningApp.Tap(DoubleTapBoxId);
-		RunningApp.WaitForElement($"0 {Doubles} on {DoubleTapBoxId}");
+		App.WaitForElement(DoubleTapBoxId);
+		App.Tap(DoubleTapBoxId);
+		App.WaitForElement($"0 {Doubles} on {DoubleTapBoxId}");
 	}
 
 	[Test]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
 	{
-		RunningApp.WaitForElement(DoubleTapBoxId);
-		RunningApp.DoubleTap(DoubleTapBoxId);
-		RunningApp.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
+		App.WaitForElement(DoubleTapBoxId);
+		App.DoubleTap(DoubleTapBoxId);
+		App.WaitForElement($"1 {Doubles} on {DoubleTapBoxId}");
 	}
 }
 #endif

@@ -19,7 +19,7 @@ public class Bugzilla60524 : _IssuesUITest
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla60524Test()
 	{
-		RunningApp.WaitForElement("Group 1");
+		App.WaitForElement("Group 1");
 	}
 }
 #endif

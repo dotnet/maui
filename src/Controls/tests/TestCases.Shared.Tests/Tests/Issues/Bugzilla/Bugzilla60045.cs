@@ -20,9 +20,9 @@ public class Bugzilla60045 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void CommandDoesNotFire()
 	{
-		RunningApp.WaitForElement(ClickThis);
-		RunningApp.Tap(ClickThis);
-		RunningApp.WaitForNoElement(Fail);
+		App.WaitForElement(ClickThis);
+		App.Tap(ClickThis);
+		App.WaitForNoElement(Fail);
 	}
 }
 #endif

@@ -15,25 +15,25 @@ public class Issue1455 : _IssuesUITest
 	//[Category(UITestCategories.ListView)]
 	//public void RefreshContextActions()
 	//{
-	//	RunningApp.WaitForElement("Cell 1");
-	//	RunningApp.Screenshot("I am at Issue 1455");
-	//	RunningApp.TouchAndHold(q => q.Marked("Cell 4"));
-	//	RunningApp.Screenshot("Long Press Cell 4 to show context actions");
-	//	RunningApp.Tap(q => q.Marked("Cell 5"));
-	//	RunningApp.Screenshot("Clicked another cell and changed menu items");
+	//	App.WaitForElement("Cell 1");
+	//	App.Screenshot("I am at Issue 1455");
+	//	App.TouchAndHold(q => q.Marked("Cell 4"));
+	//	App.Screenshot("Long Press Cell 4 to show context actions");
+	//	App.Tap(q => q.Marked("Cell 5"));
+	//	App.Screenshot("Clicked another cell and changed menu items");
 
-	//	Assert.AreEqual(1, RunningApp.Query(c => c.Marked("Hendrerit")).Length);
+	//	Assert.AreEqual(1, App.Query(c => c.Marked("Hendrerit")).Length);
 
-	//	RunningApp.Back();
+	//	App.Back();
 
-	//	RunningApp.WaitForElement("Toggle LegacyMode");
-	//	RunningApp.Tap(q => q.Marked("Toggle LegacyMode"));
+	//	App.WaitForElement("Toggle LegacyMode");
+	//	App.Tap(q => q.Marked("Toggle LegacyMode"));
 
-	//	RunningApp.TouchAndHold(q => q.Marked("Cell 4"));
-	//	RunningApp.Screenshot("Long Press Cell 4 to show context actions");
-	//	RunningApp.Tap(q => q.Marked("Cell 5"));
-	//	RunningApp.Screenshot("Clicked another cell and changed menu items");
+	//	App.TouchAndHold(q => q.Marked("Cell 4"));
+	//	App.Screenshot("Long Press Cell 4 to show context actions");
+	//	App.Tap(q => q.Marked("Cell 5"));
+	//	App.Screenshot("Clicked another cell and changed menu items");
 
-	//	Assert.AreEqual(1, RunningApp.Query(c => c.Marked("Vestibulum")).Length);
+	//	Assert.AreEqual(1, App.Query(c => c.Marked("Vestibulum")).Length);
 	//}
 }

@@ -17,7 +17,7 @@ public class Issue3319 : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void Issue3319Test()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Will this repo work?"));
+	//	App.WaitForElement(q => q.Marked("Will this repo work?"));
 
 	//}
 }
