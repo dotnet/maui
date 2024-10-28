@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Platform
 			commandBar.Resources["CommandBarBackgroundOpen"] = this.Background;
 		}
 
-	internal CommandBar CommandBar => commandBar;
+		internal CommandBar CommandBar => commandBar;
 
 
 		internal UI.Xaml.Thickness ContentGridMargin
