@@ -134,13 +134,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var scrollView = new ScrollViewStub()
 				{
-					Orientation = ScrollOrientation.Vertical,
+					Orientation = ScrollOrientation.Horizontal,
 					HorizontalScrollBarVisibility = visibility
 				};
 
 				var scrollViewHandler = CreateHandler(scrollView);
 
-				return ((MauiScrollView)scrollViewHandler.PlatformView.GetChildAt(0)).ScrollbarFadingEnabled;
+				return ((MauiHorizontalScrollView)scrollViewHandler.PlatformView.GetChildAt(0)).ScrollbarFadingEnabled;
 			});
 
 			Assert.Equal(expected, result);
