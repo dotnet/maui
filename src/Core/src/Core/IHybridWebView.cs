@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization.Metadata;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui
@@ -17,6 +19,25 @@ namespace Microsoft.Maui
 		///  The default value is <c>wwwroot</c>, which maps to <c>[ProjectFolder]/Resources/Raw/wwwroot</c>.
 		/// </summary>
 		string? HybridRoot { get; }
+
+		/// <summary>
+		/// For internal use only.
+		/// </summary>
+		object? InvokeJavaScriptTarget { get; set; }
+
+		/// <summary>
+		///  Sets the object that will be the target of JavaScript calls from the web view. The public methods on this object
+		///  are callable from JavaScript using the <c>window.HybridWebView.InvokeDotNet</c> method.
+		/// </summary>
+		/// <typeparam name="T">The type that contains methods callable from JavaScript.</typeparam>
+		/// <param name="target">An instance of type <typeparamref name="T"/> that will be used to call methods on.</param>
+		void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class;
+
+		/// <summary>
+		/// For internal use only.
+		/// </summary>
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? InvokeJavaScriptType { get; set; }
 
 		void RawMessageReceived(string rawMessage);
 

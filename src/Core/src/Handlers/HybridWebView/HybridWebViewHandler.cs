@@ -27,11 +27,21 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
+using System.Collections.Specialized;
+using System.Text.Json.Serialization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Handlers
 {
+	[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(DynamicFeatures)]
+#endif
 	public partial class HybridWebViewHandler : IHybridWebViewHandler, IHybridWebViewTaskManager
 	{
+		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
+		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
+
 		// Using an IP address means that the web view doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
@@ -51,6 +61,8 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly string AppOrigin = $"{AppHostScheme}://{AppHostAddress}/";
 
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
+
+		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
@@ -116,21 +128,134 @@ namespace Microsoft.Maui.Handlers
 
 			switch (messageType)
 			{
-				case "InvokeMethodCompleted":
+				case "__InvokeJavaScriptCompleted":
 					{
-						var sections = messageContent.Split('|');
-						var taskId = sections[0];
-						var result = sections[1];
+#if !NETSTANDARD2_0
+						var indexOfPipeInContent = messageContent.IndexOf('|', StringComparison.Ordinal);
+#else
+						var indexOfPipeInContent = messageContent.IndexOf("|", StringComparison.Ordinal);
+#endif
+						if (indexOfPipeInContent == -1)
+						{
+							throw new ArgumentException($"The '{messageType}' message content must contain a pipe character ('|').", nameof(rawMessage));
+						}
+
+						var taskId = messageContent.Substring(0, indexOfPipeInContent);
+						var result = messageContent.Substring(indexOfPipeInContent + 1);
 						AsyncTaskCompleted(taskId, result);
 					}
 					break;
-				case "RawMessage":
+				case "__RawMessage":
 					VirtualView?.RawMessageReceived(messageContent);
 					break;
 				default:
 					throw new ArgumentException($"The message type '{messageType}' is not recognized.", nameof(rawMessage));
 			}
 		}
+
+		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
+		{
+			try
+			{
+				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+				var invokeDataString = invokeQueryString["data"];
+				if (string.IsNullOrEmpty(invokeDataString))
+				{
+					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
+				}
+
+				byte[]? contentBytes = null;
+				string? contentType = null;
+
+				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
+
+				if (invokeData != null && invokeData.MethodName != null)
+				{
+					var t = ((IHybridWebView)VirtualView).InvokeJavaScriptType;
+					var result = InvokeDotNetMethod(t!, invokeTarget, invokeData);
+
+					contentType = "application/json";
+
+					DotNetInvokeResult dotNetInvokeResult;
+
+					if (result is not null)
+					{
+						var resultType = result.GetType();
+						if (resultType.IsArray || resultType.IsClass)
+						{
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = JsonSerializer.Serialize(result),
+								IsJson = true,
+							};
+						}
+						else
+						{
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = result,
+							};
+						}
+					}
+					else
+					{
+						dotNetInvokeResult = new();
+					}
+
+					contentBytes = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult));
+				}
+
+				return (contentBytes, contentType);
+			}
+			catch (Exception)
+			{
+				// TODO: Log this
+			}
+
+			return (null, null);
+		}
+
+		private static object? InvokeDotNetMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, object jsInvokeTarget, JSInvokeMethodData invokeData)
+		{
+			var invokeMethod = t.GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+			if (invokeMethod == null)
+			{
+				throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
+			}
+
+			if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
+			{
+				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
+			}
+
+			var paramObjectValues =
+				invokeData.ParamValues?
+					.Zip(invokeMethod.GetParameters(), (s, p) => s == null ? null : JsonSerializer.Deserialize(s, p.ParameterType))
+					.ToArray();
+
+			return invokeMethod.Invoke(jsInvokeTarget, paramObjectValues);
+		}
+
+
+		private sealed class JSInvokeMethodData
+		{
+			public string? MethodName { get; set; }
+			public string[]? ParamValues { get; set; }
+		}
+
+		private sealed class DotNetInvokeResult
+		{
+			public object? Result { get; set; }
+			public bool IsJson { get; set; }
+		}
+
+		[JsonSourceGenerationOptions()]
+		[JsonSerializable(typeof(JSInvokeMethodData))]
+		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
+		{
+		}
+
+
 
 #if PLATFORM && !TIZEN
 		public static async void MapEvaluateJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
@@ -210,7 +335,7 @@ namespace Microsoft.Maui.Handlers
 					invokeJavaScriptRequest.ParamValues.Select((v, i) => (v == null ? "null" : JsonSerializer.Serialize(v, invokeJavaScriptRequest.ParamJsonTypeInfos![i]!))));
 
 			await handler.InvokeAsync(nameof(IHybridWebView.EvaluateJavaScriptAsync),
-				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.InvokeMethod({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
+				new EvaluateJavaScriptAsyncRequest($"window.HybridWebView.__InvokeJavaScript({currentInvokeTaskId}, {invokeJavaScriptRequest.MethodName}, [{paramsValuesStringArray}])"));
 
 			var stringResult = await callback.Task;
 

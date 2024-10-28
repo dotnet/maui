@@ -16,15 +16,15 @@ public class Issue530 : _IssuesUITest
 	//[Category(UITestCategories.ListView)]
 	//public void Issue530TestsLoadAsync()
 	//{
-	//	RunningApp.WaitForElement(q => q.Button("Load"));
-	//	RunningApp.Screenshot("All elements present");
-	//	RunningApp.Tap(q => q.Button("Load"));
+	//	App.WaitForElement(q => q.Button("Load"));
+	//	App.Screenshot("All elements present");
+	//	App.Tap(q => q.Button("Load"));
 
-	//	RunningApp.WaitForElement(q => q.Marked("John"));
-	//	RunningApp.WaitForElement(q => q.Marked("Paul"));
-	//	RunningApp.WaitForElement(q => q.Marked("George"));
-	//	RunningApp.WaitForElement(q => q.Marked("Ringo"));
+	//	App.WaitForElement(q => q.Marked("John"));
+	//	App.WaitForElement(q => q.Marked("Paul"));
+	//	App.WaitForElement(q => q.Marked("George"));
+	//	App.WaitForElement(q => q.Marked("Ringo"));
 
-	//	RunningApp.Screenshot("List items loaded async");
+	//	App.Screenshot("List items loaded async");
 	//}
 }

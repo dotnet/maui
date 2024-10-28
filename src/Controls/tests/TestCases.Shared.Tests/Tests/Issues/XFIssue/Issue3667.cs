@@ -17,14 +17,14 @@ public class Issue3667 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue3667Tests ()
 	// {
-	// 	RunningApp.WaitForElement(query => query.Text(text));
-	// 	RunningApp.Tap("Change TextTransform");
-	// 	RunningApp.WaitForElement(query => query.Text(text));
-	// 	RunningApp.Tap("Change TextTransform");
-	// 	RunningApp.WaitForElement(query => query.Text(text.ToLowerInvariant()));
-	// 	RunningApp.Tap("Change TextTransform");
-	// 	RunningApp.WaitForElement(query => query.Text(text.ToUpperInvariant()));
-	// 	RunningApp.Tap("Change TextTransform");
-	// 	RunningApp.WaitForElement(query => query.Text(text));
+	// 	App.WaitForElement(query => query.Text(text));
+	// 	App.Tap("Change TextTransform");
+	// 	App.WaitForElement(query => query.Text(text));
+	// 	App.Tap("Change TextTransform");
+	// 	App.WaitForElement(query => query.Text(text.ToLowerInvariant()));
+	// 	App.Tap("Change TextTransform");
+	// 	App.WaitForElement(query => query.Text(text.ToUpperInvariant()));
+	// 	App.Tap("Change TextTransform");
+	// 	App.WaitForElement(query => query.Text(text));
 	// }
 }

@@ -16,10 +16,10 @@ public class Issue4714 : _IssuesUITest
 	//[Category(UITestCategories.Gestures)]
 	//public void Issue4714Test()
 	//{
-	//	RunningApp.WaitForElement(InitialText);
-	//	RunningApp.DoubleTap(InitialText);
-	//	RunningApp.Tap(InitialText);
-	//	RunningApp.Tap(InitialText);
-	//	RunningApp.WaitForElement($"{InitialText}: 4");
+	//	App.WaitForElement(InitialText);
+	//	App.DoubleTap(InitialText);
+	//	App.Tap(InitialText);
+	//	App.Tap(InitialText);
+	//	App.WaitForElement($"{InitialText}: 4");
 	//}
 }

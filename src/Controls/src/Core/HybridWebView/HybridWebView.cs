@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -31,6 +32,28 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(HybridRootProperty); }
 			set { SetValue(HybridRootProperty, value); }
+		}
+
+		/// <inheritdoc/>
+		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
+
+		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? _invokeJavaScriptType;
+
+		/// <inheritdoc/>
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? IHybridWebView.InvokeJavaScriptType
+		{
+			get => _invokeJavaScriptType;
+			set => _invokeJavaScriptType = value;
+		}
+
+		/// <inheritdoc/>
+		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
+		{
+			((IHybridWebView)this).InvokeJavaScriptTarget = target;
+			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
 		}
 
 		void IHybridWebView.RawMessageReceived(string rawMessage)

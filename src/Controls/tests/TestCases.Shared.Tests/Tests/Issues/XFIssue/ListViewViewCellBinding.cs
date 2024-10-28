@@ -17,35 +17,35 @@ public class ListViewViewCellBinding : _IssuesUITest
 	//[FailsOnIOS]
 	//public void ListViewViewCellBindingTestsAllElementsPresent()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Remove"));
-	//	RunningApp.WaitForElement(q => q.Marked("Add"));
-	//	RunningApp.WaitForElement(q => q.Marked("1"));
-	//	RunningApp.WaitForElement(q => q.Marked("$100.00"));
-	//	RunningApp.WaitForElement(q => q.Marked("2"));
-	//	RunningApp.WaitForElement(q => q.Marked("$200.00"));
-	//	RunningApp.WaitForElement(q => q.Marked("3"));
-	//	RunningApp.WaitForElement(q => q.Marked("$300.00"));
+	//	App.WaitForElement(q => q.Marked("Remove"));
+	//	App.WaitForElement(q => q.Marked("Add"));
+	//	App.WaitForElement(q => q.Marked("1"));
+	//	App.WaitForElement(q => q.Marked("$100.00"));
+	//	App.WaitForElement(q => q.Marked("2"));
+	//	App.WaitForElement(q => q.Marked("$200.00"));
+	//	App.WaitForElement(q => q.Marked("3"));
+	//	App.WaitForElement(q => q.Marked("$300.00"));
 
-	//	RunningApp.Screenshot("All elements exist");
+	//	App.Screenshot("All elements exist");
 	//}
 
 	//[Test]
 	//[FailsOnIOS]
 	//public void ListViewViewCellBindingTestsAddListItem()
 	//{
-	//	RunningApp.Tap(q => q.Button("Add"));
-	//	RunningApp.WaitForElement(q => q.Marked("4"));
-	//	RunningApp.WaitForElement(q => q.Marked("$400.00"));
-	//	RunningApp.Screenshot("List item added");
+	//	App.Tap(q => q.Button("Add"));
+	//	App.WaitForElement(q => q.Marked("4"));
+	//	App.WaitForElement(q => q.Marked("$400.00"));
+	//	App.Screenshot("List item added");
 	//}
 
 	//[Test]
 	//[FailsOnIOS]
 	//public void ListViewViewCellBindingTestsRemoveListItem()
 	//{
-	//	RunningApp.Tap(q => q.Button("Remove"));
-	//	RunningApp.WaitForNoElement(q => q.Marked("1"));
-	//	RunningApp.WaitForNoElement(q => q.Marked("$100.00"));
-	//	RunningApp.Screenshot("List item removed");
+	//	App.Tap(q => q.Button("Remove"));
+	//	App.WaitForNoElement(q => q.Marked("1"));
+	//	App.WaitForNoElement(q => q.Marked("$100.00"));
+	//	App.Screenshot("List item removed");
 	//}
 }

@@ -15,8 +15,8 @@ public class Bugzilla60045 : _IssuesUITest
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void CommandDoesNotFire()
 	// {
-	// 	RunningApp.WaitForElement(ClickThis);
-	// 	RunningApp.Tap(ClickThis);
-	// 	RunningApp.WaitForNoElement(Fail);
+	// 	App.WaitForElement(ClickThis);
+	// 	App.Tap(ClickThis);
+	// 	App.WaitForNoElement(Fail);
 	// }
 }
