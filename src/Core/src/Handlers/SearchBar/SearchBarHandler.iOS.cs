@@ -214,6 +214,10 @@ namespace Microsoft.Maui.Handlers
 			void OnSearchButtonClicked(object? sender, EventArgs e)
 			{
 				VirtualView?.SearchButtonPressed();
+				if (Handler is SearchBarHandler handler)
+				{
+					handler.VirtualView.Unfocus();
+				}
 			}
 
 			void OnTextPropertySet(object? sender, UISearchBarTextChangedEventArgs a)
