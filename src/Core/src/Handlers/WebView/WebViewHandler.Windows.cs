@@ -207,6 +207,11 @@ namespace Microsoft.Maui.Handlers
 			if (myCookieJar is null)
 				return;
 
+			if (PlatformView.CoreWebView2 is null)
+			{
+				return;
+			}
+			
 			await InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 
@@ -217,8 +222,8 @@ namespace Microsoft.Maui.Handlers
 
 			foreach (Cookie cookie in cookies)
 			{
-				var createdCookie = PlatformView.CoreWebView2?.CookieManager.CreateCookie(cookie.Name, cookie.Value, cookie.Domain, cookie.Path);
-				PlatformView.CoreWebView2?.CookieManager.AddOrUpdateCookie(createdCookie);
+				var createdCookie = PlatformView.CoreWebView2.CookieManager.CreateCookie(cookie.Name, cookie.Value, cookie.Domain, cookie.Path);
+				PlatformView.CoreWebView2.CookieManager.AddOrUpdateCookie(createdCookie);
 			}
 
 			foreach (CoreWebView2Cookie cookie in retrieveCurrentWebCookies)
@@ -226,7 +231,7 @@ namespace Microsoft.Maui.Handlers
 				if (cookies[cookie.Name] is not null)
 					continue;
 
-				PlatformView.CoreWebView2?.CookieManager.DeleteCookie(cookie);
+				PlatformView.CoreWebView2.CookieManager.DeleteCookie(cookie);
 			}
 		}
 
@@ -268,8 +273,6 @@ namespace Microsoft.Maui.Handlers
 
 		Task<IReadOnlyList<CoreWebView2Cookie>> GetCookiesFromPlatformStore(string url)
 		{
-			if (PlatformView.CoreWebView2 is null)
-				return Task.FromResult<IReadOnlyList<CoreWebView2Cookie>>(new List<CoreWebView2Cookie>());
 			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url).AsTask();
 		}
 
@@ -365,10 +368,11 @@ namespace Microsoft.Maui.Handlers
 				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
 
-				if (Handler is WebViewHandler handler && handler.VirtualView is not null)
+				if (Handler is WebViewHandler handler)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
-					if (handler.PlatformView.Source is not null)
+					var item = handler.VirtualView.Source.ToString();
+				    if (handler.PlatformView.Source is not null)
 					{
 						handler.SyncPlatformCookies(handler.PlatformView.Source.ToString()).FireAndForget();
 					}
