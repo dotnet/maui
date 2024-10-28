@@ -149,6 +149,11 @@ namespace Microsoft.Maui.Platform
 			editText.Focusable = isEditable;
 
 			editText.SetCursorVisible(isEditable);
+
+			if (!isEditable)
+			{
+				editText.SetSelection(0);
+			}
 		}
 
 		public static void UpdateKeyboard(this EditText editText, IEntry entry)
