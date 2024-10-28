@@ -5,8 +5,13 @@
     x:Class="Maui.Controls.Sample.Issues.Issue18937">
 
   <Border>
-    <StackLayout AutomationId="StackLayout" BackgroundColor="red" 
-                 IsClippedToBounds="True"/>
+    <StackLayout BackgroundColor="red" 
+                 IsClippedToBounds="True">
+      <Label AutomationId="Label" 
+             Text="Label Inside the Border" 
+             VerticalOptions="Center"
+             HorizontalOptions="Center"/>
+    </StackLayout>
   </Border>
 
 </ContentPage>
