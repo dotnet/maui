@@ -16,10 +16,10 @@ public class Issue2740 : _IssuesUITest
 	// [Category(UITestCategories.LifeCycle)]
 	// public void Issue2740Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("1"));
-	// 	RunningApp.Tap(q => q.Marked("1"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Switch"));
-	// 	RunningApp.Tap(q => q.Marked("Switch"));
-	// 	RunningApp.WaitForElement(q => q.Marked("1"));
+	// 	App.WaitForElement(q => q.Marked("1"));
+	// 	App.Tap(q => q.Marked("1"));
+	// 	App.WaitForElement(q => q.Marked("Switch"));
+	// 	App.Tap(q => q.Marked("Switch"));
+	// 	App.WaitForElement(q => q.Marked("1"));
 	// }
 }

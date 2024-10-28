@@ -4,8 +4,6 @@ on:
     types: [opened, reopened]
   issue_comment:
     types: [created, edited]
-  pull_request:
-    types: [reopened]
   pull_request_review_comment:
     types: [created, edited]
 
@@ -16,5 +14,5 @@ permissions:
 
 jobs:
   detect-heat:
-    uses: jonathanpeppers/inclusive-heat-sensor/.github/workflows/comments.yml@v0.1
+    uses: jonathanpeppers/inclusive-heat-sensor/.github/workflows/comments.yml@v0.1.1
     secrets: inherit

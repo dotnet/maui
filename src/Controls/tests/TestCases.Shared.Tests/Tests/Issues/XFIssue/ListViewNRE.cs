@@ -17,8 +17,8 @@ public class ListViewNRE : _IssuesUITest
 	//[FailsOnIOS]
 	//public void ListViewNRETest()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("1"));
-	//	RunningApp.Tap(q => q.Marked("1"));
-	//	RunningApp.WaitForElement(q => q.Marked(Success));
+	//	App.WaitForElement(q => q.Marked("1"));
+	//	App.Tap(q => q.Marked("1"));
+	//	App.WaitForElement(q => q.Marked(Success));
 	//}
 }

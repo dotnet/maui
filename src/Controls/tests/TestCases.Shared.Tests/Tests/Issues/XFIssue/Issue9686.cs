@@ -18,10 +18,10 @@ public class Issue9686 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void AddRemoveEmptyGroupsShouldNotCrashOnInsert()
 	//{
-	//	RunningApp.WaitForElement(Run);
-	//	RunningApp.Tap(Run);
-	//	RunningApp.WaitForElement("Item 1");
-	//	RunningApp.Tap(Run);
-	//	RunningApp.WaitForElement(Success);
+	//	App.WaitForElement(Run);
+	//	App.Tap(Run);
+	//	App.WaitForElement("Item 1");
+	//	App.Tap(Run);
+	//	App.WaitForElement(Success);
 	//}
 }

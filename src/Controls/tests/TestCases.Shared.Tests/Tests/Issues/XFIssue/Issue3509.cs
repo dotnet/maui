@@ -16,8 +16,8 @@ public class Issue3509 : _IssuesUITest
 	// [Category(UITestCategories.Navigation)]
 	// public void PoppedOnlyFiresOnce()
 	// {
-	// 	RunningApp.WaitForElement(_popPage);
-	// 	RunningApp.Tap(_popPage);
-	// 	RunningApp.WaitForElement("1");
+	// 	App.WaitForElement(_popPage);
+	// 	App.Tap(_popPage);
+	// 	App.WaitForElement("1");
 	// }
 }

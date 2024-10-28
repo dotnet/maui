@@ -16,11 +16,11 @@ public class Issue45749 : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void DisableScrollingOnCustomHorizontalListView()
 	//{
-	//	RunningApp.WaitForElement("Button");
-	//	RunningApp.WaitForElement(q => q.Marked("True"), timeout: TimeSpan.FromSeconds(2));
-	//	RunningApp.Screenshot("Custom HorizontalListView Scrolling Enabled Default");
-	//	RunningApp.Tap(q => q.Marked("Toggle ScrollView.IsEnabled"));
-	//	RunningApp.WaitForElement(q => q.Marked("False"), timeout: TimeSpan.FromSeconds(2));
-	//	RunningApp.Screenshot("Custom HorizontalListView Scrolling Disabled");
+	//	App.WaitForElement("Button");
+	//	App.WaitForElement(q => q.Marked("True"), timeout: TimeSpan.FromSeconds(2));
+	//	App.Screenshot("Custom HorizontalListView Scrolling Enabled Default");
+	//	App.Tap(q => q.Marked("Toggle ScrollView.IsEnabled"));
+	//	App.WaitForElement(q => q.Marked("False"), timeout: TimeSpan.FromSeconds(2));
+	//	App.Screenshot("Custom HorizontalListView Scrolling Disabled");
 	//}
 }

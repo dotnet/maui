@@ -16,15 +16,15 @@ public class Issue12246 : _IssuesUITest
 	// [Category(UITestCategories.Entry)]
 	// public void UnfocusingPasswordDoesNotHang()
 	// {
-	// 	RunningApp.WaitForElement(Entry);
-	// 	RunningApp.WaitForElement(Password);
+	// 	App.WaitForElement(Entry);
+	// 	App.WaitForElement(Password);
 
-	// 	RunningApp.EnterText(Entry, "test");
-	// 	RunningApp.DismissKeyboard();
-	// 	RunningApp.EnterText(Password, "test");
+	// 	App.EnterText(Entry, "test");
+	// 	App.DismissKeyboard();
+	// 	App.EnterText(Password, "test");
 
-	// 	RunningApp.Tap(Entry);
-	// 	RunningApp.DismissKeyboard();
-	// 	RunningApp.WaitForElement(Success);
+	// 	App.Tap(Entry);
+	// 	App.DismissKeyboard();
+	// 	App.WaitForElement(Success);
 	// }
 }

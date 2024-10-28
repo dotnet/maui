@@ -111,7 +111,6 @@ namespace Maui.Controls.Sample
 			template.SetBinding(TextCell.TextProperty, "Title");
 			template.SetBinding(TextCell.AutomationIdProperty, "TitleAutomationId");
 
-			BindingContext = _pages;
 			ItemTemplate = template;
 			ItemsSource = _pages;
 

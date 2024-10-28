@@ -17,21 +17,21 @@ public class TabbedPageWithList : _IssuesUITest
 	//[FailsOnIOS]
 	//public void TabbedPageWithListViewIssueTestsAllElementsPresent()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Tab Two"));
-	//	RunningApp.WaitForElement(q => q.Marked("List Page"));
-	//	RunningApp.Screenshot("All elements present");
+	//	App.WaitForElement(q => q.Marked("Tab Two"));
+	//	App.WaitForElement(q => q.Marked("List Page"));
+	//	App.Screenshot("All elements present");
 	//}
 
 	//[Test]
 	//[FailsOnIOS]
 	//public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
 	//{
-	//	RunningApp.Tap(q => q.Marked("List Page"));
+	//	App.Tap(q => q.Marked("List Page"));
 
-	//	RunningApp.WaitForElement(q => q.Marked("Jason"));
-	//	RunningApp.WaitForElement(q => q.Marked("Ermau"));
-	//	RunningApp.WaitForElement(q => q.Marked("Seth"));
+	//	App.WaitForElement(q => q.Marked("Jason"));
+	//	App.WaitForElement(q => q.Marked("Ermau"));
+	//	App.WaitForElement(q => q.Marked("Seth"));
 
-	//	RunningApp.Screenshot("ListView correct");
+	//	App.Screenshot("ListView correct");
 	//}
 }
