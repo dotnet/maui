@@ -206,6 +206,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		protected override void UpdateItemsLayout()
+		{
+			_ignorePlatformSelectionChange = true;
+
+			base.UpdateItemsLayout();
+			_ignorePlatformSelectionChange = false;
+		}
+
 		protected override void UpdateItemsSource()
 		{
 			_ignorePlatformSelectionChange = true;
