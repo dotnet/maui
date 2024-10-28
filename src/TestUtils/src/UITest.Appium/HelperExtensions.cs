@@ -364,7 +364,7 @@ namespace UITest.Appium
 			app.TouchAndHold(elementToTouchAndHold);
 		}
 
-		public static void TouchAndHold(this IApp app, IUIElement? element)
+		internal static void TouchAndHold(this IApp app, IUIElement? element)
 		{
 			if (element is not null)
 			{
