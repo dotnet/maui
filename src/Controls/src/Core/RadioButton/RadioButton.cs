@@ -459,7 +459,7 @@ namespace Microsoft.Maui.Controls
 
 			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
-			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent, converter: new NonNegativeValueConverter());
+			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
@@ -687,19 +687,6 @@ namespace Microsoft.Maui.Controls
 				{
 					CornerRadius = (int)value,
 				};
-			}
-
-			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-			{
-				throw new NotImplementedException();
-			}
-		}
-
-		class NonNegativeValueConverter : IValueConverter
-		{
-			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-			{
-				return Math.Max(0, (double)value);
 			}
 
 			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
