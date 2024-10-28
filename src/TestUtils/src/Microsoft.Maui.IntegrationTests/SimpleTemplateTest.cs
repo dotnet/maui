@@ -42,7 +42,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		string[]? warningsToIgnore = null;
 
-		if (additionalDotNetNewParams.Contains("IncludeSampleContent", StringComparison.OrdinalIgnoreCase))
+		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
 		{
 			warningsToIgnore = new string[]
 			{
