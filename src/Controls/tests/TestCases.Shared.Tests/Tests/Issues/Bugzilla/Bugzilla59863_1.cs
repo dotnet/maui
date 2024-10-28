@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
