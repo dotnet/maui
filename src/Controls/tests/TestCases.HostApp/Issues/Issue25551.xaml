@@ -8,8 +8,10 @@
     <local:MainPageViewModel x:Name="vm"/>
   </ContentPage.BindingContext>
 
-  <CollectionView 
+  <CollectionView AutomationId="ListCollection"
 Margin="0,0,0,15"
+VerticalOptions="Center"
+HorizontalOptions="Center"
  SelectionMode="Single"    
  ItemsSource="{Binding Items}"
  SelectedItem="{Binding SelectedItem}">
