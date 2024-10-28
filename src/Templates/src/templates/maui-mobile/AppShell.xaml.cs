@@ -10,12 +10,12 @@ public partial class AppShell : Shell
 	public AppShell()
 	{
 		InitializeComponent();
-#if (SampleContent)
+#if (IncludeSampleContent)
 		var currentTheme = Application.Current!.UserAppTheme;		
 		ThemeSegmentedControl.SelectedIndex = currentTheme == AppTheme.Light ? 0 : 1;
 #endif
 	}
-#if (SampleContent)
+#if (IncludeSampleContent)
 	public static async Task DisplaySnackbarAsync(string message)
 	{
 		CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();

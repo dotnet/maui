@@ -4,11 +4,9 @@
       "Framework": {
         "longName": "framework"
       },
-      "Empty": {
-        "longName": "empty"
-      },
       "IncludeSampleContent": {
-        "isHidden": true
+        "longName": "samplecontent",
+        "shortName": "sc"
       },
       "skipRestore": {
         "longName": "no-restore",
