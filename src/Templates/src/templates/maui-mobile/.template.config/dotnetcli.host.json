@@ -5,7 +5,8 @@
         "longName": "framework"
       },
       "IncludeSampleContent": {
-        "longName": "samplecontent",
+
+        "longName":  "sample-content",
         "shortName": "sc"
       },
       "skipRestore": {
