@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.CollectionViewSelectedItem"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+
+  <ContentPage.BindingContext>
+    <local:MainPageViewModel x:Name="vm"/>
+  </ContentPage.BindingContext>
+
+  <CollectionView 
+Margin="0,0,0,15"
+ SelectionMode="Single"    
+ ItemsSource="{Binding Items}"
+ SelectedItem="{Binding SelectedItem}">
+
+    <CollectionView.ItemTemplate>
+      <DataTemplate>
+        <Grid RowDefinitions="Auto,4" RowSpacing="5">
+          <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+              <VisualState x:Name="Normal">
+                <VisualState.Setters>
+                  <Setter Property="BackgroundColor" Value="Transparent"/>
+                  <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="False"/>
+                </VisualState.Setters>
+              </VisualState>
+              <VisualState x:Name="Selected">
+                <VisualState.Setters>
+                  <Setter Property="BackgroundColor" Value="Transparent"/>
+                  <Setter Property="Background" Value="Transparent"/>
+                  <Setter TargetName="SelectedIndicator" Property="BoxView.IsVisible" Value="True"/>
+                </VisualState.Setters>
+              </VisualState>
+            </VisualStateGroup>
+          </VisualStateManager.VisualStateGroups>
+
+          <Label 
+                 Text="{Binding .}" 
+                 x:Name="ItemName"
+                 VerticalOptions="Center"
+                 HorizontalOptions="Center"
+                 TextColor="Green"/>
+          <BoxView x:Name="SelectedIndicator" Color="blue" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
+        </Grid>
+      </DataTemplate>
+    </CollectionView.ItemTemplate>
+
+  </CollectionView>
+</ContentPage>
