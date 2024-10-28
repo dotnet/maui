@@ -98,7 +98,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetBarBackground(WBrush? brush)
 		{
-			this.Background = brush;
+			if (brush is not null)
+			{
+				this.Background = brush;
+			}
 
 			// Set CommandBarBackgroundOpen to the same color as the background.
 			// This is necessary because CommandBarBackgroundOpen defines the background color of the CommandBar when it is open.
