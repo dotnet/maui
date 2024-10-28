@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Platform
 			textBlockBorder.Visibility = UI.Xaml.Visibility.Collapsed;
 			menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
 			titleView.Visibility = UI.Xaml.Visibility.Collapsed;
+			commandBar.Style = (Style)Application.Current.Resources["DefaultCommandBarStyle"];
 		}
 
 		internal string? Title
@@ -95,7 +96,19 @@ namespace Microsoft.Maui.Platform
 			UpdateMenuBarForeground();
 		}
 
-		internal CommandBar CommandBar => commandBar;
+		internal void SetBarBackground(WBrush? brush)
+		{
+			if (brush is not null)
+			{
+				this.Background = brush;
+			}
+
+			// Set CommandBarBackgroundOpen to the same color as the background.
+			// This is necessary because CommandBarBackgroundOpen defines the background color of the CommandBar when it is open.
+			commandBar.Resources["CommandBarBackgroundOpen"] = this.Background;
+		}
+
+	internal CommandBar CommandBar => commandBar;
 
 
 		internal UI.Xaml.Thickness ContentGridMargin
