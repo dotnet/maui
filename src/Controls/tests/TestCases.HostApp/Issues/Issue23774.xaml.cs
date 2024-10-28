@@ -3,7 +3,7 @@
 	[Issue(IssueTracker.Github, 23774, "[Android] Text Clipping Issue in Entry with Long Strings", PlatformAffected.Android)]
 	public partial class Issue23774 : ContentPage
 	{
-		public Issue23333()
+		public Issue23774()
 		{
 			InitializeComponent();
 		}
