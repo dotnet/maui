@@ -25,8 +25,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RTLEditor");
 			App.EnterText("Editor", "Editor Text");
 			App.EnterText("RTLEditor", "RTL Editor");
+#if IOS
 			var app = App as AppiumApp;
 			KeyboardScrolling.HideKeyboard(app!, app!.Driver, true);
+#endif
 			App.Tap("ResetButton");
 			VerifyScreenshot();
 		}
