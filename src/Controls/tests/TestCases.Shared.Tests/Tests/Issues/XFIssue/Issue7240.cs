@@ -16,10 +16,10 @@ public class Issue7240 : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void ShellSecondPageHasSameLayoutAsPrimary()
 	//{
-	//	RunningApp.WaitForElement(ClickMe);
-	//	RunningApp.Tap(ClickMe);
-	//	RunningApp.WaitForElement("Page Count:2");
-	//	RunningApp.Tap(ClickMe);
-	//	RunningApp.WaitForElement(Success);
+	//	App.WaitForElement(ClickMe);
+	//	App.Tap(ClickMe);
+	//	App.WaitForElement("Page Count:2");
+	//	App.Tap(ClickMe);
+	//	App.WaitForElement(Success);
 	//}
 }

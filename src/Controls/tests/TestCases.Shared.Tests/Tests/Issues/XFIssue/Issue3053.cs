@@ -18,8 +18,8 @@ public class Issue3053 : _IssuesUITest
 	// [FailsOnAndroid]
 	// public void MovingItemInObservableCollectionBreaksListView()
 	// {
-	// 	RunningApp.WaitForElement(_instructions);
-	// 	RunningApp.Tap(_instructions);
-	// 	RunningApp.WaitForElement("Item 2");
+	// 	App.WaitForElement(_instructions);
+	// 	App.Tap(_instructions);
+	// 	App.WaitForElement("Item 2");
 	// }
 }

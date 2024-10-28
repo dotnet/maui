@@ -17,9 +17,9 @@ public class ShellGestures : _IssuesUITest
 //	public void SwipeGesture()
 //	{
 //		TapInFlyout(SwipeTitle, usingSwipe: true);
-//		RunningApp.WaitForElement(SwipeGestureSuccessId);
-//		RunningApp.SwipeLeftToRight(SwipeGestureSuccessId);
-//		RunningApp.WaitForElement(SwipeGestureSuccess);
+//		App.WaitForElement(SwipeGestureSuccessId);
+//		App.SwipeLeftToRight(SwipeGestureSuccessId);
+//		App.WaitForElement(SwipeGestureSuccess);
 //	}
 
 //	[Test]
@@ -27,9 +27,9 @@ public class ShellGestures : _IssuesUITest
 //	public void TableViewScroll()
 //	{
 //		TapInFlyout(TableViewTitle);
-//		RunningApp.WaitForElement(TableViewId);
+//		App.WaitForElement(TableViewId);
 
-//		RunningApp.ScrollDownTo("entry30", TableViewId, ScrollStrategy.Gesture, swipePercentage: 0.20, timeout: TimeSpan.FromMinutes(1));
+//		App.ScrollDownTo("entry30", TableViewId, ScrollStrategy.Gesture, swipePercentage: 0.20, timeout: TimeSpan.FromMinutes(1));
 //	}
 
 //	[Test]
@@ -37,8 +37,8 @@ public class ShellGestures : _IssuesUITest
 //	public void ListViewScroll()
 //	{
 //		TapInFlyout(ListViewTitle);
-//		RunningApp.WaitForElement(ListViewId);
-//		RunningApp.ScrollDownTo("30 Entry", ListViewId, ScrollStrategy.Gesture, swipePercentage: 0.20, timeout: TimeSpan.FromMinutes(1));
+//		App.WaitForElement(ListViewId);
+//		App.ScrollDownTo("30 Entry", ListViewId, ScrollStrategy.Gesture, swipePercentage: 0.20, timeout: TimeSpan.FromMinutes(1));
 //	}
 
 //#if ANDROID
@@ -48,9 +48,9 @@ public class ShellGestures : _IssuesUITest
 //	public void TouchListener()
 //	{
 //		TapInFlyout(TouchListenerTitle);
-//		RunningApp.WaitForElement(TouchListenerSuccessId);
-//		RunningApp.SwipeLeftToRight(TouchListenerSuccessId);
-//		RunningApp.WaitForElement(TouchListenerSuccess);
+//		App.WaitForElement(TouchListenerSuccessId);
+//		App.SwipeLeftToRight(TouchListenerSuccessId);
+//		App.WaitForElement(TouchListenerSuccess);
 //	}
 //#endif
 }

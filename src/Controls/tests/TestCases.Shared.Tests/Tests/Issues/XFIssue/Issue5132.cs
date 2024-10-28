@@ -19,7 +19,7 @@ public class Issue5132 : _IssuesUITest
 	//	[Category(UITestCategories.Shell)]
 	//	public void ShellFlyoutAndHamburgerAutomationProperties()
 	//	{
-	//		RunningApp.WaitForElement(q => q.Marked(_idIconElement));
+	//		App.WaitForElement(q => q.Marked(_idIconElement));
 	//		TapInFlyout(_titleElement, _idIconElement);
 	//	}
 }

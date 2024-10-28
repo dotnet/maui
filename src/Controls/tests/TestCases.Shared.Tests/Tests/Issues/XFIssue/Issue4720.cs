@@ -22,12 +22,12 @@ public class Issue4720 : _IssuesUITest
 
 	//	for (int n = 0; n < iterations; n++)
 	//	{
-	//		RunningApp.WaitForElement(q => q.Marked("New Page"));
-	//		RunningApp.Tap(q => q.Marked("New Page"));
-	//		RunningApp.WaitForElement(q => q.Marked("Close Page"));
+	//		App.WaitForElement(q => q.Marked("New Page"));
+	//		App.Tap(q => q.Marked("New Page"));
+	//		App.WaitForElement(q => q.Marked("Close Page"));
 	//		Thread.Sleep(250);
-	//		RunningApp.Tap(q => q.Marked("Close Page"));
+	//		App.Tap(q => q.Marked("Close Page"));
 	//	}
-	//	RunningApp.Tap(q => q.Marked("GC"));
+	//	App.Tap(q => q.Marked("GC"));
 	//}
 }

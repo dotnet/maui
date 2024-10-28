@@ -19,18 +19,18 @@ public class Issue11107 : _IssuesUITest
 	public void TabShouldntBeVisibleWhenThereIsOnlyOnePage()
 	{
 		RunTests();
-		RunningApp.Tap("RunTestTabBarIsVisible");
+		App.Tap("RunTestTabBarIsVisible");
 		RunTests();
-		RunningApp.Tap("RunTestTwoTabs");
+		App.Tap("RunTestTwoTabs");
 		RunTests();
 
 		void RunTests()
 		{
-			RunningApp.WaitForElement("SecondPageLoaded");
-			RunningApp.WaitForNoElement("Tab1AutomationId");
+			App.WaitForElement("SecondPageLoaded");
+			App.WaitForNoElement("Tab1AutomationId");
 			TapBackArrow();
-			RunningApp.WaitForElement("Page1Loaded");
-			RunningApp.WaitForNoElement("Tab1AutomationId");
+			App.WaitForElement("Page1Loaded");
+			App.WaitForNoElement("Tab1AutomationId");
 		}
 	}
 	*/

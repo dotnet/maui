@@ -16,6 +16,6 @@ public class Issue6323 : _IssuesUITest
 	//[Category(UITestCategories.WebView)]
 	//public void Issue6323Test()
 	//{
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
 	//}
 }

@@ -18,9 +18,9 @@ public class Issue8203 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void SelectionChangedShouldBeRaisedOnceWhenSelectionChanges()
 	//{
-	//	RunningApp.WaitForElement("one");
-	//	RunningApp.Tap("one");
-	//	RunningApp.Tap("two");
-	//	RunningApp.WaitForElement("SelectionChanged has been raised 2 times.");
+	//	App.WaitForElement("one");
+	//	App.Tap("one");
+	//	App.Tap("two");
+	//	App.WaitForElement("SelectionChanged has been raised 2 times.");
 	//}
 }
