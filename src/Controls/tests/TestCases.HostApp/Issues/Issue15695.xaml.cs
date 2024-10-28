@@ -9,7 +9,7 @@ public partial class Issue15695 : ContentPage
 		InitializeComponent();
 	}
 
-	private void OnButtonClicked(object? sender, EventArgs e)
+	private void OnButtonClicked(object sender, EventArgs e)
 	{
 		mauiSwitch.IsToggled = !mauiSwitch.IsToggled;
 	}
