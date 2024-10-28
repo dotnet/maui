@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 			=> self?.ToPlatform() ?? new AColor(ContextCompat.GetColor(context, defaultColorResourceId));
 
 		public static AColor ToPlatform(this Color? self, Color defaultColor)
-			=> (self ?? defaultColor ?? Color.FromArgb("#ff33b5e5")).ToPlatform();
+			=> self?.ToPlatform() ?? defaultColor.ToPlatform();
 
 		public static Color ToColor(this uint color)
 		{
