@@ -35,6 +35,13 @@ public partial class AppShell : Shell
 		await snackbar.Show(cancellationTokenSource.Token);
 	}
 
+#if WINDOWS
+    public static Task DisplayToastAsync(string message)
+    {
+		// Toast is currently not working in MCT on Windows
+		return Task.CompletedTask;
+    }
+#else
 	public static async Task DisplayToastAsync(string message)
 	{
 		var toast = Toast.Make(message, textSize: 18);
@@ -42,6 +49,7 @@ public partial class AppShell : Shell
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 		await toast.Show(cts.Token);
 	}
+#endif
 
 	private void SfSegmentedControl_SelectionChanged(object sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)
     {
