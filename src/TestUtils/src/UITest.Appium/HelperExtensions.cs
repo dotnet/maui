@@ -540,7 +540,7 @@ namespace UITest.Appium
 
 		public static IUIElement WaitForFirstElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			IReadOnlyCollection<IUIElement> elements = app.FindElements(marked);
+			IReadOnlyCollection<IUIElement> elements = FindElements(app, marked);
 
 			if(elements is not null && elements.Count > 0)
 			{
