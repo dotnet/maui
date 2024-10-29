@@ -85,9 +85,21 @@ namespace UITest.Appium
 			return q.FindElement(this);
 		}
 
+#nullable disable
+		public virtual IUIElement FindElementByText(string text)
+		{
+			return AppiumQuery.ByXPath("//*[@text='" + text + "']").FindElement(this);
+		}
+#nullable enable
+
 		public virtual IReadOnlyCollection<IUIElement> FindElements(string id)
 		{
 			return Query.ById(id);
+		}
+
+		public virtual IReadOnlyCollection<IUIElement> FindElementsByText(string text)
+		{
+			return AppiumQuery.ByXPath("//*[@text='" + text + "']").FindElements(this);
 		}
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(IQuery query)
