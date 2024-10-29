@@ -104,6 +104,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		}
 
 		Tasks = await _taskRepository.ListAsync(_project.ID);
+		_project.Tasks = Tasks;
 	}
 
 	private async Task LoadData(int id)
@@ -173,11 +174,14 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_project.Icon = Icon;
 		await _projectRepository.SaveItemAsync(_project);
 
-		foreach (var tag in AllTags)
+		if (_project.IsNullOrNew())
 		{
-			if (tag.IsSelected)
+			foreach (var tag in AllTags)
 			{
-				await _tagRepository.SaveItemAsync(tag, _project.ID);
+				if (tag.IsSelected)
+				{
+					await _tagRepository.SaveItemAsync(tag, _project.ID);
+				}
 			}
 		}
 
