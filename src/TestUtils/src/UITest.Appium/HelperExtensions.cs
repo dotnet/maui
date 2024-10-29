@@ -334,7 +334,7 @@ namespace UITest.Appium
 		public static void TouchAndHoldCoordinates(this IApp app, float x, float y)
 		{
 			app.CommandExecutor.Execute("touchAndHoldCoordinates", new Dictionary<string, object>
-			{		
+			{
 				{ "x", x },
 				{ "y", y }
 			});
@@ -542,10 +542,10 @@ namespace UITest.Appium
 		{
 			IReadOnlyCollection<IUIElement> elements = FindElements(app, marked);
 
-			if(elements is not null && elements.Count > 0)
+			if (elements is not null && elements.Count > 0)
 			{
 				IUIElement firstElement() => elements.First();
-				
+
 				var result = Wait(firstElement, i => i != null, timeoutMessage, timeout, retryFrequency);
 
 				return result;
@@ -776,11 +776,36 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = FindElement(app, marked);
+			var elementToScroll = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
 			{
-				{ "element", elementToSwipe},
+				{ "element", elementToScroll },
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scroll down until an element that matches the toMarked is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="withinMarked">Marked selector to select what element to scroll within.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDownTo(this IApp app, string toMarked, string withinMarked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = FindElement(app, withinMarked);
+
+			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+			{
+				{ "marked", toMarked },
+				{ "element", elementToScroll },
 				{ "strategy", strategy },
 				{ "swipePercentage", swipePercentage },
 				{ "swipeSpeed", swipeSpeed },
@@ -827,6 +852,31 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
 			{
 				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scroll up until an element that matches the toMarked is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="withinMarked">Marked selector to select what element to scroll within.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollUpTo(this IApp app, string toMarked, string withinMarked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = FindElement(app, withinMarked);
+
+			app.CommandExecutor.Execute("scrollUpTo", new Dictionary<string, object>
+			{
+				{ "marked", toMarked },
+				{ "element", elementToScroll },
 				{ "strategy", strategy },
 				{ "swipePercentage", swipePercentage },
 				{ "swipeSpeed", swipeSpeed },
@@ -1273,6 +1323,21 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		/// <summary>
+		/// Print in the Output the current application hierarchy XML (app).
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PrintTree(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"PrintTree is only supported on AppiumApp");
+			}
+
+			var pageSource = aaa.Driver.PageSource;
+			Console.WriteLine(pageSource);
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
