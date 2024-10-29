@@ -50,6 +50,8 @@
     <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
     <PackageReference Include="Xamarin.Android.Glide.AVIF.Integration" Version="$(_XamarinAndroidGlideVersion)" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.6" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.6" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.8.6" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0" />
     <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.24" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.3" />
