@@ -104,6 +104,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		}
 
 		Tasks = await _taskRepository.ListAsync(_project.ID);
+		_project.Tasks = Tasks;
 	}
 
 	private async Task LoadData(int id)
