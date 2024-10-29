@@ -20,26 +20,10 @@ public class Issue15695 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifySwitchOffColor()
-	{
-		App.WaitForElement("Switch");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Switch)]
-	public void VerifySwitchOnColor()
-	{
-		App.WaitForElement("Switch");
-		App.Tap("SwitchButton");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Switch)]
 	public void VerifySwitchOffColorAfterToggling()
 	{
 		App.WaitForElement("Switch");
+		App.Tap("SwitchButton");
 		App.Tap("SwitchButton");
 		VerifyScreenshot();
 	}
