@@ -871,9 +871,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = FindElement(app, marked);
+			var elementToScroll = FindElement(app, marked);
 
-			app.ScrollLeft(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollLeft(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		/// <summary>
@@ -887,9 +887,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollLeft(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollLeft(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollLeft(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		internal static void ScrollLeft(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -920,7 +920,7 @@ namespace UITest.Appium
 		{
 			var elementToScroll = FindElement(app, marked);
 
-			app.ScrollDown(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		/// <summary>
@@ -934,9 +934,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollDown(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		internal static void ScrollDown(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -1031,9 +1031,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollRight(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollRight(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollRight(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -1062,16 +1062,16 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollUp(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = FindElement(app, marked);
+			var elementToScroll = FindElement(app, marked);
 
-			app.ScrollUp(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollUp(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		public static void ScrollUp(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollUp(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollUp(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		public static void ScrollUp(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
