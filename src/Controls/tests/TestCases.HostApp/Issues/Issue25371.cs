@@ -49,7 +49,8 @@ namespace Maui.Controls.Sample.Issues
 		{
 			var label = new Label()
 			{
-				Text = "Welcome to Second Page",
+				AutomationID = "SecondPageLabel",
+				Text = "Welcome to Second Page",		
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center
 			};
