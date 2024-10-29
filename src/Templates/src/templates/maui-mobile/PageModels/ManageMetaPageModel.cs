@@ -11,6 +11,7 @@ public partial class ManageMetaPageModel : ObservableObject
 {
 	private readonly CategoryRepository _categoryRepository;
 	private readonly TagRepository _tagRepository;
+    private readonly SeedDataService _seedDataService;
 
 	[ObservableProperty]
 	private ObservableCollection<Category> _categories = [];
