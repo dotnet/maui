@@ -171,7 +171,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_project.Name = Name;
 		_project.Description = Description;
 		_project.CategoryID = Category?.ID ?? 0;
-		_project.Icon = Icon;
+		_project.Icon = Icon ?? FluentUI.ribbon_24_regular;
 		await _projectRepository.SaveItemAsync(_project);
 
 		if (_project.IsNullOrNew())
