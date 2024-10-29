@@ -16,7 +16,7 @@ public class Bugzilla57717 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Button)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void ButtonBackgroundColorAutomatedTest()
 	// {
 	// 	// With the original bug in place, we'll crash before we get this far

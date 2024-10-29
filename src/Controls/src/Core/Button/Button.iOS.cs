@@ -14,10 +14,10 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button : ICrossPlatformLayout
 	{
-		// _originalImageSize and _originalImageSource are used to ensure we don't resize the image
-		// larger than the original image size and to ensure if a new image is loaded, we use that image's size for resizing.
+		// _originalImage and _originalImageSize are used to ensure we don't resize the image larger than the original image size
+		// and to ensure if a new image is loaded, we use that image's size for resizing.
+		CGImage _originalCGImage = null;
 		CGSize _originalImageSize = CGSize.Empty;
-		string _originalImageSource = string.Empty;
 
 		/// <summary>
 		/// Measure the desired size of the button based on the image and title size taking into account
@@ -83,18 +83,17 @@ namespace Microsoft.Maui.Controls
 
 			if (image is not null)
 			{
-				// Save the original image size for later image resizing
-				if (_originalImageSize == CGSize.Empty || _originalImageSource == string.Empty || _originalImageSource != button.ImageSource.ToString())
-				{
-					_originalImageSource = button.ImageSource.ToString();
-					_originalImageSize = image.Size;
-				}
-
 				// Resize the image if necessary and then update the image variable
-				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint, _originalImageSize))
+				if (ResizeImageIfNecessary(platformButton, button, image, padding, spacing, borderWidth, widthConstraint, heightConstraint))
 				{
 					image = platformButton.CurrentImage;
 				}
+			}
+
+			else
+			{
+				_originalCGImage = null;
+				_originalImageSize = CGSize.Empty;
 			}
 
 			platformButton.ImageView.ContentMode = contentMode;
@@ -334,10 +333,16 @@ namespace Microsoft.Maui.Controls
 		/// <param name="borderWidth"></param>
 		/// <param name="widthConstraint"></param>
 		/// <param name="heightConstraint"></param>
-		/// <param name="originalImageSize"></param>
 		/// <returns></returns>
-		static bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint, CGSize originalImageSize)
+		bool ResizeImageIfNecessary(UIButton platformButton, Button button, UIImage image, Thickness padding, double spacing, double borderWidth, double widthConstraint, double heightConstraint)
 		{
+			// Save the original image for later image resizing
+			if (_originalImageSize == CGSize.Empty || _originalCGImage is null || image.CGImage != _originalCGImage)
+			{
+				_originalCGImage = image.CGImage;
+				_originalImageSize = image.Size;
+			}
+
 			var currentImageWidth = image.Size.Width;
 			var currentImageHeight = image.Size.Height;
 
@@ -387,15 +392,15 @@ namespace Microsoft.Maui.Controls
 				// if the image is too large then we will size it smaller
 				if (currentImageHeight - availableHeight > buffer || currentImageWidth - availableWidth > buffer)
 				{
-					image = ResizeImageSource(image, availableWidth, availableHeight, originalImageSize);
+					image = ResizeImageSource(image, availableWidth, availableHeight, _originalImageSize);
 				}
 				// if the image is already sized down but now has more space, we will size it up no more than the original image size
 				else if (availableHeight - additionalVerticalSpace - currentImageHeight > buffer
 					&& availableWidth - additionalHorizontalSpace - currentImageWidth > buffer
-					&& currentImageHeight != originalImageSize.Height
-					&& currentImageWidth != originalImageSize.Width)
+					&& currentImageHeight != _originalImageSize.Height
+					&& currentImageWidth != _originalImageSize.Width)
 				{
-					image = ResizeImageSource(image, (nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, originalImageSize, true);
+					image = ResizeImageSource(image, (nfloat)widthConstraint - additionalHorizontalSpace, (nfloat)heightConstraint - additionalVerticalSpace, _originalImageSize, true);
 				}
 				else
 				{
@@ -464,6 +469,13 @@ namespace Microsoft.Maui.Controls
 		internal static void MapBorderWidth(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateContentLayout(button);
+		}
+
+		private protected override void OnHandlerChangingCore(HandlerChangingEventArgs args)
+		{
+			base.OnHandlerChangingCore(args);
+			_originalImageSize = CGSize.Empty;
+			_originalCGImage = null;
 		}
 	}
 }

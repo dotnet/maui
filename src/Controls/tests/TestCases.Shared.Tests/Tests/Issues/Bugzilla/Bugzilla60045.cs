@@ -12,11 +12,11 @@ public class Bugzilla60045 : _IssuesUITest
 	public override string Issue => "ListView with RecycleElement strategy doesn't handle CanExecute of TextCell Command properly";
 
 	// [Test]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void CommandDoesNotFire()
 	// {
-	// 	RunningApp.WaitForElement(ClickThis);
-	// 	RunningApp.Tap(ClickThis);
-	// 	RunningApp.WaitForNoElement(Fail);
+	// 	App.WaitForElement(ClickThis);
+	// 	App.Tap(ClickThis);
+	// 	App.WaitForNoElement(Fail);
 	// }
 }

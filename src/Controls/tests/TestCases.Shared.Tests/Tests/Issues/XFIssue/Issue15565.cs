@@ -16,8 +16,8 @@ public class Issue15565 : _IssuesUITest
 	// [Test]
 	// public void TitleViewHeightIsNotZero()
 	// {
-	// 	var titleView = RunningApp.WaitForElement("TitleViewId")[0].Rect;
-	// 	var topTab = RunningApp.WaitForElement("page 1")[0].Rect;
+	// 	var titleView = App.WaitForElement("TitleViewId")[0].Rect;
+	// 	var topTab = App.WaitForElement("page 1")[0].Rect;
 
 	// 	var titleViewBottom = titleView.Y + titleView.Height;
 	// 	var topTabTop = topTab.Y;
@@ -30,22 +30,22 @@ public class Issue15565 : _IssuesUITest
 	// [Test]
 	// public void ToolbarItemsWithTitleViewAreRendering()
 	// {
-	// 	RunningApp.WaitForElement("Item 1");
-	// 	RunningApp.WaitForElement("Item 3");
+	// 	App.WaitForElement("Item 1");
+	// 	App.WaitForElement("Item 3");
 	// }
 
 	// [Test]
 	// public void NoDuplicateTitleViews()
 	// {
-	// 	var titleView = RunningApp.WaitForElement("TitleViewId");
+	// 	var titleView = App.WaitForElement("TitleViewId");
 
 	// 	Assert.AreEqual(1, titleView.Length);
 
-	// 	RunningApp.Tap("page 1");
-	// 	RunningApp.Tap("page 2");
-	// 	RunningApp.Tap("page 3");
+	// 	App.Tap("page 1");
+	// 	App.Tap("page 2");
+	// 	App.Tap("page 3");
 
-	// 	titleView = RunningApp.WaitForElement("TitleViewId");
+	// 	titleView = App.WaitForElement("TitleViewId");
 
 	// 	Assert.AreEqual(1, titleView.Length);
 	// }

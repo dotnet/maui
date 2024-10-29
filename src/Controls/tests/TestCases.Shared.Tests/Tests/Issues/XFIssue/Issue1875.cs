@@ -17,8 +17,8 @@ public class Issue1875 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void NSRangeException()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Load"));
-	// 	RunningApp.Tap(q => q.Marked("Load"));
-	// 	RunningApp.WaitForElement(q => q.Marked("5"));
+	// 	App.WaitForElement(q => q.Marked("Load"));
+	// 	App.Tap(q => q.Marked("Load"));
+	// 	App.WaitForElement(q => q.Marked("5"));
 	// }
 }

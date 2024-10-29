@@ -12,16 +12,16 @@ public class Bugzilla47923 : _IssuesUITest
 
 	public override string Issue => "TapGestureRecognizer blocks List View Context Actions1";
 
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Bugzilla47923Test()
 	// {
 	// 	foreach (var testString in new[] { "AspectFit", "AspectFill", "Fill", "Test cell views" })
 	// 	{
-	// 		RunningApp.WaitForElement(q => q.Marked(testString));
-	// 		RunningApp.Tap(q => q.Marked(testString));
-	// 		RunningApp.Back();
+	// 		App.WaitForElement(q => q.Marked(testString));
+	// 		App.Tap(q => q.Marked(testString));
+	// 		App.Back();
 	// 	}
 	// }
 }

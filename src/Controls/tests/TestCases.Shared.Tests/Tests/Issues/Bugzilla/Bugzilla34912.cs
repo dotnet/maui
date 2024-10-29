@@ -14,7 +14,7 @@ public class Bugzilla34912 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla34912Test()
 	// {
 	// 	App.Tap("Allen");

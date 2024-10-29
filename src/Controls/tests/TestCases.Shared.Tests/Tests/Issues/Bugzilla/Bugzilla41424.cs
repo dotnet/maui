@@ -15,7 +15,7 @@ public class Bugzilla41424 : _IssuesUITest
 
 	// TODO from Xamarin.UITest migration: replace DialogIsOpened calls with another way of detecting the dialog
 	// Maybe see Bugzilla42074 which seems to do the same?
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// [Test]
 	// [Category(UITestCategories.DatePicker)]
 	// public void DatePickerCancelShouldUnfocus()

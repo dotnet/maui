@@ -1,3 +1,4 @@
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -10,13 +11,14 @@ public class Bugzilla27731 : _IssuesUITest
     {
     }
 
-    public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
+	public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
 
-	// [Test]
-	// [Category(UITestCategories.InputTransparent)]
-	// public void Bugzilla27731Test()
-	// {
-	// 	App.WaitForElement("Click");
-	// 	App.WaitForNoElement("PageTitle");
-	// }
+	[Test]
+	[Category(UITestCategories.InputTransparent)]
+	public void Bugzilla27731Test()
+	{
+		App.WaitForElement("Click");
+		App.WaitForElement("PageTitle");
+	}
 }
+#endif

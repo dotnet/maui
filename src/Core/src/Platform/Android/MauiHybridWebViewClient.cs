@@ -3,13 +3,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
+using System.Web;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {
+	[RequiresUnreferencedCode(HybridWebViewHandler.DynamicFeatures)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(HybridWebViewHandler.DynamicFeatures)]
+#endif
 	public class MauiHybridWebViewClient : WebViewClient
 	{
 		private readonly WeakReference<HybridWebViewHandler?> _handler;
@@ -35,26 +41,45 @@ namespace Microsoft.Maui.Platform
 			{
 				var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
-				string contentType;
-				if (string.IsNullOrEmpty(relativePath))
+				string? contentType = null;
+				Stream? contentStream = null;
+
+				// 1. Try special InvokeDotNet path
+				if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
 				{
-					relativePath = Handler.VirtualView.DefaultFile;
-					contentType = "text/html";
-				}
-				else
-				{
-					if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+					var fullUri = new Uri(fullUrl!);
+					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
+					(var contentBytes, contentType) = Handler.InvokeDotNet(invokeQueryString);
+					if (contentBytes is not null)
 					{
-						// TODO: Log this
-						contentType = "text/plain";
+						contentStream = new MemoryStream(contentBytes);
 					}
 				}
 
-				var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
-				var contentStream = PlatformOpenAppPackageFile(assetPath);
+				// 2. If nothing found yet, try to get static content from the asset path
+				if (contentStream is null)
+				{
+					if (string.IsNullOrEmpty(relativePath))
+					{
+						relativePath = Handler.VirtualView.DefaultFile;
+						contentType = "text/html";
+					}
+					else
+					{
+						if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+						{
+							// TODO: Log this
+							contentType = "text/plain";
+						}
+					}
+
+					var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
+					contentStream = PlatformOpenAppPackageFile(assetPath);
+				}
 
 				if (contentStream is null)
 				{
+					// 3.a. If still nothing is found, return a 404
 					var notFoundContent = "Resource not found (404)";
 
 					var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
@@ -64,8 +89,10 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
+					// 3.b. Otherwise, return the content
+
 					// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
-					return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType), contentStream);
+					return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType ?? "text/plain"), contentStream);
 				}
 			}
 			else

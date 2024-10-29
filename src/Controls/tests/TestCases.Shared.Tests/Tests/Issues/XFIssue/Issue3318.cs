@@ -17,9 +17,9 @@ public class Issue3318 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue3318Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("End"));
-	// 	RunningApp.Tap(q => q.Marked("End"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Item 19"));
-	// 	RunningApp.Back();
+	// 	App.WaitForElement(q => q.Marked("End"));
+	// 	App.Tap(q => q.Marked("End"));
+	// 	App.WaitForElement(q => q.Marked("Item 19"));
+	// 	App.Back();
 	// }
 }

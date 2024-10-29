@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   iosPool: { }
   windowsPool: { }
+  windowsBuildPool: { }
   macosPool: { }
   androidCompatibilityPool: { }
   iosCompatibilityPool: { }
@@ -79,9 +80,8 @@ stages:
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
-        pool: ${{ parameters.windowsPool }}
+        pool: ${{ parameters.windowsBuildPool }}
         variables:
-          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
           - template: ui-tests-build-sample.yml

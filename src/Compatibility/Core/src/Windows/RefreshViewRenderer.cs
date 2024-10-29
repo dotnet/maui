@@ -14,7 +14,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class RefreshViewRenderer : ViewRenderer<RefreshView, RefreshContainer>
+	public partial class RefreshViewRenderer : ViewRenderer<RefreshView, RefreshContainer>
 	{
 		bool _isDisposed;
 		Deferral _refreshCompletionDeferral;
