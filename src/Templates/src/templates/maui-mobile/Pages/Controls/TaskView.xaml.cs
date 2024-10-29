@@ -26,6 +26,9 @@ public partial class TaskView
 	{
 		var checkbox = (CheckBox)sender;
 		var task = (ProjectTask)checkbox.BindingContext;
+		if (task is null)
+			return;
+		
 		if (task.IsCompleted == e.Value)
 			return;
 
