@@ -15,7 +15,7 @@ public class Bugzilla59580 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.TableView)]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)

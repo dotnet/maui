@@ -17,11 +17,11 @@ public class Issue4356 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void Issue4356Test()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Will this repo work?"));
-	//	RunningApp.WaitForElement(q => q.Marked("Remove item"));
-	//	RunningApp.Tap(q => q.Marked("Remove item"));
-	//	RunningApp.Tap(q => q.Marked("Remove item"));
-	//	RunningApp.Tap(q => q.Marked("Add item"));
-	//	RunningApp.WaitForElement(q => q.Marked("Added from Button Command"));
+	//	App.WaitForElement(q => q.Marked("Will this repo work?"));
+	//	App.WaitForElement(q => q.Marked("Remove item"));
+	//	App.Tap(q => q.Marked("Remove item"));
+	//	App.Tap(q => q.Marked("Remove item"));
+	//	App.Tap(q => q.Marked("Add item"));
+	//	App.WaitForElement(q => q.Marked("Added from Button Command"));
 	//}
 }

@@ -21,7 +21,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Tap(this IApp app, string element)
 		{
-			app.FindElement(element).Click();
+			FindElement(app, element).Click();
 		}
 
 		/// <summary>
@@ -44,7 +44,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void Click(this IApp app, string element)
 		{
-			app.FindElement(element).Click();
+			FindElement(app, element).Click();
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace UITest.Appium
 
 		public static void RightClick(this IApp app, string element)
 		{
-			var uiElement = app.FindElement(element);
+			var uiElement = FindElement(app, element);
 			uiElement.Command.Execute("click", new Dictionary<string, object>()
 			{
 				{ "element", uiElement },
@@ -112,7 +112,7 @@ namespace UITest.Appium
 		/// <param name="text">The text to enter.</param>
 		public static void EnterText(this IApp app, string element, string text)
 		{
-			var appElement = app.FindElement(element);
+			var appElement = FindElement(app, element);
 			appElement.SendKeys(text);
 			app.DismissKeyboard();
 		}
@@ -182,7 +182,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void ClearText(this IApp app, string element)
 		{
-			app.FindElement(element).Clear();
+			FindElement(app, element).Clear();
 		}
 
 		/// <summary>
@@ -246,7 +246,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void DoubleClick(this IApp app, string element)
 		{
-			var elementToDoubleClick = app.FindElement(element);
+			var elementToDoubleClick = FindElement(app, element);
 			app.CommandExecutor.Execute("doubleClick", new Dictionary<string, object>
 			{
 				{ "element", elementToDoubleClick },
@@ -275,7 +275,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void DoubleTap(this IApp app, string element)
 		{
-			var elementToDoubleTap = app.FindElement(element);
+			var elementToDoubleTap = FindElement(app, element);
 			app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
 			{
 				{ "element", elementToDoubleTap },
@@ -304,7 +304,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void LongPress(this IApp app, string element)
 		{
-			var elementToLongPress = app.FindElement(element);
+			var elementToLongPress = FindElement(app, element);
 			app.CommandExecutor.Execute("longPress", new Dictionary<string, object>
 			{
 				{ "element", elementToLongPress },
@@ -318,7 +318,7 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void TouchAndHold(this IApp app, string element)
 		{
-			var elementToTouchAndHold = app.FindElement(element);
+			var elementToTouchAndHold = FindElement(app, element);
 			app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
 			{
 				{ "element", elementToTouchAndHold },
@@ -348,8 +348,8 @@ namespace UITest.Appium
 		/// <param name="dragTarget">Element to be dropped.</param>
 		public static void DragAndDrop(this IApp app, string dragSource, string dragTarget)
 		{
-			var dragSourceElement = app.FindElement(dragSource);
-			var targetSourceElement = app.FindElement(dragTarget);
+			var dragSourceElement = FindElement(app, dragSource);
+			var targetSourceElement = FindElement(app, dragTarget);
 
 			app.CommandExecutor.Execute("dragAndDrop", new Dictionary<string, object>
 			{
@@ -464,7 +464,7 @@ namespace UITest.Appium
 		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			IUIElement result() => app.FindElement(marked);
+			IUIElement result() => FindElement(app, marked);
 			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
 
 			return results;
@@ -562,7 +562,7 @@ namespace UITest.Appium
 
 		public static IUIElement WaitForFirstElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			IReadOnlyCollection<IUIElement> elements = app.FindElements(marked);
+			IReadOnlyCollection<IUIElement> elements = FindElements(app, marked);
 
 			if(elements is not null && elements.Count > 0)
 			{
@@ -714,7 +714,7 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void SwipeLeftToRight(this IApp app, string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(marked);
+			var elementToSwipe = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
 			{
@@ -753,7 +753,7 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void SwipeRightToLeft(this IApp app, string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(marked);
+			var elementToSwipe = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
 			{
@@ -775,7 +775,7 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(marked);
+			var elementToSwipe = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
 			{
@@ -798,7 +798,7 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(marked);
+			var elementToSwipe = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
 			{
@@ -821,7 +821,7 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollRight(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(marked);
+			var elementToSwipe = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
 			{
@@ -844,7 +844,7 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollUp(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(marked);
+			var elementToSwipe = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
 			{
@@ -962,7 +962,7 @@ namespace UITest.Appium
 		/// <param name="value">The value to set the Slider to.</param>
 		public static void SetSliderValue(this IApp app, string marked, double value)
 		{
-			var element = app.FindElement(marked);
+			var element = FindElement(app, marked);
 
 			double defaultMinimum = 0d;
 			double defaultMaximum = 1d;
@@ -986,7 +986,7 @@ namespace UITest.Appium
 		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
 		public static void SetSliderValue(this IApp app, string marked, double value, double minimum = 0d, double maximum = 1d)
 		{
-			var element = app.FindElement(marked);
+			var element = FindElement(app, marked);
 
 			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
 			{
@@ -1342,6 +1342,26 @@ namespace UITest.Appium
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
 			Wait(query, i => i == null, timeoutMessage, timeout, retryFrequency);
+		}
+
+		static IUIElement FindElement(IApp app, string element)
+		{
+			var result = app.FindElement(element);
+
+			if (result is null)
+				result = app.FindElementByText(element);
+
+			return result;
+		}
+
+		static IReadOnlyCollection<IUIElement> FindElements(IApp app, string element)
+		{
+			var result = app.FindElements(element);
+
+			if (result is null)
+				result = app.FindElementsByText(element);
+
+			return result;
 		}
 	}
 }

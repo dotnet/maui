@@ -17,6 +17,6 @@ public class Issue8008 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void RemovingShellItemCorrectlyPicksNextValidShellItemAsVisibleShellItem()
 	//{
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
 	//}
 }

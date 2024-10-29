@@ -18,12 +18,12 @@ public class Issue11247 : _IssuesUITest
 	[FailsOnAndroid]
 	public void SettingFlyoutIsPresentedInNavigatingKeepsFlyoutOpen()
 	{
-		RunningApp.Tap("CloseFlyout");
+		App.Tap("CloseFlyout");
 		ShowFlyout();
-		RunningApp.Tap("FlyoutItem 1");
-		RunningApp.Tap("FlyoutItem 2");
-		RunningApp.WaitForElement("FlyoutItem 1");
-		RunningApp.WaitForElement("FlyoutItem 2");
+		App.Tap("FlyoutItem 1");
+		App.Tap("FlyoutItem 2");
+		App.WaitForElement("FlyoutItem 1");
+		App.WaitForElement("FlyoutItem 2");
 
 	}
 	*/

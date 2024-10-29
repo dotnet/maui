@@ -18,6 +18,6 @@ public class NestedCollectionView : _IssuesUITest
 	//public void NestedCollectionViewsShouldNotCrash()
 	//{
 	//	// If this page loaded and didn't crash, we're good.
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
 	//}
 }

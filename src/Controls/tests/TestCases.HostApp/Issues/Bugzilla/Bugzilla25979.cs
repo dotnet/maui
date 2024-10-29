@@ -1,7 +1,14 @@
 namespace Maui.Controls.Sample.Issues;
 
-public class Bugzilla25979 : TestNavigationPage
+[Issue(IssueTracker.Bugzilla, 25979, "https://bugzilla.xamarin.com/show_bug.cgi?id=25979")]
+public class Bugzilla25979 : NavigationPage
 {
+	public Bugzilla25979()
+	{
+		// Initialize ui here instead of ctor
+		Navigation.PushAsync(new MyPage());
+	}
+
 	internal sealed class MyPage : ContentPage
 	{
 		public MyPage()
@@ -102,11 +109,5 @@ public class Bugzilla25979 : TestNavigationPage
 					}
 			};
 		}
-	}
-
-	protected override void Init()
-	{
-		// Initialize ui here instead of ctor
-		Navigation.PushAsync(new MyPage() { Title = "Navigation Stack" });
 	}
 }

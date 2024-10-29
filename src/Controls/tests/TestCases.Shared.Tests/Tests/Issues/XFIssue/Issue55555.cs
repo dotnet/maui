@@ -17,6 +17,6 @@ public class Issue55555 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void TGroupDisplayBindingPresentRecycleElementTest()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("vegetables"));
+	//	App.WaitForElement(q => q.Marked("vegetables"));
 	//}
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
+	public partial class ShapeRenderer<TShape, TNativeShape> : ViewRenderer<TShape, TNativeShape>
 		  where TShape : Shape
 		  where TNativeShape : WShape
 	{

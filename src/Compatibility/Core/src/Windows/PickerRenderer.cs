@@ -13,7 +13,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class PickerRenderer : ViewRenderer<Picker, FormsComboBox>
+	public partial class PickerRenderer : ViewRenderer<Picker, FormsComboBox>
 	{
 		bool _fontApplied;
 		bool _isAnimating;

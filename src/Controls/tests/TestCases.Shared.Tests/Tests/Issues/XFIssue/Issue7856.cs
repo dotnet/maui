@@ -16,14 +16,14 @@ public class Issue7856 : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void BackButtonBehaviorTest()
 	//{
-	//	RunningApp.Tap(x => x.Text("Tap to Navigate To the Page With BackButtonBehavior"));
+	//	App.Tap(x => x.Text("Tap to Navigate To the Page With BackButtonBehavior"));
 
-	//	RunningApp.WaitForElement(x => x.Text("Navigate again"));
+	//	App.WaitForElement(x => x.Text("Navigate again"));
 
-	//	RunningApp.Tap(x => x.Text("Navigate again"));
+	//	App.Tap(x => x.Text("Navigate again"));
 
-	//	RunningApp.WaitForElement(x => x.Text("Test"));
+	//	App.WaitForElement(x => x.Text("Test"));
 
-	//	RunningApp.Tap(x => x.Text("Test"));
+	//	App.Tap(x => x.Text("Test"));
 	//}
 }
