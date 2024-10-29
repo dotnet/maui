@@ -96,6 +96,8 @@ public partial class ManageMetaPageModel : ObservableObject
 	private async Task Reset()
 	{
 		Preferences.Default.Remove("is_seeded");
-		await Shell.Current.GoToAsync("//main");
+        await _seedDataService.LoadSeedDataAsync();
+        Preferences.Default.Set("is_seeded", true);
+        await Shell.Current.GoToAsync("//main");
 	}
 }
