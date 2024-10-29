@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.TableView)]
-		public void ValidateTableViewTitles()
+		[Category(UITestCategories.Navigation)]
+		public void ValidateOnNavigationToMethod()
 		{
 			App.WaitForElement("MainPageLabel");
 			App.Tap("MoveToNextPage");

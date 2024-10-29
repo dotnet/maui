@@ -5,10 +5,16 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 25371, "OnNavigatedTo not called when navigating back to a specific page", PlatformAffected.iOS | PlatformAffected.macOS)]
-	public class Issue25371 : TestContentPage
+	public class Issue25371 : NavigationPage
+	{
+		public Issue25371() : base(new MainPage())
+		{
+		}
+	}
+	public class MainPage : ContentPage
 	{
 		Label label;
-		protected override void Init()
+		public MainPage()
 		{
 			var stackLayout = new StackLayout();
 		    label = new Label()
@@ -24,6 +30,7 @@ namespace Maui.Controls.Sample.Issues
 			Content = stackLayout;
 			
 		}
+
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
 			label.Text = "OnNavigationTo method is called";
