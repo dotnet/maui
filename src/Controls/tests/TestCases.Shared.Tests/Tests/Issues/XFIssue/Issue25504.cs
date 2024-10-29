@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.ToolbarItem)]
+		[Category(UITestCategories.ListView)]
 		public void ListViewShouldNotCrashWhenChangingRootPage()
 		{
 			App.WaitForElement("listView");

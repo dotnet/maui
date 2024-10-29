@@ -7,13 +7,6 @@
 		{
 			InitializeComponent();
 			this.BindingContext = this;
-
-			var chapters = new List<Chapter>
-		{
-			new Chapter { Title = "1. Introduction to .NET MAUI"},
-		};
-
-			listView.ItemsSource = chapters;
 		}
 
 		private void OnItemSelected(object sender, SelectedItemChangedEventArgs args)
@@ -31,9 +24,5 @@
 				Content = new Label { Text = "Details Page", AutomationId = "DetailsPage" };
 			}
 		}
-	}
-	public class Chapter
-	{
-		public string Title { get; set; }
 	}
 }

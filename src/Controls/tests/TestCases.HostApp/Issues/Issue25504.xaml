@@ -8,10 +8,15 @@
             AutomationId="listView"
             HeightRequest="50"
             ItemSelected="OnItemSelected">
+    <ListView.ItemsSource>
+      <x:Array Type="{x:Type x:String}">
+        <x:String>Introduction to .NET MAUI</x:String>
+      </x:Array>
+    </ListView.ItemsSource>
     <ListView.ItemTemplate>
-      <DataTemplate x:DataType="ns:Chapter">
+      <DataTemplate>
         <ViewCell>
-          <Label Text="{Binding Title}"
+          <Label Text="{Binding .}"
                  AutomationId="Label"/>
         </ViewCell>
       </DataTemplate>
