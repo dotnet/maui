@@ -68,16 +68,20 @@ namespace Microsoft.Maui.Platform
 			Button? deleteButton = element.GetDescendantByName<Button>(DeleteButtonElementName);
 
 			// Adjust the second column's width to 'Auto' when the delete button is enabled, and set it to zero when disabled.
+			// Disables the delete button when ClearButtonVisibility is set to Never, and enables it otherwise.
+			// In WinUI, they set the opacity to '0' when the button is disabled. Here, we use IsEnabled to manage visibility.
 			if (deleteButton?.Parent is Grid rootGrid && rootGrid.ColumnDefinitions.Count > 1)
 			{
 				int deleteButtonColumnIndex = Grid.GetColumn(deleteButton);
 				if (GetIsDeleteButtonEnabled(element))
 				{
 					rootGrid.ColumnDefinitions[deleteButtonColumnIndex].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Auto);
+					deleteButton.IsEnabled = true;
 				}
 				else
 				{
 					rootGrid.ColumnDefinitions[deleteButtonColumnIndex].Width = new UI.Xaml.GridLength(0);
+					deleteButton.IsEnabled = false;
 				}
 			}
 		}
