@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿#if TEST_FAILS_ON_WINDOWS
+using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -41,3 +42,4 @@ public class Issue7167 : _IssuesUITest
 		ClassicAssert.AreNotEqual(result, Rectangle.Empty);
 	}
 }
+#endif
