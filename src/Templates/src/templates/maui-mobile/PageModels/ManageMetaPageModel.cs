@@ -18,11 +18,12 @@ public partial class ManageMetaPageModel : ObservableObject
 	[ObservableProperty]
 	private ObservableCollection<Tag> _tags = [];
 
-	public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository)
+	public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository, SeedDataService seedDataService)
 	{
 		_categoryRepository = categoryRepository;
 		_tagRepository = tagRepository;
-	}
+        _seedDataService = seedDataService;
+    }
 
 	private async Task LoadData()
 	{
