@@ -17,14 +17,14 @@ public class Issue3012 : _IssuesUITest
 	// [Category(UITestCategories.Entry)]
 	// public void Issue3012Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("DumbyEntry"));
-	// 	RunningApp.Tap(q => q.Marked("DumbyEntry"));
+	// 	App.WaitForElement(q => q.Marked("DumbyEntry"));
+	// 	App.Tap(q => q.Marked("DumbyEntry"));
 		
-	// 	RunningApp.WaitForElement(q => q.Marked("FocusTargetEntry"));
-	// 	RunningApp.Tap(q => q.Marked("FocusTargetEntry"));
+	// 	App.WaitForElement(q => q.Marked("FocusTargetEntry"));
+	// 	App.Tap(q => q.Marked("FocusTargetEntry"));
 	// 	Assert.AreEqual(0, _unfocusedCount, "Unfocused should not have fired");
 
-	// 	RunningApp.Tap(q => q.Marked("DumbyEntry"));
+	// 	App.Tap(q => q.Marked("DumbyEntry"));
 	// 	Assert.AreEqual(1, _unfocusedCount, "Unfocused should have been fired once");
 	// }
 }

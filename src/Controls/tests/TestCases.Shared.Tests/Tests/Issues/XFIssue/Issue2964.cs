@@ -16,18 +16,18 @@ public class Issue2964 : _IssuesUITest
 	// [Category(UITestCategories.ToolbarItem)]
 	// public void Issue2964Test()
 	// {
-	// 	RunningApp.Screenshot("I am at Issue 2964");
+	// 	App.Screenshot("I am at Issue 2964");
 
-	// 	RunningApp.Tap(q => q.Marked("FlyoutButton"));
-	// 	RunningApp.Screenshot("Create new Detail instance");
+	// 	App.Tap(q => q.Marked("FlyoutButton"));
+	// 	App.Screenshot("Create new Detail instance");
 
-	// 	RunningApp.Tap(q => q.Marked("Page1PushModalButton"));
-	// 	RunningApp.Screenshot("Modal is pushed");
+	// 	App.Tap(q => q.Marked("Page1PushModalButton"));
+	// 	App.Screenshot("Modal is pushed");
 
-	// 	RunningApp.Tap(q => q.Marked("ModalPagePopButton"));
-	// 	RunningApp.Screenshot("Modal is popped");
+	// 	App.Tap(q => q.Marked("ModalPagePopButton"));
+	// 	App.Screenshot("Modal is popped");
 
-	// 	RunningApp.WaitForElement(q => q.Marked("Page1Label"));
-	// 	RunningApp.Screenshot("Didn't blow up! :)");
+	// 	App.WaitForElement(q => q.Marked("Page1Label"));
+	// 	App.Screenshot("Didn't blow up! :)");
 	// }
 }

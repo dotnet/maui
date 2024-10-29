@@ -17,6 +17,6 @@ public class Issue1939 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue1939Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Group #1"));
+	// 	App.WaitForElement(q => q.Marked("Group #1"));
 	// }
 }

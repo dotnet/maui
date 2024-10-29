@@ -16,12 +16,12 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void FlyoutContentTests()
 	//{
-	//	RunningApp.WaitForElement("PageLoaded");
+	//	App.WaitForElement("PageLoaded");
 	//	TapInFlyout("Flyout Item");
-	//	RunningApp.Tap("ToggleContent");
+	//	App.Tap("ToggleContent");
 	//	TapInFlyout("ContentView");
 	//	TapInFlyout("Flyout Item");
-	//	RunningApp.Tap("ToggleFlyoutContentTemplate");
+	//	App.Tap("ToggleFlyoutContentTemplate");
 	//	TapInFlyout("ContentView");
 	//	TapInFlyout("Flyout Item");
 	//}

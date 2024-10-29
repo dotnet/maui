@@ -17,6 +17,6 @@ public class GitHub1355_Forms : _IssuesUITest
 	// public void SwitchMainPageOnAppearing()
 	// {
 	// 	// Without the fix, this would crash. If we're here at all, the test passed.
-	// 	RunningApp.WaitForElement(Success);
+	// 	App.WaitForElement(Success);
 	// }
 }

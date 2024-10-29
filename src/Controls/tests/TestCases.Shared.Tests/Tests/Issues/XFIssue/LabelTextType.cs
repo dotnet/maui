@@ -17,14 +17,14 @@ public class LabelTextType : _IssuesUITest
 	//[FailsOnIOS]
 	//public void LabelToggleHtmlAndPlainTextTest()
 	//{
-	//	RunningApp.WaitForElement("TextTypeLabel");
-	//	RunningApp.Screenshot("I see plain text");
+	//	App.WaitForElement("TextTypeLabel");
+	//	App.Screenshot("I see plain text");
 
-	//	Assert.IsTrue(RunningApp.Query("TextTypeLabel").FirstOrDefault()?.Text == "<h1>Hello World!</h1>");
+	//	Assert.IsTrue(App.Query("TextTypeLabel").FirstOrDefault()?.Text == "<h1>Hello World!</h1>");
 
-	//	RunningApp.Tap("ToggleTextTypeButton");
-	//	RunningApp.Screenshot("I see HTML text");
+	//	App.Tap("ToggleTextTypeButton");
+	//	App.Screenshot("I see HTML text");
 
-	//	Assert.IsFalse(RunningApp.Query("TextTypeLabel").FirstOrDefault()?.Text.Contains("<h1>") ?? true);
+	//	Assert.IsFalse(App.Query("TextTypeLabel").FirstOrDefault()?.Text.Contains("<h1>") ?? true);
 	//}
 }

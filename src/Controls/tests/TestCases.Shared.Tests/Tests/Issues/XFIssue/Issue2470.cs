@@ -17,41 +17,41 @@ public class Issue2470 : _IssuesUITest
 	//public void OnservableCollectionChangeListView()
 	//{
 	//	// Tab 1
-	//	RunningApp.Tap(q => q.Marked("Switch"));
-	//	RunningApp.Screenshot("Switch On");
-	//	RunningApp.Tap(q => q.Marked("Results"));
+	//	App.Tap(q => q.Marked("Switch"));
+	//	App.Screenshot("Switch On");
+	//	App.Tap(q => q.Marked("Results"));
 
 	//	// Tab 2
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 0 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 1 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 2 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 3 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 4 of 5"));
-	//	RunningApp.Screenshot("Should be 5 elements");
-	//	RunningApp.Tap(q => q.Marked("Generate"));
+	//	App.WaitForElement(q => q.Marked("Entry 0 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 1 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 2 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 3 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 4 of 5"));
+	//	App.Screenshot("Should be 5 elements");
+	//	App.Tap(q => q.Marked("Generate"));
 
 	//	// Tab 1
-	//	RunningApp.Tap(q => q.Marked("Switch"));
-	//	RunningApp.Screenshot("Switch Off");
-	//	RunningApp.Tap(q => q.Marked("Results"));
+	//	App.Tap(q => q.Marked("Switch"));
+	//	App.Screenshot("Switch Off");
+	//	App.Tap(q => q.Marked("Results"));
 
 	//	// Tab 2
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 0 of 2"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 1 of 2"));
-	//	RunningApp.Screenshot("Should be 2 elements");
+	//	App.WaitForElement(q => q.Marked("Entry 0 of 2"));
+	//	App.WaitForElement(q => q.Marked("Entry 1 of 2"));
+	//	App.Screenshot("Should be 2 elements");
 
 	//	// Tab 1
-	//	RunningApp.Tap(q => q.Marked("Generate"));
-	//	RunningApp.Tap(q => q.Marked("Switch"));
-	//	RunningApp.Screenshot("Switch On");
-	//	RunningApp.Tap(q => q.Marked("Results"));
+	//	App.Tap(q => q.Marked("Generate"));
+	//	App.Tap(q => q.Marked("Switch"));
+	//	App.Screenshot("Switch On");
+	//	App.Tap(q => q.Marked("Results"));
 
 	//	// Tab 2
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 0 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 1 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 2 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 3 of 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Entry 4 of 5"));
-	//	RunningApp.Screenshot("Should be 5 elements");
+	//	App.WaitForElement(q => q.Marked("Entry 0 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 1 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 2 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 3 of 5"));
+	//	App.WaitForElement(q => q.Marked("Entry 4 of 5"));
+	//	App.Screenshot("Should be 5 elements");
 	//}
 }
