@@ -1332,22 +1332,6 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Simulate the device shaking.
-		/// Functionality that's only available on iOS.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
-		public static void Shake(this IApp app)
-		{
-			if (app is not AppiumIOSApp)
-			{
-				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
-			}
-
-			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
-		}
-
-		/// <summary>
 		/// Gets the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
 		/// Functionality that's only available on Android.
 		/// </summary>

@@ -12,7 +12,6 @@ namespace UITest.Appium
 		const string IsLockedCommand = "isLocked";
 		const string StartRecordingScreenCommand = "startRecordingScreen";
 		const string StopRecordingScreenCommand = "stopRecordingScreen";
-		const string ShakeCommand = "shake";
 
 		readonly AppiumApp _appiumApp;
 
@@ -23,7 +22,6 @@ namespace UITest.Appium
 			IsLockedCommand,
 			StartRecordingScreenCommand,
 			StopRecordingScreenCommand,
-			ShakeCommand,
 		};
 
 		public AppiumDeviceActions(AppiumApp appiumApp)
@@ -45,7 +43,6 @@ namespace UITest.Appium
 				IsLockedCommand => IsLocked(parameters),
 				StartRecordingScreenCommand => StartRecordingScreen(parameters),
 				StopRecordingScreenCommand => StopRecordingScreen(parameters),
-				ShakeCommand => Shake(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -141,18 +138,6 @@ namespace UITest.Appium
 			if (_appiumApp.Driver is WindowsDriver windowsDriver)
 			{
 				windowsDriver.StopRecordingScreen();
-
-				return CommandResponse.SuccessEmptyResponse;
-			}
-
-			return CommandResponse.FailedEmptyResponse;
-		}
-
-		CommandResponse Shake(IDictionary<string, object> parameters)
-		{
-			if (_appiumApp.Driver is IOSDriver iOSDriver)
-			{
-				iOSDriver.ShakeDevice();
 
 				return CommandResponse.SuccessEmptyResponse;
 			}
