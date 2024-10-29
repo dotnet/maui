@@ -11,8 +11,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "")]
-	[TestCase("maui", DotNetCurrent, "Debug", false, "--IncludeSampleContent")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "--IncludeSampleContent")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
@@ -42,7 +42,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		string[]? warningsToIgnore = null;
 
-		if (additionalDotNetNewParams.Contains("IncludeSampleContent", StringComparison.OrdinalIgnoreCase))
+		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
 		{
 			warningsToIgnore = new string[]
 			{

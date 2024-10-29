@@ -58,7 +58,7 @@
         "copyOnly": [ "**/*.svg", "**/*.ttf" ],
         "modifiers": [
         {
-          "condition": "(!SampleContent)",
+          "condition": "(!IncludeSampleContent)",
           "exclude": [
             "Data/**",
             "GlobalUsings.cs",
@@ -75,7 +75,7 @@
           ]
         },
         {
-          "condition": "(SampleContent)",
+          "condition": "(IncludeSampleContent)",
           "exclude": [
             "MainPage.xaml",
             "MainPage.xaml.cs"
@@ -180,16 +180,6 @@
         "defaultValue": "false",
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
-      },  
-      "Empty": {
-        "type": "parameter",
-        "datatype": "bool",
-        "defaultValue": "true",
-        "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
-      },
-      "SampleContent": {
-        "type": "computed",
-        "value": "((IncludeSampleContent && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")))"
       },
       "skipRestore": {
         "type": "parameter",
