@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Border)]
 		public void ExceptionShouldNotOccurWhenIsClippedToBoundsIsTrue()
 		{
-			App.WaitForElement("Label");
-			VerifyScreenshot();
+			var testLabel = App.WaitForElement("Label");
+			Assert.That(testLabel.GetText(), Is.EqualTo("Label Inside the Border"));
 		}
 	}
 }
