@@ -184,12 +184,11 @@ namespace Microsoft.Maui.Platform
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 
-			//Without this, when we maximize the window, if the clip is already applied, it throws an exception again
-			//So, we need to set the clip to null if it's already applied to ensure proper clipping at the end.
-			if (visual.Clip is not null)
-			{
-				visual.Clip = null;
-			}
+			visual.Clip = null;
+
+			//Adding Task.Yield ensures that all layouts are properly updated before applying the clip.
+			await Task.Yield();
+
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;
@@ -216,9 +215,6 @@ namespace Microsoft.Maui.Platform
 
 			// The clip needs to consider the content's offset in case it is in a different position because of a different alignment.
 			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
-
-			//Adding Task.Yield ensures that all layouts are properly updated before applying the clip.
-			await Task.Yield();
 
 			visual.Clip = geometricClip;
 		}
