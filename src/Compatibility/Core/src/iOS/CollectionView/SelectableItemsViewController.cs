@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (index.Section > -1 && index.Item > -1)
 			{
-					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
 			}
 		}
 
