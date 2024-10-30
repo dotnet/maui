@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Enumerates tab bar styles for a tabbed page.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates the default tab bar style.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Tabbar">
@@ -52,7 +50,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a tab bar with no title.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabbarWithTitle">
@@ -71,7 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a tab bar with a title.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
