@@ -161,7 +161,7 @@ namespace UITest.Appium
 				return (bool)response.Value;
 			}
 
-			throw new InvalidOperationException($"Could not get Displayed of element");
+			throw new InvalidOperationException($"Could not get Enabled of element");
 		}
 
 		/// <summary>
