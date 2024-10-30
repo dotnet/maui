@@ -17,11 +17,11 @@ public partial class Issue13558 : ContentPage
 {
 	public ObservableCollection<List<string>> Items { get; set; }
 
-	MainViewModel _mainViewModel;
+	Issue13558ViewModel _mainViewModel;
 	public Issue13558()
 	{
 		InitializeComponent();
-		_mainViewModel = new MainViewModel();
+		_mainViewModel = new Issue13558ViewModel();
 		BindingContext = _mainViewModel;
 	}
 }
@@ -44,12 +44,12 @@ public class BloodworkStatus : INotifyPropertyChanged
 	}
 }
 
-public class MainViewModel : INotifyPropertyChanged
+public class Issue13558ViewModel : INotifyPropertyChanged
 {
 	public ObservableCollection<Patient> Patients { get; set; }
 	public ObservableCollection<BloodworkStatus> BloodworkStatuses { get; set; }
 
-	public MainViewModel()
+	public Issue13558ViewModel()
 	{
 		Patients = new ObservableCollection<Patient>();
 		BloodworkStatuses = new ObservableCollection<BloodworkStatus>();
