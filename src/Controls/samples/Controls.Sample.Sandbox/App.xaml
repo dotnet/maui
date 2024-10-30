@@ -2,12 +2,34 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
+              xmlns:viewmodels="clr-namespace:Maui.Controls.Sample"
+
              x:Class="Maui.Controls.Sample.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
 
             </ResourceDictionary.MergedDictionaries>
+
+                  <DataTemplate x:Key="testEvenTemplate"
+                      x:DataType="viewmodels:ItemModel">
+            <Grid
+                BackgroundColor="LightYellow"
+                Margin="4"
+                Padding="4"
+                ColumnDefinitions="*,*"
+                viewmodels:PressedRoutingEffect.ClickCommand="{Binding Source={x:RelativeSource Mode=FindAncestorBindingContext, AncestorType={x:Type viewmodels:MainPageViewModel}}, Path=SelectCurrentItemCommand, x:DataType={x:Null}}"
+                viewmodels:PressedRoutingEffect.CommandParameter="{Binding ., x:DataType={x:Null}}">
+                <Grid.Effects>
+                    <viewmodels:PressedRoutingEffect/>
+                </Grid.Effects>
+                <Label Grid.Column="0"
+                       Text="{Binding Name}"/>
+                <Label Grid.Column="1"
+                       Text="Select via FindAncestorBindingContext of ViewModel"
+                       Margin="8,0"/>
+            </Grid>
+        </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

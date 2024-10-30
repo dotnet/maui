@@ -7,6 +7,17 @@ public static class MauiProgram
 			.CreateBuilder()
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
+			.ConfigureEffects(builder =>
+			{
+				#if __IOS__
+				builder.Add<PressedRoutingEffect, PressedPlatformEffect>();
+				#endif
+			})
+			.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+				})
 #endif
 			.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>

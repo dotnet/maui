@@ -1,5 +1,38 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
+             x:Name="page"
+             xmlns:viewmodels="clr-namespace:Maui.Controls.Sample"
+             x:DataType="viewmodels:MainPageViewModel"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <ContentPage.Resources>
+  
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+
+            <Label
+                Text="Hello, World!"
+                SemanticProperties.HeadingLevel="Level1"/>
+
+            <CollectionView
+                ItemsSource="{Binding Items}"
+                ItemTemplate="{StaticResource testEvenTemplate}"
+                SelectionMode="None"/>
+            <HorizontalStackLayout>
+                <Label Text="Currently Selected Item is: "
+                       Margin="0,0,8,0"/>
+                <Label Text="{Binding SelectedItem.Name}"
+                       TextColor="IndianRed"/>
+                <Label Text="at"
+                       Margin="8,0"/>
+                <Label Text="{Binding SelectedItem.SelectedAt}"
+                       TextColor="IndianRed"/>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
