@@ -5,10 +5,12 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
 
   <CollectionView AutomationId="ListCollection"
-  Margin="0,0,0,15"
+  Margin="15,0,0,15"
   SelectionMode="Single"   
+  HeightRequest="300"
   ItemsSource="{Binding Items}"
-  SelectedItem="{Binding SelectedItem}">
+  SelectedItem="{Binding SelectedItem}"
+  VerticalOptions="Center">
   <CollectionView.ItemsLayout>
   <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
   </CollectionView.ItemsLayout>
