@@ -1214,7 +1214,7 @@ namespace UITest.Appium
 		{
 			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
-				throw new InvalidOperationException($"Lock is only supported");
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
 			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
