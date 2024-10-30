@@ -11,6 +11,7 @@ public partial class ManageMetaPageModel : ObservableObject
 {
 	private readonly CategoryRepository _categoryRepository;
 	private readonly TagRepository _tagRepository;
+    private readonly SeedDataService _seedDataService;
 
 	[ObservableProperty]
 	private ObservableCollection<Category> _categories = [];
@@ -18,11 +19,12 @@ public partial class ManageMetaPageModel : ObservableObject
 	[ObservableProperty]
 	private ObservableCollection<Tag> _tags = [];
 
-	public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository)
+	public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository, SeedDataService seedDataService)
 	{
 		_categoryRepository = categoryRepository;
 		_tagRepository = tagRepository;
-	}
+        _seedDataService = seedDataService;
+    }
 
 	private async Task LoadData()
 	{
@@ -96,6 +98,8 @@ public partial class ManageMetaPageModel : ObservableObject
 	private async Task Reset()
 	{
 		Preferences.Default.Remove("is_seeded");
-		await Shell.Current.GoToAsync("//main");
+        await _seedDataService.LoadSeedDataAsync();
+        Preferences.Default.Set("is_seeded", true);
+        await Shell.Current.GoToAsync("//main");
 	}
 }
