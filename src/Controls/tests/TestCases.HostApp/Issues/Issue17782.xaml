@@ -5,7 +5,7 @@
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue 17782">
 
-  <VerticalStackLayout Spacing="10">
+  <VerticalStackLayout x:Name="verticalStack" Spacing="10">
 
     <!-- Case 1: Add text to the editor with initial CharacterSpacing set to 10.
          The Button click updates the text to a predefined value. -->
@@ -56,6 +56,10 @@
             Minimum="0"
             Maximum="30"
             Value="10" />
+
+     <Button AutomationId="EditorsUnfocusButton"
+             Text="Set Editors Unfocus" 
+             Clicked="OnEditorsUnfocusButtonClicked" />
   </VerticalStackLayout>
  
 </ContentPage>

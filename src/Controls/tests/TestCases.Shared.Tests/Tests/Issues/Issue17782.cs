@@ -23,6 +23,9 @@ public class Issue17782 : _IssuesUITest
 		App.EnterText("DynamicCharacterSpacingEditor", "Text");
 		App.Click("ButtonResetCharacterSpacing");
 		App.EnterText("ResetCharacterSpacingEditor", "Text");
+		App.Click("EditorsUnfocusButton");
+		if (App.IsKeyboardShown())
+			App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 }

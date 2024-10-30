@@ -26,5 +26,14 @@ namespace Maui.Controls.Sample.Issues
 		{
 			resetCharacterSpacingEditor.CharacterSpacing = 0;
 		}
+
+		private void OnEditorsUnfocusButtonClicked(object sender, EventArgs e)
+		{
+			foreach(var child in verticalStack.Children) 
+			{
+				if(child is Editor editor)
+					editor.Unfocus();
+			}
+		}
 	}
 }
