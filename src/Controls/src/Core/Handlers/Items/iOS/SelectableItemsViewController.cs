@@ -40,7 +40,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (index.Section > -1 && index.Item > -1)
 			{
-				CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				CollectionView.PerformBatchUpdates(null, _ =>
+				{
+					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				});
 			}
 		}
 

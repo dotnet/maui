@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 {
 	internal class Issue25551 : _IssuesUITest
 	{
-		public override string Issue => "CollectionView Programmatic-Selection is not updated when binding the selectedItem";
+		public override string Issue => "CollectionView SelectedItem binding issue on initial loading";
 
 		public Issue25551(TestDevice device) : base(device)
 		{
@@ -23,7 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 		
 		public void CollectionViewPreSelectionShouldUpdate()
 		{
-			// Is a Windows issue; see https://github.com/dotnet/maui/issues/25551
 			App.WaitForElement("ListCollection");
 			VerifyScreenshot();
 		}
