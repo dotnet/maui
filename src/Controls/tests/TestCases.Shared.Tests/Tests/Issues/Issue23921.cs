@@ -13,16 +13,15 @@ public class Issue23921(TestDevice device) : _IssuesUITest(device)
     [Category(UITestCategories.SwipeView)]
     public void SwipeViewTappedWhenOpen_ClosesAndDoesNotPropagateTap()
     {
-        var swipe = (SwipeView)App.WaitForElement("swipe");
-        var button = (Button)App.WaitForElement("button");
+        var button = App.WaitForElement("button");
 
-        var buttonWasClicked = false;
+        App.SwipeRightToLeft("swipe");
 
-        button.Clicked += (s, e) => buttonWasClicked = true;
+		App.Click("swipe");
 
-        App.SwipeLeftToRight("swipe");
+		
 
-        App.Click("swipe");
+		var buttonWasClicked = button.GetText() == "tapped";
 
         Assert.That(buttonWasClicked, Is.False);
     }
@@ -31,15 +30,12 @@ public class Issue23921(TestDevice device) : _IssuesUITest(device)
     [Category(UITestCategories.SwipeView)]
     public void SwipeViewTappedWhenClosed_PropagatesTap()
     {
-        var swipe = (SwipeView)App.WaitForElement("swipe");
-        var button = (Button)App.WaitForElement("button");
+        var button = App.WaitForElement("button");
 
-        var buttonWasClicked = false;
+		App.Click("swipe");
 
-        button.Clicked += (s, e) => buttonWasClicked = true;
+		var buttonWasClicked = button.GetText() == "tapped";
 
-        App.Click("swipe");
-
-        Assert.That(buttonWasClicked, Is.True);
+		Assert.That(buttonWasClicked, Is.True);
     }
 }
