@@ -1230,7 +1230,7 @@ namespace UITest.Appium
 		{
 			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
-				throw new InvalidOperationException($"Unlock is only supported");
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
 			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
