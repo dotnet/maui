@@ -191,7 +191,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new instance of the AbsoluteLayout class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AutoSize">
@@ -480,8 +479,6 @@
       <Docs>
         <typeparam name="T">The platform configuration that selects the platform specific to use.</typeparam>
         <summary>Returns the configuration object that the developer can use to call platform-specific methods for the layout.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildAdded">
@@ -571,8 +568,6 @@
       <Docs>
         <param name="child">To be added.</param>
         <param name="oldLogicalIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">

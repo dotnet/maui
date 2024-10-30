@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Enumerates visual styles for switches.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="CheckBox">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a checkbox UI.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Favorite">
@@ -52,7 +50,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a favorite, or star, UI.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnOff">
@@ -69,8 +66,6 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Small">
@@ -87,8 +82,6 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Toggle">
@@ -107,7 +100,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a toggle UI.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

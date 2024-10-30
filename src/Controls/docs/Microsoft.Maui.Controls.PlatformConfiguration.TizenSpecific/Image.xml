@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to the blend color for images on the Tizen platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="BlendColorProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the blend color.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FileProperty">
@@ -50,8 +48,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBlendColor">
@@ -75,7 +71,6 @@
         <param name="element">The image on the Tizen platform whose back button icon to get.</param>
         <summary>Returns the blend color for the image.</summary>
         <returns>The blend color for the image.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBlendColor">
@@ -99,7 +94,6 @@
         <param name="config">The platform configuration for the image on the Tizen platform whose blend color to get.</param>
         <summary>Returns the blend color for the image.</summary>
         <returns>The blend color for the image.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetFile">
@@ -120,9 +114,6 @@
       </Parameters>
       <Docs>
         <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetFile">
@@ -143,9 +134,6 @@
       </Parameters>
       <Docs>
         <param name="config">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBlendColor">
@@ -170,7 +158,6 @@
         <param name="element">To be added.</param>
         <param name="color">The new blend color value.</param>
         <summary>Sets the blend color.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBlendColor">
@@ -196,7 +183,6 @@
         <param name="color">The new blend color value.</param>
         <summary>Sets the blend color.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetFile">
@@ -219,8 +205,6 @@
       <Docs>
         <param name="element">To be added.</param>
         <param name="file">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetFile">
@@ -243,9 +227,6 @@
       <Docs>
         <param name="config">To be added.</param>
         <param name="file">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
