@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vlv="clr-namespace:Microsoft.Maui.Controls;assembly=VirtualListView"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             xmlns:ffimageloading="clr-namespace:FFImageLoading.Maui;assembly=FFImageLoading.Maui"
+             xmlns:v="clr-namespace:AllTheLists.Views"
+             x:Class="AllTheLists.Pages.VirtualListViewPage"
+             Title="VirtualListView">
+    <!-- <vlv:VirtualListView Adapter="{Binding ProductsAdapter}">
+        <vlv:VirtualListView.ItemTemplate>
+            <DataTemplate>
+                <vlv:VirtualViewCell>
+                    <v:ProductListItem />
+                </vlv:VirtualViewCell>
+            </DataTemplate>
+        </vlv:VirtualListView.ItemTemplate>
+    </vlv:VirtualListView> -->
+</ContentPage>

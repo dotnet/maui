@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             x:DataType="m:Review"
+             x:Class="AllTheLists.Views.ReviewListItem">
+    <Grid ColumnDefinitions="40,*" 
+        RowDefinitions="Auto,Auto"
+        ColumnSpacing="8"
+        Margin="16">
+        <Image 
+            Source="{Binding StatusImage}"
+            Grid.Column="0" 
+            Grid.RowSpan="2" 
+            HeightRequest="20"
+            WidthRequest="20"
+            VerticalOptions="Start" 
+            HorizontalOptions="Center"/>
+
+        <VerticalStackLayout Grid.Column="1" Spacing="8">
+            <Label 
+                Text="{Binding Author}"
+                FontSize="18"
+                FontAttributes="Bold" />
+            <Label Text="{Binding Comment}" MaxLines="5" Margin="0,0,0,8" />
+            <Label Text="{Binding Car}" TextColor="Gray"/>
+            <Label Text="{Binding ChargerType}" TextColor="Gray"/>
+        </VerticalStackLayout>
+
+        <Label Text="{Binding CreatedAt, StringFormat='{0:MM/dd/yyyy}'}" 
+            Grid.Row="0" 
+            Grid.Column="1" 
+            FontSize="10"
+            TextColor="Gray"
+            HorizontalOptions="End" 
+            VerticalOptions="Start" />
+
+        <BoxView 
+            HeightRequest="1" 
+            BackgroundColor="LightGray"
+            VerticalOptions="End" 
+            Grid.Column="1"
+            TranslationY="16" />
+    </Grid>
+</ContentView>

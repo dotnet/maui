@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AllTheLists.ViewModels"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             xmlns:v="clr-namespace:AllTheLists.Views"
+             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:ak="clr-namespace:AlohaKit.Layouts;assembly=AlohaKit.Layouts"
+             xmlns:effects="clr-namespace:Effects"
+             xmlns:f="clr-namespace:Fonts"
+             x:DataType="vm:StreamingServiceViewModel"
+             x:Class="AllTheLists.Pages.StreamingServicePage"
+             Title="StreamingServicePage">
+    <ScrollView>
+        <Grid RowDefinitions="500,Auto,Auto" RowSpacing="16">
+            <v:FeaturedCarousel Margin="0,16,0,0" />
+
+            <FlexLayout Grid.Row="1" Margin="16" Direction="Row" Wrap="Wrap"
+            JustifyContent="SpaceAround"
+            VerticalOptions="Start" MaximumHeightRequest="200">
+            
+                <Border StrokeShape="RoundRectangle 8" 
+                    Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                FlexLayout.Basis="30%"
+                    Background="Transparent" HeightRequest="80">
+                    <Label Text="Disney" 
+                        TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                    HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border> 
+                <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                FlexLayout.Basis="30%"
+                    Background="Transparent" HeightRequest="80">
+                    <Label Text="Pixar" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border> 
+                <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                FlexLayout.Basis="30%"
+                    Background="Transparent" HeightRequest="80">
+                    <Label Text="Marvel" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border> 
+                <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                FlexLayout.Basis="30%"
+                    Background="Transparent" HeightRequest="80">
+                    <Label Text="Star Wars" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border> 
+                <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                FlexLayout.Basis="30%"
+                    Background="Transparent" HeightRequest="80">
+                    <Label Text="National" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border> 
+                <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                FlexLayout.Basis="30%"
+                    Background="Transparent" HeightRequest="80">
+                    <Label Text="hulu" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border> 
+            </FlexLayout>
+
+            <VerticalStackLayout Grid.Row="2" Spacing="8" Margin="16,0" x:Name="VStack">
+                <Label Text="Recommended For You"/>
+                <CollectionView 
+                    Margin="-16,0"
+                    HeightRequest="140" 
+                    ItemsSource="{Binding RecommendedShows}" 
+                    HorizontalScrollBarVisibility="Never"
+                    effects:ContentInsetAdjustmentBehavior.ContentInset="{Binding Margin, Source={x:Reference VStack}}">
+                    <CollectionView.Effects>
+                        <effects:ContentInsetAdjustmentBehaviorRoutingEffect/>
+                    </CollectionView.Effects>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                                 WidthRequest="80">
+                                <Image Source="{Binding .}" 
+                                    Aspect="AspectFit" 
+                                    HeightRequest="140"
+                                    WidthRequest="80"
+                                    VerticalOptions="Fill" 
+                                    HorizontalOptions="Fill" />
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label Text="Newly Added" Margin="0,16,0,0"/>
+                <CollectionView 
+                    Margin="-16,0" HeightRequest="140" ItemsSource="{Binding NewShows}" 
+                    HorizontalScrollBarVisibility="Never"
+                    effects:ContentInsetAdjustmentBehavior.ContentInset="{Binding Margin,Source={x:Reference VStack}}">
+                    <CollectionView.Effects>
+                        <effects:ContentInsetAdjustmentBehaviorRoutingEffect/>
+                    </CollectionView.Effects>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                                Background="#1d1d1d" WidthRequest="80">
+                                <Image Source="{Binding .}" 
+                                    Aspect="AspectFit" 
+                                    HeightRequest="140"
+                                    WidthRequest="80"
+                                    VerticalOptions="Fill" 
+                                    HorizontalOptions="Fill" />
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label Text="Continue Watching" Margin="0,16,0,0"/>
+                <CollectionView HeightRequest="120" ItemsSource="{Binding ContinueWatching}" HorizontalScrollBarVisibility="Never"
+                    Margin="-16,0"
+                    effects:ContentInsetAdjustmentBehavior.ContentInset="{Binding Margin,Source={x:Reference VStack}}">
+                    <CollectionView.Effects>
+                        <effects:ContentInsetAdjustmentBehaviorRoutingEffect/>
+                    </CollectionView.Effects>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                                Background="#1d1d1d" WidthRequest="210">
+                                <Grid>
+                                    <Image Source="{Binding .}" 
+                                    Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill" />
+                                    <ImageButton 
+                                        HorizontalOptions="Center" 
+                                        VerticalOptions="Center"
+                                        Background="Transparent"
+                                        Aspect="Center">
+                                        <ImageButton.Source>
+                                            <FontImageSource FontFamily="FontAwesome" 
+                                                Glyph="{x:Static f:FontAwesome.PlayCircle}" 
+                                                Size="24" Color="White"
+                                                />
+                                        </ImageButton.Source>
+                                    </ImageButton>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label Text="Action" Margin="0,16,0,0"/>
+                <CollectionView 
+                    Margin="-16,0" HeightRequest="140" ItemsSource="{Binding ActionShows}" 
+                    HorizontalScrollBarVisibility="Never"
+                    effects:ContentInsetAdjustmentBehavior.ContentInset="{Binding Margin,Source={x:Reference VStack}}">
+                    <CollectionView.Effects>
+                        <effects:ContentInsetAdjustmentBehaviorRoutingEffect/>
+                    </CollectionView.Effects>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border 
+                                StrokeShape="RoundRectangle 8" 
+                                Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                                Background="#1d1d1d" WidthRequest="80">
+                                <Image Source="{Binding .}" Aspect="AspectFit" VerticalOptions="Fill" HorizontalOptions="Fill" />
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label Text="IRL Shows" Margin="0,16,0,0"/>
+                <CollectionView 
+                    Margin="-16,0" HeightRequest="140" ItemsSource="{Binding RealityShows}" 
+                    HorizontalScrollBarVisibility="Never"
+                    effects:ContentInsetAdjustmentBehavior.ContentInset="{Binding Margin,Source={x:Reference VStack}}">
+                    <CollectionView.Effects>
+                        <effects:ContentInsetAdjustmentBehaviorRoutingEffect/>
+                    </CollectionView.Effects>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeShape="RoundRectangle 8" Stroke="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray200}}"
+                                Background="#1d1d1d" WidthRequest="80">
+                                <Image Source="{Binding .}" Aspect="AspectFit" VerticalOptions="Fill" HorizontalOptions="Fill" />
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+
+            
+        </Grid> 
+
+    </ScrollView>
+</ContentPage>

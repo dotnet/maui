@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:m="clr-namespace:AllTheLists.Models.Learning"
+             Background="{AppThemeBinding Light=#F7F6F8,Dark=#121212}"
+             x:DataType="m:Unit"
+             x:Class="AllTheLists.Views.LearningUnitListItem">
+    <VerticalStackLayout
+        Padding="16"
+        Spacing="8">
+        <Label Text='{Binding UnitNumber,StringFormat="Unit {0}"}' 
+            TextColor="{AppThemeBinding Light=#C9C8CA,Dark=#383638}"
+            FontSize="14" 
+            HorizontalOptions="Center"/>
+        <Label Text="{Binding Title}"
+            TextColor="{AppThemeBinding Light=#383638,Dark=#C9C8CA}"
+            FontSize="20"
+            FontAttributes="Bold"
+            HorizontalOptions="Center"/>
+        <Label Text="{Binding SubTitle}"
+            TextColor="{AppThemeBinding Light=#383638,Dark=#C9C8CA}"
+            FontSize="12"
+            HorizontalOptions="Center"/>
+
+        <Border Background="{AppThemeBinding Light=#D8D7D9,Dark=#383638}"
+            WidthRequest="180"
+            HeightRequest="180"
+            Stroke="{AppThemeBinding Light=#F1F0F2,Dark=#383638}"
+            StrokeThickness="10"
+            StrokeShape="RoundRectangle 90"
+            HorizontalOptions="Center">
+            <Image Aspect="Center">
+                <Image.Source>
+                    <FontImageSource Glyph="{Binding Icon}" 
+                        FontFamily="FontAwesome" 
+                        Size="48" 
+                        Color="{AppThemeBinding Light=#F1F0F2,Dark=#383638}">
+                    </FontImageSource>
+                </Image.Source>
+            </Image>
+        </Border>
+
+        <Label Text='{Binding Chapters.Count, StringFormat="0/{0}"}'
+            TextColor="{AppThemeBinding Light=#383638,Dark=#C9C8CA}"
+            FontSize="14"
+            HorizontalOptions="Center"/>
+
+        <Button Background="Transparent"
+            ImageSource="{FontImage Glyph={x:Static f:FontAwesome.ChevronDown}, Color=#C9C8CA, FontFamily=FontAwesome, Size=32}"
+            Clicked="OnChapters_Clicked"
+            HorizontalOptions="Center"/>
+
+        <VerticalStackLayout
+            x:Name="ChaptersLayout"
+            IsVisible="False" 
+            Spacing="8"
+            HorizontalOptions="Fill"
+            BindableLayout.ItemsSource="{Binding Chapters}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="m:Chapter">
+                    <VerticalStackLayout Spacing="8" HorizontalOptions="Fill">
+                        <Label Text="{Binding Title}"
+                            TextColor="{AppThemeBinding Light=#383638,Dark=#C9C8CA}"
+                            FontSize="16"
+                            FontAttributes="Bold"/>
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Fill"
+                            BindableLayout.ItemsSource="{Binding Lessons}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="m:Lesson">
+                                    <Grid ColumnDefinitions="Auto,*" 
+                                        ColumnSpacing="12"
+                                        HorizontalOptions="Fill">
+                                        <Border Background="{AppThemeBinding Light=#D8D7D9,Dark=#383638}"
+                                            WidthRequest="40"
+                                            HeightRequest="40"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 20">
+                                            <Label Text="Day 1"
+                                                TextColor="{AppThemeBinding Light=White,Dark=Black}"
+                                                FontSize="10" 
+                                                HorizontalOptions="Center"
+                                                VerticalOptions="Center"/>
+                                        </Border>
+                                        <Border Grid.Column="1" 
+                                            Background="{AppThemeBinding Light=White,Dark=Black}"
+                                            StrokeShape="RoundRectangle 12"
+                                            StrokeThickness="0">
+                                            <Grid Padding="12" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                                <Border 
+                                                    Background="{AppThemeBinding Light=#383638,Dark=#C9C8CA}"
+                                                    WidthRequest="50" 
+                                                    HorizontalOptions="Start"
+                                                    HeightRequest="50"
+                                                    StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 25">
+                                                </Border>
+                                                <Label 
+                                                    HorizontalOptions="Start"
+                                                    Grid.Column="1"
+                                                    FontAttributes="Bold"
+                                                    Text="{Binding Title}"
+                                                    TextColor="{AppThemeBinding Light=#383638,Dark=#C9C8CA}"
+                                                    FontSize="14"/>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+    </VerticalStackLayout>
+</ContentView>

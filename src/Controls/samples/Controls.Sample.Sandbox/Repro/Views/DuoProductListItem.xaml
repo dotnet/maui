@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:v="clr-namespace:AllTheLists.Views"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             x:DataType="m:ProductDisplay"
+             x:Class="AllTheLists.Views.DuoProductListItem">
+    <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+        <v:MonoProductListItem Grid.Column="0" BindingContext="{Binding Products[0]}" />
+        <v:MonoProductListItem Grid.Column="1" BindingContext="{Binding Products[1]}" />
+    </Grid>
+</ContentView>

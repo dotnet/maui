@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:rc="http://www.pankaj_singh_apps.de/maui/controls"
+             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:DataType="m:CheckIn"
+             x:Class="AllTheLists.Views.CheckInListItem">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <mct:BoolToObjectConverter x:Key="BoolToColorBrushConverter" 
+                                   TrueObject="#FFFFFF" 
+                                   FalseObject="#000000"/>
+            <mct:BoolToObjectConverter x:Key="BoolToIntConverter" 
+                                   TrueObject="-60" 
+                                   FalseObject="0"/>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,60" 
+        Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray600}}">
+        <Image 
+            Source="{Binding SocialImage}" 
+            VerticalOptions="Start" 
+            HorizontalOptions="Fill"
+            Aspect="AspectFill"
+            IsVisible="{Binding Product.HasImage}"
+            HeightRequest="200" 
+        />
+
+        <!-- User Info -->
+        <Grid 
+            ColumnDefinitions="40,*,40"
+            ColumnSpacing="12" 
+            Grid.Row="0" 
+            VerticalOptions="Start"
+            Margin="16">
+            <Image Source="{Binding AuthorIcon}" HeightRequest="40" WidthRequest="40" Aspect="AspectFill" />
+            <VerticalStackLayout Grid.Column="1" 
+                HorizontalOptions="Start">
+                <Label Text="{Binding Author}" FontAttributes="Bold"
+                    TextColor="{Binding Product.HasImage, Converter={StaticResource BoolToColorBrushConverter}}" />
+                <Label Text="{Binding Venue.Name}" >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding Venue.Name}" 
+                                TextColor="{Binding Product.HasImage,Converter={StaticResource BoolToColorBrushConverter}}"/>
+                            <Span Text=" "/>
+                            <Span Text="{x:Static f:FontAwesome.CheckCircle}" TextColor="Yellow" FontFamily="FontAwesome" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+            <Button 
+                Grid.Column="2"
+                VerticalOptions="Center"
+                HorizontalOptions="End"
+                Background="Transparent"
+                ImageSource="{FontImage Glyph={x:Static f:FontAwesome.ChevronDown}, Color=White, FontFamily=FontAwesome, Size=24}"/>
+        </Grid>
+
+        <!-- Product Info -->
+        <Border 
+            Grid.Row="1"
+            TranslationY="{Binding Product.HasImage, Converter={StaticResource BoolToIntConverter}}"
+            Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+            Padding="16,16,16,0" 
+            Margin="16" 
+            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray900}}" 
+            StrokeShape="RoundRectangle 8"
+            StrokeThickness="1">
+            <Grid RowDefinitions="Auto,80">
+                    <VerticalStackLayout Spacing="8">
+                        <!-- Beer Info -->
+                        <Label Text="{Binding Product.Name}" FontAttributes="Bold" FontSize="Medium" Margin="0,10,0,0" />
+                        <Label Text="{Binding Product.Company}" FontSize="Small" TextColor="Gray" />
+                        <Label Text="{Binding Product.Type}" FontSize="Small" TextColor="Gray" />
+                        <Label Text="{Binding Comment}" FontSize="Small" Margin="0,10,0,0" />
+
+                        <!-- Rating -->
+                        <HorizontalStackLayout VerticalOptions="Center" Spacing="4">
+                            <!-- Assuming you have a custom control or method for displaying ratings -->
+                            <!-- <RatingControl Rating="{Binding Rating}" /> -->
+                            
+                            <rc:RatingControl Amount="5" 
+                                                    CurrentValue="{Binding Rating}" 
+                                                    AccentColor="Gold" 
+                                                    FontSize="24"/>
+                            <Label Text="{Binding Rating, StringFormat='{}{0:F2}'}" VerticalOptions="Center" Margin="10,0,0,0" />
+                        </HorizontalStackLayout>
+
+                        <!-- Badges and Actions -->
+                        <!-- <StackLayout Orientation="Horizontal" VerticalOptions="Center" Margin="0,10,0,0">
+                            <Label Text="🏅 Dessert Time! Badge" VerticalOptions="Center" />
+                        </StackLayout> -->
+                        
+                    </VerticalStackLayout>
+
+                    <Grid VerticalOptions="End" 
+                        Grid.Row="1"
+                            ColumnDefinitions="*,1,*"
+                            HorizontalOptions="Fill">
+                        <Button Text="Comment" 
+                            Background="Transparent" 
+                            TextColor="{AppThemeBinding Light=Black, Dark=White}" >
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="{x:Static f:FontAwesome.CommentAlt}" 
+                                    Color="{AppThemeBinding Light=Black, Dark=White}" 
+                                    FontFamily="FontAwesome" 
+                                    Size="18" />
+                            </Button.ImageSource>
+                        </Button>
+                        <Button Text="Toast"
+                            Grid.Column="2"
+                            Background="Transparent" TextColor="{AppThemeBinding Light=Black, Dark=White}" Margin="10,0,0,0" >
+                            <Button.ImageSource>
+                                <FontImageSource Glyph="{x:Static f:FontAwesome.Beer}" 
+                                    Color="{AppThemeBinding Light=Black, Dark=White}" 
+                                    FontFamily="FontAwesome" 
+                                    Size="18" />
+                            </Button.ImageSource>
+                        </Button>
+                        <BoxView Color="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray300}}" WidthRequest="1" VerticalOptions="Fill" Grid.Column="1"  />
+                        <BoxView Color="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray300}}" HeightRequest="1" HorizontalOptions="Fill" Grid.ColumnSpan="3" VerticalOptions="Start" Margin="-16,0"  />
+                        <!-- <BoxView BackgroundColor="LightGray" HeightRequest="1" HorizontalOptions="Fill" Grid.ColumnSpan="3" VerticalOptions="End" Margin="-16,0"  /> -->
+                    </Grid>
+
+                    
+
+                    </Grid>
+                </Border>
+
+                <Label Text="{Binding CreatedAt, StringFormat='{}{0:MM/dd/yyyy}'}" 
+                           HorizontalOptions="Start" 
+                           VerticalOptions="End" 
+                           TextColor="Gray"
+                           Margin="16,0,0,16"  
+                           Grid.Row="2"/>
+                    
+                <Label Text="VIEW DETAILS >"
+                    HorizontalOptions="End"
+                    VerticalOptions="End"
+                    Grid.Row="2"
+                    Background="Transparent" 
+                    Margin="0,0,16,16"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+    </Grid>
+</ContentView>

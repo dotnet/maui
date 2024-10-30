@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             xmlns:f="clr-namespace:Fonts"
+             xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="AllTheLists.Pages.InboxPage"
+             Background="{AppThemeBinding Light=#F2F2F7, Dark=#0D0D0D}"
+             Title="InboxPage">
+             <ContentPage.Resources>
+                <Color x:Key="FavoriteColor">#F2B90C</Color>
+                <Color x:Key="ActionColor">#0C87F2</Color>
+                <Style TargetType="Label">
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=Black, Dark=#F2F2F2}" />   
+                    <Setter Property="FontSize" Value="14" />
+                    <Setter Property="VerticalOptions" Value="Center" />
+                </Style>
+                <Style x:Key="SecondaryLabel" TargetType="Label">
+                    <Setter Property="TextColor" Value="{AppThemeBinding Light=#78787d, Dark=#8E8E93}" />
+                    <Setter Property="FontSize" Value="14" />
+                    <Setter Property="VerticalOptions" Value="Center" />
+                </Style>
+                <Style TargetType="Border">
+                    <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+                    <Setter Property="StrokeThickness" Value="0" />
+                    <Setter Property="Background" Value="{AppThemeBinding Light=White, Dark=#1C1C1E}" />
+                </Style>
+
+                <mct:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+                <mct:BoolToObjectConverter x:Key="BoolToChevronConverter" 
+                    TrueObject="{x:Static f:FluentUI.chevron_down_12_regular}" 
+                    FalseObject="{x:Static f:FluentUI.chevron_right_12_regular}" />
+             </ContentPage.Resources>    
+    <ScrollView>
+        <VerticalStackLayout Spacing="12" Padding="16">
+            <Label Text="Mailboxes" FontSize="Title" />
+            <Border>
+                <VerticalStackLayout>
+                    <BindableLayout.ItemsSource>
+                        <x:Array Type="{x:Type m:Mailbox}">
+                            <m:Mailbox Name="All Inboxes" Icon="{x:Static f:FluentUI.mail_inbox_16_regular}" UnreadCount="85284" />
+                            <m:Mailbox Name="Ortinau" Icon="{x:Static f:FluentUI.mail_inbox_16_regular}" UnreadCount="38337" />
+                            <m:Mailbox Name="Simply Profound" Icon="{x:Static f:FluentUI.mail_inbox_16_regular}" UnreadCount="35166" />
+                            <m:Mailbox Name="Gmail" Icon="{x:Static f:FluentUI.mail_inbox_16_regular}" UnreadCount="1082" />
+                            <m:Mailbox Name="VIP" Icon="{x:Static f:FluentUI.star_16_regular}" />
+                            <m:Mailbox Name="Flagged" Icon="{x:Static f:FluentUI.flag_16_regular}" UnreadCount="392" />
+                        </x:Array>
+                    </BindableLayout.ItemsSource>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="m:Mailbox">
+                            <Grid ColumnDefinitions="60,*,100,50" RowDefinitions="40,1">
+                                <Image Aspect="Center" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image.Source>
+                                        <FontImageSource Glyph="{Binding Icon}" 
+                                            FontFamily="FluentUI" 
+                                            Size="18" Color="{StaticResource ActionColor}" />
+                                    </Image.Source>
+                                </Image> 
+                                <Label Text="{Binding Name}" Grid.Column="1" FontSize="14" VerticalOptions="Center" />
+                                <Label Text="{Binding UnreadCount}" Grid.Column="2" 
+                                    Style="{StaticResource SecondaryLabel}"
+                                    HorizontalOptions="End" HorizontalTextAlignment="End" />
+                                <Label Text="{x:Static f:FluentUI.chevron_right_12_regular}" Grid.Column="3" 
+                                    Style="{StaticResource SecondaryLabel}"
+                                    VerticalOptions="Center"
+                                    FontSize="14" FontFamily="FluentUI" HorizontalOptions="Center" />
+
+                                <ContentView Grid.ColumnSpan="4" Grid.Row="1" Margin="16,0,0,0" HeightRequest="1" 
+                                    Background="{AppThemeBinding Light=#f3f3f4, Dark=#333333}" />
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
+
+            <mct:Expander>
+                <mct:Expander.Header>
+                    <Grid ColumnDefinitions="*,100,50" RowDefinitions="40">
+                        <Label Text="Ortinau" Grid.Column="0" FontSize="Subtitle" VerticalOptions="Center" />
+                        <Label Text="38386" Grid.Column="1" 
+                            Style="{StaticResource SecondaryLabel}"
+                            HorizontalOptions="End" HorizontalTextAlignment="End" 
+                            IsVisible="{Binding Path=IsExpanded, Source={RelativeSource AncestorType={x:Type mct:Expander}}, Converter={StaticResource InvertedBoolConverter}}" />
+                        <Label 
+                            Text="{Binding Path=IsExpanded, Source={RelativeSource AncestorType={x:Type mct:Expander}},Converter={StaticResource BoolToChevronConverter}}" 
+                            FontSize="14" 
+                            FontFamily="FluentUI" 
+                            Style="{StaticResource SecondaryLabel}" 
+                            TextColor="{StaticResource ActionColor}"
+                            Grid.Column="2" 
+                            VerticalOptions="Center"                            
+                            HorizontalOptions="Center" />                        
+                    </Grid>                    
+                </mct:Expander.Header>
+
+                <mct:Expander.Content>
+                    <Border>
+                <VerticalStackLayout>
+                    <BindableLayout.ItemsSource>
+                        <x:Array Type="{x:Type m:Mailbox}">
+                            <m:Mailbox Name="Inbox" Icon="{x:Static f:FluentUI.mail_inbox_16_regular}" UnreadCount="38386" />
+                            <m:Mailbox Name="Drafts" Icon="{x:Static f:FluentUI.page_fit_16_regular}" UnreadCount="8" />
+                            <m:Mailbox Name="Sent" Icon="{x:Static f:FluentUI.airplane_20_regular}" UnreadCount="2" />
+                            <m:Mailbox Name="Junk" Icon="{x:Static f:FluentUI.mail_warning_16_regular}" UnreadCount="1082" />
+                            <m:Mailbox Name="Trash" Icon="{x:Static f:FluentUI.bin_full_20_regular}" />
+                            <m:Mailbox Name="All Mail" Icon="{x:Static f:FluentUI.box_16_regular}" UnreadCount="392" />
+                        </x:Array>
+                    </BindableLayout.ItemsSource>
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="m:Mailbox">
+                            <Grid ColumnDefinitions="60,*,100,50" RowDefinitions="40,1">
+                                <Image Aspect="Center" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image.Source>
+                                        <FontImageSource Glyph="{Binding Icon}" 
+                                            FontFamily="FluentUI" 
+                                            Size="18" Color="{StaticResource ActionColor}" />
+                                    </Image.Source>
+                                </Image> 
+                                <Label Text="{Binding Name}" Grid.Column="1" FontSize="14" VerticalOptions="Center" />
+                                <Label Text="{Binding UnreadCount}" Grid.Column="2" 
+                                    Style="{StaticResource SecondaryLabel}"
+                                    HorizontalOptions="End" HorizontalTextAlignment="End" />
+                                <Label Text="{x:Static f:FluentUI.chevron_right_12_regular}" Grid.Column="3" 
+                                    Style="{StaticResource SecondaryLabel}"
+                                    VerticalOptions="Center"
+                                    FontSize="14" FontFamily="FluentUI" HorizontalOptions="Center" />
+
+                                <BoxView Grid.ColumnSpan="4" Grid.Row="1" Margin="16,0,0,0" HeightRequest="1" 
+                                    Color="{AppThemeBinding Light=#f3f3f4, Dark=#333333}" />
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </Border>
+                </mct:Expander.Content>
+            </mct:Expander>
+
+            
+            <Grid ColumnDefinitions="*,100,50" RowDefinitions="40">
+                <Label Text="Simply Profound" Grid.Column="0" FontSize="Subtitle" VerticalOptions="Center" />
+                <Label Text="35166" Grid.Column="1" 
+                    Style="{StaticResource SecondaryLabel}"
+                    HorizontalOptions="End" HorizontalTextAlignment="End" />
+                <Label Text="{x:Static f:FluentUI.chevron_right_12_regular}" Grid.Column="2" 
+                    Style="{StaticResource SecondaryLabel}" TextColor="{StaticResource ActionColor}"
+                    VerticalOptions="Center"
+                    FontSize="14" FontFamily="FluentUI" HorizontalOptions="Center" />
+            </Grid>
+            <Grid ColumnDefinitions="*,100,50" RowDefinitions="40">
+                <Label Text="Gmail" Grid.Column="0" FontSize="Subtitle" VerticalOptions="Center" />
+                <Label Text="1082" Grid.Column="1" 
+                    Style="{StaticResource SecondaryLabel}"
+                    HorizontalOptions="End" HorizontalTextAlignment="End" />
+                <Label Text="{x:Static f:FluentUI.chevron_right_12_regular}" Grid.Column="2" 
+                    Style="{StaticResource SecondaryLabel}" TextColor="{StaticResource ActionColor}"
+                    VerticalOptions="Center"
+                    FontSize="14" FontFamily="FluentUI" HorizontalOptions="Center" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

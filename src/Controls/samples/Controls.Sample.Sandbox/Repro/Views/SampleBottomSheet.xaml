@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<the49:BottomSheet xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
+             xmlns:f="clr-namespace:Fonts"
+             x:Class="AllTheLists.Views.SampleBottomSheet" Background="White"
+             CornerRadius="16"
+             x:Name="Page"
+             HasHandle="True"
+             HasBackdrop="True">
+
+    <the49:BottomSheet.Detents>
+        <the49:MediumDetent />
+    </the49:BottomSheet.Detents>
+
+    <Grid RowDefinitions="Auto,65,1,*,60" 
+        RowSpacing="12"
+        Margin="16">
+        <Label Text="Share" 
+            HorizontalOptions="Center"
+            HorizontalTextAlignment="Center"
+            VerticalOptions="Start"
+            FontSize="16" 
+            FontAttributes="Bold"
+            />
+        <BoxView HeightRequest="1" HorizontalOptions="Fill" Color="{StaticResource Gray200}" Grid.Row="2" />
+        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Grid.Row="1">
+            <HorizontalStackLayout 
+                Spacing="18"> 
+                
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="{StaticResource Gray200}"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.Search}"
+                            FontFamily="FontAwesome"
+                            Size="18"
+                            Color="Black"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>
+                
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="{StaticResource Gray200}"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.Link}"
+                            FontFamily="FontAwesome"
+                            Size="18"
+                            Color="Black"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>
+
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="{StaticResource Primary}"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.MailBulk}"
+                            FontFamily="FontAwesome"
+                            Size="18"
+                            Color="White"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>               
+                
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="{StaticResource Secondary}"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.Comment}"
+                            FontFamily="FontAwesome"
+                            Size="18"
+                            Color="{StaticResource Primary}"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>
+
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="Green"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.CommentAlt}"
+                            FontFamily="FontAwesome"
+                            Size="18"
+                            Color="White"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>
+
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="Black"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.PenFancy}"
+                            FontFamily="FontAwesome"
+                            Size="18"
+                            Color="White"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>
+
+                <ImageButton 
+                    CornerRadius="25"
+                    HeightRequest="50"
+                    WidthRequest="50"
+                    BackgroundColor="Yellow"
+                    Aspect="Center">
+                    <ImageButton.Source>
+                        <FontImageSource 
+                            Glyph="{x:Static f:FontAwesome.GrinTongueWink}"
+                            FontFamily="FontAwesome"
+                            Size="24"
+                            Color="DarkOrange"
+                        />
+                    </ImageButton.Source>
+                </ImageButton>
+            </HorizontalStackLayout>
+        </ScrollView>
+        
+        <VerticalStackLayout Grid.Row="3">
+            <Label Text="These samples demonstrate how you can use CollectionView, ListView, and BindableLayouts to achieve a variety of modern mobile layouts"
+            />
+        </VerticalStackLayout>
+        <Button 
+            Grid.Row="4"
+            Margin="0,0,0,0"
+            HorizontalOptions="Center"
+            Padding="32,0"
+            TextColor="Black" FontAttributes="Bold"
+            Text="Close" HeightRequest="60" CornerRadius="30" Background="{StaticResource Gray200}"
+            Clicked="CloseButton_Clicked"
+             />
+    </Grid>
+</the49:BottomSheet>

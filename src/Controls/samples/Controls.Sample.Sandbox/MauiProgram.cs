@@ -1,5 +1,14 @@
 ﻿namespace Maui.Controls.Sample;
 
+using FFImageLoading.Maui;
+using Microsoft.Extensions.Logging;
+using MPowerKit.VirtualizeListView;
+using CommunityToolkit.Maui;
+using RatingControlMaui;
+using AlohaKit.Layouts.Hosting;
+using Effects;
+using The49.Maui.BottomSheet;
+
 public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp() =>
@@ -8,7 +17,15 @@ public static class MauiProgram
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
 #endif
-			.UseMauiApp<App>()
+			.UseMauiApp<AllTheLists.App>()
+			
+			.UseMauiCommunityToolkit()
+			.UseVirtualListView()
+			.UseMPowerKitListView()
+			.UseFFImageLoading()		
+			.UseRatingControl()	
+			.UseAlohaKitLayouts()
+			.UseBottomSheet()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("Dokdo-Regular.ttf", "Dokdo");
@@ -21,6 +38,12 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
 				fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
+			})			
+			.ConfigureEffects(effects =>
+			{
+                
+				effects.Add<ContentInsetAdjustmentBehaviorRoutingEffect, ContentInsetAdjustmentBehaviorPlatformEffect>();
+                
 			})
 			.Build();
 }

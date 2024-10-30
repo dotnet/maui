@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             xmlns:p="clr-namespace:AllTheLists.Pages"
+             Title="All the Lists"
+             x:Class="AllTheLists.MainPage">
+
+    <ContentPage.Resources>
+        <DataTemplate x:Key="SampleTemplate">
+                <Grid 
+                    RowDefinitions="Auto,30" ColumnDefinitions="*,30" RowSpacing="8" ColumnSpacing="4">
+                    <Border StrokeShape="RoundRectangle 8" StrokeThickness="0" Grid.ColumnSpan="2" VerticalOptions="Start">
+                        <Image Source="{Binding Image}" Aspect="AspectFit" HorizontalOptions="Fill" VerticalOptions="Start" />
+                    </Border>
+                    <Label 
+                        Grid.Row="1"
+                        Text="{Binding Name}" FontSize="14" Margin="8,0" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="...">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="Actions_Tapped" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="ListView_ItemSelected" />
+                    </Grid.GestureRecognizers>
+                </Grid>
+            </DataTemplate>
+    </ContentPage.Resources>
+
+<ScrollView>
+    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="12,12,12,0">
+        <VerticalStackLayout Spacing="12" 
+            BindableLayout.ItemTemplate="{StaticResource SampleTemplate}">
+            
+        <BindableLayout.ItemsSource>
+            <x:Array Type="{x:Type m:Sample}">
+                <m:Sample Name="CollectionView" Page="{x:Type p:CollectionViewPage}" Image="basic.png" />
+                <m:Sample Name="Reviews" Page="{x:Type p:ReviewsPage}" Image="reviews.png" />
+                <m:Sample Name="Check-ins" Page="{x:Type p:CheckInsPage}" Image="checkins.png" />
+                <m:Sample Name="Learning" Page="{x:Type p:LearningPage}" Image="learning.png" />
+                <m:Sample Name="ListView" Page="{x:Type p:ListViewPage}" Image="basic.png"/>
+                <m:Sample Name="Shopping" Page="{x:Type p:ShoppingPage}" Image="adidas.png" />
+                
+            </x:Array>
+        </BindableLayout.ItemsSource>
+      </VerticalStackLayout>  
+      <VerticalStackLayout Spacing="10" 
+            Grid.Column="1"
+            BindableLayout.ItemTemplate="{StaticResource SampleTemplate}">            
+        <BindableLayout.ItemsSource>
+            <x:Array Type="{x:Type m:Sample}">
+                <m:Sample Name="Address Book" Page="{x:Type p:AddressBookPage}" Image="contacts.png" />
+                <m:Sample Name="VirtualListView (Redth)" Page="{x:Type p:VirtualListViewPage}" Image="basic.png"/>
+                <m:Sample Name="Who is Watching" Page="{x:Type p:WhoIsWatchingPage}" Image="whoiswatching.png" />
+                <m:Sample Name="Streaming Service" Page="{x:Type p:StreamingServicePage}" Image="streaming.png" />
+                <m:Sample Name="Unified Inbox" Page="{x:Type p:InboxPage}" Image="inbox.png" />
+                <m:Sample Name="VirtualizedListView" Page="{x:Type p:VirtualizedListViewPage}" Image="basic.png" />
+            </x:Array>
+        </BindableLayout.ItemsSource>
+      </VerticalStackLayout>
+    </Grid>
+</ScrollView>
+    <!-- <CollectionView ItemSizingStrategy="MeasureAllItems" Margin="16">
+        <CollectionView.ItemsLayout>
+            <GridItemsLayout Orientation="Vertical"
+                VerticalItemSpacing="8" HorizontalItemSpacing="8"
+                Span="2" />
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemsSource>
+            <x:Array Type="{x:Type m:Sample}">
+                <m:Sample Name="CollectionView" Page="{x:Type p:CollectionViewPage}" Image="basic.png" />
+                <m:Sample Name="Reviews" Page="{x:Type p:ReviewsPage}" Image="reviews.png" />
+                <m:Sample Name="Check-ins" Page="{x:Type p:CheckInsPage}" Image="checkins.png" />
+                <m:Sample Name="Learning" Page="{x:Type p:LearningPage}" Image="learning.png" />
+                <m:Sample Name="ListView" Page="{x:Type p:ListViewPage}" Image="basic.png"/>
+                <m:Sample Name="Shopping" Page="{x:Type p:ShoppingPage}" Image="adidas.png" />
+                <m:Sample Name="Address Book" Page="{x:Type p:AddressBookPage}" Image="contacts.png" />
+                <m:Sample Name="VirtualListView (Redth)" Page="{x:Type p:VirtualListViewPage}" Image="basic.png"/>
+                <m:Sample Name="Who is Watching" Page="{x:Type p:WhoIsWatchingPage}" Image="whoiswatching.png" />
+                <m:Sample Name="Streaming Service" Page="{x:Type p:StreamingServicePage}" Image="streaming.png" />
+                <m:Sample Name="Unified Inbox" Page="{x:Type p:InboxPage}" Image="inbox.png" />
+                <m:Sample Name="VirtualizedListView" Page="{x:Type p:VirtualizedListViewPage}" Image="basic.png" />
+            </x:Array>
+        </CollectionView.ItemsSource>
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Grid RowDefinitions="Auto,30" ColumnDefinitions="*,30" RowSpacing="4" ColumnSpacing="4">
+                    <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" Grid.ColumnSpan="2" VerticalOptions="Start">
+                        <Image Source="{Binding Image}" Aspect="AspectFit" HorizontalOptions="Fill" VerticalOptions="Start" />
+                    </Border>
+                    <Label 
+                        Grid.Row="1"
+                        Text="{Binding Name}" FontSize="10" Margin="8,0" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="..."/>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="ListView_ItemSelected" />
+                    </Grid.GestureRecognizers>
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView> -->
+
+    
+
+</ContentPage>

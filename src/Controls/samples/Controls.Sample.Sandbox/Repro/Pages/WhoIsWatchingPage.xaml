@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AllTheLists.ViewModels"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             x:DataType="vm:StreamingServiceViewModel"
+             x:Class="AllTheLists.Pages.WhoIsWatchingPage"
+             Title="WhoIsWatchingPage">
+    <FlexLayout Direction="Row" JustifyContent="Center" Wrap="Wrap"
+        BindableLayout.ItemsSource="{Binding WhoIsWatching}" VerticalOptions="Center">
+        <BindableLayout.ItemTemplate>
+            <DataTemplate x:DataType="m:Contact">
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="8" FlexLayout.Basis="40%" FlexLayout.AlignSelf="Start">
+                    <Image Source="{Binding ProfilePicture}" WidthRequest="80" HeightRequest="80" Aspect="AspectFill"
+                        BackgroundColor="Transparent">                        <Image.Clip>
+                            <EllipseGeometry Center="40, 40" RadiusX="40" RadiusY="40" />
+                        </Image.Clip>
+                    </Image>
+                    <Label Text="{Binding FirstName}" HorizontalOptions="Center" />
+
+                    </VerticalStackLayout>
+            </DataTemplate>
+        </BindableLayout.ItemTemplate>
+    </FlexLayout>
+</ContentPage>

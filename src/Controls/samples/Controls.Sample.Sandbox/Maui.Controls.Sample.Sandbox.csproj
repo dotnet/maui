@@ -8,7 +8,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS0618;CS8767;CS8602;CA1307;XC0103;XC0024;XC0045</NoWarn>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
@@ -51,5 +52,32 @@
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
+  <ItemGroup>
+      <PackageReference Include="Redth.Maui.VirtualListView" Version="0.4.0">
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="MPowerKit.VirtualizeListView" Version="1.1.1" >
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="FFImageLoading.Maui" Version="1.2.5">
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" >
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="CommunityToolkit.Maui" Version="9.0.1" >
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="pankaj.util.RatingControl" Version="1.0.0.2" >
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="AlohaKit.Layouts" Version="1.0.0" >
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+      <PackageReference Include="The49.Maui.BottomSheet" Version="8.0.3" >
+        <ExcludeAssets>build;buildTransitive</ExcludeAssets>
+      </PackageReference>
+  </ItemGroup>
 
 </Project>

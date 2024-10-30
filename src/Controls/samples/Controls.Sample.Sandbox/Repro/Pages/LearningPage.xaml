@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AllTheLists.ViewModels"
+             xmlns:v="clr-namespace:AllTheLists.Views"
+             x:DataType="vm:LearningUnitsViewModel"
+             x:Class="AllTheLists.Pages.LearningPage"
+             Title="LearningPage">
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" 
+            BindableLayout.ItemsSource="{Binding Items}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                    <v:LearningUnitListItem />
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <!-- <CollectionView 
+        ItemSizingStrategy="MeasureAllItems" 
+        ItemsSource="{Binding Items}">
+        <CollectionView.ItemsLayout>
+            <LinearItemsLayout 
+                Orientation="Vertical" 
+                ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <v:LearningUnitListItem />
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView> -->
+</ContentPage>

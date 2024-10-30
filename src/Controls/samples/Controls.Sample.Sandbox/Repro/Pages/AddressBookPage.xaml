@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:AllTheLists.ViewModels"
+             xmlns:m="clr-namespace:AllTheLists.Models"
+             x:DataType="vm:AddressBookViewModel"
+             x:Class="AllTheLists.Pages.AddressBookPage"
+             Title="AddressBookPage">
+
+    <ContentPage.Resources>
+        <xct:IsStringNotNullOrEmptyConverter x:Key="IsNotNullConverter"/>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <SearchBar x:Name="SearchBar"
+                   Placeholder="Search"
+                   Text="{Binding SearchText, Mode=TwoWay}"
+                   SearchCommand="{Binding SearchCommand}"
+                   VerticalOptions="Start"
+                   BackgroundColor="{AppThemeBinding Light=White, Dark=Black}"/>
+
+        <ListView
+            Grid.Row="1"
+            ItemsSource="{Binding ContactsGroups}"
+            IsGroupingEnabled="True">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell x:DataType="m:Contact">
+                        <HorizontalStackLayout Padding="10"
+                                Spacing="16">
+                            <Label FontSize="16"
+                                    VerticalOptions="Center">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding FirstName}"/>
+                                        <Span Text=" "/>
+                                        <Span Text="{Binding LastName}"
+                                                FontAttributes="Bold"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <ViewCell x:DataType="m:ContactsGroup">
+                        <Label Text="{Binding GroupName}"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               Padding="12,0,0,0"
+                               VerticalOptions="Center"
+                               Background="Transparent"/>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.GroupHeaderTemplate>
+            <ListView.Header>
+                <HorizontalStackLayout Spacing="16"
+                        Padding="16">
+                    <Border StrokeShape="RoundRectangle 40"
+                            StrokeThickness="0">
+                        <Image Source="avatar_01.png"
+                               WidthRequest="80"
+                               HeightRequest="80"
+                               Aspect="AspectFill"
+                               VerticalOptions="Center"/>
+                    </Border>
+                    <Label Text="David Ortinau"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+            </ListView.Header>
+        </ListView>
+    </Grid>
+    <!-- <CollectionView ItemsSource="{Binding ContactsGroups}" 
+        IsGrouped="True">
+        
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Grid Padding="10">
+                    <Label FontSize="16">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding FirstName}" />
+                                <Span Text=" " />
+                                <Span Text="{Binding LastName}" FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Grid>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+        <CollectionView.GroupHeaderTemplate>
+            <DataTemplate>
+                <Label Text="{Binding GroupName}" 
+                    FontSize="18" 
+                    FontAttributes="Bold"
+                    Padding="12,8"
+                    Background="Silver" />
+            </DataTemplate>
+        </CollectionView.GroupHeaderTemplate>
+    </CollectionView> -->
+</ContentPage>

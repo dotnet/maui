@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AllTheLists.Views.LoadingMoreView">
+    <Grid HeightRequest="60" Background="Silver" Padding="16">
+        <Label 
+            Text="Loading more shoes..."
+            TextColor="Black"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </Grid>
+</ContentView>

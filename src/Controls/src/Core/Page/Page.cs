@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
+		bool _allocatedFlag;
 		Rect _containerArea;
 
 		bool _containerAreaSet;
@@ -545,6 +546,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="height">The height allocated to the page.</param>
 		protected override void OnSizeAllocated(double width, double height)
 		{
+			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
 
 			if (Handler is null)
@@ -613,7 +615,12 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
+			_allocatedFlag = false;
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			if (!_allocatedFlag && Width >= 0 && Height >= 0 && UseLegacyMeasureInvalidatedBehaviorEnabled)
+			{
+				SizeAllocated(Width, Height);
+			}
 		}
 
 		internal void OnAppearing(Action action)
@@ -715,6 +722,13 @@ namespace Microsoft.Maui.Controls
 				for (var i = 0; i < e.OldItems.Count; i++)
 				{
 					var item = (Element)e.OldItems[i];
+
+					if (UseLegacyMeasureInvalidatedBehaviorEnabled &&
+						item is VisualElement visual)
+					{
+						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
+					}
+
 					RemoveLogicalChild(item);
 				}
 			}
@@ -729,6 +743,12 @@ namespace Microsoft.Maui.Controls
 					if (insertIndex < 0)
 					{
 						insertIndex = InternalChildren.IndexOf(item);
+					}
+
+					if (UseLegacyMeasureInvalidatedBehaviorEnabled &&
+						item is VisualElement visual)
+					{
+						visual.MeasureInvalidated += OnChildMeasureInvalidated;
 					}
 
 					InsertLogicalChild(insertIndex, item);
