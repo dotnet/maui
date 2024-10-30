@@ -228,11 +228,14 @@ namespace Microsoft.Maui.Controls
 
 			// If the user has set the IsVisible property on this shell content to false
 			bool disconnect = true;
-			
-			if(Parent is ShellSection shellSection &&
+
+			Shell shell = null;
+
+			if (Parent is ShellSection shellSection &&
 				shellSection.Parent is ShellItem shellItem &&
-				shellItem.Parent is Shell shell)
+				shellItem.Parent is Shell shellInstance)
 			{
+				shell = shellInstance;
 				disconnect = 
 					!this.IsVisible || // user has set the IsVisible property to false
 					(_contentCache is not null && !_contentCache.IsVisible) || // user has set IsVisible on the Page to false
@@ -243,6 +246,7 @@ namespace Microsoft.Maui.Controls
 
 			if (!disconnect)
 			{
+				shell?.NotifyFlyoutBehaviorObservers();
 				return;
 			}
 
