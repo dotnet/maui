@@ -1,5 +1,4 @@
-﻿#if IOS
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Application = Microsoft.Maui.Controls.Application;
@@ -19,9 +18,11 @@ namespace Maui.Controls.Sample.Issues
 
 		private void OnModalPage(object sender, EventArgs e)
 		{
+#if IOS
 			var modalPage = new NavigationPage(new Issue23411() { Title = "Modal Page" ,AutomationId = "PageSheetModalPage" });
 			modalPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.PageSheet);
 			Navigation.PushModalAsync(modalPage);
+#endif
 		}
 
 		private void OnDarkTheme(object sender, EventArgs e)
@@ -40,4 +41,3 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 }
-#endif

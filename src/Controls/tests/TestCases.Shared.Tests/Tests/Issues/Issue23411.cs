@@ -21,9 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/23411
 			App.WaitForElement("ThemePage");
 			App.WaitForElement("ModalPageButton");
-		    App.Tap("ModalPage");
+		    App.Tap("ModalPageButton");
 			App.WaitForElement("PageSheetModalPage");
 			App.WaitForElement("ResetThemeButton");
+			App.Tap("ResetThemeButton")
 			VerifyScreenshot();
 		
 		}
