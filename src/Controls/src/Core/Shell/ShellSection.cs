@@ -1032,10 +1032,22 @@ namespace Microsoft.Maui.Controls
 			PresentedPageDisappearing();
 		}
 
+		bool IsPageVisible()
+		{
+			if (this is IShellSectionController sectionController && sectionController.PresentedPage is not null)
+			{
+				return sectionController.PresentedPage == ((IShellContentController)CurrentItem)?.Page;
+			}
+			return false;
+		}
+
 		internal override void SendAppearing()
 		{
 			base.SendAppearing();
-			PresentedPageAppearing();
+			if (IsPageVisible())
+			{
+				PresentedPageAppearing();
+			}
 		}
 
 		class NavigationImpl : NavigationProxy
