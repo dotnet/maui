@@ -13,7 +13,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
+	public partial class EditorRenderer : ViewRenderer<Editor, FormsTextBox>
 	{
 		bool _fontApplied;
 		WBrush _backgroundColorFocusedDefaultBrush;

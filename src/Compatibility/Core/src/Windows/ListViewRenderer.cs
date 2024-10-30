@@ -29,7 +29,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer instead")]
-	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
+	public partial class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		bool _collectionIsWrapped;
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		protected WListView List { get; private set; }
 
-		protected class ListViewTransparent : WListView
+		protected partial class ListViewTransparent : WListView
 		{
 			public ListViewTransparent() : base() { }
 
