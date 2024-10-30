@@ -968,15 +968,40 @@ namespace UITest.Appium
 		{
 			var elementToScroll = FindElement(app, withinMarked);
 
-			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+			app.ScrollDownTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scroll down until an element that matches the query is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDownTo(this IApp app, string toMarked, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = app.FindElement(query);
+
+			app.ScrollDownTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollDownTo(this IApp app, string toMarked, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)	
+		{
+			if (element is not null)
 			{
-				{ "marked", toMarked },
-				{ "element", elementToScroll },
-				{ "strategy", strategy },
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+				{
+					{ "marked", toMarked },
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -1078,15 +1103,40 @@ namespace UITest.Appium
 		{
 			var elementToScroll = FindElement(app, withinMarked);
 
-			app.CommandExecutor.Execute("scrollUpTo", new Dictionary<string, object>
+			app.ScrollUpTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scroll up until an element that matches the marked is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollUpTo(this IApp app, string toMarked, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = app.FindElement(query);
+
+			app.ScrollUpTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollUpTo(this IApp app, string toMarked, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
 			{
-				{ "marked", toMarked },
-				{ "element", elementToScroll },
-				{ "strategy", strategy },
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("scrollUpTo", new Dictionary<string, object>
+				{
+					{ "marked", toMarked },
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
