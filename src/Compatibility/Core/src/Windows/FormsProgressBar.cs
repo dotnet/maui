@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FormsProgressBar : Microsoft.UI.Xaml.Controls.ProgressBar
+	public partial class FormsProgressBar : Microsoft.UI.Xaml.Controls.ProgressBar
 	{
 		public static readonly DependencyProperty ElementOpacityProperty = DependencyProperty.Register(
 			nameof(ElementOpacity), typeof(double), typeof(FormsProgressBar), new PropertyMetadata(default(double)));
