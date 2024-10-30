@@ -39,6 +39,12 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 			})			
+			.ConfigureMauiHandlers(handlers =>
+			{
+				#if IOS
+				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+				#endif
+			})
 			.ConfigureEffects(effects =>
 			{
                 

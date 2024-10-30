@@ -43,10 +43,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
-    <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
+    <!-- Images -->
+		<MauiImage Include="Resources\Images\circle_check_solid.svg" TintColor="Green" />
+		<MauiImage Include="Resources\Images\circle_xmark_solid.svg" TintColor="Red" />
+		<MauiImage Include="Resources\Images\Avatars\*" />
+		<MauiImage Include="Resources\Images\Posters\*" />
+		<MauiImage Include="Resources\Images\Shoes\*" />
+		<MauiImage Include="Resources\Images\Screenshots\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
     <MauiFont Include="Resources\Fonts\*" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
