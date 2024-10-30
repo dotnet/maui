@@ -73,14 +73,13 @@ static class InitializeComponentCodeWriter
                 using (newblock()) {
                     codeWriter.WriteLine($"private void InitializeComponentSourceGen()");
                     using(newblock()){
-                        try
-                        {
+                        // try {
                             Visit(root, new SourceGenContext(codeWriter, compilation, xmlnsCache, typeCache, rootType!));
-                        } catch (Exception e) {
-                            codeWriter.WriteLine($"/* Error: {e.Message}");
-                            codeWriter.WriteLine(e.StackTrace);
-                            codeWriter.WriteLine("*/");
-                        }
+                        // } catch (Exception e) {
+                        //     codeWriter.WriteLine($"/* Error: {e.Message}");
+                        //     codeWriter.WriteLine(e.StackTrace);
+                        //     codeWriter.WriteLine("*/");
+                        // }
                     }
                 }
                 
@@ -89,6 +88,7 @@ static class InitializeComponentCodeWriter
 
             }
 exit:
+// codeWriter.WriteLine("*/");
             codeWriter.Flush();
             return codeWriter.InnerWriter.ToString();   
         }
