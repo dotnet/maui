@@ -20,47 +20,63 @@ parameters:
 
 steps:
   # Prepare macOS
-  - ${{ if ne(parameters.poolName, 'Azure Pipelines') }}:
-    - template: agent-cleanser/v1.yml@yaml-templates
-      parameters:
-        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-        UninstallMono: false
-        UninstallXamarinMac: false
-        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-        SelfHealPowerShell: false
-        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+  # - ${{ if ne(parameters.poolName, 'Azure Pipelines') }}:
+  #   - template: agent-cleanser/v1.yml@yaml-templates
+  #     parameters:
+  #       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+  #       UninstallMono: false
+  #       UninstallXamarinMac: false
+  #       CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+  #       SelfHealPowerShell: false
+  #       AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      displayName: 'Provision Xcode'
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+    # - task: xamops.azdevex.provisionator-task.provisionator@2
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    #   displayName: 'Provision Xcode'
+    #   inputs:
+    #     provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
+    #     provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+    #     github_token: ${{ parameters.gitHubToken }}
+    #   env:
+    #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+    #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+
+    - script: |
+        echo Mac OS version:
+        sw_vers -productVersion
+        echo
+        echo Installed Xcode versions:
+        ls /Applications | grep 'Xcode'
+        echo
+        echo currently selected xcode:
+        xcrun xcode-select --print-path
+        echo
+        echo selecting latest xcode...
+        sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+        xcrun xcode-select --print-path
+        xcodebuild -version
+      displayName: Select Xcode Version
 
   # Provision Additional Software
-  - ${{ if ne(parameters.skipProvisioning, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      displayName: 'Provision Additional Software'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
-        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-          INSTALL_DEFAULT_ANDROID_API: 'true'
+  #- ${{ if ne(parameters.skipProvisioning, 'true') }}:
+    # - task: xamops.azdevex.provisionator-task.provisionator@2
+    #   displayName: 'Provision Additional Software'
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    #   continueOnError: true
+    #   inputs:
+    #     provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+    #     provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+    #     github_token: ${{ parameters.gitHubToken }}
+    #   env:
+    #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+    #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+    #     ${{ if eq(parameters.skipAndroidSdks, true) }}:
+    #       SKIP_ANDROID_API_SDKS: 'true'
+    #     ${{ if eq(parameters.skipAndroidImages, true) }}:
+    #       SKIP_ANDROID_API_IMAGES: 'true'
+    #     ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+    #       INSTALL_DEFAULT_ANDROID_API: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
@@ -69,17 +85,7 @@ steps:
     #  brew install --cask microsoft-openjdk@17
     displayName: 'Setup JDK Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
-  # Configure VS Mac for Xcode
-  # This seems to be needed or else it will pick other xcode for example on xharness
-  # - bash: |
-  #     set -x
-  #     mkdir -p ~/Library/Preferences/Xamarin
-  #     rm -f ~/Library/Preferences/Xamarin/Settings.plist
-  #     /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
-  #     cat ~/Library/Preferences/Xamarin/Settings.plist || true
-  #   displayName: 'Configure Visual Studio'
-  #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
+ 
   # Prepare Windows
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
