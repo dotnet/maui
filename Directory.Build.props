@@ -215,8 +215,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DotNetTempDirectory>$(RepoRoot)/temp/</DotNetTempDirectory>
-    <DotNetDirectory>$(RepoRoot)/.dotnet/</DotNetDirectory>
+    <DotNetTempDirectory>$(RepoRoot)temp/</DotNetTempDirectory>
+    <DotNetDirectory>$(RepoRoot).dotnet/</DotNetDirectory>
     <DotNetToolPath>$(DotNetDirectory)dotnet</DotNetToolPath>
     <DotNetPacksDirectory>$(DotNetDirectory)packs/</DotNetPacksDirectory>
     <DotNetLibraryPacksDirectory>$(DotNetDirectory)library-packs/</DotNetLibraryPacksDirectory>

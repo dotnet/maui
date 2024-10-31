@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 15826, "ListView visibility doesn't work well", PlatformAffected.Android)]
 	public partial class Issue15826 : ContentPage
 	{

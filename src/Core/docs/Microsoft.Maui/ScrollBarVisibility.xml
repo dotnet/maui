@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates conditions under which scroll bars will be visible.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Always">

@@ -77,7 +77,6 @@ steps:
       displayName: 'Provision Android SDK'
       condition: succeeded()
       env:
-        GITHUB_TOKEN: ${{ parameters.gitHubToken }}
         ${{ if eq(parameters.skipAndroidSdks, true) }}:
           SKIP_ANDROID_API_SDKS: 'true'
         ${{ if eq(parameters.skipAndroidImages, true) }}:

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	/// <br/><br/>
 	/// The standard title bar height is 32px, but can be set to a larger value.
 	/// <br/><br/>
-	/// The title bar can also be hidden by setting the <see cref="Visibility"/> property, which
+	/// The title bar can also be hidden by setting the <see cref="VisualElement.IsVisible"/> property, which
 	/// will cause the window content to be displayed in the title bar region.
 	/// </summary>
 	public partial class TitleBar : TemplatedView, ITitleBar, ISafeAreaView
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		public const string TitleBarSubtitle = "PART_Subtitle";
 		public const string SubtitleVisibleState = "SubtitleVisible";
-		public const string SubtitleHiddenState = "SubTitleCollapsed";
+		public const string SubtitleHiddenState = "SubtitleCollapsed";
 
 		public const string TitleBarLeading = "PART_LeadingContent";
 		public const string LeadingVisibleState = "LeadingContentVisible";

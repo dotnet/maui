@@ -1,11 +1,5 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4879, "4879 - ImageButtonPadding", PlatformAffected.UWP)]
 	public class Issue4879 : TestContentPage
 	{

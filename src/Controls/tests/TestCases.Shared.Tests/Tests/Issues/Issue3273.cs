@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue3273Test()
 		{
 			App.WaitForElement("Move items");

@@ -305,8 +305,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					bool skipBindingCompilation = hasSource && !context.CompileBindingsWithSource;
 					if (!skipBindingCompilation)
 					{
-						if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, isStandaloneBinding: bpRef is null, out var instructions))
+						if (TryCompileBindingPath(node, context, vardefref.VariableDefinition, bindingExtensionType.Value, out var instructions))
 						{
+							// if the binding is compiled, there's no need to pass the ServiceProvider to the extension
+							acceptEmptyServiceProvider = true;
+
 							foreach (var instruction in instructions)
 								yield return instruction;
 						}
@@ -421,7 +424,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
-		static bool TryCompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType, bool isStandaloneBinding, out IEnumerable<Instruction> instructions)
+		static bool TryCompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt, (string, string, string) bindingExtensionType, out IEnumerable<Instruction> instructions)
 		{
 			instructions = null;
 
@@ -454,13 +457,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 				{
-					break;
-				}
-				else if (isStandaloneBinding)
-				{
-					// For standalone bindings we don't allow inheriting the x:DataType from its parents.
-					// A standalone binding is a binding instance which is not immediately applied through `SetBinding(...)`
-					// but it is applied later (for example it is applied to items in a collection).
 					break;
 				}
 

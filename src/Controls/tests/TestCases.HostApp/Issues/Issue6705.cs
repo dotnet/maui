@@ -1,11 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 6705, "InvokeOnMainThreadAsync throws NullReferenceException", PlatformAffected.All)]
 	public class Issue6705 : TestContentPage // or TestFlyoutPage, etc ...
 	{

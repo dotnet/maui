@@ -5,10 +5,11 @@
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
+    <DotNetFeedUrl>https://dotnetcli.azureedge.net/dotnet</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
+    <PublicSdk Condition=" '$(PublicSdk)' == ''">true</PublicSdk>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
-    <PrivateSdk  Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
+    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
@@ -17,7 +18,8 @@
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -26,7 +28,8 @@
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
   </PropertyGroup>
 

@@ -1,5 +1,4 @@
-﻿using OpenQA.Selenium.Appium.Android;
-using OpenQA.Selenium.Appium.Windows;
+﻿using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -12,6 +11,7 @@ namespace UITest.Appium
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string BackCommand = "back";
+		const string RefreshCommand = "refresh";
 
 		protected readonly AppiumApp _app;
 
@@ -22,7 +22,8 @@ namespace UITest.Appium
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
-			BackCommand
+			BackCommand,
+			RefreshCommand
 		};
 
 		public AppiumLifecycleActions(AppiumApp app)
@@ -45,6 +46,7 @@ namespace UITest.Appium
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
 				BackCommand => Back(parameters),
+				RefreshCommand => Refresh(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -174,8 +176,26 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// Navigate backwards in the history, if possible.
-			_app.Driver.Navigate().Back();
+			try
+			{
+				// Navigate backwards in the history, if possible.
+				_app.Driver.Navigate().Back();
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+
+		CommandResponse Refresh(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			// Refresh the current page.
+			_app.Driver.Navigate().Refresh();
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

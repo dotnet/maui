@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void ClearingGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Go);

@@ -1,8 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 9951, "Android 10 Setting ThumbColor on Switch causes a square block", PlatformAffected.Android)]
 	public class Issue9951 : TestContentPage
