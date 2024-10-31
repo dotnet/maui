@@ -147,6 +147,9 @@
 		
 		<!-- Set the preferred JDK path -->
 		<Exec Command="dotnet android jdk dotnet-prefer --home &quot;$(_AndroidJdkPath)&quot;" />
+
+		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		</Exec>
 	</Target>
 
 	<Target Name="DetectJdkVersion">
@@ -159,6 +162,9 @@
 			<_AndroidJdkMajorVersion>$([System.Version]::Parse($(_AndroidJdkVersion)).Major)</_AndroidJdkMajorVersion>
 			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1))</_AndroidJdkVersionNextMajor>
 		</PropertyGroup>
+
+		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		</Exec>
 
 		<!-- Find a JDK installed that is >= the JavaJdkVersion but not > the major version specified (eg: [17.0,18.0]) -->
 		<Exec Command="dotnet android jdk list --version &quot;[$(_AndroidJdkVersion),$(_AndroidJdkVersionNextMajor)]&quot; --format=json" ConsoleToMSBuild="True" IgnoreExitCode="True">
