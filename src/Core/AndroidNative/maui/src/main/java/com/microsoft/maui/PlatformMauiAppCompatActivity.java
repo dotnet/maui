@@ -9,7 +9,7 @@ import android.os.Bundle;
 
 
 /**
- * Class for setting a relativeLineHeight on a Span
+ * Class for batching native method calls within the MauiAppCompatActivity implementation
  */
 public class PlatformMauiAppCompatActivity {
     public static void onCreate(AppCompatActivity activity, Bundle savedInstanceState, boolean allowFragmentRestore, int splashAttr, int mauiTheme)
