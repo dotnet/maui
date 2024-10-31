@@ -38,6 +38,7 @@ public class Issue7167 : _IssuesUITest
 
 		// Assert
 		// Assert that item "25" is still visible
+		App.WaitForElement("25");
 		var result = App.FindElementByText("25").GetRect();
 		ClassicAssert.AreNotEqual(result, Rectangle.Empty);
 	}
