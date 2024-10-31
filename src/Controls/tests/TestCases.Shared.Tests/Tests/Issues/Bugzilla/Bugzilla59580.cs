@@ -18,14 +18,8 @@ public class Bugzilla59580 : _IssuesUITest
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 	{
-		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-		{
-			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-		}
-
 		App.ActivateContextMenu("Cell");
-		var item = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Fire CanExecuteChanged" + "']"));
-		item.Click();
+		App.Tap("Fire CanExecuteChanged");
 	}
 }
 #endif
