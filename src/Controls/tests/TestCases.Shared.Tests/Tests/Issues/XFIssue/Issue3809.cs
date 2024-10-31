@@ -27,6 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[Category(UITestCategories.Page)]
 		public void SafeAreaInsetsBreaksAndroidPadding()
 		{
 			// Ensure initial paddings are honored
