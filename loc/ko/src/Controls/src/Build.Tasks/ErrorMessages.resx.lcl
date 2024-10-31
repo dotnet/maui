@@ -85,24 +85,36 @@
       <Item ItemId=";BindingWithNullDataType" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding could be compiled to improve runtime performance if x:DataType is not explicitly null. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:DataType이 명시적으로 null이 아닌 경우 런타임 성능을 개선하기 위해 바인딩을 컴파일할 수 있습니다. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingWithSourceCompilationSkipped" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding was not compiled because it has an explicitly set Source property and compilation of bindings with Source is not enabled. Consider enabling this optimization by setting the <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation> in your project file and make sure the correct x:DataType is specified for this binding. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[바인딩에 명시적으로 설정된 소스 속성이 있고 소스를 사용하는 바인딩의 컴파일을 사용할 수 없으므로 바인딩이 컴파일되지 않았습니다. 프로젝트 파일에서 <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>을(를) 설정하여 이 최적화를 사용하도록 설정하는 것을 고려하고 이 바인딩에 올바른 x:DataType이 지정되어 있는지 확인하세요. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingWithXDataTypeFromOuterScope" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding might be compiled incorrectly since the x:DataType annotation comes from an outer scope. Make sure you annotate all DataTemplate XAML elements with the correct x:DataType. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:DataType 주석이 외부 범위에서 제공되었으므로 바인딩이 잘못 컴파일되었을 수 있습니다. 올바른 x:DataType으로 모든 DataTemplate XAML 요소에 주석을 추가해야 합니다. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingWithoutDataType" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding could be compiled to improve runtime performance if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:DataType이 지정된 경우 런타임 성능을 개선하기 위해 바인딩을 컴파일할 수 있습니다. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -217,6 +229,9 @@
       <Item ItemId=";ObsoleteProperty" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Property, Property setter or BindableProperty "{0}" is deprecated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Property, Property setter 또는 BindableProperty "{0}"이(가) 사용되지 않습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -277,6 +292,9 @@
       <Item ItemId=";StaticResourceSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A key is required in {StaticResource}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[{StaticResource}에서 키가 필요합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -301,8 +319,8 @@
       <Item ItemId=";StyleSheetSourceOrContent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[StyleSheet cannot have both a Source and a content.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[스타일 시트는 소스와 콘텐츠 중 하나만 포함할 수 있습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[스타일 시트는 소스와 콘텐츠를 둘 다 포함할 수 있습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[StyleSheet can not have both a Source and a content.]]></Val>
@@ -331,14 +349,17 @@
       <Item ItemId=";UnattributedMarkupType" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Consider attributing the markup extension "{0}" with [RequireService]5D; or [AcceptEmptyServiceProvider]5D; if it doesn't require any.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필요 없는 경우 [RequireService]5D; 또는 [AcceptEmptyServiceProvider]5D;로 태그 확장 "{0}"에 특성을 지정하는 것을 고려하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";XDataTypeSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[x:DataType에는 {{x:Type}} 태그 또는 {{x:Nul}l} 문자열 리터럴이 필요합니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[x:DataType에는 {{x:Type}} 태그 또는 {{x:Null}} 문자열 리터럴이 필요합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.]]></Val>
