@@ -13,7 +13,7 @@ public class Issue2883 : _IssuesUITest
 
 	public override string Issue => "ViewCell IsEnabled set to false does not disable a cell in a TableView";
 
-	// [UITests.FailsOnIOS]
+	// [UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Issue2883TestDisabled ()
 	// {
@@ -26,7 +26,7 @@ public class Issue2883 : _IssuesUITest
 	// 	App.Screenshot ("I dont see the disable cell");
 	// }
 
-	// [UITests.FailsOnIOS]
+	// [UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Issue2883TestEnabled ()
 	// {

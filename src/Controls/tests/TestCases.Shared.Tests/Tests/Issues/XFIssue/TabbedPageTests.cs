@@ -14,7 +14,7 @@ public class TabbedPageTests : _IssuesUITest
 	public override string Issue => "TabbedPage nav tests";
 
 	//	[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	//{
 	//	App.WaitForElement(q => q.Marked("Page 1"));
@@ -25,7 +25,7 @@ public class TabbedPageTests : _IssuesUITest
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithModalIssueTestsPopFromFirstTab()
 	//{
 	//	App.Tap(q => q.Button("Pop"));
@@ -35,7 +35,7 @@ public class TabbedPageTests : _IssuesUITest
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithModalIssueTestsPopFromSecondTab()
 	//{
 	//	App.Tap(q => q.Marked("Page 2"));

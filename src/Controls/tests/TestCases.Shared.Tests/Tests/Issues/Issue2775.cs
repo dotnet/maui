@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue2775Test()
 		{
 			App.WaitForElement("TestReady");
