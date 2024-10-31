@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -67,3 +68,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
