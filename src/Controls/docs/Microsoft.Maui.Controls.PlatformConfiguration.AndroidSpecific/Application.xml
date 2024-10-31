@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The application instance that Microsoft.Maui.Controls created on the Android platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetWindowSoftInputModeAdjust">
@@ -38,7 +37,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that tells whether the soft input mode of the provided <paramref name="element" /> pans or resizes its content to allow the display of the on-screen input UI.</summary>
         <returns>A value that tells whether the soft input mode of the provided <paramref name="element" /> pans or resizes its content to allow the display of the on-screen input UI.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetWindowSoftInputModeAdjust">
@@ -62,7 +60,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that tells whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
         <returns>A value that tells whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetWindowSoftInputModeAdjust">
@@ -87,7 +84,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the soft input mode of the provided <paramref name="element" /> pans or resizes its content to allow the display of the on-screen input UI.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UseWindowSoftInputModeAdjust">
@@ -113,7 +109,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
         <returns>A value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WindowSoftInputModeAdjustProperty">
@@ -132,7 +127,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the attached property that controls whether the soft input mode pans or resizes content to allow the display of the on-screen input UI.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

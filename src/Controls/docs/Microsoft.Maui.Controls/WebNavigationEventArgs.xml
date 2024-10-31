@@ -17,7 +17,6 @@
   <Interfaces />
   <Docs>
     <summary>TClass that contains arguments for the event that is when web navigation begins.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -44,7 +43,6 @@
         <param name="source">The web view source that originated the event.</param>
         <param name="url">The URL of the navigation event.</param>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.WebNavigationEventArgs" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationEvent">
@@ -66,8 +64,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the navigation event that was raised.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Source">
@@ -89,8 +85,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the element that performed the navigation.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Url">
@@ -112,8 +106,6 @@
       </ReturnValue>
       <Docs>
         <summary>The destination of the navigation.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

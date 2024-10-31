@@ -17,9 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// [Test]
 		// [Category(UITestCategories.ToolbarItem)]
 		// [Category(UITestCategories.Compatibility)]
-		// [FailsOnIOS]
-		// [FailsOnMac]
-		// [FailsOnWindows]
+		// [FailsOnIOSWhenRunningOnXamarinUITest]
+		// [FailsOnMacWhenRunningOnXamarinUITest]
+		// [FailsOnWindowsWhenRunningOnXamarinUITest]
 		// public void TestIssue9419()
 		// {
 		// 	App.WaitForElement(OkResult);

@@ -17,14 +17,14 @@ public class Issue1658 : _IssuesUITest
 	// [Category(UITestCategories.ListView)]
 	// public void ContextActionsIconImageSource()
 	// {
-	// 	RunningApp.ActivateContextMenu("ListViewItem");
-	// 	RunningApp.WaitForElement("coffee.png");
-	// 	RunningApp.DismissContextMenu();
+	// 	App.ActivateContextMenu("ListViewItem");
+	// 	App.WaitForElement("coffee.png");
+	// 	App.DismissContextMenu();
 
-	// 	RunningApp.WaitForElement("ColorBox");
-	// 	RunningApp.Screenshot("Box should be red");
-	// 	RunningApp.Tap("ColorBox");
-	// 	RunningApp.Screenshot("Box should be yellow");
+	// 	App.WaitForElement("ColorBox");
+	// 	App.Screenshot("Box should be red");
+	// 	App.Tap("ColorBox");
+	// 	App.Screenshot("Box should be yellow");
 	// }
 }
 #endif

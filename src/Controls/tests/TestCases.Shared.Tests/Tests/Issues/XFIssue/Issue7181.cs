@@ -17,17 +17,17 @@ public class Issue7181 : _IssuesUITest
 	//public void ShellToolbarItemTests()
 	//{
 	//	var count = 0;
-	//	var toolbarButton = RunningApp.WaitForElement(ToolbarBtn);
+	//	var toolbarButton = App.WaitForElement(ToolbarBtn);
 	//	Assert.AreEqual(DefaultToolbarItemText, toolbarButton[0].ReadText());
 
 	//	for (int i = 0; i < 5; i++)
 	//	{
-	//		RunningApp.Tap(ToolbarBtn);
+	//		App.Tap(ToolbarBtn);
 
-	//		toolbarButton = RunningApp.WaitForElement(ToolbarBtn);
+	//		toolbarButton = App.WaitForElement(ToolbarBtn);
 	//		Assert.AreEqual($"{AfterClickToolbarItemText} {count++}", toolbarButton[0].ReadText());
 	//	}
 
-	//	RunningApp.Tap(SetToolbarIconBtn);
+	//	App.Tap(SetToolbarIconBtn);
 	//}
 }

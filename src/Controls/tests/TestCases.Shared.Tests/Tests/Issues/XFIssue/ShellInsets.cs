@@ -14,25 +14,25 @@ public class ShellInsets : _IssuesUITest
 	public override string Issue => "Shell Inset Test";
 
 	//	[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void EntryScrollTest()
 	//{
-	//	RunningApp.Tap(EntryTest);
-	//	var originalPosition = RunningApp.WaitForElement(EntrySuccess)[0].Rect;
-	//	RunningApp.Tap(EntryToClick);
-	//	RunningApp.EnterText(EntryToClick, "keyboard");
+	//	App.Tap(EntryTest);
+	//	var originalPosition = App.WaitForElement(EntrySuccess)[0].Rect;
+	//	App.Tap(EntryToClick);
+	//	App.EnterText(EntryToClick, "keyboard");
 
 	//	// if the device has too much height then try clicking the second entry
 	//	// to trigger keyboard movement
-	//	if (RunningApp.Query(EntrySuccess).Length != 0)
+	//	if (App.Query(EntrySuccess).Length != 0)
 	//	{
-	//		RunningApp.Tap(ResetKeyboard);
-	//		RunningApp.DismissKeyboard();
-	//		RunningApp.Tap(EntryToClick2);
-	//		RunningApp.EnterText(EntryToClick2, "keyboard");
+	//		App.Tap(ResetKeyboard);
+	//		App.DismissKeyboard();
+	//		App.Tap(EntryToClick2);
+	//		App.EnterText(EntryToClick2, "keyboard");
 	//	}
 
-	//	var entry = RunningApp.Query(EntrySuccess);
+	//	var entry = App.Query(EntrySuccess);
 
 	//	// ios10 on appcenter for some reason still returns this entry
 	//	// even though it's hidden so this is a fall back test just to ensure
@@ -40,14 +40,14 @@ public class ShellInsets : _IssuesUITest
 	//	if (entry.Length > 0 && entry[0].Rect.Y > 0)
 	//	{
 	//		Thread.Sleep(2000);
-	//		entry = RunningApp.Query(EntrySuccess);
+	//		entry = App.Query(EntrySuccess);
 
 	//		if (entry.Length > 0)
 	//			Assert.LessOrEqual(entry[0].Rect.Y, originalPosition.Y);
 	//	}
 
-	//	RunningApp.Tap(ResetKeyboard2);
-	//	var finalPosition = RunningApp.WaitForElement(EntrySuccess)[0].Rect;
+	//	App.Tap(ResetKeyboard2);
+	//	var finalPosition = App.WaitForElement(EntrySuccess)[0].Rect;
 
 	//	// verify that label has returned to about the same spot
 	//	var diff = Math.Abs(originalPosition.Y - finalPosition.Y);
@@ -58,33 +58,33 @@ public class ShellInsets : _IssuesUITest
 	//[Test]
 	//public void ListViewScrollTest()
 	//{
-	//	RunningApp.Tap(ListViewTest);
-	//	RunningApp.WaitForElement("Item0");
+	//	App.Tap(ListViewTest);
+	//	App.WaitForElement("Item0");
 
 	//}
 
 	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
+	//[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void SafeAreaOnBlankPage()
 	//{
-	//	RunningApp.Tap(EmptyPageSafeAreaTest);
-	//	var noSafeAreaLocation = RunningApp.WaitForElement(SafeAreaTopLabel);
+	//	App.Tap(EmptyPageSafeAreaTest);
+	//	var noSafeAreaLocation = App.WaitForElement(SafeAreaTopLabel);
 	//	Assert.AreEqual(0, noSafeAreaLocation[0].Rect.Y);
 	//}
 
 	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
+	//[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void SafeArea()
 	//{
-	//	RunningApp.Tap(SafeAreaTest);
-	//	var noSafeAreaLocation = RunningApp.WaitForElement(SafeAreaBottomLabel);
+	//	App.Tap(SafeAreaTest);
+	//	var noSafeAreaLocation = App.WaitForElement(SafeAreaBottomLabel);
 
 	//	Assert.AreEqual(1, noSafeAreaLocation.Length);
-	//	RunningApp.Tap(Reset);
+	//	App.Tap(Reset);
 
-	//	RunningApp.Tap(ToggleSafeArea);
-	//	RunningApp.Tap(SafeAreaTest);
-	//	var safeAreaLocation = RunningApp.WaitForElement(SafeAreaBottomLabel);
+	//	App.Tap(ToggleSafeArea);
+	//	App.Tap(SafeAreaTest);
+	//	var safeAreaLocation = App.WaitForElement(SafeAreaBottomLabel);
 	//	Assert.AreEqual(1, safeAreaLocation.Length);
 
 	//	Assert.Greater(safeAreaLocation[0].Rect.Y, noSafeAreaLocation[0].Rect.Y);
@@ -93,16 +93,16 @@ public class ShellInsets : _IssuesUITest
 	//[Test]
 	//public void PaddingWithoutSafeArea()
 	//{
-	//	RunningApp.EnterText(q => q.Raw($"* marked:'{PaddingEntry}'"), "0");
-	//	RunningApp.Tap(PaddingTest);
-	//	var zeroPadding = RunningApp.WaitForElement(PaddingLabel);
+	//	App.EnterText(q => q.Raw($"* marked:'{PaddingEntry}'"), "0");
+	//	App.Tap(PaddingTest);
+	//	var zeroPadding = App.WaitForElement(PaddingLabel);
 
 	//	Assert.AreEqual(1, zeroPadding.Length);
-	//	RunningApp.Tap(Reset);
+	//	App.Tap(Reset);
 
-	//	RunningApp.EnterText(PaddingEntry, "100");
-	//	RunningApp.Tap(PaddingTest);
-	//	var somePadding = RunningApp.WaitForElement(PaddingLabel);
+	//	App.EnterText(PaddingEntry, "100");
+	//	App.Tap(PaddingTest);
+	//	var somePadding = App.WaitForElement(PaddingLabel);
 	//	Assert.AreEqual(1, somePadding.Length);
 
 	//	Assert.Greater(somePadding[0].Rect.Y, zeroPadding[0].Rect.Y);

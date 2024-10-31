@@ -18,7 +18,7 @@ public class Issue7290 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void DisplayActionSheetAndDisplayAlertFromOnAppearing()
 	//{
-	//	RunningApp.Tap("Cancel");
-	//	RunningApp.Tap("Close Action Sheet");
+	//	App.Tap("Cancel");
+	//	App.Tap("Close Action Sheet");
 	//}
 }

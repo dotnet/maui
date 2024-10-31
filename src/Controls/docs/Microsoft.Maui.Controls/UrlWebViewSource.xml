@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>A WebViewSource bound to a URL.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -42,7 +41,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.UrlWebViewSource" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Load">
@@ -70,7 +68,6 @@
       <Docs>
         <param name="renderer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Url">
@@ -95,8 +92,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the URL for this <see cref="T:Microsoft.Maui.Controls.UrlWebViewSource" /> object.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UrlProperty">
@@ -121,7 +116,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.UrlWebViewSource.Url" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

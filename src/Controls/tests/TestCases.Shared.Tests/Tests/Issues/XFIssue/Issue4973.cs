@@ -14,17 +14,17 @@ public class Issue4973 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Navigation)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue4973Test()
 	//{
-	//	RunningApp.Tap(q => q.Text("Tab5"));
+	//	App.Tap(q => q.Text("Tab5"));
 
-	//	RunningApp.WaitForElement(q => q.Text("Test"));
+	//	App.WaitForElement(q => q.Text("Test"));
 
 	//	GarbageCollectionHelper.Collect();
 
-	//	RunningApp.Tap(q => q.Text("Tab1"));
+	//	App.Tap(q => q.Text("Tab1"));
 
-	//	RunningApp.Tap(q => q.Text("Tab2"));
+	//	App.Tap(q => q.Text("Tab2"));
 	//}
 }

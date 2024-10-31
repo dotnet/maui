@@ -20,7 +20,6 @@
   </Attributes>
   <Docs>
     <summary>Class that takes a string representation of a <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> and returns a corresponding <see cref="T:Microsoft.Maui.Controls.LayoutOptions" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,7 +36,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -60,8 +58,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Returns a  <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> for a valid layout options string.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

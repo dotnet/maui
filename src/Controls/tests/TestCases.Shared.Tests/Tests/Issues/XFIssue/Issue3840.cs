@@ -14,19 +14,19 @@ public class Issue3840 : _IssuesUITest
 
 	// TODO: The _ variables need to be AutomationId values
 //		[Test]
-//		[FailsOnIOS]
+//		[FailsOnIOSWhenRunningOnXamarinUITest]
 //		[Category(UITestCategories.ScrollView)]
 //		public void TranslatingViewKeepsScrollViewPosition()
 //		{
-//			RunningApp.WaitForElement(_failedText);
-//			RunningApp.Tap(_button1);
-//			RunningApp.Tap(_button2);
+//			App.WaitForElement(_failedText);
+//			App.Tap(_button1);
+//			App.Tap(_button2);
 //#if WINDOWS
-//			var label = RunningApp.WaitForElement(_failedText);
+//			var label = App.WaitForElement(_failedText);
 //			Assert.AreEqual(0, label[0].Rect.Height);
 //			Assert.AreEqual(0, label[0].Rect.Width);
 //#else
-//		var result = RunningApp.QueryUntilNotPresent(() => RunningApp.Query(_failedText));
+//		var result = App.QueryUntilNotPresent(() => App.Query(_failedText));
 //#endif
 //		}
 }

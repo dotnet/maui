@@ -17,9 +17,9 @@ public class Issue6609 : _IssuesUITest
 	//[Category(UITestCategories.CollectionView)]
 	//public void SelectionChangedCommandParameterBoundToSelectedItemShouldMatchSelectedItem()
 	//{
-	//	RunningApp.WaitForElement("Item 2");
-	//	RunningApp.Tap("Item 2");
+	//	App.WaitForElement("Item 2");
+	//	App.Tap("Item 2");
 
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
 	//}
 }

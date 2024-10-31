@@ -16,15 +16,15 @@ public class Issue2923 : _IssuesUITest
 	// [Test]
 	// public void Issue2923TestOne()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("FirstPageLabel"));
-	// 	RunningApp.Screenshot("First Tab is showing");
+	// 	App.WaitForElement(q => q.Marked("FirstPageLabel"));
+	// 	App.Screenshot("First Tab is showing");
 	// }
 
 	// [Test]
 	// public void Issue2923TestTwo()
 	// {
-	// 	RunningApp.Tap(q => q.Marked("ResetButton"));
-	// 	RunningApp.Screenshot("Tabs Reset");
-	// 	RunningApp.WaitForElement(q => q.Marked("ResetPageLabel"));
+	// 	App.Tap(q => q.Marked("ResetButton"));
+	// 	App.Screenshot("Tabs Reset");
+	// 	App.WaitForElement(q => q.Marked("ResetPageLabel"));
 	// }
 }

@@ -240,6 +240,7 @@ stages:
                       skipAndroidSdks: true
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
+                      skipProvisioning: true
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
