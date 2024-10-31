@@ -20,7 +20,6 @@ Console.WriteLine($"LOGGING:");
 Console.WriteLine($"ANDROID_API_SDKS: {ANDROID_API_SDKS}");
 Console.WriteLine($"SKIP_ANDROID_API_SDKS: {SKIP_ANDROID_API_SDKS}");
 Console.WriteLine($"SKIP_ANDROID_API_IMAGES: {SKIP_ANDROID_API_IMAGES}");
-
 if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP_ANDROID_API_SDKS))
 {
 	AndroidSdk()
