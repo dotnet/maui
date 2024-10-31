@@ -174,10 +174,17 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// Navigate backwards in the history, if possible.
-			_app.Driver.Navigate().Back();
+			try
+			{
+				// Navigate backwards in the history, if possible.
+				_app.Driver.Navigate().Back();
 
-			return CommandResponse.SuccessEmptyResponse;
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
 		}
 	}
 }

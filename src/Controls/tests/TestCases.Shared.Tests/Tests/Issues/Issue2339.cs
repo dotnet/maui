@@ -15,9 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac("Focus Behavior is different")]
-		[FailsOnWindows("Focus Behavior is different")]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest("Focus Behavior is different")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Focus Behavior is different")]
 		public void FocusAndUnFocusMultipleTimes()
 		{
 			App.WaitForElement("btnFocusThenUnFocus");

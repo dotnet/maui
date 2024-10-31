@@ -13,7 +13,7 @@ public class Issue3788 : _IssuesUITest
 
 	// TODO: these _ variables are variabled in the UI and need to be AutomationId values
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void ReplaceItemScrollsListToTop()
 	//{
 	//	App.WaitForElement(_replaceMe);

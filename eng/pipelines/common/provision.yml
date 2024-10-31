@@ -117,23 +117,6 @@ steps:
     displayName: 'Setup JDK Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
-  - pwsh: |
-      if ($env:ANDROID_SDK_ROOT) {
-        echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
-      } else {
-        if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
-          $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
-        }
-        if ($env:ANDROID_SDK_ROOT) {
-          echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
-          echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
-        } else {
-          echo "Unable to set ANDROID_SDK_ROOT"
-        }
-      }
-    displayName: 'Setup ANDROID_SDK_ROOT Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'

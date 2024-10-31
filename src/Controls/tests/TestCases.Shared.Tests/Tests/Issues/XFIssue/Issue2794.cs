@@ -15,7 +15,7 @@ public class Issue2794 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// public void Issue2794Test()
 	// {
 	// 	App.TouchAndHold(x => x.Marked("Cell2"));

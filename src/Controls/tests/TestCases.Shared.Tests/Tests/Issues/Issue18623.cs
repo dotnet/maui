@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[FailsOnIOS("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18981")]
-		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18981")]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public async Task EntryIsPasswordObscureText()
 		{
 			App.WaitForElement("WaitForStubControl");

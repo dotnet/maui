@@ -173,6 +173,7 @@ extends:
                         skipAndroidImages: true
                         skipAndroidSdks: true
                         installDefaultAndroidApi: true
+                        skipProvisioning: true
 
       - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
         - template: /eng/pipelines/common/sign.yml@self                                 

@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control how the <see cref="P:Microsoft.Maui.GridLength.Value" /> property is interpreted for row and column definitions.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Absolute">
@@ -45,7 +44,6 @@
       <MemberValue>0</MemberValue>
       <Docs>
         <summary>Interpret the <see cref="P:Microsoft.Maui.GridLength.Value" /> property value as the number of device-specific units.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Auto">
@@ -71,7 +69,6 @@
       <MemberValue>2</MemberValue>
       <Docs>
         <summary>Ignore the <see cref="P:Microsoft.Maui.GridLength.Value" /> property value and choose a size that fits the children of the row or column.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Star">
