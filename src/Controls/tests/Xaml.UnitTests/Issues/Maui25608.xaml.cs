@@ -45,7 +45,7 @@ public partial class Maui25608
         }
 
         [Test]
-        public void TestNonCompiledResourceDictionary([Values(false, true)] bool useCompiledXaml)
+        public void TestValidBindingWithRelativeSource([Values(false, true)] bool useCompiledXaml)
         {
             bool bindingFailureReported = false;
             _bindingFailureHandler = (sender, args) => bindingFailureReported = true;
