@@ -105,6 +105,66 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Determine if a form or form-like element (checkbox, select, etc...) is selected.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		/// <returns>Whether the element is selected (boolean).</returns>
+		public static bool IsSelected(this IUIElement element)
+		{
+			var response = element.Command.Execute("getSelected", new Dictionary<string, object>()
+			{
+				{ "element", element },
+			});
+
+			if (response?.Value != null)
+			{
+				return (bool)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get Selected of element");
+		}
+
+		/// <summary>
+		/// Determine if an element is currently displayed.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		/// <returns>Whether the element is displayed (boolean).</returns>
+		public static bool IsDisplayed(this IUIElement element)
+		{
+			var response = element.Command.Execute("getDisplayed", new Dictionary<string, object>()
+			{
+				{ "element", element },
+			});
+
+			if (response?.Value != null)
+			{
+				return (bool)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get Displayed of element");
+		}
+
+		/// <summary>
+		/// Determine if an element is currently enabled.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		/// <returns>Whether the element is enabled (boolean).</returns>
+		public static bool IsEnabled(this IUIElement element)
+		{
+			var response = element.Command.Execute("getEnabled", new Dictionary<string, object>()
+			{
+				{ "element", element },
+			});
+
+			if (response?.Value != null)
+			{
+				return (bool)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get Enabled of element");
+		}
+
+		/// <summary>
 		/// Enters text into the element identified by the query.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1271,6 +1331,15 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Refresh the current page.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Refresh(this IApp app)
+		{
+			app.CommandExecutor.Execute("refresh", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Return the AppId of the running app. This is used inside any appium command that want the app id
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1371,9 +1440,9 @@ namespace UITest.Appium
 		/// <exception cref="InvalidOperationException">Lock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		public static void Lock(this IApp app)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
-				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
 			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
@@ -1387,12 +1456,43 @@ namespace UITest.Appium
 		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		public static void Unlock(this IApp app)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
-				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
 			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Check whether the device is locked or not.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static bool IsLocked(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"IsLocked is only supported on AppiumAndroidApp and AppiumIOSApp");
+			}
+			var response = app.CommandExecutor.Execute("isLocked", new Dictionary<string, object>());
+
+			var responseValue = response?.Value ?? false;
+
+			return (bool)responseValue;
+		}
+
+		/// <summary>
+		/// Perform a shake action on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Shake(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Shake is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1457,22 +1557,6 @@ namespace UITest.Appium
 			}
 
 			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
-		}
-
-		/// <summary>
-		/// Simulate the device shaking.
-		/// Functionality that's only available on iOS.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
-		public static void Shake(this IApp app)
-		{
-			if (app is not AppiumIOSApp)
-			{
-				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
-			}
-
-			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
