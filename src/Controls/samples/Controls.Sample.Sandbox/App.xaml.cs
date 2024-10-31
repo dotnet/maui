@@ -11,12 +11,6 @@ public partial class App : Application
 	{
 		// To test shell scenarios, change this to true
 		bool useShell = false;
-		bool titleBarWindow = false;
-
-		if (titleBarWindow)
-		{
-			return new MainWindow();
-		}
 
 		if (!useShell)
 		{

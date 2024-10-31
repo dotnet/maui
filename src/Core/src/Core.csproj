@@ -115,18 +115,4 @@
       <FileWrites Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
     </ItemGroup>
   </Target>
-
-  <ItemGroup>
-    <Reference Include="ToolbarTestBinding">
-      <HintPath>./ToolbarTestBinding.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="ToolbarTestBinding.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
