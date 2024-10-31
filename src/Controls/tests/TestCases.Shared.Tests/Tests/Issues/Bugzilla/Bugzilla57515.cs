@@ -18,7 +18,7 @@ public class Bugzilla57515 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
-	[FailsOnIOS("It already failed in Xamarin.UITest on this platform.")]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla57515Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
