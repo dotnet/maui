@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
 
-    <!-- Empty Matching style for values-v35/styles.xml -->
-    <style name="OptOutEdgeToEdgeEnforcement">
-    </style>
-    <style name="DisableOptOutEdgeToEdgeEnforcement">
-    </style>
-
     <!-- Base application theme. -->
-    <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
+    <style name="Maui.MainTheme.Base" parent="Theme.MaterialComponents.DayNight">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -20,12 +14,18 @@
         <item name="android:textAllCaps">false</item>
         <item name="alertDialogTheme">@style/MauiAlertDialogTheme</item>
     </style>
-    <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
+    <style name="Maui.MainTheme.NoActionBar.Base" parent="Maui.MainTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:actionModeBackground">?attr/colorPrimary</item>
         <item name="android:actionModeStyle">@style/ActionMode</item>
+    </style>
+
+    <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
+    </style>
+  
+    <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar.Base">
     </style>
 
     <style name="ActionMode">

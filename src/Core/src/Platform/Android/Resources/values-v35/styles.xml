@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
 
-  <!-- Opts out of edge to edge enforcement on API 35+ -->
-	<!-- https://github.com/dotnet/maui/issues/24742 -->
-  <style name="OptOutEdgeToEdgeEnforcement">
-    <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+  <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
   </style>
 
-  <style name="DisableOptOutEdgeToEdgeEnforcement">
-    <item name="android:windowOptOutEdgeToEdgeEnforcement">false</item>
+  <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar.Base">
+    <!-- Opt out of Edge to Edge for Android 35+ -->
+    <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
   </style>
 
 </resources>
