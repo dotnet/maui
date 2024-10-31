@@ -54,6 +54,8 @@ steps:
           SKIP_ANDROID_API_SDKS: 'true'
         ${{ if eq(parameters.skipAndroidImages, true) }}:
           SKIP_ANDROID_API_IMAGES: 'true'
+        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+          INSTALL_DEFAULT_ANDROID_API: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
@@ -89,6 +91,8 @@ steps:
           SKIP_ANDROID_API_SDKS: 'true'
         ${{ if eq(parameters.skipAndroidImages, true) }}:
           SKIP_ANDROID_API_IMAGES: 'true'
+        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+          INSTALL_DEFAULT_ANDROID_API: 'true'
 
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
