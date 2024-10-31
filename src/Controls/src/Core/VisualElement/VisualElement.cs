@@ -1389,6 +1389,17 @@ namespace Microsoft.Maui.Controls
 			}
 
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+
+			// This isn't the final form of this PR
+			// I'm just spiking some concept for users to test			
+			#if IOS
+
+			if (Handler?.PlatformView is UIKit.UIScrollView scrollView)
+			{
+				return;
+			}
+
+			#endif
 			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 		}
 		
