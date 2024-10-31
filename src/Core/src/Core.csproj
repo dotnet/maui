@@ -28,6 +28,10 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
+    <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" Visible="true" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MemoryAnalyzers" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
