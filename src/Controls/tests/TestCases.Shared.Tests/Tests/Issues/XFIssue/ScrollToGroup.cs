@@ -15,7 +15,7 @@ public class ScrollToGroup : _IssuesUITest
 
 	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void CanScrollToGroupAndItemIndex()
 	//{
 	//	App.WaitForElement("GroupIndexEntry");
@@ -52,7 +52,7 @@ public class ScrollToGroup : _IssuesUITest
 	//}
 
 	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
+	//[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void CanScrollToGroupAndItem()
 	//{
 	//	App.WaitForElement("GroupNameEntry");

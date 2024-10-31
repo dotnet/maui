@@ -18,7 +18,7 @@ public class Issue1355 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.LifeCycle)]
 	[Category(UITestCategories.Compatibility)]
-	[FailsOnAndroid]
+	[FailsOnAndroidWhenRunningOnXamarinUITest]
 	public void SwitchMainPageOnAppearing()
 	{
 		// Without the fix, this would crash. If we're here at all, the test passed.

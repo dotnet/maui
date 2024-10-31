@@ -18,7 +18,6 @@
   </Attributes>
   <Docs>
     <summary>Enumerates values that tell whether margins are included when laying out windows.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="IncludeMargins">

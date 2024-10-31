@@ -26,7 +26,6 @@
   </Attributes>
   <Docs>
     <summary>Struct that defines minimum and maximum <see cref="T:Microsoft.Maui.Graphics.Size" />s.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -53,7 +52,6 @@
       <Docs>
         <param name="request">The size of the request.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.SizeRequest" /> with the specified <paramref name="request" /> size.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -82,7 +80,6 @@
         <param name="request">The size of the request.</param>
         <param name="minimum">The minimum size for the request.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.SizeRequest" /> object that requests at least the size <paramref name="minimum" />, but preferably the size <paramref name="request" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Minimum">
@@ -108,8 +105,6 @@
       </ReturnValue>
       <Docs>
         <summary>The minimum acceptable size.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Request">
@@ -135,8 +130,6 @@
       </ReturnValue>
       <Docs>
         <summary>The requested size.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -159,8 +152,6 @@
       <Parameters />
       <Docs>
         <summary>Returns a string representation of the size request.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

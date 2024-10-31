@@ -12,8 +12,6 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Data">
@@ -30,8 +28,6 @@
         <ReturnType>System.Collections.Generic.List&lt;Microsoft.Maui.Controls.Internals.ProfileDatum&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LoadProfile">
@@ -52,8 +48,6 @@
       </Parameters>
       <Docs>
         <param name="page">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

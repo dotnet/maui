@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Template that specifies a group of styles and effects for controls.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -30,7 +29,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use only.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -48,8 +46,6 @@
       </Parameters>
       <Docs>
         <param name="createTemplate">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -69,7 +65,6 @@
       <Docs>
         <param name="type">The type of control for which to create a template.</param>
         <summary>Creates a new control template for the specified control type.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

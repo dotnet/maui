@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Platform-specific functionality for sliders the iOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetUpdateOnTap">
@@ -39,7 +38,6 @@
         <summary>Returns a Boolean value that tells whether tapping on the slider will update its value.</summary>
         <returns>
           <see langword="true" /> if tapping updates the value. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetUpdateOnTap">
@@ -64,7 +62,6 @@
         <summary>Returns a Boolean value that tells whether tapping on the slider will update its value.</summary>
         <returns>
           <see langword="true" /> if tapping updates the value. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetUpdateOnTap">
@@ -90,7 +87,6 @@
         <param name="value">
           <see langword="true" /> if tapping will update the value. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that tells whether tapping on the slider will update its value.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetUpdateOnTap">
@@ -117,7 +113,6 @@
           <see langword="true" /> if tapping will update the value. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that tells whether tapping on the slider will update its value.</summary>
         <returns>A fluent object on which the developer may make more method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateOnTapProperty">
@@ -136,7 +131,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether tapping on the slider updates its value.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
