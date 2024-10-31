@@ -13,13 +13,6 @@ namespace Microsoft.Maui
 
 		protected override void OnCreate(Bundle? savedInstanceState)
 		{
-			// https://github.com/dotnet/maui/issues/24742
-			// By default we opt out of edge to edge enforcment on Android 35+
-			// Must be applied before the DecorView is setup
-			// We set force to false in case the style has already been explicitly
-			// applied to disable opting out of edge to edge enforcement
-			Theme?.ApplyStyle(Resource.Style.OptOutEdgeToEdgeEnforcement, force: false);
-
 			if (!AllowFragmentRestore)
 			{
 				// Remove the automatically persisted fragment structure; we don't need them
