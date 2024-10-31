@@ -87,7 +87,7 @@ steps:
   # Setup JAVA_HOME Environment variable
   - pwsh: |
       # Execute the command and capture the JSON output
-      $jsonOutput = & android jdk list --format=Json | ConvertFrom-Json
+      $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
       # Find the first item with DotNetPreferred set to True
       $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
       # Get the value of the Home property
