@@ -4,16 +4,28 @@
              x:Class="Maui.Controls.Sample.Issues.Issue23921"
              Title="Issue23921">
     <VerticalStackLayout>
-        <SwipeView x:Name="swipe"
-                   AutomationId="swipe">
+        <SwipeView x:Name="swipeOne"
+                   AutomationId="swipeOne">
             <SwipeView.RightItems>
                 <SwipeItem Text="Hi" />
             </SwipeView.RightItems>
 
             <Button x:Name="button"
-                    AutomationId="button"
+                    AutomationId="buttonOne"
                     Text="tap me!"
                     Clicked="button_Clicked"/>
         </SwipeView>
-    </VerticalStackLayout>
+
+      <SwipeView x:Name="swipeTwo"
+                 AutomationId="swipeTwo">
+        <SwipeView.RightItems>
+          <SwipeItem Text="Hi" />
+        </SwipeView.RightItems>
+
+        <Button x:Name="buttonTwo"
+                AutomationId="buttonTwo"
+                Text="tap me!"
+                Clicked="button_Clicked"/>
+      </SwipeView>
+  </VerticalStackLayout>
 </ContentPage>
