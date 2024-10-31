@@ -28,10 +28,6 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
-    <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" Visible="true" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MemoryAnalyzers" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -49,6 +45,7 @@
     <ProjectReference Include="..\..\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" OutputPath="$(MSBuildThisFileDirectory)../AndroidNative/maui/build/" />
     <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.5.1" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.11.0.3" />
