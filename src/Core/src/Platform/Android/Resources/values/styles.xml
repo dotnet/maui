@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="Maui.MainTheme.Base" parent="Theme.MaterialComponents.DayNight">
+    <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -22,9 +22,6 @@
         <item name="android:actionModeStyle">@style/ActionMode</item>
     </style>
 
-    <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
-    </style>
-  
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar.Base">
     </style>
 

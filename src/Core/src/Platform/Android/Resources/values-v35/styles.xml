@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
 
-  <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
-  </style>
-
   <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar.Base">
     <!-- Opt out of Edge to Edge for Android 35+ -->
     <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
