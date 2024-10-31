@@ -28,7 +28,7 @@ public class Issue7167 : _IssuesUITest
 		App.Tap(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
 		App.PrintTree();
-		App.ScrollDownTo("25", ListViewId, ScrollStrategy.Auto);
+		App.ScrollDownTo("25", ListViewId, ScrollStrategy.Gesture);
 		App.WaitForElement("25");
 
 		// Act
