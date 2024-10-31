@@ -47,7 +47,7 @@
 		<!-- Assemble the platform sdk and emulator image package names to install in the sdk -->
 		<ItemGroup>
 			<!-- Platform APIs -->
-			<AndroidSdkPackages Include="platforms%3Bandroid-@(AndroidSdkApiLevels.Identity)" />
+			<AndroidSdkPackages Include="platforms%3Bandroid-%(AndroidSdkApiLevels.Identity)" />
 
 			<!-- Emulator images -->
 			<AndroidSdkPackages Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)" />
