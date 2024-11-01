@@ -142,7 +142,7 @@ Task("android-aar")
         if (string.IsNullOrEmpty(javaHome))
         {
             javaHome = System.Environment.GetEnvironmentVariable("JAVA_HOME");
-            Information("System JAVA_HOME: {0}", javaHomeEnv);
+            Information("System JAVA_HOME: {0}", javaHome);
         }
 
         if (string.IsNullOrEmpty(javaHome))
@@ -155,7 +155,7 @@ Task("android-aar")
                 var json = string.Join(System.Environment.NewLine, process.GetStandardOutput());
                 Information(json);
 
-                javaHome = System.Text.Json.Nodes.JsonNode.Parse(json)?.AsArray().FirstOrDefault(item => item["DotNetPreferred"]?.GetValue<bool>() == true)?["Home"];
+                javaHome = System.Text.Json.Nodes.JsonNode.Parse(json)?.AsArray().FirstOrDefault(item => item["DotNetPreferred"]?.GetValue<bool>() == true)?["Home"]?.GetValue<string>();
                 // This should output 0 as valid arguments supplied
                 Information("Android Tool JAVA_HOME: {0}", javaHome);
             }
