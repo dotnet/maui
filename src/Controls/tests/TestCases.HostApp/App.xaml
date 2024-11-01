@@ -1,0 +1,15 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.App">
+
+
+  <Application.Resources>
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
+      <Setter Property="BackgroundColor" Value="{OnPlatform WinUI={AppThemeBinding Dark=Black, Light=White}}">
+      </Setter>
+    </Style>
+  </Application.Resources>
+  
+</Application>

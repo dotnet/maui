@@ -271,6 +271,19 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					TestDevice.Android => 125,
 					TestDevice.iOS => 40,
+					TestDevice.Windows => 2,
+					_ => 0,
+				};
+
+				var cropFromLeft = _testDevice switch
+				{
+					TestDevice.Windows => 2,
+					_ => 0,
+				};
+
+				var cropFromRight = _testDevice switch
+				{
+					TestDevice.Windows => 2,
 					_ => 0,
 				};
 
@@ -279,7 +292,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 					(int width, int height) = imageEditor.GetSize();
 
-					imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
+					imageEditor.Crop(cropFromLeft, cropFromTop, width - cropFromLeft - cropFromRight, height - cropFromTop - cropFromBottom);
 
 					actualImage = imageEditor.GetUpdatedImage();
 				}
