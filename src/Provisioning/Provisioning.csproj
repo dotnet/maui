@@ -231,7 +231,7 @@
 			<Output TaskParameter="DownloadedFile" PropertyName="_JdkDownloadedFile" />
 		</DownloadFile>
 
-		<Exec Command="msiexec /i &quot;$(_JdkDownloadedFile)&quot; ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome INSTALLDIR=&quot;$(ProgramFiles)\Microsoft\&quot; /quiet /l*v &quot;$(LogDirectory)/msiexec-jdk-log.log&quot;" />
+		<Exec Command="msiexec /i &quot;$(_JdkDownloadedFile)&quot; ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome /quiet /l*v &quot;$(LogDirectory)/msiexec-jdk-log.log&quot;" />
 
 		<!-- <Exec Command="Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" />
 		<Exec Command="winget install Microsoft.OpenJDK.$(JavaJdkVersion)" /> -->
