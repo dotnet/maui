@@ -69,7 +69,7 @@ jobs:
     - template: provision.yml
       parameters:
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
-        skipXcode: false
+        skipXcode: ${{ ne('${{ PLATFORM_NAME }}', 'macos') }}
         skipProvisioning: true
 
     - task: DownloadBuildArtifacts@0
