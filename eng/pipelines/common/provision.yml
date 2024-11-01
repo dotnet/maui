@@ -85,7 +85,7 @@ steps:
   - ${{ if ne(parameters.skipJdk, 'true') }}:
     - pwsh: |
         # Run provisioning step
-        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" -v:diag ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Setup JAVA_HOME
         # Execute the command and capture the JSON output
         $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
@@ -106,7 +106,7 @@ steps:
   - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
     - pwsh: |
         # Run provisioning step
-        dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:diag ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
         # Execute the command and capture the JSON output
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
@@ -133,7 +133,7 @@ steps:
   # Provision Android SDK Platform APIs (eg: platforms;android-29, platforms;android-30)
   - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" -v:diag ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Platform APIs'
       condition: succeeded()
       env:
@@ -142,14 +142,14 @@ steps:
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" -v:diag ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Emulator Images'
       condition: succeeded()
 
   # Create Android AVDs (Create actual Emulator Virtual Devices)
   - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:diag ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Create AVDs'
       condition: succeeded()
 
