@@ -10,15 +10,9 @@ namespace Maui.Controls.Sample
 		public App()
 		{
 			InitializeComponent();
-			SetMainPage(CreateDefaultMainPage());
 		}
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
-
-		public void SetMainPage(Page rootPage)
-		{
-			MainPage = rootPage;
-		}
 
 		public Page CreateDefaultMainPage()
 		{
@@ -30,10 +24,10 @@ namespace Maui.Controls.Sample
 			base.OnAppLinkRequestReceived(uri);
 		}
 
-#if WINDOWS || MACCATALYST
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			var window = base.CreateWindow(activationState);
+			var window = new Window(CreateDefaultMainPage());
+#if WINDOWS || MACCATALYST
 
 			// For desktop use a fixed window size, so that screenshots are deterministic,
 			// matching (as much as possible) between dev machines and CI. Currently
@@ -65,9 +59,10 @@ namespace Maui.Controls.Sample
 			window.MinimumHeight = desktopWindowHeight;
 #endif
 
+#endif
+
 
 			return window;
 		}
-#endif
 	}
 }
