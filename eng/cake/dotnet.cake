@@ -137,6 +137,7 @@ Task("android-aar")
             gradlew += ".bat";
 
         var javaHomeProcess = StartAndReturnProcess("dotnet", new ProcessSettings {
+            RedirectStandardOutput = true,
             Arguments = "android jdk find",
         });
 
