@@ -166,10 +166,12 @@ stages:
               - template: common/provision.yml
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
-                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   skipAndroidSdks: true
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
+                  skipProvisioning: true
+                  skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -236,11 +238,12 @@ stages:
                     parameters:
                       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                      # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       skipAndroidSdks: true
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipProvisioning: true
+                      skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -256,8 +259,7 @@ stages:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Sonoma
-              - macOS.Architecture -equals x64
+               - macOS.Name -equals Sonoma
           steps:
             - template: common/provision.yml
               parameters:
@@ -265,6 +267,8 @@ stages:
                 skipAndroidSdks: true
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
+                skipProvisioning: true
+                skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
 
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'
