@@ -404,6 +404,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				return null;
 
 			var coordinates = labelText[(i + 1)..].Split(",");
+			if (coordinates.Length < 2)
+				return null;
+
 			var x = int.Parse(coordinates[0]);
 			var y = int.Parse(coordinates[1]);
 
