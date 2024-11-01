@@ -92,13 +92,13 @@ steps:
         # Find the first item with DotNetPreferred set to True
         $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
         # Get the value of the Home property
-        $env:JAVA_HOME = $preferredJdk.Home
-        if ($env:JAVA_HOME) {
-          echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
-          echo "JAVA_HOME set to '$env:JAVA_HOME'"
-        } else {
-          echo "Unable to set JAVA_HOME"
-        }
+        #$env:JAVA_HOME = $preferredJdk.Home
+        #if ($env:JAVA_HOME) {
+        #  echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+        #  echo "JAVA_HOME set to '$env:JAVA_HOME'"
+        #} else {
+        #  echo "Unable to set JAVA_HOME"
+        #}
       displayName: 'Provision JDK'
       condition: succeeded()
 
