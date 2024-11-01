@@ -3,9 +3,11 @@ parameters:
   clearCaches: true
   skipXcode: false
   skipProvisioning: $(skipProvisionator)
-  skipAndroidSdks: false
-  skipAndroidImages: false
-  installDefaultAndroidApi: false
+  skipJdk: false
+  skipAndroidCommonSdks: false
+  skipAndroidPlatformApis: false
+  skipAndroidEmulatorImages: true # For most builds we won't need these
+  skipAndroidCreateAvds: true # For most builds we won't need these
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -78,59 +80,75 @@ steps:
       xcodebuild -version
     displayName: Select Xcode Version
 
-  # Provision Additional Software (Jdk, Android SDKs, etc.)
-  - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+  # Provision JDK
+  - ${{ if ne(parameters.skipJdk, 'true') }}:
     - pwsh: |
+        # Run provisioning step
         dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
+        # Setup JAVA_HOME
+        # Execute the command and capture the JSON output
+        $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
+        # Find the first item with DotNetPreferred set to True
+        $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
+        # Get the value of the Home property
+        $env:JAVA_HOME = $preferredJdk.Home
+        if ($env:JAVA_HOME) {
+          echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+          echo "JAVA_HOME set to '$env:JAVA_HOME'"
+        } else {
+          echo "Unable to set JAVA_HOME"
+        }
       displayName: 'Provision JDK'
       condition: succeeded()
 
-  - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+  # Provision Android SDK Common Packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
+  - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdk -bl:"$(LogDirectory)/provision-androidsdk.binlog" ./src/Provisioning/Provisioning.csproj
-      displayName: 'Provision Android SDK'
-      condition: succeeded()
-      env:
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
-        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-          INSTALL_DEFAULT_ANDROID_API: 'true'
-
-  # Setup JAVA_HOME Environment variable
-  - pwsh: |
-      # Execute the command and capture the JSON output
-      $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
-      # Find the first item with DotNetPreferred set to True
-      $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
-      # Get the value of the Home property
-      $env:JAVA_HOME = $preferredJdk.Home
-      if ($env:JAVA_HOME) {
-        echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
-        echo "JAVA_HOME set to '$env:JAVA_HOME'"
-      } else {
-        echo "Unable to set JAVA_HOME"
-      }
-    displayName: 'Setup JDK Paths'
-    condition: succeeded()
-
-  - pwsh: |
-      if ($env:ANDROID_SDK_ROOT) {
-        echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
-      } else {
-        if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
-          $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
-        }
+        # Run provisioning step
+        dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj
+        # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
+        # Execute the command and capture the JSON output
+        $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
+        # Get the SDK Path
+        $preferredSdk = $jsonOutput.SdkInfo.Path
+        # Set Environment variables
+        $env:ANDROID_SDK_ROOT = $preferredSdk
         if ($env:ANDROID_SDK_ROOT) {
           echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
           echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
         } else {
           echo "Unable to set ANDROID_SDK_ROOT"
         }
-      }
-    displayName: 'Setup ANDROID_SDK_ROOT Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+        $env:ANDROID_HOME = $preferredSdk
+        if ($env:ANDROID_HOME) {
+          echo "##vso[task.setvariable variable=ANDROID_HOME]$env:ANDROID_HOME"
+          echo "ANDROID_HOME set to '$env:ANDROID_HOME'"
+        } else {
+          echo "Unable to set ANDROID_HOME"
+        }
+      displayName: 'Provision Android SDK - Common Packages'
+      condition: succeeded()
+
+  # Provision Android SDK Platform APIs (eg: platforms;android-29, platforms;android-30)
+  - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
+    - pwsh: |
+        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj
+      displayName: 'Provision Android SDK - Platform APIs'
+      condition: succeeded()
+
+  # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
+  - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
+    - pwsh: |
+        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj
+      displayName: 'Provision Android SDK - Emulator Images'
+      condition: succeeded()
+
+  # Create Android AVDs (Create actual Emulator Virtual Devices)
+  - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
+    - pwsh: |
+        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj
+      displayName: 'Provision Android SDK - Create AVDs'
+      condition: succeeded()
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
