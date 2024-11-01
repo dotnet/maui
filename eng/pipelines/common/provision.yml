@@ -19,7 +19,6 @@ parameters:
   base64Encode: false
 
 steps:
-
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:
@@ -53,16 +52,31 @@ steps:
 
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      displayName: 'Provision Xcode'
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+    # - task: xamops.azdevex.provisionator-task.provisionator@2
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    #   displayName: 'Provision Xcode'
+    #   inputs:
+    #     provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
+    #     provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+    #     github_token: ${{ parameters.gitHubToken }}
+    #   env:
+    #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+    #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+    - script: |
+      echo Mac OS version:
+      sw_vers -productVersion
+      echo
+      echo Installed Xcode versions:
+      ls /Applications | grep 'Xcode'
+      echo
+      echo currently selected xcode:
+      xcrun xcode-select --print-path
+      echo
+      echo selecting latest xcode...
+      sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+      xcrun xcode-select --print-path
+      xcodebuild -version
+    displayName: Select Xcode Version
 
   # Provision Additional Software (Jdk, Android SDKs, etc.)
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
