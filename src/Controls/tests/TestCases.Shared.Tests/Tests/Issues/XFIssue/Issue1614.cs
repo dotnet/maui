@@ -17,36 +17,36 @@ public class Issue1614 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue1614Test()
 	// {
-	// 	RunningApp.SetOrientationPortrait();
+	// 	App.SetOrientationPortrait();
 
-	// 	RunningApp.WaitForElement(x => x.Class("UITextField"));
-	// 	RunningApp.Tap(x => x.Class("UITextField").Index(0));
+	// 	App.WaitForElement(x => x.Class("UITextField"));
+	// 	App.Tap(x => x.Class("UITextField").Index(0));
 	// 	CheckPickerAccessory("UIPickerView");
-	// 	RunningApp.SetOrientationLandscape();
+	// 	App.SetOrientationLandscape();
 	// 	CheckPickerAccessory("UIPickerView");
-	// 	RunningApp.SetOrientationPortrait();
-	// 	RunningApp.DismissKeyboard();
+	// 	App.SetOrientationPortrait();
+	// 	App.DismissKeyboard();
 
-	// 	RunningApp.Tap(x => x.Class("UITextField").Index(1));
+	// 	App.Tap(x => x.Class("UITextField").Index(1));
 	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationLandscape();
+	// 	App.SetOrientationLandscape();
 	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationPortrait();
-	// 	RunningApp.DismissKeyboard();
+	// 	App.SetOrientationPortrait();
+	// 	App.DismissKeyboard();
 
-	// 	RunningApp.Tap(x => x.Class("UITextField").Index(2));
+	// 	App.Tap(x => x.Class("UITextField").Index(2));
 	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationLandscape();
+	// 	App.SetOrientationLandscape();
 	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationPortrait();
-	// 	RunningApp.DismissKeyboard();
+	// 	App.SetOrientationPortrait();
+	// 	App.DismissKeyboard();
 	// }
 
 	// private void CheckPickerAccessory(string className)
 	// {
-	// 	RunningApp.WaitForElement(x => x.Class("UIButtonLabel"));
-	// 	var buttonRect = RunningApp.Query(x => x.Class("UIButtonLabel"))[0].Rect;
-	// 	var pickerRect = RunningApp.Query(x => x.Class(className))[0].Rect;
+	// 	App.WaitForElement(x => x.Class("UIButtonLabel"));
+	// 	var buttonRect = App.Query(x => x.Class("UIButtonLabel"))[0].Rect;
+	// 	var pickerRect = App.Query(x => x.Class(className))[0].Rect;
 
 	// 	var buttonBottom = buttonRect.Y + buttonRect.Height;
 	// 	var pickerTop = pickerRect.Y;

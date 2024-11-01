@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates input method editor (IME) options for entry fields on the Android platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">

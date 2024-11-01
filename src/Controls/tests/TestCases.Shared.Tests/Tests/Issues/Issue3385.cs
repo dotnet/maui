@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue3385Test()
 		{
 			App.WaitForElement("entry");

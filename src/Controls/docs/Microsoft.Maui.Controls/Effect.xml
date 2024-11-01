@@ -36,7 +36,6 @@
       <Docs>
         <summary>Gets the element to which the style is attached.</summary>
         <value>The <see cref="T:Microsoft.Maui.Controls.Element" /> to which the property is attached, if the property is attached. Otherwise, <see langword="null" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsAttached">
@@ -55,8 +54,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that tells whether the effect is attached to an element.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAttached">
@@ -76,7 +73,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called after the effect is attached and made valid.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnDetached">
@@ -96,7 +92,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called after the effect is detached and invalidated.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Resolve">

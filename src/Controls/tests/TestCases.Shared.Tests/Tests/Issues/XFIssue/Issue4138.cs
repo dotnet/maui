@@ -17,8 +17,8 @@ public class Issue4138 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void TitleIconIsCentered()
 	//{
-	//	var element = RunningApp.WaitForElement("coffee.png")[0];
-	//	var rect = RunningApp.RootViewRect();
+	//	var element = App.WaitForElement("coffee.png")[0];
+	//	var rect = App.RootViewRect();
 	//	Assert.AreEqual(element.Rect.CenterX, rect.CenterX);
 	//}
 }

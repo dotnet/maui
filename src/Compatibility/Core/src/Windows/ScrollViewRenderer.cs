@@ -11,7 +11,7 @@ using WRect = Windows.Foundation.Rect;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
+	public partial class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
 	{
 		VisualElement _currentView;
 		bool _checkedForRtlScroll = false;

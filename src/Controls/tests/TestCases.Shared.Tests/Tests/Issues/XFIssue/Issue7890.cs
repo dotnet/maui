@@ -16,15 +16,15 @@ public class Issue7890 : _IssuesUITest
 	//[Category(UITestCategories.ListView)]
 	//public void TestCorrectListItemsRemoved()
 	//{
-	//	RunningApp.WaitForElement(q => q.Button("RemoveBtn"));
-	//	RunningApp.Tap(q => q.Button("RemoveBtn"));
+	//	App.WaitForElement(q => q.Button("RemoveBtn"));
+	//	App.Tap(q => q.Button("RemoveBtn"));
 	//	var toRemove = Enumerable.Range(RemoveFrom, RemoveCount).ToList();
 	//	foreach (var c in Enumerable.Range(0, Count))
 	//	{
 	//		if (toRemove.Contains(c))
-	//			Assert.IsNull(RunningApp.Query(q => q.Marked(c.ToString())).FirstOrDefault());
+	//			Assert.IsNull(App.Query(q => q.Marked(c.ToString())).FirstOrDefault());
 	//		else
-	//			Assert.IsNotNull(RunningApp.Query(q => q.Marked(c.ToString())).FirstOrDefault());
+	//			Assert.IsNotNull(App.Query(q => q.Marked(c.ToString())).FirstOrDefault());
 	//	}
 	//}
 }

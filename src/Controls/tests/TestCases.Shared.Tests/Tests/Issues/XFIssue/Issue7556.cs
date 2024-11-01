@@ -17,54 +17,54 @@ public class Issue7556 : _IssuesUITest
 	//[Category(UITestCategories.FlyoutPage)]
 	//public void MasterStillVisibleAfterPushingAndPoppingModalPage()
 	//{
-	//	if (!RunningApp.IsTablet())
+	//	if (!App.IsTablet())
 	//		return;
 
-	//	RunningApp.SetOrientationLandscape();
-	//	RunningApp.WaitForElement("Split");
-	//	RunningApp.WaitForElement("Flyout Visible");
-	//	RunningApp.Tap("PushModalPage");
-	//	RunningApp.Tap("PopModalPage");
-	//	RunningApp.WaitForElement("Flyout Visible");
+	//	App.SetOrientationLandscape();
+	//	App.WaitForElement("Split");
+	//	App.WaitForElement("Flyout Visible");
+	//	App.Tap("PushModalPage");
+	//	App.Tap("PopModalPage");
+	//	App.WaitForElement("Flyout Visible");
 	//}
 
 	//[Test]
 	//public void SplitOnLandscapeFailsToDetectClose()
 	//{
-	//	if (!RunningApp.IsTablet())
+	//	if (!App.IsTablet())
 	//		return;
 
-	//	while (RunningApp.WaitForElement("CurrentMasterBehavior")[0].ReadText() != FlyoutLayoutBehavior.SplitOnLandscape.ToString())
+	//	while (App.WaitForElement("CurrentMasterBehavior")[0].ReadText() != FlyoutLayoutBehavior.SplitOnLandscape.ToString())
 	//	{
-	//		RunningApp.Tap("ChangeMasterBehavior");
+	//		App.Tap("ChangeMasterBehavior");
 
-	//		if (RunningApp.Query("Flyout Visible").Length > 0)
-	//			RunningApp.Tap("Close Flyout");
+	//		if (App.Query("Flyout Visible").Length > 0)
+	//			App.Tap("Close Flyout");
 	//	}
 
-	//	RunningApp.Tap("Flyout");
-	//	RunningApp.WaitForElement("Flyout Visible");
-	//	RunningApp.Tap("Close Flyout");
+	//	App.Tap("Flyout");
+	//	App.WaitForElement("Flyout Visible");
+	//	App.Tap("Close Flyout");
 
-	//	RunningApp.SetOrientationLandscape();
-	//	RunningApp.SetOrientationPortrait();
-	//	RunningApp.SetOrientationLandscape();
-	//	RunningApp.SetOrientationPortrait();
+	//	App.SetOrientationLandscape();
+	//	App.SetOrientationPortrait();
+	//	App.SetOrientationLandscape();
+	//	App.SetOrientationPortrait();
 
-	//	if (RunningApp.Query("Flyout Visible").Length > 0)
-	//		RunningApp.Tap("Close Flyout");
+	//	if (App.Query("Flyout Visible").Length > 0)
+	//		App.Tap("Close Flyout");
 
-	//	RunningApp.Tap("Flyout");
-	//	RunningApp.WaitForElement("Flyout Visible");
-	//	RunningApp.Tap("Close Flyout");
-	//	RunningApp.Tap("Flyout");
-	//	RunningApp.WaitForElement("Flyout Visible");
+	//	App.Tap("Flyout");
+	//	App.WaitForElement("Flyout Visible");
+	//	App.Tap("Close Flyout");
+	//	App.Tap("Flyout");
+	//	App.WaitForElement("Flyout Visible");
 	//}
 
 	//[TearDown]
 	//public override void TearDown()
 	//{
-	//	RunningApp.SetOrientationPortrait();
+	//	App.SetOrientationPortrait();
 	//	base.TearDown();
 	//}
 }

@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Contains static methods that add functions to use for resolving dependencies.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="ResolveUsing">

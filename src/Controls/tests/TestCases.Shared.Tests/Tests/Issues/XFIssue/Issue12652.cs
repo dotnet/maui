@@ -16,19 +16,19 @@ public class Issue12652 : _IssuesUITest
 	// [Category(UITestCategories.Shell)]
 	// public void NavigatingBackToAlreadySelectedTopTabDoesntCrash()
 	// {
-	// 	var location = RunningApp.WaitForElement("Top 3")[0];
-	// 	RunningApp.TapCoordinates(location.Rect.CenterX, location.Rect.CenterY);
-	// 	RunningApp.WaitForElement("TopTabPage3");
-	// 	RunningApp.Tap("Main 2");
-	// 	RunningApp.WaitForElement("TopTabPage2");
-	// 	RunningApp.Tap("Main 1");
+	// 	var location = App.WaitForElement("Top 3")[0];
+	// 	App.TapCoordinates(location.Rect.CenterX, location.Rect.CenterY);
+	// 	App.WaitForElement("TopTabPage3");
+	// 	App.Tap("Main 2");
+	// 	App.WaitForElement("TopTabPage2");
+	// 	App.Tap("Main 1");
 
-	// 	RunningApp.TapCoordinates(location.Rect.CenterX, location.Rect.CenterY);
-	// 	RunningApp.WaitForElement("TopTabPage3");
-	// 	RunningApp.Tap("Main 2");
-	// 	RunningApp.WaitForElement("TopTabPage2");
-	// 	RunningApp.Tap("Main 1");
-	// 	RunningApp.TapCoordinates(location.Rect.CenterX, location.Rect.CenterY);
-	// 	RunningApp.WaitForElement("TopTabPage3");
+	// 	App.TapCoordinates(location.Rect.CenterX, location.Rect.CenterY);
+	// 	App.WaitForElement("TopTabPage3");
+	// 	App.Tap("Main 2");
+	// 	App.WaitForElement("TopTabPage2");
+	// 	App.Tap("Main 1");
+	// 	App.TapCoordinates(location.Rect.CenterX, location.Rect.CenterY);
+	// 	App.WaitForElement("TopTabPage3");
 	// }
 }

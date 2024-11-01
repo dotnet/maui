@@ -16,11 +16,11 @@ public class Issue6878 : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void ShellItemItemsClearTests()
 	//{
-	//	RunningApp.WaitForElement(StatusLabel);
-	//	RunningApp.Tap(ClearShellItems);
+	//	App.WaitForElement(StatusLabel);
+	//	App.Tap(ClearShellItems);
 
-	//	var label = RunningApp.WaitForElement(StatusLabel)[0];
+	//	var label = App.WaitForElement(StatusLabel)[0];
 	//	Assert.AreEqual(StatusLabelText, label.ReadText());
-	//	RunningApp.Tap(PostClearTopTab);
+	//	App.Tap(PostClearTopTab);
 	//}
 }

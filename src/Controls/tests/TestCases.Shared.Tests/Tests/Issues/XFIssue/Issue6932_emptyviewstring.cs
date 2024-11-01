@@ -17,46 +17,46 @@ public class Issue6932_emptyviewstring : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void EmptyViewStringBecomesVisibleWhenItemsSourceIsCleared()
 	//{
-	//	RunningApp.Screenshot("Screen opens, items are shown");
+	//	App.Screenshot("Screen opens, items are shown");
 
-	//	RunningApp.WaitForElement(_viewModel.LayoutAutomationId);
-	//	RunningApp.Tap(_viewModel.ClearAutomationId);
-	//	RunningApp.WaitForElement(_viewModel.EmptyViewStringDescription);
+	//	App.WaitForElement(_viewModel.LayoutAutomationId);
+	//	App.Tap(_viewModel.ClearAutomationId);
+	//	App.WaitForElement(_viewModel.EmptyViewStringDescription);
 
-	//	RunningApp.Screenshot("Empty view is visible");
+	//	App.Screenshot("Empty view is visible");
 	//}
 
 	//[Test]
 	//[FailsOnMauiIOS]
 	//public void EmptyViewStringBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 	//{
-	//	RunningApp.Screenshot("Screen opens, items are shown");
+	//	App.Screenshot("Screen opens, items are shown");
 
-	//	RunningApp.WaitForElement(_viewModel.LayoutAutomationId);
+	//	App.WaitForElement(_viewModel.LayoutAutomationId);
 
 	//	for (var i = 0; i < _viewModel.ItemsSource.Count; i++)
-	//		RunningApp.Tap(_viewModel.RemoveAutomationId);
+	//		App.Tap(_viewModel.RemoveAutomationId);
 
-	//	RunningApp.WaitForElement(_viewModel.EmptyViewStringDescription);
+	//	App.WaitForElement(_viewModel.EmptyViewStringDescription);
 
-	//	RunningApp.Screenshot("Empty view is visible");
+	//	App.Screenshot("Empty view is visible");
 	//}
 
 	//[Test]
 	//[FailsOnMauiIOS]
 	//public void EmptyViewStringHidesWhenItemsSourceIsFilled()
 	//{
-	//	RunningApp.Screenshot("Screen opens, items are shown");
+	//	App.Screenshot("Screen opens, items are shown");
 
-	//	RunningApp.WaitForElement(_viewModel.LayoutAutomationId);
-	//	RunningApp.Tap(_viewModel.ClearAutomationId);
-	//	RunningApp.WaitForElement(_viewModel.EmptyViewStringDescription);
+	//	App.WaitForElement(_viewModel.LayoutAutomationId);
+	//	App.Tap(_viewModel.ClearAutomationId);
+	//	App.WaitForElement(_viewModel.EmptyViewStringDescription);
 
-	//	RunningApp.Screenshot("Items are cleared, empty view visible");
+	//	App.Screenshot("Items are cleared, empty view visible");
 
-	//	RunningApp.Tap(_viewModel.AddAutomationId);
-	//	RunningApp.WaitForNoElement(_viewModel.EmptyViewStringDescription);
+	//	App.Tap(_viewModel.AddAutomationId);
+	//	App.WaitForNoElement(_viewModel.EmptyViewStringDescription);
 
-	//	RunningApp.Screenshot("Item is added, empty view is not visible");
+	//	App.Screenshot("Item is added, empty view is not visible");
 	//}
 }

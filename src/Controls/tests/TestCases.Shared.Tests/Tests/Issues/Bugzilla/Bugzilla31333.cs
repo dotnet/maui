@@ -33,7 +33,7 @@ public class Bugzilla31333 : _IssuesUITest
 	// 	}
 
 	// 	[FailsOnAndroid]
-	// 	[FailsOnIOS]
+	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	[Test]
 	// #if __MACOS__
 	// 	[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -50,7 +50,7 @@ public class Bugzilla31333 : _IssuesUITest
 
 
 	// 	[FailsOnAndroid]
-	// 	[FailsOnIOS]
+	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	[Test]
 	// #if __MACOS__
 	// 	[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -66,7 +66,7 @@ public class Bugzilla31333 : _IssuesUITest
 	// 	}
 
 	// 	[FailsOnAndroid]
-	// 	[FailsOnIOS]
+	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	[Test]
 	// #if __MACOS__
 	// 	[Ignore("EnterText on UITest.Desktop not implemented")]

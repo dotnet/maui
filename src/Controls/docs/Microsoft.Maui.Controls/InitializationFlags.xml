@@ -16,8 +16,6 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DisableCss">
@@ -35,7 +33,6 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
   </Members>

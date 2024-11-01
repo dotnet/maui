@@ -14,25 +14,25 @@ public class Issue8291 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Editor)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
 	//{
-	//	RunningApp.TouchAndHold("PressEditor");
+	//	App.TouchAndHold("PressEditor");
 	//	TestForPopup();
-	//	RunningApp.Tap("PressEntry");
-	//	RunningApp.TouchAndHold("PressEntry");
+	//	App.Tap("PressEntry");
+	//	App.TouchAndHold("PressEntry");
 	//	TestForPopup();
 	//}
 
 	//void TestForPopup()
 	//{
-	//	var result = RunningApp.QueryUntilPresent(() =>
+	//	var result = App.QueryUntilPresent(() =>
 	//	{
-	//		return RunningApp.Query("Paste")
-	//				.Union(RunningApp.Query("Share"))
-	//				.Union(RunningApp.Query("Copy"))
-	//				.Union(RunningApp.Query("Cut"))
-	//				.Union(RunningApp.Query("Select All"))
+	//		return App.Query("Paste")
+	//				.Union(App.Query("Share"))
+	//				.Union(App.Query("Copy"))
+	//				.Union(App.Query("Cut"))
+	//				.Union(App.Query("Select All"))
 	//				.ToArray();
 	//	});
 

@@ -16,9 +16,9 @@ public class Issue7886 : _IssuesUITest
 	//[Category(UITestCategories.Navigation)]
 	//public void NoNREOnPushModalAsyncAndBack()
 	//{
-	//	RunningApp.WaitForElement(TriggerModalAutomationId);
-	//	RunningApp.Tap(TriggerModalAutomationId);
-	//	RunningApp.WaitForElement(PopModalAutomationId);
-	//	RunningApp.Tap(PopModalAutomationId);
+	//	App.WaitForElement(TriggerModalAutomationId);
+	//	App.Tap(TriggerModalAutomationId);
+	//	App.WaitForElement(PopModalAutomationId);
+	//	App.Tap(PopModalAutomationId);
 	//}
 }

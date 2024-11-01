@@ -18,10 +18,10 @@ public class MapsModalCrash : _IssuesUITest
 	//[FailsOnIOS]
 	//public void CanDisplayModalOverMap()
 	//{
-	//	RunningApp.WaitForElement(StartTest);
-	//	RunningApp.Tap(StartTest);
-	//	RunningApp.WaitForElement(DisplayModal);
-	//	RunningApp.Tap(DisplayModal);
-	//	RunningApp.WaitForElement(Success);
+	//	App.WaitForElement(StartTest);
+	//	App.Tap(StartTest);
+	//	App.WaitForElement(DisplayModal);
+	//	App.Tap(DisplayModal);
+	//	App.WaitForElement(Success);
 	//}
 }

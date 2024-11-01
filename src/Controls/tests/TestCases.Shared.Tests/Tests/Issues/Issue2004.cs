@@ -15,8 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
 			App.WaitForNoElement("Success", timeout: TimeSpan.FromSeconds(20));

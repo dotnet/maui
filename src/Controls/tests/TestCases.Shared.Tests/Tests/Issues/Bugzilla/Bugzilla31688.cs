@@ -16,9 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla31688Test()
 		{
 			App.WaitForNoElement("Page3");

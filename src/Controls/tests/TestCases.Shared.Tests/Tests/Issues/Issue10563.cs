@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue10563OpenSwipeViewTest()
 		{
 			App.WaitForElement(OpenLeftId);
