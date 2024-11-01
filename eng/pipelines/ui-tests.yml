@@ -64,20 +64,14 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
 
   - name: iosPool
     type: object
     default:
-      name: $(iosDeviceTestsVmPool)
-      vmImage: $(iosDeviceTestsVmImage)
-      demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
   
   - name: windowsBuildPool
     type: object
