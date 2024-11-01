@@ -136,11 +136,40 @@ Task("android-aar")
         if (IsRunningOnWindows())
             gradlew += ".bat";
 
+        var javaHome = EnvironmentVariable<string>("JAVA_HOME", string.Empty);
+        Information("Cake JAVA_HOME: {0}", javaHome);
+
+        if (string.IsNullOrEmpty(javaHome))
+        {
+            javaHome = System.Environment.GetEnvironmentVariable("JAVA_HOME");
+            Information("System JAVA_HOME: {0}", javaHomeEnv);
+        }
+
+        if (string.IsNullOrEmpty(javaHome))
+        {
+            using(var process = StartAndReturnProcess("dotnet", new ProcessSettings {
+                Arguments = "android jdk list --format=Json",
+            }))
+            {
+                process.WaitForExit();
+                var json = string.Join(System.Environment.NewLine, process.GetStandardOutput());
+                Information(json);
+
+                javaHome = System.Text.Json.Nodes.JsonNode.Parse(json)?.AsArray().FirstOrDefault(item => item["DotNetPreferred"]?.GetValue<bool>() == true)?["Home"];
+                // This should output 0 as valid arguments supplied
+                Information("Android Tool JAVA_HOME: {0}", javaHome);
+            }
+        }
+
         var exitCode = StartProcess(
             MakeAbsolute((FilePath)gradlew),
             new ProcessSettings
             {
                 Arguments = $"createAar --rerun-tasks",
+                EnvironmentVariables = new Dictionary<string, string>
+                {
+                    { "JAVA_HOME", javaHome }
+                },
                 WorkingDirectory = root
             });
 
