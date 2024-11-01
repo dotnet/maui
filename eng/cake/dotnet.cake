@@ -136,20 +136,14 @@ Task("android-aar")
         if (IsRunningOnWindows())
             gradlew += ".bat";
 
-        var javaHome = string.Empty;
+        var javaHomeProcess = StartAndReturnProcess("dotnet", new ProcessSettings {
+            Arguments = "android jdk find",
+        });
 
-        using(var process = StartAndReturnProcess("dotnet", new ProcessSettings {
-            Arguments = "android jdk list --format=Json",
-        }))
-        {
-            process.WaitForExit();
-            var json = string.Join(System.Environment.NewLine, process.GetStandardOutput());
-            Information(json);
+        javaHomeProcess.WaitForExit();
+        var javaHome = javaHomeProcess.GetStandardOutput()?.FirstOrDefault()?.Trim() ?? string.Empty;
 
-            javaHome = System.Text.Json.Nodes.JsonNode.Parse(json)?.AsArray().FirstOrDefault(item => item["DotNetPreferred"]?.GetValue<bool>() == true)?["Home"]?.GetValue<string>();
-            // This should output 0 as valid arguments supplied
-            Information("Android Tool JAVA_HOME: {0}", javaHome);
-        }
+        Information("Java Home: " + javaHome);
 
         var exitCode = StartProcess(
             MakeAbsolute((FilePath)gradlew),
