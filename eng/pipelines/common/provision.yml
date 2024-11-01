@@ -7,7 +7,6 @@ parameters:
   skipAndroidCommonSdks: false
   onlyAndroidPlatformDefaultApis: false
   skipAndroidPlatformApis: false
-  onlyAndroidPlatformDefaultApis: true # Only install the api's we need
   skipAndroidEmulatorImages: true # For most builds we won't need these
   skipAndroidCreateAvds: true # For most builds we won't need these
   checkoutDirectory: $(System.DefaultWorkingDirectory)
