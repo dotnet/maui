@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Enumerates button styles</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Bottom">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates the bottom button style.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Circle">
@@ -52,7 +50,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates the circle button style.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Default">
@@ -71,7 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates the default button style.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectMode">
@@ -90,7 +86,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a selection button.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -109,7 +104,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates a text button.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

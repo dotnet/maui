@@ -6,8 +6,7 @@
             "Icon": "\uea28",
             "Category": { "Title": "work", "Color": "#3068df" },
             "Tags": [
-                { "Title": "work", "Color": "#3068df" },
-                { "Title": "personal", "Color": "#FF4500" }
+                { "Title": "work", "Color": "#3068df" }
             ],
             "Tasks": [
                 { "Title": "Survey Employees", "IsCompleted": false },
@@ -19,7 +18,7 @@
             "Name": "Personal",
             "Description": "Learn to speak another language.",
             "Icon": "\uf8fe",
-            "Category": { "Title": "self", "Color": "#FF3300" },
+            "Category": { "Title": "education", "Color": "#8800FF" },
             "Tags": [
                 { "Title": "personal", "Color": "#FF4500" }
             ],
@@ -35,8 +34,7 @@
             "Icon": "\uf837",
             "Category": { "Title": "self", "Color": "#FF3300" },
             "Tags": [
-                { "Title": "health", "Color": "#32CD32" },
-                { "Title": "personal", "Color": "#FF4500" }
+                { "Title": "health", "Color": "#32CD32" }
             ],
             "Tasks": [
                 { "Title": "Morning Yoga", "IsCompleted": false },

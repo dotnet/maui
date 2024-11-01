@@ -14,7 +14,7 @@ public class SwipeBackNavCrash : _IssuesUITest
 	public override string Issue => "Swipe back nav crash";
 
 //	[Test]
-//	[FailsOnIOS]
+//	[FailsOnIOSWhenRunningOnXamarinUITest]
 //	public void SwipeBackNavCrashTestsAllElementsPresent()
 //	{
 //		App.WaitForElement(q => q.Marked("Page One"));
@@ -22,7 +22,7 @@ public class SwipeBackNavCrash : _IssuesUITest
 //	}
 
 //	[Test]
-//	[FailsOnIOS]
+//	[FailsOnIOSWhenRunningOnXamarinUITest]
 //	public void SwipeBackNavCrashTestsGoToSecondPage()
 //	{
 //		App.WaitForElement(q => q.Marked("Page One"));
@@ -32,7 +32,7 @@ public class SwipeBackNavCrash : _IssuesUITest
 
 //#if IOS
 //	[Test]
-//	[Compatibility.UITests.FailsOnIOS]
+//	[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 //	public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash ()
 //	{
 //		App.WaitForElement (q => q.Marked ("Page One"));

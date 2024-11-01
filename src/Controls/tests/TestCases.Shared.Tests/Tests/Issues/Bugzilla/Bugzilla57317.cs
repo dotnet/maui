@@ -17,7 +17,7 @@ public class Bugzilla57317 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla57317Test()
 	// {
 	// 	App.WaitForFirstElement("Cell");

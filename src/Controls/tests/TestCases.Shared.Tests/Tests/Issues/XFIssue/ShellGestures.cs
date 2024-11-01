@@ -44,7 +44,7 @@ public class ShellGestures : _IssuesUITest
 //#if ANDROID
 //	[Test]
 //	[Category(UITestCategories.CustomRenderers)]
-//	[FailsOnAndroid]
+//	[FailsOnAndroidWhenRunningOnXamarinUITest]
 //	public void TouchListener()
 //	{
 //		TapInFlyout(TouchListenerTitle);

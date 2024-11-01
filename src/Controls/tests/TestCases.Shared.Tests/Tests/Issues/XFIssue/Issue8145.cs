@@ -17,7 +17,7 @@ public class Issue8145 : _IssuesUITest
 //#if !(ANDROID || IOS)
 //	[Ignore("Shell test is only supported on Android and iOS")]
 //#endif
-//	[FailsOnAndroid]
+//	[FailsOnAndroidWhenRunningOnXamarinUITest]
 //	public void Issue8145ShellToolbarDisposedException()
 //	{
 //		App.WaitForElement("More");

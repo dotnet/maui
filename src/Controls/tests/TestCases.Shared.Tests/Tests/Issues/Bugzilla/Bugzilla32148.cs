@@ -15,7 +15,7 @@ public class Bugzilla32148 : _IssuesUITest
   
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnIOS]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla32148Test()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)

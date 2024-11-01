@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
 			App.WaitForElement("Click me");

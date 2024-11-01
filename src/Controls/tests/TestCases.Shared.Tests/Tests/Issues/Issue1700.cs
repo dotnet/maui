@@ -18,9 +18,9 @@ public class Issue1700 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Image)]
 	[Category(UITestCategories.Compatibility)]
-	[FailsOnIOS]
-	[FailsOnMac]
-	[FailsOnWindows]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void LongImageURLsShouldNotCrash()
 	{
 		// Give the images some time to load (or fail)
