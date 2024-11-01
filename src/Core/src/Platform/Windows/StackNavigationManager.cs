@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -156,31 +153,34 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var nv = NavigationView;
-			ContentPresenter? presenter;
+			ContentControl? presenter;
 
 			if (page.Content == null)
 			{
-				presenter = new ContentPresenter()
+				presenter = new ContentControl()
 				{
 					HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
 				};
+				presenter.Unloaded += Presenter_Unloaded;
 
 				page.Content = presenter;
 			}
 			else
 			{
-				presenter = page.Content as ContentPresenter;
+				presenter = page.Content as ContentControl;
 			}
 
 			// At this point if the Content isn't a ContentPresenter the user has replaced
-			// the conent so we just let them take control
+			// the content so we just let them take control
 			if (presenter == null || _currentPage == null)
 				return;
 
+			var platformPage = _currentPage.ToPlatform(MauiContext);
+
 			try
 			{
-				presenter.Content = _currentPage.ToPlatform(MauiContext);
+				presenter.Content = platformPage;
 			}
 			catch (Exception)
 			{
@@ -206,6 +206,21 @@ namespace Microsoft.Maui.Platform
 			};
 
 			fe.OnLoaded(FirePendingNavigationFinished);
+		}
+
+		/// <summary>
+		/// There's some bug in our code, or the lifecycle of ContentControl, that is causing the content to
+		/// never be removed from the parent...
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void Presenter_Unloaded(object sender, RoutedEventArgs e)
+		{
+			if (sender is ContentControl control)
+			{
+				control.Content = null;
+				control.Unloaded -= Presenter_Unloaded;
+			}
 		}
 
 		void FireNavigationFinished()
