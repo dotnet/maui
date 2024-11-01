@@ -60,7 +60,7 @@
 		<!-- Assemble the platform sdk package names to install in the sdk -->
 		<ItemGroup>
 			<!-- Platform APIs -->
-			<AndroidSdkPlatformApiPackages Include="platforms%3Bandroid-%(AndroidSdkApiLevels.Identity)" />
+			<AndroidSdkPlatformApiPackages Include="platforms%3Bandroid-%(AndroidSdkApiLevels.Identity)" Condition=" '$(AndroidSdkProvisionDefaultApiLevelsOnly)' != 'True' Or '%(AndroidSdkApiLevels.IsDefault)' == 'True' " />
 		</ItemGroup>
 
 		<!-- Install SDK Platform API Packages -->

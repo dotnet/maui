@@ -173,6 +173,7 @@ extends:
                         skipJdk: false
                         skipAndroidCommonSdks: false
                         skipAndroidPlatformApis: false
+                        onlyAndroidPlatformDefaultApis: true
                         skipAndroidEmulatorImages: true
                         skipAndroidCreateAvds: true
                         skipProvisioning: true
