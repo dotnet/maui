@@ -1,6 +1,7 @@
 #if MACCATALYST
 using System;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using UIKit;
 
@@ -8,12 +9,13 @@ namespace Microsoft.Maui.Platform;
 
 internal class WindowViewController : UIViewController
 {
-#pragma warning disable MEM0002 // Reference type members in NSObject subclasses can cause memory leaks
-
     WeakReference<IView?> _iTitleBarRef;
     bool _isTitleBarVisible = true;
 
+    [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
     UIView? _titleBar;
+
+    [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
     UIView? _contentWrapperView;
 
     /// <summary>
@@ -121,5 +123,4 @@ internal class WindowViewController : UIViewController
     public void SetTitleBarVisibility(bool isVisible) =>
 			_isTitleBarVisible = isVisible;
 }
-#pragma warning restore MEM0002 // Reference type members in NSObject subclasses can cause memory leaks
 #endif // MACCATALYST
