@@ -15,7 +15,7 @@ public class Issue10222 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    [FailsOnIOS("This test is failing, likely due to product issue")]
+    [FailsOnIOSWhenRunningOnXamarinUITest]
     public void Issue10222Test()
     {
         try
