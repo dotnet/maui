@@ -213,9 +213,7 @@ namespace Microsoft.Maui.Controls
 				var sharedSpacing = spacing / 2;
 
 				// These are just used to shift the image and title to center
-				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidth / 2;
-				imageInsets.Right -= titleWidth / 2;
+				// Which makes the later math easier to follow				
 				titleInsets.Left -= imageWidth / 2;
 				titleInsets.Right += imageWidth / 2;
 
@@ -223,6 +221,8 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom += (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(Width - imageWidth) / 2;
+					imageInsets.Right += (float)(Width - imageWidth)  / 2;
 
 					titleInsets.Top += (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
@@ -231,6 +231,8 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(Width - imageWidth) / 2;
+					imageInsets.Right += (float)(Width - imageWidth)  / 2;
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += (imageHeight / 2) + sharedSpacing;
@@ -239,6 +241,8 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
 					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+					imageInsets.Left += titleWidth / 2;
+					imageInsets.Right -= titleWidth / 2;
 
 					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
@@ -248,6 +252,8 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
 					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
+					imageInsets.Left += titleWidth / 2;
+					imageInsets.Right -= titleWidth / 2;
 
 					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
