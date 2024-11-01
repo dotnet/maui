@@ -133,9 +133,11 @@ steps:
   # Provision Android SDK Platform APIs (eg: platforms;android-29, platforms;android-30)
   - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$(onlyAndroidPlatformDefaultApis)" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Platform APIs'
       condition: succeeded()
+      env:
+        AndroidSdkProvisionDefaultApiLevelsOnly: ${{ parameters.onlyAndroidPlatformDefaultApis }}
 
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
