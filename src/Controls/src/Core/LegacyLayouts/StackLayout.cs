@@ -92,7 +92,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			ComputeConstraintForView(view, false);
 		}
 
-		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			_layoutInformation = new LayoutInformation();
 			base.InvalidateMeasureInternal(trigger);

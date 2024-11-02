@@ -497,8 +497,10 @@ namespace Microsoft.Maui.Controls
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
-		
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
@@ -585,7 +587,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			var container = this as IPageContainer<Page>;
 			if (container != null)

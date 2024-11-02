@@ -319,7 +319,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// It is suggested to still call the base method and modify its calculated results.</remarks>
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));

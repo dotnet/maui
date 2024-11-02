@@ -1362,7 +1362,9 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			_measureCache.Clear();
 
@@ -1387,8 +1389,10 @@ namespace Microsoft.Maui.Controls
 				(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
 			}
 		}
-		
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			switch (trigger)
 			{
