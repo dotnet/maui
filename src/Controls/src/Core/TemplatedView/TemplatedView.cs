@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -105,6 +106,10 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
 			TemplateUtilities.OnChildRemoved(this, child);
+		}
+
+		private protected override void InvalidationFromPropagaton(InvalidationTrigger trigger)
+		{
 		}
 
 		protected object GetTemplateChild(string name) => TemplateUtilities.GetTemplateChild(this, name);

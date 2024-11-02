@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Controls
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
+		private protected override void InvalidationFromPropagaton(InvalidationTrigger trigger)
+		{
+		}
+
 		#region IScrollViewController
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />

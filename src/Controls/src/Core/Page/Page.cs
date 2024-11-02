@@ -613,7 +613,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			//InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		internal void OnAppearing(Action action)

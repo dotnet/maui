@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Controls
 	public class ContentPresenter : Compatibility.Layout, IContentView
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
+
+		private protected override void InvalidationFromPropagaton(InvalidationTrigger trigger)
+		{
+		}
+		
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(ContentPresenter), null, propertyChanged: OnContentChanged);

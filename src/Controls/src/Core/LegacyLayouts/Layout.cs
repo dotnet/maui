@@ -557,6 +557,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
+			InvalidationFromPropagaton(trigger);
+		}
+
+		private protected virtual void InvalidationFromPropagaton(InvalidationTrigger trigger)
+		{
+
 			if (trigger == InvalidationTrigger.RendererReady)
 			{
 				InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
