@@ -1389,10 +1389,10 @@ namespace Microsoft.Maui.Controls
 			}
 
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger, 0);
 		}
 		
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			switch (trigger)
 			{
@@ -1405,7 +1405,7 @@ namespace Microsoft.Maui.Controls
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
 					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger, ++depth);
 					return;
 				default:
 					// When visibility changes `InvalidationTrigger.Undefined` is used,
@@ -1414,7 +1414,7 @@ namespace Microsoft.Maui.Controls
 					{
 						// We need to invalidate measures only if child is actually visible
 						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
-						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged, ++depth);
 					}
 					return;
 			}
