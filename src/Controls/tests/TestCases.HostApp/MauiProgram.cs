@@ -1,4 +1,4 @@
-using Maui.Controls.Sample.Issues;
+﻿using Maui.Controls.Sample.Issues;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -31,8 +31,8 @@ namespace Maui.Controls.Sample
 
 			appBuilder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
+					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
 				});
 				
 #endif
@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample
 
 		public Page CreateDefaultMainPage()
 		{
-			return new CoreNavigationPage();
+			return new Issue3643();
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
