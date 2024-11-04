@@ -69,6 +69,8 @@ jobs:
     - template: provision.yml
       parameters:
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
+        skipXcode: ${{ ne(parameters.PlatformName, 'macos') }}
+        skipProvisioning: true
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
@@ -156,18 +158,19 @@ jobs:
       - ${{ each pair in step }}:
           ${{ pair.key }}: ${{ pair.value }}
 
-    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
-      - bash: |
-          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
-          $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        displayName: 'Clean bot'
-        continueOnError: true
-        timeoutInMinutes: 60
+    # - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+    #   - bash: |
+    #       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    #       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+    #       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    #     displayName: 'Clean bot'
+    #     continueOnError: true
+    #     timeoutInMinutes: 60
 
     - template: provision.yml
       parameters:
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
+        skipProvisioning: true
         skipAndroidImages: ${{ ne(RunPlatform.testName, 'RunOnAndroid') }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
