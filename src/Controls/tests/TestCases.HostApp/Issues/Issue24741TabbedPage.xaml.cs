@@ -14,9 +14,20 @@ public class Issue24741Page1 : ContentPage
 	{
 		Title = "Page 1";
 
-		Content = new Label
+		var content = new Button
 		{
+			AutomationId = "Page1Button",
 			Text = "Page 1"
+		};
+
+		content.Clicked += async (sender, args) =>
+		{
+			await Navigation.PopAsync();
+		};
+
+		Content = new VerticalStackLayout
+		{
+			content
 		};
 	}
 }
@@ -27,9 +38,20 @@ public class Issue24741Page2 : ContentPage
 	{
 		Title = "Page 2";
 
-		Content = new Label
+		var content = new Button
 		{
+			AutomationId = "Page2Button",
 			Text = "Page 2"
+		};
+
+		content.Clicked += async (sender, args) =>
+		{
+			await Navigation.PopAsync();
+		};
+
+		Content = new VerticalStackLayout
+		{
+			content
 		};
 	}
 }

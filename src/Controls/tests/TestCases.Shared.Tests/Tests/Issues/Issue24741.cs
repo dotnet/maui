@@ -17,11 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.TabbedPage)]
 		public void SelectTabAfterNavigation()
 		{
-			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-			{
-				throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-			}
-
 			const string Page2Title = "Page 2";
 
 			// 1. Navigate to the TabbedPage.
@@ -29,19 +24,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("NavigateButton");
 
 			// 2. Click the second Tab.
-			var tab2First = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + Page2Title + "']"));
-			tab2First.Click();
+			App.Tap(Page2Title);
 
 			// 3. Navigate back.
-			App.Back();
+			App.WaitForElement("Page2Button");
+			App.Tap("Page2Button");
 
 			// 4. Repeat the process. Navigate to the TabbedPage.
 			App.WaitForElement("NavigateButton");
 			App.Tap("NavigateButton");
 
 			// 2. Click the second Tab.
-			var tab2Second = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + Page2Title + "']"));
-			tab2Second.Click();
+			App.Tap(Page2Title);
 
 			// 6. Screenshot to validate the result.
 			App.Screenshot("If can select the second Tab, the test has passed.");
