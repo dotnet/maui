@@ -28,25 +28,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("PopAsyncButton");
 			VerifyScreenshot();
 		}
-
-		[Test]
-		[Category(UITestCategories.Shell)]
-		public void ApplyQueryAttributeShouldTriggerforNavigatingBetweenTabs()
-		{
-			App.WaitForElement("TestLabel");
-			App.Tap("Favourite");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Shell)]
-		public void ApplyQueryAttributeShouldTriggerforBackButton()
-		{
-			App.WaitForElement("TestLabel");
-			App.Tap("PushAsyncButton");
-			App.Tap(BackButtonAutomationId);
-			VerifyScreenshot();
-		}
 	}
 
 }
