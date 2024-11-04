@@ -6,9 +6,6 @@ using CoreGraphics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Devices;
 using UIKit;
-#if MACCATALYST
-using AppKit;
-#endif
 
 namespace Microsoft.Maui.Platform
 {

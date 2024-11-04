@@ -64,7 +64,7 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios15.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
-		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")] 
+		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst15.0")]
 		public static IiOSLifecycleBuilder SceneRestoreInteractionState(this IiOSLifecycleBuilder lifecycle, iOSLifecycle.SceneRestoreInteractionState del) => lifecycle.OnEvent(del);
 
 		[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]

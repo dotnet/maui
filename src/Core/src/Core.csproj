@@ -115,4 +115,5 @@
       <FileWrites Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
     </ItemGroup>
   </Target>
+
 </Project>

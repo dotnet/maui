@@ -364,10 +364,8 @@ namespace Microsoft.Maui.Controls
 				},
 #if IOS || MACCATALYST
 				IgnoreSafeArea = true,
-				// HeightRequest = 200,
 #endif
 			};
-
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
 				static (TitleBar tb) => tb.BackgroundColor,

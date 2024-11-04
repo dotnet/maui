@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using CoreGraphics;
 using Microsoft.Maui.HotReload;
 using ObjCRuntime;
 using UIKit;
