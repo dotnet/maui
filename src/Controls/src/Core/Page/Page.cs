@@ -614,7 +614,7 @@ namespace Microsoft.Maui.Controls
 
 			if (depth <= 1)
 			{
-				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged, depth);
 			}
 			else
 			{

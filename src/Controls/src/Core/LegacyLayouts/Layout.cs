@@ -341,11 +341,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			_currentInvalidationDepth = 0;
 			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
 			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
-
-			if (depth <= 1)
-			{
-				OnChildMeasureInvalidated();
-			}
+			OnChildMeasureInvalidated();
 		}
 
 		/// <summary>
