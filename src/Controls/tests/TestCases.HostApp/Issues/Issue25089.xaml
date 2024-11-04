@@ -7,11 +7,11 @@
   
   <ShellContent  FlyoutItemIsVisible="False"
                Title="Home"
-               ContentTemplate="{DataTemplate local:MainPage}"
-               Route="MainPage" />
+               ContentTemplate="{DataTemplate local:_25089MainPage}"
+               Route="_25089MainPage" />
   <TabBar>
     <Tab Title="TestTab"  x:Name="TestTab">
-      <ShellContent Title = "Parameter" Route = "SecondPage" ContentTemplate="{DataTemplate local:SecondPage}"></ShellContent>
+      <ShellContent Title = "Parameter" Route = "_25089SecondPage" ContentTemplate="{DataTemplate local:_25089SecondPage}"></ShellContent>
     </Tab>
   </TabBar>
   

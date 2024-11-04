@@ -10,16 +10,16 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Github, 25089, "OnAppearing of Page called again, although this page was on already replaced NavigationStack", PlatformAffected.UWP | PlatformAffected.Android)]
 	public partial class Issue25089 : Shell
 	{
-		public static SharedViewModel SharedViewModel { get; } = new SharedViewModel();
+		public static _25089SharedViewModel SharedViewModel { get; } = new _25089SharedViewModel();
 		public Issue25089()
 		{
 			InitializeComponent();
-			Routing.RegisterRoute("FirstPage", typeof(FirstPage));
-			Routing.RegisterRoute("SecondPage", typeof(SecondPage));
+			Routing.RegisterRoute("_25089FirstPage", typeof(_25089FirstPage));
+			Routing.RegisterRoute("_25089SecondPage", typeof(_25089SecondPage));
 		}
 	}
 
-	public class SharedViewModel : INotifyPropertyChanged
+	public class _25089SharedViewModel : INotifyPropertyChanged
 	{
 		string _statusText = "Page Appearing Sequence: Initial";
 
@@ -44,11 +44,11 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public partial class MainPage : ContentPage
+	public partial class _25089MainPage : ContentPage
 	{
-		public MainPage()
+		public _25089MainPage()
 		{
-			Appearing += MainPage_Appearing;	
+			Appearing += MainPage_Appearing;
 			BindingContext = Issue25089.SharedViewModel;
 
 			var statusLabel = new Label
@@ -57,7 +57,7 @@ namespace Maui.Controls.Sample.Issues
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
-			statusLabel.SetBinding(Label.TextProperty, nameof(SharedViewModel.StatusText));
+			statusLabel.SetBinding(Label.TextProperty, nameof(_25089SharedViewModel.StatusText));
 
 			var mainButton = new Button
 			{
@@ -69,7 +69,7 @@ namespace Maui.Controls.Sample.Issues
 
 			mainButton.Clicked += async (sender, e) =>
 			{
-				await Shell.Current.GoToAsync("FirstPage", true);
+				await Shell.Current.GoToAsync("_25089FirstPage", true);
 			};
 
 			var stackLayout = new VerticalStackLayout
@@ -86,9 +86,9 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class FirstPage : ContentPage
+	public class _25089FirstPage : ContentPage
 	{
-		public FirstPage()
+		public _25089FirstPage()
 		{
 			Title = "First Page";
 			Appearing += FirstPage_Appearing;
@@ -103,7 +103,7 @@ namespace Maui.Controls.Sample.Issues
 
 			firstPageButton.Clicked += async (sender, e) =>
 			{
-				await Shell.Current.GoToAsync("//SecondPage", true);
+				await Shell.Current.GoToAsync("//_25089SecondPage", true);
 			};
 
 			var stackLayout = new VerticalStackLayout
@@ -120,9 +120,9 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class SecondPage : ContentPage
+	public class _25089SecondPage : ContentPage
 	{
-		public SecondPage()
+		public _25089SecondPage()
 		{
 			Title = "Second Page";
 			Appearing += SecondPage_Appearing;
@@ -137,7 +137,7 @@ namespace Maui.Controls.Sample.Issues
 
 			secondPageButton.Clicked += async (sender, e) =>
 			{
-				await Shell.Current.GoToAsync("//MainPage", true);
+				await Shell.Current.GoToAsync("//_25089MainPage", true);
 			};
 
 			var stackLayout = new VerticalStackLayout
