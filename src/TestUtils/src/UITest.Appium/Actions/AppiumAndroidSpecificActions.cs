@@ -5,12 +5,15 @@ namespace UITest.Appium
 {
 	public class AppiumAndroidSpecificActions : ICommandExecutionGroup
 	{
+		const string MoreButton = "OverflowMenuButton";
+
 		const string ToggleAirplaneModeCommand = "toggleAirplaneMode";
 		const string ToggleWifiCommand = "toggleWifi";
 		const string ToggleDataCommand = "toggleData";
 		const string GetPerformanceDataCommand = "getPerformanceData";
 		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
 		const string GetSystemBarsCommand = "getSystemBars";
+		const string ToggleSecondaryToolbarItemsCommand = "toggleSecondaryToolbarItems";
 
 		readonly AppiumApp _appiumApp;
 
@@ -22,6 +25,7 @@ namespace UITest.Appium
 			GetPerformanceDataCommand,
 			ToggleSystemAnimationsCommand,
 			GetSystemBarsCommand,
+			ToggleSecondaryToolbarItemsCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -44,6 +48,7 @@ namespace UITest.Appium
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
 				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
 				GetSystemBarsCommand => GetSystemBars(parameters),
+				ToggleSecondaryToolbarItemsCommand => ToggleSecondaryToolbarItems(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -128,6 +133,16 @@ namespace UITest.Appium
 
 					return CommandResponse.SuccessEmptyResponse;
 				}
+			}
+		}
+		CommandResponse ToggleSecondaryToolbarItems(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				_appiumApp.WaitForElement(MoreButton);
+				_appiumApp.Tap(MoreButton);
+
+				return CommandResponse.SuccessEmptyResponse;
 			}
 			catch
 			{
