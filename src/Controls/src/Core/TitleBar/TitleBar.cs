@@ -301,6 +301,8 @@ namespace Microsoft.Maui.Controls
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
+				// TODO we probably need to make sure this happens recursively for all children
+
 				if (leadingContent is Layout layout)
 				{
 					layout.IgnoreSafeArea = true;
@@ -362,7 +364,7 @@ namespace Microsoft.Maui.Controls
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
 				},
-#if IOS || MACCATALYST
+#if MACCATALYST
 				IgnoreSafeArea = true,
 #endif
 			};
@@ -385,7 +387,7 @@ namespace Microsoft.Maui.Controls
 			#region Leading content
 			var leadingContent = new ContentView()
 			{
-				IsVisible = false,
+				IsVisible = false
 			};
 
 			contentGrid.Add(leadingContent);
@@ -408,7 +410,7 @@ namespace Microsoft.Maui.Controls
 				HeightRequest = 16,
 				VerticalOptions = LayoutOptions.Center,
 				Margin = new Thickness(16, 0, 0, 0),
-				IsVisible = false,
+				IsVisible = false
 			};
 
 			contentGrid.Add(icon);
@@ -433,7 +435,7 @@ namespace Microsoft.Maui.Controls
 				VerticalOptions = LayoutOptions.Center,
 				MinimumWidthRequest = 48,
 				FontSize = 12,
-				IsVisible = false,
+				IsVisible = false
 			};
 
 			contentGrid.Add(titleLabel);
@@ -487,7 +489,7 @@ namespace Microsoft.Maui.Controls
 				MinimumWidthRequest = 48,
 				FontSize = 12,
 				Opacity = 0.7,
-				IsVisible = false,
+				IsVisible = false
 			};
 
 			contentGrid.Add(subtitleLabel);
@@ -511,7 +513,7 @@ namespace Microsoft.Maui.Controls
 			#region Content
 			var content = new ContentView()
 			{
-				IsVisible = false,
+				IsVisible = false
 			};
 
 			contentGrid.Add(content);
@@ -530,7 +532,7 @@ namespace Microsoft.Maui.Controls
 			#region Trailing content
 			var trailingContent = new ContentView()
 			{
-				IsVisible = false,
+				IsVisible = false
 			};
 
 			contentGrid.Add(trailingContent);
