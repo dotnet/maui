@@ -936,7 +936,7 @@ namespace Microsoft.Maui.Controls
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
 			var existing = (ShellRouteParameters)shellContent.GetValue(ShellContent.QueryAttributesProperty);
-			if (shellItem.GetType() != typeof(FlyoutItem) || existing == null)
+			if (shellItem is not FlyoutItem) || existing is null)
 			{
 				ShellNavigationManager.ApplyQueryAttributes(shellContent, new ShellRouteParameters(), false, false);
 			}
