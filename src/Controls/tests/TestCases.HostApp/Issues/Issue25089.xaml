@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Maui.Controls.Sample.Issues.Issue25089"
+        xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+        Shell.FlyoutBehavior="Disabled">
+  
+  <ShellContent  FlyoutItemIsVisible="False"
+               Title="Home"
+               ContentTemplate="{DataTemplate local:MainPage}"
+               Route="MainPage" />
+  <TabBar>
+    <Tab Title="TestTab"  x:Name="TestTab">
+      <ShellContent Title = "Parameter" Route = "SecondPage" ContentTemplate="{DataTemplate local:SecondPage}"></ShellContent>
+    </Tab>
+  </TabBar>
+  
+</Shell>
