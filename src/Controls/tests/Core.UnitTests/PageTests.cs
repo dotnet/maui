@@ -549,5 +549,76 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Contains(customControl, page.LogicalChildrenInternal);
 			Assert.Contains(customControl, ((IVisualTreeElement)page).GetVisualChildren());
 		}
+
+		[Fact]
+		public void MeasureInvalidatedPropagatesUpTree()
+		{
+			var label = new Label(){
+				IsPlatformEnabled = true
+			};
+
+			var scrollView = new ScrollViewCheck()
+			{
+				Content = new VerticalStackLayout()
+				{
+					Children = { new ContentView { Content = label, IsPlatformEnabled = true } },
+					IsPlatformEnabled = true
+				},
+				IsPlatformEnabled = true
+			};
+
+			var page = new InvalidatePageCheck()
+			{
+				Content = scrollView
+			};
+
+			var window = new TestWindow(page);
+
+			int fired = 0;
+			page.MeasureInvalidated += (sender, args) =>
+			{
+				fired++;
+			};
+
+			page.Fired = 0;
+			scrollView.Fired = 0;
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, fired);
+			Assert.Equal(0, page.Fired);
+			Assert.Equal(0, scrollView.Fired);
+			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, page.Fired);
+		}
+
+		class ScrollViewCheck : ScrollView
+		{
+			public int Fired { get; set; }
+
+			public ScrollViewCheck()
+			{
+				
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				Fired++;
+			}
+		}
+
+		class InvalidatePageCheck : ContentPage
+		{
+			public int Fired { get; set; }
+
+			public InvalidatePageCheck()
+			{
+				
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			{
+				Fired++;
+			}
+		}
 	}
 }
