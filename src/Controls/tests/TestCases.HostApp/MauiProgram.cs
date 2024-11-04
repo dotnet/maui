@@ -33,6 +33,9 @@ namespace Maui.Controls.Sample
 				{
 					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+
+					// When CV2 is completed and can handle resize of items, we can remove this pointer to CV1
+					handlers.AddHandler<Issue25671CollectionView, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
 				});
 				
 #endif
