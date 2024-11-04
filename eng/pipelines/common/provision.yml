@@ -58,6 +58,8 @@ steps:
         sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
         xcrun xcode-select --print-path
         xcodebuild -version
+        xcodebuild -downloadAllPlatforms
+        xcodebuild -runFirstLaunch
       displayName: Select Xcode Version
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
