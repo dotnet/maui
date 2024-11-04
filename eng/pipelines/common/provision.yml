@@ -43,6 +43,8 @@ steps:
     #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
 
     - script: |
+        echo Remove old Xamarin Settings
+        rm -f ~/Library/Preferences/Xamarin/Settings.plist
         echo Mac OS version:
         sw_vers -productVersion
         echo
