@@ -102,9 +102,12 @@ namespace Microsoft.Maui
 			}
 			else
 			{
-				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
-				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
-
+				if (platformView is LayoutView layoutView)
+				{
+					widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
+			   		heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
+				}
+				
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
 
