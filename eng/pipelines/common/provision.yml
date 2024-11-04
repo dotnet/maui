@@ -57,6 +57,8 @@ steps:
         xcrun xcode-select --print-path
         xcodebuild -version
       displayName: Select Xcode Version
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
 
   # Provision Additional Software
   #- ${{ if ne(parameters.skipProvisioning, 'true') }}:
