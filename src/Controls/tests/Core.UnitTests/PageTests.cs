@@ -617,6 +617,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 			{
+				base.InvalidateMeasureInternal(trigger);
 				Fired++;
 			}
 		}
