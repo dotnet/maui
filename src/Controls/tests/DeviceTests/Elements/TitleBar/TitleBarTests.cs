@@ -128,6 +128,6 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-#endif
 	}
 }
+#endif
