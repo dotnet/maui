@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			Label label = new Label();
 			label.AutomationId = "Label";
 
-			const string url = "https://httpbin.org/#/Cookies/get_cookies";
+			const string url = "https://learn.microsoft.com/en-us/dotnet/";
 
 			CookieContainer cookieContainer = new();
 			Uri uri = new(url, UriKind.RelativeOrAbsolute);
