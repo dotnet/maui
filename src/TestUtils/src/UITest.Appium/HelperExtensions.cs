@@ -1914,7 +1914,7 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void ToggleSecondaryToolbarItems(this IApp app)
 		{
-			if (app is not AppiumWindowsApp)
+			if (app is not AppiumAndroidApp && app is not AppiumWindowsApp)
 			{
 				throw new InvalidOperationException($"ToggleSecondaryToolbarItems is not supported");
 			}
