@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		    App.Tap("ModalPageButton");
 			App.WaitForElement("PageSheetModalPage");
 			App.WaitForElement("ResetThemeButton");
-			App.Tap("ResetThemeButton")
+			App.Tap("ResetThemeButton");
 			VerifyScreenshot();
 		
 		}
