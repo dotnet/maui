@@ -42,8 +42,12 @@ namespace Microsoft.Maui
 
 				var name = cgFont.PostScriptName;
 
+#pragma warning disable CA1422 // Validate platform compatibility
+#pragma warning disable IDE0011 // Add braces
 				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
 					return name;
+#pragma warning restore IDE0011 // Add braces
+#pragma warning restore CA1422 // Validate platform compatibility
 
 				var uiFont = UIFont.FromName(name, 10);
 				if (uiFont != null)
