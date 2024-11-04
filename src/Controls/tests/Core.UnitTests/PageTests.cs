@@ -557,7 +557,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var scrollView = new ScrollViewCheck()
+			var scrollView = new ScrollViewInvalidationMeasureCheck()
 			{
 				Content = new VerticalStackLayout()
 				{
@@ -567,7 +567,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var page = new InvalidatePageCheck()
+			var page = new InvalidatePageInvalidateMeasureCheck()
 			{
 				Content = scrollView
 			};
@@ -581,20 +581,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			page.Fired = 0;
-			scrollView.Fired = 0;
+			scrollView.InvalidateMeasureCount = 0;
 			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			Assert.Equal(1, fired);
 			Assert.Equal(0, page.Fired);
-			Assert.Equal(0, scrollView.Fired);
+			Assert.Equal(0, scrollView.InvalidateMeasureCount);
 			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			Assert.Equal(1, page.Fired);
 		}
 
-		class ScrollViewCheck : ScrollView
+		class LabelInvalidateMeasureCheck : Label
 		{
-			public int Fired { get; set; }
+			public int InvalidateMeasureCount { get; set; }
 
-			public ScrollViewCheck()
+			public LabelInvalidateMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
+		}
+
+		class ScrollViewInvalidationMeasureCheck : ScrollView
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public ScrollViewInvalidationMeasureCheck()
 			{
 				
 			}
@@ -602,15 +618,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
-				Fired++;
+				InvalidateMeasureCount++;
 			}
 		}
 
-		class InvalidatePageCheck : ContentPage
+		class InvalidatePageInvalidateMeasureCheck : ContentPage
 		{
 			public int Fired { get; set; }
 
-			public InvalidatePageCheck()
+			public InvalidatePageInvalidateMeasureCheck()
 			{
 				
 			}

@@ -561,9 +561,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			if (depth <= 1)
-			{
+			InvalidateMeasureLegacy(trigger, depth, int.MaxValue);
+		}
 
+		// This lets us override the rules for invalidation on MAUI controls that unfortunately still inheirt from the legacy layout
+		private protected virtual void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
+		{
+			if (depth <= depthLeveltoInvalidate)
+			{
 				CurrentInvalidationDepth = depth;
 				if (trigger == InvalidationTrigger.RendererReady)
 				{
