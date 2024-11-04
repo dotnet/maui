@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
