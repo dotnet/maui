@@ -14,17 +14,17 @@ public class Issue2272 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Navigation)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// #if MACCATALYST // Check if this is still try for MAUI?
 	// 	[Ignore("EnterText problems in UITest Desktop")]
 	// #endif
 	// 	public void TestFocusIsOnTheEndAfterSettingText ()
 	// 	{
-	// 		RunningApp.WaitForElement("userNameEditorEmptyString");
-	// 		RunningApp.Tap (c => c.Marked ("userNameEditorEmptyString"));
-	// 		RunningApp.EnterText ("1");
+	// 		App.WaitForElement("userNameEditorEmptyString");
+	// 		App.Tap (c => c.Marked ("userNameEditorEmptyString"));
+	// 		App.EnterText ("1");
 	// 		PressEnter ();
-	// 		var q = RunningApp.Query(c => c.Marked("userNameEditorEmptyString"));
+	// 		var q = App.Query(c => c.Marked("userNameEditorEmptyString"));
 	// 		Assert.AreEqual("focused1", q[0].Text);
 	// 	}
 
@@ -35,7 +35,7 @@ public class Issue2272 : _IssuesUITest
 	// 			androidApp.PressUserAction (UserAction.Done);
 	// 		}
 	// 		else {
-	// 			RunningApp.PressEnter ();
+	// 			App.PressEnter ();
 	// 		}
 	// 	}
 }

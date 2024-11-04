@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumeration specifying whether the <see cref="T:Microsoft.Maui.Controls.ToolbarItem" /> appears on the primary toolbar surface or secondary.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">

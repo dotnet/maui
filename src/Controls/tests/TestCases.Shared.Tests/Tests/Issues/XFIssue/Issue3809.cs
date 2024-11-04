@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		//{
 		//	// ensure initial paddings are honored
 		//	AssertSafeAreaText($"{_safeAreaText}{true}");
-		//	var element = RunningApp.WaitForFirstElement(_paddingLabel);
+		//	var element = App.WaitForFirstElement(_paddingLabel);
 
 		//	bool usesSafeAreaInsets = false;
 		//	if (element.ReadText() != "25, 25, 25, 25")
@@ -39,16 +39,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		//		Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 		//	// disable Safe Area Insets
-		//	RunningApp.Tap(_safeAreaAutomationId);
+		//	App.Tap(_safeAreaAutomationId);
 		//	AssertSafeAreaText($"{_safeAreaText}{false}");
-		//	element = RunningApp.WaitForFirstElement(_paddingLabel);
+		//	element = App.WaitForFirstElement(_paddingLabel);
 
 		//	Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 		//	// enable Safe Area insets
-		//	RunningApp.Tap(_safeAreaAutomationId);
+		//	App.Tap(_safeAreaAutomationId);
 		//	AssertSafeAreaText($"{_safeAreaText}{true}");
-		//	element = RunningApp.WaitForFirstElement(_paddingLabel);
+		//	element = App.WaitForFirstElement(_paddingLabel);
 		//	Assert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 
 		//	if (!usesSafeAreaInsets)
@@ -56,10 +56,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 		//	// Set Padding and then disable safe area insets
-		//	RunningApp.Tap(_setPagePadding);
-		//	RunningApp.Tap(_safeAreaAutomationId);
+		//	App.Tap(_setPagePadding);
+		//	App.Tap(_safeAreaAutomationId);
 		//	AssertSafeAreaText($"{_safeAreaText}{false}");
-		//	element = RunningApp.WaitForFirstElement(_paddingLabel);
+		//	element = App.WaitForFirstElement(_paddingLabel);
 		//	Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 		//}

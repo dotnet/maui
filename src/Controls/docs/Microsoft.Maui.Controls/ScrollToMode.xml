@@ -15,7 +15,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that describe how a scroll request is made.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Element">

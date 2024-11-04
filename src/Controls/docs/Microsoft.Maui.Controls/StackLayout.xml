@@ -119,8 +119,6 @@
       <Docs>
         <typeparam name="T">The platform configuration that selects the platform specific to use.</typeparam>
         <summary>Returns the configuration object that the developer can use to call platform-specific methods for the layout.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">

@@ -1,4 +1,4 @@
-using NUnit.Framework;
+/*using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,10 +12,10 @@ public class Bugzilla26171 : _IssuesUITest
 
     public override string Issue => "Microsoft.Maui.Controls.Maps is not updating VisibleRegion property when layout is changed";
 
-	// [Test]
-	// [Category(UITestCategories.Maps)]
-	// public void Bugzilla26171Test()
-	// {
-	// 	App.WaitForElement("lblValue");
-	// }
-}
+	[Test]
+	[Category(UITestCategories.Maps)]
+	public void Bugzilla26171Test()
+	{
+		App.WaitForElement("lblValue");
+	}
+}*/

@@ -14,34 +14,34 @@ public class Issue774 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.ActionSheet)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue774TestsDismissActionSheetAfterRotation()
 	//{
-	//	RunningApp.Tap(q => q.Button("Show ActionSheet"));
-	//	RunningApp.Screenshot("Show ActionSheet");
+	//	App.Tap(q => q.Button("Show ActionSheet"));
+	//	App.Screenshot("Show ActionSheet");
 
-	//	RunningApp.SetOrientationLandscape();
-	//	RunningApp.Screenshot("Rotate Device");
+	//	App.SetOrientationLandscape();
+	//	App.Screenshot("Rotate Device");
 
 	//	// Wait for the action sheet element to show up
-	//	RunningApp.WaitForElement(q => q.Marked("What's up"));
+	//	App.WaitForElement(q => q.Marked("What's up"));
 
-	//	var dismiss = RunningApp.Query("Dismiss");
+	//	var dismiss = App.Query("Dismiss");
 
 	//	var target = dismiss.Length > 0 ? "Dismiss" : "Destroy";
 
 
-	//	RunningApp.Tap(q => q.Marked(target));
-	//	RunningApp.WaitForNoElement(q => q.Marked(target));
+	//	App.Tap(q => q.Marked(target));
+	//	App.WaitForNoElement(q => q.Marked(target));
 
-	//	RunningApp.Screenshot("Dismiss ActionSheet");
+	//	App.Screenshot("Dismiss ActionSheet");
 
 	//}
 
 	//[TearDown]
 	//public override void TearDown()
 	//{
-	//	RunningApp.SetOrientationPortrait();
+	//	App.SetOrientationPortrait();
 
 	//	base.TearDown();
 	//}

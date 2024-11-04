@@ -1,4 +1,4 @@
-using NUnit.Framework;
+/*using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,12 +12,12 @@ public class Bugzilla26501 : _IssuesUITest
 
     public override string Issue => "BindingSource / Context action issue";
 
-	// [Test]
-	// [Category(UITestCategories.InputTransparent)]		
-	// public void TestCellsShowAfterRefresh()
-	// {
-	// 	App.Tap("Refresh");
+	[Test]
+	[Category(UITestCategories.InputTransparent)]
+	public void TestCellsShowAfterRefresh()
+	{
+		App.Tap("Refresh");
 
-	// 	App.WaitForElement("ZOOMER robothund 2");
-	// }
-}
+		App.WaitForNoElement("ZOOMER robothund 2");
+	}
+}*/

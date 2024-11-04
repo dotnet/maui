@@ -14,35 +14,35 @@ public class Issue8741 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Shell)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue8741Test()
 	//{
-	//	RunningApp.WaitForElement("Add");
-	//	RunningApp.Tap("Add");
+	//	App.WaitForElement("Add");
+	//	App.Tap("Add");
 
 	//	var toolbarItemColorValue = GetToolbarItemColorValue();
 	//	int disabledAlpha = GetAlphaValue(toolbarItemColorValue);
 
-	//	Assert.AreEqual("0", RunningApp.WaitForElement("ClickCount")[0].ReadText());
+	//	Assert.AreEqual("0", App.WaitForElement("ClickCount")[0].ReadText());
 
-	//	RunningApp.Tap("ToggleEnabled");
-	//	RunningApp.Tap("Add");
+	//	App.Tap("ToggleEnabled");
+	//	App.Tap("Add");
 
 	//	toolbarItemColorValue = GetToolbarItemColorValue();
 	//	int enabledAlpha = GetAlphaValue(toolbarItemColorValue);
 	//	Assert.Less(disabledAlpha, enabledAlpha);
 
-	//	Assert.AreEqual("1", RunningApp.WaitForElement("ClickCount")[0].ReadText());
+	//	Assert.AreEqual("1", App.WaitForElement("ClickCount")[0].ReadText());
 
-	//	RunningApp.Tap("ToggleEnabled");
-	//	RunningApp.Tap("Add");
+	//	App.Tap("ToggleEnabled");
+	//	App.Tap("Add");
 
-	//	Assert.AreEqual("1", RunningApp.WaitForElement("ClickCount")[0].ReadText());
+	//	Assert.AreEqual("1", App.WaitForElement("ClickCount")[0].ReadText());
 	//}
 
 	//private object GetToolbarItemColorValue()
 	//{
-	//	return RunningApp.Query(x => x.Text("Add").Invoke("getCurrentTextColor"))[0];
+	//	return App.Query(x => x.Text("Add").Invoke("getCurrentTextColor"))[0];
 	//}
 
 	//private int GetAlphaValue(object toolbarItemColorValue)

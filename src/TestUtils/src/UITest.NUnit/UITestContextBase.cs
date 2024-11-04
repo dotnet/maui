@@ -42,6 +42,7 @@ namespace UITest.Appium.NUnit
 		/// for FixtureTeardown to reset the app state, going back to the home screen.
 		/// </summary>
 		public bool RunTestsInIsolation => _useBrowserStack;
+		public IApp RunningApp => App;
 
 		public abstract IConfig GetTestConfig();
 

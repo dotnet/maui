@@ -14,36 +14,36 @@ public class TabbedPageTests : _IssuesUITest
 	public override string Issue => "TabbedPage nav tests";
 
 	//	[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Page 1"));
-	//	RunningApp.WaitForElement(q => q.Marked("Page 2"));
-	//	RunningApp.WaitForElement(q => q.Button("Pop"));
+	//	App.WaitForElement(q => q.Marked("Page 1"));
+	//	App.WaitForElement(q => q.Marked("Page 2"));
+	//	App.WaitForElement(q => q.Button("Pop"));
 
-	//	RunningApp.Screenshot("All elements present");
+	//	App.Screenshot("All elements present");
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithModalIssueTestsPopFromFirstTab()
 	//{
-	//	RunningApp.Tap(q => q.Button("Pop"));
-	//	RunningApp.WaitForElement(q => q.Marked("Bug Repro's"));
+	//	App.Tap(q => q.Button("Pop"));
+	//	App.WaitForElement(q => q.Marked("Bug Repro's"));
 
-	//	RunningApp.Screenshot("Popped from first tab");
+	//	App.Screenshot("Popped from first tab");
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void TabbedPageWithModalIssueTestsPopFromSecondTab()
 	//{
-	//	RunningApp.Tap(q => q.Marked("Page 2"));
-	//	RunningApp.WaitForElement(q => q.Button("Pop 2"));
-	//	RunningApp.Screenshot("On second tab");
+	//	App.Tap(q => q.Marked("Page 2"));
+	//	App.WaitForElement(q => q.Button("Pop 2"));
+	//	App.Screenshot("On second tab");
 
-	//	RunningApp.Tap(q => q.Button("Pop 2"));
-	//	RunningApp.WaitForElement(q => q.Marked("Bug Repro's"));
-	//	RunningApp.Screenshot("Popped from second tab");
+	//	App.Tap(q => q.Button("Pop 2"));
+	//	App.WaitForElement(q => q.Marked("Bug Repro's"));
+	//	App.Screenshot("Popped from second tab");
 	//}
 }

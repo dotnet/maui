@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Just navigating to this test will crash WinUI so we want to just completely remove it
 		/*
 		[Test]
-		[FailsOnWindows("This broke with WinAPPSDK 1.4 and we currently don't have an alternative https://github.com/dotnet/maui/issues/20253")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This broke with WinAPPSDK 1.4 and we currently don't have an alternative https://github.com/dotnet/maui/issues/20253")]
 		[Category(UITestCategories.Window)]
 		public void AppDoesntCrashWhenOpeningWinUIWindowParentedToCurrentWindow()
 		{

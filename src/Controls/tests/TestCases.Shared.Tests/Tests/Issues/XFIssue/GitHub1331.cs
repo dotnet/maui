@@ -17,18 +17,18 @@ public class GitHub1331 : _IssuesUITest
 	// [Category(UITestCategories.Gestures)]
 	// public void SingleTapOnCellDoesNotActivateContext()
 	// {
-	// 	RunningApp.WaitForElement(Action);
+	// 	App.WaitForElement(Action);
 		
-	// 	RunningApp.Tap(Action);
-	// 	RunningApp.WaitForElement(ActionItemTapped);
+	// 	App.Tap(Action);
+	// 	App.WaitForElement(ActionItemTapped);
 
 	// 	// Tapping the part of the cell without a tap gesture should *not* display the context action
-	// 	RunningApp.Tap(CellItem);
-	// 	RunningApp.WaitForNoElement("Context Action");
+	// 	App.Tap(CellItem);
+	// 	App.WaitForNoElement("Context Action");
 
 	// 	// But a Long Press *should* still display the context action
-	// 	RunningApp.TouchAndHold(CellItem);
-	// 	RunningApp.WaitForElement("Context Action");
+	// 	App.TouchAndHold(CellItem);
+	// 	App.WaitForElement("Context Action");
 	// }
 }
 #endif

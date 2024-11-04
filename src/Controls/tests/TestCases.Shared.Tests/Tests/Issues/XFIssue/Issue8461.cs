@@ -17,19 +17,19 @@ public class Issue8461 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void ShellSwipeToDismiss()
 	//{
-	//	var pushButton = RunningApp.WaitForElement(ButtonId);
+	//	var pushButton = App.WaitForElement(ButtonId);
 	//	Assert.AreEqual(1, pushButton.Length);
 
-	//	RunningApp.Tap(ButtonId);
+	//	App.Tap(ButtonId);
 
-	//	var page2Layout = RunningApp.WaitForElement(LayoutId);
+	//	var page2Layout = App.WaitForElement(LayoutId);
 	//	Assert.AreEqual(1, page2Layout.Length);
 	//	// Swipe in from left across 1/2 of screen width
-	//	RunningApp.SwipeLeftToRight(LayoutId, 0.99, 500, false);
+	//	App.SwipeLeftToRight(LayoutId, 0.99, 500, false);
 	//	// Swipe in from left across full screen width
-	//	RunningApp.SwipeLeftToRight(0.99, 500);
+	//	App.SwipeLeftToRight(0.99, 500);
 
-	//	pushButton = RunningApp.WaitForElement(ButtonId);
+	//	pushButton = App.WaitForElement(ButtonId);
 	//	Assert.AreEqual(1, pushButton.Length);
 	//}
 }

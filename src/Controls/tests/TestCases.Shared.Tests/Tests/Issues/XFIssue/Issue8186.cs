@@ -16,9 +16,9 @@ public class Issue8186 : _IssuesUITest
 	//[Category(UITestCategories.RefreshView)]
 	//public void SetIsRefreshingToTrueInOnAppearingDoesntCrash()
 	//{
-	//	RunningApp.WaitForElement("Success");
-	//	RunningApp.Tap("PushPage");
-	//	RunningApp.Tap("PopPage");
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
+	//	App.Tap("PushPage");
+	//	App.Tap("PopPage");
+	//	App.WaitForElement("Success");
 	//}
 }
