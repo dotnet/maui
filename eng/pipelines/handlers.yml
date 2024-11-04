@@ -166,6 +166,9 @@ stages:
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  skipAndroidSdks: true
+                  skipAndroidImages: true
+                  installDefaultAndroidApi: false
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
