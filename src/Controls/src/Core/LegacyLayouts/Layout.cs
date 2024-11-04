@@ -343,10 +343,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
-			CurrentInvalidationDepth = depth;
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
-			CurrentInvalidationDepth = 0;
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger, depth));
 		}
 
 		/// <summary>
@@ -358,9 +356,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>This method has a default implementation and application developers must call the base implementation.</remarks>
 		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			var depth = CurrentInvalidationDepth;
-			CurrentInvalidationDepth = 0;
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
+			var depth = 0;
+			InvalidationTrigger trigger;
+			if (e is InvalidationEventArgs args)
+			{
+				trigger = args.Trigger;
+				depth = args.CurrentInvalidationDepth;
+			}
+			else
+			{
+				trigger = InvalidationTrigger.Undefined;
+			}
+
 			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
 			OnChildMeasureInvalidated();
 		}
@@ -568,18 +575,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 		private protected virtual void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
 		{
 			if (depth <= depthLeveltoInvalidate)
-			{
-				CurrentInvalidationDepth = depth;
+			{				
 				if (trigger == InvalidationTrigger.RendererReady)
 				{
-					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
+					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.RendererReady, depth));
 				}
 				else
 				{
-					InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.MeasureChanged, depth));
 				}
-
-				CurrentInvalidationDepth = 0;
 			}
 			else
 			{

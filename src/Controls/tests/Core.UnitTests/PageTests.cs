@@ -580,14 +580,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				fired++;
 			};
 
-			page.Fired = 0;
+			page.InvalidateMeasureCount = 0;
 			scrollView.InvalidateMeasureCount = 0;
 			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			Assert.Equal(1, fired);
-			Assert.Equal(0, page.Fired);
+			Assert.Equal(0, page.InvalidateMeasureCount);
 			Assert.Equal(0, scrollView.InvalidateMeasureCount);
 			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			Assert.Equal(1, page.Fired);
+			Assert.Equal(1, page.InvalidateMeasureCount);
 		}
 
 		class LabelInvalidateMeasureCheck : Label
@@ -599,7 +599,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			}
 
-			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
 				InvalidateMeasureCount++;
@@ -615,7 +615,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				
 			}
 
-			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
 				InvalidateMeasureCount++;
@@ -624,17 +624,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		class InvalidatePageInvalidateMeasureCheck : ContentPage
 		{
-			public int Fired { get; set; }
+			public int InvalidateMeasureCount { get; set; }
 
 			public InvalidatePageInvalidateMeasureCheck()
 			{
 				
 			}
 
-			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
-				Fired++;
+				InvalidateMeasureCount++;
 			}
 		}
 	}
