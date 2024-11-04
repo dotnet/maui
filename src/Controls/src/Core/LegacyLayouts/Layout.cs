@@ -319,8 +319,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// It is suggested to still call the base method and modify its calculated results.</remarks>
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		int _currentInvalidationDepth;
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
+			_currentInvalidationDepth = depth;
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
 		}
@@ -334,9 +336,15 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>This method has a default implementation and application developers must call the base implementation.</remarks>
 		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
+			var depth = _currentInvalidationDepth;
+			_currentInvalidationDepth = 0;
 			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
-			OnChildMeasureInvalidated();
+			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
+
+			if (depth <= 1)
+			{
+				OnChildMeasureInvalidated();
+			}
 		}
 
 		/// <summary>
@@ -497,7 +505,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			child.Layout(region);
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			IReadOnlyList<Element> children = LogicalChildrenInternal;
 			int count = children.Count;
@@ -523,13 +531,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			if (trigger == InvalidationTrigger.RendererReady)
+			if (depth <= 1)
 			{
-				InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
+				if (trigger == InvalidationTrigger.RendererReady)
+				{
+					InvalidateMeasureInternal(InvalidationTrigger.RendererReady, depth);
+				}
+				else
+				{
+					InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged, depth);
+				}
 			}
 			else
 			{
-				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				FireMeasureChanged(trigger, depth);
 			}
 		}
 

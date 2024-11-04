@@ -498,8 +498,10 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
 		
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		int _currentDepth;
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
+			_currentDepth = depth;
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
 			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
 		}
@@ -512,7 +514,9 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
 			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
+			var depth = _currentDepth;
+			_currentDepth = 0;
+			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
 		}
 
 		/// <summary>
@@ -585,7 +589,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			var container = this as IPageContainer<Page>;
 			if (container != null)
@@ -606,7 +610,16 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_allocatedFlag = false;
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+			if (depth <= 1)
+			{
+				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			}
+			else
+			{
+				FireMeasureChanged(trigger, depth);
+			}
+
 			if (!_allocatedFlag && Width >= 0 && Height >= 0 && UseLegacyMeasureInvalidatedBehaviorEnabled)
 			{
 				SizeAllocated(Width, Height);

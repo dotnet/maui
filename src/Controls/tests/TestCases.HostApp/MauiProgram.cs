@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -11,6 +11,7 @@ namespace Maui.Controls.Sample
 	{
 		public static MauiApp CreateMauiApp()
 		{
+			AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.UseLegacyMeasureInvalidatedBehavior", false); 
 			var appBuilder = MauiApp.CreateBuilder();
 
 #if IOS || ANDROID
@@ -52,7 +53,7 @@ namespace Maui.Controls.Sample
 
 		public Page CreateDefaultMainPage()
 		{
-			return new CoreNavigationPage();
+			return new Issue3643();
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
