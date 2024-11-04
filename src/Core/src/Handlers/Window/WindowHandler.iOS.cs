@@ -57,10 +57,7 @@ namespace Microsoft.Maui.Handlers
 
 #if MACCATALYST
 			// If we are in Catalyst, use the WindowViewController so we can handle the TitleBar
-			if (rootViewController is not WindowViewController)
-			{
-				handler.PlatformView.RootViewController = new WindowViewController(nativeContent, window, handler.MauiContext);
-			}
+			handler.PlatformView.RootViewController = new WindowViewController(nativeContent, window, handler.MauiContext);
 #else
 			handler.PlatformView.RootViewController = nativeContent;
 #endif

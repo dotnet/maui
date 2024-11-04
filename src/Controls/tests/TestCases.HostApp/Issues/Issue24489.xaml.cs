@@ -11,6 +11,43 @@ public partial class Issue24489 : ContentPage
 	public Issue24489()
 	{
 		InitializeComponent();
+		var grid = new Grid
+		{
+			BackgroundColor = Colors.LightBlue,
+			ColumnDefinitions = new ColumnDefinitionCollection
+			{
+				new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+				new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+			}
+		};
+
+		var firstLabel = new Label
+		{
+			Text = "Hello, TitleBar!",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+
+		var vsl = new VerticalStackLayout()
+		{
+			Children = { firstLabel },
+			BackgroundColor = Colors.LightGreen,
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+
+		var secondLabel = new Label
+		{
+			Text = "Have a nice Day!",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+
+		Grid.SetColumn(vsl, 0);
+		grid.Children.Add(vsl);
+		Grid.SetColumn(secondLabel, 1);
+		grid.Children.Add(secondLabel);
+
 		_customTitleBar = new TitleBar()
 		{
 			Title = "Title",
@@ -18,14 +55,7 @@ public partial class Issue24489 : ContentPage
 			BackgroundColor = Colors.Blue,
 			ForegroundColor = Colors.White,
 			Icon = "dotnet_bot.png",
-			Content = new Label()
-			{
-				Text = "Have a nice day! :)",
-				HorizontalTextAlignment = TextAlignment.Center,
-				VerticalTextAlignment = TextAlignment.Center,
-				Background = Colors.LightBlue,
-				TextColor = Colors.Black,
-			},
+			Content = grid,
 			HeightRequest = 32,
 			TrailingContent = new Border()
 			{

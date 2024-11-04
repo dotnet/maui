@@ -266,6 +266,18 @@ namespace Microsoft.Maui.Controls
 				Window.Activated += Window_Activated;
 				Window.Deactivated += Window_Deactivated;
 			}
+			else if (e.PropertyName == nameof(LeadingContent))
+			{
+				IgnoreSafeAreaLayouts(LeadingContent as Layout);
+			}
+			else if (e.PropertyName == nameof(Content))
+			{
+				IgnoreSafeAreaLayouts(Content as Layout);
+			}
+			else if (e.PropertyName == nameof(TrailingContent))
+			{
+				IgnoreSafeAreaLayouts(TrailingContent as Layout);
+			}
 		}
 
 		internal void ApplyVisibleState(string stateGroup)
@@ -301,34 +313,38 @@ namespace Microsoft.Maui.Controls
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
-				// TODO we probably need to make sure this happens recursively for all children
-
-				if (leadingContent is Layout layout)
-				{
-					layout.IgnoreSafeArea = true;
-				}
 				PassthroughElements.Add(leadingContent);
 			}
 
 			if (controlTemplate?.GetTemplateChild(TitleBarContent) is IView content)
 			{
-				if (content is Layout layout)
-				{
-					layout.IgnoreSafeArea = true;
-				}
 				PassthroughElements.Add(content);
 			}
 
 			if (controlTemplate?.GetTemplateChild(TitleBarTrailing) is IView trailingContent)
 			{
-				if (trailingContent is Layout layout)
-				{
-					layout.IgnoreSafeArea = true;
-				}
 				PassthroughElements.Add(trailingContent);
 			}
 
 			ApplyVisibleState(TitleBarActiveState);
+		}
+
+		void IgnoreSafeAreaLayouts(Layout? layout)
+		{
+			if (layout is null)
+			{
+				return;
+			}
+
+			layout.IgnoreSafeArea = true;
+
+			foreach (var child in layout.Children)
+			{
+				if (child is Layout childLayout)
+				{
+					IgnoreSafeAreaLayouts(childLayout);
+				}
+			}
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)
@@ -364,9 +380,7 @@ namespace Microsoft.Maui.Controls
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
 				},
-#if MACCATALYST
 				IgnoreSafeArea = true,
-#endif
 			};
 			contentGrid.SetBinding(
 				BackgroundColorProperty,

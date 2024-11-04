@@ -135,7 +135,6 @@ namespace Microsoft.Maui
 		Rect[]? TitleBarDragRectangles => null;
 #endif
 
-#pragma warning disable RS0016
 #if MACCATALYST
 		ITitleBar? TitleBar => null;
 #endif
