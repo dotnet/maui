@@ -279,13 +279,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
-				if (oldvalue == null) return;
+				if (oldvalue == null)
+					return;
 
 				(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
 			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (newvalue == null) return;
+				if (newvalue == null)
+					return;
 
 				(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
@@ -318,7 +320,7 @@ namespace Microsoft.Maui.Controls
 				_backgroundChanged ??= (sender, e) => OnPropertyChanged(nameof(Background));
 				_backgroundProxy ??= new();
 				_backgroundProxy.Subscribe(background, _backgroundChanged);
-							
+
 				OnParentResourcesChanged(this.GetMergedResources());
 				((IElementDefinition)this).AddResourcesChangedListener(background.OnParentResourcesChanged);
 			}
@@ -1369,14 +1371,19 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		{
+			InvalidateMeasureInternal(new InvalidationEventArgs(trigger, 0));
+		}
+
+		internal virtual void InvalidateMeasureInternal(InvalidationEventArgs eventArgs)
 		{
 			_measureCache.Clear();
 
 			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
 			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
 
-			switch (trigger)
+			switch (eventArgs.Trigger)
 			{
 				case InvalidationTrigger.MarginChanged:
 				case InvalidationTrigger.HorizontalOptionsChanged:
@@ -1388,11 +1395,28 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+			FireMeasureChanged(eventArgs);
 		}
-		
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+
+		private protected void FireMeasureChanged(InvalidationTrigger trigger, int depth)
+		{
+			FireMeasureChanged(new InvalidationEventArgs(trigger, depth));
+		}
+
+
+		private protected void FireMeasureChanged(InvalidationEventArgs args)
+		{
+			var depth = args.CurrentInvalidationDepth;
+			MeasureInvalidated?.Invoke(this, args);
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, args.Trigger, ++depth);
+		}
+
+		// We don't want to change the execution path of Page or Layout when they are calling "InvalidationMeasure"
+		// If you look at page it calls OnChildMeasureInvalidated from OnChildMeasureInvalidatedInternal
+		// Because OnChildMeasureInvalidated is public API and the user might override it, we need to keep it as is
+		//private protected int CurrentInvalidationDepth { get; set; }
+
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			switch (trigger)
 			{
@@ -1404,17 +1428,14 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.RendererReady:
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
-					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					FireMeasureChanged(trigger, depth);
 					return;
 				default:
 					// When visibility changes `InvalidationTrigger.Undefined` is used,
 					// so here we're sure that visibility didn't change
 					if (child.IsVisible)
 					{
-						// We need to invalidate measures only if child is actually visible
-						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
-						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+						FireMeasureChanged(InvalidationTrigger.MeasureChanged, depth);
 					}
 					return;
 			}
