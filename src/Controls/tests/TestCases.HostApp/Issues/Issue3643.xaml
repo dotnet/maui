@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                          x:Class="Maui.Controls.Sample.Issues.Issue3643">
+     <StackLayout>
+        <Button Text="Button" Clicked="Button_Clicked" AutomationId="clickMe"/>
+        <CollectionView ItemsSource="{Binding Items}" >
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Label Text="{Binding Name}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+        </CollectionView>
+    </StackLayout>
+</ContentPage>
