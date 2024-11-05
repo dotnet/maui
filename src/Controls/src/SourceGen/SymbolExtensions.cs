@@ -62,6 +62,9 @@ static class SymbolExtensions
     public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol) => symbol.GetAllMembers().OfType<IMethodSymbol>();
     public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, string name) => symbol.GetAllMembers(name).OfType<IMethodSymbol>();
 
+    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol) => symbol.GetAllMembers().OfType<IFieldSymbol>();
+    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name) => symbol.GetAllMembers(name).OfType<IFieldSymbol>();
+    
     public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol)
     {
         foreach (var attribute in symbol.GetAttributes()) {
@@ -129,5 +132,16 @@ static class SymbolExtensions
     }
 
     public static bool IsPublic(this ISymbol symbol)
-        => symbol.DeclaredAccessibility == Accessibility.Public;   
+        => symbol.DeclaredAccessibility == Accessibility.Public;  
+
+    public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType)
+    {
+        if (type == null || baseType == null)
+            return false;
+
+        if (SymbolEqualityComparer.Default.Equals(type, baseType))
+            return true;
+
+        return type.BaseType?.InheritsFrom(baseType) ?? false;
+    }
 }
