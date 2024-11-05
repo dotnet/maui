@@ -6,10 +6,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class SetFieldVisitor : IXamlNodeVisitor
 	{
-		public SetFieldVisitor(ILContext context)
-		{
-			Context = context;
-		}
+		public SetFieldVisitor(ILContext context) => Context = context;
 
 		public ILContext Context { get; }
 
