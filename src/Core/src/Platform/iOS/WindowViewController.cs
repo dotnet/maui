@@ -26,9 +26,24 @@ internal class WindowViewController : UIViewController
 	/// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
 	public WindowViewController(UIViewController windowContentViewController, IWindow window, IMauiContext mauiContext)
 	{
-		AddChildViewController(windowContentViewController);
 		_iTitleBarRef = new WeakReference<IView?>(null);
-		SetUpTitleBar(window, mauiContext);
+
+		// Note: Maintain the order for adding a new ViewController to a Container ViewController
+		// 1. Add the Subview
+		// 2. Arrange the Subview's frame
+		// 3. AddChildViewController
+		// 4. Call DidMoveToParentViewController
+
+		if (_contentWrapperView is null && View is not null && windowContentViewController.View is not null)
+		{
+			_contentWrapperView = new();
+			View.AddSubview(_contentWrapperView);
+			_contentWrapperView.AddSubview(windowContentViewController.View);
+		}
+
+		SetUpTitleBar(window, mauiContext, true);
+		AddChildViewController(windowContentViewController);
+		windowContentViewController.DidMoveToParentViewController(this);
 	}
 
 	public override void ViewWillLayoutSubviews()
@@ -42,21 +57,14 @@ internal class WindowViewController : UIViewController
 	/// </summary>
 	/// <param name="window">An instance of the <see cref="IWindow"/>.</param>
 	/// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
-	public void SetUpTitleBar(IWindow window, IMauiContext mauiContext)
+	/// <param name="isInitalizing"></param>
+	public void SetUpTitleBar(IWindow window, IMauiContext mauiContext, bool isInitalizing)
 	{
 		var platformWindow = window.Handler?.PlatformView as UIWindow;
 
 		if (platformWindow is null || View is null)
 		{
 			return;
-		}
-
-		if (_contentWrapperView is null && ChildViewControllers.Count() > 0
-			&& ChildViewControllers?[0]?.View is UIView rootView)
-		{
-			_contentWrapperView = new();
-			View.AddSubview(_contentWrapperView);
-			_contentWrapperView.AddSubview(rootView);
 		}
 
 		var newTitleBar = window.TitleBar?.ToPlatform(mauiContext);
@@ -88,7 +96,13 @@ internal class WindowViewController : UIViewController
 		}
 
 		LayoutTitleBar();
-		View.LayoutIfNeeded();
+
+		// When we are initializing, calling LayoutIfNeeded will cause the layout events to not fire properly.
+		// However we need this when the titlebar is added or removed or the titlebar may not be fully laid out.
+		if (!isInitalizing)
+		{
+			View.LayoutIfNeeded();
+		}
 	}
 
 	/// <summary>

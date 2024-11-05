@@ -25,7 +25,7 @@ public partial class Issue24489 : ContentPage
 		{
 			Text = "Hello, TitleBar!",
 			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.Center
+			VerticalOptions = LayoutOptions.End
 		};
 
 		var vsl = new VerticalStackLayout()
@@ -33,14 +33,14 @@ public partial class Issue24489 : ContentPage
 			Children = { firstLabel },
 			BackgroundColor = Colors.LightGreen,
 			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.Center
+			VerticalOptions = LayoutOptions.End
 		};
 
 		var secondLabel = new Label
 		{
 			Text = "Have a nice Day!",
 			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.Center
+			VerticalOptions = LayoutOptions.End
 		};
 
 		Grid.SetColumn(vsl, 0);
@@ -56,7 +56,7 @@ public partial class Issue24489 : ContentPage
 			ForegroundColor = Colors.White,
 			Icon = "dotnet_bot.png",
 			Content = grid,
-			HeightRequest = 32,
+			HeightRequest = 300,
 			TrailingContent = new Border()
 			{
 				WidthRequest = 32,
@@ -69,7 +69,7 @@ public partial class Issue24489 : ContentPage
 					Text = "TJ",
 					TextColor = Colors.Black,
 					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.End,
 					FontSize = 10
 				}
 			},
