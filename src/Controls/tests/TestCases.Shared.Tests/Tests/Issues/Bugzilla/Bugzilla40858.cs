@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+//TouchAndHold not works in MacCatalyst platform.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,11 +14,12 @@ public class Bugzilla40858 : _IssuesUITest
 
 	public override string Issue => "Long clicking a text entry in a ListView header/footer cause a crash";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()
-	// {
-	// 	App.TouchAndHold("Header");
-	// 	App.TouchAndHold("Footer");
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()
+	{
+		App.TouchAndHold("Header");
+		App.TouchAndHold("Footer");
+	}
 }
+#endif

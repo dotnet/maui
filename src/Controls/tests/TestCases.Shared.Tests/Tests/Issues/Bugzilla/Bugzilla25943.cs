@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || WINDOWS
+//AutomationID for Layouts and inner elements are not works in iOS and MacCatalyst
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] TapGestureRecognizer does not work with a nested StackLayout";
 
-		/*	
+
 		const string InnerLayout = "innerlayout";
 		const string OuterLayout = "outerlayout";
 		const string Success = "Success";
@@ -33,6 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForNoElement(Success);
 		}
-		*/
+
 	}
 }
+#endif

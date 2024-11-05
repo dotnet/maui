@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,19 +13,19 @@ public class Issue12246 : _IssuesUITest
 
 	public override string Issue => "[Bug] iOS 14 App freezes when password is entered after email";
 
-	// [Test]
-	// [Category(UITestCategories.Entry)]
-	// public void UnfocusingPasswordDoesNotHang()
-	// {
-	// 	App.WaitForElement(Entry);
-	// 	App.WaitForElement(Password);
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void UnfocusingPasswordDoesNotHang()
+	{
+		App.WaitForElement("Entry");
 
-	// 	App.EnterText(Entry, "test");
-	// 	App.DismissKeyboard();
-	// 	App.EnterText(Password, "test");
+		App.EnterText("Entry", "test");
+		App.DismissKeyboard();
+		App.EnterText("Password", "test");
 
-	// 	App.Tap(Entry);
-	// 	App.DismissKeyboard();
-	// 	App.WaitForElement(Success);
-	// }
+		App.Tap("Entry");
+		App.DismissKeyboard();
+		App.WaitForElement("Success", timeout: new TimeSpan(0,0,2));
+	}
 }
+#endif

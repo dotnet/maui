@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,15 +15,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash when toolbar item removed then page changed";
 
-		// [Test]
-		// [Category(UITestCategories.ToolbarItem)]
-		// [Category(UITestCategories.Compatibility)]
-		// [FailsOnIOSWhenRunningOnXamarinUITest]
-		// [FailsOnMacWhenRunningOnXamarinUITest]
-		// [FailsOnWindowsWhenRunningOnXamarinUITest]
-		// public void TestIssue9419()
-		// {
-		// 	App.WaitForElement(OkResult);
-		// }
+		 [Test]
+		 [Category(UITestCategories.ToolbarItem)]
+		 [Category(UITestCategories.Compatibility)]
+		 [FailsOnIOSWhenRunningOnXamarinUITest]
+		 [FailsOnMacWhenRunningOnXamarinUITest]
+		 [FailsOnWindowsWhenRunningOnXamarinUITest]
+		 public void TestIssue9419()
+		 {
+		 	App.WaitForElement(OkResult, timeout: new TimeSpan(0,0,8));
+		 }
 	}
 }
+#endif
