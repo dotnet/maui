@@ -9,7 +9,7 @@
     <DefineConstants>$(DefineConstants);ANDROID;TEST_FAILS_ON_IOS;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_WINDOWS</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\..\AppiumTests.targets" />
+  <Import Project="..\AppiumTests.targets" />
  
   <ItemGroup>
     <Content Include="snapshots\**">
