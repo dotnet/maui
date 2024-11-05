@@ -18,10 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ItemCellsResize()
 		{
 			App.WaitForElement("clickMe");
-			try{
 			VerifyScreenshot("ItemCellsResize_SmallerCellSizes");
-			}
-			catch{}
 			App.Tap("clickMe");
 			VerifyScreenshot();
 		}
