@@ -1,6 +1,4 @@
-﻿#if ANDROID || WINDOWS
-//AutomationID for Layouts and inner elements are not works in iOS and MacCatalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void VerifyNestedStacklayoutTapsBubble()
@@ -38,4 +35,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 	}
 }
-#endif

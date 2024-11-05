@@ -1,5 +1,4 @@
-﻿#if !WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		 [Test]
 		 [Category(UITestCategories.ToolbarItem)]
 		 [Category(UITestCategories.Compatibility)]
-		 [FailsOnIOSWhenRunningOnXamarinUITest]
 		 [FailsOnMacWhenRunningOnXamarinUITest]
 		 [FailsOnWindowsWhenRunningOnXamarinUITest]
 		 public void TestIssue9419()
@@ -27,4 +25,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		 }
 	}
 }
-#endif

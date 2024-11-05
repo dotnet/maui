@@ -1,6 +1,4 @@
-﻿#if !MACCATALYST
-//TouchAndHold not works in MacCatalyst platform.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,10 +14,11 @@ public class Bugzilla40858 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.Compatibility)]
+	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()
 	{
 		App.TouchAndHold("Header");
 		App.TouchAndHold("Footer");
 	}
 }
-#endif

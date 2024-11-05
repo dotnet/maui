@@ -1,5 +1,4 @@
-﻿#if ANDROID || IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,6 +20,7 @@ public class Issue12246 : _IssuesUITest
 
 		App.EnterText("Entry", "test");
 		App.DismissKeyboard();
+		App.Tap("Password");
 		App.EnterText("Password", "test");
 
 		App.Tap("Entry");
@@ -28,4 +28,3 @@ public class Issue12246 : _IssuesUITest
 		App.WaitForElement("Success", timeout: new TimeSpan(0,0,2));
 	}
 }
-#endif
