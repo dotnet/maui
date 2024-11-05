@@ -24,8 +24,10 @@ public class Issue17782 : _IssuesUITest
 		App.Click("ButtonResetCharacterSpacing");
 		App.EnterText("ResetCharacterSpacingEditor", "Text");
 		App.Click("EditorsUnfocusButton");
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
+#if IOS
+			var app = App as AppiumApp;
+			KeyboardScrolling.HideKeyboard(app!, app!.Driver, true);
+#endif
 		VerifyScreenshot();
 	}
 }
