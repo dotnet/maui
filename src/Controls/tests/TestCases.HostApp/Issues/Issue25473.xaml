@@ -8,8 +8,8 @@
         <!-- Entry control with ClearButtonVisibility set to 'WhileEditing' -->
         <HorizontalStackLayout>
           <Entry
-                x:Name="PrimaryEntryField"
-                AutomationId="PrimaryEntryField"
+                x:Name="mainEntryField"
+                AutomationId="MainEntryField"
                 BackgroundColor="Transparent"
                 ClearButtonVisibility="WhileEditing"
                 FontSize="16"
@@ -21,21 +21,10 @@
                 MinimumWidthRequest="300"
                 VerticalTextAlignment="Center"/>
         </HorizontalStackLayout>
-        <!-- Entry control with ClearButtonVisibility set to 'Never' -->
-        <HorizontalStackLayout>
-          <Entry
-              x:Name="SecondaryEntryField"
-              AutomationId="SecondaryEntryField"
-              BackgroundColor="Transparent"
-              ClearButtonVisibility="Never"
-              FontSize="16"
-              ReturnType="Search"
-              IsSpellCheckEnabled="false"
-              IsTextPredictionEnabled="false"
-              HorizontalOptions="Fill"
-              VerticalOptions="Center"
-              MinimumWidthRequest="300"
-              VerticalTextAlignment="Center"/>
-        </HorizontalStackLayout>
+      
+        <!-- Button to toggle the ClearButton visibility for the Entry control -->
+        <Button AutomationId="ToggleClearButtonVisibilityButton"
+                Text="Toggle Clear Button Visibility"
+                Clicked="OnClearButtonVisibilityClicked"/>
       </VerticalStackLayout>
 </ContentPage>

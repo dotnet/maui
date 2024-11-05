@@ -8,5 +8,10 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
+
+		private void OnToggleClearButtonVisibilityClicked(object sender, EventArgs e)
+		{
+			mainEntryField.ClearButtonVisibility = ClearButtonVisibility.Never;
+		}
 	}
 }
