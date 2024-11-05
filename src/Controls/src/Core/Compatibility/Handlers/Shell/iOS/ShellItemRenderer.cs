@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public ShellItemRenderer(IShellContext context)
 		{
+			this.DisableiOS18ToolbarTabs();
 			_context = context;
 		}
 
@@ -438,7 +439,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellItemController == null)
 				return;
 
+
+#if IOS18_0_OR_GREATER || MACCATALYST18_0_OR_GREATER
+			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18))
+			{
+				TabBarHidden = !ShellItemController.ShowTabs;
+			}
+			else
+			{
+				TabBar.Hidden = !ShellItemController.ShowTabs;
+			}
+#else
 			TabBar.Hidden = !ShellItemController.ShowTabs;
+#endif
 		}
 	}
 }
