@@ -180,16 +180,18 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					Thread.Sleep(350);
 				}
-#if MACCATALYST
-				// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
-				// is of the entire screen, not just the app. Later when xharness relay support is in place to
-				// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
-				// the app.
-#else
+
 				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
-#endif
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
+				int y = 0;
+#if MACUITEST
+				var driver = ((AppiumApp)App).Driver;
+				var windowSize = driver.Manage().Window.Size;
+				
+				const int catalystWindowHeight = 768;
+				y = (windowSize.Height - catalystWindowHeight) / 2;
+#endif
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
@@ -198,6 +200,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
+					TestDevice.Mac => y,
 					_ => 0,
 				};
 
@@ -244,5 +247,26 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 		}
+
+#if MACUITEST
+		byte[] TakeScreenshot()
+		{
+			if(App is AppiumCatalystApp aca)
+			{
+				OpenQA.Selenium.Screenshot screenshot = aca.Driver.GetScreenshot();
+
+				// For Catalyst use a fixed window size, so that screenshots are deterministic.
+				// Currently, the Window size is 1024x768 and is centered in the middle of the screen.
+
+				var driver = aca.Driver;
+				var windowSize = driver.Manage().Window.Size;
+
+
+				return screenshot.AsByteArray;
+			}
+
+			throw new InvalidOperationException("Failed to get screenshot");
+		}
+#endif
 	}
 }
