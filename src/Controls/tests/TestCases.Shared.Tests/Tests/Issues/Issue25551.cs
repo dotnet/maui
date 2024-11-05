@@ -23,7 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues
 		
 		public void CollectionViewPreSelectionShouldUpdate()
 		{
-			App.WaitForElement("ListCollection");
+			App.WaitForElement("SingleSelection");
+			VerifyScreenshot();
+			App.WaitForElement("MultipleSelection");
 			VerifyScreenshot();
 		}
 	}
