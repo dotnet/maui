@@ -10,15 +10,20 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class TabbedViewExtensions
 	{
-		internal static void DisableiOS18ToolbarTabs(this UITabBarController tabBarController)
+		internal static void DisableiOS18ToolbarTabs(this UITabBarController tabBarController, bool tabBarHidden = true)
 		{
 			// Should apply to iOS and Catalyst
-			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18()) //https://github.com/xamarin/xamarin-macios/issues/21390		
+			if (OperatingSystemMacCatalyst18Workaround
+			    .IsMacCatalystVersionAtLeast18()) //https://github.com/xamarin/xamarin-macios/issues/21390		
 			{
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 				tabBarController.Mode = UITabBarControllerMode.TabSidebar;
-				tabBarController.Sidebar.Hidden = true;
-				tabBarController.TabBarHidden = true;
+
+				if (tabBarHidden)
+				{
+					tabBarController.Sidebar.Hidden = true;
+					tabBarController.TabBarHidden = true;
+				}
 			}
 			else if (OperatingSystem.IsIOSVersionAtLeast(18, 0) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
 			{

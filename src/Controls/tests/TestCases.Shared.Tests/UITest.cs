@@ -165,11 +165,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.Mac:
-						// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
-						// is of the entire screen, not just the app. Later when xharness relay support is in place to
-						// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
-						// the app.
-						Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+						environmentName = "mac";
 						break;
 
 					default:
@@ -184,9 +180,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					Thread.Sleep(350);
 				}
-
+#if MACCATALYST
+				// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
+				// is of the entire screen, not just the app. Later when xharness relay support is in place to
+				// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
+				// the app.
+#else
 				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
-
+#endif
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
@@ -241,7 +242,6 @@ namespace Microsoft.Maui.TestCases.Tests
 					Thread.Sleep(1000);
 					App.SetOrientationPortrait();
 				}
-				
 			}
 		}
 	}
