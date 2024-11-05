@@ -61,9 +61,13 @@ namespace Microsoft.Maui.Resizetizer
 			span[0] = new SKPoint();
 		}
 
+<<<<<<< HEAD
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality? filterQuality, ILogger logger)
 #pragma warning restore CS0618 // Type or member is obsolete
+=======
+		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality filterQuality, ILogger logger)
+>>>>>>> 69b15566d7 (Refactored default value handling for ResizeImageInfo.FilterQuality)
 			=> isVector
 				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, filterQuality, logger) as SkiaSharpTools
 				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, filterQuality, logger);
@@ -76,9 +80,13 @@ namespace Microsoft.Maui.Resizetizer
 		{
 		}
 
+<<<<<<< HEAD
 #pragma warning disable CS0618 // Type or member is obsolete
 		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality? filterQuality, ILogger logger)
 #pragma warning restore CS0618 // Type or member is obsolete
+=======
+		public SkiaSharpTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality filterQuality, ILogger logger)
+>>>>>>> 69b15566d7 (Refactored default value handling for ResizeImageInfo.FilterQuality)
 		{
 			Logger = logger;
 			Filename = filename;
@@ -86,10 +94,14 @@ namespace Microsoft.Maui.Resizetizer
 			BackgroundColor = backgroundColor;
 			Paint = new SKPaint
 			{
+<<<<<<< HEAD
 				IsAntialias = true,
 #pragma warning disable CS0618 // Type or member is obsolete
 				FilterQuality = filterQuality ?? SKFilterQuality.High,
 #pragma warning restore CS0618 // Type or member is obsolete
+=======
+				FilterQuality = filterQuality
+>>>>>>> 69b15566d7 (Refactored default value handling for ResizeImageInfo.FilterQuality)
 			};
 
 			if (tintColor is SKColor tint)

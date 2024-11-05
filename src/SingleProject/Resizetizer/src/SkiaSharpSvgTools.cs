@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Resizetizer
 		{
 		}
 
-		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality? filterQuality, ILogger logger)
+		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, SKFilterQuality filterQuality, ILogger logger)
 			: base(filename, baseSize, backgroundColor, tintColor, filterQuality, logger)
 		{
 			var sw = new Stopwatch();

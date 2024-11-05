@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+		public const SKFilterQuality DefaultFilterQuality = SKFilterQuality.High;
+
 		public string? ItemSpec { get; set; }
 
 		public string? Alias { get; set; }
@@ -50,7 +52,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public double ForegroundScale { get; set; } = 1.0;
 
-		public SKFilterQuality? FilterQuality { get; set; }
+		public SKFilterQuality FilterQuality { get; set; } = DefaultFilterQuality;
 
 		private static bool IsVectorFilename(string? filename)
 			=> IsVectorExtension(Path.GetExtension(filename));
