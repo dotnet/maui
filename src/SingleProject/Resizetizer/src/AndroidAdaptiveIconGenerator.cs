@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (backgroundExists)
 				{
 					// resize the background
-					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Logger);
+					var tools = SkiaSharpTools.Create(Info.IsVector, Info.Filename, dpi.Size, Info.Color, null, Info.FilterQuality, Logger);
 					tools.Resize(dpi, destination, dpiSizeIsAbsolute: true);
 				}
 				else
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Resizetizer
 				if (foregroundExists)
 				{
 					// resize the forground
-					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Logger);
+					var tools = SkiaSharpTools.Create(Info.ForegroundIsVector, Info.ForegroundFilename, dpi.Size, null, Info.TintColor, Info.FilterQuality, Logger);
 					tools.Resize(dpi, destination, Info.ForegroundScale, dpiSizeIsAbsolute: true);
 				}
 				else
