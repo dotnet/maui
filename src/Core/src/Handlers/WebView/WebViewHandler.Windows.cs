@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Handlers
 					sender.UpdateUserAgent(handler.VirtualView);
 				    if (sender.Source is not null)
 					{
-						handler.SyncPlatformCookies(handler.PlatformView.Source.ToString()).FireAndForget();
+						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();
 					}
 				}
 			}
