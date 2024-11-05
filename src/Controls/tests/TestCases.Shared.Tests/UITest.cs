@@ -180,18 +180,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					Thread.Sleep(350);
 				}
-
-				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
-				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
-
-				int y = 0;
-#if MACUITEST
-				var driver = ((AppiumApp)App).Driver;
-				var windowSize = driver.Manage().Window.Size;
 				
-				const int catalystWindowHeight = 768;
-				y = (windowSize.Height - catalystWindowHeight) / 2;
+#if MACUITEST
+				byte[] screenshotPngBytes = Screenshot();
+#else
+				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 #endif
+				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
+				
 				// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 				// app itself and contains the time, which always changes. For WinUI, crop off the title
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
@@ -200,7 +196,6 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
-					TestDevice.Mac => y,
 					_ => 0,
 				};
 
@@ -247,25 +242,54 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 		}
-
+		
 #if MACUITEST
-		byte[] TakeScreenshot()
+		byte[] Screenshot()
 		{
-			if(App is AppiumCatalystApp aca)
+			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
+			// we are going to maximize the App before take the screenshot.
+			TryToMaximize();
+			
+			// The app might not be ready to take the screenshot.
+			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
+			Thread.Sleep(1000);
+			
+			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+			
+			// After take the screenshot, restore the App Window to the previous state.
+			TryToMinimize();
+			
+			return screenshotPngBytes;
+		}
+
+		void TryToMaximize()
+		{
+			var driver = ((AppiumApp)App).Driver;
+			var window = driver.Manage().Window;
+			
+			try
 			{
-				OpenQA.Selenium.Screenshot screenshot = aca.Driver.GetScreenshot();
-
-				// For Catalyst use a fixed window size, so that screenshots are deterministic.
-				// Currently, the Window size is 1024x768 and is centered in the middle of the screen.
-
-				var driver = aca.Driver;
-				var windowSize = driver.Manage().Window.Size;
-
-
-				return screenshot.AsByteArray;
+				window.Maximize();
 			}
-
-			throw new InvalidOperationException("Failed to get screenshot");
+			catch
+			{
+				// Catalyst will throw an error on Maximize() after maximize the Window (works).
+			}
+		}
+		
+		void TryToMinimize()
+		{
+			var driver = ((AppiumApp)App).Driver;
+			var window = driver.Manage().Window;
+			
+			try
+			{
+				window.Minimize();
+			}
+			catch
+			{
+				// Catalyst will throw an error on Minimize() after minimize the Window (works).
+			}
 		}
 #endif
 	}
