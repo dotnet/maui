@@ -73,13 +73,13 @@ static class InitializeComponentCodeWriter
                 using (newblock()) {
                     codeWriter.WriteLine($"private void InitializeComponentSourceGen()");
                     using(newblock()){
-                        // try {
+                        try {
                             Visit(root, new SourceGenContext(codeWriter, compilation, xmlnsCache, typeCache, rootType!));
-                        // } catch (Exception e) {
-                        //     codeWriter.WriteLine($"/* Error: {e.Message}");
-                        //     codeWriter.WriteLine(e.StackTrace);
-                        //     codeWriter.WriteLine("*/");
-                        // }
+                        } catch (Exception e) {
+                            codeWriter.WriteLine($"/* Error: {e.Message}");
+                            codeWriter.WriteLine(e.StackTrace);
+                            codeWriter.WriteLine("*/");
+                        }
                     }
                 }
                 
@@ -102,10 +102,10 @@ exit:
         if (useDesignProperties)
             rootnode.Accept(new RemoveDuplicateDesignNodes(), null);
         // rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
-         rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
-         rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);
+        rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
+        rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);
         // rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
         // rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
-        rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
+//        rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
     }
 }
