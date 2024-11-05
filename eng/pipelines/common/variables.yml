@@ -57,7 +57,6 @@ variables:
   value: 7.4.0
 - name: Codeql.Enabled
   value: false
-- group: Xamarin-Secrets
 
 # Variable groups required for private builds
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
@@ -73,6 +72,8 @@ variables:
     # - name: PostBuildSign
     #   value: true
     # For eng/common/SetupNugetSources.ps1
+    # - group: Xamarin-Secrets
+
     - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats
     - name: _InternalBuildArgs

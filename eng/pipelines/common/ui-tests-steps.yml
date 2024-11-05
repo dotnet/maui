@@ -37,7 +37,7 @@ steps:
 
   - template: provision.yml
     parameters:
-      skipProvisioning:  ${{ eq(parameters.platform, 'windows') }}
+      skipProvisioning:  true
       skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
