@@ -255,9 +255,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Thread.Sleep(1000);
 			
 			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
-			
-			// After take the screenshot, restore the App Window to the previous state.
-			TryToMinimize();
+
+			// TODO: After take the screenshot, restore the App Window to the previous state.
 			
 			return screenshotPngBytes;
 		}
@@ -274,21 +273,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			catch
 			{
 				// Catalyst will throw an error on Maximize() after maximize the Window (works).
-			}
-		}
-		
-		void TryToMinimize()
-		{
-			var driver = ((AppiumApp)App).Driver;
-			var window = driver.Manage().Window;
-			
-			try
-			{
-				window.Minimize();
-			}
-			catch
-			{
-				// Catalyst will throw an error on Minimize() after minimize the Window (works).
 			}
 		}
 #endif
