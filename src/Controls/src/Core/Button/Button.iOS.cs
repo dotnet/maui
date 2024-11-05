@@ -214,8 +214,14 @@ namespace Microsoft.Maui.Controls
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow				
-				titleInsets.Left -= imageWidth / 2;
-				titleInsets.Right += imageWidth / 2;
+				if(layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					imageInsets.Left += titleWidth / 2;
+					imageInsets.Right -= titleWidth / 2;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
+				}
+				
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
@@ -226,6 +232,8 @@ namespace Microsoft.Maui.Controls
 
 					titleInsets.Top += (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
@@ -236,14 +244,13 @@ namespace Microsoft.Maui.Controls
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += (imageHeight / 2) + sharedSpacing;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
 					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
 					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
-					imageInsets.Left += titleWidth / 2;
-					imageInsets.Right -= titleWidth / 2;
-
 					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
 
@@ -252,9 +259,6 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
 					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
-					imageInsets.Left += titleWidth / 2;
-					imageInsets.Right -= titleWidth / 2;
-
 					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
 				}
