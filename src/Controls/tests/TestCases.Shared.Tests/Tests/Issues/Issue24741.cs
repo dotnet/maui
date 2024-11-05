@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(Page2Title);
 
 			// 6. Screenshot to validate the result.
-			App.Screenshot("If can select the second Tab, the test has passed.");
+			VerifyScreenshot();
 			App.Back();
 		}
 	}
