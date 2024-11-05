@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Handlers
 			var rootViewController = handler.PlatformView.RootViewController;
 
 #if MACCATALYST
+			// If we are in Catalyst, use the WindowViewController so we can handle the TitleBar
 			handler.PlatformView.RootViewController = new WindowViewController(nativeContent, window, handler.MauiContext);
 #else
 			handler.PlatformView.RootViewController = nativeContent;
@@ -62,8 +63,6 @@ namespace Microsoft.Maui.Handlers
 
 			window.VisualDiagnosticsOverlay?.Initialize();
 		}
-
-		// static int count;
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
 			handler.PlatformView?.UpdateX(view);
