@@ -251,6 +251,7 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
 					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+
 					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
 
@@ -259,6 +260,7 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
 					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
+
 					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
 					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
 				}
