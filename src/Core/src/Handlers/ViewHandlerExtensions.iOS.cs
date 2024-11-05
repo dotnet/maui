@@ -102,7 +102,7 @@ namespace Microsoft.Maui
 			}
 			else
 			{
-				if (platformView is LayoutView layoutView)
+				if (platformView is LayoutView || platformView is MauiLabel)
 				{
 					widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
 			   		heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
