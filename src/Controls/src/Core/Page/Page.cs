@@ -502,8 +502,7 @@ namespace Microsoft.Maui.Controls
 		
 		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
 		{
-			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			InvokeMeasureInvalidated(InvalidationTrigger.MeasureChanged);
 		}
 
 		/// <summary>
