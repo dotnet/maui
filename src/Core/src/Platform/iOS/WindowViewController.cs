@@ -1,6 +1,5 @@
 #if MACCATALYST
 using System;
-using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using UIKit;
@@ -34,7 +33,7 @@ internal class WindowViewController : UIViewController
 		// 3. AddChildViewController
 		// 4. Call DidMoveToParentViewController
 
-		if (_contentWrapperView is null && View is not null && windowContentViewController.View is not null)
+		if (View is not null && windowContentViewController.View is not null)
 		{
 			_contentWrapperView = new();
 			View.AddSubview(_contentWrapperView);
@@ -127,7 +126,7 @@ internal class WindowViewController : UIViewController
 
 		var newFrame = new CGRect(0, titleBarHeight, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
 
-		if (_contentWrapperView is not null && newFrame != _contentWrapperView.Frame && _contentWrapperView.Subviews.Count() > 0)
+		if (_contentWrapperView is not null && newFrame != _contentWrapperView.Frame && _contentWrapperView.Subviews.Length > 0)
 		{
 			_contentWrapperView.Frame = newFrame;
 			_contentWrapperView.Subviews[0].Frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);

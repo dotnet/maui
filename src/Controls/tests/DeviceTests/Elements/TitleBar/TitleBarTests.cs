@@ -37,44 +37,16 @@ namespace Microsoft.Maui.DeviceTests
 			WeakReference platformViewReference = null;
 			WeakReference handlerReference = null;
 
-			NSToolbar originalToolbar = null;
-
-			// Get the original Toolbar on the window
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var root = UIApplication.SharedApplication.GetKeyWindow().RootViewController;
-
-				if (root?.View?.Window is UIWindow window)
-				{
-					var platformTitleBar = window?.WindowScene?.Titlebar;
-
-					if (platformTitleBar is not null)
-					{
-						originalToolbar = platformTitleBar.Toolbar;
-					}
-					else
-					{
-						Assert.Fail("Could not find platform Titlebar");
-					}
-				}
-				else
-				{
-					Assert.Fail("Could not find original window");
-				}
-			});
-
-			// Create a new WindowViewController, attach it to a viewController,
-			// and see if it disposes properly
+			// Create a new WindowViewController, attach it to a viewController, and see if it disposes properly
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var window = new Window
 				{
 					Page = new ContentPage(),
-					// Page = contentPage,
 					TitleBar = new TitleBar()
 					{
 						BackgroundColor = Colors.Red,
-						Icon = new FileImageSource { File = "dotnet_bot.png" },
+						Icon = new FileImageSource { File = "blue.png" },
 						Content = new Label () { Text = "Hello, TitleBar!" },
 					},
 				};
@@ -87,10 +59,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				if ((pageHandler as IPlatformViewHandler)?.ViewController is UIViewController vc)
 				{
-					var windowHandler = CreateHandler<WindowHandler>(window);
-
 					var titleBarViewController = new UIViewController();
-					var windowVC = new WindowViewController(titleBarViewController, window, window.MauiContext);
+					var windowVC = new WindowViewController(titleBarViewController, window, pageHandler.MauiContext);
 
 					vc.AddChildViewController(windowVC);
 					vc.View.AddSubview(windowVC.View);
@@ -102,31 +72,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
-
-			// Restore the original Toolbar on the window
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var root = UIApplication.SharedApplication.GetKeyWindow().RootViewController;
-
-				if (root?.View?.Window is UIWindow window)
-				{
-					var platformTitleBar = window?.WindowScene?.Titlebar;
-
-					if (platformTitleBar is not null)
-					{
-						platformTitleBar.Toolbar = originalToolbar;
-						platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
-					}
-					else
-					{
-						Assert.Fail("Could not find the platform Titlebar");
-					}
-				}
-				else
-				{
-					Assert.Fail("Could not find window to restore");
-				}
-			});
 		}
 	}
 }
