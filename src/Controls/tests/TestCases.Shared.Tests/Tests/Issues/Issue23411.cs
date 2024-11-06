@@ -19,14 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ThemeUnspecifiedDoesNotAffectModalPageSheet()
 		{
 			// Is a iOS issue; see https://github.com/dotnet/maui/issues/23411
-			App.WaitForElement("ThemePage");
 			App.WaitForElement("ModalPageButton");
-		    App.Tap("ModalPageButton");
+			App.Tap("ModalPageButton");
 			App.WaitForElement("PageSheetModalPage");
-			App.WaitForElement("ResetThemeButton");
-			App.Tap("ResetThemeButton");
+			App.WaitForElement("ResetThemePageButton");
+			App.Tap("ResetThemePageButton");
 			VerifyScreenshot();
-		
 		}
 	}
 }

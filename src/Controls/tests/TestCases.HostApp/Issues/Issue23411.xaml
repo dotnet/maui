@@ -13,14 +13,12 @@
                 Aspect="AspectFit"
                 SemanticProperties.Description="dot net bot in a race car number eight" />
 
-      <Label
+      <Label  AutomationId="ThemeLabel" x:Name="ThemeLabelText"
                 Text="Hello, World!"
-                Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
 
       <Label
                 Text="Welcome to &#10;.NET Multi-platform App UI"
-                Style="{StaticResource SubHeadline}"
                 SemanticProperties.HeadingLevel="Level2"
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
 
@@ -30,21 +28,9 @@
                 Clicked="OnModalPage"
                 HorizontalOptions="Fill" />
 
-      <Button
-                x:Name="LightThemeBtn"
-                Text="Light theme" 
-                Clicked="OnLightTheme"
-                HorizontalOptions="Fill" />
-
-      <Button
-                x:Name="DarkThemeBtn"
-                Text="Dark theme" 
-                Clicked="OnDarkTheme"
-                HorizontalOptions="Fill" />
-
       <Button AutomationId="ResetThemeButton"
                 x:Name="ResetThemeBtn"
-                Text="Reset theme" 
+                Text="Reset theme"
                 Clicked="OnResetTheme"
                 HorizontalOptions="Fill" />
     </VerticalStackLayout>
