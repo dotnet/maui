@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Issues
 		public Issue13537Home()
 		{
 			Title = "Home"; // Setting the title of the page
-			var viewModel = new PageViewModel<Issue13537Home>();
+			var viewModel = new Issue13537ViewModel<Issue13537Home>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample.Issues
 		public Issue13537Favorite()
 		{
 			Title = "Favorite"; // Setting the title of the page
-			var viewModel = new PageViewModel<Issue13537Favorite>();
+			var viewModel = new Issue13537ViewModel<Issue13537Favorite>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
@@ -107,7 +107,7 @@ namespace Maui.Controls.Sample.Issues
 		public Issue13537SettingPage()
 		{
 			Title = "Setting"; // Setting the title of the page
-			var viewModel = new PageViewModel<Issue13537SettingPage>();
+			var viewModel = new Issue13537ViewModel<Issue13537SettingPage>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
@@ -128,7 +128,7 @@ namespace Maui.Controls.Sample.Issues
 		public Issue13537InnerPage()
 		{
 			Title = "NewPage"; // Setting the title of the page
-			var viewModel = new PageViewModel<Issue13537InnerPage>();
+			var viewModel = new Issue13537ViewModel<Issue13537InnerPage>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
@@ -172,7 +172,7 @@ namespace Maui.Controls.Sample.Issues
 			Navigation.PopAsync();
 		}
 	}
-	public class PageViewModel<T> : IQueryAttributable, INotifyPropertyChanged where T : Page
+	public class Issue13537ViewModel<T> : IQueryAttributable, INotifyPropertyChanged where T : Page
 	{
 		// Property to hold formatted query attributes as a string
 		private string _displayText = "Default Query" ;
