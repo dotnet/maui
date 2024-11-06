@@ -117,6 +117,14 @@ jobs:
       testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
       testRunTitle: $(PLATFORM_NAME) templates build tests
 
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifacts
+    condition: always()
+    continueOnError: true
+    inputs:
+      PathToPublish: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
+      ArtifactName: BuildTemplateBuildLogs
+
   - pwsh: |
       Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
       if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
