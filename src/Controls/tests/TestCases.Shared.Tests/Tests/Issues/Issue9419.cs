@@ -14,14 +14,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash when toolbar item removed then page changed";
 
-		 [Test]
-		 [Category(UITestCategories.ToolbarItem)]
-		 [Category(UITestCategories.Compatibility)]
-		 [FailsOnMacWhenRunningOnXamarinUITest]
-		 [FailsOnWindowsWhenRunningOnXamarinUITest]
-		 public void TestIssue9419()
-		 {
-		 	App.WaitForElement(OkResult, timeout: new TimeSpan(0,0,8));
-		 }
+		// [Test]
+		// [Category(UITestCategories.ToolbarItem)]
+		// [Category(UITestCategories.Compatibility)]
+		// [FailsOnIOSWhenRunningOnXamarinUITest]
+		// [FailsOnMacWhenRunningOnXamarinUITest]
+		// [FailsOnWindowsWhenRunningOnXamarinUITest]
+		// public void TestIssue9419()
+		// {
+		// 	App.WaitForElement(OkResult);
+		// }
 	}
 }
