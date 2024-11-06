@@ -112,6 +112,17 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 		}
+		
+		public override NSAttributedString? AccessibilityAttributedValue
+		{
+			get
+			{
+				return string.IsNullOrWhiteSpace(Text)
+					? new NSAttributedString(PlaceholderText ?? string.Empty)
+					: base.AccessibilityAttributedValue;
+			}
+			set => base.AccessibilityAttributedValue = value;
+		}
 
 		public override void LayoutSubviews()
 		{
@@ -128,6 +139,8 @@ namespace Microsoft.Maui.Platform
 				BackgroundColor = UIColor.Clear,
 				TextColor = ColorExtensions.PlaceholderColor,
 				Lines = 0,
+				AccessibilityElementsHidden = true,
+				IsAccessibilityElement = false,
 				VerticalAlignment = UIControlContentVerticalAlignment.Top
 			};
 
