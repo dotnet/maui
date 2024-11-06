@@ -25,6 +25,6 @@ public class Issue12246 : _IssuesUITest
 
 		App.Tap("Entry");
 		App.DismissKeyboard();
-		App.WaitForElement("Success", timeout: new TimeSpan(0,0,2));
+		App.WaitForElement("Success");
 	}
 }

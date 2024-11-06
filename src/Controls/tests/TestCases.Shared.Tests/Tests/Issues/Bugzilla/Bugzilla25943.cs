@@ -18,10 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string Success = "Success";
 
 		[Test]
-		[Category(UITestCategories.LifeCycle)]
+		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void VerifyNestedStacklayoutTapsBubble()
 		{
 			App.WaitForElement(InnerLayout);
@@ -30,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(OuterLayout);
 			App.Tap(OuterLayout);
 
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 
 	}
