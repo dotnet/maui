@@ -117,6 +117,19 @@ jobs:
       testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
       testRunTitle: $(PLATFORM_NAME) templates build tests
 
+  - task: CopyFiles@2
+    displayName: Copy binlogs
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: |
+        **/*.binlog
+        ../**/*.binlog
+        ../../**/*.binlog
+      TargetFolder: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
+    continueOnError: true
+    condition: succeededOrFailed()
+
+
   - task: PublishBuildArtifacts@1
     displayName: Publish Artifacts
     condition: always()
