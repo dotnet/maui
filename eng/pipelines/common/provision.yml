@@ -62,6 +62,7 @@ steps:
         xcodebuild -runFirstLaunch
       displayName: Select Xcode Version
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 30
 
 
   # Provision Additional Software

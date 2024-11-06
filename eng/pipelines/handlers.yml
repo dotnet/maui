@@ -260,6 +260,7 @@ stages:
             vmImage: ${{ BuildPlatform.vmImage }}
             demands:
                - macOS.Name -equals Sonoma
+               - macOS.Architecture -equals x64
           steps:
             - template: common/provision.yml
               parameters:
