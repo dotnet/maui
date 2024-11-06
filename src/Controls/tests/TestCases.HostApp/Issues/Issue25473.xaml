@@ -25,6 +25,6 @@
         <!-- Button to toggle the ClearButton visibility for the Entry control -->
         <Button AutomationId="ToggleClearButtonVisibilityButton"
                 Text="Toggle Clear Button Visibility"
-                Clicked="OnClearButtonVisibilityClicked"/>
+                Clicked="OnToggleClearButtonVisibilityClicked"/>
       </VerticalStackLayout>
 </ContentPage>

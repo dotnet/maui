@@ -19,13 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void VerifyEntryClearButtonVisibilitySetToWhileEditing()
 		{
 			App.WaitForElement("ToggleClearButtonVisibilityButton");
-			App.Tap("MainEntryField");
+			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to WhileEditing");
-#if IOS
-			var app = App as AppiumApp;
-
-			KeyboardScrolling.HideKeyboard(app!, app!.Driver, true);
-#endif
+			App.Tap("MainEntryField");
 			VerifyScreenshot();
 		}
 
@@ -36,11 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("ToggleClearButtonVisibilityButton");
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to Never");
-#if IOS
-			var app = App as AppiumApp;
-
-			KeyboardScrolling.HideKeyboard(app!, app!.Driver, true);
-#endif
+			App.Tap("MainEntryField");
 			VerifyScreenshot();
 		}
 	}
