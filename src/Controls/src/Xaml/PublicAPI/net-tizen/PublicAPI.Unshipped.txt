@@ -8,3 +8,7 @@ Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
 Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Default = 0 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.RuntimeInflator = 1 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.XamlCInflator = 2 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.SourceGenInflator = 4 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
