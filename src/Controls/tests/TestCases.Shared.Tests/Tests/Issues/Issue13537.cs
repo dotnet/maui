@@ -11,7 +11,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
     public class Issue13537 : _IssuesUITest
 		{
-		const string BackButtonAutomationId = "Back";
 		public Issue13537(TestDevice testDevice) : base(testDevice)
 		{
 		}
