@@ -8,27 +8,23 @@ namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 13537, "ApplyQueryAttributes should Trigger for all navigations",
 		PlatformAffected.All)]
-	public partial class Issue13537 : TestShell
+	public partial class Issue13537 : Shell
 	{
 
 		public Issue13537()
 		{
 			InitializeComponent();
 	     	Routing.RegisterRoute("NewPage", typeof(NewInnerPage));
-			Application.Current.MainPage = new NavigationPage(new MainHomePage());
-		}
-
-		protected override void Init()
-		{
+			Application.Current.Windows[0].Page = new NavigationPage(new Issue13537Home());
 		}
 	}
 
-	public class MainHomePage : ContentPage
+	public class Issue13537Home : ContentPage
 	{
-		public MainHomePage()
+		public Issue13537Home()
 		{
 			Title = "Home"; // Setting the title of the page
-			var viewModel = new PageViewModel<MainPage>();
+			var viewModel = new PageViewModel<Issue13537Home>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label

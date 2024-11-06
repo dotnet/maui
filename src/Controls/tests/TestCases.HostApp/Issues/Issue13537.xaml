@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<local:TestShell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:local="using:Maui.Controls.Sample.Issues"
@@ -10,7 +10,7 @@
     <Tab Title="Home" AutomationId="Home">
       <ShellContent
                 Title="Home"                                                                        
-                ContentTemplate="{DataTemplate local:MainHomePage}"
+                ContentTemplate="{DataTemplate local:Issue13537Home}"
                 Route="MainPage" />
     </Tab>
     <Tab Title="Favorites"
@@ -28,7 +28,4 @@
                 Route="SettingsPage" />
     </Tab>
   </TabBar>
-
-
-
-</local:TestShell>
+</Shell>
