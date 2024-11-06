@@ -1351,8 +1351,7 @@ namespace Microsoft.Maui.Controls
 		// rely on the previous behavior or that are affected by the event propagation being slow on deep control
 		// hierarchies. This can be removed once a better fix is in place, such as https://github.com/dotnet/maui/pull/24848
 		// or https://github.com/dotnet/maui/pull/25291.
-		internal static bool UseLegacyMeasureInvalidatedBehaviorEnabled { get; } =
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.UseLegacyMeasureInvalidatedBehavior", out var enabled) && enabled;
+		internal static bool UseLegacyMeasureInvalidatedBehaviorEnabled { get; } = true;
 
 		/// <summary>
 		/// Invalidates the measure of an element.
