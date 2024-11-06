@@ -36,6 +36,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				Assert.That(tableViewSelectionText, Is.EqualTo("TableSection Title Text"));
 			}
-        }
+
+			VerifyScreenshot();
+		}
     }
 }
