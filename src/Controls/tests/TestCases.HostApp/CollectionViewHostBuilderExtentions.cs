@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 				bool cv2Handlers = false;
 				foreach(var en in NSProcessInfo.ProcessInfo.Environment)
 				{
-					if ($"{en.Key}" == "TEST_COMMANDLINE_ARGS")
+					if ($"{en.Key}" == "TEST_CONFIGURATION_ARGS")
 					{
 						cv2Handlers = $"{en.Value}".Contains("CollectionView2", StringComparison.OrdinalIgnoreCase);
 						break;

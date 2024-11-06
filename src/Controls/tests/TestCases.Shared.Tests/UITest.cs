@@ -90,10 +90,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				config.SetTestConfigurationArg("StartingTestClass", TestContext.CurrentContext.Test.ClassName);
 			}
 
-			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_COMMANDLINE_ARGS") ?? "";
+			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
 			if (!String.IsNullOrEmpty(commandLineArgs))
 			{
-				config.SetTestConfigurationArg("TEST_COMMANDLINE_ARGS", commandLineArgs);
+				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
 			}
 
 			return config;
