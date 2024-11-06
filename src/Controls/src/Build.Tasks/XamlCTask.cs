@@ -208,9 +208,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")) != null)
 					{
 						var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-						if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
+						if ((options & XamlCompilationOptions.RuntimeInflator) == XamlCompilationOptions.RuntimeInflator)
 							skipassembly = true;
-						if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
+						if ((options & XamlCompilationOptions.XamlCInflator) == XamlCompilationOptions.XamlCInflator)
 							skipassembly = false;
 					}
 
@@ -223,9 +223,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")) != null)
 						{
 							var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-							if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
+							if ((options & XamlCompilationOptions.RuntimeInflator) == XamlCompilationOptions.RuntimeInflator)
 								skipmodule = true;
-							if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
+							if ((options & XamlCompilationOptions.XamlCInflator) == XamlCompilationOptions.XamlCInflator)
 								skipmodule = false;
 						}
 
@@ -253,9 +253,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 										ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute")) != null)
 							{
 								var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-								if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
+								if ((options & XamlCompilationOptions.RuntimeInflator) == XamlCompilationOptions.RuntimeInflator)
 									skiptype = true;
-								if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
+								if ((options & XamlCompilationOptions.XamlCInflator) == XamlCompilationOptions.XamlCInflator)
 									skiptype = false;
 							}
 
