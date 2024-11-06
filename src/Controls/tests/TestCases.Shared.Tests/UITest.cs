@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using NUnit.Framework;
-using OpenQA.Selenium.Appium.iOS;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -182,7 +181,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 				
 #if MACUITEST
-				byte[] screenshotPngBytes = Screenshot();
+				byte[] screenshotPngBytes = TakeScreenshot();
 #else
 				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 #endif
@@ -244,11 +243,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 		
 #if MACUITEST
-		byte[] Screenshot()
+		byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to maximize the App before take the screenshot.
-			TryToMaximize();
+			App.EnterFullScreen();
 			
 			// The app might not be ready to take the screenshot.
 			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
@@ -257,23 +256,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 
 			// TODO: After take the screenshot, restore the App Window to the previous state.
+			App.ExitFullScreen();
 			
 			return screenshotPngBytes;
-		}
-
-		void TryToMaximize()
-		{
-			var driver = ((AppiumApp)App).Driver;
-			var window = driver.Manage().Window;
-			
-			try
-			{
-				window.Maximize();
-			}
-			catch
-			{
-				// Catalyst will throw an error on Maximize() after maximize the Window (works).
-			}
 		}
 #endif
 	}
