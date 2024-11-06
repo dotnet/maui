@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 		public Issue13537()
 		{
 			InitializeComponent();
-	     	Routing.RegisterRoute("NewPage", typeof(NewInnerPage));
+	     	Routing.RegisterRoute("NewPage", typeof(Issue13537InnerPage));
 			Application.Current.Windows[0].Page = new NavigationPage(new Issue13537Home());
 		}
 	}
@@ -61,20 +61,20 @@ namespace Maui.Controls.Sample.Issues
 		}
 		private void OnNavigationWithPushAsync(object sender, EventArgs e)
 		{
-			Navigation.PushAsync(new NewInnerPage());
+			Navigation.PushAsync(new Issue13537InnerPage());
 		}
 
 		private void OnNavigationWithPushModalAsync(object sender, EventArgs e)
 		{
-			Navigation.PushModalAsync(new NewInnerPage());
+			Navigation.PushModalAsync(new Issue13537InnerPage());
 		}
 	}
-	public class FavoritePage : ContentPage
+	public class Issue13537Favorite : ContentPage
 	{
-		public FavoritePage()
+		public Issue13537Favorite()
 		{
 			Title = "Favorite"; // Setting the title of the page
-			var viewModel = new PageViewModel<FavoritePage>();
+			var viewModel = new PageViewModel<Issue13537Favorite>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
@@ -102,12 +102,12 @@ namespace Maui.Controls.Sample.Issues
 			Shell.Current.GoToAsync("NewPage");
 		}
 	}
-	public class SettingPage : ContentPage
+	public class Issue13537SettingPage : ContentPage
 	{
-		public SettingPage()
+		public Issue13537SettingPage()
 		{
 			Title = "Setting"; // Setting the title of the page
-			var viewModel = new PageViewModel<SettingPage>();
+			var viewModel = new PageViewModel<Issue13537SettingPage>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
@@ -123,12 +123,12 @@ namespace Maui.Controls.Sample.Issues
 			this.Content = stack;
 		}
 	}
-	public class NewInnerPage : ContentPage
+	public class Issue13537InnerPage : ContentPage
 	{
-		public NewInnerPage()
+		public Issue13537InnerPage()
 		{
 			Title = "NewPage"; // Setting the title of the page
-			var viewModel = new PageViewModel<NewInnerPage>();
+			var viewModel = new PageViewModel<Issue13537InnerPage>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
