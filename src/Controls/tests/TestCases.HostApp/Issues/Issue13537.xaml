@@ -17,14 +17,14 @@
              AutomationId="favorite">
       <ShellContent
                 Title="Favorites" AutomationId="Favourite"
-                ContentTemplate="{DataTemplate local:FavoritePage}"
+                ContentTemplate="{DataTemplate local:Issue13537Favorite}"
                 Route="FavoritesPage" />
     </Tab>
     <Tab Title="Settings"
              AutomationId="settings">
       <ShellContent
                 Title="Settings"
-                ContentTemplate="{DataTemplate local:SettingPage}"
+                ContentTemplate="{DataTemplate local:Issue13537SettingPage}"
                 Route="SettingsPage" />
     </Tab>
   </TabBar>
