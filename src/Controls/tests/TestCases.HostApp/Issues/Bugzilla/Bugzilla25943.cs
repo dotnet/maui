@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public StackLayout GetNestedStackLayout()
 		{
-			_result = new Label();
+			_result = new Label() { AutomationId = "Success" };
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var innerLayout = new StackLayout

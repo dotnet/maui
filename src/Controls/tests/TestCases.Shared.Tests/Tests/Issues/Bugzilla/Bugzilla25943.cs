@@ -25,10 +25,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(InnerLayout);
 			App.Tap(InnerLayout);
 
-			App.WaitForElement(OuterLayout);
 			App.Tap(OuterLayout);
 
-			App.WaitForElement(Success);
+			Assert.That(App.WaitForTextToBePresentInElement("Success", "Success"), Is.True, "Success value should be updated in the label.");
 		}
 
 	}
