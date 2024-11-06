@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			ComputeConstraintForView(view, false);
 		}
 
-		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
 		{
 			_layoutInformation = new LayoutInformation();
 			base.InvalidateMeasureInternal(trigger);
