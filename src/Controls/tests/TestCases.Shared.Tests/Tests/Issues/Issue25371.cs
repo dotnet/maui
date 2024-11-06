@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("MoveToNextPage");
 			App.WaitForElement("SecondPageLabel");
 
-			App.LongPress(BackButtonAutomationId);
+			App.LongPress("Back");
 			var navigationToLabel = App.FindElement("MainPageLabel").GetText();
 			if (string.IsNullOrEmpty(navigationToLabel))
 			{
