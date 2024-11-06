@@ -247,6 +247,9 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 			.Append("/bl:" + binlog)
 	});
 
+	Information("TEST_CONFIGURATION_ARGS {0}", TEST_CONFIGURATION_ARGS);
+
+	SetEnvironmentVariable("TEST_CONFIGURATION_ARGS", Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? ""));
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);
