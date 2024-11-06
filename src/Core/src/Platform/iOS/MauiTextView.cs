@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var contentHeight = ContentSize.Height;
 			var availableSpace = Bounds.Height - contentHeight * ZoomScale;
-			if (availableSpace <= 0)
+			if (availableSpace <= 0 || IsFirstResponder)
 				return;
 			ContentOffset = VerticalTextAlignment switch
 			{
