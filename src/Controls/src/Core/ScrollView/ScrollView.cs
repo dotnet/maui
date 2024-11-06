@@ -474,10 +474,5 @@ namespace Microsoft.Maui.Controls
 
 			return bounds.Size;
 		}
-
-		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
-		{
-			base.InvalidateMeasureLegacy(trigger, depth, 1);
-		}
 	}
 }

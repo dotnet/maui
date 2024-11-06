@@ -9,9 +9,9 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IMauiPlatformView
 	{
-		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
+		bool _invalidateParentWhenMovedToWindow;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 		internal ICrossPlatformLayout? CrossPlatformLayout
@@ -96,6 +96,12 @@ namespace Microsoft.Maui.Platform
 				if (_shadowLayer != null)
 					Layer.InsertSublayer(_shadowLayer, 0);
 			}
+		}
+
+		public override void SetNeedsLayout()
+		{
+			InvalidateConstraintsCache();
+			base.SetNeedsLayout();
 		}
 
 		public override void LayoutSubviews()
@@ -237,32 +243,6 @@ namespace Microsoft.Maui.Platform
 			return returnSize;
 		}
 
-		public override void SetNeedsLayout()
-		{
-			base.SetNeedsLayout();
-			TryToInvalidateSuperView(false);
-		}
-
-		private protected void TryToInvalidateSuperView(bool onlyIfPending)
-		{
-			if (onlyIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
-			{
-				return;
-			}
-
-			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
-			// To a SuperView that's been disposed which will cause a crash when trying to access it
-			if (Window is not null)
-			{
-				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
-				this.Superview?.SetNeedsLayout();
-			}
-			else
-			{
-				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
-			}
-		}
-
 		partial void ClipChanged()
 		{
 			SetClip();
@@ -274,6 +254,12 @@ namespace Microsoft.Maui.Platform
 		}
 
 		partial void BorderChanged() => SetBorder();
+
+		void InvalidateConstraintsCache()
+		{
+			_lastMeasureWidth = double.NaN;
+			_lastMeasureHeight = double.NaN;
+		}
 
 		void SetClip()
 		{
@@ -368,6 +354,13 @@ namespace Microsoft.Maui.Platform
 			return Layer;
 		}
 
+		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		void IMauiPlatformView.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
@@ -380,7 +373,11 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-			TryToInvalidateSuperView(true);
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 	}
 }

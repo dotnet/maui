@@ -38,6 +38,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView.AddSubview(child.ToPlatform(MauiContext));
 			}
+
+			PlatformView.InvalidateAncestorsMeasures();
 		}
 
 		public void Add(IView child)
@@ -54,6 +56,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				childPlatformView.UpdateFlowDirection(child);
 			}
+
+			PlatformView.InvalidateAncestorsMeasures();
 		}
 
 		public void Remove(IView child)
@@ -65,11 +69,14 @@ namespace Microsoft.Maui.Handlers
 			{
 				childView.RemoveFromSuperview();
 			}
+
+			PlatformView.InvalidateAncestorsMeasures();
 		}
 
 		public void Clear()
 		{
 			PlatformView.ClearSubviews();
+			PlatformView.InvalidateAncestorsMeasures();
 		}
 
 		public void Insert(int index, IView child)
@@ -86,6 +93,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				childPlatformView.UpdateFlowDirection(child);
 			}
+
+			PlatformView.InvalidateAncestorsMeasures();
 		}
 
 		public void Update(int index, IView child)
@@ -99,6 +108,7 @@ namespace Microsoft.Maui.Handlers
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
 			PlatformView.InsertSubview(child.ToPlatform(MauiContext), targetIndex);
 			PlatformView.SetNeedsLayout();
+			PlatformView.InvalidateAncestorsMeasures();
 		}
 
 		public void UpdateZIndex(IView child)
@@ -137,6 +147,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				PlatformView.Subviews.RemoveAt(currentIndex);
 				PlatformView.InsertSubview(nativeChildView, targetIndex);
+				PlatformView.InvalidateAncestorsMeasures();
 			}
 		}
 
