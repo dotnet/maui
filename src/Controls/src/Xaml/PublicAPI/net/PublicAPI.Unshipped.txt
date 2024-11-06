@@ -8,7 +8,11 @@ Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
 Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
-Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Default = 0 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
-Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.RuntimeInflator = 1 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
-Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.XamlCInflator = 2 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
-Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.SourceGenInflator = 4 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.Default = 0 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.Runtime = 1 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.XamlC = 2 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlInflator.SourceGen = 4 -> Microsoft.Maui.Controls.Xaml.XamlInflator
+Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute
+Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute.XamlProcessingAttribute(Microsoft.Maui.Controls.Xaml.XamlInflator inflator) -> void
+Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute.XamlInflator.get -> Microsoft.Maui.Controls.Xaml.XamlInflator

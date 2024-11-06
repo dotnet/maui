@@ -179,6 +179,7 @@ Microsoft.Maui.Controls.Xaml.TypeExtension.TypeExtension() -> void
 Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute
 Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationAttribute(Microsoft.Maui.Controls.Xaml.XamlCompilationOptions xamlCompilationOptions) -> void
 Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationOptions.get -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
+Microsoft.Maui.Controls.Xaml.XamlCompilationAttribute.XamlCompilationOptions.set -> void
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile = 2 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions
 Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Skip = 1 -> Microsoft.Maui.Controls.Xaml.XamlCompilationOptions

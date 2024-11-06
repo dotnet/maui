@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Xaml;
 
-
 namespace Microsoft.Maui.Controls.SourceGen;
 
 static class InitializeComponentCodeWriter
