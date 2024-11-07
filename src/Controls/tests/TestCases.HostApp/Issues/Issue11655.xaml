@@ -5,9 +5,19 @@
 
   <VerticalStackLayout Spacing="25"
                        VerticalOptions="Center">
+
+    <Label x:Name="RTLlabel" FlowDirection="RightToLeft"
+        BackgroundColor="gray"
+        Text="Label with RTL"
+        WidthRequest="200"
+        HeightRequest="50"
+        HorizontalTextAlignment="End"
+        VerticalTextAlignment="Center"
+        HorizontalOptions="CenterAndExpand" />
+    
     <Label x:Name="label"
            BackgroundColor="gray"
-           Text="Hello, World!"
+           Text="Label with LTR"
            WidthRequest="200"
            HeightRequest="50"
            HorizontalTextAlignment="End"
