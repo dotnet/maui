@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		static void AssertEqualWithTolerance(double a, double b, double tolerance)
 		{
 			var diff = Math.Abs(a - b);
-			Assert.True(diff <= tolerance);
+			Assert.True(diff <= tolerance, $"a: {a} b: {b} tolerance: {tolerance}");
 		}
 
 		[Theory]
