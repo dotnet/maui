@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue15559"
+             Title="Issue15559">
+    
+  <VerticalStackLayout Spacing="20" Margin="20">
+
+    <VerticalStackLayout WidthRequest="200" BackgroundColor="Yellow">
+        <Label AutomationId="LayoutWidth" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."/>
+    </VerticalStackLayout>
+
+    <VerticalStackLayout  BackgroundColor="Yellow">
+        <Label AutomationId="LabelWidth" WidthRequest="200" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."/>
+    </VerticalStackLayout>
+</VerticalStackLayout>
+</ContentPage>
