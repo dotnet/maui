@@ -14,149 +14,149 @@ namespace Maui.Controls.Sample.Issues
 		{
 
 		}
-	}
 
-	public class MainPage : ContentPage
-	{
-		MenuFlyoutItem menuFlyoutItem;
-
-		public MainPage()
+		public class MainPage : ContentPage
 		{
-			MainPageViewModel mainPageViewModel = new MainPageViewModel();
-			mainPageViewModel.MainPage = this;
-			BindingContext = mainPageViewModel;
+			MenuFlyoutItem menuFlyoutItem;
 
-			var menuBarItem = new MenuBarItem
+			public MainPage()
 			{
-				Text = "Custom Menu",
-				AutomationId = "MenuBarItem"
-			};
+				MainPageViewModel mainPageViewModel = new MainPageViewModel();
+				mainPageViewModel.MainPage = this;
+				BindingContext = mainPageViewModel;
 
-			menuFlyoutItem = new MenuFlyoutItem
-			{
-				Text = "Custom Item",
-				AutomationId = "MenuFlyoutItem"
-			};
-
-			menuFlyoutItem.SetBinding(MenuFlyoutItem.CommandProperty, new Binding("MenuItemCommand"));
-			menuBarItem.Add(menuFlyoutItem);
-
-			MenuBarItems.Add(menuBarItem);
-
-			var mainButton = new Button
-			{
-				Text = "Go to Second Page",
-				AutomationId = "MainButton",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-
-			var commandButton = new Button
-			{
-				Text = "CommandButton",
-				AutomationId = "CommandButton",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-			};
-
-			var commandLabel = new Label
-			{
-				AutomationId = "CommandLabel",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-
-			commandLabel.SetBinding(Label.TextProperty, new Binding("LabelText"));
-
-			mainButton.Command = mainPageViewModel.GoToSecondPageCommand;
-			commandButton.Clicked += OnButtonClicked;
-			var stackLayout = new VerticalStackLayout();
-			stackLayout.Children.Add(mainButton);
-			stackLayout.Children.Add(commandButton);
-			stackLayout.Children.Add(commandLabel);
-
-			Content = stackLayout;
-		}
-
-		private void OnButtonClicked(object sender, EventArgs e)
-		{
-			menuFlyoutItem?.Command.Execute(menuFlyoutItem.CommandParameter);
-		}
-	}
-
-	public class SecondPage : ContentPage
-	{
-		public SecondPage()
-		{
-			BindingContext = new SecondPageViewModel(this);
-
-			var goBackButton = new Button
-			{
-				Text = "Go Back",
-				AutomationId = "GoBackButton",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-
-			goBackButton.SetBinding(Button.CommandProperty, nameof(SecondPageViewModel.GoBackCommand));
-
-			var grid = new Grid();
-			grid.Children.Add(goBackButton);
-
-			Content = grid;
-		}
-	}
-
-	public class SecondPageViewModel
-	{
-		SecondPage secondPage;
-		public SecondPageViewModel(SecondPage page)
-		{
-			secondPage = page;
-			GoBackCommand = new Command(GoBackAsync);
-		}
-
-		public ICommand GoBackCommand { get; }
-
-		private void GoBackAsync()
-		{
-			secondPage.Navigation.PopAsync();
-		}
-	}
-
-	public class MainPageViewModel : INotifyPropertyChanged
-	{
-		public MainPage MainPage;
-		private string _labelText;
-		public string LabelText
-		{
-			get => _labelText;
-			set
-			{
-				if (_labelText != value)
+				var menuBarItem = new MenuBarItem
 				{
-					_labelText = value;
-					OnPropertyChanged(nameof(LabelText));
-				}
+					Text = "Custom Menu",
+					AutomationId = "MenuBarItem"
+				};
+
+				menuFlyoutItem = new MenuFlyoutItem
+				{
+					Text = "Custom Item",
+					AutomationId = "MenuFlyoutItem"
+				};
+
+				menuFlyoutItem.SetBinding(MenuFlyoutItem.CommandProperty, new Binding("MenuItemCommand"));
+				menuBarItem.Add(menuFlyoutItem);
+
+				MenuBarItems.Add(menuBarItem);
+
+				var mainButton = new Button
+				{
+					Text = "Go to Second Page",
+					AutomationId = "MainButton",
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				};
+
+				var commandButton = new Button
+				{
+					Text = "CommandButton",
+					AutomationId = "CommandButton",
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center,
+				};
+
+				var commandLabel = new Label
+				{
+					AutomationId = "CommandLabel",
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				};
+
+				commandLabel.SetBinding(Label.TextProperty, new Binding("LabelText"));
+
+				mainButton.Command = mainPageViewModel.GoToSecondPageCommand;
+				commandButton.Clicked += OnButtonClicked;
+				var stackLayout = new VerticalStackLayout();
+				stackLayout.Children.Add(mainButton);
+				stackLayout.Children.Add(commandButton);
+				stackLayout.Children.Add(commandLabel);
+
+				Content = stackLayout;
+			}
+
+			private void OnButtonClicked(object sender, EventArgs e)
+			{
+				menuFlyoutItem?.Command.Execute(menuFlyoutItem.CommandParameter);
 			}
 		}
 
-		public ICommand MenuItemCommand { get; set; } 
-		public ICommand GoToSecondPageCommand { get; set; }
-
-		public MainPageViewModel()
+		public class SecondPage : ContentPage
 		{
-			MenuItemCommand = new Command(() => LabelText = "Menu Item Clicked");
-			GoToSecondPageCommand = new Command(GoToSecondPageAsync);
+			public SecondPage()
+			{
+				BindingContext = new SecondPageViewModel(this);
+
+				var goBackButton = new Button
+				{
+					Text = "Go Back",
+					AutomationId = "GoBackButton",
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				};
+
+				goBackButton.SetBinding(Button.CommandProperty, nameof(SecondPageViewModel.GoBackCommand));
+
+				var grid = new Grid();
+				grid.Children.Add(goBackButton);
+
+				Content = grid;
+			}
 		}
 
-		private void GoToSecondPageAsync()
+		public class SecondPageViewModel
 		{
-			MainPage.Navigation.PushAsync(new SecondPage());
+			SecondPage secondPage;
+			public SecondPageViewModel(SecondPage page)
+			{
+				secondPage = page;
+				GoBackCommand = new Command(GoBackAsync);
+			}
+
+			public ICommand GoBackCommand { get; }
+
+			private void GoBackAsync()
+			{
+				secondPage.Navigation.PopAsync();
+			}
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
-		protected void OnPropertyChanged(string propertyName) =>
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		public class MainPageViewModel : INotifyPropertyChanged
+		{
+			public MainPage MainPage;
+			private string _labelText;
+			public string LabelText
+			{
+				get => _labelText;
+				set
+				{
+					if (_labelText != value)
+					{
+						_labelText = value;
+						OnPropertyChanged(nameof(LabelText));
+					}
+				}
+			}
+
+			public ICommand MenuItemCommand { get; set; }
+			public ICommand GoToSecondPageCommand { get; set; }
+
+			public MainPageViewModel()
+			{
+				MenuItemCommand = new Command(() => LabelText = "Menu Item Clicked");
+				GoToSecondPageCommand = new Command(GoToSecondPageAsync);
+			}
+
+			private void GoToSecondPageAsync()
+			{
+				MainPage.Navigation.PushAsync(new SecondPage());
+			}
+
+			public event PropertyChangedEventHandler PropertyChanged;
+			protected void OnPropertyChanged(string propertyName) =>
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 	}
 }
