@@ -96,7 +96,7 @@ steps:
       $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
       
       $testFilter = ""
-      $testConfigrationArgs = ""${{ parameters.testConfigurationArgs }}""
+      $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
       "${{ parameters.testFilter }}".Split(",") | ForEach {
         $testFilter += "TestCategory=" + $_ + "|"
