@@ -11,12 +11,10 @@ namespace Microsoft.Maui.TestCases.Tests
 #else
 		protected const string FlyoutIconAutomationId = "OK";
 #endif
-#if IOS || MACCATALYST
+#if __IOS__ || WINDOWS
 		protected const string BackButtonAutomationId = "Back";
-#elif WINDOWS
-        protected const string BackButtonAutomationId = "NavigationViewBackButton";
 #else
-        protected const string BackButtonAutomationId = "Navigate up";
+		protected const string BackButtonAutomationId = "Navigate up";
 #endif
 
 		public _IssuesUITest(TestDevice device) : base(device) { }

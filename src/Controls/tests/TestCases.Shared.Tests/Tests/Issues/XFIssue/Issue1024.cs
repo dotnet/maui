@@ -22,11 +22,8 @@ public class Issue1024 : _IssuesUITest
 			App.Tap("Push");
 
 			App.WaitForElement("ListView");
-#if ANDROID
-			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
-#else
-			App.Tap("NavigationViewBackButton");
-#endif
+			App.NavigateBack();
+
 		}
 
 		// At this point, the counter can be any value, but it's most likely not zero.

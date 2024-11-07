@@ -18,12 +18,7 @@ public class Issue12126 : _IssuesUITest
 	public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()
 	{
 		App.WaitForElement("TestReady");
-#if ANDROID
-		App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
-#else
-		App.Tap(BackButtonAutomationId);
-#endif
-
+		App.NavigateBack();
 #if WINDOWS
 		App.WaitForElement("navViewItem");
 #else
