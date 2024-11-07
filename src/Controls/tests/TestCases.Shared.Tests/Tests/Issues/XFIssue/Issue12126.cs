@@ -21,7 +21,7 @@ public class Issue12126 : _IssuesUITest
 #if ANDROID
 		App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));App.Tap("Navigate up");
 #else
-		App.Tap("NavigationViewBackButton");
+		App.Tap(BackButtonAutomationId);
 #endif
 
 #if WINDOWS
