@@ -1,4 +1,3 @@
-
 namespace Maui.Controls.Sample.Issues;
 
 
