@@ -93,7 +93,7 @@ steps:
       $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
       $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
       $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
-      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic" --TEST_CONFIGURATION_ARGS=""${{ parameters.testConfigurationArgs }}""
+      $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --TEST_CONFIGURATION_ARGS=""${{ parameters.testConfigurationArgs }}"" --verbosity=diagnostic"
       
       $testFilter = ""
 
