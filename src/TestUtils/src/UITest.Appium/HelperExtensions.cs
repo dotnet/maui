@@ -1661,7 +1661,7 @@ namespace UITest.Appium
 		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		public static void NavigateBack(this IApp app)
+		public static void TapBackArrow(this IApp app)
 		{
 			if (app is AppiumAndroidApp)
 			{

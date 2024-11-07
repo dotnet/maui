@@ -18,7 +18,7 @@ public class Issue12126 : _IssuesUITest
 	public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()
 	{
 		App.WaitForElement("TestReady");
-		App.NavigateBack();
+		App.TapBackArrow();
 #if WINDOWS
 		App.WaitForElement("navViewItem");
 #else

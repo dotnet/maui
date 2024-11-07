@@ -22,7 +22,7 @@ public class Issue1024 : _IssuesUITest
 			App.Tap("Push");
 
 			App.WaitForElement("ListView");
-			App.NavigateBack();
+			App.TapBackArrow();
 
 		}
 
