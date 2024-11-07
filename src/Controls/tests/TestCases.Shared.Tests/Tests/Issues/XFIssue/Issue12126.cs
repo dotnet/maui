@@ -19,7 +19,7 @@ public class Issue12126 : _IssuesUITest
 	{
 		App.WaitForElement("TestReady");
 #if ANDROID
-		App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));App.Tap("Navigate up");
+		App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
 #else
 		App.Tap(BackButtonAutomationId);
 #endif

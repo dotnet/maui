@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,26 +12,28 @@ public class Issue1024 : _IssuesUITest
 
 	public override string Issue => "Entry and Editor are leaking when used in ViewCell";
 
-	// [Test]
-	// [Category(UITestCategories.Performance)]
-	// [FailsOnIOS]
-	// public void Bugzilla1024Test()
-	// {
-	// 	for (var n = 0; n < 10; n++)
-	// 	{
-	// 		App.WaitForElement(q => q.Marked("Push"));
-	// 		App.Tap(q => q.Marked("Push"));
+	[Test]
+	[Category(UITestCategories.Performance)]
+	public void Bugzilla1024Test()
+	{
+		for (var n = 0; n < 10; n++)
+		{
+			App.WaitForElement("Push");
+			App.Tap("Push");
 
-	// 		App.WaitForElement(q => q.Marked("ListView"));
-	// 		App.Back();
-	// 	}
-
-	// 	// At this point, the counter can be any value, but it's most likely not zero.
-	// 	// Invoking GC once is enough to clean up all garbage data and set counter to zero
-	// 	App.WaitForElement(q => q.Marked("GC"));
-	// 	App.Tap(q => q.Marked("GC"));
-
-	// 	App.WaitForElement(q => q.Marked("Counter: 0"));
-	// }
-}
+			App.WaitForElement("ListView");
+#if ANDROID
+			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
+#else
+			App.Tap("NavigationViewBackButton");
 #endif
+		}
+
+		// At this point, the counter can be any value, but it's most likely not zero.
+		// Invoking GC once is enough to clean up all garbage data and set counter to zero
+		App.WaitForElement("GC");
+		App.Tap("GC");
+
+		Assert.That(App.FindElement("Counter").GetText(), Is.EqualTo("Counter: 0"));
+	}
+}
