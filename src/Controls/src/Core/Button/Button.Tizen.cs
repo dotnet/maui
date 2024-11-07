@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using Microsoft.Maui.Controls.Platform;
 using Tizen.NUI;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
