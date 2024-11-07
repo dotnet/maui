@@ -17,10 +17,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAspect(this ImageView imageView, IImage image)
 		{
-			if (image.Aspect is Aspect.AspectFill)
-				imageView.SetAdjustViewBounds(false);
-			else
-				imageView.SetAdjustViewBounds(true);
+			// Apply bounds adjustment only for the Image control, not for the ImageButton control. ShapeableImageView serves as the platform view for ImageButton
+			if (imageView is not ShapeableImageView)
+			{
+				if (image.Aspect == Aspect.AspectFill)
+					imageView.SetAdjustViewBounds(false);
+				else
+					imageView.SetAdjustViewBounds(true);
+			}
 
 			imageView.SetScaleType(image.Aspect.ToScaleType());
 		}
