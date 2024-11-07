@@ -22,8 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("FirstPageButton");
 			App.WaitForElement("SecondPageButton");
 			App.Tap("SecondPageButton");
-			var label = App.FindElement("StatusLabel");
-			Assert.That(label.GetText(), Is.EqualTo("Page Appearing Sequence: Initial | MainPage appeared | FirstPage appeared | SecondPage appeared | MainPage appeared"));
+			App.WaitForElement("StatusLabel");
+			var text = App.FindElement("StatusLabel")?.GetText();
+			Assert.That(text, Is.EqualTo("Page Appearing Sequence: Initial | MainPage appeared | FirstPage appeared | SecondPage appeared | MainPage appeared"));
 		}
 	}
 }
