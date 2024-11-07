@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Issues
 		private void ChangeAlignmentClicked(object sender, EventArgs e)
 		{
 			label.HorizontalTextAlignment = TextAlignment.Start;
+			RTLlabel.HorizontalTextAlignment = TextAlignment.Start;
 		}
 
 	}
