@@ -12,13 +12,22 @@ public class Issue12126 : _IssuesUITest
 
 	public override string Issue => "[iOS] TabBarIsVisible = True/False breaking for multiple nested pages";
 
-	// Where does TapBackArrow() come from?
-	// [Test]
-	// [Category(UITestCategories.Shell)]
-	// public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()
-	// {
-	// 	App.WaitForElement("TestReady");
-	// 	TapBackArrow();
-	// 	App.WaitForElement("Tab 1");
-	// }
+	
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()
+	{
+		App.WaitForElement("TestReady");
+#if ANDROID
+		App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));App.Tap("Navigate up");
+#else
+		App.Tap("NavigationViewBackButton");
+#endif
+
+#if WINDOWS
+		App.WaitForElement("navViewItem");
+#else
+		App.WaitForElement("Tab 1");
+#endif
+	}
 }
