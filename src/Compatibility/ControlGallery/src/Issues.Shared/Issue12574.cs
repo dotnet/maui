@@ -47,7 +47,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			};
 			_btn2.SetBinding(Button.CommandProperty, "RemoveAllItemsCommand");
 
-			_carouselView = new CarouselView
+			// https://github.com/dotnet/maui/pull/25692
+			_carouselView = new CarouselView2
 			{
 				AutomationId = carouselAutomationId,
 				Margin = new Thickness(30),

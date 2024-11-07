@@ -167,7 +167,7 @@ stages:
                       testFilter: $(CATEGORYGROUP)
 
   - stage: ios_ui_tests_mono_cv2
-    displayName: iOS UITests Mono CV2
+    displayName: iOS UITests Mono CollectionView2
     dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:

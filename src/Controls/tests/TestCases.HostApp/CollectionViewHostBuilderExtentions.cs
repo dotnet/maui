@@ -5,6 +5,14 @@ using Foundation;
 
 namespace Maui.Controls.Sample
 {
+
+	class CollectionView1 : CollectionView{}
+	class CollectionView2 : CollectionView{}
+
+
+	class CarouselView1 : CarouselView{}
+	class CarouselView2 : CarouselView{}
+
 	public static partial class CollectionViewHostBuilderExtentions
 	{
 		/// <summary>
@@ -44,6 +52,13 @@ namespace Maui.Controls.Sample
 					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
 					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
 				}
+
+				handlers.AddHandler<CollectionView1, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
+				handlers.AddHandler<CarouselView1, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
+
+
+				handlers.AddHandler<CollectionView2, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+				handlers.AddHandler<CarouselView2, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
 			});
 			#endif
 
