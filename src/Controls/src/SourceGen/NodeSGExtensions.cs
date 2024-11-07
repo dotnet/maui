@@ -16,7 +16,7 @@ static class NodeSGExtensions
     public static bool TryGetPropertyName(this INode parentNode, INode node, out XmlName name)
     {
         name = default(XmlName);
-        if (!(parentNode is IElementNode parentElement))
+        if (parentNode is not IElementNode parentElement)
             return false;
         foreach (var kvp in parentElement.Properties)
         {
@@ -30,7 +30,7 @@ static class NodeSGExtensions
 
     public static bool IsCollectionItem(this INode parentNode, INode node)
     {
-        if (!(parentNode is IListNode parentList))
+        if (parentNode is not IListNode parentList)
             return false;
         return parentList.CollectionItems.Contains(node);
     }
