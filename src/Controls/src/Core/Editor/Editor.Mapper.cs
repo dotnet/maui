@@ -23,5 +23,13 @@ namespace Microsoft.Maui.Controls
 			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), InputView.MapFocus);
 #endif
 		}
+
+		static void InvalidateMeasureIfNecessary(Editor editor)
+		{
+			if (editor.AutoSize == EditorAutoSizeOption.TextChanges)
+			{
+				editor.InvalidateMeasure();
+			}
+		}
 	}
 }

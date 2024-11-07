@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Controls
 		/// The backing store for the <see cref="Text" /> bindable property.
 		/// </summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(
-			nameof(Text), typeof(string), typeof(Button), null,
-			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+			nameof(Text), typeof(string), typeof(Button), null);
 
 		/// <summary>
 		/// The backing store for the <see cref="TextColor" /> bindable property.

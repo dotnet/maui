@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.Issues.Issue3643">
+     <StackLayout>
+        <Label Text="Clicking the button once loads the CV, clicking it a second time should increase the content size growing the CV Cell" LineBreakMode="WordWrap" />
+        <HorizontalStackLayout>
+            <Button Text="Label" Clicked="Button_Clicked" AutomationId="Label"/>
+            <Button Text="Button" Clicked="Button_Clicked" AutomationId="Button"/>
+            <Button Text="Editor" Clicked="Button_Clicked" AutomationId="Editor"/>
+        </HorizontalStackLayout>
+
+        <local:CollectionView1 x:Name="cv" ItemsSource="{Binding Items}" >
+            <local:CollectionView1.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Label Text="{Binding Name}" />
+                    </Grid>
+                </DataTemplate>
+            </local:CollectionView1.ItemTemplate>
+        </local:CollectionView1>
+    </StackLayout>
+</ContentPage>

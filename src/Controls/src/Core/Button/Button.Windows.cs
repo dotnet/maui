@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
 			handler.PlatformView?.UpdateText(text);
 			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
+			button.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		public static void MapLineBreakMode(IButtonHandler handler, Button button)

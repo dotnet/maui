@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ILabelHandler handler, Label label)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, label);
+			InvalidateMeasureIfNecessary(label);
 		}
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label)

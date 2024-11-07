@@ -114,11 +114,6 @@ namespace Microsoft.Maui.Controls
 		protected override void OnTextChanged(string oldValue, string newValue)
 		{
 			base.OnTextChanged(oldValue, newValue);
-
-			if (AutoSize == EditorAutoSizeOption.TextChanges)
-			{
-				InvalidateMeasure();
-			}
 		}
 
 		public void OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)

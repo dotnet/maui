@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls
 			Platform.LabelExtensions.UpdateText(handler.PlatformView, label);
 
 			MapFormatting(handler, label);
+			InvalidateMeasureIfNecessary(label);
 		}
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label)

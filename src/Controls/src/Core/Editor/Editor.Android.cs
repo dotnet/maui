@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, editor);
+			InvalidateMeasureIfNecessary(editor);
 		}
 	}
 }

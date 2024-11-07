@@ -360,9 +360,6 @@ namespace Microsoft.Maui.Controls
 		{
 			var label = (Label)bindable;
 
-			if (TextChangedShouldInvalidateMeasure(label))
-				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-
 			if (newvalue != null)
 				label.FormattedText = null;
 		}
@@ -444,37 +441,6 @@ namespace Microsoft.Maui.Controls
 				return false;
 
 			// The label may grow/shrink based on the constraints, so we may need to invalidate.
-			return true;
-		}
-
-		/// <summary>
-		/// Determines if the text has changed in a way that would require a measure invalidation.
-		/// Unlike FormattedText changes, Text changes may not always require invalidation because
-		/// the text size and spacing is all uniform. Formatted text may have a case where even
-		/// though the label is a single line, the font size of a span may cause the label to grow
-		/// vertically.
-		/// </summary>
-		internal static bool TextChangedShouldInvalidateMeasure(Label label)
-		{
-			// If the label cannot grow in any direction, then we don't need to invalidate.
-			var isSizeable = IsLabelSizeable(label);
-			if (!isSizeable)
-				return false;
-
-			// Determine if the label can grow vertically (wrapping means it may grow vertically).
-			var constraint = label.Constraint;
-			var breakMode = label.LineBreakMode;
-			var isHorizontallySizeable = (constraint & LayoutConstraint.HorizontallyFixed) == 0;
-			var isMultiline = breakMode == LineBreakMode.CharacterWrap || breakMode == LineBreakMode.WordWrap;
-			var isSingleLine = !isMultiline;
-
-			// If the label cannot grow horizontally and is only single line,
-			// then we don't need to invalidate since the only direction it can grow in
-			// is vertically but it never will.
-			if (!isHorizontallySizeable && isSingleLine)
-				return false;
-
-			// The label may grow/shrink based on the constraints, so we need to invalidate.
 			return true;
 		}
 	}

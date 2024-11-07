@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEditorHandler handler, Editor editor)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, editor);
+			InvalidateMeasureIfNecessary(editor);
 		}
 	}
 }

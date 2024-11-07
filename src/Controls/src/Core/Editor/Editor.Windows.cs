@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEditorHandler handler, Editor editor)
 		{
 			Platform.TextBoxExtensions.UpdateText(handler.PlatformView, editor);
+			InvalidateMeasureIfNecessary(editor);
 		}
 
 		public static void MapDetectReadingOrderFromContent(IEditorHandler handler, Editor editor)

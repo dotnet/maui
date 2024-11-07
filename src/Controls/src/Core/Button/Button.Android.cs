@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
+			button.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		public static void MapText(ButtonHandler handler, Button button) =>
