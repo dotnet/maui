@@ -20,7 +20,6 @@
   </Interfaces>
   <Docs>
     <summary>Arguments for the event that is raised when a scroll is requested.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Element">
@@ -41,8 +40,6 @@
       </ReturnValue>
       <Docs>
         <summary>An element to scroll to.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Mode">
@@ -63,8 +60,6 @@
       </ReturnValue>
       <Docs>
         <summary>Whether to scroll by element or by position.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Position">
@@ -85,8 +80,6 @@
       </ReturnValue>
       <Docs>
         <summary>An enumeration value that describes which part of an element to scroll to.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScrollX">
@@ -107,8 +100,6 @@
       </ReturnValue>
       <Docs>
         <summary>The X position to scroll to.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScrollY">
@@ -129,8 +120,6 @@
       </ReturnValue>
       <Docs>
         <summary>The Y position to scroll to.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldAnimate">
@@ -151,8 +140,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that tells whether the scroll operation should be animated.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.ITemplatedItemsListScrollToRequestedEventArgs.Group">
@@ -174,8 +161,6 @@
       </ReturnValue>
       <Docs>
         <summary>This method is for internal use by platform renderers.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.ITemplatedItemsListScrollToRequestedEventArgs.Item">
@@ -197,8 +182,6 @@
       </ReturnValue>
       <Docs>
         <summary>Internal.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

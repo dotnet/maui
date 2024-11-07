@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
@@ -23,6 +24,7 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
 			_commandExecutor.AddCommandGroup(new AppiumDeviceActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumPinchToZoomActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumSliderActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumSwipeActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumScrollActions(this));

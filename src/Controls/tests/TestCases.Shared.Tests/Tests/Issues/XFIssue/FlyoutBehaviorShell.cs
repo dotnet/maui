@@ -11,7 +11,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Behavior";
 
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// [Test]
 	// [Category(UITestCategories.Shell)]
 	// public void FlyoutTests()

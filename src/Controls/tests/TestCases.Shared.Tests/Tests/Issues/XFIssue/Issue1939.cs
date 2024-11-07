@@ -14,7 +14,7 @@ public class Issue1939 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Issue1939Test()
 	// {
 	// 	App.WaitForElement(q => q.Marked("Group #1"));

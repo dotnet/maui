@@ -13,7 +13,6 @@
   <Interfaces />
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.BaseShellItem" /> that has <see cref="T:Microsoft.Maui.Controls.FlyoutDisplayOptions" />. Base class for <see cref="T:Microsoft.Maui.Controls.ShellItem" /> and <see cref="T:Microsoft.Maui.Controls.ShellSection" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -27,8 +26,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlyoutDisplayOptions">
@@ -46,8 +43,6 @@
       </ReturnValue>
       <Docs>
         <summary>AsSingleItem (default) will only display the title of this item in the flyout. AsMultipleItems will create a separate flyout option for each child and <see cref="T:Microsoft.Maui.Controls.MenuItem" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlyoutDisplayOptionsProperty">
@@ -65,7 +60,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellGroupItem.FlyoutDisplayOptions" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

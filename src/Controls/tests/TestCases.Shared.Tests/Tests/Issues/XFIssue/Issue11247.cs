@@ -15,7 +15,7 @@ public class Issue11247 : _IssuesUITest
 	/*
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[FailsOnAndroid]
+	[FailsOnAndroidWhenRunningOnXamarinUITest]
 	public void SettingFlyoutIsPresentedInNavigatingKeepsFlyoutOpen()
 	{
 		App.Tap("CloseFlyout");

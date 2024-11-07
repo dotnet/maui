@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control whether items in a list view can or cannot be selected.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="None">

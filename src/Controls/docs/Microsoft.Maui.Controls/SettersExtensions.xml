@@ -49,7 +49,6 @@
         <param name="property">The property to set.</param>
         <param name="value">The value to which to set the property set.</param>
         <summary>Add a Setter with a value to the IList&lt;Setter&gt;</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddBinding">
@@ -79,7 +78,6 @@
         <param name="property">The property to set.</param>
         <param name="binding">The binding to add.</param>
         <summary>Add a Setter with a Binding to the IList&lt;Setter&gt;</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddDynamicResource">
@@ -109,7 +107,6 @@
         <param name="property">The resource to add.</param>
         <param name="key">The resource key.</param>
         <summary>Add a Setter with a DynamicResource to the IList&lt;Setter&gt;</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

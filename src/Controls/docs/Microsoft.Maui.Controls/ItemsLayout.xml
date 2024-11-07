@@ -19,8 +19,6 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -38,8 +36,6 @@
       </Parameters>
       <Docs>
         <param name="orientation">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Orientation">
@@ -56,9 +52,6 @@
         <ReturnType>Microsoft.Maui.Controls.ItemsLayoutOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SnapPointsAlignment">
@@ -75,9 +68,6 @@
         <ReturnType>Microsoft.Maui.Controls.SnapPointsAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SnapPointsAlignmentProperty">
@@ -95,7 +85,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignment" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SnapPointsType">
@@ -112,9 +101,6 @@
         <ReturnType>Microsoft.Maui.Controls.SnapPointsType</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SnapPointsTypeProperty">
@@ -132,7 +118,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ItemsLayout.SnapPointsType" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

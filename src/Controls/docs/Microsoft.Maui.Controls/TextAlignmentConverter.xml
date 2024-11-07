@@ -37,7 +37,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new default converter.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -61,7 +60,6 @@
         <param name="value">The value to convert.</param>
         <summary>Returns the object for the string representation.</summary>
         <returns>The object for the string representation.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
