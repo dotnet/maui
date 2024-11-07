@@ -27,6 +27,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("PopAsyncButton");
 			VerifyScreenshot();
 		}
+
+		[Test]
+		[Category(UITestCategories.Shell)]
+		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
+		{
+			App.WaitForElement("TestLabel");
+			App.Tap("PushAsyncButton");
+			App.WaitForElement("TestLabel3");
+			App.Tap("NavigationViewBackButton");
+			VerifyScreenshot();
+		}
 	}
 
 }

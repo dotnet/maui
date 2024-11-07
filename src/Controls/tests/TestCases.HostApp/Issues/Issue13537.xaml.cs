@@ -43,30 +43,16 @@ namespace Maui.Controls.Sample.Issues
 				VerticalOptions=LayoutOptions.Center
 			};
 			button.Clicked += OnNavigationWithPushAsync;
-			var button1 = new Button
-			{
-				Text = "Navigate using PushModalAsync",
-				AutomationId = "PushModalButton",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-			button1.Clicked += OnNavigationWithPushModalAsync;
 
 			var stack = new StackLayout();
 			stack.Children.Add(Label);
 			stack.Children.Add(button);
-			stack.Children.Add(button1);
 
 			this.Content = stack;
 		}
 		private void OnNavigationWithPushAsync(object sender, EventArgs e)
 		{
 			Navigation.PushAsync(new Issue13537InnerPage());
-		}
-
-		private void OnNavigationWithPushModalAsync(object sender, EventArgs e)
-		{
-			Navigation.PushModalAsync(new Issue13537InnerPage());
 		}
 	}
 	public class Issue13537Favorite : ContentPage
@@ -99,7 +85,12 @@ namespace Maui.Controls.Sample.Issues
 		}
 		private void OnGoToAsync(object sender, EventArgs e)
 		{
-			Shell.Current.GoToAsync("NewPage");
+			var Parameter = new Dictionary<string, object>
+			{
+				{ "SampleQueryText", 5 },
+			
+			};
+			Shell.Current.GoToAsync("NewPage",parameters:Parameter);
 		}
 	}
 	public class Issue13537SettingPage : ContentPage
@@ -146,14 +137,7 @@ namespace Maui.Controls.Sample.Issues
 				VerticalOptions = LayoutOptions.Center
 			};
 			button.Clicked += OnNavigatingPopButton;
-			var button1 = new Button
-			{
-				Text = "Navigate using Navigating back",
-				AutomationId = "PopModalButton",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center
-			};
-			button.Clicked += OnNavigatingPopModalButton;
+
 			var stack = new StackLayout();
 			stack.Children.Add(Label);
 			stack.Children.Add(button);
@@ -163,10 +147,7 @@ namespace Maui.Controls.Sample.Issues
 		
 			this.Content = stack;
 		}
-		private void OnNavigatingPopModalButton(object sender, EventArgs e)
-		{
-			Navigation.PopModalAsync();
-		}
+
 		private void OnNavigatingPopButton(object sender, EventArgs e)
 		{
 			Navigation.PopAsync();
@@ -188,6 +169,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public void ApplyQueryAttributes(IDictionary<string, object> query)
 		{
+		
 			DisplayText = $"{typeof(T).Name} ViewModel.ApplyQueryAttributes";
 		}
 

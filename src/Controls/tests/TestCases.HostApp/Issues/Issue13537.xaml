@@ -6,7 +6,7 @@
              xmlns:issues="using:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue13537">
 
-  <TabBar AutomationId="TabBar13537">
+  <TabBar AutomationId="TabBar13537" x:Name="TabBar13537">
     <Tab Title="Home" AutomationId="Home">
       <ShellContent
                 Title="Home"                                                                        
