@@ -128,10 +128,10 @@
 		<Exec Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
 
 		<!-- Run doctor command just so we have some output -->
-		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" />
+		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
 
 		<!-- Run driver list again for our records -->
-		<Exec Command="appium driver list --installed" />
+		<Exec Command="appium driver list --installed" ContinueOnError="true" />
 	</Target>
 
 	<Target Name="InstallAppium">
@@ -248,4 +248,3 @@
 		<PackageReference Include="JsonPeek" Version="1.2.0" />
 	</ItemGroup>
 </Project>
-
