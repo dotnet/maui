@@ -16,8 +16,11 @@ public class Issue13916 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void RemovingMoreThanOneInnerPageAndThenPushingAPageCrashes()
 	{
+		App.WaitForElement("ClickMe1");
 		App.Tap("ClickMe1");
+		App.WaitForElement("ClickMe2");
 		App.Tap("ClickMe2");
+		App.WaitForElement("ClickMe3");
 		App.Tap("ClickMe3");
 		App.WaitForElement("Success");
 	}

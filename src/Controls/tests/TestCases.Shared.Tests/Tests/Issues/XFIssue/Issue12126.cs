@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+//App.Back() is not working on Windows and Catalyst.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +24,4 @@ public class Issue12126 : _IssuesUITest
 		App.WaitForElement("Tab 1");
 	}
 }
+#endif

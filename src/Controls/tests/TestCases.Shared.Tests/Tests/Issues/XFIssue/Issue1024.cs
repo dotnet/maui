@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+//App.Back() is not working on Windows and Catalyst
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -33,3 +35,4 @@ public class Issue1024 : _IssuesUITest
 		Assert.That(App.FindElement("Counter").GetText(), Is.EqualTo("Counter: 0"));
 	}
 }
+#endif
