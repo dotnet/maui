@@ -43,9 +43,12 @@ namespace Maui.Controls.Sample.Issues
 				{
 					if (c.Name == "DotNetMAUICookie")
 					{
-						grid.Children.Add(label);
-						label.Text = "Success";
-						break;
+						if (!grid.Contains(label))
+                        {
+                            grid.Children.Add(label);
+                            label.Text = "Success";
+                            break;
+                        }
 					}
 				}
 			};
