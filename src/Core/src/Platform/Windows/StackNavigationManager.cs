@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
 		Action? _pendingNavigationFinished;
+		ContentControl? _previousContent;
 		bool _connected;
 
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
@@ -162,8 +163,15 @@ namespace Microsoft.Maui.Platform
 					HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
 				};
-				presenter.Unloaded += Presenter_Unloaded;
 
+				// It's possible that the unloaded event didn't happen yet, so force clear the content
+				if (_previousContent is not null)
+				{
+					_previousContent.Content = null;
+					_previousContent = null;
+				}
+
+				presenter.Unloaded += Presenter_Unloaded;
 				page.Content = presenter;
 			}
 			else
@@ -190,6 +198,8 @@ namespace Microsoft.Maui.Platform
 
 			_pendingNavigationFinished = () =>
 			{
+				_previousContent = presenter;
+
 				if (presenter?.Content is not FrameworkElement pc)
 				{
 					FireNavigationFinished();
