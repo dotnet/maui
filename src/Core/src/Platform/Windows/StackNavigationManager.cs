@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
 		Action? _pendingNavigationFinished;
-		ContentControl? _previousContent;
+		ContentPresenter? _previousContent;
 		bool _connected;
 
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
@@ -154,11 +154,11 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var nv = NavigationView;
-			ContentControl? presenter;
+			ContentPresenter? presenter;
 
 			if (page.Content == null)
 			{
-				presenter = new ContentControl()
+				presenter = new ContentPresenter()
 				{
 					HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch,
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				presenter = page.Content as ContentControl;
+				presenter = page.Content as ContentPresenter;
 			}
 
 			// At this point if the Content isn't a ContentPresenter the user has replaced
