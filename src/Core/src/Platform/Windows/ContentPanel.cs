@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			var size = new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
 
 			// We need to update the clip since the content's position might have changed
-			UpdateClip(_borderStroke?.Shape, size.Width, size.Height);
+			_ = UpdateClipAsync(_borderStroke?.Shape, size.Width, size.Height);
 
 			return size;
 		}
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
-			UpdateClip(_borderStroke?.Shape, width, height);
+			_ = UpdateClipAsync(_borderStroke?.Shape, width, height);
 		}
 
 		internal void EnsureBorderPath(bool containsCheck = true)
@@ -160,10 +160,10 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			UpdateClip(strokeShape, width, height);
+			_ = UpdateClipAsync(strokeShape, width, height);
 		}
 
-		async void UpdateClip(IShape? borderShape, double width, double height)
+		async Task UpdateClipAsync(IShape? borderShape, double width, double height)
 		{
 			if (Content is null)
 			{
