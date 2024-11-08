@@ -11,42 +11,7 @@ public partial class Issue24489 : ContentPage
 	public Issue24489()
 	{
 		InitializeComponent();
-		var grid = new Grid
-		{
-			BackgroundColor = Colors.LightBlue,
-			ColumnDefinitions = new ColumnDefinitionCollection
-			{
-				new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
-				new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
-			}
-		};
-
-		var firstLabel = new Label
-		{
-			Text = "Hello, TitleBar!",
-			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.End
-		};
-
-		var vsl = new VerticalStackLayout()
-		{
-			Children = { firstLabel },
-			BackgroundColor = Colors.LightGreen,
-			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.End
-		};
-
-		var secondLabel = new Label
-		{
-			Text = "Have a nice Day!",
-			HorizontalOptions = LayoutOptions.Center,
-			VerticalOptions = LayoutOptions.End
-		};
-
-		Grid.SetColumn(vsl, 0);
-		grid.Children.Add(vsl);
-		Grid.SetColumn(secondLabel, 1);
-		grid.Children.Add(secondLabel);
+		var grid = CreateGrid(true);
 
 		_customTitleBar = new TitleBar()
 		{
@@ -82,11 +47,74 @@ public partial class Issue24489 : ContentPage
 		Window.TitleBar = _customTitleBar;
 	}
 
+	Grid CreateGrid(bool isInitial)
+	{
+		var grid = new Grid
+		{
+			BackgroundColor = Colors.LightBlue,
+			ColumnDefinitions = new ColumnDefinitionCollection
+			{
+				new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+				new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }
+			}
+		};
+
+		var firstLabel = new Label
+		{
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.End
+		};
+
+		firstLabel.Text = isInitial ? "Hello World!" : "New Hello World!";
+
+		var vsl = new VerticalStackLayout()
+		{
+			Children = { firstLabel },
+			BackgroundColor = Colors.LightGreen,
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.End
+		};
+
+		var secondLabel = new Label
+		{
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.End
+		};
+
+		secondLabel.Text = isInitial ? "Have a nice day!" : "New have a nice day!";
+
+		Grid.SetColumn(vsl, 0);
+		grid.Children.Add(vsl);
+		Grid.SetColumn(secondLabel, 1);
+		grid.Children.Add(secondLabel);
+
+		return grid;
+	}
+
 	void ToggleTitleBarButtonClicked(object sender, EventArgs e)
 	{
 		if (Window.TitleBar is TitleBar tbar)
 		{
 			tbar.IsVisible = !tbar.IsVisible;
+		}
+	}
+
+	void ToggleButtonClicked2(object sender, EventArgs e)
+	{
+		if (Window.TitleBar is TitleBar tbar)
+		{
+			tbar.Title = tbar.Title == "Title" ? "New Title" : "Title";
+			tbar.Subtitle = tbar.Subtitle == "Subtitle" ? "New Subtitle" : "Subtitle";
+			tbar.HeightRequest = tbar.HeightRequest == 300 ? 400 : 300;
+
+			if (tbar.Title == "Title")
+			{
+				tbar.Content = CreateGrid(true);
+			}
+			else
+			{
+				tbar.Content = CreateGrid(false);
+			}
 		}
 	}
 }

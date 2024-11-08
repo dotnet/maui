@@ -24,6 +24,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Removed");
             App.WaitForElement("ToggleButton").Tap();
             VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+            App.WaitForElement("ToggleButton2").Tap();
+            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_TextAndSizeChanged");
         }
     }
 }

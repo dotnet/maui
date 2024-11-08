@@ -23,6 +23,11 @@ internal class WindowViewController : UIViewController
 	/// <param name="windowContentViewController">An instance of the <see cref="UIViewController"/> that is the RootViewController.</param>
 	/// <param name="window">An instance of the <see cref="IWindow"/>.</param>
 	/// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
+	/// <remarks>
+	/// Only dragging the top of the titlebar will move the window.
+	/// The top of the TitleBar will also drag the window inside of elements like buttons.
+	/// Gestures such as swiping and controls like swipeview will not work inside the TitleBar.
+	/// </remarks>
 	public WindowViewController(UIViewController windowContentViewController, IWindow window, IMauiContext mauiContext)
 	{
 		_iTitleBarRef = new WeakReference<IView?>(null);
@@ -86,7 +91,7 @@ internal class WindowViewController : UIViewController
 			_iTitleBarRef = new WeakReference<IView?>(iTitleBar);
 		}
 
-		var platformTitleBar = platformWindow?.WindowScene?.Titlebar;
+		var platformTitleBar = platformWindow.WindowScene?.Titlebar;
 
 		if (newTitleBar is not null && platformTitleBar is not null)
 		{

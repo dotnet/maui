@@ -282,6 +282,8 @@ Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
 Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
+Microsoft.Maui.Controls.LayoutExtensions
+static Microsoft.Maui.Controls.LayoutExtensions.IgnoreLayoutSafeArea(this Microsoft.Maui.Controls.Layout! layout) -> void
 Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.IsHorizontal.get -> bool

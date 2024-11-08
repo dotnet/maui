@@ -268,15 +268,15 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (e.PropertyName == nameof(LeadingContent))
 			{
-				IgnoreSafeAreaLayouts(LeadingContent as Layout);
+				(LeadingContent as Layout)?.IgnoreLayoutSafeArea();
 			}
 			else if (e.PropertyName == nameof(Content))
 			{
-				IgnoreSafeAreaLayouts(Content as Layout);
+				(Content as Layout)?.IgnoreLayoutSafeArea();
 			}
 			else if (e.PropertyName == nameof(TrailingContent))
 			{
-				IgnoreSafeAreaLayouts(TrailingContent as Layout);
+				(TrailingContent as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -327,24 +327,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			ApplyVisibleState(TitleBarActiveState);
-		}
-
-		void IgnoreSafeAreaLayouts(Layout? layout)
-		{
-			if (layout is null)
-			{
-				return;
-			}
-
-			layout.IgnoreSafeArea = true;
-
-			foreach (var child in layout.Children)
-			{
-				if (child is Layout childLayout)
-				{
-					IgnoreSafeAreaLayouts(childLayout);
-				}
-			}
 		}
 
 		private void Window_Activated(object? sender, System.EventArgs e)
