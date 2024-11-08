@@ -58,11 +58,16 @@ namespace Maui.Controls.Sample.Issues
 			CurrentPage = Children[0];
 		}
 
-		public void SwitchTabMultiPageAsync()
+		public void SwitchTabSecondPage()
 		{
 			var page = new SecondPage25518() { Title = "Two" };
 			Children.Add(page);
 			CurrentPage = Children[1];
+		}
+
+		public void SwitchTabFirstPage()
+		{
+			CurrentPage = Children[0];
 		}
 	}
 
@@ -82,7 +87,7 @@ namespace Maui.Controls.Sample.Issues
 				if (page is Issue25518 multiLayerPage)
 				{
 					var tabMultiPage = multiLayerPage.Children.FirstOrDefault() as TabMultiPage25518;
-					tabMultiPage?.SwitchTabMultiPageAsync();
+					tabMultiPage?.SwitchTabSecondPage();
 				}
 			};
 
@@ -94,12 +99,32 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public SecondPage25518()
 		{
-			Content = new Label 
+			var button = new Button
+			{
+				Text = "Move to main page",
+				AutomationId = "MoveToMainPage"
+			};
+
+			button.Clicked += (sender, e) =>
+			{
+				var page = Application.Current.MainPage;
+				if (page is Issue25518 multiLayerPage)
+				{
+					var tabMultiPage = multiLayerPage.Children.FirstOrDefault() as TabMultiPage25518;
+					tabMultiPage?.SwitchTabFirstPage();
+				}
+			};
+			var label = new Label 
 			{ 
 				Text = "Welcome to Second Page",
 				VerticalOptions = LayoutOptions.Center, 
 				HorizontalOptions = LayoutOptions.Center 
 			};
+
+			var stackLayout = new StackLayout();
+			stackLayout.Children.Add(label);
+			stackLayout.Children.Add(button);
+			Content = stackLayout;
 		}
 	}
 

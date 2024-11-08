@@ -20,6 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("MoveToSecondPage");
 			App.Tap("MoveToSecondPage");
 
+			App.WaitForElement("MoveToMainPage");
+			App.Tap("MoveToMainPage");
+
+			App.WaitForElement("MoveToSecondPage");
+			App.Tap("MoveToSecondPage");
 			VerifyScreenshot();
 		}
 	}
