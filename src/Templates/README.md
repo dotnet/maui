@@ -3,6 +3,9 @@
 
 For easy building and testing you can use the `build.ps1` script. This script is only for manual use and not part of any pipeline.
 
+> [!NOTE]
+> On macOS you find encounter and error like: `error NU5119: Warning As Error: File '/file/path/.DS_Store' was not added to the package. Files and folders starting with '.' or ending with '.nupkg' are excluded by default. To include this file, use -NoDefaultExcludes from the commandline` when this happens, run a `git clean -xfd` on the repository to remove all `.DS_Store` files from the filesystem.
+
 ## Functionality
 
 The script:

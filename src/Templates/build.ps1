@@ -39,20 +39,30 @@ Empty-UserHomeTemplateEngineFolder
 dotnet new install $nupkgPath.FullName
 
 # Create a new dotnet project using the specified project type
-dotnet new $projectType -o .tempTemplateOutput\NewProject --force
+dotnet new $projectType -o ./.tempTemplateOutput/NewProject --force
 
 if ($startVsAfterBuild -eq $false) {
     exit 0
 }
 
 # Start Visual Studio with the newly created project
-$projectFilePath = Resolve-Path ".\.tempTemplateOutput\NewProject\NewProject.csproj"
+$projectFilePath = Resolve-Path "./.tempTemplateOutput/NewProject/NewProject.csproj"
 $projectFolderPath = Split-Path -Path $projectFilePath
 
 if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
     Start-Process "devenv.exe" -ArgumentList $projectFilePath
 } elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
-    Start-Process "code" -ArgumentList $projectFolderPath
+    # Check if VS Code Insiders is installed
+    $vscodeInsidersPath = "/Applications/Visual Studio Code - Insiders.app"
+    $vscodeStablePath = "/Applications/Visual Studio Code.app"
+    
+    if (Test-Path $vscodeInsidersPath) {
+        Start-Process "code-insiders" -ArgumentList $projectFolderPath
+    } elseif (Test-Path $vscodeStablePath) {
+        Start-Process "code" -ArgumentList $projectFolderPath
+    } else {
+        Write-Error "Neither Visual Studio Code Insiders nor Visual Studio Code stable is installed. Cannot open VS Code, however a new project is created at $projectFolderPath."
+    }
 } else {
     Write-Error "Unsupported operating system."
 }
