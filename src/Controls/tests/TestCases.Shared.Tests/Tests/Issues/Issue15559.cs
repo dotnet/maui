@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Layout)]
 		public void LabelDisplayWithoutCroppingInsideVerticalLayout()
 		{
-			App.WaitForElement("LayoutWidth");
-			App.WaitForElement("LabelWidth");
+			App.WaitForElement("Label");
 			VerifyScreenshot();
 		}
 	}
