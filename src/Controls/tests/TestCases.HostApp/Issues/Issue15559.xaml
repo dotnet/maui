@@ -7,11 +7,11 @@
   <VerticalStackLayout Spacing="20" Margin="20">
 
     <VerticalStackLayout WidthRequest="200" BackgroundColor="Yellow">
-        <Label AutomationId="LayoutWidth" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."/>
+        <Label Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."/>
     </VerticalStackLayout>
 
     <VerticalStackLayout  BackgroundColor="Yellow">
-        <Label AutomationId="LabelWidth" WidthRequest="200" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."/>
+        <Label AutomationId="Label" WidthRequest="200" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."/>
     </VerticalStackLayout>
 </VerticalStackLayout>
 </ContentPage>
