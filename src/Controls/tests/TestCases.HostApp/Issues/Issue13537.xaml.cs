@@ -169,8 +169,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public void ApplyQueryAttributes(IDictionary<string, object> query)
 		{
-		
-			DisplayText = $"{typeof(T).Name} ViewModel.ApplyQueryAttributes";
+			DisplayText = $"{typeof(T).Name}ViewModel.ApplyQueryAttributes(\n{string.Join(",\n", query.Select(q => $"{q.Key}={q.Value}"))})";
 		}
 
 		// Implement INotifyPropertyChanged to support binding
