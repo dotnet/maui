@@ -164,14 +164,14 @@ namespace Microsoft.Maui.Platform
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
 				};
 
-				// It's possible that the unloaded event didn't happen yet, so force clear the content
+				// There's some bug in our code, or the lifecycle of ContentControl, that is causing the content to
+				// never be removed from the parent...
 				if (_previousContent is not null)
 				{
 					_previousContent.Content = null;
 					_previousContent = null;
 				}
 
-				presenter.Unloaded += Presenter_Unloaded;
 				page.Content = presenter;
 			}
 			else
@@ -216,21 +216,6 @@ namespace Microsoft.Maui.Platform
 			};
 
 			fe.OnLoaded(FirePendingNavigationFinished);
-		}
-
-		/// <summary>
-		/// There's some bug in our code, or the lifecycle of ContentControl, that is causing the content to
-		/// never be removed from the parent...
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void Presenter_Unloaded(object sender, RoutedEventArgs e)
-		{
-			if (sender is ContentControl control)
-			{
-				control.Content = null;
-				control.Unloaded -= Presenter_Unloaded;
-			}
 		}
 
 		void FireNavigationFinished()
