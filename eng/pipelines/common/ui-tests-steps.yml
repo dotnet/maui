@@ -35,6 +35,14 @@ steps:
       continueOnError: true
       timeoutInMinutes: 60
 
+  - ${{ if eq(parameters.platform, 'catalyst')}}:
+        - bash: |
+              chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+              $(System.DefaultWorkingDirectory)/eng/scripts/disable-notification-center.sh
+          displayName: 'Disable Notification Center'
+          continueOnError: true
+          timeoutInMinutes: 60
+          
   - template: provision.yml
     parameters:
       skipProvisioning:  true
@@ -132,6 +140,14 @@ steps:
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish artifacts
+
+  - ${{ if eq(parameters.platform, 'catalyst')}}:
+        - bash: |
+              chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+              $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
+          displayName: 'Enable Notification Center'
+          continueOnError: true
+          timeoutInMinutes: 60
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates
