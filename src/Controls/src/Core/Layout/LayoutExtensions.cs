@@ -1,8 +1,8 @@
 namespace Microsoft.Maui.Controls;
 
-public static class LayoutExtensions
+internal static class LayoutExtensions
 {
-	public static void IgnoreLayoutSafeArea(this Layout layout)
+	internal static void IgnoreLayoutSafeArea(this Layout layout)
 	{
 		layout.IgnoreSafeArea = true;
 
