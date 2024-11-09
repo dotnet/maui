@@ -17,6 +17,6 @@ public class Issue3292 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue3292Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Hello World Changed"));
+	// 	App.WaitForElement(q => q.Marked("Hello World Changed"));
 	// }
 }

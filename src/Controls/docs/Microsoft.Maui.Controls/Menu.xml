@@ -33,7 +33,6 @@
   </Interfaces>
   <Docs>
     <summary>Represents an application menu on platforms that support them.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -49,7 +48,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new menu with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -75,7 +73,6 @@
       <Docs>
         <param name="item">The menu to add to this menu.</param>
         <summary>Add <paramref name="item" /> to the end of the collection of menus in this menu.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -98,7 +95,6 @@
       <Parameters />
       <Docs>
         <summary>Clears all the menus from this menu.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -126,7 +122,6 @@
         <summary>Returns <see langword="true" /> if <paramref name="item" /> is contained in the top-level collection of menus that belong to this menu. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if <paramref name="item" /> is contained in the top-level collection of menus that belong to this menu. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CopyTo">
@@ -154,7 +149,6 @@
         <param name="array">The menu items to copy into this menu.</param>
         <param name="arrayIndex">The index at which to begin inserting menus.</param>
         <summary>Copies <paramref name="array" /> into this menu's collection of menus, beginning at <paramref name="arrayIndex" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">
@@ -176,8 +170,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the number of menus that are contained in this menu.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnumerator">
@@ -200,8 +192,6 @@
       <Parameters />
       <Docs>
         <summary>Returns an enumerator for the menus that are contained in this menu.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IndexOf">
@@ -227,8 +217,6 @@
       <Docs>
         <param name="item">The menu whose index to get.</param>
         <summary>Returns the index of <paramref name="item" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Insert">
@@ -256,7 +244,6 @@
         <param name="index">The index at which to insert <paramref name="itme" />.</param>
         <param name="item">The menu to insert.</param>
         <summary>Inserts <paramref name="item" /> into this menu's collection of items at <paramref name="index" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Invalidate">
@@ -276,7 +263,6 @@
       <Parameters />
       <Docs>
         <summary>Visually displays the menu as invalid.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsReadOnly">
@@ -300,7 +286,6 @@
         <summary>Returns <see langword="false" />.</summary>
         <value>
           <see langword="false" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -327,7 +312,6 @@
         <param name="index">The index of the item to get or set.</param>
         <summary>Gets or sets the menu at <paramref name="index" />.</summary>
         <value>The menu at <paramref name="index" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Items">
@@ -346,8 +330,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the collection of menus that belong to this menu.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -373,8 +355,6 @@
       <Docs>
         <param name="item">The menu to remove.</param>
         <summary>Removes <paramref name="item" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveAt">
@@ -400,7 +380,6 @@
       <Docs>
         <param name="index">The index for the menu to remove.</param>
         <summary>Removes the menu at <paramref name="index" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
@@ -423,8 +402,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use only.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -444,7 +421,6 @@
       <Docs>
         <summary>Gets or sets the text of the menu.</summary>
         <value>The menu text.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

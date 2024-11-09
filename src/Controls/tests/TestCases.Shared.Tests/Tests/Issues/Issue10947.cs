@@ -15,26 +15,26 @@ public class Issue10947 : _IssuesUITest
     string HeaderEntry => "HeaderEntry";
     string FooterEntry => "FooterEntry";
 
-    // [Test]
-	// [Category(UITestCategories.CollectionView)]
-	// public void CollectionViewHeaderShouldNotScroll()
-	// {
-	// 	var headerEntry = App.WaitForElement(HeaderEntry);
-	// 	var headerLocation = headerEntry.GetRect();
-    //     var footerEntry = App.WaitForElement(FooterEntry);
-	// 	var footerLocation = headerEntry.GetRect();
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void CollectionViewHeaderShouldNotScroll()
+	{
+		var headerEntry = App.WaitForElement(HeaderEntry);
+		var headerLocation = headerEntry.GetRect();
+		var footerEntry = App.WaitForElement(FooterEntry);
+		var footerLocation = headerEntry.GetRect();
 
-    //     App.Tap(HeaderEntry);
+		App.Tap(HeaderEntry);
 
-    //     var newHeaderEntry = App.WaitForElement(HeaderEntry);
-	// 	var newHeaderLocation = headerEntry.GetRect();
-    //     ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
+		var newHeaderEntry = App.WaitForElement(HeaderEntry);
+		var newHeaderLocation = headerEntry.GetRect();
+		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
-    //     App.Tap(FooterEntry);
+		App.Tap(FooterEntry);
 
-    //     var newFooterEntry = App.WaitForElement(FooterEntry);
-	// 	var newFooterLocation = headerEntry.GetRect();
+		var newFooterEntry = App.WaitForElement(FooterEntry);
+		var newFooterLocation = headerEntry.GetRect();
 
-    //     ClassicAssert.AreEqual(footerLocation, newFooterLocation);
-	// }
+		ClassicAssert.AreEqual(footerLocation, newFooterLocation);
+	}
 }

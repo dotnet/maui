@@ -11,6 +11,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
@@ -38,8 +40,19 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"</Project>",
 				"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
+		string[]? warningsToIgnore = null;
+
+		if (additionalDotNetNewParams.Contains("sample-content", StringComparison.OrdinalIgnoreCase))
+		{
+			warningsToIgnore = new string[]
+			{
+				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
+			};
+		}
+
+
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -125,8 +138,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 			"</Project>",
 			$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
 
+		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\log\\{Path.GetFileName(projectDir)}.binlog");
+
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 

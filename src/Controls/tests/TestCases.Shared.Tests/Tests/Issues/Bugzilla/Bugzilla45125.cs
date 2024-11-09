@@ -16,8 +16,8 @@ public class Bugzilla45125 : _IssuesUITest
 	public override string Issue => "ListView lacks a way to get information about visible elements (such as FirstVisibleItem) to restore visual positions of elements";
 
 	// TODO From Xamarin.UITest migration: test references variable in UI, needs to be refactored
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	// public void Bugzilla45125Test()
 	// {

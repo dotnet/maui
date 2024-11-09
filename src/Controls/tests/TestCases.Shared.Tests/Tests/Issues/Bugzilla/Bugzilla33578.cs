@@ -17,7 +17,7 @@ public class Bugzilla33578 : _IssuesUITest
 	// Find out how to do this advanced stuff with Appium
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TableViewEntryCellShowsDefaultKeyboardThenNumericKeyboardAfterScrolling()
 	// {
 	// 	App.ScrollDown("table");

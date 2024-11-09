@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net8.0";
+			var frameworkVersion = "net9.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -230,7 +230,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			var device = App.GetTestDevice();
 			if(device == TestDevice.Android || device == TestDevice.iOS)
 			{
-				App.SetOrientationPortrait();
+				try
+				{
+					App.SetOrientationPortrait();
+				}
+				catch
+				{
+					// The app might not be ready
+					// Probably reduce this value if this works
+					Thread.Sleep(1000);
+					App.SetOrientationPortrait();
+				}
+				
 			}
 		}
 	}

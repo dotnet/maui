@@ -24,12 +24,12 @@ parameters:
   - name: BuildCategories
     type: object
     default:
-    - WindowsTemplates 
-    - macOSTemplates 
-    - Build 
-    - Blazor 
-    - MultiProject 
-    - AOT 
+    - WindowsTemplates
+    - macOSTemplates
+    - Build
+    - Blazor
+    - MultiProject
+    - AOT
 
   - name: RunPlatforms
     type: object
@@ -69,6 +69,8 @@ jobs:
     - template: provision.yml
       parameters:
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
+        skipXcode: false
+        skipProvisioning: true
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
@@ -119,6 +121,14 @@ jobs:
       continueOnError: true
       condition: succeededOrFailed()
 
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifacts
+      condition: always()
+      continueOnError: true
+      inputs:
+        PathToPublish: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
+        ArtifactName: BuildTemplateBuildLogs
+
     - task: PublishTestResults@2
       displayName: Publish the $(PLATFORM_NAME) templates build tests
       condition: always()
@@ -148,18 +158,19 @@ jobs:
       - ${{ each pair in step }}:
           ${{ pair.key }}: ${{ pair.value }}
 
-    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
-      - bash: |
-          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-          chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
-          $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-        displayName: 'Clean bot'
-        continueOnError: true
-        timeoutInMinutes: 60
+    # - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+    #   - bash: |
+    #       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    #       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+    #       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+    #     displayName: 'Clean bot'
+    #     continueOnError: true
+    #     timeoutInMinutes: 60
 
     - template: provision.yml
       parameters:
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
+        skipProvisioning: true
         skipAndroidImages: ${{ ne(RunPlatform.testName, 'RunOnAndroid') }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
 

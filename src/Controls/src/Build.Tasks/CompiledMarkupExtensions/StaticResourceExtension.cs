@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
                 
 
             //Fallback
-            foreach (var instruction in  FallBack(keyValueNode.Value as string, eNode, module, context).ToList())
+            foreach (var instruction in FallBack(keyValueNode.Value as string, eNode, module, context).ToList())
                 yield return instruction;
 
             var vardef = new VariableDefinition(module.TypeSystem.Object);
@@ -124,15 +124,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
             var propertyRef = parentType.GetProperty(context.Cache, pd => pd.Name == localName, out var declaringTypeReference);
             if (propertyRef != null)
             {
-                foreach (var instruction in stringResourceNode.PushConvertedValue(context, propertyRef.PropertyType, new ICustomAttributeProvider[] { propertyRef, propertyRef.PropertyType.ResolveCached(context.Cache) }, requiredServices => stringResourceNode.PushServiceProvider(context, requiredServices, propertyRef: propertyRef), true, false))
+                var propertyType = propertyRef.PropertyType.ResolveGenericParameters(declaringTypeReference);
+
+                foreach (var instruction in stringResourceNode.PushConvertedValue(
+                        context,
+                        propertyType,
+                        [propertyRef, propertyType.ResolveCached(context.Cache)],
+                        requiredServices => stringResourceNode.PushServiceProvider(context, requiredServices, propertyRef: propertyRef),
+                        boxValueTypes: true,
+                        unboxValueTypes: false))
 					yield return instruction;
-                var vardef = new VariableDefinition(propertyRef.PropertyType);
+                var vardef = new VariableDefinition(propertyType);
                 yield return Create(Stloc, vardef);
                 vardefref.VariableDefinition = vardef;
                 yield break;
             }
-
-
         }
 
         public static IEnumerable<Instruction> FallBack(string key, IElementNode node, ModuleDefinition module, ILContext context)

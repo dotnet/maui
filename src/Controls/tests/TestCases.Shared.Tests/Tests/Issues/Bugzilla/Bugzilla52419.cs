@@ -15,22 +15,22 @@ public class Bugzilla52419 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// public void Bugzilla52419Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Push new page"));
-	// 	RunningApp.Tap(q => q.Marked("Push new page"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Push new page"));
-	// 	RunningApp.Tap(q => q.Marked("Push new page"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Push new page"));
-	// 	RunningApp.Tap(q => q.Marked("Push new page"));
-	// 	RunningApp.Tap(q => q.Marked("Tab Page 2"));
-	// 	RunningApp.Tap(q => q.Marked("Tab Page 1"));
-	// 	RunningApp.Tap(q => q.Marked("Tab Page 2"));
-	// 	RunningApp.Tap(q => q.Marked("Tab Page 1"));
-	// 	RunningApp.Back();
-	// 	RunningApp.WaitForElement(q => q.Marked("AppearanceLabel"));
-	// 	var label = RunningApp.Query(q => q.Marked("AppearanceLabel"))[0];
+	// 	App.WaitForElement(q => q.Marked("Push new page"));
+	// 	App.Tap(q => q.Marked("Push new page"));
+	// 	App.WaitForElement(q => q.Marked("Push new page"));
+	// 	App.Tap(q => q.Marked("Push new page"));
+	// 	App.WaitForElement(q => q.Marked("Push new page"));
+	// 	App.Tap(q => q.Marked("Push new page"));
+	// 	App.Tap(q => q.Marked("Tab Page 2"));
+	// 	App.Tap(q => q.Marked("Tab Page 1"));
+	// 	App.Tap(q => q.Marked("Tab Page 2"));
+	// 	App.Tap(q => q.Marked("Tab Page 1"));
+	// 	App.Back();
+	// 	App.WaitForElement(q => q.Marked("AppearanceLabel"));
+	// 	var label = App.Query(q => q.Marked("AppearanceLabel"))[0];
 	// 	Assert.AreEqual("Times Appeared: 2", label.Text);
 	// }
 }

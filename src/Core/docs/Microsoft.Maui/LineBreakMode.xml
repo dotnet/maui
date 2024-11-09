@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumeration specifying various options for line breaking.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="CharacterWrap">

@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Apply">
@@ -49,7 +48,6 @@
         <param name="reset">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Apply&lt;TFrom&gt;">
@@ -80,7 +78,6 @@
         <param name="from">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="to">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WithCount">
@@ -106,7 +103,6 @@
         <param name="count">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

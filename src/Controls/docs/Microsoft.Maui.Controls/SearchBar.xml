@@ -106,7 +106,6 @@ public class App : Application
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.SearchBar" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CancelButtonColor">
@@ -128,8 +127,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the cancel button.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CancelButtonColorProperty">
@@ -151,7 +148,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the CancelButtonColor property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacingProperty">
@@ -168,8 +164,6 @@ public class App : Application
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributes">
@@ -189,8 +183,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributesProperty">
@@ -210,7 +202,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the FontAttributes property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamily">
@@ -230,8 +221,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the font family for the search bar text.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamilyProperty">
@@ -251,7 +240,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the FontFamily property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSize">
@@ -276,8 +264,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Gets the size of the font for the text in the searchbar.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSizeProperty">
@@ -297,7 +283,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the FontSize property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
@@ -317,8 +302,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the horizontal text alignment.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignmentProperty">
@@ -338,7 +321,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SearchBar.HorizontalTextAlignment" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -369,8 +351,6 @@ public class App : Application
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.SearchBar" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSearchButtonPressed">
@@ -398,7 +378,6 @@ public class App : Application
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PlaceholderColorProperty">
@@ -418,7 +397,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.PlaceholderColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PlaceholderProperty">
@@ -443,7 +421,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.Placeholder" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SearchButtonPressed">
@@ -468,7 +445,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the user presses the Search button.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SearchCommand">
@@ -494,7 +470,6 @@ public class App : Application
       <Docs>
         <summary>Gets or sets the command that is run when the user presses Search button.</summary>
         <value>The command that is run when the user presses Search button.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SearchCommandParameter">
@@ -520,7 +495,6 @@ public class App : Application
       <Docs>
         <summary>Gets or sets the parameter that is sent to the <see cref="P:Microsoft.Maui.Controls.SearchBar.SearchCommand" />.</summary>
         <value>The parameter that is sent to the <see cref="P:Microsoft.Maui.Controls.SearchBar.SearchCommand" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SearchCommandParameterProperty">
@@ -545,7 +519,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SearchBar.SearchCommandParameter" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SearchCommandProperty">
@@ -570,7 +543,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SearchBar.SearchCommand" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColorProperty">
@@ -590,7 +562,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.TextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextProperty">
@@ -615,7 +586,6 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.Text" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
@@ -632,9 +602,6 @@ public class App : Application
         <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignmentProperty">
@@ -651,8 +618,6 @@ public class App : Application
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.FontSizeDefaultValueCreator">
@@ -675,8 +640,6 @@ public class App : Application
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontAttributesChanged">
@@ -704,7 +667,6 @@ public class App : Application
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontChanged">
@@ -732,7 +694,6 @@ public class App : Application
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontFamilyChanged">
@@ -760,7 +721,6 @@ public class App : Application
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontSizeChanged">
@@ -788,7 +748,6 @@ public class App : Application
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
