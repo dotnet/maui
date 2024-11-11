@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Login");
 			App.Tap("Login");
 #if ANDROID
-			App.TapCoordinates(60,130);
+			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Open navigation drawer']"));
 #else
 			App.Tap(FlyoutIconAutomationId);
 #endif
