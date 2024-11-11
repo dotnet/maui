@@ -72,14 +72,14 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 		}
 
 		// If the project is new, we don't need to load the project dropdown
-		if (Project is not null && Project.ID != 0)
-		{
-			Projects = await _projectRepository.ListAsync();
-			IsExistingProject = true;
+		if (Project?.ID == 0)
+        {
+            IsExistingProject = false;
 		}
 		else
-		{
-			IsExistingProject = false;
+        {
+            Projects = await _projectRepository.ListAsync();
+            IsExistingProject = true;
 		}
 
 		if (Project is not null)
@@ -142,7 +142,7 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 			Project.Tasks.Add(_task);
 
 		if (_task.ProjectID > 0)
-			_ = _taskRepository.SaveItemAsync(_task);
+			_taskRepository.SaveItemAsync(_task).FireAndForgetSafeAsync(_errorHandler);
 
 		await Shell.Current.GoToAsync("..?refresh=true");
 

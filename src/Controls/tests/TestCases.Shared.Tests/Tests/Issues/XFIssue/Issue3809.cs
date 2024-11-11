@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -6,62 +8,64 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue3809 : _IssuesUITest
 	{
+		const string SetPagePadding = "Set Page Padding";
+		const string SafeAreaText = "Safe Area Enabled: ";
+		const string PaddingLabel = "paddingLabel";
+		const string SafeAreaAutomationId = "SafeAreaAutomation";
+
 		public Issue3809(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
 		public override string Issue => "SetUseSafeArea is wiping out Page Padding ";
 
-		// TODO: The _ variables need to be AutomationId values
-		//void AssertSafeAreaText(string text)
-		//{
-		//	var element =
-		//		RunningApp
-		//			.WaitForFirstElement(_safeAreaAutomationId);
+		void AssertSafeAreaText(string text)
+		{
+			var element = App.WaitForFirstElement(SafeAreaAutomationId);
 
-		//	element.AssertHasText(text);
-		//}
+			ClassicAssert.AreEqual(element.GetText(), text);
+		}
 
-		//[Test]
-		//[Category(UITestCategories.Layout)]
-		//public void SafeAreaInsetsBreaksAndroidPadding()
-		//{
-		//	// ensure initial paddings are honored
-		//	AssertSafeAreaText($"{_safeAreaText}{true}");
-		//	var element = App.WaitForFirstElement(_paddingLabel);
+		[Test]
+		[Category(UITestCategories.Layout)]
+		[Category(UITestCategories.Page)]
+		public void SafeAreaInsetsBreaksAndroidPadding()
+		{
+			// Ensure initial paddings are honored
+			AssertSafeAreaText($"{SafeAreaText}{true}");
+			var element = App.WaitForFirstElement(PaddingLabel);
 
-		//	bool usesSafeAreaInsets = false;
-		//	if (element.ReadText() != "25, 25, 25, 25")
-		//		usesSafeAreaInsets = true;
+			bool usesSafeAreaInsets = false;
+			if (element.ReadText() != "25, 25, 25, 25")
+				usesSafeAreaInsets = true;
 
-		//	Assert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
-		//	if (!usesSafeAreaInsets)
-		//		Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
+			ClassicAssert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
+			if (!usesSafeAreaInsets)
+				ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
-		//	// disable Safe Area Insets
-		//	App.Tap(_safeAreaAutomationId);
-		//	AssertSafeAreaText($"{_safeAreaText}{false}");
-		//	element = App.WaitForFirstElement(_paddingLabel);
+			// Disable Safe Area Insets
+			App.Tap(SafeAreaAutomationId);
+			AssertSafeAreaText($"{SafeAreaText}{false}");
+			element = App.WaitForFirstElement(PaddingLabel);
 
-		//	Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
+			ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
-		//	// enable Safe Area insets
-		//	App.Tap(_safeAreaAutomationId);
-		//	AssertSafeAreaText($"{_safeAreaText}{true}");
-		//	element = App.WaitForFirstElement(_paddingLabel);
-		//	Assert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
+			// Enable Safe Area insets
+			App.Tap(SafeAreaAutomationId);
+			AssertSafeAreaText($"{SafeAreaText}{true}");
+			element = App.WaitForFirstElement(PaddingLabel);
+			ClassicAssert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 
-		//	if (!usesSafeAreaInsets)
-		//		Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
+			if (!usesSafeAreaInsets)
+				ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
-
-		//	// Set Padding and then disable safe area insets
-		//	App.Tap(_setPagePadding);
-		//	App.Tap(_safeAreaAutomationId);
-		//	AssertSafeAreaText($"{_safeAreaText}{false}");
-		//	element = App.WaitForFirstElement(_paddingLabel);
-		//	Assert.AreEqual(element.ReadText(), "25, 25, 25, 25");
-
-		//}
+			// Set Padding and then disable safe area insets
+			App.Tap(SetPagePadding);
+			App.Tap(SafeAreaAutomationId);
+			AssertSafeAreaText($"{SafeAreaText}{false}");
+			element = App.WaitForFirstElement(PaddingLabel);
+			ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
+		}
 	}
 }
+#endif
