@@ -65,12 +65,16 @@ static class InitializeComponentCodeWriter
                 if (rootType == null)
                     goto exit;
 
+        		(var generateInflatorSwitch, var xamlInflators) = rootType.GetXamlInflator();
+                if (!generateInflatorSwitch && (xamlInflators & XamlInflator.SourceGen)!= XamlInflator.SourceGen)
+                    goto exit;
+
                 codeWriter.WriteLine($"namespace {rootClrNamespace};");
                 codeWriter.WriteLine();
                 codeWriter.WriteLine(GeneratedCodeAttribute);
                 codeWriter.WriteLine($"{accessModifier} partial class {rootTypeName}");
                 using (newblock()) {
-                    codeWriter.WriteLine($"private void InitializeComponentSourceGen()");
+                    codeWriter.WriteLine($"private partial void InitializeComponentSourceGen()");
                     using(newblock()){
                         try {
                             Visit(root, new SourceGenContext(codeWriter, compilation, xmlnsCache, typeCache, rootType!));

@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-static class SymbolExtensions
+static class ITypeSymbolExtensions
 {
-    //FIXME use IMMutable instead of IEnumerable
+    //FIXME use IMutable instead of IEnumerable
     public static string? GetContentPropertyName(this ITypeSymbol type)
         => type.GetAllAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToString() == "Microsoft.Maui.Controls.ContentPropertyAttribute")?.ConstructorArguments[0].Value as string;           
 
@@ -74,7 +73,7 @@ static class SymbolExtensions
         var baseType = symbol.BaseType;
         while (baseType != null) {
             foreach (var attribute in baseType.GetAttributes()) {
-                if (IsInherited(attribute)) {
+                if (attribute.IsInherited()) {
                     yield return attribute;
                 }
             }
@@ -83,29 +82,8 @@ static class SymbolExtensions
         }
     }
 
-    static bool IsInherited(this AttributeData attribute) 
-    {
-        if (attribute.AttributeClass == null) {
-            return false;
-        }
-
-        foreach (var attributeAttribute in attribute.AttributeClass.GetAttributes()) {
-            var @class = attributeAttribute.AttributeClass;
-            if (@class != null && @class.Name == nameof(AttributeUsageAttribute) &&
-                @class.ContainingNamespace?.Name == "System") {
-                foreach (var kvp in attributeAttribute.NamedArguments) {
-                    if (kvp.Key == nameof(AttributeUsageAttribute.Inherited)) {
-                        return (bool) kvp.Value.Value!;
-                    }
-                }
-
-                // Default value of Inherited is true
-                return true;
-            }
-        }
-        // An attribute without an `AttributeUsage` attribute will also default to being inherited.
-        return true;
-    }
+	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name)
+        => symbol.GetAllAttributes().Where(ad => ad.AttributeClass?.ToString() == name);
 
     public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol)
     {
@@ -131,9 +109,6 @@ static class SymbolExtensions
         return (getter.ReturnType, typeConverter);
     }
 
-    public static bool IsPublic(this ISymbol symbol)
-        => symbol.DeclaredAccessibility == Accessibility.Public;  
-
     public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType)
     {
         if (type == null || baseType == null)
@@ -143,5 +118,36 @@ static class SymbolExtensions
             return true;
 
         return type.BaseType?.InheritsFrom(baseType) ?? false;
+    }
+
+    public static (bool generateInflatorSwitch, XamlInflator inflators) GetXamlInflator(this ITypeSymbol type)
+    {
+        var attr = type.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length == 2);
+        if (attr != null)
+        {    
+            var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
+            var generateInflatorSwitch = (bool)attr.ConstructorArguments[1].Value!;
+            return (generateInflatorSwitch, inflator);
+        }
+
+        var module = type.ContainingModule;
+        attr = module.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length == 2);
+        if (attr != null)
+        {
+            var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
+            var generateInflatorSwitch = (bool)attr.ConstructorArguments[1].Value!;
+            return (generateInflatorSwitch, inflator);
+        }
+
+        var assembly = type.ContainingAssembly;
+        attr = assembly.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length == 2);
+        if (attr != null)
+        {
+            var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
+            var generateInflatorSwitch = (bool)attr.ConstructorArguments[1].Value!;
+            return (generateInflatorSwitch, inflator);
+        }
+
+        return (false, XamlInflator.Default);
     }
 }

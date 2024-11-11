@@ -8,6 +8,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Border : ContentPage
 	{
 		public Border() => InitializeComponent();
@@ -28,6 +29,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(layout.Border0.StrokeShape);
 				Assert.NotNull(layout.Border1.StrokeShape);
 				Assert.NotNull(layout.Border2.StrokeShape);
+			}
+
+			public void InitializeStrokeShape([Values]XamlInflator inflator)
+			{
+				var layout = new Border(inflator);
+				Assert.NotNull(layout.Border0.StrokeShape);
+				Assert.NotNull(layout.Border1.StrokeShape);
+				Assert.NotNull(layout.Border2.StrokeShape); 
 			}
 
 			[TestCase(false)]

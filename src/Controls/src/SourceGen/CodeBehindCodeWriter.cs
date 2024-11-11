@@ -28,6 +28,7 @@ static class CodeBehindCodeWriter
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+#nullable enable
 ";
 
     public static void GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
@@ -87,6 +88,10 @@ static class CodeBehindCodeWriter
 			throw new Exception("Something went wrong");
 		}
 
+		var rootSymbol = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootType}");
+
+		(var generateInflatorSwitch, var xamlInflators) = rootSymbol?.GetXamlInflator() ?? (false, XamlInflator.Default);
+
 		sb.AppendLine($"namespace {rootClrNamespace}");
 		sb.AppendLine("{");
 		sb.AppendLine($"\t[global::Microsoft.Maui.Controls.Xaml.XamlFilePath(\"{projItem.RelativePath?.Replace("\\", "\\\\")}\")]");
@@ -126,6 +131,10 @@ static class CodeBehindCodeWriter
 			}
 		}
 
+		var initCompRuntimeName = "InitializeComponent";
+		if (generateInflatorSwitch)
+			initCompRuntimeName = "InitializeComponentRuntime";
+
 		//initializeComponent
 		sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
@@ -142,7 +151,7 @@ static class CodeBehindCodeWriter
 			sb.AppendLine($"#endif");
 		}
 
-		sb.AppendLine("\t\tprivate void InitializeComponent()");
+		sb.AppendLine($"\t\tprivate void {initCompRuntimeName}()");
 		sb.AppendLine("\t\t{");
 		sb.AppendLine("#pragma warning disable IL2026, IL3050 // The body of InitializeComponent will be replaced by XamlC so LoadFromXaml will never be called in production builds");
 		sb.AppendLine($"\t\t\tglobal::Microsoft.Maui.Controls.Xaml.Extensions.LoadFromXaml(this, typeof({rootType}));");
@@ -157,9 +166,77 @@ static class CodeBehindCodeWriter
 		sb.AppendLine("#pragma warning restore IL2026, IL3050");
 
 		sb.AppendLine("\t\t}");
+
+
+		if (generateInflatorSwitch)
+		{
+			sb.AppendLine();
+
+			// add MemberNotNull attributes
+			if (namedFields != null)
+			{
+				sb.AppendLine($"#if NET5_0_OR_GREATER");
+				foreach ((var fname, _, _) in namedFields)
+				{
+					sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
+				}
+
+				sb.AppendLine($"#endif");
+			}
+			sb.AppendLine($"\t\tprivate void InitializeComponent() => InitializeComponentRuntime();");
+			sb.AppendLine();
+
+			if(xamlInflators == XamlInflator.Default || (xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
+				if (namedFields != null)
+				{
+					sb.AppendLine($"#if NET5_0_OR_GREATER");
+					foreach ((var fname, _, _) in namedFields)
+					{
+						sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
+					}
+
+					sb.AppendLine($"#endif");
+				}
+				sb.AppendLine($"\t\tprivate partial void InitializeComponentSourceGen();");
+				sb.AppendLine();
+			}
+
+			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
+
+			sb.AppendLine($"\t\tpublic {rootType}(global::Microsoft.Maui.Controls.Xaml.XamlInflator inflator)");
+			sb.AppendLine("\t\t{");
+			sb.AppendLine("\t\t\tswitch (inflator)");
+			sb.AppendLine("\t\t\t{");
+			if(xamlInflators == XamlInflator.Default || (xamlInflators & XamlInflator.Runtime) == XamlInflator.Runtime)
+			{
+				sb.AppendLine("\t\t\t\tcase global::Microsoft.Maui.Controls.Xaml.XamlInflator.Runtime:");
+				sb.AppendLine("\t\t\t\t\tInitializeComponentRuntime();");
+				sb.AppendLine("\t\t\t\t\tbreak;");
+			}
+			if(xamlInflators == XamlInflator.Default || (xamlInflators & XamlInflator.XamlC) == XamlInflator.XamlC)
+			{
+				sb.AppendLine("\t\t\t\tcase global::Microsoft.Maui.Controls.Xaml.XamlInflator.XamlC:");
+				sb.AppendLine("\t\t\t\t\tInitializeComponent();");
+				sb.AppendLine("\t\t\t\t\tbreak;");
+			}
+			if(xamlInflators == XamlInflator.Default || (xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
+				sb.AppendLine("\t\t\t\tcase global::Microsoft.Maui.Controls.Xaml.XamlInflator.SourceGen:");
+				sb.AppendLine("\t\t\t\t\tInitializeComponentSourceGen();");
+				sb.AppendLine("\t\t\t\t\tbreak;");
+			}
+			sb.AppendLine("\t\t\t\tcase global::Microsoft.Maui.Controls.Xaml.XamlInflator.Default:");
+			sb.AppendLine("\t\t\t\t\tInitializeComponent();");
+			sb.AppendLine("\t\t\t\t\tbreak;");
+			sb.AppendLine("\t\t\t\tdefault:");
+			sb.AppendLine("\t\t\t\t\tthrow new global::System.NotSupportedException($\"no code for {inflator} generated. check the [XamlProcessing] attribute.\");");
+			sb.AppendLine("\t\t\t}");
+			sb.AppendLine("\t\t}");
+		}
 		sb.AppendLine("\t}");
 		sb.AppendLine("}");
-
+		
 		context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 	}
 
