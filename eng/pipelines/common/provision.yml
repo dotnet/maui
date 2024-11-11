@@ -58,10 +58,12 @@ steps:
         sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
         xcrun xcode-select --print-path
         xcodebuild -version
-        xcodebuild -downloadAllPlatforms
-        xcodebuild -runFirstLaunch
+        sudo xcodebuild -license accept
+        sudo xcodebuild -downloadAllPlatforms
+        sudo xcodebuild -runFirstLaunch
       displayName: Select Xcode Version
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 30
 
 
   # Provision Additional Software
