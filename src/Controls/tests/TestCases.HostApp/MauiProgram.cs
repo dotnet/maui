@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using Maui.Controls.Sample.Issues;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -29,11 +30,7 @@ namespace Maui.Controls.Sample
 
 #if IOS || MACCATALYST
 
-			appBuilder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
-				});
+			appBuilder.ConfigureCollectionViewHandlers();
 				
 #endif
 

@@ -1723,5 +1723,13 @@ namespace UITest.Appium
 
 			return result;
 		}
+
+
+		public static void SetTestConfigurationArg(this IConfig config, string key, string value)
+		{
+			var startupArg = config.GetProperty<Dictionary<string,string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+			startupArg.Add(key, value);
+			config.SetProperty("TestConfigurationArgs", startupArg);
+		}
 	}
 }
