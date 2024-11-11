@@ -74,9 +74,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
         [Test]
         [Category(UITestCategories.CollectionView)]
-#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST
-        [Ignore("Currently fails on iOS & MAC platform; UI Behavior is different in iOS with collectionViewHandler than Android and Windows ")]
-#endif
         public void HeaderFooterGridHorizontalWorks()
         {
             // Navigate to the selection galleries
