@@ -1,5 +1,4 @@
-﻿/*
-#if IOS
+﻿#if TEST_FAILS_ON_CATALYST // This test fails on Catalyst because the animation happeds while tab changes which cause additional delays.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,12 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void ClickingQuicklyBetweenTopTabsBreaksContent()
 		{
+			App.WaitForElement("AutomatedRun");
 			App.Tap("AutomatedRun");
 			App.WaitForElement("Success");
 			App.Tap("AutomatedRun");
-			App.WaitForElement("Success");
-		}
+			App.WaitForElement("Success");		}
 	}
 }
 #endif
-*/

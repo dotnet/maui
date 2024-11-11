@@ -12,18 +12,16 @@ public class Issue889 : _IssuesUITest
 
 	public override string Issue => "Assigning to FlyoutPage.Detail after construction doesn't work";
 
-	//[Test]
-	//[Category(UITestCategories.FlyoutPage)]
-	//[Description("Reproduce app crash - Issue #983")]
-	//public void Issue899TestsAppCrashWhenSwitchingTabs()
-	//{
-	//	App.Tap(q => q.Marked("Push new page"));
-	//	App.WaitForElement(q => q.Marked("I have been pushed"));
-	//	App.Screenshot("Push page");
-	//	App.Back();
-	//	App.Screenshot("Navigate back");
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Issue899TestsAppCrashWhenSwitchingTabs()
+	{
+		App.WaitForElement("PushPage");
+		App.Tap("PushPage");
+		App.WaitForElement("PushedPageLabel");
 
-	//	App.Tap(q => q.Marked("Tab 2 Title"));
-	//	App.Screenshot("Go to second tab");
-	//}
+		App.TapBackArrow();
+
+		App.WaitForElement("PushPage");
+	}
 }

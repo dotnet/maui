@@ -12,14 +12,12 @@ public class Issue3318 : _IssuesUITest
 
 	public override string Issue => "[MAC] ScrollTo method is not working in Xamarin.Forms for mac platform";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Issue3318Test()
-	// {
-	// 	App.WaitForElement(q => q.Marked("End"));
-	// 	App.Tap(q => q.Marked("End"));
-	// 	App.WaitForElement(q => q.Marked("Item 19"));
-	// 	App.Back();
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Issue3318Test()
+	{
+		App.WaitForElement("End");
+		App.Tap("End");
+		App.WaitForElement("Item 19");
+	}
 }
