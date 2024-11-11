@@ -256,6 +256,7 @@ Task("dotnet-integration-build")
     });
 
 Task("dotnet-integration-test")
+    .IsDependentOn("dotnet-integration-build")
     .Does(() =>
     {
         RunTestWithLocalDotNet(
@@ -780,6 +781,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+    Information("Log Directory: {0}", logDirectory);
 
     if (!string.IsNullOrWhiteSpace(pathDotnet) && localDotnet)
     {
