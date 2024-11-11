@@ -9,7 +9,7 @@
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
     <PublicSdk Condition=" '$(PublicSdk)' == ''">true</PublicSdk>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
-    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
+    <PrivateSdk>true</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
