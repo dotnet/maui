@@ -84,6 +84,7 @@ steps:
     displayName: "Install Appium (Drivers)"
     continueOnError: false
     retryCountOnTaskFailure: 1
+    timeoutInMinutes: 10
     env:
       APPIUM_HOME: $(APPIUM_HOME)
 
