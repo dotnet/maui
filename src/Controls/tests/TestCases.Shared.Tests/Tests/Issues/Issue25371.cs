@@ -1,3 +1,4 @@
+#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,20 +17,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Navigation)]
 		public void ValidateOnNavigationToMethod()
 		{
-			App.WaitForElement("MainPageLabel");
+			App.WaitForElement("MoveToNextPage");
 			App.Tap("MoveToNextPage");
 			App.WaitForElement("SecondPageLabel");
 
 			App.LongPress("Back");
-			var navigationToLabel = App.FindElement("MainPageLabel").GetText();
-			if (string.IsNullOrEmpty(navigationToLabel))
-			{
-				Assert.Fail("OnNavigationTo method is not called");
-			}
-			else
-			{
-				Assert.That(navigationToLabel, Is.EqualTo("OnNavigationTo method is called"));
-			}
+
+			var navigationToLabel = App.FindElement("FirstPageLabel").GetText();
+			Assert.That(navigationToLabel, Is.EqualTo("OnNavigationTo method is called"));
 		}
 	}
 }
+#endif

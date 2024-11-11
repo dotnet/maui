@@ -7,20 +7,20 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Github, 25371, "OnNavigatedTo not called when navigating back to a specific page", PlatformAffected.iOS | PlatformAffected.macOS)]
 	public class Issue25371 : NavigationPage
 	{
-		public Issue25371() : base(new MainPage())
+		public Issue25371() : base(new FirstPage25371())
 		{
 		}
 	}
-	public class MainPage : ContentPage
+	public class FirstPage25371 : ContentPage
 	{
 		Label label;
-		public MainPage()
+		public FirstPage25371()
 		{
 			var stackLayout = new StackLayout();
 		    label = new Label()
 			{
 				Text = "Welcome to Main page",
-				AutomationId ="MainPageLabel"
+				AutomationId ="FirstPageLabel"
 			};
 
 			var button = new Button() { Text = "MoveToNextPage", AutomationId="MoveToNextPage" };
@@ -39,13 +39,13 @@ namespace Maui.Controls.Sample.Issues
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			Navigation.PushAsync(new SecondPage());
+			Navigation.PushAsync(new SecondPage25371());
 		}
 	}
 
-	public class SecondPage : ContentPage
+	public class SecondPage25371 : ContentPage
 	{
-		public SecondPage()
+		public SecondPage25371()
 		{
 			var label = new Label()
 			{
