@@ -12,10 +12,10 @@ public class Issue6323 : _IssuesUITest
 
 	public override string Issue => "TabbedPage Page not watching icon changes";
 
-	//[Test]
-	//[Category(UITestCategories.WebView)]
-	//public void Issue6323Test()
-	//{
-	//	App.WaitForElement("Success");
-	//}
+	[Test]
+	[Category(UITestCategories.WebView)]
+	public void Issue6323Test()
+	{
+		App.WaitForElement("Success");
+	}
 }
