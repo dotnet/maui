@@ -122,29 +122,29 @@ static class ITypeSymbolExtensions
 
     public static (bool generateInflatorSwitch, XamlInflator inflators) GetXamlInflator(this ITypeSymbol type)
     {
-        var attr = type.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length == 2);
+        var attr = type.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length >= 1);
         if (attr != null)
         {    
             var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
-            var generateInflatorSwitch = (bool)attr.ConstructorArguments[1].Value!;
+            var generateInflatorSwitch = attr.ConstructorArguments.Length == 2 && (bool)attr.ConstructorArguments[1].Value!;
             return (generateInflatorSwitch, inflator);
         }
 
         var module = type.ContainingModule;
-        attr = module.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length == 2);
+        attr = module.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length >= 1);
         if (attr != null)
         {
             var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
-            var generateInflatorSwitch = (bool)attr.ConstructorArguments[1].Value!;
+            var generateInflatorSwitch = attr.ConstructorArguments.Length == 2 && (bool)attr.ConstructorArguments[1].Value!;
             return (generateInflatorSwitch, inflator);
         }
 
         var assembly = type.ContainingAssembly;
-        attr = assembly.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length == 2);
+        attr = assembly.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length >= 1);
         if (attr != null)
         {
             var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
-            var generateInflatorSwitch = (bool)attr.ConstructorArguments[1].Value!;
+            var generateInflatorSwitch = attr.ConstructorArguments.Length == 2 && (bool)attr.ConstructorArguments[1].Value!;
             return (generateInflatorSwitch, inflator);
         }
 
