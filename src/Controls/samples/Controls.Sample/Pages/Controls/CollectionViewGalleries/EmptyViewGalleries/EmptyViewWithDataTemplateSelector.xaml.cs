@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿#nullable enable
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using System;
 using System.Collections.Generic;
@@ -27,10 +28,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 
 		public class SearchTermDataTemplateSelector : DataTemplateSelector
 		{
-			public DataTemplate DefaultTemplate { get; set; }
-			public DataTemplate OtherTemplate { get; set; }
+			public DataTemplate? DefaultTemplate { get; set; }
+			public DataTemplate? OtherTemplate { get; set; }
 
-			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+			protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
 			{
 				string query = (string)item;
 				return query.Equals("xamarin", StringComparison.OrdinalIgnoreCase) ? OtherTemplate : DefaultTemplate;
@@ -46,16 +47,17 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			public EmptyViewWithDataTemplateSelectorViewModel()
 			{
 				source = new List<Monkey>();
+				Monkeys = new ObservableCollection<Monkey>(source);
 				CreateMonkeyCollection();
 			}
 
 			public partial class Monkey
 			{
-				public string Name { get; set; }
+				public string? Name { get; set; }
 
-				public string Location { get; set; }
+				public string? Location { get; set; }
 
-				public string Details { get; set; }
+				public string? Details { get; set; }
 
 			}
 
@@ -67,12 +69,13 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 					Location = "Africa & Asia",
 					Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."
 				});
-				Monkeys = new ObservableCollection<Monkey>(source);
 			}
 
 			private void FilterItems(string filter)
 			{
-				var filteredItems = source.Where(monkey => monkey.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+				var filteredItems = source
+    .Where(monkey => monkey.Name != null && monkey.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
+    .ToList();
 				foreach (var monkey in source)
 				{
 					if (!filteredItems.Contains(monkey))
@@ -90,11 +93,11 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			}
 
 			#region INotifyPropertyChanged
-			public event PropertyChangedEventHandler PropertyChanged;
+			public event PropertyChangedEventHandler? PropertyChanged;
 
-			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
 			{
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName!));
 			}
 			#endregion
 		}
