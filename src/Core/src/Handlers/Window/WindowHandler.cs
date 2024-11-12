@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS
 			[nameof(IWindow.FlowDirection)] = MapFlowDirection,
 			[nameof(IWindow.TitleBarDragRectangles)] = MapTitleBarDragRectangles,
-			[nameof(IWindow.TitleBar)] = MapTitleBar
 #endif
 		};
 
