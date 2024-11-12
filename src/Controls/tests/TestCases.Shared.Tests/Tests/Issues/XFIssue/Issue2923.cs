@@ -17,11 +17,6 @@ public class Issue2923 : _IssuesUITest
 	public void Issue2923TestOne()
 	{
 		App.WaitForElement("FirstPageLabel");
-	}
-
-	[Test]
-	public void Issue2923TestTwo()
-	{
 		App.Tap("ResetButton");
 		App.WaitForElement("ResetPageLabel");
 	}

@@ -6,6 +6,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue2740 : _IssuesUITest
 {
+	const string Switch = "Switch";
+
+	const string ListItem = "1";
+
 	public Issue2740(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -16,10 +20,10 @@ public class Issue2740 : _IssuesUITest
 	[Category(UITestCategories.LifeCycle)]
 	public void Issue2740Test()
 	{
-		App.WaitForElement("1");
-		App.Tap("1");
-		App.WaitForElement("Switch");
-		App.Tap("Switch");
-		App.WaitForElement("1");
+		App.WaitForElement(ListItem);
+		App.Tap(ListItem);
+		App.WaitForElement(Switch);
+		App.Tap(Switch);
+		App.WaitForElement(ListItem);
 	}
 }
