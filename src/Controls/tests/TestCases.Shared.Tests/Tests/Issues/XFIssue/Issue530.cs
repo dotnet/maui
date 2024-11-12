@@ -18,12 +18,12 @@ public class Issue530 : _IssuesUITest
 	public void Issue530TestsLoadAsync()
 	{
 		App.WaitForElement("Load");
-		App.Screenshot("All elements present");
 		App.Tap("Load");
 
 		App.WaitForElement("John");
-
-		App.Screenshot("List items loaded async");
+		App.FindElement("Paul");
+		App.FindElement("George");
+		App.FindElement("Ringo");
 	}
 }
 #endif
