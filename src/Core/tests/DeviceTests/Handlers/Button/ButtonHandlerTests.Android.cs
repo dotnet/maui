@@ -229,8 +229,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(ButtonHandler buttonHandler)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var image = buttonHandler.PlatformView.Icon ??
 						TextViewCompat.GetCompoundDrawablesRelative(buttonHandler.PlatformView)[3];
+#pragma warning restore CS0618
 
 			return image != null;
 		}
