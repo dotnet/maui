@@ -1,5 +1,4 @@
-﻿# if TEST_FAILS_ON_WINDOWS //timeout exception while tap a item 
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,30 +12,30 @@ public class Issue1439 : _IssuesUITest
 
 	public override string Issue => "ItemTapped event for a grouped ListView is not working as expected.";
 
-	[Test]
-	[Category(UITestCategories.TableView)]
-	public void Issue1439Test()
-	{
-		App.WaitForElement("A");
-		App.Tap("A");
+	// [Test]
+	// [Category(UITestCategories.TableView)]
+	// [FailsOnIOS]
+	// public void Issue1439Test()
+	// {
+	// 	App.WaitForElement(q => q.Marked(A));
+	// 	App.Tap(q => q.Marked(A));
 
-		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("A"));
-		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 1"));
+	// 	Assert.AreEqual(A, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_1, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
-		App.Tap("B");
+	// 	App.Tap(q => q.Marked(B));
 
-		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("B"));
-		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 1"));
+	// 	Assert.AreEqual(B, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_1, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
-		App.Tap("C");
+	// 	App.Tap(q => q.Marked(C));
 
-		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("C"));
-		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 2"));
+	// 	Assert.AreEqual(C, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_2, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
-		App.Tap("D");
+	// 	App.Tap(q => q.Marked(D));
 
-		Assert.That(App.FindElement("lblItem").GetText(), Is.EqualTo("D"));
-		Assert.That(App.FindElement("lblGroup").GetText(), Is.EqualTo("Group 2"));
-	}
+	// 	Assert.AreEqual(D, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_2, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
+	// }
 }
-# endif

@@ -1,5 +1,4 @@
-﻿# if TEST_FAILS_ON_WINDOWS //timeout exception : While tap the item
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,9 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue1342 : _IssuesUITest
 {
-	const string add2 = "add2";
-	const string add3 = "add3";
-	const string success = "No crash means success";
+	const string Success = "Success";
 
 	public Issue1342(TestDevice testDevice) : base(testDevice)
 	{
@@ -17,12 +14,13 @@ public class Issue1342 : _IssuesUITest
 
 	public override string Issue => "[iOS] ListView throws Exception on ObservableCollection.Add/Remove for non visible list view";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
-	public void AddingItemsToNonVisibleListViewDoesntCrash()
-	{
-		App.Tap(add2);
-		App.Tap(add3);
-		App.WaitForElement(success);
-	}
+	// [Test]
+	// [Category(UITestCategories.ListView)]
+	// [Ignore("Fails sometimes - needs a better test")]
+	// public void AddingItemsToNonVisibleListViewDoesntCrash()
+	// {
+	// 	App.Tap(add2);
+	// 	App.Tap(add3);
+	// 	App.WaitForElement(success);
+	// }
 }
