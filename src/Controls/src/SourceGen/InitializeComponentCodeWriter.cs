@@ -109,6 +109,6 @@ exit:
         rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);
         // rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
         // rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
-//        rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
+        rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
     }
 }
