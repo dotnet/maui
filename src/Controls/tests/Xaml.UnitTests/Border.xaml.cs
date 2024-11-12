@@ -13,24 +13,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		public Border() => InitializeComponent();
 
-		public Border(bool useCompiledXaml)
-		{
-			// This stub will be replaced at compile time
-		}
 
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void InitializeStrokeShape(bool useCompiledXaml)
-			{
-				var layout = new Border(useCompiledXaml);
-				Assert.NotNull(layout.Border0.StrokeShape);
-				Assert.NotNull(layout.Border1.StrokeShape);
-				Assert.NotNull(layout.Border2.StrokeShape);
-			}
-
+			[Test]
 			public void InitializeStrokeShape([Values]XamlInflator inflator)
 			{
 				var layout = new Border(inflator);
@@ -39,12 +26,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.NotNull(layout.Border2.StrokeShape); 
 			}
 
-			[TestCase(false)]
-			[TestCase(true)]
-			public void BindingToStrokeShapeWorks(bool useCompiledXaml)
+			[Test]
+			public void BindingToStrokeShapeWorks([Values]XamlInflator inflator)
 			{
 				DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-				var layout = new Border(useCompiledXaml);
+				var layout = new Border(inflator);
 
 				BorderViewModel viewModel = new();
 				layout.BindingContext = viewModel;
