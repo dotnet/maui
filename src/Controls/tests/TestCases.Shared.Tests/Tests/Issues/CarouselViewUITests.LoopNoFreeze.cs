@@ -21,9 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMacWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST || TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_ANDROID
+		[Ignore("Currently fails on all platform; see https://github.com/dotnet/maui/issues/19488")]
+#endif
 		public void Issue12574Test()
 		{
 			App.WaitForElement("0 item");
@@ -51,8 +51,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
+#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST || TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_ANDROID
+		[Ignore("Currently fails on all platform; see https://github.com/dotnet/maui/issues/19488")]
+#endif
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForElement("0 item");
