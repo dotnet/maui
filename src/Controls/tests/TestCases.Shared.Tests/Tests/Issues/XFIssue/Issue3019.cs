@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +17,8 @@ public class Issue3019 : _IssuesUITest
 	public void MakeSureListGroupShowsUpAndItemsAreClickable()
 	{
 		App.Tap("Grouped Item: 0");
-	 	App.Tap("Grouped Item: 1");
-	 	App.WaitForElement("Grouped Item: 1 Clicked");
+		Assert.That(App.WaitForElement("MessageLabel").GetText(), Is.EqualTo("Grouped Item: 0 Clicked"));
+		App.Tap("Grouped Item: 1");
+		Assert.That(App.WaitForElement("MessageLabel").GetText(), Is.EqualTo("Grouped Item: 1 Clicked"));
 	}
 }
