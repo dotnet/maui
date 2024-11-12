@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.19041.45</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.19041.57</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
