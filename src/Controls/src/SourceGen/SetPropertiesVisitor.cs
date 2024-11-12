@@ -242,9 +242,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         if (valueNode != null) {
             valueString = valueNode.ConvertTo(bpFieldSymbol, iXmlLineInfo);
-            writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol}, {valueString});");
+            writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {valueString});");
         } else if (elementNode != null) {
-            writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol}, {context.Variables[node].Name});");
+            writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {context.Variables[node].Name});");
         }
     }
 
