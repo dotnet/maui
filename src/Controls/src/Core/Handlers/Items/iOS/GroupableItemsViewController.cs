@@ -204,12 +204,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal UIEdgeInsets GetInsetForSection(ItemsViewLayout itemsViewLayout,
 			UICollectionView collectionView, nint section)
 		{
-			var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
-
 			if (!ItemsView.IsGrouped)
 			{
-				return uIEdgeInsets;
+				return UIEdgeInsets.Zero;
 			}
+
+			var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
 
 			// If we're grouping, we'll need to inset the sections to maintain the spacing between the 
 			// groups and their group headers/footers
@@ -228,8 +228,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				top += spacing;
 			}
 
+			// If we're at the last section, we don't need to add the right inset
+			var resolvedRightInset = section >= (collectionView.NumberOfSections() - 1) ? 0 : uIEdgeInsets.Right;
+
 			return new UIEdgeInsets(top, left,
-				uIEdgeInsets.Bottom, uIEdgeInsets.Right);
+				uIEdgeInsets.Bottom, resolvedRightInset);
 		}
 
 		// These measurement methods are only necessary for iOS 10 and lower

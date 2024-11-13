@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Maui.Controls.Sample.Issues.Issue25433"
+			 xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+	<Grid RowDefinitions="*">
+		<CollectionView Grid.Row="0"
+						x:Name="collectionView"
+						AutomationId="collectionView"
+						Background="Red"
+						HorizontalOptions="Center">
+			<CollectionView.ItemsLayout>
+				<GridItemsLayout Orientation="Horizontal"
+								 HorizontalItemSpacing="10"/>
+			</CollectionView.ItemsLayout>
+			<CollectionView.ItemTemplate>
+				<DataTemplate>
+					<Button Width="32"
+							Background="Blue"
+							Text="."/>
+				</DataTemplate>
+			</CollectionView.ItemTemplate>
+		</CollectionView>
+	</Grid>
+</ContentPage>
