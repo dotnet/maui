@@ -599,13 +599,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData(true, 1)]
-		[InlineData(false, 0)]
-		public void MeasureInvalidatedPropagatesUpTreeOnAppSwitch(bool switchValue, int expectedMeasureInvalidatedEvents)
+		[InlineData(true, 0)]
+		[InlineData(false, 1)]
+		public void MeasureInvalidatedPropagatesUpTreeOnAppSwitch(bool skipMeasureInvalidatedPropagation, int expectedAncestorMeasureInvalidatedEvents)
 		{
 			try
 			{
-				VisualElement.IsMeasureInvalidatedPropagationEnabled = switchValue;
+				VisualElement.SkipMeasureInvalidatedPropagation = skipMeasureInvalidatedPropagation;
 
 				var label = new LabelInvalidateMeasureCheck { IsPlatformEnabled = true };
 
@@ -643,14 +643,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Equal(1, label.PlatformInvalidateMeasureCount);
 				Assert.Equal(1, contentView.InvalidateMeasureCount);
 				Assert.Equal(0, contentView.PlatformInvalidateMeasureCount);
-				Assert.Equal(expectedMeasureInvalidatedEvents, scrollView.InvalidateMeasureCount);
+				Assert.Equal(expectedAncestorMeasureInvalidatedEvents, scrollView.InvalidateMeasureCount);
 				Assert.Equal(0, scrollView.PlatformInvalidateMeasureCount);
-				Assert.Equal(expectedMeasureInvalidatedEvents, page.InvalidateMeasureCount);
+				Assert.Equal(expectedAncestorMeasureInvalidatedEvents, page.InvalidateMeasureCount);
 				Assert.Equal(0, page.PlatformInvalidateMeasureCount);
 			}
 			finally
 			{
-				VisualElement.IsMeasureInvalidatedPropagationEnabled = false;
+				VisualElement.SkipMeasureInvalidatedPropagation = false;
 			}
 		}
 

@@ -1409,14 +1409,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// A flag that determines whether the measure invalidated event should be propagated up the visual tree.
+		/// A flag that determines whether the measure invalidated event should not be propagated up the visual tree.
 		/// </summary>
-		internal static bool IsMeasureInvalidatedPropagationEnabled { get; set /* for testing purpose */; } =
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.PropagateMeasureInvalidated", out var enabled) && enabled;
+		internal static bool SkipMeasureInvalidatedPropagation { get; set /* for testing purpose */; } =
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.SkipMeasureInvalidatedPropagation", out var enabled) && enabled;
 
 		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			if (!IsMeasureInvalidatedPropagationEnabled)
+			if (SkipMeasureInvalidatedPropagation)
 			{
 				return;
 			}
