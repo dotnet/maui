@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Xaml;
 
 internal interface IExpressionParser
 {
-	object Parse(string? match, ref string expression, IServiceProvider serviceProvider);
+	object Parse(string match, ref string expression, IServiceProvider serviceProvider);
 }
 
 internal interface IExpressionParser<out T> : IExpressionParser
