@@ -1,4 +1,4 @@
-﻿#if !MACCATALYST
+﻿#if WINDOWS
 using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using UITest.Appium;
