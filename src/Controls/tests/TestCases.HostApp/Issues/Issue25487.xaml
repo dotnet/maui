@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25487">
+
+    <VerticalStackLayout Spacing="5">
+        <Button Text="Short" AutomationId="ToggleTextButton" ImageSource="dotnet_bot_resized3.png" 
+            ContentLayout="Top" x:Name="Button1" 
+            Clicked="OnButtonClicked" Background="Purple" />
+
+        <Button Text="A very long text that will take up more space" 
+            ImageSource="dotnet_bot_resized3.png" ContentLayout="Top" 
+            x:Name="Button2" Background="Purple" />
+
+        <Button Text="Short" ImageSource="dotnet_bot_resized3.png" 
+            ContentLayout="Right" x:Name="Button3" 
+            Background="Purple" />
+
+        <Button Text="A very long text that will take up more space" 
+            ImageSource="dotnet_bot_resized3.png" ContentLayout="Left" 
+            x:Name="Button4" Background="Purple" />
+
+    </VerticalStackLayout>
+</ContentPage>
