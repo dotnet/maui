@@ -32,5 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (itemSpacing.HasValue)
 				ItemSpacing = itemSpacing.Value;
 		}
+
+		public override string ToString() => Item?.ToString();
 	}
 }
