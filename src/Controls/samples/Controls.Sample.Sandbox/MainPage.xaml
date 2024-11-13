@@ -2,4 +2,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+
+              <!-- <Grid RowDefinitions="50, 50, *, 50" Margin="30">
+        <Entry Text="Content before" AutomationId="EntryBefore" FontSize="Large" ReturnType="Next" Background="Aquamarine" Grid.Row="0" />
+        <Label x:Name="CursorHeightTracker" Text="0" AutomationId="CursorHeightTracker" FontSize="Large" Background="Aquamarine" Grid.Row="1" />
+        <Editor x:Name="editor" Text="Hello world" AutomationId="IssueEditor" FontSize="Large" Background="Orange" Grid.Row="2" VerticalTextAlignment="Start"/>
+        <Button Text="Erase" Grid.Row="3"/>
+    </Grid> -->
+
+<ScrollView>
+
+              <Grid RowDefinitions="50, 50, *, 50" Margin="30">
+        <Entry Text="Content before" AutomationId="EntryBefore" FontSize="Large" ReturnType="Next" Background="Aquamarine" Grid.Row="0" />
+        <Label x:Name="CursorHeightTracker" Text="0" AutomationId="CursorHeightTracker" FontSize="Large" Background="Aquamarine" Grid.Row="1" />
+        <Editor x:Name="editor" Text="Hello world" AutomationId="IssueEditor" FontSize="Large" Background="Orange" Grid.Row="2" VerticalTextAlignment="Start"/>
+        <Button Text="Erase" Grid.Row="3"/>
+    </Grid>
+</ScrollView>
 </ContentPage>
