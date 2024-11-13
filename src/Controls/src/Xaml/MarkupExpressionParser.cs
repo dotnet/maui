@@ -42,9 +42,17 @@ namespace Microsoft.Maui.Controls.Xaml
 		protected struct Property
 		{
 			public bool last;
-			public string? name;
-			public string? strValue;
-			public object? value;
+			public string? name = null;
+			public string? strValue = null;
+			 public object? value = null;
+
+			public Property(bool last, string? name, string? strValue, object? value)
+			{
+				this.last = last;
+				this.name = name;
+				this.strValue = strValue;
+				this.value = value;
+			}
 		}
 #if !__SOURCEGEN__
 
@@ -68,7 +76,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new XamlParseException("Expression did not end in '}'", serviceProvider);
 
 			var parser = Activator.CreateInstance(GetType()) as IExpressionParser;
-			return parser!.Parse(match, ref expression, serviceProvider);
+			return parser!.Parse(match!, ref expression, serviceProvider);
 		}
 
 		internal static bool MatchMarkup(out string? match, string expression, out int end)
@@ -150,7 +158,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				name = null;
 			}
 
-			return new Property { last = next == '}', name = name, strValue = str_value};
+			return new Property (last: next == '}', name: name, strValue: str_value, value: null);
 		}
 #if !__SOURCEGEN__
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
