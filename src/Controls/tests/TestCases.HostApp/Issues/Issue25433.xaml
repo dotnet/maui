@@ -15,9 +15,8 @@
 			</CollectionView.ItemsLayout>
 			<CollectionView.ItemTemplate>
 				<DataTemplate>
-					<Button Width="32"
-							Background="Blue"
-							Text="."/>
+					<Label BackgroundColor="Blue"
+						   Text="Item"/>
 				</DataTemplate>
 			</CollectionView.ItemTemplate>
 		</CollectionView>
