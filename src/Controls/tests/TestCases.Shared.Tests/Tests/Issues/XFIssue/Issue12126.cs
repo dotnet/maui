@@ -19,10 +19,6 @@ public class Issue12126 : _IssuesUITest
 	{
 		App.WaitForElement("TestReady");
 		App.TapBackArrow();
-#if WINDOWS
-		App.WaitForElement("navViewItem");
-#else
 		App.WaitForElement("Tab 1");
-#endif
 	}
 }
