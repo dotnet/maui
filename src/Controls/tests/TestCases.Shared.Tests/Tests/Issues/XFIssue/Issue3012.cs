@@ -1,5 +1,4 @@
-﻿#if MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,19 +12,28 @@ public class Issue3012 : _IssuesUITest
 
 	public override string Issue => "[macOS] Entry focus / unfocus behavior";
 
-	// [Test]
-	// [Category(UITestCategories.Entry)]
-	// public void Issue3012Test()
-	// {
-	// 	App.WaitForElement(q => q.Marked("DumbyEntry"));
-	// 	App.Tap(q => q.Marked("DumbyEntry"));
-		
-	// 	App.WaitForElement(q => q.Marked("FocusTargetEntry"));
-	// 	App.Tap(q => q.Marked("FocusTargetEntry"));
-	// 	Assert.AreEqual(0, _unfocusedCount, "Unfocused should not have fired");
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void Issue3012Test()
+	{
+		App.WaitForElement("DumbyEntry");
+		App.Tap("DumbyEntry");
 
-	// 	App.Tap(q => q.Marked("DumbyEntry"));
-	// 	Assert.AreEqual(1, _unfocusedCount, "Unfocused should have been fired once");
-	// }
+		App.WaitForElement("FocusTargetEntry");
+		App.Tap("FocusTargetEntry");
+
+		AssertUnfocusedCount(0, "Unfocused should not have fired");
+
+		App.Tap("DumbyEntry");
+
+		AssertUnfocusedCount(1, "Unfocused should have been fired once");
+	}
+
+	private void AssertUnfocusedCount(int expectedCount, string message)
+	{
+		App.WaitForElement("UnfocusedCountLabel");
+		var unfocusedCountText = App.WaitForElement("UnfocusedCountLabel");
+		var unfocusedCountText1 = unfocusedCountText.GetText();
+		Assert.That(unfocusedCountText1, Is.EqualTo($"Unfocused count: {expectedCount}"), message);
+	}
 }
-#endif

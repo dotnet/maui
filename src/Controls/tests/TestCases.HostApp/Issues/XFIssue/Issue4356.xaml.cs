@@ -83,6 +83,14 @@ public partial class Issue4356 : TestContentPage
 		public int Count { get; private set; } = 0;
 		readonly object _listLock = new object();
 
+		public class ArticleListing
+		{
+			public string ArticleTitle { get; set; }
+			public string AuthorString { get; set; }
+			public string FormattedPostedDate { get; set; }
+			public string AutomationId { get; set; } // Add this property
+		}
+
 		public FavoritesViewModel()
 		{
 			Title = "Favorites";
@@ -95,7 +103,8 @@ public partial class Issue4356 : TestContentPage
 					{
 						ArticleTitle = "Added from Button Command",
 						AuthorString = "Rui Marinho",
-						FormattedPostedDate = "08-11-2018"
+						FormattedPostedDate = "08-11-2018",
+						AutomationId = "AddedFromButtonCommandLabel" // Set AutomationId here
 					});
 				}
 			});
@@ -111,8 +120,8 @@ public partial class Issue4356 : TestContentPage
 					}
 				}
 			});
-
 		}
+
 
 		public Command AddCommand { get; }
 		public Command RemoveCommand { get; }
@@ -137,7 +146,6 @@ public partial class Issue4356 : TestContentPage
 
 #pragma warning disable 1998 // considered for removal
 		public async Task ExecuteFavoritesCommand()
-#pragma warning restore 1998
 		{
 			if (IsBusy)
 				return;
@@ -146,28 +154,28 @@ public partial class Issue4356 : TestContentPage
 			LoadFavoritesCommand.ChangeCanExecute();
 			FavoriteArticles.Clear();
 			var articles = new ObservableCollection<ArticleListing> {
-				new ArticleListing {
-					ArticleTitle = "Will this repo work?",
-					AuthorString = "Ben Crispin",
-					FormattedPostedDate = "7-28-2015"
-				},
-				new ArticleListing {
-					ArticleTitle = "Xamarin Forms BugZilla",
-					AuthorString = "Some Guy",
-					FormattedPostedDate = "7-28-2015"
-				}
-			};
-			var templist = new ObservableCollection<ArticleListing>();
+		new ArticleListing {
+			ArticleTitle = "Will this repo work?" ,
+			AuthorString = "Ben Crispin",
+			FormattedPostedDate = "7-28-2015",
+			AutomationId = "WillThisRepoWorkLabel" // Set AutomationId here
+        },
+		new ArticleListing {
+			ArticleTitle = "Xamarin Forms BugZilla",
+			AuthorString = "Some Guy",
+			FormattedPostedDate = "7-28-2015",
+			AutomationId = "XamarinFormsBugZillaLabel" // Example for another item
+        }
+	};
 			foreach (var article in articles)
 			{
-				//templist.Add(article);
 				FavoriteArticles.Add(article);
 			}
-			//FavoriteArticles = templist;
 			OnPropertyChanged("FavoriteArticles");
 			IsBusy = false;
 			LoadFavoritesCommand.ChangeCanExecute();
 		}
+
 
 	}
 }
