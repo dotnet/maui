@@ -164,7 +164,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var contentHeight = ContentSize.Height;
 			var availableSpace = Bounds.Height - contentHeight * ZoomScale;
-			if (availableSpace <= 0 || IsFirstResponder)
+			if (availableSpace <= 0 )
 				return;
 			ContentOffset = VerticalTextAlignment switch
 			{
@@ -172,6 +172,17 @@ namespace Microsoft.Maui.Platform
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
 				_ => ContentOffset,
 			};
+
+			// Scroll the content to the cursor position if it is hidden by the keyboard
+			if (KeyboardAutoManagerScroll.IsKeyboardShowing)
+		    {
+		       var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+		       if (cursorRect.HasValue && cursorRect.Value.Bottom > KeyboardAutoManagerScroll.KeyboardFrame.Top)
+		       {
+		         var offset = cursorRect.Value.Bottom - KeyboardAutoManagerScroll.KeyboardFrame.Top;
+		         ContentOffset = new CGPoint(ContentOffset.X, ContentOffset.Y + offset);
+		       }
+		     }
 		}
 
 		void UpdatePlaceholderFont(UIFont? value)
