@@ -1,4 +1,3 @@
-
 # .NET Multi-platform App UI (.NET MAUI)
 
 [![Build Status](https://dev.azure.com/xamarin/public/_apis/build/status/MAUI-public?repoName=dotnet%2Fmaui&branchName=main&label=Public)](https://dev.azure.com/xamarin/public/_build/latest?definitionId=57&repoName=dotnet%2Fmaui&branchName=main) [![Build Status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MAUI?repoName=dotnet%2Fmaui&branchName=main&label=Private)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=13330&repoName=dotnet%2Fmaui&branchName=main)
@@ -19,8 +18,8 @@
 ![.NET MAUI Weather App on all platforms](Assets/maui-weather-hero-sm.png)
 
 ## Current News
-* November 14, 2023 - [Announcing .NET MAUI in .NET 8](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-in-dotnet-8/)
-* November 8, 2024 - [Announcing .NET MAUI in .NET 9](https://learn.microsoft.com/en-us/dotnet/maui/whats-new/dotnet-9?view=net-maui-9.0)
+* November 13, 2024 - [What's new in .NET MAUI for .NET 9](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-9)
+* November 12, 2024 - [Announcing .NET 9](https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/#.net-maui-–-enhancing-multi-platform-app-development)
 
 Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 
