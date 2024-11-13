@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-#if !WINDOWS // Currently TabBar AutomationId is not works in Windows
+#if !WINDOWS && !ANDROID // Currently TabBar AutomationId is not works in Windows
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforTab()
