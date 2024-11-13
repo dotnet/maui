@@ -94,14 +94,17 @@ static class ITypeSymbolExtensions
         var owner = fieldSymbol.ContainingType;
         var propertyName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
         var property = owner.GetMembers(propertyName).OfType<IPropertySymbol>().SingleOrDefault();
-        var getter = property.GetMethod
+        var getter = property?.GetMethod
                   ?? owner.GetMembers($"Get{propertyName}").OfType<IMethodSymbol>().SingleOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
         if (getter == null)
             return null;
             // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
         
-        var attributes = property.GetAttributes().ToList();
-        attributes.AddRange(property.Type.GetAttributes());
+        List<AttributeData> attributes = new();
+        if (property != null){
+            attributes.AddRange(property.GetAttributes().ToList());
+            attributes.AddRange(property.Type.GetAttributes());
+        }
         attributes.AddRange(getter.GetAttributes());
         attributes.AddRange(getter.ReturnType.GetAttributes());
 
@@ -118,6 +121,17 @@ static class ITypeSymbolExtensions
             return true;
 
         return type.BaseType?.InheritsFrom(baseType) ?? false;
+    }
+
+    public static bool Implements(this ITypeSymbol type, ITypeSymbol iface)
+    {
+        if (type == null || iface == null)
+            return false;
+
+        if (SymbolEqualityComparer.Default.Equals(type, iface))
+            return true;
+
+        return type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iface));
     }
 
     public static (bool generateInflatorSwitch, XamlInflator inflators) GetXamlInflator(this ITypeSymbol type)

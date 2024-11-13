@@ -35,43 +35,44 @@ static class NodeSGExtensions
         return parentList.CollectionItems.Contains(node);
     }
 
-    public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter();
         if (typeandconverter == null)
             return string.Empty;
-        return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, iXmlLineInfo);
+        return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, iXmlLineInfo);
     }
 
     // public static string ConvertTo(this ValueNode valueNode, IPropertySymbol bpPropertySymbol) => valueNode.ConvertTo(bpPropertySymbol.Type);
     
-    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
         if (typeConverter != null)
-            return $"new global:{typeConverter}().ConvertFromInvariantString(\"{valueString}\")";
-        switch (toType.ToString()) {
-        case "System.SByte":
-        case "System.Int16":
-        case "System.Int32":
-        case "System.Int64":
-        case "System.Byte":
-        case "System.UInt16":
-        case "System.UInt32":
-        case "System.UInt64":
-        case "System.Single":
-        case "System.Double":
-        case "System.Decimal": return valueString;
-        case "System.Boolean": return valueString.ToLowerInvariant();
-        case "System.String": return $"\"{valueString}\"";
-        case "System.Object": return "new()";
-        case "System.Char": return $"'{valueString}'";
-        case "System.TimeSpan":
-            var span = TimeSpan.Parse(valueString);
-            return $"new global::System.TimeSpan({span.Ticks})";
-        case "System.Uri": return $"new global::System.Uri(\"{valueString}\", global:System.UriKind.RelativeOrAbsolute)";
-        }
+            return valueNode.ConvertWithConverter(typeConverter, context, iXmlLineInfo);
+		return toType.ToString() switch
+		{
+			"System.SByte" or "sbyte" or "System.Int16" or "short" or "System.Int32" or "int" or "System.Int64" or "long" or "System.Byte" or "byte" or "System.UInt16" or "ushort" or "System.UInt32" or "uint" or "System.UInt64" or "ulong" or "System.Single" or "float" or "System.Double" or "double" or "System.Decimal" => valueString,
+			"System.Boolean" or "bool" => valueString.ToLowerInvariant(),
+			"System.String" or "string" => $"\"{valueString}\"",
+			"System.Object" or "object" => "new()",
+			"System.Char" or "char" => $"'{valueString}'",
+			"System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
+			"System.Uri" => $"new global::System.Uri(\"{valueString}\", global:System.UriKind.RelativeOrAbsolute)",
+			_ => $"\"{valueString}\"",
+		};
+	}
 
-        return $"\"{valueString}\"";        
+    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+        var valueString = valueNode.Value as string ?? string.Empty;
+        //TODO check if there's a SourceGen version of the converter
+        if (typeConverter.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IExtendedTypeConverter")!))
+        {
+            //TODO
+            //check the required services
+            return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new global::{typeConverter}()).ConvertFromInvariantString(\"{valueString}\", /*TODO*/ null)";
+        }
+        return $"new global::{typeConverter}().ConvertFromInvariantString(\"{valueString}\")";
     }
 }

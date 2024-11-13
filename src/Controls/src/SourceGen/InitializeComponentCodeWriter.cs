@@ -27,7 +27,7 @@ static class InitializeComponentCodeWriter
 #nullable enable
 ";
 
-    public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+    public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
     {
         using (var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") {NewLine = NewLine})
         {
@@ -76,13 +76,7 @@ static class InitializeComponentCodeWriter
                 using (newblock()) {
                     codeWriter.WriteLine($"private partial void InitializeComponentSourceGen()");
                     using(newblock()){
-                        try {
-                            Visit(root, new SourceGenContext(codeWriter, compilation, xmlnsCache, typeCache, rootType!));
-                        } catch (Exception e) {
-                            codeWriter.WriteLine($"/* Error: {e.Message}");
-                            codeWriter.WriteLine(e.StackTrace);
-                            codeWriter.WriteLine("*/");
-                        }
+                        Visit(root, new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!));
                     }
                 }
                 
