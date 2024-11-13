@@ -55,24 +55,6 @@
     <_MauiPreviousDotNetVersion Condition="'$(_MauiPreviousDotNetVersion)' == ''">$(_MauiPreviousDotNetVersionMajor).$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersion>
     <_MauiPreviousDotNetVersionNoDot Condition="'$(_MauiPreviousDotNetVersionNoDot)' == ''">$(_MauiPreviousDotNetVersionMajor)$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersionNoDot>
     <_MauiPreviousDotNetTfm Condition="'$(_MauiPreviousDotNetTfm)' == ''">net$(_MauiPreviousDotNetVersion)</_MauiPreviousDotNetTfm>
-
-    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
-    <_MauiNoTargetPlatform>false</_MauiNoTargetPlatform>
-    <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
-    <_MauiTargetPlatformIsAndroid>false</_MauiTargetPlatformIsAndroid>
-    <_MauiTargetPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_MauiTargetPlatformIsAndroid>
-    <_MauiTargetPlatformIsiOS>false</_MauiTargetPlatformIsiOS>
-    <_MauiTargetPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_MauiTargetPlatformIsiOS>
-    <_MauiTargetPlatformIsMacCatalyst>false</_MauiTargetPlatformIsMacCatalyst>
-    <_MauiTargetPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_MauiTargetPlatformIsMacCatalyst>
-    <_MauiTargetPlatformIsmacOS>false</_MauiTargetPlatformIsmacOS>
-    <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
-    <_MauiTargetPlatformIstvOS>false</_MauiTargetPlatformIstvOS>
-    <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
-    <_MauiTargetPlatformIsWindows>false</_MauiTargetPlatformIsWindows>
-    <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
-    <_MauiTargetPlatformIsTizen>false</_MauiTargetPlatformIsTizen>
-    <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
   </PropertyGroup>
 
   <!-- Try determine which .NET workloads are installed -->
@@ -116,7 +98,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="'$(IncludeCompatibilityProjects)' == 'True'">$(DefineConstants);COMPATIBILITY_ENABLED</DefineConstants>
     <DefineConstants Condition="'$(IncludePreviousTfms)' == 'True'">$(DefineConstants);ENABLE_PREVIOUS_TFM_BUILDS</DefineConstants>
     <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
@@ -125,11 +106,6 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <DisableEmbeddedXbf>false</DisableEmbeddedXbf>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-  </PropertyGroup>
-
-  <!-- Windows specific settings -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <!-- version number information -->
