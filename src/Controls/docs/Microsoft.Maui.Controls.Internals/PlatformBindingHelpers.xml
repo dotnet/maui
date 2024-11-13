@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="SetBinding&lt;TNativeView&gt;">
@@ -54,7 +53,6 @@
         <param name="targetProperty">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="binding">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBinding&lt;TNativeView&gt;">
@@ -91,7 +89,6 @@
         <param name="bindingBase">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="propertyChanged">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBinding&lt;TNativeView&gt;">
@@ -128,7 +125,6 @@
         <param name="bindingBase">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="updateSourceEventName">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBindingContext&lt;TNativeView&gt;">
@@ -163,7 +159,6 @@
         <param name="bindingContext">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="getChild">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetValue&lt;TNativeView&gt;">
@@ -198,7 +193,6 @@
         <param name="targetProperty">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TransferBindablePropertiesToWrapper&lt;TNativeView,TNativeWrapper&gt;">
@@ -237,7 +231,6 @@
         <param name="nativeView">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="wrapper">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

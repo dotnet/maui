@@ -105,6 +105,66 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Determine if a form or form-like element (checkbox, select, etc...) is selected.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		/// <returns>Whether the element is selected (boolean).</returns>
+		public static bool IsSelected(this IUIElement element)
+		{
+			var response = element.Command.Execute("getSelected", new Dictionary<string, object>()
+			{
+				{ "element", element },
+			});
+
+			if (response?.Value != null)
+			{
+				return (bool)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get Selected of element");
+		}
+
+		/// <summary>
+		/// Determine if an element is currently displayed.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		/// <returns>Whether the element is displayed (boolean).</returns>
+		public static bool IsDisplayed(this IUIElement element)
+		{
+			var response = element.Command.Execute("getDisplayed", new Dictionary<string, object>()
+			{
+				{ "element", element },
+			});
+
+			if (response?.Value != null)
+			{
+				return (bool)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get Displayed of element");
+		}
+
+		/// <summary>
+		/// Determine if an element is currently enabled.
+		/// </summary>
+		/// <param name="element">Target Element.</param>
+		/// <returns>Whether the element is enabled (boolean).</returns>
+		public static bool IsEnabled(this IUIElement element)
+		{
+			var response = element.Command.Execute("getEnabled", new Dictionary<string, object>()
+			{
+				{ "element", element },
+			});
+
+			if (response?.Value != null)
+			{
+				return (bool)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get Enabled of element");
+		}
+
+		/// <summary>
 		/// Enters text into the element identified by the query.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -112,9 +172,9 @@ namespace UITest.Appium
 		/// <param name="text">The text to enter.</param>
 		public static void EnterText(this IApp app, string element, string text)
 		{
-			var appElement = FindElement(app, element);
-			appElement.SendKeys(text);
-			app.DismissKeyboard();
+			var appElement = app.FindElement(element);
+
+			app.EnterText(appElement, text);
 		}
 
 		/// <summary>
@@ -126,10 +186,18 @@ namespace UITest.Appium
 		public static void EnterText(this IApp app, IQuery query, string text)
 		{
 			var appElement = app.FindElement(query);
-			appElement.SendKeys(text);
-			app.DismissKeyboard();
+
+			app.EnterText(appElement, text);
 		}
 
+		internal static void EnterText(this IApp app, IUIElement? element, string text)
+		{
+			if (element is not null)
+			{
+				element.SendKeys(text);
+				app.DismissKeyboard();
+			}
+		}
 
 		/// <summary>
 		/// Hides soft keyboard if present.
@@ -275,11 +343,32 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void DoubleTap(this IApp app, string element)
 		{
-			var elementToDoubleTap = FindElement(app, element);
-			app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
+			var elementToDoubleTap = app.FindElement(element);
+		
+			app.DoubleTap(elementToDoubleTap);
+		}
+
+		/// <summary>
+		/// Performs two quick tap / touch gestures on the matched element by 'query'.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query"></param>
+		public static void DoubleTap(this IApp app, IQuery query)
+		{
+			var elementToDoubleTap = app.FindElement(query);
+
+			app.DoubleTap(elementToDoubleTap);
+		}
+
+		internal static void DoubleTap(this IApp app, IUIElement? element)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToDoubleTap },
-			});
+				app.CommandExecutor.Execute("doubleTap", new Dictionary<string, object>
+				{
+					{ "element", element },
+				});
+			}
 		}
 
 		/// <summary>
@@ -318,11 +407,32 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void TouchAndHold(this IApp app, string element)
 		{
-			var elementToTouchAndHold = FindElement(app, element);
-			app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
+			var elementToTouchAndHold = app.FindElement(element);
+		
+			app.TouchAndHold(elementToTouchAndHold);
+		}
+
+		/// <summary>
+		/// Performs a continuous touch gesture on an element matched by 'query'.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		public static void TouchAndHold(this IApp app, IQuery query)
+		{
+			var elementToTouchAndHold = app.FindElement(query);
+
+			app.TouchAndHold(elementToTouchAndHold);
+		}
+
+		internal static void TouchAndHold(this IApp app, IUIElement? element)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToTouchAndHold },
-			});
+				app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
+				{
+					{ "element", element },
+				});
+			}
 		}
 
 		/// <summary>
@@ -334,7 +444,7 @@ namespace UITest.Appium
 		public static void TouchAndHoldCoordinates(this IApp app, float x, float y)
 		{
 			app.CommandExecutor.Execute("touchAndHoldCoordinates", new Dictionary<string, object>
-			{		
+			{
 				{ "x", x },
 				{ "y", y }
 			});
@@ -351,10 +461,102 @@ namespace UITest.Appium
 			var dragSourceElement = FindElement(app, dragSource);
 			var targetSourceElement = FindElement(app, dragTarget);
 
-			app.CommandExecutor.Execute("dragAndDrop", new Dictionary<string, object>
+			app.DragAndDrop(dragSourceElement, targetSourceElement);
+		}
+
+		/// <summary>
+		/// Performs a long touch on an item, followed by dragging the item to a second item and dropping it.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="dragSource">Represents the query that identify a source element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="dragTarget">Represents the query that identify a target element by parameters such as type, text it contains or identifier.</param>
+		public static void DragAndDrop(this IApp app, IQuery dragSource, IQuery dragTarget)
+		{
+			var dragSourceElement = app.FindElement(dragSource);
+			var targetSourceElement = app.FindElement(dragTarget);
+
+			app.DragAndDrop(dragSourceElement, targetSourceElement);
+		}
+
+		internal static void DragAndDrop(this IApp app, IUIElement? dragSourceElement, IUIElement? targetSourceElement)
+		{
+			if (dragSourceElement is not null && targetSourceElement is not null)
 			{
-				{ "sourceElement", dragSourceElement },
-				{ "destinationElement", targetSourceElement }
+				app.CommandExecutor.Execute("dragAndDrop", new Dictionary<string, object>
+				{
+					{ "sourceElement", dragSourceElement },
+					{ "destinationElement", targetSourceElement }
+				});
+			}
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures on the matched element to zoom the view in. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Element to zoom in.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomIn(this IApp app, string element, TimeSpan? duration = null)
+		{
+			var elementToPinchToZoomIn = app.FindElement(element);
+
+			app.CommandExecutor.Execute("pinchToZoomIn", new Dictionary<string, object>
+			{
+				{ "element", elementToPinchToZoomIn },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures to zoom the view in on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate of the center of the pinch.</param>
+		/// <param name="y">The y coordinate of the center of the pinch.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomInCoordinates(this IApp app, float x, float y, TimeSpan? duration = null)
+		{
+			app.CommandExecutor.Execute("pinchToZoomInCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures on the matched element to zoom the view out. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Element to zoom in.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomOut(this IApp app, string element, TimeSpan? duration = null)
+		{
+			var elementToPinchToZoomOut = app.FindElement(element);
+
+			app.CommandExecutor.Execute("pinchToZoomOut", new Dictionary<string, object>
+			{
+				{ "element", elementToPinchToZoomOut },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+			});
+		}
+
+		/// <summary>
+		/// Performs a pinch gestures to zoom the view out on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate of the center of the pinch.</param>
+		/// <param name="y">The y coordinate of the center of the pinch.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
+		public static void PinchToZoomOutCoordinates(this IApp app, float x, float y, TimeSpan? duration = null)
+		{
+			app.CommandExecutor.Execute("pinchToZoomOutCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y },
+				{ "duration", duration ?? TimeSpan.FromSeconds(1) }
 			});
 		}
 
@@ -542,10 +744,10 @@ namespace UITest.Appium
 		{
 			IReadOnlyCollection<IUIElement> elements = FindElements(app, marked);
 
-			if(elements is not null && elements.Count > 0)
+			if (elements is not null && elements.Count > 0)
 			{
 				IUIElement firstElement() => elements.First();
-				
+
 				var result = Wait(firstElement, i => i != null, timeoutMessage, timeout, retryFrequency);
 
 				return result;
@@ -694,13 +896,36 @@ namespace UITest.Appium
 		{
 			var elementToSwipe = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+			app.SwipeLeftToRight(elementToSwipe, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Performs a left to right swipe gesture on an element matched by 'query'.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeLeftToRight(this IApp app, IQuery query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(query);
+
+			app.SwipeLeftToRight(elementToSwipe, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void SwipeLeftToRight(this IApp app, IUIElement? element, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToSwipe},
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -733,13 +958,36 @@ namespace UITest.Appium
 		{
 			var elementToSwipe = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+			app.SwipeRightToLeft(elementToSwipe, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Performs a right to left swipe gesture on an element matched by 'query'.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeRightToLeft(this IApp app, IQuery query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(query);
+
+			app.SwipeRightToLeft(elementToSwipe, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void SwipeRightToLeft(this IApp app, IUIElement? element, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToSwipe},
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -755,14 +1003,38 @@ namespace UITest.Appium
 		{
 			var elementToSwipe = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
+			app.ScrollLeft(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scrolls left on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollLeft(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(query);
+
+			app.ScrollLeft(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollLeft(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToSwipe},
-				{ "strategy", strategy },
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -778,14 +1050,38 @@ namespace UITest.Appium
 		{
 			var elementToSwipe = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+			app.ScrollDown(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scrolls down on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDown(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(query);
+
+			app.ScrollDown(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollDown(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToSwipe},
-				{ "strategy", strategy },
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -801,14 +1097,38 @@ namespace UITest.Appium
 		{
 			var elementToSwipe = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
-			{
-				{ "element", elementToSwipe},
-				{ "strategy", strategy },
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+			app.ScrollRight(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scrolls right on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollRight(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(query);
+
+			app.ScrollRight(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
+			{ 
+				app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -824,14 +1144,29 @@ namespace UITest.Appium
 		{
 			var elementToSwipe = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
+			app.ScrollUp(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		public static void ScrollUp(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(query);
+
+			app.ScrollUp(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		public static void ScrollUp(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
 			{
-				{ "element", elementToSwipe},
-				{ "strategy", strategy },
-				{ "swipePercentage", swipePercentage },
-				{ "swipeSpeed", swipeSpeed },
-				{ "withInertia", withInertia }
-			});
+				app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
 		}
 
 		/// <summary>
@@ -966,13 +1301,36 @@ namespace UITest.Appium
 		{
 			var element = FindElement(app, marked);
 
-			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+			app.SetSliderValue(element, value, minimum, maximum);
+		}
+
+		/// <summary>
+		/// Sets the value of a slider element that matches query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		/// <param name="minimum">Te minimum selectable value for the Slider.</param>
+		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
+		public static void SetSliderValue(this IApp app, IQuery query, double value, double minimum = 0d, double maximum = 1d)
+		{
+			var element = app.FindElement(query);
+
+			app.SetSliderValue(element, value, minimum, maximum);
+		}
+
+		internal static void SetSliderValue(this IApp app, IUIElement? element, double value, double minimum = 0d, double maximum = 1d)
+		{
+			if (element is not null)
 			{
-				{ "element", element },
-				{ "value", value },
-				{ "minimum", minimum },
-				{ "maximum", maximum },
-			});
+				app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "value", value },
+					{ "minimum", minimum },
+					{ "maximum", maximum },
+				});
+			}
 		}
 
 		/// <summary>
@@ -1040,6 +1398,15 @@ namespace UITest.Appium
 		public static void Back(this IApp app)
 		{
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Refresh the current page.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Refresh(this IApp app)
+		{
+			app.CommandExecutor.Execute("refresh", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1143,9 +1510,9 @@ namespace UITest.Appium
 		/// <exception cref="InvalidOperationException">Lock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		public static void Lock(this IApp app)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
-				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"Lock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
 			app.CommandExecutor.Execute("lock", ImmutableDictionary<string, object>.Empty);
@@ -1159,12 +1526,43 @@ namespace UITest.Appium
 		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		public static void Unlock(this IApp app)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
-				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
 			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Check whether the device is locked or not.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static bool IsLocked(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"IsLocked is only supported on AppiumAndroidApp and AppiumIOSApp");
+			}
+			var response = app.CommandExecutor.Execute("isLocked", new Dictionary<string, object>());
+
+			var responseValue = response?.Value ?? false;
+
+			return (bool)responseValue;
+		}
+
+		/// <summary>
+		/// Perform a shake action on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Shake(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Shake is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1232,22 +1630,6 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Simulate the device shaking.
-		/// Functionality that's only available on iOS.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
-		public static void Shake(this IApp app)
-		{
-			if (app is not AppiumIOSApp)
-			{
-				throw new InvalidOperationException($"Shake is only supported on AppiumIOSApp");
-			}
-
-			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
-		}
-
-		/// <summary>
 		/// Gets the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
 		/// Functionality that's only available on Android.
 		/// </summary>
@@ -1259,7 +1641,7 @@ namespace UITest.Appium
 		{
 			if (app is not AppiumAndroidApp)
 			{
-				throw new InvalidOperationException($"ToggleWifi is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"GetPerformanceData is only supported on AppiumAndroidApp");
 			}
 
 			var response = app.CommandExecutor.Execute("getPerformanceData", new Dictionary<string, object>()
@@ -1340,6 +1722,14 @@ namespace UITest.Appium
 				result = app.FindElementsByText(element);
 
 			return result;
+		}
+
+
+		public static void SetTestConfigurationArg(this IConfig config, string key, string value)
+		{
+			var startupArg = config.GetProperty<Dictionary<string,string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+			startupArg.Add(key, value);
+			config.SetProperty("TestConfigurationArgs", startupArg);
 		}
 	}
 }

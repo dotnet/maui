@@ -17,7 +17,6 @@
   <Interfaces />
   <Docs>
     <summary>Arguments for the event that is raised when a modal window is popping from the navigation stack.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -40,7 +39,6 @@
       <Docs>
         <param name="modal">The modal page.</param>
         <summary>Constructs a new <see cref="T:Microsoft.Maui.Controls.ModalPoppingEventArgs" /> object for the page that is being popped.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Cancel">
@@ -62,8 +60,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value that tells whether the modal navigation was canceled.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

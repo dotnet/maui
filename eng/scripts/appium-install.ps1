@@ -198,8 +198,8 @@ if ($IsWindows) {
     appium driver doctor windows || & { "ignore failure"; $global:LASTEXITCODE = 0 }
 }
 if ($IsMacOS) {
-    appium driver doctor xcuitest || & { "ignore failure"; $global:LASTEXITCODE = 0 }
-    appium driver doctor mac2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+    # appium driver doctor xcuitest || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+    # appium driver doctor mac2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
 }
 appium driver doctor uiautomator2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
 

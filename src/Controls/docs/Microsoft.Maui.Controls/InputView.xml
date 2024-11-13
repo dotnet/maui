@@ -39,7 +39,6 @@
       <Docs>
         <summary>Gets or sets a value that indicates the number of device-independent units that should be in between characters in the text displayed by the Entry. Applies to Text and Placeholder.</summary>
         <value>The number of device-independent units that should be in between characters in the text.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacingProperty">
@@ -57,7 +56,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.CharacterSpacing" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsReadOnly">
@@ -94,7 +92,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.IsReadOnly" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Keyboard">
@@ -120,7 +117,6 @@
       <Docs>
         <summary>Gets or sets the Keyboard for the InputView. This is a bindable property.</summary>
         <value>The <see cref="T:Microsoft.Maui.Keyboard" /> to use for the InputView.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="KeyboardProperty">
@@ -145,7 +141,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.Keyboard" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MaxLength">
@@ -165,7 +160,6 @@
       <Docs>
         <summary>Gets or sets the maximum allowed length of input.</summary>
         <value>An integer in the interval [0,<c>int.MaxValue</c>]. The default value is <c>Int.MaxValue</c>.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MaxLengthProperty">
@@ -184,7 +178,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.MaxLength" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnTextChanged">
@@ -207,8 +200,6 @@
       <Docs>
         <param name="oldValue">To be added.</param>
         <param name="newValue">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnTextTransformChanged">
@@ -231,8 +222,6 @@
       <Docs>
         <param name="oldValue">To be added.</param>
         <param name="newValue">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Placeholder">
@@ -251,7 +240,6 @@
       <Docs>
         <summary>Gets or sets the text that is displayed when the control is empty.</summary>
         <value>The text that is displayed when the control is empty.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PlaceholderColor">
@@ -270,7 +258,6 @@
       <Docs>
         <summary>Gets or sets the color of the placeholder text.</summary>
         <value>The color of the placeholder text.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PlaceholderColorProperty">
@@ -288,7 +275,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.PlaceholderColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PlaceholderProperty">
@@ -306,7 +292,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.Placeholder" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -343,7 +328,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the text of the Editor changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColor">
@@ -361,8 +345,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColorProperty">
@@ -380,7 +362,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.TextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextProperty">
@@ -398,7 +379,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.InputView.Text" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransform">
@@ -415,9 +395,6 @@
         <ReturnType>Microsoft.Maui.Controls.TextTransform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransformProperty">
@@ -434,8 +411,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateFormsText">
@@ -458,9 +433,6 @@
       <Docs>
         <param name="original">To be added.</param>
         <param name="transform">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

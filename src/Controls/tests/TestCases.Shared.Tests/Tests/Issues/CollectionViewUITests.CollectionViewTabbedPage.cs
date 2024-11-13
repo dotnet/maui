@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue7700.cs)
 		[Test]
-		[FailsOnAllPlatforms("Click does not find Tab elements")]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("Click does not find Tab elements")]
 		[Category(UITestCategories.CollectionView)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue7700.cs)
 		[Test]
-		[FailsOnAllPlatforms("Click does not find Tab elements")]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("Click does not find Tab elements")]
 		[Category(UITestCategories.CollectionView)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{

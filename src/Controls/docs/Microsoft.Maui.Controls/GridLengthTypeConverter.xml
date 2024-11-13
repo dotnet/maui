@@ -61,7 +61,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.GridLength.Star" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -84,8 +83,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Converts a valid grid length descriptor in to a <see cref="T:Microsoft.Maui.GridLength.Star" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
