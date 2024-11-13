@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class AcceptEmptyServiceProvider : ContentPage
 	{
 		public AcceptEmptyServiceProvider()
@@ -27,21 +28,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			InitializeComponent();
 		}
 
-		public AcceptEmptyServiceProvider(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		public IServiceProvider ServiceProvider { get; set; }
 
 		[TestFixture]
 		class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ServiceProviderIsNullOnAttributedExtensions(bool useCompiledXaml)
+			[Test]
+			public void ServiceProviderIsNullOnAttributedExtensions([Values] XamlInflator inflator)
 			{
-				var p = new AcceptEmptyServiceProvider(useCompiledXaml);
+				var p = new AcceptEmptyServiceProvider(inflator);
 				Assert.IsNull(p.ServiceProvider);
 			}
 		}

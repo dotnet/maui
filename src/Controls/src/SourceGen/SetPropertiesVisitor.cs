@@ -176,7 +176,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         //TODO I believe ContentProperty should be resolved here
         var localName = propertyName.LocalName;
-        var bpFieldSymbol = GetBindableProperty(parentVar.Type, propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, iXmlLineInfo);
+        var bpFieldSymbol = GetBindableProperty(parentVar.Type, propertyName.NamespaceURI, ref localName, out bool attached, context, iXmlLineInfo);
 
         //TODO event
 
@@ -236,17 +236,16 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
     static void SetValue(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-        var valueNode = node as ValueNode;
-        var elementNode = node as ElementNode;
-        string? valueString = null;
-
-        if (valueNode != null) {
-            valueString = valueNode.ConvertTo(bpFieldSymbol, iXmlLineInfo);
-            writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {valueString});");
-        } else if (elementNode != null) {
-            writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {context.Variables[node].Name});");
-        }
-    }
+		if (node is ValueNode valueNode)
+		{
+			var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
+			writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {valueString});");
+		}
+		else if (node is ElementNode elementNode)
+		{
+			writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {context.Variables[node].Name});");
+		}
+	}
 
     static bool CanAdd(LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context)
     {

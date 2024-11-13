@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
 public class SetValue : SourceGenXamlInitializeComponentTestBase
 {
 	[Test]
-	public void TestInitializeComponentGenerator_BasicXaml()
+	public void Test()
 	{
 		var xaml =
 """
@@ -15,7 +15,7 @@ public class SetValue : SourceGenXamlInitializeComponentTestBase
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	x:Class="Test.TestPage">
-		<Button x:Name="MyButton" Text="Hello MAUI!" />
+		<Button x:Name="MyButton" Text="Hello MAUI!" Grid.Row="0" />
 </ContentPage>
 """;
 
@@ -61,6 +61,7 @@ public partial class TestPage
 		global::Test.TestPage __root = this;
 		this.MyButton = button0;
 		button0.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
+		button0.SetValue(global::Microsoft.Maui.Controls.Grid.RowProperty, 0);
 		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, button0);
 	}
 }

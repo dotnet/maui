@@ -30,7 +30,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
+#nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -42,12 +42,14 @@ namespace Microsoft.Maui.Controls.Xaml
 		protected struct Property
 		{
 			public bool last;
-			public string name;
-			public string strValue;
-			public object value;
+			public string? name;
+			public string? strValue;
+			public object? value;
 		}
+#if !__SOURCEGEN__
 
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		public object ParseExpression(ref string expression, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
@@ -58,19 +60,18 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (expression[expression.Length - 1] != '}')
 				throw new XamlParseException("Expression must end with '}'", serviceProvider);
 
-			int len;
-			string match;
-			if (!MatchMarkup(out match, expression, out len))
+			string? match;
+			if (!MatchMarkup(out match, expression, out var len))
 				return false;
 			expression = expression.Substring(len).TrimStart();
 			if (expression.Length == 0)
 				throw new XamlParseException("Expression did not end in '}'", serviceProvider);
 
 			var parser = Activator.CreateInstance(GetType()) as IExpressionParser;
-			return parser.Parse(match, ref expression, serviceProvider);
+			return parser!.Parse(match, ref expression, serviceProvider);
 		}
 
-		internal static bool MatchMarkup(out string match, string expression, out int end)
+		internal static bool MatchMarkup(out string? match, string expression, out int end)
 		{
 			if (expression.Length < 2)
 			{
@@ -122,12 +123,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			return true;
 		}
 
+#if !__SOURCEGEN__
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		protected Property ParseProperty(IServiceProvider serviceProvider, ref string remaining)
 		{
-			object value = null;
 			string str_value;
-			string name;
+			string? name;
 
 			remaining = remaining.TrimStart();
 			if (remaining[0] == '{')
@@ -148,11 +150,12 @@ namespace Microsoft.Maui.Controls.Xaml
 				name = null;
 			}
 
-			return new Property { last = next == '}', name = name, strValue = str_value, value = value };
+			return new Property { last = next == '}', name = name, strValue = str_value};
 		}
-
+#if !__SOURCEGEN__
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
-		Property ParsePropertyExpression(string prop, IServiceProvider serviceProvider, ref string remaining)
+#endif		
+		Property ParsePropertyExpression(string? prop, IServiceProvider serviceProvider, ref string remaining)
 		{
 			bool last;
 			var value = ParseExpression(ref remaining, serviceProvider);
@@ -236,7 +239,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			var split = name.Split(':');
 
 			if (split.Length > 2)
-				throw new ArgumentException();
+				throw new ArgumentException(null, nameof(name));
 
 			return split.Length == 2 ? (split[0], split[1]) : ("", split[0]);
 		}
