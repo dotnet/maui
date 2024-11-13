@@ -83,15 +83,15 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		});
 
 		// Register the XAML pipeline for InitializeComponent
-		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (spc, provider) =>
+		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (sourceProductionContext, provider) =>
 		{
 			var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
-			if (!CanSourceGenXaml(xamlItem, compilation, spc, xmlnsCache, typeCache))
+			if (!CanSourceGenXaml(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache))
 				return;
 			
 			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.xsg.cs".Replace(Path.DirectorySeparatorChar, '_');
-			var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, xmlnsCache, typeCache);
-			spc.AddSource(fileName, code);
+			var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+			sourceProductionContext.AddSource(fileName, code);
 			
 		});
 

@@ -19,15 +19,17 @@
     <Compile Include="..\Core\XmlLineInfo.cs" Link="XmlLineInfo.cs" />
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
     <Compile Include="..\Xaml\IDictionaryExtensions.cs" Link="IDictionaryExtensions.cs" />
+    <Compile Include="..\Xaml\IExpressionParser.cs" Link="IExpressionParser.cs" />
+    <Compile Include="..\Xaml\MarkupExpressionParser.cs" Link="MarkupExpressionParser.cs" />
     <Compile Include="..\Xaml\PruneIgnoredNodesVisitor.cs" Link="PruneIgnoredNodesVisitor.cs" />
     <Compile Include="..\Xaml\RemoveDuplicateDesignNodes.cs" Link="RemoveDuplicateDesignNodes.cs" />
     <Compile Include="..\Xaml\TypeArgumentsParser.cs" Link="TypeArgumentsParser.cs" />
     <Compile Include="..\Xaml\XamlInflator.cs" Link="XamlInflator.cs" />
     <Compile Include="..\Xaml\XamlLoader.Types.cs" Link="XamlLoader.Types.cs" />
-    <Compile Include="..\Xaml\XamlParser.cs" Link="XamlParser.Namespaces.cs" />
-    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XamlNode.cs" Link="XamlNode.cs" />
     <Compile Include="..\Xaml\XamlNodeVisitor.cs" Link="XamlNodeVisitor.cs" />
+    <Compile Include="..\Xaml\XamlParser.cs" Link="XamlParser.Namespaces.cs" />
+    <Compile Include="..\Xaml\XamlParser.Namespaces.cs" Link="XamlParser.Namespaces.cs" />
     <Compile Include="..\Xaml\XmlName.cs" Link="XmlName.cs" />
     <Compile Include="..\Xaml\XmlnsHelper.cs" Link="XmlnsHelper.cs" />
     <Compile Include="..\Xaml\XmlTypeXamlExtensions.cs" Link="XmlTypeXamlExtensions.cs" />

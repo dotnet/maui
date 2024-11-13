@@ -6,3 +6,4 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 MAUIG1001 | XamlParsing | Error | XamlParsingFailed
+MAUIG1002 | XamlParsing | Error | ExpressionNotClosed

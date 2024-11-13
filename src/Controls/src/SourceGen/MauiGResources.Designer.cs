@@ -77,5 +77,14 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("XamlParsingFailed", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///  Looks up a localized string similar to Expression not closed.
+        /// </summary>
+        internal static string ExpressionNotClosed {
+            get {
+                return ResourceManager.GetString("ExpressionNotClosed", resourceCulture);
+            }
+        }
     }
 }

@@ -121,6 +121,9 @@
     <value>An error occured while parsing Xaml: {0}.</value>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
-    <value>XAML parsing failed</value>
+    <value>XAML parsing failed.</value>
+  </data>
+  <data name="ExpressionNotClosed" xml:space="preserve">
+    <value>Expression must end with '}'.</value>
   </data>
 </root>

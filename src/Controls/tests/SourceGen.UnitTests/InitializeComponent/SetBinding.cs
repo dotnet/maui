@@ -2,10 +2,10 @@ using System.Linq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
-public class BasicCase : SourceGenXamlInitializeComponentTestBase
+public class SetBinding : SourceGenXamlInitializeComponentTestBase
 {
 	[Test]
-	public void BasicXaml()
+	public void Test()
 	{
 		var xaml =
 """
@@ -13,9 +13,8 @@ public class BasicCase : SourceGenXamlInitializeComponentTestBase
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Test.TestPage">
-		<Button x:Name="MyButton" Text="Hello MAUI!" />
-</ContentPage>
+	x:Class="Test.TestPage" 
+    Title="{Binding Title}"/>
 """;
 
 		var code =
@@ -56,11 +55,8 @@ public partial class TestPage
 {
 	private partial void InitializeComponentSourceGen()
 	{
-		global::Microsoft.Maui.Controls.Button button0 = new global::Microsoft.Maui.Controls.Button();
 		global::Test.TestPage __root = this;
-		this.MyButton = button0;
-		button0.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
-		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, button0);
+		__root.SetBinding(global::Microsoft.Maui.Controls.ContentPage.TitleProperty, new global::Microsoft.Maui.Controls.Binding("Title", global::Microsoft.Maui.Controls.BindingMode.Default, null, null, null));
 	}
 }
 
