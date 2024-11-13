@@ -7,7 +7,7 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet");
 		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
-		const int DEFAULT_TIMEOUT = 900;
+		const int DEFAULT_TIMEOUT = 1800;
 
 		private static string ConstructBuildArgs(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "", bool isPublishing = false)
 		{
