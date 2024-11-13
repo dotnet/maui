@@ -116,7 +116,7 @@ internal class WindowViewController : UIViewController
 	{
 		_iTitleBarRef.TryGetTarget(out var iTitleBar);
 
-		if (iTitleBar is not null && View is not null)
+		if (_isTitleBarVisible && iTitleBar is not null && View is not null)
 		{
 			var measured = iTitleBar.Measure(View.Bounds.Width, double.PositiveInfinity);
 			iTitleBar.Arrange(new Graphics.Rect(0, 0, View.Bounds.Width, measured.Height));
