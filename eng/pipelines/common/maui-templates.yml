@@ -101,12 +101,8 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
-    - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
-      displayName: Build Microsoft.Maui.IntegrationTests
-      workingDirectory: ${{ parameters.checkoutDirectory }}
-
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ category }}" --resultsfilename="integration-tests" --verbosity=diagnostic
-      displayName: Run $(PLATFORM_NAME) templates build tests
+      displayName: Run ${{ category }} templates build tests
       workingDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: CopyFiles@2
@@ -130,12 +126,12 @@ jobs:
         ArtifactName: BuildTemplateBuildLogs
 
     - task: PublishTestResults@2
-      displayName: Publish the $(PLATFORM_NAME) templates build tests
+      displayName: Publish the ${{ category }} templates build tests
       condition: always()
       inputs:
         testRunner: VSTest
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-        testRunTitle: $(PLATFORM_NAME) templates build tests
+        testRunTitle: ${{ category }} templates build tests
 
     - pwsh: |
         Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
@@ -213,11 +209,8 @@ jobs:
         env:
           IOS_TEST_DEVICE: ios-simulator-64_17.2
 
-    - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
-      displayName: Build Microsoft.Maui.IntegrationTests
-
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
-      displayName: Run $(PLATFORM_NAME) templates run tests
+      displayName: Run ${{ RunPlatform.testName }} templates run tests
       continueOnError: true
       # TODO: pass properly device type/version from top-level yml
       ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
@@ -231,12 +224,12 @@ jobs:
         continueOnError: true
 
     - task: PublishTestResults@2
-      displayName: Publish the $(PLATFORM_NAME) templates run tests
+      displayName: Publish the ${{ RunPlatform.testName }} templates run tests
       condition: always()
       inputs:
         testRunner: VSTest
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-        testRunTitle: $(PLATFORM_NAME) templates run tests
+        testRunTitle: ${{ RunPlatform.testName }} templates run tests
 
     - pwsh: |
         Write-Host "Current job status is: $env:AGENT_JOBSTATUS"

@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium.Windows;
+﻿using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -70,6 +71,15 @@ namespace UITest.Appium
 				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
 				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
 				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+			}
+			else if(_app.Driver is IOSDriver iOSDriver)
+			{
+				var args = _app.Config.GetProperty<Dictionary<string,string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },					
+					{ "environment", args },
+				});
 			}
 			else
 			{
