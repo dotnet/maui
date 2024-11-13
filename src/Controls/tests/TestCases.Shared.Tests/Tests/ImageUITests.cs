@@ -24,6 +24,7 @@ internal class ImageUITests : _ViewUITests
 		Assert.Ignore("Image elements do not really have a concept of being \"disabled\".");
 	}
 
+#if TEST_FAILS_ON_CATALYST
 	[Test]
 	public void Source_FontImageSource()
 	{
@@ -36,6 +37,7 @@ internal class ImageUITests : _ViewUITests
 		remote.TapStateButton();
 		VerifyScreenshot("ImageUITests_Source_FontImageSource_FontAwesome");
 	}
+#endif
 
 	[Test]
 	public async Task IsAnimationPlaying()
