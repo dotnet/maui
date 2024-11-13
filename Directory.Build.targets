@@ -29,32 +29,6 @@
     <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
-    <_MauiNoTargetPlatform>false</_MauiNoTargetPlatform>
-    <_MauiNoTargetPlatform Condition="'$(_MauiTargetPlatformIdentifier)' == ''">True</_MauiNoTargetPlatform>
-    <_MauiTargetPlatformIsAndroid>false</_MauiTargetPlatformIsAndroid>
-    <_MauiTargetPlatformIsAndroid Condition="'$(_MauiTargetPlatformIdentifier)' == 'android'">True</_MauiTargetPlatformIsAndroid>
-    <_MauiTargetPlatformIsiOS>false</_MauiTargetPlatformIsiOS>
-    <_MauiTargetPlatformIsiOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'ios'">True</_MauiTargetPlatformIsiOS>
-    <_MauiTargetPlatformIsMacCatalyst>false</_MauiTargetPlatformIsMacCatalyst>
-    <_MauiTargetPlatformIsMacCatalyst Condition="'$(_MauiTargetPlatformIdentifier)' == 'maccatalyst'">True</_MauiTargetPlatformIsMacCatalyst>
-    <_MauiTargetPlatformIsmacOS>false</_MauiTargetPlatformIsmacOS>
-    <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
-    <_MauiTargetPlatformIstvOS>false</_MauiTargetPlatformIstvOS>
-    <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
-    <_MauiTargetPlatformIsWindows>false</_MauiTargetPlatformIsWindows>
-    <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
-    <_MauiTargetPlatformIsTizen>false</_MauiTargetPlatformIsTizen>
-    <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
-  </PropertyGroup>
-
-  <!-- Windows specific settings -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
-    <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
-  </PropertyGroup>
-
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
