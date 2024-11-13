@@ -31,12 +31,20 @@ public class Issue1439 : TestContentPage
 		BindingContext = new ViewModel();
 
 		_listView = new ListView { VerticalOptions = LayoutOptions.Start, IsGroupingEnabled = true, RowHeight = 50, HeightRequest = 300 };
+		_listView.ItemTemplate = new DataTemplate(() =>
+		{
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, new Binding("."));
+			label.SetBinding(Label.AutomationIdProperty, new Binding("."));
+			return new ViewCell { View = label };
+		});
 		_listView.ItemTapped += _listView_ItemTapped;
 		_listView.SetBinding(ListView.ItemsSourceProperty, new Binding(nameof(ViewModel.Items)));
 		_listView.SetBinding(ListView.SelectedItemProperty, new Binding(nameof(ViewModel.SelectedItem)));
 		_listView.GroupDisplayBinding = new Binding(nameof(Group.Title));
 
 		_label1.SetBinding(Label.TextProperty, new Binding(nameof(ViewModel.SelectedItem), stringFormat: "SelectedItem: {0}"));
+		_label1.SetBinding(Label.AutomationIdProperty, new Binding(nameof(ViewModel.SelectedItem), stringFormat: "SelectedItem: {0}"));
 
 		_layout.Children.Add(_listView);
 		_layout.Children.Add(_label1);
