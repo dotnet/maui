@@ -35,7 +35,7 @@ public class Issue2993 : TestTabbedPage
 		Children.Add((createPage()));
 		Children.Add(new ContentPage()
 		{
-			IconImageSource = "coffee.png",
+			IconImageSource = "calculator.png",
 			Content = new Button()
 			{
 				Text = "Click Me",
