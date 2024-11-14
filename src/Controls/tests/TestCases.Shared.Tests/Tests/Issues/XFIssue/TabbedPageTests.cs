@@ -11,9 +11,10 @@ public class TabbedPageTests : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "TabbedPage nav tests";
+	public override string Issue => "TabbedPage Page basic tests";
 
 	[Test]
+	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	{
 		App.WaitForElement("Page 1");
@@ -22,6 +23,7 @@ public class TabbedPageTests : _IssuesUITest
 	}
 
 	[Test]
+	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromFirstTab()
 	{
 		App.Tap("Pop");
@@ -29,11 +31,11 @@ public class TabbedPageTests : _IssuesUITest
 	}
 
 	[Test]
+	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsPopFromSecondTab()
 	{
 		App.Tap("Page 2");
 		App.WaitForElement("Pop 2");
-		App.Screenshot("On second tab");
 
 		App.Tap("Pop 2");
 		App.WaitForElement("Bug Repro's");

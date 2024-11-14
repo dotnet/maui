@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.TabbedPage)]
 public class TabbedPageWithList : _IssuesUITest
 {
 	public TabbedPageWithList(TestDevice testDevice) : base(testDevice)
@@ -14,13 +13,15 @@ public class TabbedPageWithList : _IssuesUITest
 	public override string Issue => "TabbedPage with list";
 
 	[Test]
+	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsAllElementsPresent()
 	{
-		App.WaitForElement("Tab Two");
-		App.WaitForElement("List Page");
+		App.WaitForElement("TAB TWO");
+		App.WaitForElement("LIST PAGE");
 	}
 
 	[Test]
+	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
 	{
 		App.Tap("List Page");
