@@ -648,7 +648,7 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					OnLoadedCheck(null);
+					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 				}
 			}
 			else
@@ -662,11 +662,6 @@ namespace Microsoft.Maui.Platform
 				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(boundObserver, boundKey)));
 				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(frameObserver, frameKey)));
 			}
-
-			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
-			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
-			// to get attached.
-			uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 
 			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
 			{
@@ -728,15 +723,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					UnLoadedCheck();
+					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
-
-
-			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
-			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
-			// to get detached.
-			uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 
 			void UnLoadedCheck()
 			{
