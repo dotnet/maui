@@ -17,10 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void Shell_Issue21916()
 		{
-			App.WaitForElement("ButtonId");
-			App.Click("ButtonId");
-			App.WaitForElement("ButtonId");
-			App.Click("ButtonId");
+			App.WaitForElement("Button");
+			App.Click("Button");
+			App.WaitForElement("Button");
+			App.Click("Button");
 			VerifyScreenshot();
 		}
 	}

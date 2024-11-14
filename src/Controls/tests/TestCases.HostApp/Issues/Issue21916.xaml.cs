@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
             label = new Label();
             var Button = new Button();
             Button.Text = "Click to navigate new page";
-            Button.AutomationId = "ButtonId";
+            Button.AutomationId = "Button";
             Button.Clicked += Clicked;
             stack.Children.Add(Button);
             stack.Children.Add(label);
@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample.Issues
             var stack = new StackLayout();
             var Button = new Button();
             Button.Text = "Click to navigate main page";
-            Button.AutomationId = "ButtonId";
+            Button.AutomationId = "Button";
             Button.Clicked += Clicked;
             stack.Children.Add(Button);
             this.Content = stack;
