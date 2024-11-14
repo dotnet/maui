@@ -8,7 +8,7 @@
 		{
 
 		}
-		public partial class Issue24547PopoverPage : FlyoutPage
+		public class Issue24547PopoverPage : FlyoutPage
 		{
 			public Issue24547PopoverPage()
 			{
@@ -68,7 +68,7 @@
 			}
 		}
 
-		public partial class Issue24547Page1 : ContentPage
+		public class Issue24547Page1 : ContentPage
 		{
 			public Issue24547Page1()
 			{
