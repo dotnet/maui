@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class NodeSGExtensions
 {
-    public static bool TryGetPropertyName(this INode parentNode, INode node, out XmlName name)
+    public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
     {
         name = default(XmlName);
         if (parentNode is not IElementNode parentElement)

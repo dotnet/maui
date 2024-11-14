@@ -91,7 +91,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 			return null;
 		}
 		var serviceProvider = new XamlServiceProvider(node, Context);
-		//serviceProvider.Add(typeof(IXmlNamespaceResolver), nsResolver);
+		serviceProvider.Add(typeof(IXmlNamespaceResolver), nsResolver);
 
 		return new MarkupExpansionParser().Parse(match!, ref expression, serviceProvider);
 	}
@@ -110,8 +110,8 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 
 		public INode Parse(string match, ref string remaining, IServiceProvider serviceProvider)
 		{
-			if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
-				throw new ArgumentException();
+				if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
+					throw new ArgumentException();
 			IXmlLineInfo? xmlLineInfo = null;
 			if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
 				xmlLineInfo = xmlLineInfoProvider.XmlLineInfo;
@@ -224,22 +224,5 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 
 			return _node;
 		}
-	}
-}
-
-internal class XamlServiceProvider : IServiceProvider
-{
-	private INode _node;
-	private SourceGenContext _context;
-
-	public XamlServiceProvider(INode node, SourceGenContext context)
-	{
-		_node = node;
-		_context = context;
-	}
-
-	public object GetService(Type serviceType)
-	{
-		throw new NotImplementedException();
 	}
 }
