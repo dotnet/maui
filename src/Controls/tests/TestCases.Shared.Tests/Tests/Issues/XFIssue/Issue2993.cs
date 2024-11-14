@@ -16,6 +16,6 @@ public class Issue2993 : _IssuesUITest
 	[Category(UITestCategories.Layout)]
 	public void BottomContentVisibleWithBottomBarAndNavigationPage()
 	{
-		App.WaitForElement("Bottom Text");
+		App.WaitForElement("BottomText");
 	}
 }
