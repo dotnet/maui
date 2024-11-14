@@ -10,6 +10,7 @@ parameters:
   configuration : "Release"
   runtimeVariant : "Mono"
   testFilter: ''
+  testConfigurationArgs: ''
 
 steps:
   - task: DownloadPipelineArtifact@2
@@ -103,6 +104,7 @@ steps:
       $command += " --results=""$(TestResultsDirectory)"" --binlog=""$(LogDirectory)"" ${{ parameters.cakeArgs }} --verbosity=diagnostic"
       
       $testFilter = ""
+      $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
 
       "${{ parameters.testFilter }}".Split(",") | ForEach {
         $testFilter += "TestCategory=" + $_ + "|"
@@ -111,6 +113,9 @@ steps:
       $testFilter = $testFilter.TrimEnd("|")
 
       # Cake does not allow empty parameters, so check if our filter is empty before adding it
+      if ($testConfigrationArgs) {
+        $command += " --TEST_CONFIGURATION_ARGS=""$testConfigrationArgs"""
+      }
       if ($testFilter) {
         $command += " --test-filter ""$testFilter"""
       }

@@ -168,7 +168,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 
 				// Create the content and renderer for the view 
-				var view = itemTemplate.CreateContent() as View;
+				var content = itemTemplate.CreateContent();
+
+				if(content is not View view)
+				{
+					throw new InvalidOperationException($"{itemTemplate} could not be created from {content}");
+				}
 
 				// Set the binding context _before_ we create the renderer; that way, it's available during OnElementChanged
 				view.BindingContext = bindingContext;
