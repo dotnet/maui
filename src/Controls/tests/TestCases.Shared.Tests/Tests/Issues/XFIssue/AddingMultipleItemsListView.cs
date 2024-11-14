@@ -35,7 +35,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 	{
 		App.Tap("Add One");
 
-		App.WaitForElement("1234");
+		App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test]
@@ -43,7 +43,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 	{
 		App.Tap("Add Two");
 
-		App.WaitForElement("9999");
+		App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
 		App.FindElement("8888");
 	}
 }

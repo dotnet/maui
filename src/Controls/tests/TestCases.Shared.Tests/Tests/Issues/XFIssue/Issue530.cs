@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST // Getting OpenQA.Selenium.InvalidSelectorException on Catalyst
+﻿#if TEST_FAILS_ON_CATALYST // Getting OpenQA.Selenium.InvalidSelectorException on Catalyst Line No. 23.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
