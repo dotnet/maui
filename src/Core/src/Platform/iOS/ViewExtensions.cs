@@ -648,12 +648,8 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					// The MovedToWindow event is called multiple times during page navigation 
-					// when animation is enabled, as the UIView is repeatedly attached and detached 
-					// from the window as part of the animation process. To handle this reliably, 
-					// we invoke OnLoadedCheck on the main thread using BeginInvokeOnMainThread. 
-					// This ensures that the check occurs only when the UI is fully attached and 
-					// ready, avoiding potential threading issues and ensuring consistent behavior.
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated OnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures OnLoadedCheck executes after all window transitions are complete.
 					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 				}
 			}
@@ -729,12 +725,8 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					// The MovedToWindow event is called multiple times during page navigation 
-					// when animation is enabled, as the UIView is repeatedly attached and detached 
-					// from the window as part of the animation process. To handle this reliably, 
-					// we invoke UnLoadedCheck on the main thread using BeginInvokeOnMainThread. 
-					// This ensures that the check occurs only when the UI is fully detached and 
-					// stable, avoiding potential threading issues and ensuring consistent behavior.
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated UnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures UnLoadedCheck executes after all window transitions are complete.
 					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
