@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // In Catalyst App.TapBackArrow() not working when override the back button icon of the navigation page.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,3 +22,4 @@ public class Issue12320 : _IssuesUITest
 		App.WaitForElement("Tab 1");
 	}
 }
+#endif
