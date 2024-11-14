@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		public void ButtonRunTimeAlignmentWithImage()
+		public void ButtonWithImageShouldAlignCenter()
 		{
 			App.WaitForElement("ToggleTextButton");
 			App.Tap("ToggleTextButton");

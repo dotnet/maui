@@ -16,16 +16,12 @@
 			{
 				Button1.Text = "A very long text that will take up more space";
 				Button2.Text = "Short";
-				Button3.Text = "A very long text that will take up more space";
-				Button4.Text = "Short";
 			}
 
 			else
 			{
 				Button1.Text = "Short";
 				Button2.Text = "A very long text that will take up more space";
-				Button3.Text = "Short";
-				Button4.Text = "A very long text that will take up more space";
 			}
 
 			_isToggled = !_isToggled;

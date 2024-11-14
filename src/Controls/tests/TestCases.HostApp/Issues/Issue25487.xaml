@@ -12,13 +12,5 @@
             ImageSource="dotnet_bot_resized3.png" ContentLayout="Top" 
             x:Name="Button2" Background="Purple" />
 
-        <Button Text="Short" ImageSource="dotnet_bot_resized3.png" 
-            ContentLayout="Right" x:Name="Button3" 
-            Background="Purple" />
-
-        <Button Text="A very long text that will take up more space" 
-            ImageSource="dotnet_bot_resized3.png" ContentLayout="Left" 
-            x:Name="Button4" Background="Purple" />
-
     </VerticalStackLayout>
 </ContentPage>
