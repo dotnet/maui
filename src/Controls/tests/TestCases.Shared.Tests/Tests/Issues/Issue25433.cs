@@ -1,4 +1,6 @@
-﻿#if !MACCATALYST || !WINDOWS
+﻿#if !MACCATALYST && !WINDOWS
+// https://github.com/dotnet/maui/issues/11320
+// Item spacing on the Windows platform is currently not functioning correctly
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
