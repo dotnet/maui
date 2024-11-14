@@ -47,8 +47,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			public EmptyViewWithDataTemplateSelectorViewModel()
 			{
 				source = new List<Monkey>();
-				Monkeys = new ObservableCollection<Monkey>(source);
 				CreateMonkeyCollection();
+				Monkeys = new ObservableCollection<Monkey>(source);
 			}
 
 			public partial class Monkey

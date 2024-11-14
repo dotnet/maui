@@ -43,8 +43,8 @@ namespace Maui.Controls.Sample.Issues
 			public Issue25224ViewModel()
 			{
 				source = new List<Monkey>();
-				Monkeys = new ObservableCollection<Monkey>(source);
 				CreateMonkeyCollection();
+				Monkeys = new ObservableCollection<Monkey>(source);
 			}
 
 			private void CreateMonkeyCollection()
