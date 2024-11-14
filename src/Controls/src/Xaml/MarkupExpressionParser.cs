@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				name = null;
 			}
 
-			return new Property (last: next == '}', name: name, strValue: str_value, value: null);
+			return new Property { last = next == '}', name = name, strValue = str_value};
 		}
 #if !__SOURCEGEN__
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]

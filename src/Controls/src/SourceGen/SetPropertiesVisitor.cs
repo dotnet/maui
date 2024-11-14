@@ -48,7 +48,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         //TODO support Label text as element
 
         // if it's implicit content property, get the content property name
-        if (!parentNode.TryGetPropertyName(node, out XmlName propertyName))
+        if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
         {
             if (!parentNode.IsCollectionItem(node))
                 return;
@@ -91,7 +91,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             parentNode = parentNode.Parent;
         }
 
-        if ((propertyName != XmlName.Empty || parentNode.TryGetPropertyName(node, out propertyName)) && skips.Contains(propertyName))
+        if ((propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName)) && skips.Contains(propertyName))
             return;
 
         // if (propertyName == XmlName._CreateContent)
