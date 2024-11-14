@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID // Getting Java.Lang.IndexOutOfBoundsException on Android
+﻿#if TEST_FAILS_ON_ANDROID // Getting Java.Lang.IndexOutOfBoundsException on Android (https://github.com/dotnet/maui/issues/25836)
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
