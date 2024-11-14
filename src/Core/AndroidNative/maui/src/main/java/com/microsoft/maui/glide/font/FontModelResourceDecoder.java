@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +17,8 @@ import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPoolAdapter;
 import com.bumptech.glide.load.resource.bitmap.BitmapResource;
 
 public class FontModelResourceDecoder implements ResourceDecoder<FontModel, Bitmap> {
+    private static final String TAG = "FontModelResourceDecoder";
+    private static final boolean IS_VERBOSE_LOGGABLE = Log.isLoggable(TAG, Log.VERBOSE);
 
     private final BitmapPool bitmapPool;
 
@@ -53,6 +56,8 @@ public class FontModelResourceDecoder implements ResourceDecoder<FontModel, Bitm
 
         Canvas canvas = new Canvas(bmp);
         canvas.drawText(model.getGlyph(), 0, baseline, paint);
+
+        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "decode: " + width + "x" + height + " => " + model.getGlyph());
 
         return new BitmapResource(bmp, bitmapPool);
     }

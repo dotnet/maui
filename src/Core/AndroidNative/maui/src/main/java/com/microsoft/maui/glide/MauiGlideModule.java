@@ -11,7 +11,6 @@ import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.module.AppGlideModule;
 
 import com.microsoft.maui.ImageLoaderCallback;
-import com.microsoft.maui.glide.GlideLogging;
 import com.microsoft.maui.glide.fallback.ImageLoaderCallbackModelLoaderFactory;
 import com.microsoft.maui.glide.font.FontModel;
 import com.microsoft.maui.glide.font.FontModelLoaderFactory;
@@ -22,6 +21,9 @@ import java.io.InputStream;
 
 @GlideModule
 public class MauiGlideModule extends AppGlideModule {
+    private static final String TAG = "Glide";
+    private static final boolean IS_VERBOSE_LOGGABLE = Log.isLoggable(TAG, Log.VERBOSE);
+
     @Override
     public void registerComponents(Context context, Glide glide, Registry registry) {
         // add custom loaders
@@ -41,7 +43,7 @@ public class MauiGlideModule extends AppGlideModule {
     public void applyOptions(Context context, GlideBuilder builder) {
         // Glide is checking for the log level only on some classes, so we have to do it ourselves here.
         // Command: adb shell setprop log.tag.Glide VERBOSE
-        if (GlideLogging.isVerboseLoggable()) {
+        if (Log.isLoggable(TAG, Log.VERBOSE)) {
             builder.setLogLevel(Log.VERBOSE);
         }
     }

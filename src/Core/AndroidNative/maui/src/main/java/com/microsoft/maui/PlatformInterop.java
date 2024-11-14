@@ -313,13 +313,13 @@ public class PlatformInterop {
             .into(target);
     }
 
-    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
-        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
+    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
+        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, model);
         prepare(builder, target, cachingEnabled, callback);
     }
 
-    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback) {
-        MauiCustomTarget target = new MauiCustomTarget(context, callback);
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
+        MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
         prepare(builder, target, cachingEnabled, callback);
     }
 
@@ -327,7 +327,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
-        loadInto(builder, imageView, true, callback);
+        loadInto(builder, imageView, true, callback, file);
     }
 
     public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -339,14 +339,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
-        loadInto(builder, imageView, cachingEnabled, callback);
+        loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        loadInto(builder, imageView, false, callback);
+        loadInto(builder, imageView, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -355,14 +355,14 @@ public class PlatformInterop {
             .with(imageView)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        loadInto(builder, imageView, true, callback);
+        loadInto(builder, imageView, true, callback, fontModel);
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
-        load(builder, context, true, callback);
+        load(builder, context, true, callback, file);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -374,14 +374,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
-        load(builder, context, cachingEnabled, callback);
+        load(builder, context, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
-        load(builder, context, false, callback);
+        load(builder, context, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -390,7 +390,7 @@ public class PlatformInterop {
             .with(context)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        load(builder, context, true, callback);
+        load(builder, context, true, callback, fontModel);
     }
 
     public static ColorStateList getColorStateListForToolbarStyleableAttribute(Context context, int resId, int index) {
