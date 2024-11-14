@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST // In Catalyst App.TapBackArrow() not working when override the back button icon of the navigation page.
+﻿#if TEST_FAILS_ON_CATALYST // In the Catalyst App, the TapBackArrow() function does not work when the back button icon is replaced with a new image on the navigation page.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
