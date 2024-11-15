@@ -32,7 +32,7 @@ namespace Maui.Controls.Sample.Issues
 
 				popOnAppearing.Appearing += async (sender, args) =>
 				{
-					await Task.Delay(100);
+					await Task.Delay(50);
 					await popOnAppearing.Navigation.PopModalAsync();
 				};
 
@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Issues
 						}
 					};
 
-					await Task.Delay(100);
+					await Task.Delay(50);
 					await intermediatePage.Navigation.PushModalAsync(popOnAppearing);
 
 					await page1.Navigation.PushModalAsync(intermediatePage);
