@@ -78,8 +78,12 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		initContext.RegisterSourceOutput(xamlSourceProviderForCB, static (sourceProductionContext, provider) =>
 		{
 			var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
-
-			CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+			try {
+				CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+			} catch (Exception e) {
+				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+			}
 		});
 
 		// Register the XAML pipeline for InitializeComponent
@@ -90,8 +94,13 @@ public class CodeBehindGenerator : IIncrementalGenerator
 				return;
 			
 			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.xsg.cs".Replace(Path.DirectorySeparatorChar, '_');
-			var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
-			sourceProductionContext.AddSource(fileName, code);
+			try {
+				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+				sourceProductionContext.AddSource(fileName, code);
+			} catch (Exception e) {
+				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
+			}
 			
 		});
 
