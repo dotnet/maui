@@ -220,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void TearDown(CarouselView carouselView)
 		{
 			_oldViews = null;
-
+			InitialPositionSet = false;
 			carouselView.Scrolled -= CarouselViewScrolled;
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 
@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SetPosition(int position)
 		{
-			if (position == -1 || ItemsView is not CarouselView carousel)
+			if (!InitialPositionSet || position == -1 || ItemsView is not CarouselView carousel)
 			{
 				return;
 			}
@@ -478,6 +478,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFromCurrentItem()
 		{
+			if (!InitialPositionSet)
+				return;
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -497,6 +500,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFromPosition()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
