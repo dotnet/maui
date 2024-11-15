@@ -52,21 +52,20 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
             Writer.WriteLine($"global::{type.Name} {variableName} = {ValueForLanguagePrimitive(type, node)};");
         }
-        
-        //suports factorymethod, ctor args, etc
-        var namedType = type as INamedTypeSymbol;
-        if (namedType != null)
-        {
-            var ctors = namedType.InstanceConstructors;
-            var ctor = ctors.FirstOrDefault(c => c.Parameters.Length == 0);
-            if (ctor != null)
-            {
-                var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
-                Context.Variables[node] = new LocalVariable(type, variableName);
-                Writer.WriteLine($"global::{type} {variableName} = new global::{type}();");
-            }
-        }
-    }
+
+		//suports factorymethod, ctor args, etc
+		if (type is INamedTypeSymbol namedType)
+		{
+			var ctors = namedType.InstanceConstructors;
+			var ctor = ctors.FirstOrDefault(c => c.Parameters.Length == 0);
+			if (ctor != null)
+			{
+				var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
+				Context.Variables[node] = new LocalVariable(type, variableName);
+				Writer.WriteLine($"global::{type} {variableName} = new global::{type}();");
+			}
+		}
+	}
 
     public void Visit(ListNode node, INode parentNode)
     {
