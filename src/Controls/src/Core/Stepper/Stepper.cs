@@ -45,15 +45,8 @@ namespace Microsoft.Maui.Controls
 		//'-log10(increment) + 4' as rounding digits gives us 4 significant decimal digits after the most significant one.
 		//If your increment uses more than 4 significant digits, you're holding it wrong.
 		/// <summary>Bindable property for <see cref="Increment"/>.</summary>
-		public static readonly BindableProperty IncrementProperty = BindableProperty.Create(nameof(Increment), typeof(double), typeof(Stepper), 1.0,
-			propertyChanged: (b, o, n) =>
-			{
-				((Stepper)b).digits = (int)(-Math.Log10((double)n) + 4).Clamp(1, 15);
-				if (b is Stepper stepper)
-				{
-					stepper.UpdateIncrement();
-				}
-			});
+			public static readonly BindableProperty IncrementProperty = BindableProperty.Create(nameof(Increment), typeof(double), typeof(Stepper), 1.0,
+			propertyChanged: (b, o, n) => { ((Stepper)b).digits = (int)(-Math.Log10((double)n) + 4).Clamp(1, 15); });
 
 		readonly Lazy<PlatformConfigurationRegistry<Stepper>> _platformConfigurationRegistry;
 
@@ -114,9 +107,5 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
 
 		double IStepper.Interval => Increment;
-		void UpdateIncrement()
-		{
-			Handler?.UpdateValue(nameof(IStepper.Interval));
-		}
 	}
 }
