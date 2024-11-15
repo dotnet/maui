@@ -16,7 +16,7 @@
               </VerticalStackLayout>
               <VerticalStackLayout WidthRequest="150">
                 <Label Text="Bloodwork status :" />
-                <Picker ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type local:MainViewModel}}, Path=BloodworkStatuses}" SelectedItem="{Binding BloodworkStatus, Mode=TwoWay}" />
+                <Picker ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type local:Issue13558ViewModel}}, Path=BloodworkStatuses}" SelectedItem="{Binding BloodworkStatus, Mode=TwoWay}" />
               </VerticalStackLayout>
             </HorizontalStackLayout>
           </ViewCell>
