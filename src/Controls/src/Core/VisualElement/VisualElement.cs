@@ -293,18 +293,18 @@ namespace Microsoft.Maui.Controls
 			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (newvalue == null)
+				if (newvalue is null)
 					return;
 
-				if (oldvalue != null)
+				if (oldvalue is Brush oldBrush)
 				{
-					((Brush)oldvalue).Parent = null;
+					oldBrush.Parent = null;
 				}
 
-				if (newvalue != null)
+				if (newvalue is Brush newBrush)
 				{
 					(bindable as VisualElement)?.NotifyBackgroundChanges();
-					((Brush)newvalue).Parent = bindable as VisualElement;
+					newBrush.Parent = bindable as VisualElement;
 				}
 			});
 

@@ -2,14 +2,14 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-	public partial class Bz19253 : ContentPage
+	public partial class Issue19253 : ContentPage
 	{
-		public Bz19253()
+		public Issue19253()
 		{
 			InitializeComponent();
 		}
 
-		public Bz19253(bool useCompiledXaml)
+		public Issue19253(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(false)]
 			public void RelativeSourceWithAncestorTypeShouldWork(bool useCompiledXaml)
 			{
-				var layout = new Bz19253(useCompiledXaml);
+				var layout = new Issue19253(useCompiledXaml);
 
 				var border = layout.border;
 				var gradientStops = ((LinearGradientBrush)layout.border.Background).GradientStops;
