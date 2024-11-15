@@ -14,7 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
 		[Test]
-		[FailsOnMac]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -24,8 +25,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -38,8 +39,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddAdditionalCookieToWebView()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -52,8 +53,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetToOneCookie()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -63,8 +64,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -77,8 +78,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
