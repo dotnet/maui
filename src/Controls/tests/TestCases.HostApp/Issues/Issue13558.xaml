@@ -6,8 +6,8 @@
              Title="Issue13558">
   <VerticalStackLayout>
     <ListView AutomationId="ListViewId"
-        ItemsSource="{Binding Patients}"
-        RowHeight="65">
+              ItemsSource="{Binding Patients}"
+              RowHeight="65">
       <ListView.ItemTemplate>
         <DataTemplate>
           <ViewCell>
@@ -19,7 +19,7 @@
               <VerticalStackLayout WidthRequest="150">
                 <Label Text="Bloodwork status :"/>
                 <Picker ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type local:Issue13558ViewModel}}, Path=BloodworkStatuses}"
-                    SelectedItem="{Binding BloodworkStatus, Mode=TwoWay}"/>
+                        SelectedItem="{Binding BloodworkStatus, Mode=TwoWay}"/>
               </VerticalStackLayout>
             </HorizontalStackLayout>
           </ViewCell>
