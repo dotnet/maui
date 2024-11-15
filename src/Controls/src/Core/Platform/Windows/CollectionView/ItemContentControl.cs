@@ -172,7 +172,14 @@ namespace Microsoft.Maui.Controls.Platform
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
-				_visualElement = dataTemplate.CreateContent() as VisualElement;
+				var content = dataTemplate.CreateContent();
+				_visualElement = content as VisualElement;
+
+				if(_visualElement is null)
+				{
+					throw new InvalidOperationException($"{dataTemplate} could not be created from {content}");
+				}
+
 				_visualElement.BindingContext = dataContext;
 				_handler = _visualElement.ToHandler(mauiContext);
 

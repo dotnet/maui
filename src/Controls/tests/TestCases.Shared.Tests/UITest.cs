@@ -84,6 +84,18 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 			}
 
+			// This currently doesn't work
+			if (!String.IsNullOrEmpty(TestContext.CurrentContext.Test.ClassName))
+			{
+				config.SetTestConfigurationArg("StartingTestClass", TestContext.CurrentContext.Test.ClassName);
+			}
+
+			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+			if (!String.IsNullOrEmpty(commandLineArgs))
+			{
+				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
+			}
+
 			return config;
 		}
 
