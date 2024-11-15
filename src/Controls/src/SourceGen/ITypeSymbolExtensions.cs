@@ -128,10 +128,25 @@ static class ITypeSymbolExtensions
         if (type == null || iface == null)
             return false;
 
-        if (SymbolEqualityComparer.Default.Equals(type, iface))
-            return true;
-
         return type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iface));
+    }
+
+    public static bool ImplementsGeneric(this ITypeSymbol type, ITypeSymbol iface, out ITypeSymbol[] typeArguments)
+    {
+        typeArguments = [];
+        if (type == null || iface == null)
+            return false;
+
+        foreach (var i in type.AllInterfaces)
+        {
+            if (SymbolEqualityComparer.Default.Equals(i.OriginalDefinition, iface))
+            {
+                typeArguments = [.. i.TypeArguments];
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static (bool generateInflatorSwitch, XamlInflator inflators) GetXamlInflator(this ITypeSymbol type)

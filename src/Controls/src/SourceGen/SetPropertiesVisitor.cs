@@ -100,7 +100,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         //     return;
         // }
 
-        // TODO ProvideValue on markupextensions
+        //IMarkupExtension or IValueProvider => ProvideValue()
+        if (node.IsValueProvider(context, out ITypeSymbol? type))
+        {
+            var valueProviderVariable = Context.Variables[node];
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
+            Context.Variables[node] = new LocalVariable(type, variableName);
+            Writer.WriteLine($"global::{type} {variableName} = {valueProviderVariable.Name}.ProvideValue(null);");
+        }
 
         if (propertyName != XmlName.Empty)
         {
@@ -182,7 +189,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         //TODO dynamicresource
 
-        //TODO binding
+        //If it's a BP and the value is BindingBase, SetBinding
+        if (CanSetBinding(bpFieldSymbol, valueNode, context))
+        {
+            SetBinding(writer, parentVar, bpFieldSymbol!, valueNode, context, iXmlLineInfo);
+            return;
+        }
 
         //If it's a BP, SetValue
         if (CanSetValue(bpFieldSymbol, valueNode, context)) {
@@ -190,7 +202,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return;
         }
 
-        //TODO Set
+        //POCO, set the property
+        if (CanSet(parentVar, localName, valueNode, context)) {
+            Set(writer, parentVar, localName, valueNode, context, iXmlLineInfo);
+            return;
+        }
 
         if (CanAdd(parentVar, propertyName, valueNode, context)) {
             Add(writer, parentVar, propertyName, valueNode, context, iXmlLineInfo);
@@ -246,6 +262,57 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {context.Variables[node].Name});");
 		}
 	}
+
+    static bool CanSet(LocalVariable parentVar, string localName, INode node, SourceGenContext context)
+    {
+        if (parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == localName) is not IPropertySymbol property)
+            return false;
+        if (property.SetMethod is not IMethodSymbol propertySetter  || !propertySetter.IsPublic() || propertySetter.IsStatic)
+            return false;
+        if (node is ValueNode vn) //TODO check if a conversion exists
+            return true;
+        if (node is not IElementNode elementNode)
+            return false;
+        var localVar = context.Variables[elementNode];
+        //TODO check if the property type is compatible with the element type
+        return true;
+    }
+
+    static void Set(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+        var property = parentVar.Type.GetAllProperties().First(p => p.Name == localName);
+        if (node is ValueNode valueNode)
+        {
+            var valueString = valueNode.ConvertTo(property, context, iXmlLineInfo);
+            writer.WriteLine($"{parentVar.Name}.{localName} = {valueString};");
+        }
+        else if (node is ElementNode elementNode)
+        {
+            writer.WriteLine($"{parentVar.Name}.{localName} = {context.Variables[elementNode].Name};");
+        }
+    }
+
+    static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
+    {
+        if (bpFieldSymbol == null)
+            return false;
+        if (node is not ElementNode en)
+            return false;
+        if (!context.Variables.TryGetValue(en, out var localVariable))
+            return false;
+
+        //TODO check if there's an implicit operator to/from BindingBase
+
+        if(localVariable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!))
+            return true;
+        return false;
+    }
+
+    static void SetBinding(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+        var localVariable = context.Variables[(ElementNode)node];
+        writer.WriteLine($"{parentVar.Name}.SetBinding(global::{bpFieldSymbol}, {localVariable.Name});");
+    }
 
     static bool CanAdd(LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context)
     {
