@@ -17,89 +17,59 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 		public EmptyViewWithDataTemplateSelector()
 		{
 			InitializeComponent();
-			var emptyViewTemplateSelector = new SearchTermDataTemplateSelector
-			{
-				DefaultTemplate = (DataTemplate)Resources["AdvancedTemplate"],
-				OtherTemplate = (DataTemplate)Resources["BasicTemplate"]
-			};
-			collectionView.EmptyViewTemplate = emptyViewTemplateSelector;
-			BindingContext = new EmptyViewWithDataTemplateSelectorViewModel();
+            var emptyViewTemplateSelector = new SearchTermDataTemplateSelector
+            {
+                DefaultTemplate = (DataTemplate)Resources["AdvancedTemplate"],
+                OtherTemplate = (DataTemplate)Resources["BasicTemplate"]
+            };
+            collectionView.EmptyViewTemplate = emptyViewTemplateSelector;
+            BindingContext = new EmptyViewWithDataTemplateSelectorViewModel();
 		}
 
-		public class SearchTermDataTemplateSelector : DataTemplateSelector
-		{
-			public DataTemplate? DefaultTemplate { get; set; }
-			public DataTemplate? OtherTemplate { get; set; }
+		public class Monkey
+        {
+            public string? Name { get; set; }
+            public string? Location { get; set; }
+            public string? Details { get; set; }
+        }
 
-			protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
+		public class SearchTermDataTemplateSelector : DataTemplateSelector
+        {
+            public DataTemplate? DefaultTemplate { get; set; }
+            public DataTemplate? OtherTemplate { get; set; }
+
+            protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
 			{
 				string query = (string)item;
 				return query.Equals("xamarin", StringComparison.OrdinalIgnoreCase) ? OtherTemplate : DefaultTemplate;
 			}
-		}
+        }
 
-		internal class EmptyViewWithDataTemplateSelectorViewModel : INotifyPropertyChanged
+		internal class EmptyViewWithDataTemplateSelectorViewModel
 		{
-			private readonly IList<Monkey> source;
-			public ObservableCollection<Monkey> Monkeys { get; set; }
-			public ICommand FilterCommand => new Command<string>(FilterItems);
+			public ObservableCollection<Monkey> Monkeys { get; } = new();
+            public ICommand FilterCommand => new Command<string>(FilterItems);
 
-			public EmptyViewWithDataTemplateSelectorViewModel()
-			{
-				source = new List<Monkey>();
-				CreateMonkeyCollection();
-				Monkeys = new ObservableCollection<Monkey>(source);
-			}
+            public EmptyViewWithDataTemplateSelectorViewModel()
+            {
+                // Directly populate the ObservableCollection
+                Monkeys.Add(new Monkey
+                {
+                    Name = "Baboon",
+                    Location = "Africa & Asia",
+                    Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."
+                });
+            }
 
-			public partial class Monkey
-			{
-				public string? Name { get; set; }
-
-				public string? Location { get; set; }
-
-				public string? Details { get; set; }
-
-			}
-
-			private void CreateMonkeyCollection()
-			{
-				source.Add(new Monkey
-				{
-					Name = "Baboon",
-					Location = "Africa & Asia",
-					Details = "Baboons are African and Arabian Old World monkeys belonging to the genus Papio, part of the subfamily Cercopithecinae."
-				});
-			}
-
-			private void FilterItems(string filter)
-			{
-				var filteredItems = source
-    .Where(monkey => monkey.Name != null && monkey.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
-    .ToList();
-				foreach (var monkey in source)
-				{
-					if (!filteredItems.Contains(monkey))
-					{
-						Monkeys.Remove(monkey);
-					}
-					else
-					{
-						if (!Monkeys.Contains(monkey))
-						{
-							Monkeys.Add(monkey);
-						}
-					}
-				}
-			}
-
-			#region INotifyPropertyChanged
-			public event PropertyChangedEventHandler? PropertyChanged;
-
-			protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-			{
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName!));
-			}
-			#endregion
+            private void FilterItems(string filter)
+            {
+                var filteredItems = Monkeys.Where(monkey => monkey.Name?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false).ToList();
+                Monkeys.Clear();
+                foreach (var monkey in filteredItems)
+                {
+                    Monkeys.Add(monkey);
+                }
+            }
 		}
 	}
 }
