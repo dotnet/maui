@@ -94,10 +94,9 @@ public static class SourceGeneratorDriver
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Core.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
-				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
 				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
-				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(XamlProcessingAttribute).Assembly.Location), 	//Xaml				
+				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
 			};
 		}
 		return MauiReferences;

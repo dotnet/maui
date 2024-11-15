@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -43,7 +45,16 @@ static class NodeSGExtensions
         return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, iXmlLineInfo);
     }
 
-    // public static string ConvertTo(this ValueNode valueNode, IPropertySymbol bpPropertySymbol) => valueNode.ConvertTo(bpPropertySymbol.Type);
+    public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+        List<AttributeData> attributes = [
+            .. property.GetAttributes().ToList(),
+            .. property.Type.GetAttributes()
+        ];
+        
+        var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
+        return valueNode.ConvertTo(property.Type, typeConverter, context, iXmlLineInfo);
+    }
     
     public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
@@ -74,5 +85,23 @@ static class NodeSGExtensions
             return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new global::{typeConverter}()).ConvertFromInvariantString(\"{valueString}\", /*TODO*/ null)";
         }
         return $"new global::{typeConverter}().ConvertFromInvariantString(\"{valueString}\")";
+    }
+
+    public static bool IsValueProvider(this INode node, SourceGenContext context, out ITypeSymbol? returnType)
+    {
+        returnType = context.Compilation.ObjectType;
+        if (!context.Variables.TryGetValue(node, out var variable))
+            return false;
+        if (variable.Type.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
+            return true;
+        if (variable.Type.ImplementsGeneric(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
+        {
+            returnType = typeArg[0];
+            return true;
+        }
+        if (variable.Type.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension")!))
+            return true;
+        return false;
+
     }
 }
