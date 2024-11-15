@@ -142,8 +142,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
 			}
+			else if (_itemsLayout is LinearItemsLayout listViewLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return new UIEdgeInsets(0, 0, 0, new nfloat(listViewLayout.ItemSpacing));
+				}
 
-			return UIEdgeInsets.Zero;
+				return new UIEdgeInsets(0, 0, new nfloat(listViewLayout.ItemSpacing), 0);
+			}
+			else
+			{
+				return UIEdgeInsets.Zero;
+			}
 		}
 
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
