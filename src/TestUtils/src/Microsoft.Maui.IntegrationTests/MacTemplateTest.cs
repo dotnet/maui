@@ -104,7 +104,7 @@ public class MacTemplateTest : BaseTemplateTests
 			appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";
 
 			appLocation =
-				Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+				Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", $"iossimulator-{arch}", appFileName);
 		}
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
