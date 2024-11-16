@@ -16,6 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+#if TEST_FAILS_ON_IOS|| TEST_FAILS_ON_CATALYST
+	[Ignore("Currently fails on iOS and mac; see https://github.com/dotnet/maui/issues/19488")]
+#endif
 		public void Issue10300Test()
 		{
 			App.Click("Add");
