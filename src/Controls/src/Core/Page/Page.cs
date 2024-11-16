@@ -455,7 +455,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Resets the BindingContext for each MenuBarItem when it becomes null after page navigation.
 		/// </summary>
-		private void UpdateMenuBarItemBindingContext()
+	 void UpdateMenuBarItemBindingContext()
 		{
 			if (MenuBarItems is null)
 			{
