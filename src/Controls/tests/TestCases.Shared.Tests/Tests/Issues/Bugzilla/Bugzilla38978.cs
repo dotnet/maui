@@ -19,7 +19,7 @@ public class Bugzilla38978 : _IssuesUITest
 	{
 		App.WaitForElement("2");
 		var beforeRect = App.FindElement("2").GetRect();
-		
+
 		App.Tap("2");
 		var afterRect = App.FindElement("2").GetRect();
 
