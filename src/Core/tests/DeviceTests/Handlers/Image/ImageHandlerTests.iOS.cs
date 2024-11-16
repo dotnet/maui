@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				image.Source = new FileImageSourceStub(changed);
 				handler.UpdateValue(nameof(IImage.Source));
-				
+
 				await image.WaitUntilLoaded();
 
 				var platformImageView = GetPlatformImageView(handler);
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected virtual bool UsesAnimatedImages => true; 
+		protected virtual bool UsesAnimatedImages => true;
 
 		UIImageView GetPlatformImageView(IImageHandler imageHandler) =>
 			imageHandler.PlatformView;

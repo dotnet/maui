@@ -10,7 +10,7 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.TestCases.Tests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
-				
+
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
 						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
 
-						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
@@ -240,7 +240,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			base.TestSetup();
 			var device = App.GetTestDevice();
-			if(device == TestDevice.Android || device == TestDevice.iOS)
+			if (device == TestDevice.Android || device == TestDevice.iOS)
 			{
 				try
 				{
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					Thread.Sleep(1000);
 					App.SetOrientationPortrait();
 				}
-				
+
 			}
 		}
 	}

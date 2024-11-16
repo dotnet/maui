@@ -19,43 +19,44 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui25141 : ContentPage
 {
-    public Maui25141()
-    {
-        InitializeComponent();
+	public Maui25141()
+	{
+		InitializeComponent();
 		BindingContext = new Maui25141ViewModel
 		{
 			Text = "Hello, Maui!",
 			TriggerFlag = true
 		};
-    }
+	}
 
-    public Maui25141(bool useCompiledXaml)
-    {
-        //this stub will be replaced at compile time
-    }
+	public Maui25141(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-    [TestFixture]
-    class Test
-    {
-        [SetUp]
-        public void Setup()
-        {
-            Application.SetCurrentApplication(new MockApplication());
-            DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-        }
+	[TestFixture]
+	class Test
+	{
+		[SetUp]
+		public void Setup()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
 
-        [TearDown] public void TearDown()
-        {
-            AppInfo.SetCurrent(null);
-            DeviceInfo.SetCurrent(null);
-        }
+		[TearDown]
+		public void TearDown()
+		{
+			AppInfo.SetCurrent(null);
+			DeviceInfo.SetCurrent(null);
+		}
 
-        [Test]
-        public void BindingsInDataTriggerAndMultiBindingAreCompiledCorrectly()
-        {
-            MockCompiler.Compile(typeof(Maui25141), treatWarningsAsErrors: true);
-        }
-    }
+		[Test]
+		public void BindingsInDataTriggerAndMultiBindingAreCompiledCorrectly()
+		{
+			MockCompiler.Compile(typeof(Maui25141), treatWarningsAsErrors: true);
+		}
+	}
 }
 
 public class Maui25141ViewModel : INotifyPropertyChanged

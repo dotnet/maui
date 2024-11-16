@@ -33,7 +33,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// TODO: remove this if as we should be able to build tizen net8
 		if (framework != DotNetPrevious)
-		EnableTizen(projectFile);
+			EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
