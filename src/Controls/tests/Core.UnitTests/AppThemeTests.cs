@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -250,6 +251,141 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var border = new Border();
 			border.SetAppTheme(Border.StrokeProperty, Colors.Red, Colors.Black);
+		}
+		
+		[Fact]
+		// https://github.com/dotnet/maui/issues/24444
+		public void ThemeChangeUpdatesPlatformBehaviorViaSetBinding()
+		{
+			var colorBehavior = new ColorBehavior();
+			
+			var contentView = new ContentView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				Behaviors =
+				{
+					colorBehavior
+				}
+			};
+			
+			colorBehavior.SetView(contentView);
+			
+			app.LoadPage(new ContentPage {Content = contentView});
+			
+			colorBehavior.SetBinding(ColorBehavior.ColorProperty, new AppThemeBinding { Light = Colors.Green, Dark = Colors.Red });
+			
+			Assert.Equal(Colors.Green, colorBehavior.Color);
+			Assert.Equal(Colors.Green, contentView.BackgroundColor);
+
+			SetAppTheme(AppTheme.Dark);
+			
+			Assert.Equal(Colors.Red, colorBehavior.Color);
+			Assert.Equal(Colors.Red, contentView.BackgroundColor);
+		}
+		
+		[Fact]
+		// https://github.com/dotnet/maui/issues/24444
+		public void ThemeChangeUpdatesPlatformBehaviorViaSetAppTheme()
+		{
+			var colorBehavior = new ColorBehavior();
+			
+			var contentView = new ContentView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				Behaviors =
+				{
+					colorBehavior
+				}
+			};
+			
+			colorBehavior.SetView(contentView);
+			
+			app.LoadPage(new ContentPage {Content = contentView});
+			
+			colorBehavior.SetAppTheme(ColorBehavior.ColorProperty, Colors.Green, Colors.Red);
+			
+			Assert.Equal(Colors.Green, colorBehavior.Color);
+			Assert.Equal(Colors.Green, contentView.BackgroundColor);
+
+			SetAppTheme(AppTheme.Dark);
+			
+			Assert.Equal(Colors.Red, colorBehavior.Color);
+			Assert.Equal(Colors.Red, contentView.BackgroundColor);
+		}
+		
+		[Fact]
+		// https://github.com/dotnet/maui/issues/24444
+		public void ThemeChangeUpdatesPlatformBehaviorViaSetAppThemeColor()
+		{
+			var colorBehavior = new ColorBehavior();
+			
+			var contentView = new ContentView()
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				Behaviors =
+				{
+					colorBehavior
+				}
+			};
+
+			colorBehavior.SetView(contentView);
+			
+			app.LoadPage(new ContentPage {Content = contentView});
+			
+			colorBehavior.SetAppThemeColor(ColorBehavior.ColorProperty, Colors.Green, Colors.Red);
+			
+			Assert.Equal(Colors.Green, colorBehavior.Color);
+			Assert.Equal(Colors.Green, contentView.BackgroundColor);
+
+			SetAppTheme(AppTheme.Dark);
+			
+			Assert.Equal(Colors.Red, colorBehavior.Color);
+			Assert.Equal(Colors.Red, contentView.BackgroundColor);
+		}
+
+		private class ColorBehavior : PlatformBehavior<VisualElement>
+		{
+			public static readonly BindableProperty ColorProperty = BindableProperty.Create(
+				nameof(Color),
+				typeof(Color),
+				typeof(ColorBehavior),
+				propertyChanged: UpdateColor);
+    
+			public Color Color
+			{
+				get => (Color)GetValue(ColorProperty);
+				set => SetValue(ColorProperty, value);
+			}
+    
+			private static void UpdateColor(BindableObject bindable, object oldvalue, object newvalue)
+			{
+				if (bindable is ColorBehavior colorBehavior)
+				{
+					colorBehavior.UpdateColor();
+				}
+			}
+
+			private void UpdateColor()
+			{
+				if (View is null)
+				{
+					return;
+				}
+        
+				View.BackgroundColor = Color;
+			}
+    
+			protected VisualElement View { get; set; }
+
+			// Since OnAttachedTo won't fire in a unit test, this replaces it with our virtual view
+			public void SetView(VisualElement view)
+			{
+				View = view;
+				UpdateColor();
+			}
 		}
 	}
 }
