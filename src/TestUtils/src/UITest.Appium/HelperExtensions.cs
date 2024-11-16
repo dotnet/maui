@@ -633,28 +633,6 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Activates the context menu for the specified element.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="element">The identifier for the element whose context menu is to be activated.</param>
-		public static void ActivateContextMenu(this IApp app, string element)
-		{
-			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
-			{
-				{ "element", element },
-			});
-		}
-
-		/// <summary>
-		/// Dismisses the context menu.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		public static void DismissContextMenu(this IApp app)
-		{
-			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
-		}
-
-		/// <summary>
 		/// Wait function that will repeatly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
