@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			_targetProperty = property;
 			_specificity = specificity;
 
@@ -396,7 +396,7 @@ namespace Microsoft.Maui.Controls
 					part.LastGetter = propertyGetMethod;
 				}
 
-				if (property is {CanWrite: true, SetMethod: {IsPublic: true, IsStatic: false} propertySetMethod})
+				if (property is { CanWrite: true, SetMethod: { IsPublic: true, IsStatic: false } propertySetMethod })
 				{
 					part.LastSetter = propertySetMethod;
 					part.SetterType = propertyType;

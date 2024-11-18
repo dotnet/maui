@@ -16,8 +16,8 @@ public class Issue10608 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[Bug] [Shell] [iOS] Locked flyout causes application to freezes when quickly switching between tabs"; 
-	
+	public override string Issue => "[Bug] [Shell] [iOS] Locked flyout causes application to freezes when quickly switching between tabs";
+
 	// [Test]
 	// [Category(UITestCategories.Shell)]
 	// public void ShellWithTopTabsFreezesWhenNavigatingFlyoutItems()

@@ -344,7 +344,7 @@ namespace UITest.Appium
 		public static void DoubleTap(this IApp app, string element)
 		{
 			var elementToDoubleTap = app.FindElement(element);
-		
+
 			app.DoubleTap(elementToDoubleTap);
 		}
 
@@ -408,7 +408,7 @@ namespace UITest.Appium
 		public static void TouchAndHold(this IApp app, string element)
 		{
 			var elementToTouchAndHold = app.FindElement(element);
-		
+
 			app.TouchAndHold(elementToTouchAndHold);
 		}
 
@@ -1119,7 +1119,7 @@ namespace UITest.Appium
 		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			if (element is not null)
-			{ 
+			{
 				app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
 				{
 					{ "element", element },
@@ -1722,6 +1722,14 @@ namespace UITest.Appium
 				result = app.FindElementsByText(element);
 
 			return result;
+		}
+
+
+		public static void SetTestConfigurationArg(this IConfig config, string key, string value)
+		{
+			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+			startupArg.Add(key, value);
+			config.SetProperty("TestConfigurationArgs", startupArg);
 		}
 	}
 }

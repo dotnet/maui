@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void EvaluateDisconnect()
 		{
-			if(!_createdViaService)
+			if (!_createdViaService)
 				return;
 
 			// If the user has set the IsVisible property on this shell content to false
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls
 
 			Shell shell = null;
 
-			if (Parent is ShellSection shellSection &&
+      if (Parent is ShellSection shellSection &&
 				shellSection.Parent is ShellItem shellItem &&
 				shellItem.Parent is Shell shellInstance)
 			{
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == WindowProperty.PropertyName)
 			{
-				if(_contentCache?.IsLoaded == true)
+				if (_contentCache?.IsLoaded == true)
 					return;
 
 				EvaluateDisconnect();

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void DoesNotCrash()
-		{ 
+		{
 			App.WaitForElement("Success");
 		}
 	}
