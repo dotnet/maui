@@ -12,9 +12,6 @@ using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
-using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
-using static Microsoft.Maui.Controls.SourceGen.TypeHelpers;
-
 namespace Microsoft.Maui.Controls.SourceGen;
 
 static class CodeBehindCodeWriter
@@ -281,7 +278,7 @@ static class CodeBehindCodeWriter
 
 		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-		baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsCache, typeCache);
+		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeName(compilation, xmlnsCache, typeCache);
 
 		// x:ClassModifier attribute
 		var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -347,7 +344,7 @@ static class CodeBehindCodeWriter
 				accessModifier = "private";
 			}
 
-			yield return (name ?? "", GetTypeName(xmlType, compilation, xmlnsCache, typeCache), accessModifier);
+			yield return (name ?? "", xmlType.GetTypeName(compilation, xmlnsCache, typeCache), accessModifier);
 		}
 	}
 
