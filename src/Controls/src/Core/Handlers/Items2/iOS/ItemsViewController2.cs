@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				DetachingFromWindow();
 			}
 		}
-		
+
 		internal void DisposeItemsSource()
 		{
 			ItemsSource?.Dispose();

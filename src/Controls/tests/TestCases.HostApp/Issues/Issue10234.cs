@@ -127,7 +127,7 @@ namespace Maui.Controls.Sample.Issues
 				get; set;
 			}
 		}
-	
+
 		class PhotoItem
 		{
 			public string Image { get; set; }

@@ -1,6 +1,6 @@
-﻿using AndroidX.DrawerLayout.Widget;
+﻿using System.Threading.Tasks;
+using AndroidX.DrawerLayout.Widget;
 using Microsoft.Maui.Controls;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
