@@ -92,6 +92,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		}
 		var serviceProvider = new XamlServiceProvider(node, Context);
 		serviceProvider.Add(typeof(IXmlNamespaceResolver), nsResolver);
+		serviceProvider.Add(typeof(SGContextProvider), new SGContextProvider(Context));
 
 		return new MarkupExpansionParser().Parse(match!, ref expression, serviceProvider);
 	}
@@ -110,8 +111,8 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 
 		public INode Parse(string match, ref string remaining, IServiceProvider serviceProvider)
 		{
-				if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
-					throw new ArgumentException();
+			if (!(serviceProvider.GetService(typeof(IXmlNamespaceResolver)) is IXmlNamespaceResolver nsResolver))
+				throw new ArgumentException();
 			IXmlLineInfo? xmlLineInfo = null;
 			if (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider)
 				xmlLineInfo = xmlLineInfoProvider.XmlLineInfo;
@@ -182,26 +183,16 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 			}
 
 
-				// if (!(serviceProvider.GetService(typeof(IXamlTypeResolver)) is XamlTypeResolver typeResolver))
-				// 	throw new NotSupportedException();
+			// if (!(serviceProvider.GetService(typeof(IXamlTypeResolver)) is XamlTypeResolver typeResolver))
+			// 	throw new NotSupportedException();
 
-				var xmltype = new XmlType(namespaceuri, name + "Extension", typeArguments);
+			var xmltype = new XmlType(namespaceuri, name + "Extension", typeArguments);
+			if (!xmltype.TryResolveTypeSymbol(contextProvider!.Context, out _))
+				xmltype = new XmlType(namespaceuri, name, typeArguments);
 
-				// //The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
-				// if (!typeResolver.TryResolve(xmltype, out _))
-				// {
-				// 	xmltype = new XmlType(namespaceuri, name, typeArguments);
-				// 	if (!typeResolver.TryResolve(xmltype, out _))
-				// 	{
-				// 		var ex = new XamlParseException($"MarkupExtension not found for {match}", serviceProvider);
-				// 		if (ExceptionHandler != null)
-				// 		{
-				// 			ExceptionHandler(ex);
-				// 			return null;
-				// 		}
-				// 		throw ex;
-				// 	}
-				// }
+			if (xmltype == null)
+				throw new NotSupportedException();
+
 
 			_node = xmlLineInfo == null
 				? new ElementNode(xmltype, null, nsResolver)
