@@ -42,4 +42,4 @@ public class Issue8008 : TestShell
 #pragma warning restore CS0618 // Type or member is obsolete
 
 	}
-}
+ }
