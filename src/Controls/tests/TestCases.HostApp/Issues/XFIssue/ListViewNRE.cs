@@ -27,12 +27,12 @@ public class ListViewNRE : TestContentPage
 		});
 
 		listView.ItemSelected += ListView_ItemSelected;
-		
+
 		Content = listView;
 	}
 
 	void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
 	{
-		Content = new Label { AutomationId = Success , Text = Success };
+		Content = new Label { AutomationId = Success, Text = Success };
 	}
 }

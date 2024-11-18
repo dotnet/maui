@@ -345,7 +345,7 @@ namespace UITest.Appium
 		public static void DoubleTap(this IApp app, string element)
 		{
 			var elementToDoubleTap = app.FindElement(element);
-		
+
 			app.DoubleTap(elementToDoubleTap);
 		}
 
@@ -409,7 +409,7 @@ namespace UITest.Appium
 		public static void TouchAndHold(this IApp app, string element)
 		{
 			var elementToTouchAndHold = app.FindElement(element);
-		
+
 			app.TouchAndHold(elementToTouchAndHold);
 		}
 
@@ -631,28 +631,6 @@ namespace UITest.Appium
 				["element"] = alertElement
 			});
 			return (IReadOnlyCollection<string>?)result.Value ?? Array.Empty<string>();
-		}
-
-		/// <summary>
-		/// Activates the context menu for the specified element.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="element">The identifier for the element whose context menu is to be activated.</param>
-		public static void ActivateContextMenu(this IApp app, string element)
-		{
-			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
-			{
-				{ "element", element },
-			});
-		}
-
-		/// <summary>
-		/// Dismisses the context menu.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		public static void DismissContextMenu(this IApp app)
-		{
-			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
 		}
 
 		/// <summary>
@@ -1142,7 +1120,7 @@ namespace UITest.Appium
 		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			if (element is not null)
-			{ 
+			{
 				app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
 				{
 					{ "element", element },
@@ -1849,7 +1827,7 @@ namespace UITest.Appium
 
 		public static void SetTestConfigurationArg(this IConfig config, string key, string value)
 		{
-			var startupArg = config.GetProperty<Dictionary<string,string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
 		}

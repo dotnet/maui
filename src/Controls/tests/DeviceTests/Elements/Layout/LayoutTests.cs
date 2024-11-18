@@ -326,47 +326,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-        [Fact]
-        [Category(TestCategory.Button, TestCategory.FlexLayout)]
-        public async Task ButtonWithImageInFlexLayoutInGridDoesNotCycle()
-        {
-            EnsureHandlerCreated((builder) =>
-            {
-                builder.ConfigureMauiHandlers(handler =>
-                {
-                    handler.AddHandler(typeof(Button), typeof(ButtonHandler));
-                    handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
-                });
-            });
+		[Fact]
+		[Category(TestCategory.Button, TestCategory.FlexLayout)]
+		public async Task ButtonWithImageInFlexLayoutInGridDoesNotCycle()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
 
-            await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
-            // Cycle does not occur on first run
-            await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
-        }
+			await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
+			// Cycle does not occur on first run
+			await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
+		}
 
-        async Task ButtonWithImageInFlexLayoutInGridDoesNotCycleCore()
-        {
-            var grid = new Grid() { MaximumWidthRequest = 150 };
-            grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
+		async Task ButtonWithImageInFlexLayoutInGridDoesNotCycleCore()
+		{
+			var grid = new Grid() { MaximumWidthRequest = 150 };
+			grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
 
-            var flexLayout = new FlexLayout() { Wrap = Layouts.FlexWrap.Wrap };
-            grid.Add(flexLayout);
+			var flexLayout = new FlexLayout() { Wrap = Layouts.FlexWrap.Wrap };
+			grid.Add(flexLayout);
 
-            for (int i = 0; i < 2; i++)
-            {
-                var button = new Button { ImageSource = "black.png" };
-                flexLayout.Add(button);
-            }
+			for (int i = 0; i < 2; i++)
+			{
+				var button = new Button { ImageSource = "black.png" };
+				flexLayout.Add(button);
+			}
 
-            await InvokeOnMainThreadAsync(async () =>
-            {
-                // If this can be attached to the hierarchy and make it through a layout
-                // without crashing, then we're good.
-                await AttachAndRun(grid, (handler) => { });
-            });
-        }
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// If this can be attached to the hierarchy and make it through a layout
+				// without crashing, then we're good.
+				await AttachAndRun(grid, (handler) => { });
+			});
+		}
 
-        /* Commented out of for now due to inconsistent platform behavior
+		/* Commented out of for now due to inconsistent platform behavior
 		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
 		public async Task Issue15330()
 		{
@@ -441,7 +441,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
 		}*/
 
-        [Fact]
+		[Fact]
 		public async Task DependentLayoutBindingsResolve()
 		{
 			EnsureHandlerCreated((builder) =>

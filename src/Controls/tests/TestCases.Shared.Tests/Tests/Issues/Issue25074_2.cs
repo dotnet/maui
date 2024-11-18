@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue25074_2 : _IssuesUITest
 	{
-		public Issue25074_2(TestDevice testDevice) : base(testDevice){}
+		public Issue25074_2(TestDevice testDevice) : base(testDevice) { }
 
 		public override string Issue => "Button title can extend past previously truncated size";
 

@@ -6,12 +6,12 @@ using Foundation;
 namespace Maui.Controls.Sample
 {
 
-	class CollectionView1 : CollectionView{}
-	class CollectionView2 : CollectionView{}
+	class CollectionView1 : CollectionView { }
+	class CollectionView2 : CollectionView { }
 
 
-	class CarouselView1 : CarouselView{}
-	class CarouselView2 : CarouselView{}
+	class CarouselView1 : CarouselView { }
+	class CarouselView2 : CarouselView { }
 
 	public static partial class CollectionViewHostBuilderExtentions
 	{
@@ -27,11 +27,11 @@ namespace Maui.Controls.Sample
 		public static MauiAppBuilder ConfigureCollectionViewHandlers(this MauiAppBuilder builder)
 		{
 
-			#if IOS || MACCATALYST
-            builder.ConfigureMauiHandlers(handlers =>
+#if IOS || MACCATALYST
+			builder.ConfigureMauiHandlers(handlers =>
 			{
 				bool cv2Handlers = false;
-				foreach(var en in NSProcessInfo.ProcessInfo.Environment)
+				foreach (var en in NSProcessInfo.ProcessInfo.Environment)
 				{
 					if ($"{en.Key}" == "TEST_CONFIGURATION_ARGS")
 					{
@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler<CollectionView2, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 				handlers.AddHandler<CarouselView2, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
 			});
-			#endif
+#endif
 
 			return builder;
 		}

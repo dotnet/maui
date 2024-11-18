@@ -106,7 +106,7 @@ public class Issue9088 : TestShell
 		};
 
 		stackLayout.AutomationId = SwipeViewId;
-		stackLayout.BackgroundColor = Colors.Coral;		
+		stackLayout.BackgroundColor = Colors.Coral;
 
 		// Define Swipe Content
 		var swipeContent = new ContentView

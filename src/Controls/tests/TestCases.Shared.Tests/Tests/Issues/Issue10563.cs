@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue10563 : _IssuesUITest
+	public class Issue10563 : _IssuesUITest
 	{
 		const string OpenLeftId = "OpenLeftId";
 		const string OpenRightId = "OpenRightId";
@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Bug] SwipeView Open methods does not work for RightItems"; 
-		
+		public override string Issue => "[Bug] SwipeView Open methods does not work for RightItems";
+
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]

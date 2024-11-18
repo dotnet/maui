@@ -24,9 +24,9 @@ public class Issue8279 : TestContentPage
 	{
 
 		Data = new List<MyGroup>();
-            Data.Add(new MyGroup(){Headertitle = "Header 1"});
-            Data.First().Add(new MyData(){Title = "title 1"});
-            Data.First().Add(new MyData() { Title = "title 2" });
+		Data.Add(new MyGroup() { Headertitle = "Header 1" });
+		Data.First().Add(new MyData() { Title = "title 1" });
+		Data.First().Add(new MyData() { Title = "title 2" });
 		Data.First().Add(new MyData() { Title = "title 3" });
 		Data.First().Add(new MyData() { Title = "title 4" });
 		Data.First().Add(new MyData() { Title = "title 5" });
@@ -42,16 +42,16 @@ public class Issue8279 : TestContentPage
 
 		List = new ListView();
 #pragma warning disable CS0618 // Type or member is obsolete
-            List.HorizontalOptions = LayoutOptions.FillAndExpand;
+		List.HorizontalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
-            List.VerticalOptions = LayoutOptions.FillAndExpand;
+		List.VerticalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
-            List.BackgroundColor = Colors.Yellow;
-            List.ItemTemplate = new DataTemplate(typeof (VCTest));
-            List.GroupHeaderTemplate = new DataTemplate(typeof(VCHeader));
-            List.IsGroupingEnabled = true;
-            List.ItemsSource = Data;
+		List.BackgroundColor = Colors.Yellow;
+		List.ItemTemplate = new DataTemplate(typeof(VCTest));
+		List.GroupHeaderTemplate = new DataTemplate(typeof(VCHeader));
+		List.IsGroupingEnabled = true;
+		List.ItemsSource = Data;
 
 		var lastGroup = Data.Last();
 		var lastItem = lastGroup.First();
@@ -63,7 +63,7 @@ public class Issue8279 : TestContentPage
 		{
 			Text = "Scroll with no item but group",
 			AutomationId = ScrollWithNoItemButGroup,
-			Command = new Command(()=> List.ScrollTo(null, lastGroup, ScrollToPosition.MakeVisible, true))
+			Command = new Command(() => List.ScrollTo(null, lastGroup, ScrollToPosition.MakeVisible, true))
 		};
 
 		var button2 = new Button()
