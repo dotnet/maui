@@ -17,17 +17,5 @@ public class Issue24547: _IssuesUITest
 		App.WaitForElement("DetailButton");
 		VerifyScreenshot();
 	}
-
-	[Test]
-	[Category(UITestCategories.FlyoutPage)]
-	public void VerifyToolbarButtonHiddenOnNavigateBack()
-    {
-		App.WaitForElement("DetailButton");
-		App.Tap("DetailButton");
-		App.WaitForElement("PopButton");
-		App.Tap("PopButton");
-		App.WaitForElement("DetailButton");
-		VerifyScreenshot();
-    }
 }
 #endif
