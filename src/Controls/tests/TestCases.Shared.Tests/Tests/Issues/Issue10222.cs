@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,13 +11,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
-
-		// Crash after navigation
-		/*
+		public override string Issue => "[CollectionView] ObjectDisposedException if the page is closed during scrolling";
+	
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue10222Test()
 		{
 			App.WaitForElement("goTo");
@@ -24,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("collectionView");
 			App.WaitForElement("goTo");
 		}
-		*/
+		
 	}
 }
+#endif

@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+//TapBackArrow doesn't work on iOS and Mac.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,26 +12,26 @@ public class Bugzilla45926 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Effect not attaching to ScrollView";
+	public override string Issue => "MessagingCenter prevents subscriber from being collected";
 
-	// TODO Xamarin.UITest Migration
-	// [Test]
-	// [FailsOnAndroidWhenRunningOnXamarinUITest]
-	// public void Issue45926Test()
-	// {
-	// 	App.WaitForElement(q => q.Marked("New Page"));
+	[Test]
+	[Category(UITestCategories.Page)]
+	public void Issue45926Test()
+	{
+		App.WaitForElement("New Page");
 
-	// 	App.Tap(q => q.Marked("New Page"));
-	// 	App.WaitForElement(q => q.Marked("Second Page #1"));
-	// 	App.Back();
-	// 	App.WaitForElement(q => q.Marked("Intermediate Page"));
-	// 	App.Back();
-	// 	App.Tap(q => q.Marked("Do GC"));
-	// 	App.Tap(q => q.Marked("Do GC"));
-	// 	App.Tap(q => q.Marked("Send Message"));
-	// 	App.Tap(q => q.Marked("Do GC"));
+		App.Tap("New Page");
+		App.WaitForElement("Second Page #1");
+		App.TapBackArrow();
+		App.WaitForElement("Intermediate Page");
+		App.TapBackArrow();
+		App.Tap("Do GC");
+		App.Tap("Do GC");
+		App.Tap("Send Message");
+		App.Tap("Do GC");
 
-	// 	App.WaitForElement(q => q.Marked("Instances: 0"));
-	// 	App.WaitForElement(q => q.Marked("Messages: 0"));
-	// }
+		App.WaitForElement("Instances: 0");
+		App.WaitForElement("Messages: 0");
+	}
 }
+#endif
