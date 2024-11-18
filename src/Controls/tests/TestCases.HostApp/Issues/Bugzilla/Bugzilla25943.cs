@@ -30,12 +30,11 @@ namespace Maui.Controls.Sample.Issues
 
 		public StackLayout GetNestedStackLayout()
 		{
-			_result = new Label();
+			_result = new Label() { AutomationId = "Success" };
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			var innerLayout = new StackLayout
 			{
-				AutomationId = InnerLayout,
 				HeightRequest = 100,
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.Fill,
@@ -44,6 +43,7 @@ namespace Maui.Controls.Sample.Issues
 				{
 					new Label
 					{
+						AutomationId = InnerLayout,
 						Text = "inner label",
 						FontSize = 20,
 						HorizontalOptions = LayoutOptions.Center,
@@ -55,7 +55,6 @@ namespace Maui.Controls.Sample.Issues
 
 			var outerLayout = new StackLayout
 			{
-				AutomationId = OuterLayout,
 				Orientation = StackOrientation.Vertical,
 				BackgroundColor = Colors.Brown,
 				Children =
@@ -64,6 +63,7 @@ namespace Maui.Controls.Sample.Issues
 					innerLayout,
 					new Label
 					{
+						AutomationId = OuterLayout,
 						Text = "outer label",
 						FontSize = 20,
 						HorizontalOptions = LayoutOptions.Center,

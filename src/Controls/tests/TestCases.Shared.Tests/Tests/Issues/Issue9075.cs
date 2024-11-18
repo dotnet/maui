@@ -12,10 +12,10 @@ public class Issue9075 : _IssuesUITest
 		: base(device)
 	{ }
 
-	#if WINDOWS
+#if WINDOWS
 	[Test]
 	[Category(UITestCategories.Layout)]
-	#endif
+#endif
 	public void FlexLayoutCycleException()
 	{
 		App.WaitForElement("Item2");

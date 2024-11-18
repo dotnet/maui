@@ -1,13 +1,13 @@
 ﻿#nullable enable
+using System;
+using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using System.Threading.Tasks;
 using Xunit;
-using System;
 
 namespace Microsoft.Maui.DeviceTests
 {
