@@ -10,19 +10,19 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Debug", false, "","")]
 	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=Partial")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=Partial")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=Partial")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty","")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty","TrimMode=Partial")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty","TrimMode=partial")]
 	[TestCase("mauilib", DotNetPrevious, "Debug", true, "", "")]
 	[TestCase("mauilib", DotNetPrevious, "Release", true, "","")]
 	[TestCase("mauilib", DotNetCurrent, "Debug", true, "", "")]
-	[TestCase("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=Partial")]
+	[TestCase("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)	
 	{
 		var projectDir = TestDirectory;
@@ -112,15 +112,15 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Debug", false, "")]
 	[TestCase("maui", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "TrimMode=Partial")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false,	"")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false,	"")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false,	"")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=Partial")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
 	[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
 	[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
 	[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Release", true, "TrimMode=Partial")]
+	[TestCase("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
@@ -280,11 +280,11 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Test]
 	[TestCase("maui", "Debug", "2.0", "2", "")]
-	[TestCase("maui", "Release", "2.0", "2", "TrimMode=Partial")]
-	[TestCase("maui", "Release", "0.3", "3", "TrimMode=Partial")]
+	[TestCase("maui", "Release", "2.0", "2", "TrimMode=partial")]
+	[TestCase("maui", "Release", "0.3", "3", "TrimMode=partial")]
 	[TestCase("maui-blazor", "Debug", "2.0", "2", "")]
-	[TestCase("maui-blazor", "Release", "2.0", "2",	"TrimMode=Partial")]
-	[TestCase("maui-blazor", "Release", "0.3", "3", "TrimMode=Partial")]
+	[TestCase("maui-blazor", "Release", "2.0", "2",	"TrimMode=partial")]
+	[TestCase("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
 	public void BuildWithDifferentVersionNumber(string id, string config, string display, string version, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
