@@ -49,14 +49,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
 			};
 		}
+		
+		var buildProps = BuildProps;
 
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
-			additionalDotNetBuildParams.Split("").ToList().ForEach(p => BuildProps.Add(p));
+			additionalDotNetBuildParams.Split("").ToList().ForEach(p => buildProps.Add(p));
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -144,13 +146,15 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\log\\{Path.GetFileName(projectDir)}.binlog");
 
+		var buildProps = BuildProps;
+
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
-			additionalDotNetBuildParams.Split("").ToList().ForEach(p => BuildProps.Add(p));
+			additionalDotNetBuildParams.Split("").ToList().ForEach(p => buildProps.Add(p));
 		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: BuildProps),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -297,12 +301,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"<ApplicationVersion>1</ApplicationVersion>",
 			$"<ApplicationVersion>{version}</ApplicationVersion>");
 
+		var buildProps = BuildProps;
+
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
-			additionalDotNetBuildParams.Split("").ToList().ForEach(p => BuildProps.Add(p));
+			additionalDotNetBuildParams.Split("").ToList().ForEach(p => buildProps.Add(p));
 		}
 		
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }
