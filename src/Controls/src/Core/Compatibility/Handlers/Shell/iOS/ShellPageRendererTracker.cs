@@ -400,14 +400,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var previousNavItem = viewControllers[count - 2].NavigationItem;
 					if (previousNavItem != null)
 					{
-						if (text is not null)
+						if (previousNavItem.BackBarButtonItem is null)
 						{
-							var barButtonItem = (previousNavItem.BackBarButtonItem ??= new UIBarButtonItem());
-							barButtonItem.Title = text;
-						}
-						else if (previousNavItem.BackBarButtonItem != null)
-						{
-							previousNavItem.BackBarButtonItem = null;
+							previousNavItem.BackBarButtonItem ??= new UIBarButtonItem();
+							previousNavItem.BackBarButtonItem.Title = string.IsNullOrEmpty(text) ? string.Empty : text;
 						}
 					}
 				}
