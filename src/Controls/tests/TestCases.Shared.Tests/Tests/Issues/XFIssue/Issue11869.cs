@@ -7,7 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue11869 : _IssuesUITest
 {
 
-#if ANDROID
+	// In Android the top tab title was displayed with uppercase so we need to use uppercase string to find the element
+#if ANDROID 
 	const string TopTab2 = "TOPTAB2";
 	const string TopTab3 = "TOPTAB3";
 
@@ -37,7 +38,7 @@ public class Issue11869 : _IssuesUITest
 	{
 		// Ignored on Windows: The BottomTabs are displayed as a popup with a dropdown icon on Windows. 
 		// This causes a visibility issue where the content does not function as expected, a bug has been logged to address this behavior. 
-		// Once the issue is fixed, the test case should be re-enabled for Windows.
+		// Once the issue is fixed, the test case should be re-enabled for Windows. https://github.com/dotnet/maui/issues/25913
 #if !WINDOWS
 		App.WaitForElement(TopTab2);
 		App.Tap(HideTop2);
