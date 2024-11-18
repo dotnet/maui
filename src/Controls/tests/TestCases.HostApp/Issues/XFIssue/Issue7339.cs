@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 7339, "[iOS] Material frame renderer not being cleared",	PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 7339, "[iOS] Material frame renderer not being cleared", PlatformAffected.iOS)]
 
 public class Issue7339 : TestShell
 {

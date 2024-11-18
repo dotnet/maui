@@ -12,10 +12,10 @@ public partial class Issue21726 : ContentPage
 	{
 #if IOS
 		var window = UIKit.UIApplication.SharedApplication
-        .ConnectedScenes
-        .OfType<UIKit.UIWindowScene>()
-        .SelectMany(s => s.Windows)
-        .FirstOrDefault(w => w.IsKeyWindow);
+		.ConnectedScenes
+		.OfType<UIKit.UIWindowScene>()
+		.SelectMany(s => s.Windows)
+		.FirstOrDefault(w => w.IsKeyWindow);
 
 		var rootVC = window?.RootViewController;
 		while (rootVC?.PresentedViewController != null)
@@ -23,7 +23,8 @@ public partial class Issue21726 : ContentPage
 			rootVC = rootVC.PresentedViewController;
 		}
 
-		if (rootVC is not null) {
+		if (rootVC is not null)
+		{
 			var testVC = new TestViewController();
 
 			var testNC = new UIKit.UINavigationController(testVC)
@@ -37,12 +38,14 @@ public partial class Issue21726 : ContentPage
 	}
 
 #if IOS
-	public class TestViewController: UIKit.UIViewController {
+	public class TestViewController : UIKit.UIViewController
+	{
 
 		UIKit.UITextField TextField1;
 		UIKit.UIButton Button1;
 
-		public override void ViewDidLoad() {
+		public override void ViewDidLoad()
+		{
 			base.ViewDidLoad();
 
 			View.BackgroundColor = UIKit.UIColor.White;
@@ -58,7 +61,8 @@ public partial class Issue21726 : ContentPage
 			Button1.SetTitle("Dismiss", UIKit.UIControlState.Normal);
 			Button1.BackgroundColor = UIKit.UIColor.SystemBlue;
 			Button1.AccessibilityIdentifier = "Button1";
-			Button1.TouchUpInside += (sender, e) => {
+			Button1.TouchUpInside += (sender, e) =>
+			{
 				DismissViewController(true, null);
 			};
 

@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ref _headerUIView, ref _headerViewFormsElement);
 			UpdateHeaderFooterPosition();
 
-			if(_headerUIView is MauiView mv)
+			if (_headerUIView is MauiView mv)
 			{
 				mv.LayoutChanged += HeaderViewLayoutChanged;
 			}

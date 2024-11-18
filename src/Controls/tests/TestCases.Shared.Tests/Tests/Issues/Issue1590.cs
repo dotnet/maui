@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException"; 
-		
+		public override string Issue => "ListView.IsGroupingEnabled results ins ArguementOutOfRangeException";
+
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
