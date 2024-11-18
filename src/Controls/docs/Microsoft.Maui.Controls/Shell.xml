@@ -34,7 +34,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.Page" /> that provides fundamental UI features that most applications require, leaving you to focus on the application's core workload.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -49,7 +48,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.Shell" /> element with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Current">
@@ -67,7 +65,6 @@
       </ReturnValue>
       <Docs>
         <summary>Static property providing access to the current <see cref="T:Microsoft.Maui.Controls.Shell" />.</summary>
-        <value>To be added.</value>
         <remarks>
           <para>This is a typecast alias for <c>Microsoft.Maui.Controls.Application.Current.MainPage</c>.</para>
         </remarks>
@@ -88,8 +85,6 @@
       </ReturnValue>
       <Docs>
         <summary>The current navigation state of the <see cref="T:Microsoft.Maui.Controls.Shell" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentStateProperty">
@@ -107,7 +102,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Shell.CurrentState" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GoToAsync">
@@ -128,9 +122,6 @@
       </Parameters>
       <Docs>
         <param name="state">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GoToAsync">
@@ -154,7 +145,6 @@
         <param name="state">To be added.</param>
         <param name="animate">To be added.</param>
         <summary>Asynchronously navigates to <paramref name="state" />, optionally animating.</summary>
-        <returns>To be added.</returns>
         <remarks>
           <para>Note that <see cref="T:Microsoft.Maui.Controls.ShellNavigationState" /> has implicit conversions from <see langword="string" /> and <see cref="T:System.Uri" />, so developers may write code such as the following, with no explicit instantiation of the <see cref="T:Microsoft.Maui.Controls.ShellNavigationState" />:</para>
           <example>
@@ -180,8 +170,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Docs>
         <summary>The collection of <see cref="T:Microsoft.Maui.Controls.ShellItem" /> objects managed by <c>this</c><see cref="T:Microsoft.Maui.Controls.Shell" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsProperty">
@@ -199,7 +187,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Shell.Items" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Navigated">
@@ -217,7 +204,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Docs>
         <summary>The library raises this event after performing navigation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Navigating">
@@ -235,7 +221,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Docs>
         <summary>The library raises this event immediately prior to performing navigation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBackButtonPressed">
@@ -361,8 +346,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="constructorHint">To be added.</param>
         <param name="memberName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.AddAppearanceObserver">
@@ -389,7 +372,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
         <param name="observer">To be added.</param>
         <param name="pivot">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.AddFlyoutBehaviorObserver">
@@ -414,7 +396,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="observer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.AppearanceChanged">
@@ -441,7 +422,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
         <param name="source">To be added.</param>
         <param name="appearanceSet">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.FlyoutHeader">
@@ -462,8 +442,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.GenerateFlyoutGrouping">
@@ -485,8 +463,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.GetFlyoutItemDataTemplate">
@@ -510,9 +486,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </Parameters>
       <Docs>
         <param name="bo">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.GetItems">
@@ -533,9 +506,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.GetNavigationState">
@@ -566,8 +536,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
         <param name="shellContent">To be added.</param>
         <param name="includeStack">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.ItemsCollectionChanged">
@@ -587,8 +555,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
         <ReturnType>System.Collections.Specialized.NotifyCollectionChangedEventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.OnFlyoutItemSelected">
@@ -613,7 +579,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="element">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.OnFlyoutItemSelectedAsync">
@@ -638,8 +603,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="element">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.ProposeNavigation">
@@ -674,8 +637,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
         <param name="stack">To be added.</param>
         <param name="canCancel">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.RemoveAppearanceObserver">
@@ -700,8 +661,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="observer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.RemoveFlyoutBehaviorObserver">
@@ -726,8 +685,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="observer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.StructureChanged">
@@ -748,7 +705,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellController.UpdateCurrentState">
@@ -773,7 +729,6 @@ await Shell.Current.GoToAsync("app://xamarin.com/xaminals/animals/monkeys");
       <Docs>
         <param name="source">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

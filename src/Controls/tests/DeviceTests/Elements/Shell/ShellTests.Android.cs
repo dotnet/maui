@@ -102,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Shell.SetNavBarHasShadow(contentPage, navBarHasShadow);
 			});
-			
+
 			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
 				await Task.Delay(100);
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platformToolbar = GetPlatformToolbar(handler);
 				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 
-				if(navBarHasShadow)
+				if (navBarHasShadow)
 					Assert.True(appBar.Elevation > 0);
 				else
 					Assert.True(appBar.Elevation == 0);
@@ -579,7 +579,9 @@ namespace Microsoft.Maui.DeviceTests
 			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
 			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
 
+#pragma warning disable XAOBS001 // Obsolete
 			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+#pragma warning restore XAOBS001 // Obsolete
 			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
 			await Task.Delay(10);
 

@@ -35,8 +35,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void CarouselViewGoToNextCurrentItem()
+		public async Task CarouselViewGoToNextCurrentItem()
 		{
+			await Task.Delay(2000);
 			int indexToTest = 3;
 			var index = indexToTest.ToString();
 			var nextIndex = (indexToTest + 1).ToString();
@@ -54,8 +55,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void CarouselViewGoToPreviousCurrentItem()
+		public async Task CarouselViewGoToPreviousCurrentItem()
 		{
+			await Task.Delay(2000);
 			int indexToTest = 3;
 			var index = indexToTest.ToString();
 			var previousIndex = (indexToTest - 1).ToString();
@@ -70,12 +72,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblSelected", previousIndex);
 		}
 
-// Catalyst doesn't support orientation changes
+		// Catalyst doesn't support orientation changes
 #if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewKeepPositionChangingOrientation()
 		{
+			await Task.Delay(2000);
 			int indexToTest = 3;
 			var index = indexToTest.ToString();
 

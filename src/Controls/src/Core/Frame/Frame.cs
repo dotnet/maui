@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="Type[@FullName='Microsoft.Maui.Controls.Frame']/Docs/*" />
 	[ContentProperty(nameof(Content))]
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IView, IContentView
 	{
 		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
@@ -111,7 +112,8 @@ namespace Microsoft.Maui.Controls
 		Size ICrossPlatformLayout.CrossPlatformArrange(Graphics.Rect bounds)
 		{
 #if !WINDOWS
-			bounds = bounds.Inset(((IBorderElement)this).BorderWidth); // Windows' implementation would cause an incorrect double-counting of the inset
+			if (BorderColor is not null)
+				bounds = bounds.Inset(((IBorderElement)this).BorderWidth); // Windows' implementation would cause an incorrect double-counting of the inset
 #endif
 			this.ArrangeContent(bounds);
 			return bounds.Size;
@@ -121,12 +123,14 @@ namespace Microsoft.Maui.Controls
 		{
 			var inset = Padding;
 #if !WINDOWS
-			inset += ((IBorderElement)this).BorderWidth; // Windows' implementation would cause an incorrect double-counting of the inset
+			if (BorderColor is not null)
+				inset += ((IBorderElement)this).BorderWidth; // Windows' implementation would cause an incorrect double-counting of the inset
 #endif
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
 	}
 
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	internal static class FrameExtensions
 	{
 		internal static bool IsClippedToBoundsSet(this Frame frame, bool defaultValue) =>

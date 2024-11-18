@@ -21,8 +21,9 @@ stages:
           condition: eq(variables.signingCondition, true)
           use1ESTemplate: true
           usePipelineArtifactTasks: true
+          checkoutType : 'self'
         
-      - template: nuget-msi-convert/job/v3.yml@yaml-templates
+      - template: nuget-msi-convert/job/v4.yml@yaml-templates
         parameters:
           yamlResourceName: yaml-templates
           artifactName: nuget-signed
@@ -37,12 +38,20 @@ stages:
               patterns: |
                 **/SignVerifyIgnore.txt
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.SourcesDirectory)\eng\automation\guardian
+              patterns: |
+                **/tsaoptions-v2.json
+                **/source.gdnsuppress
+
           - task: MicroBuildCodesignVerify@3
             displayName: verify signed msi content
             inputs:
               TargetFolders: |
                 $(Build.ArtifactStagingDirectory)\bin\manifests
-                $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
+                $(Build.ArtifactStagingDirectory)\bin\manifests-packs
                 $(Build.ArtifactStagingDirectory)\bin\msi-nupkgs
               ExcludeSNVerify: true
               ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt

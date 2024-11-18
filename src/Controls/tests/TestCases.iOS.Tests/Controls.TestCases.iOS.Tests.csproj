@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
-    <DefineConstants>$(DefineConstants);IOS;IOSUITEST</DefineConstants>
+    <DefineConstants>$(DefineConstants);IOS;IOSUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_CATALYST</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
@@ -25,6 +25,10 @@
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj"
+      PrivateAssets="all"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
@@ -45,6 +49,11 @@
   
   <ItemGroup>
     <Compile Include="..\TestCases.Shared.Tests\**\*.cs" Exclude="..\TestCases.Shared.Tests\obj\**;..\TestCases.Shared.Tests\bin\**" LinkBase="Shared" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553) -->
+    <Compile Condition=" '$(_UseNativeAot)' == 'true' " Remove="../TestCases.Shared.Tests/Tests/Issues/**/*.*" />
   </ItemGroup>
 
   <ItemGroup>

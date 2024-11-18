@@ -21,8 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[FailsOnAndroid("PointerGestureRecognizer doesn't work with mouse in Android")]
-		[FailsOnIOS("PointerGestureRecognizer doesn't work with mouse in iOS")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("PointerGestureRecognizer doesn't work with mouse in Android")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("PointerGestureRecognizer doesn't work with mouse in iOS")]
 		public void PointerGestureTest()
 		{
 			App.WaitForElement("TargetView");
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("DoubleTapResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void SingleTap()
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("SingleTapGestureResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DisabledSingleTap()
@@ -81,6 +81,31 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			var result = App.FindElement("DisabledTapGestureResults").GetText();
 			ClassicAssert.AreNotEqual("Failed", result);
+		}
+
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void DynamicallyAddedTapGesturesDontCauseMultipleTapEvents()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DynamicTapGestureGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("DynamicTapSurface");
+			App.Tap("DynamicTapSurface");
+			App.Tap("DynamicTapSurface");
+			App.Tap("DynamicTapSurface");
+
+			var result = App.FindElement("DynamicTapGestureResults").GetText();
+
+			if (int.TryParse(result, out var resultInt))
+			{
+				ClassicAssert.AreEqual(3, resultInt);
+			}
+			else
+			{
+				ClassicAssert.Fail("Failed to parse result as int");
+			}
 		}
 	}
 }

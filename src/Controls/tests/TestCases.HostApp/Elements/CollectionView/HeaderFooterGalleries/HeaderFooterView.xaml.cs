@@ -1,12 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.Windows.Input;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterView : ContentPage
 	{
 		readonly HeaderFooterViewModel _viewModel = new HeaderFooterViewModel(0);

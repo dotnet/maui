@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/widget/ListView.java;l=1314-1322?q=ListView
 			// This causes issues because if a TextCell already has a view that's attached to the visual tree, then `OnMeasure(AT_MOST)`
 			// will call "GetView" without a convert view. Android basically creates an in memory copy of the table to calculate the measure.
-   			//
+			//
 			// Our problem is that we don't have a way of knowing if a view we are returning from getView will be the one we
 			// should track against our TextCellHandler or not. 
 			// This all worked fine in XF because in XF we didn't really block against just creating as many renderers against a single
@@ -117,7 +117,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (double.IsInfinity(heightConstraint))
 			{

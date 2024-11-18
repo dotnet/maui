@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellItem']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	[TypeConverter(typeof(ShellItemConverter))]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys
@@ -222,10 +223,10 @@ namespace Microsoft.Maui.Controls
 			result.Route = Routing.GenerateImplicitRoute(shellSection.Route);
 
 			result.Items.Add(shellSection);
-			result.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellSection));
-			result.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellSection));
-			result.SetBinding(FlyoutDisplayOptionsProperty, new Binding(nameof(FlyoutDisplayOptions), BindingMode.OneTime, source: shellSection));
-			result.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellSection));
+			result.SetBinding(TitleProperty, static (ShellSection section) => section.Title, BindingMode.OneWay, source: shellSection);
+			result.SetBinding(IconProperty, static (ShellSection section) => section.Icon, BindingMode.OneWay, source: shellSection);
+			result.SetBinding(FlyoutDisplayOptionsProperty, static (ShellSection section) => section.FlyoutDisplayOptions, BindingMode.OneTime, source: shellSection);
+			result.SetBinding(FlyoutIconProperty, static (ShellSection section) => section.FlyoutIcon, BindingMode.OneWay, source: shellSection);
 
 			return result;
 		}
@@ -341,6 +342,31 @@ namespace Microsoft.Maui.Controls
 			base.OnParentSet();
 			if (this.IsVisibleItem && CurrentItem != null)
 				((IShellController)Parent)?.AppearanceChanged(CurrentItem, false);
+		}
+
+		private sealed class ShellItemConverter : TypeConverter
+		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(ShellSection)
+					|| sourceType == typeof(ShellContent)
+					|| sourceType == typeof(TemplatedPage)
+					|| sourceType == typeof(MenuItem);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> false;
+
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+				=> value switch
+				{
+					ShellSection shellSection => (ShellItem)shellSection,
+					ShellContent shellContent => (ShellItem)shellContent,
+					TemplatedPage page => (ShellItem)page,
+					MenuItem menuItem => (ShellItem)menuItem,
+					_ => throw new NotSupportedException(),
+				};
+
+			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+				=> throw new NotSupportedException();
 		}
 	}
 }

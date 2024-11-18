@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+
     <!-- Base application theme. -->
-    <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
+    <style name="Maui.MainTheme.Base" parent="Theme.MaterialComponents.DayNight">
+        <!-- For .NET 9 we optout of edge to edge enforcement by default -->
+        <item name="maui_edgetoedge_optout">true</item>
+        <item name="maui_splash">false</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -12,6 +16,9 @@
         <item name="checkboxStyle">@style/MauiCheckBox</item>
         <item name="android:textAllCaps">false</item>
         <item name="alertDialogTheme">@style/MauiAlertDialogTheme</item>
+    </style>
+    <style name="Maui.MainTheme" parent="Maui.MainTheme.Base">
+      <!-- v35+ uses this to inject edge to edge opt out attribute value -->
     </style>
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
         <item name="windowActionBar">false</item>
@@ -65,6 +72,8 @@
       <!-- remove all the min sizes as MAUI manages it -->
       <item name="android:minWidth">0dp</item>
       <item name="android:minHeight">0dp</item>
+      <!-- remove the button tint as MAUI manages it -->
+      <item name="buttonTint">?attr/colorPrimary</item>
     </style>
 
     <style name="MauiAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">

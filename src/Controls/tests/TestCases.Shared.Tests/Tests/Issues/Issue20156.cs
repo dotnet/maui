@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,8 +12,9 @@ public class Issue20156 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
-	[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+	[Test]
+	[Category(UITestCategories.Border)]
+	[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 	public void BorderShouldHaveNoThickness()
 	{
 		_ = App.WaitForElement("WaitForStubControl");

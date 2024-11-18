@@ -129,8 +129,17 @@
         Version="$(MicrosoftExtensionsPrimitivesVersion)"
     />
     <PackageReference
+        Update="Microsoft.IO.RecyclableMemoryStream"
+        Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
+        NoWarn="NU1605"
+    />
+    <PackageReference
+        Update="Microsoft.Web.WebView2"
+        Version="$(MicrosoftWindowsWebView2PackageVersion)"
         NoWarn="NU1605"
     />
     <PackageReference
@@ -175,11 +184,64 @@
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Components.Web"
-        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)" />
-
+        Version="$(MicrosoftAspNetCoreComponentsWebPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)"
+    />
     <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authorization"
+        Version="$(MicrosoftAspNetCoreAuthorizationPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Google"
+        Version="$(MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.Facebook"
+        Version="$(MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount"
+        Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebView"
+        Version="$(MicrosoftAspNetCoreComponentsWebViewPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Web"
+        Version="$(MicrosoftAspNetCoreComponentsWebPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
+        Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.JSInterop"
+        Version="$(MicrosoftJSInteropPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
         Update="System.Text.Json"
@@ -196,10 +258,6 @@
     <PackageReference
         Update="Microsoft.Bcl.AsyncInterfaces"
         Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Web.WebView2"
-        Version="$(_MicrosoftWebWebView2Version)"
     />
     <PackageReference
         Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
@@ -246,5 +304,11 @@
         Update="System.Drawing.Common"
         Version="$(SystemDrawingCommonPackageVersion)"
     />
+
+
+    <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
+    <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
+    <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
+    <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
 </Project>

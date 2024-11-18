@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool appendCalled = false;
 			bool originalMapperCalled = false;
-			ButtonWithControlsMapper.
-				ControlsButtonWithControlsMapper
+			ButtonWithControlsMapperHandler.
+				Mapper
 				.AppendToMapping("MapperTest", (_, _) =>
 				{
 					Assert.True(originalMapperCalled);
@@ -68,8 +68,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool newMapperMethodCalled = false;
 			bool originalMapperCalled = false;
-			ButtonWithControlsMapper.
-				ControlsButtonWithControlsMapper
+			ButtonWithControlsMapperHandler.
+				Mapper
 				.PrependToMapping("MapperTest", (_, _) =>
 				{
 					Assert.False(originalMapperCalled);
@@ -96,9 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool newMapperMethodCalled = false;
 			bool originalMapperCalled = false;
-			ButtonWithControlsMapper.
-				ControlsButtonWithControlsMapper
-				.ModifyMapping("MapperTest", (handler, view, previous) =>
+			ButtonWithControlsMapperHandler.Mapper.ModifyMapping("MapperTest", (handler, view, previous) =>
 				{
 					Assert.False(originalMapperCalled);
 					previous.Invoke(handler, view);
@@ -121,9 +119,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		class ButtonWithControlsMapper : Button
 		{
-			public static IPropertyMapper<ButtonWithControlsMapper, ButtonWithControlsMapperHandler> ControlsButtonWithControlsMapper =
-				new ControlsMapper<ButtonWithControlsMapper, ButtonWithControlsMapperHandler>(ButtonWithControlsMapperHandler.Mapper);
-
 
 			public Action MapperCalled { get; private set; }
 			public ButtonWithControlsMapper(Action mapperCalled)

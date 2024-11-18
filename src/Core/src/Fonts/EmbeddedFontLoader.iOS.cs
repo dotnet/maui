@@ -42,15 +42,21 @@ namespace Microsoft.Maui
 
 				var name = cgFont.PostScriptName;
 
+#pragma warning disable CA1416  // TODO:  'RegisterGraphicsFont' is obsolete on: 'ios' 15.0 and later
+#pragma warning disable CA1422
 				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
 					return name;
+#pragma warning restore CA1422
+#pragma warning restore CA1416
 
 				var uiFont = UIFont.FromName(name, 10);
 				if (uiFont != null)
 					return name;
 
-				// we know error is not null, the NotNullWhen attr is missing in the iOS bindings, ref: https://github.com/xamarin/xamarin-macios/pull/20050
-				throw new NSErrorException(error!);
+				if (error != null)
+					throw new NSErrorException(error);
+				else
+					throw new InvalidOperationException("Unable to load font from the stream.");
 			}
 			catch (Exception ex)
 			{

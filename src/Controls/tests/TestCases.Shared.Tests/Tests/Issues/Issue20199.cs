@@ -14,7 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[Category(UITestCategories.Page)]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public void TitleViewShouldBeVisible()
 		{
 			_ = App.WaitForElement("button");

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Buttons with images don't cover text";
 
 		[Test]
-		[FailsOnIOS("Not generated snapshot for this platform")]
-		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[Category(UITestCategories.Button)]
+		[FailsOnIOSWhenRunningOnXamarinUITest("Not generated snapshot for this platform")]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public void Issue21513Test()
 		{
 			App.WaitForElement("WaitForStubControl");

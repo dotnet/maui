@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Globalization;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
@@ -51,6 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		string Icon { get; }
 	}
 
+	[TypeConverter(typeof(Gh1346FontAwesomeTypeConverter))]
 	public sealed class Gh1346FontAwesome : IGh1346FontIcon
 	{
 		public string Icon { get; }
@@ -71,6 +74,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		public static readonly Gh1346FontAwesome SnowflakeO = new Gh1346FontAwesome('\uf2dc');
+
+		private sealed class Gh1346FontAwesomeTypeConverter : TypeConverter
+		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => false;
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => throw new NotSupportedException();
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> destinationType == typeof(Gh1346FontIconOptions);
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType)
+				=> value switch
+				{
+					Gh1346FontAwesome f => (Gh1346FontIconOptions)f,
+					_ => throw new NotSupportedException(),
+				};
+		}
 	}
 
 	public sealed class Gh1346FontIconOptions

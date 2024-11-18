@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange -= OnFocusChange;
 			platformView.Click -= OnClick;
 			platformView.Touch -= OnTouch;
+			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
 			base.DisconnectHandler(platformView);
 
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusChange += OnFocusChange;
 			platformView.Click += OnClick;
 			platformView.Touch += OnTouch;
+			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 
 			base.ConnectHandler(platformView);
 		}
@@ -51,11 +53,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.PlatformView.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
@@ -88,6 +92,22 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(object? sender, EventArgs e)
 		{
 			VirtualView?.Clicked();
+		}
+
+		void OnPlatformViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			if (sender is not View platformView)
+			{
+				return;
+			}
+
+			if (!this.IsConnected())
+			{
+				platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+				return;
+			}
+
+			ImageHandler.OnPlatformViewAttachedToWindow(this);
 		}
 
 		partial class ImageButtonImageSourcePartSetter

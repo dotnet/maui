@@ -4,6 +4,7 @@ parameters:
   device: '' # the xharness device to use
   apiversion: '' # the iOS device api version to use
   cakeArgs: '' # additional cake args
+  androidConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   artifactName: 'nuget'
@@ -11,9 +12,10 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
   rebootAgent: true
+  poolName: 'Azure Pipelines'
 
 steps:
-  - ${{ if eq(parameters.platform, 'ios')}}:
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
     - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
@@ -28,10 +30,10 @@ steps:
       ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android'))}}:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
-      ${{ if eq(parameters.platform, 'ios')}}:
-        skipAndroidSdks: false
-        skipAndroidImages: true
+      skipProvisioning: true
+      skipAndroidImages : ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst')) }}
+      skipAndroidSdks: ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'))  }}
+      installDefaultAndroidApi: ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'))  }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -79,14 +81,6 @@ steps:
       Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
     displayName: 'Set Platform.Name'
 
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        if [ -f "$HOME/Library/Logs/CoreSimulator/*" ]; then rm -r $HOME/Library/Logs/CoreSimulator/*; fi
-        if [ -f "$HOME/Library/Logs/DiagnosticReports/*" ]; then rm -r $HOME/Library/Logs/DiagnosticReports/*; fi
-      displayName: Delete Old Simulator Logs
-      condition: always()
-      continueOnError: true
-
   - ${{ if eq(parameters.platform, 'windows')}}:
     - pwsh: |
         $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
@@ -96,36 +90,46 @@ steps:
       continueOnError: true
       timeoutInMinutes: 5
 
-  - pwsh: |
-      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
-    displayName: $(Agent.JobName)
-    workingDirectory: ${{ parameters.checkoutDirectory }}
-    condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))
-    retryCountOnTaskFailure: 1
+  # Everything should be release but doing android for now to work around an xharness issue
+  - ${{ if eq(parameters.platform, 'android')}}:
+    - pwsh: |
+        ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.androidConfiguration }}
+      displayName: $(Agent.JobName)
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+      condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))
+      retryCountOnTaskFailure: 1
 
-  - bash: |
-      # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
-      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
-    displayName: $(Agent.JobName)
-    workingDirectory: ${{ parameters.checkoutDirectory }}
-    condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
-    retryCountOnTaskFailure: 1
+  - ${{ if eq(parameters.platform, 'android')}}:
+    - bash: |
+        # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
+        pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.androidConfiguration }}
+      displayName: $(Agent.JobName)
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+      condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
+      retryCountOnTaskFailure: 1
+
+  - ${{ if ne(parameters.platform, 'android')}}:
+    - pwsh: |
+        ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+      displayName: $(Agent.JobName)
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+      condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))
+      retryCountOnTaskFailure: 1
+
+  - ${{ if ne(parameters.platform, 'android')}}:
+    - bash: |
+        # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
+        pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+      displayName: $(Agent.JobName)
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+      condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
+      retryCountOnTaskFailure: 1
+  # Everything should be release but doing android for now to work around an xharness issue
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        suffix=$(date +%Y%m%d%H%M%S)
-        zip -9r "$(LogDirectory)/CoreSimulatorLog_${suffix}.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports_${suffix}.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
-      condition: always()
-      continueOnError: true
-
-
-  - ${{ if eq(parameters.platform, 'ios')}}:
-    - bash: |
-        zip -9r "$(LogDirectory)/CoreSimulatorLog.zip" "$HOME/Library/Logs/CoreSimulator/"
-        zip -9r "$(LogDirectory)/DiagnosticReports.zip" "$HOME/Library/Logs/DiagnosticReports/"
-      displayName: Zip Simulator Logs
+        pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+      displayName: Cleanup and Create Simulator Logs if Test Run Failed To
       condition: always()
       continueOnError: true
 
@@ -143,7 +147,7 @@ steps:
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
-  - ${{ if eq(parameters.rebootAgent, true) }}:
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
     # This must always be placed as the last step in the job
     - template: agent-rebooter/mac.v1.yml@yaml-templates
       parameters:

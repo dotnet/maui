@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "CarouselView doesn't update the CurrentItem on Swipe under strange condition";
+		public override string Issue => "CarouselView does not update the CurrentItem on Swipe under strange condition";
 
 		// Issue9827 (src\ControlGallery\src\Issues.Shared\Issue9827.cs
 		[Test]
@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue9827Test()
 		{
 			App.WaitForNoElement("Pos:0");
+			App.WaitForElement("btnNext");
 			App.Click("btnNext");
 			App.WaitForNoElement("Item 1 with some additional text");
 			App.WaitForNoElement("Pos:1");

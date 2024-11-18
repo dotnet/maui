@@ -69,6 +69,9 @@ namespace Microsoft.Maui.Platform
 			"TextControlForegroundPointerOver",
 			"TextControlForegroundFocused",
 			"TextControlForegroundDisabled",
+			"TextControlButtonForeground",
+			"TextControlButtonForegroundPointerOver",
+			"TextControlButtonForegroundPressed"
 		};
 
 		public static void UpdateCharacterSpacing(this TextBox textBox, ITextStyle textStyle)

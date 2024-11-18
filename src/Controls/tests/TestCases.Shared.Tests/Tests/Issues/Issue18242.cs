@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,8 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Button ImageSource not Scaling as expected";
 
 		[Test]
-		[FailsOnIOS("iOS will be fixed in https://github.com/dotnet/maui/pull/20953")]
-		[FailsOnMac("Catalyst will be fixed in https://github.com/dotnet/maui/pull/20953")]
+		[Category(UITestCategories.Button)]
+		[FailsOnIOSWhenRunningOnXamarinUITest("iOS will be fixed in https://github.com/dotnet/maui/pull/20953")]
+		[FailsOnMacWhenRunningOnXamarinUITest("Catalyst will be fixed in https://github.com/dotnet/maui/pull/20953")]
 		public void Issue18242Test()
 		{
 			App.WaitForElement("WaitForStubControl");

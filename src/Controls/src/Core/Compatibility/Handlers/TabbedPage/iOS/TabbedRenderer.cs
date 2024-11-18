@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TabbedRenderer()
 		{
+			this.DisableiOS18ToolbarTabs();
 			_viewHandlerWrapper = new ViewHandlerDelegator<TabbedPage>(Mapper, CommandMapper, this);
 		}
 
@@ -110,14 +111,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidAppear(bool animated)
 		{
-			Page.SendAppearing();
+			Page?.SendAppearing();
 			base.ViewDidAppear(animated);
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			Page.SendDisappearing();
+			Page?.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -158,7 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIViewController GetViewController(Page page)
 		{
-			if (page.Handler is not IPlatformViewHandler nvh)
+			if (page?.Handler is not IPlatformViewHandler nvh)
 				return null;
 
 			return nvh.ViewController;
@@ -531,7 +532,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
 				tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor : null,
 				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
-				null);
+				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
 		}
 
 		#region IPlatformViewHandler

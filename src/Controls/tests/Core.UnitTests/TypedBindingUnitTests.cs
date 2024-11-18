@@ -1001,7 +1001,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact, Category("[Binding] Complex paths")]
-		[Description("When part of a complex path can not be evaluated during an update, bindables should return to their default value.")]
+		[Description("When part of a complex path cannot be evaluated during an update, bindables should return to their default value.")]
 		public void NullInPathUsesDefaultValue()
 		{
 			var vm = new ComplexMockViewModel
@@ -1028,7 +1028,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact, Category("[Binding] Complex paths")]
-		[Description("When part of a complex path can not be evaluated during an update, bindables should return to their default value.")]
+		[Description("When part of a complex path cannot be evaluated during an update, bindables should return to their default value.")]
 		public void NullContextUsesDefaultValue()
 		{
 			var vm = new ComplexMockViewModel
@@ -1059,7 +1059,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact, Category("[Binding] Complex paths")]
-		[Description("When part of a complex path can not be evaluated during an update, bindables should return to their default value, or TargetNullValue")]
+		[Description("When part of a complex path cannot be evaluated during an update, bindables should return to their default value, or TargetNullValue")]
 		public void NullContextUsesFallbackValue()
 		{
 			var vm = new ComplexMockViewModel

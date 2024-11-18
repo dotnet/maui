@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
 	{
+		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		static bool? _respondsToSafeArea;
 
 		double _lastMeasureHeight = double.NaN;
@@ -33,7 +34,9 @@ namespace Microsoft.Maui.Platform
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
 
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
@@ -134,13 +137,34 @@ namespace Microsoft.Maui.Platform
 			}
 
 			CrossPlatformArrange(bounds);
+			OnLayoutChanged();
 		}
 
 		public override void SetNeedsLayout()
 		{
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
+		}
+
+		private protected void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
+		{
+			if (shouldOnlyInvalidateIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				return;
+			}
+
+			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+			// To a SuperView that's been disposed which will cause a crash when trying to access it
+			if (Window is not null)
+			{
+				this.Superview?.SetNeedsLayout();
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+			}
+			else
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
+			}
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
@@ -173,6 +197,15 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			TryToInvalidateSuperView(true);
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		internal event EventHandler? LayoutChanged;
+
+		private void OnLayoutChanged()
+		{
+			LayoutChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

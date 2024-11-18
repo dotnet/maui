@@ -13,8 +13,12 @@ namespace UITest.Appium
 		{
 			_commandExecutor.AddCommandGroup(new AppiumIOSMouseActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSTouchActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSStepperActions(this));
 		}
 
 		public override ApplicationState AppState
@@ -65,6 +69,12 @@ namespace UITest.Appium
 			{
 				options.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
 			}
+
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			options.AddAdditionalAppiumOption(IOSMobileCapabilityType.ProcessArguments, new Dictionary<string, object>
+			{
+				{ "env", args! }
+			});
 
 			return options;
 		}

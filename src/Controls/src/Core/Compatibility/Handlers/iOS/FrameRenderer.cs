@@ -7,10 +7,21 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
-			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper);
+			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)
+			{
+				[VisualElement.BackgroundColorProperty.PropertyName] = (h, _) => h.SetupLayer(),
+				[VisualElement.BackgroundProperty.PropertyName] = (h, _) => h.SetupLayer(),
+				[Microsoft.Maui.Controls.Frame.BorderColorProperty.PropertyName] = (h, _) => h.SetupLayer(),
+				[Microsoft.Maui.Controls.Frame.CornerRadiusProperty.PropertyName] = (h, _) => h.SetupLayer(),
+				[Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.SetupLayer(),
+				[VisualElement.IsVisibleProperty.PropertyName] = (h, _) => h.SetupLayer(),
+				[Controls.Frame.HasShadowProperty.PropertyName] = (h, _) => h.UpdateShadow(),
+				[Microsoft.Maui.Controls.Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
+			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(VisualElementRendererCommandMapper);
@@ -59,16 +70,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
+		}
 
-			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-				e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
-				e.PropertyName == Microsoft.Maui.Controls.Frame.BorderColorProperty.PropertyName ||
-				e.PropertyName == Microsoft.Maui.Controls.Frame.CornerRadiusProperty.PropertyName ||
-				e.PropertyName == Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty.PropertyName ||
-				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
-				SetupLayer();
-			else if (e.PropertyName == Controls.Frame.HasShadowProperty.PropertyName)
-				UpdateShadow();
+		void UpdateContent()
+		{
+			_actualView.ClearSubviews();
+
+			var content = Element?.Content;
+
+			if (content == null || MauiContext == null)
+				return;
+
+			var platformView = content.ToPlatform(MauiContext);
+			_actualView.AddSubview(platformView);
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -204,10 +218,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		bool _pendingSuperViewSetNeedsLayout;
+
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
+
+			if (Window is not null)
+			{
+				_pendingSuperViewSetNeedsLayout = false;
+				this.Superview?.SetNeedsLayout();
+			}
+			else
+			{
+				_pendingSuperViewSetNeedsLayout = true;
+			}
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (_pendingSuperViewSetNeedsLayout)
+			{
+				this.Superview?.SetNeedsLayout();
+			}
+
+			_pendingSuperViewSetNeedsLayout = false;
 		}
 
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]

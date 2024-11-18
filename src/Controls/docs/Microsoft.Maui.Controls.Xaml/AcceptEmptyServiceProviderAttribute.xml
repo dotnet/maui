@@ -37,7 +37,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.Xaml.AcceptEmptyServiceProviderAttribute" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

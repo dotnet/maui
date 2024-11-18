@@ -5,6 +5,10 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageButtonHandler : ViewHandler<IImageButton, UIButton>
 	{
+		// Because we can't inherit from Button we use the container to handle
+		// Life cycle events and things like monitoring focus changed
+		public override bool NeedsContainer => true;
+
 		readonly ImageButtonProxy _proxy = new();
 
 		protected override UIButton CreatePlatformView()
@@ -41,11 +45,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)

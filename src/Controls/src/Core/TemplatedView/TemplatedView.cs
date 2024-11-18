@@ -1,13 +1,16 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedView']/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
 	public partial class TemplatedView : Compatibility.Layout, IControlTemplated, IContentView
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <summary>Bindable property for <see cref="ControlTemplate"/>.</summary>
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedView), null,
@@ -24,17 +27,23 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
+		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
+
+				// For now we just leave the old path in place to avoid too much change in behavior
+				// All of our types that inherit from TemplatedView overrides LayoutChildren and replaces
+				// this behavior
 				if (child != null)
 					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
 			}
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;
@@ -140,6 +149,12 @@ namespace Microsoft.Maui.Controls
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
+
+		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
+		{
+			base.InvalidateMeasureLegacy(trigger, depth, 1);
+		}
+
 #nullable disable
 
 	}

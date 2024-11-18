@@ -126,6 +126,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		private protected override void DisconnectHandlerCore()
+		{
+			CleanUpResources();
+			base.DisconnectHandlerCore();
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -133,58 +139,64 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
-				if (Element != null)
-				{
-					var templatedItems = TemplatedItemsView.TemplatedItems;
-					templatedItems.CollectionChanged -= OnCollectionChanged;
-					templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
-				}
-
-				if (_dataSource != null)
-				{
-					_dataSource.Dispose();
-					_dataSource = null;
-				}
-
-				if (_tableViewController != null)
-				{
-					_tableViewController.Dispose();
-					_tableViewController = null;
-				}
-
-				if (_headerRenderer != null)
-				{
-					_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-					_headerRenderer = null;
-				}
-				if (_footerRenderer != null)
-				{
-					_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
-					_footerRenderer = null;
-				}
-
-				if (_backgroundUIView != null)
-				{
-					_backgroundUIView.Dispose();
-					_backgroundUIView = null;
-				}
-
-				var headerView = ListView?.HeaderElement as VisualElement;
-				if (headerView != null)
-					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
-				Control?.TableHeaderView?.Dispose();
-
-				var footerView = ListView?.FooterElement as VisualElement;
-				if (footerView != null)
-					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
-				Control?.TableFooterView?.Dispose();
+				CleanUpResources();
 			}
 
 			_disposed = true;
 
 			base.Dispose(disposing);
 		}
+
 		bool _disposed = false;
+
+		void CleanUpResources()
+		{
+			if (Element != null)
+			{
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+				templatedItems.CollectionChanged -= OnCollectionChanged;
+				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+			}
+
+			if (_dataSource != null)
+			{
+				_dataSource.Dispose();
+				_dataSource = null;
+			}
+
+			if (_tableViewController != null)
+			{
+				_tableViewController.Dispose();
+				_tableViewController = null;
+			}
+
+			if (_headerRenderer != null)
+			{
+				_headerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+				_headerRenderer = null;
+			}
+			if (_footerRenderer != null)
+			{
+				_footerRenderer.VirtualView?.DisposeModalAndChildHandlers();
+				_footerRenderer = null;
+			}
+
+			if (_backgroundUIView != null)
+			{
+				_backgroundUIView.Dispose();
+				_backgroundUIView = null;
+			}
+
+			var headerView = ListView?.HeaderElement as VisualElement;
+			if (headerView != null)
+				headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+			Control?.TableHeaderView?.Dispose();
+
+			var footerView = ListView?.FooterElement as VisualElement;
+			if (footerView != null)
+				footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
+			Control?.TableFooterView?.Dispose();
+		}
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
 		{
 			_requestedScroll = null;
@@ -932,7 +944,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					// Let the EstimatedHeight method know to use this value.
 					// Much more efficient than checking the value each time.
 					//_useEstimatedRowHeight = true;
-					var height = (nfloat)req.Request.Height;
+					var height = (nfloat)req.Height;
 					return height > 1 ? height : DefaultRowHeight;
 				}
 
@@ -959,10 +971,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_prototype != null)
 				{
-					var element = _prototype.VirtualView;
-					element?.Handler?.DisconnectHandler();
-					//_prototype?.Dispose();
-					//_prototype = null;
+					_prototype?.DisconnectHandler();
+					_prototype = null;
 				}
 			}
 		}

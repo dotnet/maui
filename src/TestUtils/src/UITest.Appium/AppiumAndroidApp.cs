@@ -10,8 +10,11 @@ namespace UITest.Appium
 		private AppiumAndroidApp(Uri remoteAddress, IConfig config)
 			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumAndroidThemeChangeAction());
+			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAndroidStepperActions(this));
 		}
 
 		public static AppiumAndroidApp CreateAndroidApp(Uri remoteAddress, IConfig config)

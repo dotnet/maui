@@ -11,6 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ScrollView always has a scroll bar on iOS";
 
 		[Test]
+		[Category(UITestCategories.ScrollView)]
 		public void NoScrollbarsTest()
 		{
 			App.WaitForElement("WaitForStubControl");

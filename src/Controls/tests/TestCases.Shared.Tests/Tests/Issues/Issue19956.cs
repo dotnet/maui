@@ -7,6 +7,8 @@ using OpenQA.Selenium.Interactions;
 using NUnit.Framework.Legacy;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
+[Category(UITestCategories.Entry)]
 public class Issue19956: _IssuesUITest
 {
     public Issue19956(TestDevice device) : base(device) { }
@@ -14,7 +16,6 @@ public class Issue19956: _IssuesUITest
     public override string Issue => "Sticky headers and bottom content insets";
 
     [Test]
-	[Category(UITestCategories.Entry)]
 	public void ContentAccountsForStickyHeaders()
     {
 		// This is an iOS Keyboard Scrolling issue.
@@ -54,20 +55,31 @@ public class Issue19956: _IssuesUITest
     {
         var app = App as AppiumApp;
         if (app is null)
+        {
             return;
+        }
 
-        App.Tap("Entry5");
-        ScrollToBottom(app);
-        CheckForBottomEntry(app);
-        KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
+        try
+        {
+            App.Tap("Entry5");
+            ScrollToBottom(app);
+            CheckForBottomEntry(app);
+            KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-        App.Tap("Entry10");
-        ScrollToBottom(app);
-        CheckForBottomEntry(app);
-        KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
+            App.Tap("Entry10");
+            ScrollToBottom(app);
+            CheckForBottomEntry(app);
+            KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-        ScrollToBottom(app);
-        CheckForBottomEntry(app);
+            ScrollToBottom(app);
+            CheckForBottomEntry(app);
+        }
+        finally
+        {
+            //Reset the app so other UITest is in a clean state
+            Reset();
+            FixtureSetup();
+        }
     }
 
     static void ScrollToBottom(AppiumApp app)

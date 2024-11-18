@@ -5,6 +5,7 @@ using Maui.Controls.Sample.Controls;
 using Maui.Controls.Sample.Pages;
 using Maui.Controls.Sample.Services;
 using Maui.Controls.Sample.ViewModels;
+using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,13 +18,9 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+
 #if COMPATIBILITY_ENABLED
 using Microsoft.Maui.Controls.Compatibility.Hosting;
-#endif
-
-
-#if NET6_0_OR_GREATER
-using Microsoft.AspNetCore.Components.WebView.Maui;
 #endif
 
 #if ANDROID
@@ -38,6 +35,8 @@ namespace Maui.Controls.Sample
 	public static class MauiProgram
 	{
 		static bool UseMauiGraphicsSkia = false;
+
+		static bool UseCollectionView2 = true;
 
 		enum PageType { Main, Blazor, Shell, Template, FlyoutPage, TabbedPage }
 		readonly static PageType _pageType = PageType.Main;
@@ -57,6 +56,18 @@ namespace Maui.Controls.Sample
 #endif
 			appBuilder.UseMauiApp<XamlApp>();
 			var services = appBuilder.Services;
+
+			if (UseCollectionView2)
+			{
+#if IOS || MACCATALYST
+
+				appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+				});
+#endif
+			}
 
 			if (UseMauiGraphicsSkia)
 			{
@@ -112,11 +123,10 @@ namespace Maui.Controls.Sample
 						{"Logging:LogLevel:Default", "Warning"}
 					});
 
-#if NET6_0_OR_GREATER
 			services.AddMauiBlazorWebView();
 #if DEBUG
 			services.AddBlazorWebViewDeveloperTools();
-#endif
+			services.AddHybridWebViewDeveloperTools();
 #endif
 
 			services.AddLogging(logging =>
@@ -147,12 +157,7 @@ namespace Maui.Controls.Sample
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
 					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
-					PageType.Blazor =>
-#if NET6_0_OR_GREATER
-						typeof(BlazorPage),
-#else
-						throw new NotSupportedException("Blazor requires .NET 6 or higher."),
-#endif
+					PageType.Blazor => typeof(BlazorPage),
 					_ => throw new Exception(),
 				});
 

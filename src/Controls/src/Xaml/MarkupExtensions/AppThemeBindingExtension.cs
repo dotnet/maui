@@ -6,6 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Default))]
+	[RequireService(
+		[typeof(IProvideValueTarget),
+		 typeof(IValueConverterProvider),
+		 typeof(IXmlLineInfoProvider),
+		 typeof(IConverterOptions)])]
 	public class AppThemeBindingExtension : IMarkupExtension<BindingBase>
 	{
 		object _default;
