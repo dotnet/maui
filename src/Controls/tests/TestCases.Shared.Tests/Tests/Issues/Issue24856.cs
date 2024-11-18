@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ImageButtonAspectFitWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
-
+			App.Tap("UpdateAspect");
 			VerifyScreenshot();
 		}
 	}

@@ -10,16 +10,20 @@
         AutomationId="WaitForStubControl"
         Text="Issue 24856"/>
       <ImageButton 
+        x:Name="TestImageButton"
         Source="avatar.png" 
         CornerRadius="10" 
         BorderColor="Red" 
         BorderWidth="3" 
-        Aspect="AspectFit" 
         BackgroundColor="Yellow"
         WidthRequest="80"
         HeightRequest="80" 
         HorizontalOptions="StartAndExpand" 
         Margin="24"/>
+      <Button 
+        AutomationId="UpdateAspect"
+        Text="Update ImageButton Aspect"
+        Clicked="OnButtonClicked"/>
     </VerticalStackLayout>
   </ContentPage.Content>
 </controls:TestContentPage>

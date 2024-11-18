@@ -13,5 +13,10 @@
 		{
 
 		}
+
+		void OnButtonClicked(object sender, EventArgs e)
+		{
+			TestImageButton.Aspect = Aspect.AspectFit;
+		}
 	}
 }
