@@ -6,12 +6,9 @@ using System.Xml;
 using Microsoft.Maui.Controls.Xaml;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 
 using System.CodeDom.Compiler;
 
-using static Microsoft.Maui.Controls.SourceGen.TypeHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 

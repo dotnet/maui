@@ -5,24 +5,45 @@ using System.Text;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-static class TypeHelpers
+static class XmlTypeExtensions
 {
 	public static string GetTypeName(XmlType xmlType, SourceGenContext context, bool globalAlias = true)
 		=> GetTypeName(xmlType, context.Compilation, context.XmlnsCache, context.TypeCache, globalAlias);
 
 	public static ITypeSymbol? ResolveTypeSymbol(this XmlType xmlType, SourceGenContext context)
 	{
-		var fqn = GetTypeName(xmlType, context, globalAlias: false);
-		return context.Compilation.GetTypeByMetadataName(fqn);
+		if (TryResolveTypeSymbol(xmlType, context, out var symbol))
+			return symbol!;
+		//FIXME reportDiagnostic
+		// throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");
+		return null;
 	}
 
-    public static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
+	public static bool TryResolveTypeSymbol(this XmlType xmlType, SourceGenContext context, out ITypeSymbol? symbol)
+	{
+		var xmlnsDefinitions = context.XmlnsCache.XmlnsDefinitions;
+		symbol = xmlType.GetTypeReference(
+			xmlnsDefinitions,
+			context.Compilation.AssemblyName!, 
+			typeInfo =>
+			{
+				var t = context.Compilation.GetTypeByMetadataName($"{typeInfo.clrNamespace}.{typeInfo.typeName}");
+				if (t is not null && t.IsPublic())
+					return t;
+				return null;
+			}
+		);
+		return symbol is not null;		
+	}
+
+    public static string GetTypeName(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
 	{
 		if (typeCache.TryGetValue(xmlType, out string returnType))
 		{
@@ -33,19 +54,14 @@ static class TypeHelpers
 
 		var ns = GetClrNamespace(xmlType.NamespaceUri);
 		if (ns != null)
-		{
 			returnType = $"{ns}.{xmlType.Name}";
-		}
 		else
-		{
 			// It's an external, non-built-in namespace URL.
 			returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
-		}
 
 		if (xmlType.TypeArguments != null)
-		{
 			returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
-		}
+
 		typeCache[xmlType] = returnType;
 		if (globalAlias)
 			returnType = $"global::{returnType}";
@@ -55,16 +71,12 @@ static class TypeHelpers
 	static string? GetClrNamespace(string namespaceuri)
 	{
 		if (namespaceuri == XamlParser.X2009Uri)
-		{
 			return "System";
-		}
 
 		if (namespaceuri != XamlParser.X2006Uri &&
 			!namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) &&
 			!namespaceuri.StartsWith("using:", StringComparison.InvariantCulture))
-		{
 			return null;
-		}
 
 		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 	}

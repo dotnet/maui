@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
-using static Microsoft.Maui.Controls.SourceGen.TypeHelpers;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
