@@ -7,9 +7,9 @@
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
     <DotNetFeedUrl>https://dotnetcli.azureedge.net/dotnet</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
-    <PublicSdk Condition=" '$(PublicSdk)' == ''">false</PublicSdk>
+    <PublicSdk Condition=" '$(PublicSdk)' == ''">true</PublicSdk>
     <PrivateSdk>$(PrivateBuild)</PrivateSdk>
-    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">true</PrivateSdk>
+    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
