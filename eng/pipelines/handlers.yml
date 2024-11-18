@@ -94,11 +94,13 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
+        poolDemands: 
+          - Agent.OS -equals Windows_NT
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
-        demands:
+        poolDemands:
           - macOS.Name -equals Sonoma
           - macOS.Architecture -equals x64
         artifact: build-macos

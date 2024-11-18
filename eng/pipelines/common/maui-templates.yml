@@ -52,7 +52,7 @@ jobs:
           ${{ BuildPlatform.name }}:
             POOL_NAME: ${{ BuildPlatform.poolName }}
             POOL_VIMAGE: ${{ BuildPlatform.vmImage }}
-            POOL_DEMANDS: ${{ BuildPlatform.demands }}
+            POOL_DEMANDS: ${{ BuildPlatform.poolDemands }}
             PLATFORM_NAME: ${{ lower(BuildPlatform.name) }}
 
     pool:
