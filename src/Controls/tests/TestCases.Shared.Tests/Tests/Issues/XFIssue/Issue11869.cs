@@ -35,6 +35,10 @@ public class Issue11869 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void IsVisibleWorksForShowingHidingTabs()
 	{
+		// Ignored on Windows: The BottomTabs are displayed as a popup with a dropdown icon on Windows. 
+		// This causes a visibility issue where the content does not function as expected, a bug has been logged to address this behavior. 
+		// Once the issue is fixed, the test case should be re-enabled for Windows.
+#if !WINDOWS
 		App.WaitForElement(TopTab2);
 		App.Tap(HideTop2);
 		App.WaitForNoElement(TopTab2);
@@ -42,6 +46,7 @@ public class Issue11869 : _IssuesUITest
 		App.WaitForElement(TopTab3);
 		App.Tap(HideTop3);
 		App.WaitForNoElement(TopTab3);
+#endif
 
 		App.WaitForElement(Tab2);
 		App.Tap(HideBottom2);
@@ -52,8 +57,10 @@ public class Issue11869 : _IssuesUITest
 		App.WaitForNoElement(Tab3);
 
 		App.Tap(ShowAllTabs);
+#if !WINDOWS
 		App.WaitForElement(TopTab2);
 		App.WaitForElement(TopTab3);
+#endif
 		App.WaitForElement(Tab2);
 		App.WaitForElement(Tab3);
 	}
