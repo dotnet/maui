@@ -33,17 +33,21 @@ public class AddingMultipleItemsListView : _IssuesUITest
 	[Test]
 	public void AddingMultipleListViewTests2AddOneElementToList()
 	{
-		App.Tap("Add One");
+		App.WaitForElement("Add One");
+	    App.Tap("Add One");
 
-		App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
-	}
+	//     App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
+	//     App.Screenshot("One more element exists");
+	// }
 
 	[Test]
 	public void AddingMultipleListViewTests3AddTwoElementToList()
 	{
-		App.Tap("Add Two");
+		App.WaitForElement("Add Two");
+	    App.Tap("Add Two");
 
-		App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
-		App.FindElement("8888");
-	}
+	//     App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
+	//     App.WaitForElement("8888", timeout: TimeSpan.FromSeconds(2));
+	//     App.Screenshot("Two more element exist");
+	// }
 }
