@@ -17,7 +17,6 @@ public class AddingMultipleItemsListView : _IssuesUITest
 	public void AddingMultipleListViewTests1AllElementsPresent()
 	{
 		App.WaitForElement("Big Job");
-		App.FindElement("Big Job");
 		App.FindElement("Smaller Job");
 		App.FindElement("Add On Job");
 		App.FindElement("Add One");
@@ -36,9 +35,8 @@ public class AddingMultipleItemsListView : _IssuesUITest
 		App.WaitForElement("Add One");
 	    App.Tap("Add One");
 
-	//     App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
-	//     App.Screenshot("One more element exists");
-	// }
+	    App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
+	}
 
 	[Test]
 	public void AddingMultipleListViewTests3AddTwoElementToList()
@@ -46,8 +44,7 @@ public class AddingMultipleItemsListView : _IssuesUITest
 		App.WaitForElement("Add Two");
 	    App.Tap("Add Two");
 
-	//     App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
-	//     App.WaitForElement("8888", timeout: TimeSpan.FromSeconds(2));
-	//     App.Screenshot("Two more element exist");
-	// }
+	    App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
+	    App.FindElement("8888");
+	}
 }
