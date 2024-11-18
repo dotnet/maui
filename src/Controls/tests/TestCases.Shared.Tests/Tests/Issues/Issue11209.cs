@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue11209 : _IssuesUITest
+	public class Issue11209 : _IssuesUITest
 	{
 		const string SwipeViewContent = "SwipeViewContent";
 		const string Success = "Success";

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public class DefaultCell2 : ItemsViewCell2
 	{
 		//public const string ReuseId = "Microsoft.Maui.Controls.DefaultCell2";
-		
+
 		public UILabel Label { get; }
 
 		protected NSLayoutConstraint Constraint { get; set; }

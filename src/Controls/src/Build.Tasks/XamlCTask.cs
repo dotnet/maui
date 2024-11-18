@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									LoggingHelperExtensions.LoggedErrors = null;
 								}
 							}
-							
+
 							if (initComp.HasCustomAttributes)
 							{
 								var suppressMessageAttribute = initComp.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute");
