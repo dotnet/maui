@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -108,6 +109,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					{
 						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
+						if (item.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null)
+						{
+							TintColor = UIColor.FromRGBA(fontImageSource.Color.Red, fontImageSource.Color.Green, fontImageSource.Color.Blue, fontImageSource.Color.Alpha);
+						}
 					});
 				}
 			}
@@ -126,6 +131,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Image = null;
 			}
 		}
+
+		internal static UIImage ConvertFontImageSourceToUIImage(FontImageSource fontImageSource)
+{
+    var size = new CGSize(50, 50); // Set the desired image size
+
+    UIGraphics.BeginImageContextWithOptions(size, false, 0); // Create a new context
+    var context = UIGraphics.GetCurrentContext();
+
+    // Set up the color and font to use for the icon
+    var font = UIFont.FromName(fontImageSource.FontFamily, (float)fontImageSource.Size);
+    var color = UIColor.FromRGBA(fontImageSource.Color.Red, fontImageSource.Color.Green, fontImageSource.Color.Blue, fontImageSource.Color.Alpha); // Convert Color to UIColor
+    color.SetFill();
+
+    // Render the icon (draw the glyph)
+    var text = fontImageSource.Glyph; // Get the glyph
+    var rect = new CGRect(0, 0, size.Width, size.Height);
+#pragma warning disable CA1422 // Validate platform compatibility
+			text.DrawString(rect, font);
+#pragma warning restore CA1422 // Validate platform compatibility
+
+			// Convert the image context to UIImage
+			UIImage image = UIGraphics.GetImageFromCurrentImageContext();
+    UIGraphics.EndImageContext(); // Clean up
+
+    return image;
+}
 
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
