@@ -228,11 +228,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				top += spacing;
 			}
 
-			// If we're at the last section, we don't need to add the right inset
-			var resolvedRightInset = section >= (collectionView.NumberOfSections() - 1) ? 0 : uIEdgeInsets.Right;
-
 			return new UIEdgeInsets(top, left,
-				uIEdgeInsets.Bottom, resolvedRightInset);
+				uIEdgeInsets.Bottom, uIEdgeInsets.Right);
 		}
 
 		// These measurement methods are only necessary for iOS 10 and lower
