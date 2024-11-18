@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Platform
 			void OnPageBusy(IView sender, bool enabled)
 			{
 				// Verify that the page making the request is part of this activity 
-				if (!PageIsInThisContext(sender))
+				if (!PageIsInThisContext(sender) && enabled)
 				{
 					return;
 				}
