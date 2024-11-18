@@ -14,7 +14,6 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumCatalystTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystAlertActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystSpecificActions(this));
-			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
 		}
 
 		public override ApplicationState AppState
