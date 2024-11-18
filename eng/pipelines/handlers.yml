@@ -98,6 +98,9 @@ parameters:
       - name: macOS
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
+        demands:
+          - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
         artifact: build-macos
 
   - name: RunTemplatePlatforms

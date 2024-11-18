@@ -52,14 +52,13 @@ jobs:
           ${{ BuildPlatform.name }}:
             POOL_NAME: ${{ BuildPlatform.poolName }}
             POOL_VIMAGE: ${{ BuildPlatform.vmImage }}
+            POOL_DEMANDS: ${{ BuildPlatform.demands }}
             PLATFORM_NAME: ${{ lower(BuildPlatform.name) }}
 
     pool:
       name: $(POOL_NAME)
       vmImage: $(POOL_VIMAGE)
-      demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals arm64
+      demands: $(POOL_DEMANDS)
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:
