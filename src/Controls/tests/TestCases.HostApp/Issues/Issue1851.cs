@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1851, "ObservableCollection in ListView gets Index out of range when removing item", PlatformAffected.Android)]
 	public class Issue1851 : TestContentPage
 	{
@@ -61,7 +56,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class CellTemplate1851 : ViewCell
 		{
 			protected override void OnBindingContextChanged()
@@ -76,7 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class Grouping1851<TKey, TElement> : ObservableCollection<TElement>
 		{
 			public Grouping1851(TKey key, IEnumerable<TElement> items)

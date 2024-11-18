@@ -1,10 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -133,7 +127,7 @@ namespace Maui.Controls.Sample.Issues
 				get; set;
 			}
 		}
-	
+
 		class PhotoItem
 		{
 			public string Image { get; set; }

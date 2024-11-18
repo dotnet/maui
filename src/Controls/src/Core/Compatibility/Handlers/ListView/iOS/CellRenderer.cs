@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.UpdateValue(property);
 			var args = new PropertyChangedEventArgs(property);
 			if (VirtualView is BindableObject bindableObject &&
-				GetRealCell(bindableObject) is CellTableViewCell ctv )
+				GetRealCell(bindableObject) is CellTableViewCell ctv)
 			{
 				ctv.HandlePropertyChanged(bindableObject, args);
 			}
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.Invoke(command, args);
 
-			if (command == "ForceUpdateSizeRequested" && 
+			if (command == "ForceUpdateSizeRequested" &&
 				VirtualView is BindableObject bindableObject &&
 				GetRealCell(bindableObject) is UITableViewCell ctv &&
 				_tableView is not null &&

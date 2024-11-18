@@ -4,7 +4,7 @@ using AppKit;
 using CoreGraphics;
 using Foundation;
 
-#pragma warning disable CA1422 
+#pragma warning disable CA1422
 
 namespace GraphicsTester.Mac
 {

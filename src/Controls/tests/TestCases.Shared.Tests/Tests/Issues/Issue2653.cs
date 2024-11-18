@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues 
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue2653 : _IssuesUITest
 	{
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void ZIndexWhenInsertingChildren()
 		{
 			App.WaitForNoElement(ButtonText);

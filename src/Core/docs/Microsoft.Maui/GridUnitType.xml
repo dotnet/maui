@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control how the <see cref="P:Microsoft.Maui.GridLength.Value" /> property is interpreted for row and column definitions.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Absolute">
@@ -45,7 +44,6 @@
       <MemberValue>0</MemberValue>
       <Docs>
         <summary>Interpret the <see cref="P:Microsoft.Maui.GridLength.Value" /> property value as the number of device-specific units.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Auto">
@@ -71,7 +69,6 @@
       <MemberValue>2</MemberValue>
       <Docs>
         <summary>Ignore the <see cref="P:Microsoft.Maui.GridLength.Value" /> property value and choose a size that fits the children of the row or column.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Star">
@@ -96,8 +93,8 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>Interpret the <see cref="P:Microsoft.Maui.GridLength.Value" /> property value as a proportional weight, to be laid out after rows and columns with <see cref="F:Microsoft.Maui.GridUnitType.Absolute" /> or <see cref="F:Microsoft.Maui.GridUnitType.Auto" /> are accounted for.</summary>
-        <remarks>After all the rows and columns of type <see cref="F:Microsoft.Maui.GridUnitType.Absolute" /> and <see cref="F:Microsoft.Maui.GridUnitType.Auto" /> are laid out, each of the corresponding remaining rows or columns, which are of type <see cref="F:Microsoft.Maui.GridUnitType.Star" />, receive a fraction of the remaining available space. This fraction is determined by dividing each row's or column's <see cref="P:Microsoft.Maui.GridLength.Value" /> property value by the sum of all the row or column <see cref="P:Microsoft.Maui.GridLength.Value" /> property values, correspondingly, including its own.</remarks>
+        <summary>Interpret the <see cref="P:Microsoft.Maui.GridLength.Value" /> property value as a proportional weight, to be arranged after rows and columns with <see cref="F:Microsoft.Maui.GridUnitType.Absolute" /> or <see cref="F:Microsoft.Maui.GridUnitType.Auto" /> are accounted for.</summary>
+        <remarks>After all the rows and columns of type <see cref="F:Microsoft.Maui.GridUnitType.Absolute" /> and <see cref="F:Microsoft.Maui.GridUnitType.Auto" /> are arranged, each of the corresponding remaining rows or columns, which are of type <see cref="F:Microsoft.Maui.GridUnitType.Star" />, receive a fraction of the remaining available space. This fraction is determined by dividing each row's or column's <see cref="P:Microsoft.Maui.GridLength.Value" /> property value by the sum of all the row or column <see cref="P:Microsoft.Maui.GridLength.Value" /> property values, correspondingly, including its own.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -1,11 +1,6 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1355, "Setting Main Page in quick succession causes crash on Android",
 		PlatformAffected.Android)]
 	public class Issue1355 : TestContentPage
@@ -28,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			var page = new ContentPage
 			{
-				Content = new Label { Text = Success },
+				Content = new Label { AutomationId = Success, Text = Success },
 				Title = $"CreatePage Iteration: {_runCount}"
 			};
 

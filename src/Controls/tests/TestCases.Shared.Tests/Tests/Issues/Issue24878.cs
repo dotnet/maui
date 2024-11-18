@@ -16,7 +16,7 @@ public class Issue24878 : _IssuesUITest
 	public void ToolbarItemsShouldBeVisible()
 	{
 		App.WaitForElement("label");
-		
+
 		VerifyScreenshot();
 	}
 }

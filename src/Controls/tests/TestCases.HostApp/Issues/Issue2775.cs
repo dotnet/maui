@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2775, "ViewCell background conflicts with ListView Semi-Transparent and Transparent backgrounds")]
 	public class Issue2775 : TestContentPage
 	{
@@ -70,7 +63,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+
 		internal class ContextActionsCell : ViewCell
 		{
 			public ContextActionsCell()
@@ -82,7 +75,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		internal class NormalCell : ViewCell
 		{
 			public NormalCell()
@@ -103,7 +96,7 @@ namespace Maui.Controls.Sample.Issues
 			return itemList;
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class ListItemViewModel
 		{
 			public string Name { get; set; }

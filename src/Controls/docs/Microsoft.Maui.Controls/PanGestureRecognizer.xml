@@ -19,7 +19,6 @@
   </Interfaces>
   <Docs>
     <summary>A gesture recognizer for panning content that is larger than its parent view.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.PanGestureRecognizer" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PanUpdated">
@@ -56,7 +54,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the pan gesture changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPan">
@@ -93,7 +90,6 @@
         <param name="totalY">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="gestureId">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPanCanceled">
@@ -126,7 +122,6 @@
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="gestureId">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPanCompleted">
@@ -159,7 +154,6 @@
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="gestureId">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPanStarted">
@@ -192,7 +186,6 @@
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="gestureId">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TouchPoints">
@@ -212,8 +205,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the number of touch points in the gesture.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TouchPointsProperty">
@@ -233,7 +224,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.PanGestureRecognizer.TouchPoints" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

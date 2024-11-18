@@ -42,7 +42,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new instance of a TapGestureRecognizer object.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -76,7 +75,6 @@
       <Docs>
         <param name="tappedCallback">An action whose first argument is the View the recognizer is associated with and whose second argument is the callback parameter.</param>
         <summary>Initializes a new instance of a TapGestureRecognizer object with a parameterized callback.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -110,7 +108,6 @@
       <Docs>
         <param name="tappedCallback">An action whose first argument is the View the recognizer is associated with.</param>
         <summary>Initializes a new instance of a TapGestureRecognizer object with a callback.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Command">
@@ -135,7 +132,6 @@
       </ReturnValue>
       <Docs>
         <summary>The Command to invoke when the gesture has been triggered by the user. This is a bindable property.</summary>
-        <value>To be added.</value>
         <remarks>The object passed to the Command will be the contents of <see cref="P:Microsoft.Maui.Controls.TapGestureRecognizer.CommandParameter" /></remarks>
       </Docs>
     </Member>
@@ -161,8 +157,6 @@
       </ReturnValue>
       <Docs>
         <summary>An object to be passed to the TappedCallback. This is a bindable property.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandParameterProperty">
@@ -187,7 +181,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the CommandParameter bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandProperty">
@@ -212,7 +205,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Command bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NumberOfTapsRequired">
@@ -238,7 +230,6 @@
       <Docs>
         <summary>The number of taps required to trigger the callback. This is a bindable property.</summary>
         <value>The number of taps to recognize. The default value is 1.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NumberOfTapsRequiredProperty">
@@ -263,7 +254,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the NumberOfTapsRequired bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendTapped">
@@ -291,7 +281,6 @@
       <Docs>
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Tapped">
@@ -316,7 +305,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the user taps.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TappedCallback">
@@ -417,7 +405,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the TappedCallbackParameter bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TappedCallbackProperty">
@@ -450,7 +437,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the TappedCallback bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

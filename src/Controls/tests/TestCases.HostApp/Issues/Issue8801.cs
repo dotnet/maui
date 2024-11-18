@@ -1,17 +1,9 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 8801, "[Android] Attempt to read from field 'int android.view.ViewGroup$LayoutParams.width' on a null object reference",
 		PlatformAffected.Android, navigationBehavior: NavigationBehavior.SetApplicationRoot)]
 	public class Issue8801 : TestContentPage
@@ -211,7 +203,7 @@ namespace Maui.Controls.Sample.Issues
 					}
 					else
 					{
-						var rootGrid = rootPage.Content as  Microsoft.Maui.Controls.Compatibility.Grid;
+						var rootGrid = rootPage.Content as Microsoft.Maui.Controls.Compatibility.Grid;
 						popupStack.Layout(new Rect(x, y, popupStack.WidthRequest, height));
 						rootGrid.Children.Add(popupStack);
 						popupStack.Parent = rootGrid;

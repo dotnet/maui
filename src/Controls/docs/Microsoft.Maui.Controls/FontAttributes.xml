@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>Enumerates values that describe font styles.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Bold">

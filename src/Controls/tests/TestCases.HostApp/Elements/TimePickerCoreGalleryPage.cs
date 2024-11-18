@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample;
 
 internal class TimePickerCoreGalleryPage : CoreGalleryPage<TimePicker>

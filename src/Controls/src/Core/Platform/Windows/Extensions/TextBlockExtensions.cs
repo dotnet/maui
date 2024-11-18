@@ -34,7 +34,13 @@ namespace Microsoft.Maui.Controls.Platform
 					if (label.FormattedText != null)
 						platformControl.UpdateInlines(label);
 					else
+					{
+						if (platformControl.TextHighlighters.Count > 0)
+						{
+							platformControl.TextHighlighters.Clear();
+						}
 						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					}
 					break;
 			}
 		}

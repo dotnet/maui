@@ -1,6 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 22042, "[Android] Border Stroke GradiantBrush can only switch to another gradiantbrush", PlatformAffected.Android)]
 
 public partial class Issue22042 : ContentPage

@@ -1,6 +1,3 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample;
 
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XC", 0126, nameof(ResourceDictMissingKey), "");
 		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XC", 0127, nameof(XKeyNotLiteral), "");
 		public static BuildExceptionCode StaticResourceSyntax = new BuildExceptionCode("XC", 0128, nameof(StaticResourceSyntax), "");
-		
+
 		//CSC equivalents
 		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning
 
