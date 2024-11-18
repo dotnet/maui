@@ -178,20 +178,7 @@ namespace Microsoft.Maui.Controls
 		public int CursorPosition
 		{
 			get { return (int)GetValue(CursorPositionProperty); }
-			set
-			{
-				// Note: this property (and SelectionLength) will always raise change events when set. On platforms like WinUI we 
-				// need to always push the xplat -> native value flow in scenarios such as "select all text on focus". If we 
-				// don't do this the native control will handle the input event and move the cursor after we set the selection
-				// length/cursor position, which is not the desired behavior.
-				bool forceHandlerUpdate = (int)GetValue(CursorPositionProperty) == value;
-				SetValue(CursorPositionProperty, value);
-
-				if (forceHandlerUpdate)
-				{
-					Handler?.UpdateValue(nameof(CursorPosition));
-				}
-			}
+			set { SetValue(CursorPositionProperty, value); }
 		}
 
 		/// <summary>
@@ -201,16 +188,7 @@ namespace Microsoft.Maui.Controls
 		public int SelectionLength
 		{
 			get { return (int)GetValue(SelectionLengthProperty); }
-			set 
-			{
-				bool forceHandlerUpdate = (int)GetValue(SelectionLengthProperty) == value;
-				SetValue(SelectionLengthProperty, value);
-
-				if (forceHandlerUpdate)
-				{
-					Handler?.UpdateValue(nameof(SelectionLength));
-				}
-			}
+			set { SetValue(SelectionLengthProperty, value); }
 		}
 
 		/// <summary>
@@ -292,6 +270,27 @@ namespace Microsoft.Maui.Controls
 		{
 			get => Text;
 			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
+		{
+			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
+
+			// Note: these properties will always raise change events when set. On platforms like WinUI we 
+			// need to always push the xplat -> native value flow in scenarios such as "select all text on focus". If we 
+			// don't do this the native control will handle the input event and move the cursor after we set the selection
+			// length/cursor position, which is not the desired behavior.
+			if (!changed)
+			{
+				if (property.PropertyName == nameof(CursorPosition))
+				{
+					Handler?.UpdateValue(nameof(CursorPosition));
+				}
+				if (property.PropertyName == nameof(SelectionLength))
+				{
+					Handler?.UpdateValue(nameof(SelectionLength));
+				}
+			}
 		}
 	}
 }
