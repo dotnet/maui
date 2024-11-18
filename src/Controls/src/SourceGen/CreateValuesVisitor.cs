@@ -9,8 +9,6 @@ using Microsoft.CodeAnalysis.Text;
 
 using System.CodeDom.Compiler;
 
-using static Microsoft.Maui.Controls.SourceGen.TypeHelpers;
-
 namespace Microsoft.Maui.Controls.SourceGen;
 
 class CreateValuesVisitor : IXamlNodeVisitor
