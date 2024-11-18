@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdating(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (ItemsView is not CarouselView carousel)
+			if (ItemsSource.ItemCount == 0 || ItemsView is not CarouselView carousel)
 			{
 				return;
 			}
@@ -366,6 +366,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			SetPosition(targetPosition);
 			SetCurrentItem(targetPosition);
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+
+			}
+			else
+			{
+				//Since we can be removing the item that is already created next to the current item we need to update the visible cells
+				if (ItemsView.Loop)
+				{
+					CollectionView.ReloadItems(new NSIndexPath[] { GetScrollToIndexPath(targetPosition) });
+				}
+			}
+
+			ScrollToPosition(targetPosition, targetPosition, false, true);
+
 		}
 
 		int GetPositionWhenAddingItems(int carouselPosition, int currentItemPosition)
@@ -476,7 +492,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
+			if (goToPosition != carouselPosition || forceScroll || carouselPosition == 0)
 			{
 				_gotoPosition = goToPosition;
 				carousel.ScrollTo(goToPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
@@ -796,7 +812,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var incrementAbs = Math.Abs(increment);
 
 			int goToPosition;
-			if (diffToStart < incrementAbs)
+			if (diffToStart <= incrementAbs)
 			{
 				goToPosition = centerIndexPath.Row - diffToStart;
 			}
@@ -897,7 +913,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		int GetCorrectedIndex(int indexToCorrect)
 		{
 			var itemsCount = GetItemsSourceCount();
-			if ((indexToCorrect < itemsCount && indexToCorrect >= 0) || itemsCount == 0)
+			if (itemsCount == 0)
+			{
+				return 0;
+			}
+
+			if (indexToCorrect < itemsCount && indexToCorrect >= 0)
 			{
 				return indexToCorrect;
 			}
