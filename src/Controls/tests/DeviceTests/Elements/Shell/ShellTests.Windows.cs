@@ -541,6 +541,31 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Navigate back and forth doesn't crash")]
+		public async Task NavigateBackAndForthDoesntCrash()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				var secondPage = new ContentPage();
+
+				for (int i = 0; i < 5; i++)
+				{
+					await shell.Navigation.PushAsync(secondPage, false);
+					await Task.Delay(100);
+					await shell.Navigation.PopToRootAsync(false);
+					await Task.Delay(100);
+				}
+				Assert.NotNull(shell.Handler);
+			});
+		}
+
 		[Fact(DisplayName = "Shell Toolbar With Only MenuBarItems Is Visible")]
 		public async Task ShellToolbarWithOnlyMenuBarItemsIsVisible()
 		{
