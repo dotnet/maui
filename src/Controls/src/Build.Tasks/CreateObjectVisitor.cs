@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					foreach (var n in en.CollectionItems)
 						n.Accept(visitor, cnode);
 				}
-				
+
 				var il = new ArrayExtension().ProvideValue(node, Module, Context, out typeref);
 				var vardef = new VariableDefinition(typeref);
 				Context.Variables[node] = vardef;

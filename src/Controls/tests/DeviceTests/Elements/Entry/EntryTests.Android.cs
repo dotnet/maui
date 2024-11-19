@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await SetValueAsync<string, EntryHandler>(entry, longText, SetPlatformText);
-			
+
 			Assert.Equal(longText[..4], entry.Text);
 		}
 	}

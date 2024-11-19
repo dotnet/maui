@@ -27,7 +27,8 @@ public class Issue7240 : TestShell
 						},
 						new Label()
 						{
-							Text = $"Page Count:{pageCount}"
+							Text = $"Page Count:{pageCount}",
+							AutomationId=$"Page Count:{pageCount}"
 						}
 					}
 			   };

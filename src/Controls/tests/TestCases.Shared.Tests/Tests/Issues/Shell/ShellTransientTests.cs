@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ValidateBasicServiceLifetimePageBehavior()
-		{			
+		{
 			// Navigate to Transient Page for the First time
 			App.WaitForElement("NewPage");
 

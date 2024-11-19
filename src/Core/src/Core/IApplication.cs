@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 #else
 		void ActivateWindow(IWindow window) { }
 #endif
-		
+
 
 		/// <summary>
 		/// Gets the current requested theme by the system for your application. 
