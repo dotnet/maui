@@ -54,7 +54,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
-			additionalDotNetBuildParams.Split("").ToList().ForEach(p => buildProps.Add(p));
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
 		}
 
 		string target = shouldPack ? "Pack" : "";
@@ -150,7 +150,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
-			additionalDotNetBuildParams.Split("").ToList().ForEach(p => buildProps.Add(p));
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
 		}
 
 		string target = shouldPack ? "Pack" : "";
@@ -305,7 +305,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		if (additionalDotNetBuildParams is not "" and not null)
 		{
-			additionalDotNetBuildParams.Split("").ToList().ForEach(p => buildProps.Add(p));
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
 		}
 		
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
