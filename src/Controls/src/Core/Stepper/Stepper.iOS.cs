@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Maui.Controls.Stepper;
+namespace Microsoft.Maui.Controls;
 
 public class Stepper.iOS
 {
