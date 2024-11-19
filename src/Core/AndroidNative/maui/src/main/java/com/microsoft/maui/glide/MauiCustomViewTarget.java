@@ -51,8 +51,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
         if (logger.isVerboseLoggable) logger.v("onLoadFailed: " + resourceLogIdentifier);
 
-        // trigger the callback out of this target
-        post(() -> callback.onComplete(false, errorDrawable, this::clear), true);
+        callback.onComplete(false, errorDrawable, null);
     }
 
     @Override
@@ -66,24 +65,6 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         // set the image
         this.view.setImageDrawable(resource);
 
-        // trigger the callback out of this target
-        post(() -> callback.onComplete(true, resource, this::clear), true);
-    }
-
-    private void post(Runnable runnable, boolean yieldExecution) {
-        if (!yieldExecution && Looper.getMainLooper().isCurrentThread()) {
-            runnable.run();
-            return;
-        }
-
-        view.post(runnable);
-    }
-
-    private void clear() {
-        //post(() -> {
-            // TODO: Explicitly release image
-            // https://github.com/dotnet/maui/issues/6464
-            // https://github.com/dotnet/maui/pull/6543
-        //}, false);
+        callback.onComplete(true, resource, null);
     }
 }
