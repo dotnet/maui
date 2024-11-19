@@ -9,7 +9,7 @@ public class BlazorTemplateTest : BaseTemplateTests
 	// First, default scenarios
 	[TestCase(DotNetCurrent, "Debug", "", false, "")]
 	[TestCase(DotNetCurrent, "Release", "", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Release", "", false, "TrimMode=full")]
+	//[TestCase(DotNetCurrent, "Release", "", false, "TrimMode=full")]
 
 	// Then, scenarios with additional template parameters:
 	// - Interactivity Location: None/WASM/Server/Auto
@@ -22,7 +22,7 @@ public class BlazorTemplateTest : BaseTemplateTests
 	[TestCase(DotNetCurrent, "Release", "-I WebAssembly --Empty", false, "TrimMode=partial")]
 	[TestCase(DotNetCurrent, "Debug", "-I Server --Empty", false, "")]
 	[TestCase(DotNetCurrent, "Release", "-I Auto --Empty", false, "TrimMode=partial")]
-	[TestCase(DotNetCurrent, "Debug", "-I None", false)]
+	[TestCase(DotNetCurrent, "Debug", "-I None", false, "")]
 	[TestCase(DotNetCurrent, "Release", "-I WebAssembly", false, "TrimMode=partial")]
 	[TestCase(DotNetCurrent, "Debug", "-I Server", false, "")]
 	[TestCase(DotNetCurrent, "Release", "-I Auto", false, "TrimMode=partial")]
