@@ -136,11 +136,11 @@ parameters:
   - name: MacTemplatePool
     type: object
     default:
-      - name: $(windowsVmPool)
-        vmImage: $(windowsVmImage)
-        demands:
-          - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals arm64
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals arm64
 
   - name: TestTargetFrameworks
     type: object
