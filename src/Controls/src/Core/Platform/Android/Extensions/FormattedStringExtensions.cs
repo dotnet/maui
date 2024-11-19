@@ -204,7 +204,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var spanStartX = (int)layout.GetPrimaryHorizontal(startOffset);
 
 					var endOffset = (curLine == spanEndLine) ? spanEndOffset : lineVisibleEndOffset;
-					var spanEndX = (int)layout.GetSecondaryHorizontal(endOffset);
+					var validEndOffset = System.Math.Min(endOffset, layout.GetLineEnd(curLine));
+					var spanEndX = (int)layout.GetSecondaryHorizontal(validEndOffset);
 
 					var spanWidth = spanEndX - spanStartX;
 					var spanLeftX = spanStartX;
