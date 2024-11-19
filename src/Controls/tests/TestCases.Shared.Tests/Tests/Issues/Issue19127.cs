@@ -2,7 +2,7 @@
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.AppiumTests.Issues
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue19127 : _IssuesUITest
 	{
@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Frame)]
 		public void ContentOfFrameShouldChange()
 		{
 			_ = App.WaitForElement("button");
@@ -23,8 +24,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			var textAfterClick = App.FindElement("label2").GetText();
 
-			Assert.AreEqual(textBeforeClick, "Camera is Disabled");
-			Assert.AreEqual(textAfterClick, "Camera is Enabled");
+			Assert.That(textBeforeClick!, Is.EqualTo("Camera is Disabled"));
+			Assert.That(textAfterClick!, Is.EqualTo("Camera is Enabled"));
 		}
 	}
 }

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue24284 : _IssuesUITest
 	{
-		public Issue24284(TestDevice testDevice) : base(testDevice){ }
+		public Issue24284(TestDevice testDevice) : base(testDevice) { }
 
 		public override string Issue => "FlyoutHeaderAdaptsToMinimumHeight";
 

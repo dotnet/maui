@@ -108,7 +108,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				pageToWaitFor = new ContentPage { Content = new Label() };
 				tabbedPage.Children.Add(pageToWaitFor);
 			}
-			
+
 			await navPage.Navigation.PushModalAsync(page);
 
 			references.Add(new(page));

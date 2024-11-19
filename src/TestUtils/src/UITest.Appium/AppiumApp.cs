@@ -91,7 +91,7 @@ namespace UITest.Appium
 		public virtual IUIElement FindElementByText(string text)
 		{
 			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElement(this);
-		}	
+		}
 #nullable enable
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(string id)

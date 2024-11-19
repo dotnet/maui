@@ -123,7 +123,7 @@ public class ShellInsets : TestShell
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		stackLayout.BackgroundColor = Colors.White;
-		
+
 		page.Content = stackLayout;
 
 		page.BackgroundColor = Colors.Yellow;
@@ -162,7 +162,7 @@ public class ShellInsets : TestShell
 				label.SetBinding(Label.TextProperty, ".");
 				label.SetBinding(Label.AutomationIdProperty, ".");
 
-				var stackLayout= new StackLayout()
+				var stackLayout = new StackLayout()
 				{
 					label,
 					new Microsoft.Maui.Controls.Entry(),

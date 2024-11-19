@@ -233,7 +233,7 @@ namespace UITest.Appium
 			int touch2StartY = y + distance;
 			int touch2EndX = x;
 			int touch2EndY = y;
-		
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touch2 = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			ActionSequence touch2Sequence = new ActionSequence(touch2, 0);
 			touch2Sequence.AddAction(touch2.CreatePointerMove(CoordinateOrigin.Viewport, touch2StartX, touch2StartY, TimeSpan.Zero));

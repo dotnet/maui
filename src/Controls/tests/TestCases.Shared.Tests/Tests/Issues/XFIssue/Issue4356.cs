@@ -12,16 +12,14 @@ public class Issue4356 : _IssuesUITest
 
 	public override string Issue => "[iOS] NSInternalInconsistencyException thrown when adding item to ListView after clearing bound ObservableCollection";
 
-	//[Test]
-	//[Category(UITestCategories.ListView)]
-	//[FailsOnIOS]
-	//public void Issue4356Test()
-	//{
-	//	App.WaitForElement(q => q.Marked("Will this repo work?"));
-	//	App.WaitForElement(q => q.Marked("Remove item"));
-	//	App.Tap(q => q.Marked("Remove item"));
-	//	App.Tap(q => q.Marked("Remove item"));
-	//	App.Tap(q => q.Marked("Add item"));
-	//	App.WaitForElement(q => q.Marked("Added from Button Command"));
-	//}
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Issue4356Test()
+	{
+		App.WaitForElement("Will this repo work?");
+		App.Tap("RemoveItem");
+		App.Tap("RemoveItem");
+		App.Tap("AddItem");
+		App.WaitForElement("Added from Button Command");
+	}
 }

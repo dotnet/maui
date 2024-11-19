@@ -230,7 +230,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
-		{	
+		{
 			Shell.SetFlyoutItemIsVisible(bindable, (bool)newValue);
 		}
 
