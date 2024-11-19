@@ -1,6 +1,9 @@
 parameters:
   - name: condition
     default: true
+  
+  - name: skipProvisioning
+    default: true
 
   - name: artifactName
     type: string
@@ -64,10 +67,10 @@ jobs:
           prepareSteps: ${{ parameters.prepareSteps }}
           category: ${{ category }}
           skipXcode: false
-          ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-            skipProvisioning: false
-          ${{ else }}:  
+          ${{ if eq(parameters.skipProvisioning, 'true') }}:
             skipProvisioning: true
+          ${{ else }}:  
+            skipProvisioning: false
 
 
 - ${{ each category in parameters.BuildCategories }}:

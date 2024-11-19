@@ -343,6 +343,10 @@ stages:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
         MacBuildPool: ${{ parameters.MacTemplatePool }}
+        ${{ if parameters.UseProvisionator }}:
+          skipProvisioning: false
+        ${{ else }}:
+          skipProvisioning: true
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
