@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls
 			if (ShouldSetBinding(content, FontElement.FontFamilyProperty))
 			{
 				content.SetBinding(FontElement.FontFamilyProperty, static (IFontElement fe) => fe.FontFamily, source: source);
-			}	
+			}
 		}
 
 		static bool ShouldSetBinding(BindableObject content, BindableProperty property)

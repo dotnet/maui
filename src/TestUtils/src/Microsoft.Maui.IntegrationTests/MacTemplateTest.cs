@@ -42,14 +42,19 @@ public class MacTemplateTest : BaseTemplateTests
 	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
 	{
 		if (TestEnvironment.IsWindows)
+		{
 			Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
+		}
+
+		var arch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
 
 		string projectDir = TestDirectory;
 		string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 		// Note: Debug app is stored in the maccatalyst-x64 folder, while the Release is in parent directory
+		// or in maccatalyst-arm64 thats why we have to check where the test is running 
 		string appLocation = config == "Release" ?
 			Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"{Path.GetFileName(projectDir)}.app") :
-			Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", "maccatalyst-x64", $"{Path.GetFileName(projectDir)}.app");
+			Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"maccatalyst-{arch}", $"{Path.GetFileName(projectDir)}.app");
 		string entitlementsPath = Path.Combine(projectDir, "x.xml");
 
 		List<string> buildWithCodeSignProps = new List<string>(BuildProps)
@@ -82,11 +87,13 @@ public class MacTemplateTest : BaseTemplateTests
 			Assert.Ignore("Running iOS templates is only supported on Mac.");
 		}
 
+		var arch = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
+
 		string projectDir = TestDirectory;
 		string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 		string appFileName = $"{Path.GetFileName(projectDir)}.app";
 		string appLocation =
-			Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+			Path.Combine(projectDir, "bin", config, $"{framework}-ios", $"iossimulator-{arch}", appFileName);
 
 		// Multi-project is in a .iOS subfolder and csproj is *.iOS.csproj
 		if (id.EndsWith("multiproject"))
@@ -97,7 +104,7 @@ public class MacTemplateTest : BaseTemplateTests
 			appFileName = $"{Path.GetFileName(projectDir)}.iOS.app";
 
 			appLocation =
-				Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", "iossimulator-x64", appFileName);
+				Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", $"iossimulator-{arch}", appFileName);
 		}
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");

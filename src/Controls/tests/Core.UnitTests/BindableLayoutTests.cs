@@ -199,17 +199,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			
+
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
 			BindableLayout.SetItemsSource(layout, itemsSource);
-			
+
 			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
 			Assert.All(layout.Children, c => Assert.IsType<Label>(c));
-			
+
 			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Button()));
 			Assert.All(layout.Children, c => Assert.IsType<Button>(c));
 		}
-		
+
 		[Fact]
 		public void ChangingItemMaintainingTemplateUpdatesBindingContextOnly()
 		{
@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			
+
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
 			BindableLayout.SetItemsSource(layout, itemsSource);
 			BindableLayout.SetItemTemplate(layout, new DataTemplate(() =>
@@ -226,18 +226,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				label.SetBinding(Label.TextProperty, ".");
 				return label;
 			}));
-			
+
 			var firstChild = layout.Children[0] as Label;
 			Assert.NotNull(firstChild);
 			Assert.Equal("0", firstChild.Text);
-			
+
 			itemsSource[0] = 42;
 			var firstChildAfterChange = layout.Children[0] as Label;
 			Assert.NotNull(firstChildAfterChange);
 			Assert.Equal("42", firstChildAfterChange.Text);
 			Assert.Same(firstChild, firstChildAfterChange);
 		}
-		
+
 		[Fact]
 		public void ChangingItemsMaintainingTemplateUpdatesBindingContextOnly()
 		{
@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			
+
 			var itemsSource = new List<int>(Enumerable.Range(0, 10));
 			BindableLayout.SetItemsSource(layout, itemsSource);
 			BindableLayout.SetItemTemplate(layout, new DataTemplate(() =>
@@ -254,10 +254,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				label.SetBinding(Label.TextProperty, ".");
 				return label;
 			}));
-			
+
 			var children = layout.Children.Cast<Label>().ToList();
 			BindableLayout.SetItemsSource(layout, new List<int>(Enumerable.Range(10, 10)));
-			
+
 			var childrenAfterChange = layout.Children.Cast<Label>().ToList();
 			for (var i = 0; i < children.Count; i++)
 			{
@@ -273,14 +273,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			
+
 			var itemsSource = new List<int>(Enumerable.Range(0, 10));
 			BindableLayout.SetItemsSource(layout, itemsSource);
 			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
-			
+
 			var children = layout.Children.ToList();
 			BindableLayout.SetItemsSource(layout, new List<int>(Enumerable.Range(0, 5)));
-			
+
 			var childrenAfterChange = layout.Children.ToList();
 			Assert.Equal(5, childrenAfterChange.Count);
 
@@ -288,7 +288,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Assert.Same(children[i], childrenAfterChange[i]);
 			}
-			
+
 			for (int i = 5; i < 10; i++)
 			{
 				Assert.Null(children[i].BindingContext);
@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			itemsSource.Remove(0);
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
-		
+
 		[Fact]
 		public void RemovesEmptyViewWhenAddingTheFirstItem()
 		{
@@ -466,7 +466,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			itemsSource.Add(0);
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
-		
+
 		[Fact]
 		public void AddsEmptyViewWhenRemovingRemainingItem()
 		{
@@ -533,7 +533,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
 			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
 		}
-		
+
 		[Fact]
 		public async Task ItemViewBindingContextIsSetToNullOnClear()
 		{
@@ -554,7 +554,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Verify item view binding context is null
 			Assert.Null(itemView.BindingContext);
 		}
-		
+
 		[Fact]
 		public async Task ItemViewBindingContextIsSetToNullOnRemove()
 		{
@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Verify item view binding context is null
 			Assert.Null(itemView.BindingContext);
 		}
-		
+
 		[Fact]
 		public async Task EmptyViewTemplateContentInheritsLayoutBindingContext()
 		{

@@ -2,13 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CoreGraphics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using UIKit;
-using CoreGraphics;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Layouts;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
@@ -115,13 +115,13 @@ namespace Microsoft.Maui.Controls
 			var titleRectHeight = titleRect.Height;
 
 			var buttonContentWidth =
-				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
+				+(nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
 				+ (nfloat)padding.Left
 				+ (nfloat)padding.Right
 				+ (nfloat)borderWidth * 2;
 
 			var buttonContentHeight =
-				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
+				+(nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
 				+ (nfloat)padding.Top
 				+ (nfloat)padding.Bottom
 				+ (nfloat)borderWidth * 2;
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="padding"></param>
 		/// <param name="isMeasuring"></param>
 		/// <returns>Returns a <see cref="CGRect"/> that contains the title text.</returns>
-		CGRect ComputeTitleRect (UIButton platformButton, Button button, UIImage image,  double widthConstraint, double heightConstraint, double borderWidth, Thickness padding, bool isMeasuring)
+		CGRect ComputeTitleRect(UIButton platformButton, Button button, UIImage image, double widthConstraint, double heightConstraint, double borderWidth, Thickness padding, bool isMeasuring)
 		{
 			if (string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
@@ -312,7 +312,7 @@ namespace Microsoft.Maui.Controls
 			if (currentTitleText.Length > 0 && button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
 			{
 				// Measure the width of the first character in the string using the same font as the TitleLabel. If a character cannot fit in the titleRect, let's use a zero size.
-				var minimumCharacterWidth = new Foundation.NSString(currentTitleText.Substring(0,1)).GetSizeUsingAttributes(new UIStringAttributes { Font = platformButton.TitleLabel.Font });
+				var minimumCharacterWidth = new Foundation.NSString(currentTitleText.Substring(0, 1)).GetSizeUsingAttributes(new UIStringAttributes { Font = platformButton.TitleLabel.Font });
 				if (double.IsNaN(titleRect.Width) || double.IsNaN(titleRect.Height) || titleRect.Width < minimumCharacterWidth.Width)
 				{
 					titleRect = Rect.Zero;

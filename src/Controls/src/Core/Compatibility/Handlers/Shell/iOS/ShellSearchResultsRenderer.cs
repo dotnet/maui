@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Specialized;
 using Foundation;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
