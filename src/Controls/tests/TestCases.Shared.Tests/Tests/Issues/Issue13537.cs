@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,44 +16,36 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndPopButton()
 		{
-			App.WaitForElement("TestLabel");
+			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
-			App.WaitForElement("TestLabel3");
+			App.WaitForElement("InnerPageTestLabel");
 			App.Tap("PopAsyncButton");
-			VerifyScreenshot();
+			var result = App.WaitForElement("HomePageTestLabel").GetText();
+			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
 		{
-			App.WaitForElement("TestLabel");
+			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
-			App.WaitForElement("TestLabel3");
-#if IOS
-			App.Back();
-#elif ANDROID
-          App.Tap("Navigate up");
-#else
-			App.Tap("NavigationViewBackButton");
-#endif
-			VerifyScreenshot();
+			App.WaitForElement("InnerPageTestLabel");
+			App.TapBackArrow("Home");
+			var result = App.WaitForElement("HomePageTestLabel").GetText();
+			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 
-#if !WINDOWS && !ANDROID // Currently TabBar AutomationId is not works in Windows
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforTab()
 		{
-			App.Tap("favorite");
-			App.WaitForElement("TestLabel1");
+			App.Tap("Favorite");
+			App.WaitForElement("FavouritePageTestLabel");
 			App.Tap("GoToAsyncButton");
-			App.WaitForElement("TestLabel3");
-			VerifyScreenshot();
+			var result = App.WaitForElement("InnerPageTestLabel").GetText();
+			Assert.That(result , Is.EqualTo("Parameter From Favorite Page to New Page"));
 		}
-
-#endif
 	}
 
 }
-#endif
