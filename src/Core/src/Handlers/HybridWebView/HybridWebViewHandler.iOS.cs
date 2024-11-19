@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using System.Web;
 using Foundation;
 using UIKit;
@@ -137,82 +138,90 @@ namespace Microsoft.Maui.Handlers
 
 			[Export("webView:startURLSchemeTask:")]
 			[SupportedOSPlatform("ios11.0")]
-			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
-			{
-				var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
-
-				var responseData = GetResponseBytes(url);
-
-				if (responseData.StatusCode == 200)
-				{
-					using (var dic = new NSMutableDictionary<NSString, NSString>())
-					{
-						dic.Add((NSString)"Content-Length", (NSString)(responseData.ResponseBytes.Length.ToString(CultureInfo.InvariantCulture)));
-						dic.Add((NSString)"Content-Type", (NSString)responseData.ContentType);
-						// Disable local caching. This will prevent user scripts from executing correctly.
-						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
-						if (urlSchemeTask.Request.Url != null)
-						{
-							using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, responseData.StatusCode, "HTTP/1.1", dic);
-							urlSchemeTask.DidReceiveResponse(response);
-						}
-					}
-
-					urlSchemeTask.DidReceiveData(NSData.FromArray(responseData.ResponseBytes));
-					urlSchemeTask.DidFinish();
-				}
-			}
-
-			private (byte[] ResponseBytes, string ContentType, int StatusCode) GetResponseBytes(string? url)
+			public async void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
 				if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 				{
-					return (Array.Empty<byte>(), ContentType: string.Empty, StatusCode: 404);
+					return;
 				}
 
-				var fullUrl = url;
-				url = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+				var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
 
-				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+				var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
+
+				if (statusCode != 200)
 				{
-					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
+					// TODO: maybe we need to handle errors?
+					return;
+				}
 
-					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
+				using (var dic = new NSMutableDictionary<NSString, NSString>())
+				{
+					dic.Add((NSString)"Content-Length", (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture));
+					dic.Add((NSString)"Content-Type", (NSString)contentType);
+					// Disable local caching. This will prevent user scripts from executing correctly.
+					dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
 
-					// 1. Try special InvokeDotNet path
-					if (relativePath == InvokeDotNetPath)
+					if (urlSchemeTask.Request.Url != null)
 					{
-						var fullUri = new Uri(fullUrl!);
-						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-						(var contentBytes, var bytesContentType) = Handler.InvokeDotNet(invokeQueryString);
-						if (contentBytes is not null)
+						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+
+						urlSchemeTask.DidReceiveResponse(response);
+					}
+				}
+
+				urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+				urlSchemeTask.DidFinish();
+			}
+
+			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytesAsync(string? url)
+			{
+				if (Handler is not null)
+				{
+					var fullUrl = url;
+					url = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+
+					if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+					{
+						var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
+
+						var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
+
+						// 1. Try special InvokeDotNet path
+						if (relativePath == InvokeDotNetPath)
 						{
-							return (contentBytes, bytesContentType!, StatusCode: 200);
+							var fullUri = new Uri(fullUrl!);
+							var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
+							var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
+							if (contentBytes is not null)
+							{
+								return (contentBytes, "application/json", StatusCode: 200);
+							}
 						}
-					}
 
-					string contentType;
+						string contentType;
 
-					// 2. If nothing found yet, try to get static content from the asset path
-					if (string.IsNullOrEmpty(relativePath))
-					{
-						relativePath = Handler.VirtualView.DefaultFile!.Replace('\\', '/');
-						contentType = "text/html";
-					}
-					else
-					{
-						if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+						// 2. If nothing found yet, try to get static content from the asset path
+						if (string.IsNullOrEmpty(relativePath))
 						{
-							// TODO: Log this
-							contentType = "text/plain";
+							relativePath = Handler.VirtualView.DefaultFile!.Replace('\\', '/');
+							contentType = "text/html";
 						}
-					}
+						else
+						{
+							if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+							{
+								// TODO: Log this
+								contentType = "text/plain";
+							}
+						}
 
-					var assetPath = Path.Combine(bundleRootDir, relativePath);
+						var assetPath = Path.Combine(bundleRootDir, relativePath);
 
-					if (File.Exists(assetPath))
-					{
-						return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
+						if (File.Exists(assetPath))
+						{
+							return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
+						}
 					}
 				}
 
