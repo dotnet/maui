@@ -1,6 +1,8 @@
 #nullable disable
 using System;
-using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -19,12 +21,38 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ContentPresenter()
 		{
-			this.SetBinding(
+			SetBinding(
 				ContentProperty,
-				static (IContentView view) => view.Content,
-				source: RelativeBindingSource.TemplatedParent,
-				converter: new ContentConverter(),
-				converterParameter: this);
+				new TypedBinding<object, View>(
+					getter: static source =>
+					{
+						var content = (source as IContentView)?.Content as View ?? UnsafeGetContent(source);
+						return (content, true);
+					},
+					setter: null,
+					handlers: [ new(static source => source, nameof(IContentView.Content)) ])
+					{
+						Source = RelativeBindingSource.TemplatedParent,
+						Converter = new ContentConverter(),
+						ConverterParameter = this,
+					});
+		}
+
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075:RequiresUnreferencedCodeMessage",
+			Justification = "Best effort to get the content property using reflection.")]
+		private static View UnsafeGetContent(object source)
+		{
+			var property = source.GetType().GetProperty(nameof(IContentView.Content), BindingFlags.Public | BindingFlags.Instance);
+			var value = property?.GetValue(source) as View;
+
+			if (value is not null)
+			{
+				Application.Current?.FindMauiContext()?.CreateLogger<ContentPresenter>()?.LogWarning(
+					$"The {nameof(ContentPresenter)} is falling back to reflection to get access to the {nameof(IContentView.Content)} property of {source.GetType()}. " +
+					$"Consider implementing {nameof(IContentView)}.{nameof(IContentView.Content)} on {source.GetType()} if you own this type.");
+			}
+
+			return value;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
