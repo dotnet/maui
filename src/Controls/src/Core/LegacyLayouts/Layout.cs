@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		private protected virtual void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
 		{
 			if (depth <= depthLeveltoInvalidate)
-			{				
+			{
 				if (trigger == InvalidationTrigger.RendererReady)
 				{
 					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.RendererReady, depth));

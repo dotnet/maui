@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
-			void OnClicked (object sender, EventArgs e)
+			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
 				{
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
-			void OnClicked (object sender, EventArgs e)
+			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
 				{

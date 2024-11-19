@@ -292,7 +292,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			});
 			if (longRunningSeconds > 0)
 				resultsSink = new ExecutionSink(resultsSink, new ExecutionSinkOptions
-				{	
+				{
 					CancelThunk = () => cancelled,
 					DiagnosticMessageSink = diagSink,
 					LongRunningTestTime = TimeSpan.FromSeconds(longRunningSeconds)

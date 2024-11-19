@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue9951 : _IssuesUITest
+	public class Issue9951 : _IssuesUITest
 	{
 		const string SwitchId = "switch";
 
@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Android 10 Setting ThumbColor on Switch causes a square block"; 
-		
+		public override string Issue => "Android 10 Setting ThumbColor on Switch causes a square block";
+
 		[Test]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]

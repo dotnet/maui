@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IEditorController).SendCompleted();
 		}
-		
+
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			_previousBounds = bounds;
