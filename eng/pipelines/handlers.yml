@@ -70,7 +70,8 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
-        demands: { }        
+        demands:
+           - Agent.OS -equals Windows_NT        
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXVmPool)
@@ -86,7 +87,8 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
-        demands: { }
+        demands: 
+          - Agent.OS -equals Windows_NT
         artifact: nuget
       - name: macOS
         poolName: $(macOSXVmPool)
@@ -102,7 +104,8 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
-        demands: { }
+        demands: 
+          - Agent.OS -equals Windows_NT
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXVmPool)
@@ -268,7 +271,6 @@ stages:
                       ${{ else }}:  
                         skipProvisioning: true
                       
-
   - stage: samples_net
     displayName: Test .NET MAUI Samples
     dependsOn: pack_net
