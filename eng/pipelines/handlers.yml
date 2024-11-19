@@ -315,7 +315,7 @@ stages:
           vmImage: $(macOSXVmImage)
           demands:
             - macOS.Name -equals Sonoma
-            - macOS.Architecture -equals arm64
+            - macOS.Architecture -equals x64
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
