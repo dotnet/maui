@@ -15,21 +15,21 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 	     	Routing.RegisterRoute("NewPage", typeof(Issue13537InnerPage));
-			Application.Current.Windows[0].Page = new NavigationPage(new Issue13537Home());
+			Application.Current.Windows[0].Page = new NavigationPage(new Issue13537HomePage());
 		}
 	}
 
-	public class Issue13537Home : ContentPage
+	public class Issue13537HomePage : ContentPage
 	{
-		public Issue13537Home()
+		public Issue13537HomePage()
 		{
-			Title = "Home"; // Setting the title of the page
-			var viewModel = new Issue13537ViewModel<Issue13537Home>();
+			Title="Home"; // Setting the title of the page
+			var viewModel = new Issue13537ViewModel<Issue13537HomePage>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
 			{
-				AutomationId = "TestLabel",
+				AutomationId = "HomePageTestLabel",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
@@ -55,17 +55,18 @@ namespace Maui.Controls.Sample.Issues
 			Navigation.PushAsync(new Issue13537InnerPage());
 		}
 	}
-	public class Issue13537Favorite : ContentPage
+	public class Issue13537FavoritePage : ContentPage
 	{
-		public Issue13537Favorite()
+
+		public Issue13537FavoritePage()
 		{
 			Title = "Favorite"; // Setting the title of the page
-			var viewModel = new Issue13537ViewModel<Issue13537Favorite>();
+			var viewModel = new Issue13537ViewModel<Issue13537FavoritePage>();
 			this.BindingContext = viewModel;
 
 			var Label = new Label
 			{
-				AutomationId = "TestLabel1",
+				AutomationId = "FavouritePageTestLabel",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
@@ -85,33 +86,13 @@ namespace Maui.Controls.Sample.Issues
 		}
 		private void OnGoToAsync(object sender, EventArgs e)
 		{
+			
 			var Parameter = new Dictionary<string, object>
 			{
-				{ "SampleQueryText", 5 },
+				{ $"Parameter From {Shell.Current.CurrentPage.Title} Page", $"to New Page" },
 			
 			};
 			Shell.Current.GoToAsync("NewPage",parameters:Parameter);
-		}
-	}
-	public class Issue13537SettingPage : ContentPage
-	{
-		public Issue13537SettingPage()
-		{
-			Title = "Setting"; // Setting the title of the page
-			var viewModel = new Issue13537ViewModel<Issue13537SettingPage>();
-			this.BindingContext = viewModel;
-
-			var Label = new Label
-			{
-				AutomationId = "TestLabel2",
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-				TextColor = Colors.Black
-			};
-			Label.SetBinding(Label.TextProperty, nameof(viewModel.DisplayText));
-			var stack = new StackLayout();
-			stack.Children.Add(Label);
-			this.Content = stack;
 		}
 	}
 	public class Issue13537InnerPage : ContentPage
@@ -124,7 +105,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var Label = new Label
 			{
-				AutomationId = "TestLabel3",
+				AutomationId = "InnerPageTestLabel",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
 			};
@@ -169,7 +150,19 @@ namespace Maui.Controls.Sample.Issues
 
 		public void ApplyQueryAttributes(IDictionary<string, object> query)
 		{
-			DisplayText = $"{typeof(T).Name}ViewModel.ApplyQueryAttributes(\n{string.Join(",\n", query.Select(q => $"{q.Key}={q.Value}"))})";
+			if(query == null)
+			{
+				return;
+			}
+
+		   if( query.Count > 0)
+			{
+		       DisplayText = $"{string.Join(",\n", query.Select(q => $"{q.Key} {q.Value}"))}";
+			}
+			else
+			{
+				DisplayText= $"{typeof(T).Name} QueryAttribute is triggered";
+			}
 		}
 
 		// Implement INotifyPropertyChanged to support binding

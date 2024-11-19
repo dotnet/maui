@@ -7,25 +7,16 @@
              x:Class="Maui.Controls.Sample.Issues.Issue13537">
 
   <TabBar AutomationId="TabBar13537" x:Name="TabBar13537">
-    <Tab Title="Home" AutomationId="Home">
-      <ShellContent
-                Title="Home"                                                                        
-                ContentTemplate="{DataTemplate local:Issue13537Home}"
+    <Tab  Title="Home" AutomationId="Home">
+      <ShellContent 
+                ContentTemplate="{DataTemplate local:Issue13537HomePage}"
                 Route="MainPage" />
     </Tab>
-    <Tab Title="Favorites"
-             AutomationId="favorite">
+    <Tab Title="Favorite"
+             AutomationId="Favorite">
       <ShellContent
-                Title="Favorites" AutomationId="Favourite"
-                ContentTemplate="{DataTemplate local:Issue13537Favorite}"
+                ContentTemplate="{DataTemplate local:Issue13537FavoritePage}"
                 Route="FavoritesPage" />
-    </Tab>
-    <Tab Title="Settings"
-             AutomationId="settings">
-      <ShellContent
-                Title="Settings"
-                ContentTemplate="{DataTemplate local:Issue13537SettingPage}"
-                Route="SettingsPage" />
     </Tab>
   </TabBar>
 </Shell>
