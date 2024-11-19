@@ -60,7 +60,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			{
 				var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
 				Context.Variables[node] = new LocalVariable(type, variableName);
-				Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
+				Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
 			}
 		}
 	}
