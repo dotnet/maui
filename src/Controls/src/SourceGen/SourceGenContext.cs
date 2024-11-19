@@ -18,4 +18,5 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
     public IDictionary<INode, LocalVariable> Variables { get; } = new Dictionary<INode, LocalVariable>();
     public void ReportDiagnostic(Diagnostic diagnostic) => _sourceProductionContext.ReportDiagnostic(diagnostic);
     public string? FilePath {get; set;}
+	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
 }

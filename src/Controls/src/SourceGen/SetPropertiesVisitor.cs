@@ -8,6 +8,7 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.CodeAnalysis;
 
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -98,12 +99,29 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         // }
 
         //IMarkupExtension or IValueProvider => ProvideValue()
-        if (node.IsValueProvider(context, out ITypeSymbol? type, out ITypeSymbol? valueProviderFace))
+        if (node.IsValueProvider(context, 
+                out ITypeSymbol? returnType,
+                out ITypeSymbol? valueProviderFace,
+                out bool acceptEmptyServiceProvider,
+                out ImmutableArray<ITypeSymbol>? requiredServices))
         {
             var valueProviderVariable = Context.Variables[node];
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
-            Context.Variables[node] = new LocalVariable(type, variableName);
-            Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, returnType!.Name!.Split('.').Last().ToLowerInvariant());
+            Context.Variables[node] = new LocalVariable(returnType, variableName);
+
+            //if it require a serviceprovider, create one
+            if (!acceptEmptyServiceProvider)
+            {
+                var serviceProviderSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider")!;
+                var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(Context, "xamlServiceProvider");
+
+                Context.ServiceProviders[node] = new LocalVariable(serviceProviderSymbol, serviceProviderVariableName);
+                Writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
+
+                Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVariableName});");
+            }
+            else
+                Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
         }
 
         if (propertyName != XmlName.Empty)
@@ -252,12 +270,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (node is ValueNode valueNode)
 		{
 			var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
-			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}, {valueString});");
+			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {valueString});");
 		}
 		else if (node is ElementNode elementNode)
-		{
-			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}, {context.Variables[node].Name});");
-		}
+			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {context.Variables[node].Name});");
 	}
 
     static bool CanSet(LocalVariable parentVar, string localName, INode node, SourceGenContext context)

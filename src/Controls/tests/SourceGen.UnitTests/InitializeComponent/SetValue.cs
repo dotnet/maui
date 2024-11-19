@@ -57,7 +57,7 @@ public partial class TestPage
 {
 	private partial void InitializeComponentSourceGen()
 	{
-		global::Microsoft.Maui.Controls.Button button0 = new global::Microsoft.Maui.Controls.Button();
+		var button0 = new global::Microsoft.Maui.Controls.Button();
 		global::Test.TestPage __root = this;
 		this.MyButton = button0;
 		button0.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
