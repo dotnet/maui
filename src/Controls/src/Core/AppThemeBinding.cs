@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			{
 				Binding.Apply(false);
 			}
-			
+
 			public AppThemeBinding Binding { get; }
 
 			public void Unsubscribe()

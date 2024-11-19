@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 
 		public override bool PrefersStatusBarHidden()
 		{
-			if(CurrentView is IiOSPageSpecifics pageSpecifics)
+			if (CurrentView is IiOSPageSpecifics pageSpecifics)
 			{
 				return pageSpecifics.PrefersStatusBarHiddenMode switch
 				{

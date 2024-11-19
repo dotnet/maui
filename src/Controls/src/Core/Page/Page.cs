@@ -713,12 +713,12 @@ namespace Microsoft.Maui.Controls
 					}
 
 					InsertLogicalChild(insertIndex, item);
-					
+
 					if (item is VisualElement)
 					{
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
-					
+
 					if (index >= 0)
 					{
 						index++;
@@ -847,7 +847,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (args.NavigationType == NavigationType.Pop || 
+			if (args.NavigationType == NavigationType.Pop ||
 				args.NavigationType == NavigationType.PopToRoot)
 			{
 				if (!this.IsLoaded)

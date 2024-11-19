@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue14471 : _IssuesUITest
 {
-	public Issue14471(TestDevice device) : base(device){ }
+	public Issue14471(TestDevice device) : base(device) { }
 
 	public override string Issue => "Image can disappear when going back to the page";
 
