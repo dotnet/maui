@@ -98,12 +98,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         // }
 
         //IMarkupExtension or IValueProvider => ProvideValue()
-        if (node.IsValueProvider(context, out ITypeSymbol? type))
+        if (node.IsValueProvider(context, out ITypeSymbol? type, out ITypeSymbol? valueProviderFace))
         {
             var valueProviderVariable = Context.Variables[node];
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
             Context.Variables[node] = new LocalVariable(type, variableName);
-            Writer.WriteLine($"global::{type} {variableName} = {valueProviderVariable.Name}.ProvideValue(null);");
+            Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
         }
 
         if (propertyName != XmlName.Empty)
@@ -252,11 +252,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (node is ValueNode valueNode)
 		{
 			var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
-			writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {valueString});");
+			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}, {valueString});");
 		}
 		else if (node is ElementNode elementNode)
 		{
-			writer.WriteLine($"{parentVar.Name}.SetValue(global::{bpFieldSymbol}, {context.Variables[node].Name});");
+			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}, {context.Variables[node].Name});");
 		}
 	}
 
@@ -308,7 +308,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     static void SetBinding(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var localVariable = context.Variables[(ElementNode)node];
-        writer.WriteLine($"{parentVar.Name}.SetBinding(global::{bpFieldSymbol}, {localVariable.Name});");
+        writer.WriteLine($"{parentVar.Name}.SetBinding({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {localVariable.Name});");
     }
 
     static bool CanAdd(LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context)

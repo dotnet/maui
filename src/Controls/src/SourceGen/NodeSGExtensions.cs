@@ -82,25 +82,34 @@ static class NodeSGExtensions
         {
             //TODO
             //check the required services
-            return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new global::{typeConverter}()).ConvertFromInvariantString(\"{valueString}\", /*TODO*/ null)";
+            return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", /*TODO*/ null)";
         }
-        return $"new global::{typeConverter}().ConvertFromInvariantString(\"{valueString}\")";
+        return $"new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")";
     }
 
-    public static bool IsValueProvider(this INode node, SourceGenContext context, out ITypeSymbol? returnType)
+    public static bool IsValueProvider(this INode node, SourceGenContext context, out ITypeSymbol? returnType, out ITypeSymbol? iface)
     {
         returnType = context.Compilation.ObjectType;
+        iface = null;
         if (!context.Variables.TryGetValue(node, out var variable))
             return false;
-        if (variable.Type.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
+        
+        iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!;
+        if (variable.Type.Implements(iface))
             return true;
-        if (variable.Type.ImplementsGeneric(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
+        
+        iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!;
+        if (variable.Type.ImplementsGeneric(iface, out var typeArg))
         {
+            iface = ((INamedTypeSymbol)iface).Construct(typeArg[0]);
             returnType = typeArg[0];
             return true;
         }
-        if (variable.Type.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension")!))
+
+        iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension")!;
+        if (variable.Type.Implements(iface))
             return true;
+        
         return false;
 
     }
