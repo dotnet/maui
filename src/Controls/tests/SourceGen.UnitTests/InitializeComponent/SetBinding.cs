@@ -58,7 +58,7 @@ public partial class TestPage
 		global::Microsoft.Maui.Controls.Xaml.BindingExtension bindingextension0 = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
 		global::Test.TestPage __root = this;
 		bindingextension0.Path = "Title";
-		global::Microsoft.Maui.Controls.BindingBase bindingbase0 = bindingextension0.ProvideValue(null);
+		global::Microsoft.Maui.Controls.BindingBase bindingbase0 = ((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingextension0).ProvideValue(null);
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingbase0);
 	}
 }

@@ -43,6 +43,7 @@ static class XmlTypeExtensions
 		return symbol is not null;		
 	}
 
+	//FIXME should return a ITypeSymbol, and properly construct it for generics. globalalias param should go away
     public static string GetTypeName(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
 	{
 		if (typeCache.TryGetValue(xmlType, out string returnType))
