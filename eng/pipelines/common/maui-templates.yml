@@ -50,7 +50,7 @@ jobs:
   - job: build_maui_templates_${{ category }}
     workspace:
       clean: all
-    displayName: 'Build ${{ category }}: '
+    displayName: 'Build ${{ category }}: macOS' 
     timeoutInMinutes: 240
     condition: ${{ parameters.condition}}
     pool: ${{ parameters.MacBuildPool}}
