@@ -16,7 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonContentNotRendering()
 		{
-			App.WaitForElement("Success");
+			App.WaitForElement("RadioButtonTemplate1");
+			VerifyScreenshot();
 		}
 	}
 }
