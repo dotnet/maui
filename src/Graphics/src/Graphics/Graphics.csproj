@@ -39,10 +39,6 @@
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.19041.45</WindowsSdkPackageVersion>
-  </PropertyGroup>
-
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
