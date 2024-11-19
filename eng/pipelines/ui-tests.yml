@@ -48,6 +48,11 @@ variables:
     value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
 parameters:
+
+  - name: UseProvisionator
+    type: boolean
+    default: false
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -139,10 +144,12 @@ stages:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
+        skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
+      ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
+        skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
       projects:

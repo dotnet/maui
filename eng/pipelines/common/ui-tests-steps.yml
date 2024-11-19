@@ -11,6 +11,7 @@ parameters:
   runtimeVariant : "Mono"
   testFilter: ''
   testConfigurationArgs: ''
+  skipProvisioning: true
 
 steps:
   - task: DownloadPipelineArtifact@2
@@ -41,7 +42,7 @@ steps:
       skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      ${{ if not(parameters.skipProvisioning) }}:
         skipProvisioning: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       ${{ else }}:  
