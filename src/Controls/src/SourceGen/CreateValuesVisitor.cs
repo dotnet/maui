@@ -48,7 +48,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
             Context.Variables[node] = new LocalVariable(type, variableName);
 
-            Writer.WriteLine($"global::{type.Name} {variableName} = {ValueForLanguagePrimitive(type, node)};");
+            Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = {ValueForLanguagePrimitive(type, node)};");
         }
 
 		//suports factorymethod, ctor args, etc
@@ -60,7 +60,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 			{
 				var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
 				Context.Variables[node] = new LocalVariable(type, variableName);
-				Writer.WriteLine($"global::{type} {variableName} = new global::{type}();");
+				Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
 			}
 		}
 	}
@@ -74,7 +74,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
     {
         var variableName = "__root";                    
         Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
-        Writer.WriteLine($"global::{Context.RootType} {variableName} = this;");
+        Writer.WriteLine($"{Context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = this;");
     }
     		
     static bool IsXaml2009LanguagePrimitive(IElementNode node)
@@ -134,7 +134,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             case "System.TimeSpan":
                 var span = TimeSpan.Parse(valueString);
                 return $"new global::System.TimeSpan({span.Ticks})";
-            case "System.Uri": return $"new global::System.Uri(\"{valueString}\", global:System.UriKind.RelativeOrAbsolute)";
+            case "System.Uri": return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
             default: return "default";
         }
     }
