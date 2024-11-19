@@ -2,7 +2,7 @@ parameters:
   poolName: ''
   clearCaches: true
   skipXcode: false
-  skipProvisioning: $(skipProvisionator)
+  skipProvisioning: true
   skipAndroidSdks: false
   skipAndroidImages: false
   installDefaultAndroidApi: false

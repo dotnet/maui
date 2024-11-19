@@ -49,6 +49,11 @@ variables:
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
+
+  - name: UseProvisionator
+    type: boolean
+    default: eq(variables['System.TeamProject'], 'devdiv')
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -192,7 +197,7 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                  ${{ if parameter.UseProvisionator }}:
                     skipProvisioning: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:  
@@ -265,7 +270,7 @@ stages:
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                      ${{ if parameters.UseProvisionator }}:
                         skipProvisioning: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
@@ -293,7 +298,7 @@ stages:
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                ${{ if parameters.UseProvisionator }}:
                   skipProvisioning: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
