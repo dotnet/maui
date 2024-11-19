@@ -37,8 +37,8 @@ public class MacTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui-blazor", "Debug", DotNetCurrent, false)]
-	[TestCase("maui-blazor", "Release", DotNetCurrent, false)]
+	[TestCase("maui-blazor", "Debug", DotNetCurrent, true)]
+	[TestCase("maui-blazor", "Release", DotNetCurrent, true)]
 	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
