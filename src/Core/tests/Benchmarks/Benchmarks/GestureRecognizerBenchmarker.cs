@@ -51,7 +51,7 @@ public class GestureRecognizerBenchmarker
 		}
 	}
 
-	
+
 	[Benchmark]
 	public void ClearLotsOfGestureRecognizers()
 	{
@@ -65,7 +65,7 @@ public class GestureRecognizerBenchmarker
 		layout.GestureRecognizers.Clear();
 	}
 
-		
+
 	[Benchmark]
 	public void RemoveLotsOfGestureRecognizers()
 	{

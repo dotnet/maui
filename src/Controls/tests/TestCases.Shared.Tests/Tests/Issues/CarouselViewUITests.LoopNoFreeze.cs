@@ -21,9 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMac("DragCoordinates methods not implemented")]
-		[FailsOnWindows("DragCoordinates methods not implemented")]
-		[FailsOnAndroid("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Issue12574Test()
 		{
 			App.WaitForElement("0 item");
@@ -51,12 +51,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnWindows("This test is failing, likely due to product issu")]
-		[FailsOnAndroid("This test is failing, likely due to product issu")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForElement("0 item");
-	
+
 			App.Click(_btnRemoveAllAutomationId);
 
 			// If we haven't crashed, then the other button should be here

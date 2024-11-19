@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12777 (src\ControlGallery\src\Issues.Shared\Issue12777.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Issue12777Test()
 		{
 			App.WaitForElement("TestCarouselView");

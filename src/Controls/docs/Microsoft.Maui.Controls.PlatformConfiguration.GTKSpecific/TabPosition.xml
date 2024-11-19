@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates tab positions on a tabbed page on the GTK platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Bottom">

@@ -549,5 +549,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Contains(customControl, page.LogicalChildrenInternal);
 			Assert.Contains(customControl, ((IVisualTreeElement)page).GetVisualChildren());
 		}
+
+		[Fact]
+		public void MeasureInvalidatedPropagatesUpTree()
+		{
+			var label = new Label()
+			{
+				IsPlatformEnabled = true
+			};
+
+			var scrollView = new ScrollViewInvalidationMeasureCheck()
+			{
+				Content = new VerticalStackLayout()
+				{
+					Children = { new ContentView { Content = label, IsPlatformEnabled = true } },
+					IsPlatformEnabled = true
+				},
+				IsPlatformEnabled = true
+			};
+
+			var page = new InvalidatePageInvalidateMeasureCheck()
+			{
+				Content = scrollView
+			};
+
+			var window = new TestWindow(page);
+
+			int fired = 0;
+			page.MeasureInvalidated += (sender, args) =>
+			{
+				fired++;
+			};
+
+			page.InvalidateMeasureCount = 0;
+			scrollView.InvalidateMeasureCount = 0;
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, fired);
+			Assert.Equal(0, page.InvalidateMeasureCount);
+			Assert.Equal(0, scrollView.InvalidateMeasureCount);
+			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, page.InvalidateMeasureCount);
+		}
+
+		class LabelInvalidateMeasureCheck : Label
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public LabelInvalidateMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
+		}
+
+		class ScrollViewInvalidationMeasureCheck : ScrollView
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public ScrollViewInvalidationMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
+		}
+
+		class InvalidatePageInvalidateMeasureCheck : ContentPage
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public InvalidatePageInvalidateMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
+		}
 	}
 }

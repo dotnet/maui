@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Handlers
 					VirtualView?.Completed();
 				}
 				// InputPaneView Path
-				else if(evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
+				else if (evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
 				{
 					VirtualView?.Completed();
 				}

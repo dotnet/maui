@@ -31,7 +31,6 @@
   </Attributes>
   <Docs>
     <summary>One or more items in the flyout. Contained within a <see cref="T:Microsoft.Maui.Controls.Shell" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -45,8 +44,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentItem">
@@ -64,8 +61,6 @@
       </ReturnValue>
       <Docs>
         <summary>The currently selected <see cref="T:Microsoft.Maui.Controls.Tab" /> or <see cref="T:Microsoft.Maui.Controls.ShellSection" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentItemProperty">
@@ -83,7 +78,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellItem.CurrentItem" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Items">
@@ -101,8 +95,6 @@
       </ReturnValue>
       <Docs>
         <summary>The collection of <see cref="T:Microsoft.Maui.Controls.ShellSection" /> objects managed by <c>this</c><see cref="T:Microsoft.Maui.Controls.ShellItem" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsProperty">
@@ -120,7 +112,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellItem.Items" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -149,9 +140,6 @@
       <Parameters />
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildAdded">
@@ -227,8 +215,6 @@
       <Docs>
         <param name="child">To be added.</param>
         <param name="oldLogicalIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -250,8 +236,6 @@
       <Docs>
         <param name="menuItem">To be added.</param>
         <summary>Used primarily by XAML to implicitly create a <see cref="T:Microsoft.Maui.Controls.MenuItem" /> from a <see cref="T:Microsoft.Maui.Controls.ShellSection" /> .</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -273,8 +257,6 @@
       <Docs>
         <param name="shellContent">To be added.</param>
         <summary>Used primarily by XAML to implicitly create a <see cref="T:Microsoft.Maui.Controls.ShellItem" /> from a <see cref="T:Microsoft.Maui.Controls.ShellContent" /> .</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -296,8 +278,6 @@
       <Docs>
         <param name="shellSection">To be added.</param>
         <summary>Used primarily by XAML to implicitly create a <see cref="T:Microsoft.Maui.Controls.ShellItem" /> from a <see cref="T:Microsoft.Maui.Controls.ShellSection" /> .</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -319,8 +299,6 @@
       <Docs>
         <param name="page">To be added.</param>
         <summary>Used primarily by XAML to implicitly create a <see cref="T:Microsoft.Maui.Controls.ShellItem" /> from a <see cref="T:Microsoft.Maui.Controls.TemplatedPage" /> .</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellItemController.GetItems">
@@ -341,9 +319,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellItemController.ItemsCollectionChanged">
@@ -363,8 +338,6 @@
         <ReturnType>System.Collections.Specialized.NotifyCollectionChangedEventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellItemController.ProposeSection">
@@ -391,8 +364,6 @@
         <param name="shellSection">To be added.</param>
         <param name="setValue">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellItemController.ShowTabs">
@@ -412,9 +383,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

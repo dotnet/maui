@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		[FailsOnIOS("iOS will be fixed in https://github.com/dotnet/maui/pull/20953")]
-		[FailsOnMac("Catalyst will be fixed in https://github.com/dotnet/maui/pull/20953")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("iOS will be fixed in https://github.com/dotnet/maui/pull/20953")]
+		[FailsOnMacWhenRunningOnXamarinUITest("Catalyst will be fixed in https://github.com/dotnet/maui/pull/20953")]
 		public void Issue18242Test()
 		{
 			App.WaitForElement("WaitForStubControl");

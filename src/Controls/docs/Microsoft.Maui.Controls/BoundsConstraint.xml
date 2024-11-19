@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>A bounds layout constraint used by <see cref="T:Microsoft.Maui.Controls.Compatibility.RelativeLayout" />s.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="FromExpression">
@@ -51,8 +50,6 @@
         <param name="expression">The expression from which to compile the constraint.</param>
         <param name="parents">The parents to consider when compiling the constraint.</param>
         <summary>Returns a <see cref="T:Microsoft.Maui.Controls.BoundsConstraint" /> object that contains the compiled version of <paramref name="expression" /> and is relative to either <paramref name="parents" /> or the views referred to in <paramref name="expression" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

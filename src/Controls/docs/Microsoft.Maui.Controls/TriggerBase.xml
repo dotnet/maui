@@ -43,7 +43,6 @@
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.TriggerAction" /> objects that will be invoked when the trigger condition is met. Ignored for the <see cref="T:Microsoft.Maui.Controls.EventTrigger" /> class.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ExitActions">
@@ -67,7 +66,6 @@
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.TriggerAction" /> objects that will be invoked after the trigger condition is no longer met. Ignored for the <see cref="T:Microsoft.Maui.Controls.EventTrigger" /> class.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSealed">
@@ -89,7 +87,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether or not the trigger is sealed.</summary>
-        <value>To be added.</value>
         <remarks>A trigger becomes sealed when its `IAttachedObject.AttachTo(Microsoft.Maui.Controls.BindableObject)` method is called. Once it is sealed, its <see cref="P:Microsoft.Maui.Controls.TriggerBase.EnterActions" /> and <see cref="P:Microsoft.Maui.Controls.TriggerBase.ExitActions" /> lists become readonly.</remarks>
       </Docs>
     </Member>
@@ -112,8 +109,6 @@
       </ReturnValue>
       <Docs>
         <summary>The type of object to which this <see cref="T:Microsoft.Maui.Controls.TriggerBase" /> object can be attached.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

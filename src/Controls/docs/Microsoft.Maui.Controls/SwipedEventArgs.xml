@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Arguments for swipe events.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
         <param name="parameter">The parameter to pass to the command for the swipe.</param>
         <param name="direction">The swipe direction.</param>
         <summary>Creates a new swipe event argument object with the specified values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Direction">
@@ -56,7 +54,6 @@
       <Docs>
         <summary>Gets the direction of the swipe.</summary>
         <value>The direction of the swipe.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Parameter">
@@ -76,7 +73,6 @@
       <Docs>
         <summary>Ges the command parameter.</summary>
         <value>The command parameter.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

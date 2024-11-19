@@ -22,38 +22,38 @@ public class Maui19535CustomThemeDictionary : ResourceDictionary
 
 public partial class Maui19535 : Maui19535CustomThemeDictionary
 {
-    public Maui19535()
-    {
-        InitializeComponent();
-    }
+	public Maui19535()
+	{
+		InitializeComponent();
+	}
 
-    public Maui19535(bool useCompiledXaml)
-    {
-        //this stub will be replaced at compile time
-    }
+	public Maui19535(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-    [TestFixture]
-    class Test
-    {
-        [SetUp]
-        public void Setup()
-        {
-            Application.SetCurrentApplication(new MockApplication());
-            DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-        }
+	[TestFixture]
+	class Test
+	{
+		[SetUp]
+		public void Setup()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
 
-        [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-        [Test]
-        public void SubClassOfRDShouldNotThrow([Values(false, true)] bool useCompiledXaml)
-        {
-            if (useCompiledXaml)
-                MockCompiler.Compile(typeof(Maui19535));
-            var rd = new Maui19535(useCompiledXaml);
-            Assert.That(rd.Count, Is.EqualTo(3));
-            Assert.True(rd.TryGetValue("CustomTheme", out var theme));
-            Assert.That(theme, Is.EqualTo("LightTheme"));
-        }
-    }
-        
+		[Test]
+		public void SubClassOfRDShouldNotThrow([Values(false, true)] bool useCompiledXaml)
+		{
+			if (useCompiledXaml)
+				MockCompiler.Compile(typeof(Maui19535));
+			var rd = new Maui19535(useCompiledXaml);
+			Assert.That(rd.Count, Is.EqualTo(3));
+			Assert.True(rd.TryGetValue("CustomTheme", out var theme));
+			Assert.That(theme, Is.EqualTo("LightTheme"));
+		}
+	}
+
 }

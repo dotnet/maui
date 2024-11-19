@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides control over the spellchecker on search bars.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DisableSpellCheck">
@@ -37,7 +36,6 @@
       <Docs>
         <param name="config">The platform configuration for the search bar element.</param>
         <summary>Disables the spellchecker.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableSpellCheck">
@@ -60,7 +58,6 @@
       <Docs>
         <param name="config">The platform configuration for the search bar element.</param>
         <summary>Enables the spellchecker.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsSpellCheckEnabled">
@@ -85,7 +82,6 @@
         <summary>Returns a Boolean value that tells whether the spellchecker is enabled.</summary>
         <returns>
           <see langword="true" /> if the spellchecker is enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsSpellCheckEnabled">
@@ -110,7 +106,6 @@
         <summary>Returns a Boolean value that tells whether the spellchecker is enabled.</summary>
         <returns>
           <see langword="true" /> if the spellchecker is enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSpellCheckEnabled">
@@ -135,7 +130,6 @@
         <summary>Returns a Boolean value that tells whether the spellchecker is enabled.</summary>
         <returns>
           <see langword="true" /> if the spellchecker is enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSpellCheckEnabledProperty">
@@ -154,7 +148,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that turns the spellchecker on and off.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsSpellCheckEnabled">
@@ -180,7 +173,6 @@
         <param name="value">
           <see langword="true" /> to turn the spellchecker on. <see langword="false" /> to turn it off.</param>
         <summary>Turns the spellchecker on and off.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsSpellCheckEnabled">
@@ -207,7 +199,6 @@
           <see langword="true" /> to turn the spellchecker on. <see langword="false" /> to turn it off.</param>
         <summary>Turns the spellchecker on and off.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
