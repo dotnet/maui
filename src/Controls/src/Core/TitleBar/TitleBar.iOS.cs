@@ -11,11 +11,7 @@ namespace Microsoft.Maui.Controls
 			base.OnIsVisibleChanged(oldValue, newValue);
 
 #if MACCATALYST
-            var mauiContext = Handler?.MauiContext;
-
-            var platformWindow = Window.Handler.PlatformView;
-
-			if (platformWindow is UIWindow platWindow
+			if (Handler?.MauiContext?.GetPlatformWindow() is UIWindow platWindow
 				&& platWindow.RootViewController is WindowViewController windowViewController)
 			{
 				windowViewController.SetTitleBarVisibility(newValue);

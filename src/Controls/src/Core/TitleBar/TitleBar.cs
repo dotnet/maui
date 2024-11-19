@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(LeadingVisibleState);
+				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -134,6 +135,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(ContentVisibleState);
+				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -147,6 +149,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(TrailingVisibleState);
+				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -265,18 +268,6 @@ namespace Microsoft.Maui.Controls
 
 				Window.Activated += Window_Activated;
 				Window.Deactivated += Window_Deactivated;
-			}
-			else if (e.PropertyName == nameof(LeadingContent))
-			{
-				(LeadingContent as Layout)?.IgnoreLayoutSafeArea();
-			}
-			else if (e.PropertyName == nameof(Content))
-			{
-				(Content as Layout)?.IgnoreLayoutSafeArea();
-			}
-			else if (e.PropertyName == nameof(TrailingContent))
-			{
-				(TrailingContent as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
