@@ -25,7 +25,7 @@
 			button = new Button()
 			{
 				Text = "Click Me",
-				AutomationId = "Click Me",
+				AutomationId = "ClickMe",
 				Command = new Command(async () =>
 				{
 					await GoToAsync("Issue9006_ContentPage");
