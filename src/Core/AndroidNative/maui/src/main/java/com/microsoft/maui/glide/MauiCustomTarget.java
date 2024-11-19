@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,10 +13,10 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import com.microsoft.maui.ImageLoaderCallback;
+import com.microsoft.maui.PlatformLogger;
 
 public class MauiCustomTarget extends CustomTarget<Drawable> {
-    private static final String TAG = "MauiCustomTarget";
-    private static final boolean IS_VERBOSE_LOGGABLE = Log.isLoggable(TAG, Log.VERBOSE);
+    private static final PlatformLogger logger = new PlatformLogger("MauiCustomTarget");
 
     private final Context context;
     private final ImageLoaderCallback callback;
@@ -29,7 +28,7 @@ public class MauiCustomTarget extends CustomTarget<Drawable> {
         this.context = context;
         this.callback = callback;
 
-        if (IS_VERBOSE_LOGGABLE && model != null) {
+        if (logger.isVerboseLoggable && model != null) {
             this.resourceLogIdentifier = model.toString();
         } else {
             this.resourceLogIdentifier = null;
@@ -43,10 +42,10 @@ public class MauiCustomTarget extends CustomTarget<Drawable> {
 
         this.completed = true;
 
-        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "onLoadFailed: " + resourceLogIdentifier);
+        if (logger.isVerboseLoggable) logger.v("onLoadFailed: " + resourceLogIdentifier);
 
         // trigger the callback out of this target
-        callback.onComplete(false, errorDrawable, null);
+        post(() -> callback.onComplete(false, errorDrawable, null), true);
     }
 
     @Override
@@ -55,20 +54,20 @@ public class MauiCustomTarget extends CustomTarget<Drawable> {
             return;
         this.completed = true;
 
-        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "onResourceReady: " + resourceLogIdentifier);
+        if (logger.isVerboseLoggable) logger.v("onResourceReady: " + resourceLogIdentifier);
 
         // trigger the callback out of this target
-        callback.onComplete(true, resource, this::clear);
+        post(() -> callback.onComplete(true, resource, this::clear), true);
     }
 
     @Override
     public void onLoadCleared(@Nullable Drawable placeholder) {
-        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "onLoadCleared: " + resourceLogIdentifier);
+        if (logger.isVerboseLoggable) logger.v("onLoadCleared: " + resourceLogIdentifier);
     }
 
-    private void post(Runnable runnable) {
+    private void post(Runnable runnable, boolean yieldExecution) {
         Looper looper = Looper.getMainLooper();
-        if (looper.isCurrentThread()) {
+        if (!yieldExecution && looper.isCurrentThread()) {
             runnable.run();
             return;
         }
@@ -82,6 +81,6 @@ public class MauiCustomTarget extends CustomTarget<Drawable> {
             Glide
                 .with(context)
                 .clear(this);
-        });
+        }, false);
     }
 }

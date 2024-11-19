@@ -4,7 +4,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,10 +13,10 @@ import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import com.microsoft.maui.ImageLoaderCallback;
+import com.microsoft.maui.PlatformLogger;
 
 public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> {
-    private static final String TAG = "MauiCustomViewTarget";
-    private static final boolean IS_VERBOSE_LOGGABLE = Log.isLoggable(TAG, Log.VERBOSE);
+    private static final PlatformLogger logger = new PlatformLogger("MauiCustomViewTarget");
 
     private final ImageLoaderCallback callback;
     private final String resourceLogIdentifier;
@@ -29,7 +28,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
         this.completed = false;
         this.callback = callback;
 
-        if (IS_VERBOSE_LOGGABLE && model != null) {
+        if (logger.isVerboseLoggable && model != null) {
             this.resourceLogIdentifier = model.toString();
         } else {
             this.resourceLogIdentifier = null;
@@ -38,7 +37,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
-        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "onResourceCleared: " + resourceLogIdentifier);
+        if (logger.isVerboseLoggable) logger.v("onResourceCleared: " + resourceLogIdentifier);
 
 		this.view.setImageDrawable(placeholder);
     }
@@ -50,10 +49,10 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
         this.completed = true;
 
-        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "onLoadFailed: " + resourceLogIdentifier);
+        if (logger.isVerboseLoggable) logger.v("onLoadFailed: " + resourceLogIdentifier);
 
         // trigger the callback out of this target
-        callback.onComplete(false, errorDrawable, this::clear);
+        post(() -> callback.onComplete(false, errorDrawable, this::clear), true);
     }
 
     @Override
@@ -62,18 +61,17 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
             return;
         this.completed = true;
 
-        if (IS_VERBOSE_LOGGABLE) Log.v(TAG, "onResourceReady: " + resourceLogIdentifier);
+        if (logger.isVerboseLoggable) logger.v("onResourceReady: " + resourceLogIdentifier);
 
         // set the image
         this.view.setImageDrawable(resource);
 
         // trigger the callback out of this target
-        callback.onComplete(true, resource, this::clear);
+        post(() -> callback.onComplete(true, resource, this::clear), true);
     }
 
-    private void post(Runnable runnable) {
-        Looper looper = Looper.getMainLooper();
-        if (looper.isCurrentThread()) {
+    private void post(Runnable runnable, boolean yieldExecution) {
+        if (!yieldExecution && Looper.getMainLooper().isCurrentThread()) {
             runnable.run();
             return;
         }
@@ -86,6 +84,6 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
             // TODO: Explicitly release image
             // https://github.com/dotnet/maui/issues/6464
             // https://github.com/dotnet/maui/pull/6543
-        //});
+        //}, false);
     }
 }
