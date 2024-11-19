@@ -197,7 +197,7 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if parameter.UseProvisionator }}:
+                  ${{ if parameters.UseProvisionator }}:
                     skipProvisioning: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:  
