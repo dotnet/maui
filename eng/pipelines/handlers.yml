@@ -166,12 +166,15 @@ stages:
               - template: common/provision.yml
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
-                  # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   skipAndroidSdks: true
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
-                  skipProvisioning: true
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
+                  ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                    skipProvisioning: false
+                    gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  ${{ else }}:  
+                    skipProvisioning: true
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -238,12 +241,16 @@ stages:
                     parameters:
                       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       skipAndroidSdks: true
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
-                      skipProvisioning: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
+                      ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                        skipProvisioning: false
+                        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                      ${{ else }}:  
+                        skipProvisioning: true
+                      
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -268,8 +275,12 @@ stages:
                 skipAndroidSdks: true
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
-                skipProvisioning: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
+                ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+                  skipProvisioning: false
+                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                ${{ else }}:  
+                  skipProvisioning: true
 
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'
@@ -319,5 +330,3 @@ stages:
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

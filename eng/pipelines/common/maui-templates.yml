@@ -52,8 +52,8 @@ jobs:
       clean: all
     displayName: 'Build ${{ category }}: macOS' 
     timeoutInMinutes: 240
-    condition: ${{ parameters.condition}}
-    pool: ${{ parameters.MacBuildPool}}
+    condition: ${{ parameters.condition }}
+    pool: ${{ parameters.MacBuildPool }}
     steps:
       - template: maui-templates-steps.yml
         parameters:
@@ -63,6 +63,11 @@ jobs:
           checkoutDirectory: ${{ parameters.checkoutDirectory }}
           prepareSteps: ${{ parameters.prepareSteps }}
           category: ${{ category }}
+          skipXcode: false
+          ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+            skipProvisioning: false
+          ${{ else }}:  
+            skipProvisioning: true
 
 
 - ${{ each category in parameters.BuildCategories }}:
