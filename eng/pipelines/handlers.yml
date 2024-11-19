@@ -52,7 +52,7 @@ parameters:
 
   - name: UseProvisionator
     type: boolean
-    default: $[eq(variables['System.TeamProject'], 'devdiv')]
+    default: false
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
