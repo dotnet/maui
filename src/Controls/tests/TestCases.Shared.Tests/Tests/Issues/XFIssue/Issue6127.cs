@@ -7,8 +7,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue6127 : _IssuesUITest
 {
-	const string PrimaryToolbarIcon = "PrimaryToolbarIcon";
-	const string SecondaryToolbarIcon = "SecondaryToolbarIcon";
 
 	public Issue6127(TestDevice testDevice) : base(testDevice)
 	{
