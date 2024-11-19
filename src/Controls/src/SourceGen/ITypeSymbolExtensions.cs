@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class ITypeSymbolExtensions
 {
-    //FIXME use IMutable instead of IEnumerable
     public static string? GetContentPropertyName(this ITypeSymbol type)
         => type.GetAllAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToString() == "Microsoft.Maui.Controls.ContentPropertyAttribute")?.ConstructorArguments[0].Value as string;           
 
@@ -82,8 +81,12 @@ static class ITypeSymbolExtensions
         }
     }
 
+
 	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name)
         => symbol.GetAllAttributes().Where(ad => ad.AttributeClass?.ToString() == name);
+
+    public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol symbol, ITypeSymbol attributeType)
+        => symbol.GetAttributes().Where(ad => SymbolEqualityComparer.Default.Equals(ad.AttributeClass, attributeType));
 
     public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol)
     {
