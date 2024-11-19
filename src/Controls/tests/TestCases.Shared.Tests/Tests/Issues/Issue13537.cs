@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
 			App.WaitForElement("InnerPageTestLabel");
-			App.TapBackArrow("Home");
+			App.TapBackArrow();
 			var result = App.WaitForElement("HomePageTestLabel").GetText();
 			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
