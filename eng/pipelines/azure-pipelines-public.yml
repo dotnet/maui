@@ -61,8 +61,6 @@ variables:
       value: ''
     - name: _Sign
       value: false
-    - name: _RunPublic
-      value: True
 
   # Set up non-PR build from internal project
   - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
@@ -79,8 +77,6 @@ variables:
       value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
     - name: _Sign
       value: true
-    - name: _RunPublic
-      value: False
 
 parameters:
   - name: pushMauiPackagesToMaestro
@@ -169,4 +165,4 @@ stages:
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
-                runAsPublic: $(_RunPublic)
+                runAsPublic: ${{ ne(variables['_RunAsPublic'], 'true') }}
