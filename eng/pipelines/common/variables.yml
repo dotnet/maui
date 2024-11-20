@@ -59,6 +59,10 @@ variables:
   value: false
 - name: _RunAsPublic
   value: True
+- name: _RunAsInternal
+  value: False
+- name: _InternalBuildArgs
+  value: ''
 
 # Variable groups required for private builds
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:

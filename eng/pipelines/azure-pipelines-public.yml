@@ -192,3 +192,4 @@ stages:
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
+                runAsPublic: $(_RunAsPublic)
