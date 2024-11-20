@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void LinearGradientShouldHaveTheSameTopColorAsBackgroind()
+		public void LinearGradientShouldHaveTheSameTopColorAsBackground()
 		{
 			App.WaitForElement("Label");
 			VerifyScreenshot();
