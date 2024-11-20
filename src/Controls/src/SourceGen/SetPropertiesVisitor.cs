@@ -267,13 +267,13 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
     static void SetValue(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-		if (node is ValueNode valueNode)
-		{
-			var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
-			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {valueString});");
-		}
-		else if (node is ElementNode elementNode)
-			writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {context.Variables[node].Name});");
+        if (node is ValueNode valueNode)
+        {
+            var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
+            writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {valueString});");
+        }
+        else if (node is ElementNode elementNode)
+            writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {context.Variables[node].Name});");
 	}
 
     static bool CanSet(LocalVariable parentVar, string localName, INode node, SourceGenContext context)
@@ -294,14 +294,17 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     static void Set(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var property = parentVar.Type.GetAllProperties().First(p => p.Name == localName);
-        if (node is ValueNode valueNode)
+        
+        //generated code could fail, so add location info
+        using (PrePost.NewBlock(writer, $"#line {iXmlLineInfo.LineNumber} \"{context.FilePath}\"", "#line default", ident: 0, noTab: true))
         {
-            var valueString = valueNode.ConvertTo(property, context, iXmlLineInfo);
-            writer.WriteLine($"{parentVar.Name}.{localName} = {valueString};");
-        }
-        else if (node is ElementNode elementNode)
-        {
-            writer.WriteLine($"{parentVar.Name}.{localName} = {context.Variables[elementNode].Name};");
+            if (node is ValueNode valueNode)
+            {
+                var valueString = valueNode.ConvertTo(property, context, iXmlLineInfo);
+                writer.WriteLine($"{parentVar.Name}.{localName} = {valueString};");
+            }
+            else if (node is ElementNode elementNode)
+                writer.WriteLine($"{parentVar.Name}.{localName} = {context.Variables[elementNode].Name};");
         }
     }
 
