@@ -141,8 +141,8 @@ parameters:
   - name: MacTemplatePool
     type: object
     default:
-      name: $(windowsVmPool)
-      vmImage: $(windowsVmImage)
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals arm64
