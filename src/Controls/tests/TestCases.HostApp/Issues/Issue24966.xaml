@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue24966"
+             xmlns:cv1="clr-namespace:Maui.Controls.Sample"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
              Title="Main Page">
@@ -17,9 +18,9 @@
       <Button Command="{Binding RemoveCommand}" Text="Remove item" AutomationId="RemoveButton" />
     </HorizontalStackLayout>
 
-    <CollectionView Grid.Row="1" ItemsSource="{Binding ItemList}">
+    <cv1:CollectionView1 Grid.Row="1" ItemsSource="{Binding ItemList}">
 
-      <CollectionView.HeaderTemplate>
+      <cv1:CollectionView1.HeaderTemplate>
         <DataTemplate>
           <Label
               Padding="10"
@@ -27,21 +28,21 @@
               FontSize="Large"
               Text="Cities" />
         </DataTemplate>
-      </CollectionView.HeaderTemplate>
+      </cv1:CollectionView1.HeaderTemplate>
 
-      <CollectionView.ItemTemplate>
+      <cv1:CollectionView1.ItemTemplate>
         <DataTemplate>
           <Label Padding="20,5,5,5" Text="{Binding .}" />
         </DataTemplate>
-      </CollectionView.ItemTemplate>
+      </cv1:CollectionView1.ItemTemplate>
 
-      <CollectionView.EmptyViewTemplate>
+      <cv1:CollectionView1.EmptyViewTemplate>
         <DataTemplate>
           <Label Padding="20,5,5,5" Text="Empty" />
         </DataTemplate>
-      </CollectionView.EmptyViewTemplate>
+      </cv1:CollectionView1.EmptyViewTemplate>
 
-      <CollectionView.FooterTemplate>
+      <cv1:CollectionView1.FooterTemplate>
         <DataTemplate>
           <Label
               Padding="10"
@@ -49,9 +50,9 @@
               FontSize="Large"
               Text="Hello world !!!" />
         </DataTemplate>
-      </CollectionView.FooterTemplate>
+      </cv1:CollectionView1.FooterTemplate>
 
-    </CollectionView>
+    </cv1:CollectionView1>
 
   </Grid>
 </ContentPage>
