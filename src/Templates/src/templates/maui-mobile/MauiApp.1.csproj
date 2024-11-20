@@ -48,10 +48,20 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
+<!--#if (!IncludeSampleContent) -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+<!--#endif -->
+<!--#if (IncludeSampleContent) -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#17171a" />
+<!--#endif -->
 
 		<!-- Splash Screen -->
+<!--#if (!IncludeSampleContent) -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+<!--#endif -->
+<!--#if (IncludeSampleContent) -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#17171a" BaseSize="128,128" />
+<!--#endif -->
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />

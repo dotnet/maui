@@ -2,8 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Android.Content;
 using Android.Webkit;
-using AWebView = Android.Webkit.WebView;
 using AUri = Android.Net.Uri;
+using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
 {

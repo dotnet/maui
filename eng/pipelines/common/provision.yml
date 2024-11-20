@@ -139,10 +139,10 @@ steps:
       version: $(DOTNET_VERSION)
       includePreviewVersions: true
 
-  - pwsh: |
-      dotnet --version
-      dotnet --list-sdks
-    displayName: 'Show .NET SDK info'
+  # - pwsh: |
+  #     dotnet --version
+  #     dotnet --list-sdks
+  #   displayName: 'Show .NET SDK info'
 
   - ${{ if eq(parameters.clearCaches, 'true') }}:
     - pwsh: dotnet nuget locals all --clear

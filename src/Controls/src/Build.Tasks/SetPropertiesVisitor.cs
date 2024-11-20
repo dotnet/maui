@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Type compiledValueProviderType;
 				ICompiledValueProvider valueProvider;
 
-				if (   compiledValueProviderName != null 
+				if (compiledValueProviderName != null
 					&& (compiledValueProviderType = Type.GetType(compiledValueProviderName)) != null
 					&& (valueProvider = Activator.CreateInstance(compiledValueProviderType) as ICompiledValueProvider) != null)
 				{
@@ -1338,7 +1338,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return false;
 
 
-				
+
 			var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
 			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
 			// Worst case scenario ? InvalidCastException at runtime
@@ -1398,16 +1398,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var @else = Create(OpCodes.Nop);
 				var endif = Create(OpCodes.Nop);
 
-				if(context.Variables[elementNode].VariableType.FullName == "System.Object")
+				if (context.Variables[elementNode].VariableType.FullName == "System.Object")
 				{
 					//if(value != null && value.GetType().IsAssignableFrom(typeof(BindingBase)))
 					yield return Create(Ldloc, context.Variables[elementNode]);
 					yield return Create(Brfalse, @else);
-					
+
 					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase")));
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
 					yield return Create(Ldloc, context.Variables[elementNode]);
-					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Object"), methodName: "GetType",  paramCount: 0));
+					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Object"), methodName: "GetType", paramCount: 0));
 					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "IsAssignableFrom", parameterTypes: new[] { ("mscorlib", "System", "Type") }));
 					yield return Create(Brfalse, @else);
 					//then
@@ -1421,9 +1421,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					yield return instruction;
 				if (bpTypeRef.IsValueType)
 					yield return Create(Box, module.ImportReference(bpTypeRef));
-				
+
 				//endif
-				if(context.Variables[elementNode].VariableType.FullName == "System.Object")
+				if (context.Variables[elementNode].VariableType.FullName == "System.Object")
 					yield return endif;
 
 			}
@@ -1470,7 +1470,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return false;
 
 			var valueNode = node as ValueNode;
-            if (valueNode != null && valueNode.CanConvertValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }))
+			if (valueNode != null && valueNode.CanConvertValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }))
 				return true;
 
 			var elementNode = node as IElementNode;

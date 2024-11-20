@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using System.Runtime.CompilerServices;
 using Android.Views.Animations;
+using AndroidX.Activity;
+using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using AndroidX.AppCompat.App;
-using Microsoft.Maui.LifecycleEvents;
-using AndroidX.Activity;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls.Platform
 {
