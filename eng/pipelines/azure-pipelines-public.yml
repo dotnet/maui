@@ -165,4 +165,5 @@ stages:
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
-                runAsPublic: ${{ ne(variables['_RunAsPublic'], 'true') }}
+                runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+                runHelixTests: ${{ contains(testVariant, 'helix') }}
