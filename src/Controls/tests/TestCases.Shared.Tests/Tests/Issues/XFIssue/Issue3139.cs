@@ -28,7 +28,7 @@ public class Issue3139 : _IssuesUITest
 		App.Tap("Yes");
 		App.WaitForElement("Again Yes");
 		App.Tap("Yes");
-		App.WaitForElement("Test passed");
+		Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("Test passed"));
 #endif
 	}
 }
