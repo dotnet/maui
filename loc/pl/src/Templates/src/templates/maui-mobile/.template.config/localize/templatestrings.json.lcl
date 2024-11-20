@@ -52,6 +52,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";postActions/restore/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restore NuGet packages required by this project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Przywróć pakiety NuGet wymagane przez ten projekt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";postActions/restore/manualInstructions/default/text" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Run 'dotnet restore']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Uruchom polecenie „dotnet restore”]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";symbols/Framework/choices/DOTNET_TFM_VALUE/description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
@@ -70,11 +88,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";symbols/IncludeSampleContent/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Configures whether to add sample pages and functionality to demonstrate basic usage patterns.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Konfiguruje, czy dodać przykładowe strony i funkcje, aby zademonstrować podstawowe wzorce użycia.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";symbols/IncludeSampleContent/displayName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Include sample content]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[_Dołącz przykładową zawartość]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";symbols/applicationId/description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Overrides the $(ApplicationId) in the project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Zastępuje $(ApplicationId) w projekcie]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";symbols/skipRestore/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[If specified, skips the automatic restore of the project on create.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

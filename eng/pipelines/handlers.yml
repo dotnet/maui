@@ -310,6 +310,12 @@ stages:
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
+        MacBuildPool:    
+          name: $(macOSXVmPool)
+          vmImage: $(macOSXVmImage)
+          demands:
+            - macOS.Name -equals Sonoma
+            - macOS.Architecture -equals x64
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

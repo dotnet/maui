@@ -52,6 +52,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";postActions/restore/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restore NuGet packages required by this project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 프로젝트에 필요한 NuGet 패키지를 복원합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";postActions/restore/manualInstructions/default/text" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Run 'dotnet restore']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA['dotnet restore' 실행]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";symbols/Framework/choices/DOTNET_TFM_VALUE/description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Target DOTNET_TFM_VALUE]]></Val>
@@ -70,11 +88,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";symbols/IncludeSampleContent/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Configures whether to add sample pages and functionality to demonstrate basic usage patterns.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[기본 사용 패턴을 보여 주는 샘플 페이지 및 기능을 추가할지 여부를 구성합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";symbols/IncludeSampleContent/displayName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[_Include sample content]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[_샘플 콘텐츠 포함]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";symbols/applicationId/description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Overrides the $(ApplicationId) in the project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[프로젝트에서 $(ApplicationId) 재정의]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";symbols/skipRestore/description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[If specified, skips the automatic restore of the project on create.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
