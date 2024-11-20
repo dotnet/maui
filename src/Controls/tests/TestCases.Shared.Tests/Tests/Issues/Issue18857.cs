@@ -23,7 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("TestRemoveBackgroundButton");
 			App.Tap("TestUpdateBackgroundButton");
 
-			await Task.Delay(500);
+			App.WaitForElement("TestImageButton");
+
+			await Task.Yield(); // Wait for Ripple Effect animation to complete.
 
 			VerifyScreenshot();
 		}
