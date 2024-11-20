@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 
 		nfloat _strokeMiterLimit;
 
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "CALayerAutosizeObserver has no strong references to other objects.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeObserver_DoesNotLeak test.")]
 		CALayerAutosizeObserver? _boundsObserver;
 
 		public MauiCALayer()

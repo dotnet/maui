@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Platform;
 
 class StaticCALayer : CALayer, IAutoSizableCALayer
 {
-	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "CALayerAutosizeObserver has no strong references to other objects.")]
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in CALayerAutosizeObserver_DoesNotLeak test.")]
 	CALayerAutosizeObserver? _boundsObserver;
 
 	protected override void Dispose(bool disposing)
