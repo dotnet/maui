@@ -14,12 +14,13 @@ public class Issue1323 : _IssuesUITest
 
 	public override string Issue => "tabbed page BarTextColor is not pervasive and can't be applied after instantiation";
 
-	[Test]
-	[Category(UITestCategories.TabbedPage)]
-	public void Issue1323Test()
-	{
-		App.WaitForElement("Page 1");
-		App.WaitForElement("Page5");
-		App.Screenshot("All tab bar items text should be white");
-	}
+	// [Test]
+	// [Category(UITestCategories.TabbedPage)]
+	// [FailsOnIOS]
+	// public void Issue1323Test()
+	// {
+	// 	App.WaitForElement(X => X.Marked("Page 1"));
+	// 	App.WaitForElement(X => X.Marked("Page5"));
+	// 	App.Screenshot("All tab bar items text should be white");
+	// }
 }

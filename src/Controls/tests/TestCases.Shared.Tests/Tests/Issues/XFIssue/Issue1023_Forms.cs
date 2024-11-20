@@ -22,7 +22,8 @@ public class Issue1023_Forms : _IssuesUITest
 			App.Tap("Push");
 
 			App.WaitForElement("ListView");
-			App.TapBackArrow("Back");
+			App.TapBackArrow();
+
 		}
 
 		// At this point, the counter can be any value, but it's most likely not zero.
