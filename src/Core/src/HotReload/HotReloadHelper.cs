@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,21 +34,36 @@ namespace Microsoft.Maui.HotReload
 
 		public static void Register(IHotReloadableView view, params object[] parameters)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
 				return;
+
+			if (!IsEnabled)
+				return;
+
 			currentViews[view] = parameters;
 		}
 
 		public static void UnRegister(IHotReloadableView view)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
 				return;
+
+			if (!IsEnabled)
+				return;
+
 			currentViews.Remove(view);
 		}
 		public static bool IsReplacedView(IHotReloadableView view, IView newView)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
 				return false;
+
+			if (!IsEnabled)
+				return false;
+
 			if (view == null || newView == null)
 				return false;
 
@@ -57,7 +73,11 @@ namespace Microsoft.Maui.HotReload
 		}
 		public static IView GetReplacedView(IHotReloadableView view)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
+				return view;
+
+			if (!IsEnabled)
 				return view;
 
 			var viewType = view.GetType();
@@ -97,9 +117,18 @@ namespace Microsoft.Maui.HotReload
 		static Dictionary<string, Type> replacedViews = new(StringComparer.Ordinal);
 		static Dictionary<IHotReloadableView, object[]> currentViews = new Dictionary<IHotReloadableView, object[]>();
 		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
+
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
 		public static void RegisterReplacedView(string oldViewType, Type newViewType)
 		{
-			if (!IsSupported || !IsEnabled)
+			// Check separately to avoid trim warnings
+			if (!IsSupported)
+				return;
+
+			if (!IsEnabled)
 				return;
 
 			Action<MethodInfo> executeStaticMethod = (method) =>
@@ -145,17 +174,15 @@ namespace Microsoft.Maui.HotReload
 				}
 			}
 
-		}
-
-
-		static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
-		{
-			_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
-			var view = pair.Key;
-			var newType = newHandler;
-			if (pair.Value.IsGenericType)
-				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-			HandlerService.AddHandler(view, newType);
+			static void RegisterHandler(KeyValuePair<Type, Type> pair, Type newHandler)
+			{
+				_ = HandlerService ?? throw new ArgumentNullException(nameof(HandlerService));
+				var view = pair.Key;
+				var newType = newHandler;
+				if (pair.Value.IsGenericType)
+					newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
+				HandlerService.AddHandler(view, newType);
+			}
 		}
 
 		public static void TriggerReload()
@@ -179,6 +206,10 @@ namespace Microsoft.Maui.HotReload
 			}
 		}
 		#region Metadata Update Handler
+		[RequiresUnreferencedCode("Hot Reload is not trim compatible")]
+#if !NETSTANDARD
+		[RequiresDynamicCode("Hot Reload is not AOT compatible")]
+#endif
 		public static void UpdateApplication(Type[] types)
 		{
 			IsEnabled = true;

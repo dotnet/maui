@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to the font weight for labels on the Tizen platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="FontWeightProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetFontWeight">
@@ -57,7 +55,6 @@
         <param name="element">The label element on the Tizen platform whose font weight icon to get.</param>
         <summary>Returns the font weight for the label text.</summary>
         <returns>The font weight for the label text.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetFontWeight">
@@ -81,7 +78,6 @@
         <param name="config">The platform configuration for the label element on the Tizen platform whose font weight icon to get.</param>
         <summary>Returns a string representation of the font weight for the label text.</summary>
         <returns>A string representation of the font weight for the label text.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetFontWeight">
@@ -106,7 +102,6 @@
         <param name="element">The label element on the Tizen platform whose font weight icon to set.</param>
         <param name="weight">The new font weight value.</param>
         <summary>Sets the font weight on the label text.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetFontWeight">
@@ -132,7 +127,6 @@
         <param name="weight">The new font weight value.</param>
         <summary>Sets the font weight on the label text.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

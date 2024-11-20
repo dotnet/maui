@@ -15,7 +15,7 @@ public class Bugzilla38731 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Navigation)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla38731Test ()
 	// {
 	// 	App.WaitForElement("btn1");

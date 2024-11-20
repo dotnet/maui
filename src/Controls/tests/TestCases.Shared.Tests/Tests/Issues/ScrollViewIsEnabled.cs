@@ -23,10 +23,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
+#if WINDOWS || ANDROID
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyEnabled()
 		{
 			// 1. Enable the ScrollView.
@@ -47,8 +48,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
 			// 1. Enable the ScrollView.
@@ -75,8 +76,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyNotEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -95,8 +96,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -120,6 +121,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			this.Back();
 		}
+#endif
 	}
 }
 #endif

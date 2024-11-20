@@ -20,14 +20,15 @@
 			var tapCount = 0;
 
 			var singleTapRecognizer = new TapGestureRecognizer();
-			singleTapRecognizer.Tapped += (sender, args) => {
+			singleTapRecognizer.Tapped += (sender, args) =>
+			{
 				tapCount++;
 				singleTapResults.Text = tapCount.ToString();
 
 				var dynamicTapRecognizer = new TapGestureRecognizer();
 				dynamicTapRecognizer.Tapped += (sender, args) =>
 				{
-					Console.WriteLine("DynamicTap"); 
+					Console.WriteLine("DynamicTap");
 				};
 				singleTapSurface.GestureRecognizers.Add(dynamicTapRecognizer);
 			};

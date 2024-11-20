@@ -1,12 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 31255, "Flyout's page Icon cause memory leak after FlyoutPage is popped out by holding on page")]
 	public class Bugzilla31255 : NavigationPage
 	{
@@ -61,7 +55,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			public class Page2 : FlyoutPage
 			{
 				public Page2()

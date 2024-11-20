@@ -16,9 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// EmptyViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue9196.xaml.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void EmptyViewShouldNotCrash()
 		{
 			App.WaitForNoElement("Success");

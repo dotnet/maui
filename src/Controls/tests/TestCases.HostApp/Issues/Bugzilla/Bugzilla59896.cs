@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 59896, "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty", PlatformAffected.iOS)]
 	public class Bugzilla59896 : TestContentPage
 	{
@@ -58,7 +54,7 @@ namespace Maui.Controls.Sample.Issues
 
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class Group : List<string>
 		{
 			public string Title
@@ -75,7 +71,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class GroupHeaderView
 		{
 			public GroupHeaderView()

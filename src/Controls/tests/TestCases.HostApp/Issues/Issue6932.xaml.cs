@@ -1,13 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6932, "EmptyView for BindableLayout (view)", PlatformAffected.All)]
 	public partial class Issue6932 : TestContentPage
 	{
@@ -25,7 +20,6 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class Page6932ViewModel
 	{
 		public string LayoutAutomationId { get => "StackLayoutThing"; }

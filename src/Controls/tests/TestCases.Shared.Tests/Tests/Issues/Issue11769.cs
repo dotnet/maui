@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void DelayedAddingOfShellContentDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void DelayedAddingOfShellSectionDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void DelayedAddingOfShellItemDoesntCrash()
 		{
 			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);

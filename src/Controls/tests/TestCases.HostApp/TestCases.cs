@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+﻿using System.Reflection;
 
 namespace Maui.Controls.Sample
 {
@@ -58,7 +53,7 @@ namespace Maui.Controls.Sample
 					return () =>
 					{
 						var page = ActivatePage(type);
-						Application.Current.MainPage = page;
+						Application.Current.Windows[0].Page = page;
 					};
 				}
 
@@ -139,6 +134,10 @@ namespace Maui.Controls.Sample
 
 				var assembly = typeof(TestCases).Assembly;
 
+#if NATIVE_AOT
+				// Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553)
+				_issues = new();
+#else
 				_issues =
 					(from type in assembly.GetTypes()
 					 let attribute = type.GetCustomAttribute<IssueAttribute>()
@@ -152,6 +151,7 @@ namespace Maui.Controls.Sample
 						 Description = attribute.Description,
 						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
+#endif
 
 				VerifyNoDuplicates();
 				FilterIssues();

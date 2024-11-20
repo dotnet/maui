@@ -1,10 +1,6 @@
-using System;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 30324, "Detail view of FlyoutPage does not get appearance events on Android when whole FlyoutPage disappears/reappears")]
 public class Bugzilla30324 : TestNavigationPage
 {

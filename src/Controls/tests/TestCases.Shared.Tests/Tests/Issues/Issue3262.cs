@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			App.Tap("PageWithoutCookies");
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("Loaded");
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void AddAdditionalCookieToWebView()
 		{
 			App.WaitForElement("Loaded");
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void SetToOneCookie()
 		{
 			App.WaitForElement("Loaded");
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			App.WaitForElement("Loaded");
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			App.WaitForElement("Loaded");

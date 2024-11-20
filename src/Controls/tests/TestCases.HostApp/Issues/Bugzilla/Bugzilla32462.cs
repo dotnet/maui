@@ -1,15 +1,27 @@
-using System;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 32462, "Crash after a page disappeared if a ScrollView is in the HeaderTemplate property of a ListView", PlatformAffected.Android)]
-public class Bugzilla32462 : TestContentPage // or TestFlyoutPage, etc ...
+public class Bugzilla32462 : NavigationPage // or TestFlyoutPage, etc ...
 {
-	[Preserve(AllMembers = true)]
+	public Bugzilla32462()
+	{
+		Navigation.PushAsync(new MainPage());
+	}
+
+	public class MainPage : ContentPage
+	{
+		public MainPage()
+		{
+			var button = new Button
+			{
+				Text = "Click!",
+			};
+			button.Clicked += (object sender, EventArgs e) => Navigation.PushAsync(new ListViewPage());
+			Content = button;
+		}
+	}
+
 	public class ListViewPage : ContentPage
 	{
 		public ListViewPage()
@@ -27,15 +39,5 @@ public class Bugzilla32462 : TestContentPage // or TestFlyoutPage, etc ...
 
 			listview.ScrollTo(list[39], ScrollToPosition.Center, false);
 		}
-	}
-
-	protected override void Init()
-	{
-		var button = new Button
-		{
-			Text = "Click!",
-		};
-		button.Clicked += (object sender, EventArgs e) => Navigation.PushAsync(new ListViewPage());
-		Content = button;
 	}
 }

@@ -1,10 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1975, "[iOS] ListView throws NRE when grouping enabled and data changed",
 		PlatformAffected.iOS)]
 	public class Issue1975 : NavigationPage
@@ -60,7 +58,7 @@ namespace Maui.Controls.Sample.Issues
 				return contentPage;
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class DataSample
 			{
 				static readonly object _lockObject = new object();
@@ -108,7 +106,7 @@ namespace Maui.Controls.Sample.Issues
 				public ObservableCollection<Item> Items { get; }
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class Item : ObservableCollection<SubItem>
 			{
 				public string ShortName { get; set; }
@@ -121,7 +119,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class SubItem
 			{
 				public string Text { get; set; }

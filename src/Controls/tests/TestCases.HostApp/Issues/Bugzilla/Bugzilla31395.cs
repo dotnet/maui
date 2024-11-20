@@ -1,9 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 31395, "Crash when switching MainPage and using a Custom Render")]
 	public class Bugzilla31395 : NavigationPage
 	{

@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		internal static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)
 		{
-			ILRootNode rootnode = null;
 			using (var reader = XmlReader.Create(stream))
 			{
 				while (reader.Read())
@@ -56,12 +55,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						continue;
 					}
 
-					XamlParser.ParseXaml(
-						rootnode = new ILRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), typeReference, reader as IXmlNamespaceResolver, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition), reader);
-					break;
+					var xmlType = new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader));
+					var rootnode = new ILRootNode(xmlType, typeReference, reader as IXmlNamespaceResolver, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
+					XamlParser.ParseXaml(rootnode, reader);
+					return rootnode;
 				}
 			}
-			return rootnode;
+			return null;
 		}
 	}
 

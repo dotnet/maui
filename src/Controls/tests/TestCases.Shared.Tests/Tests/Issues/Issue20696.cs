@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		#if IOS
+#if IOS
 		[Test]
 		[Category(UITestCategories.Shell)]
 #endif
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			_ = App.WaitForElement("GoToTest");
 			App.Tap("GoToTest");
-			
+
 			_ = App.WaitForElement("button");
 			App.Tap("button");
 

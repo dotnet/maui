@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Platform
 
 		void DrawBorder(CGContext ctx)
 		{
-			if (_strokeThickness == 0)
+			if (_strokeThickness <= 0)
 				return;
 
 			if (IsBorderDashed())

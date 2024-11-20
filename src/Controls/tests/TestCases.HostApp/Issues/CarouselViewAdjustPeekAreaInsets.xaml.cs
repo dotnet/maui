@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// Issue13436 (src\ControlGallery\src\Issues.Shared\Issue13436.cs
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.None, 13436,
 		"[Bug] Java.Lang.IllegalArgumentException in CarouselView adjusting PeekAreaInsets in OnSizeAllocated using XF 5.0",
 		PlatformAffected.Android)]

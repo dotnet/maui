@@ -1,9 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 41415, "ScrollX and ScrollY values are not consistent with iOS", PlatformAffected.Android)]
 	public class Bugzilla41415 : ContentPage

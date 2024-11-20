@@ -22,7 +22,6 @@
   </Attributes>
   <Docs>
     <summary>Exception that is raised when the XAML parser encounters a XAML error.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,7 +36,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -56,7 +54,6 @@
       <Docs>
         <param name="message">For internal use by the XAML engine.</param>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -77,7 +74,6 @@
         <param name="info">For internal use by the XAML engine.</param>
         <param name="context">For internal use by the XAML engine.</param>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -98,7 +94,6 @@
         <param name="message">For internal use by the XAML engine.</param>
         <param name="innerException">For internal use by the XAML engine..</param>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -122,7 +117,6 @@
         <param name="xmlInfo">For internal use by the XAML engine.</param>
         <param name="innerException">For internal use by the XAML engine.</param>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="XmlInfo">
@@ -145,7 +139,6 @@
       <Docs>
         <summary>Information about the condition that caused the exception to be thrown.</summary>
         <value>For internal use by the XAML engine.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

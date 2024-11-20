@@ -3,12 +3,11 @@ using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/BindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindingBase']/Docs/*" />
-	public abstract class BindingBase
+	public abstract partial class BindingBase
 	{
 		static readonly ConditionalWeakTable<IEnumerable, CollectionSynchronizationContext> SynchronizedCollections = new ConditionalWeakTable<IEnumerable, CollectionSynchronizationContext>();
 

@@ -7,10 +7,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Window
 	{
-		[Obsolete("Use WindowHandler.Mapper instead.")]
-		public static IPropertyMapper<IWindow, WindowHandler> ControlsWindowMapper =
-			new ControlsMapper<Window, WindowHandler>(WindowHandler.Mapper);
-
 		internal static new void RemapForControls()
 		{
 #if ANDROID

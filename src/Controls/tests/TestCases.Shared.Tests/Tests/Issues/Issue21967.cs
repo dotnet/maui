@@ -38,19 +38,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnMac("This test is failing, likely due to product issue")]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
-		public void CollectionViewWorksWhenRotatingDevice()
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		public async Task CollectionViewWorksWhenRotatingDevice()
 		{
 			try
 			{
 				App.WaitForElement("FullSize");
 				App.Tap("FullSize");
 				App.SetOrientationPortrait();
+				await Task.Delay(100);
 				var itemSizePortrait = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationLandscape();
+				await Task.Delay(100);
 				var itemSizeLandscape = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationPortrait();
+				await Task.Delay(100);
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
 				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);

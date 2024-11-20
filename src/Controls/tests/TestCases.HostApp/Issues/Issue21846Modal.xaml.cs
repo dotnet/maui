@@ -1,11 +1,5 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class Issue21846Modal : ContentPage
 	{
 		public Issue21846Modal()
@@ -14,7 +8,7 @@ namespace Maui.Controls.Sample.Issues
 
 			BindingContext = this;
 		}
-		
+
 		async void OnButtonClicked(object sender, System.EventArgs e)
 		{
 			if (TestWebView is IElement visualElement)

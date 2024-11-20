@@ -1,12 +1,6 @@
-using System;
-using System.Xml.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 34007, "Z order drawing of children views are different on Android, iOS, Win", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Bugzilla34007 : TestContentPage
 	{

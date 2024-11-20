@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
 			App.Screenshot("Screen opens, items are shown");
@@ -34,9 +34,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			App.Screenshot("Screen opens, items are shown");

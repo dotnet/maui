@@ -1,16 +1,10 @@
-﻿using System;
-using System.ComponentModel;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.ComponentModel;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
 using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1667, "Entry: Position and color of caret", PlatformAffected.All)]
 	public class Issue1667 : TestContentPage
 	{

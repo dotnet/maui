@@ -16,6 +16,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Android.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.UAP.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Maui.Compatibility.Core.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Xaml")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.Compatibility.Maps.iOS")]
@@ -86,7 +87,9 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty))]
 [assembly: StyleProperty("border-radius", typeof(ICornerElement), nameof(CornerElement.CornerRadiusProperty))]
 [assembly: StyleProperty("border-radius", typeof(Button), nameof(Button.CornerRadiusProperty))]
+#pragma warning disable CS0618 // Type or member is obsolete
 [assembly: StyleProperty("border-radius", typeof(Frame), nameof(Frame.CornerRadiusProperty))]
+#pragma warning restore CS0618 // Type or member is obsolete
 [assembly: StyleProperty("border-radius", typeof(ImageButton), nameof(BorderElement.CornerRadiusProperty))]
 [assembly: StyleProperty("border-width", typeof(IBorderElement), nameof(BorderElement.BorderWidthProperty))]
 [assembly: StyleProperty("color", typeof(IColorElement), nameof(ColorElement.ColorProperty), Inherited = true)]

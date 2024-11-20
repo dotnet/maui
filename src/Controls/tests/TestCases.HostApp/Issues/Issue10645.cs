@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 10645, "Image is not centered in AspectFill mode", PlatformAffected.UWP)]
 	public class Issue10645 : TestContentPage

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 16386, "Process the hardware enter key as \"Done\"", PlatformAffected.Android)]
 	public class Issue16386 : TestContentPage
@@ -12,16 +10,16 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "HardwareEnterKeyEntry"
 			};
 
-			Content = 
-				new VerticalStackLayout() 
-				{ 
+			Content =
+				new VerticalStackLayout()
+				{
 					new Label()
 					{
 						Text = "Focus entry and hit the Enter key on the hardware keyboard. A success label should appear."
 					},
 					entry
 				};
-		
+
 			entry.Completed += (sender, args) =>
 			{
 				(Content as VerticalStackLayout)

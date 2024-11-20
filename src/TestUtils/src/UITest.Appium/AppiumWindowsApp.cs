@@ -10,7 +10,7 @@ namespace UITest.Appium
 		public AppiumWindowsApp(Uri remoteAddress, IConfig config)
 			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
 		{
-
+			_commandExecutor.AddCommandGroup(new AppiumWindowsStepperActions(this));
 		}
 
 		public override ApplicationState AppState
@@ -26,7 +26,7 @@ namespace UITest.Appium
 				{
 					return ApplicationState.NotRunning;
 				}
-				catch(Exception)
+				catch (Exception)
 				{
 					return ApplicationState.Unknown;
 				}

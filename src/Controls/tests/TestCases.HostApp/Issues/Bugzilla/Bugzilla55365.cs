@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 55365, "~VisualElement crashes with System.Runtime.InteropServices.COMException", PlatformAffected.UWP)]
 	public class Bugzilla55365 : TestContentPage
 	{
@@ -72,7 +67,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class _55365Item
 		{
 			public int Subject { get; set; }

@@ -1,12 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 53834, "incorrect row heights on ios when using groupheadertemplate in Xamarin.Forms 2.3.4.214-pre5", PlatformAffected.iOS)]
 	public class Bugzilla53834 : TestContentPage
 	{

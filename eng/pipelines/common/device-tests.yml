@@ -12,7 +12,11 @@ parameters:
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  androidConfiguration: 'debug' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   useArtifacts: false
+  targetFrameworkVersion:
+    - tfm: ''
+      dependsOn: ''
   projects:
     - name: name
       desc: Human Description
@@ -21,14 +25,18 @@ parameters:
       catalyst: /optional/path/to/catalyst.csproj
 
 stages:
-  - stage: android_device_tests
-    displayName: Android Device Tests
-    dependsOn: []
+  - stage: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn:
+        - android_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
-    - job: android_device_tests
+    - job: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "Android emulator tests"
+      displayName: "Android"
       pool: ${{ parameters.androidPool }}
       timeoutInMinutes: 60
       strategy:
@@ -41,6 +49,8 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
+                    ANDROID_CONFIGURATION: ${{ project.androidConfiguration }}
+                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if eq(api, 27) }}:
                       DEVICE: android-emulator-32_${{ api }}
                       APIVERSION: ${{ api }}
@@ -62,15 +72,20 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: ${{ parameters.androidPool.name }}
+            androidConfiguration: $(ANDROID_CONFIGURATION)
 
-  - stage: ios_device_tests
-    displayName: iOS Device Tests
-    dependsOn: []
+  - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn:
+        - ios_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
-    - job: ios_device_tests
+    - job: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "iOS tests"
+      displayName: "iOS"
       pool: ${{ parameters.iosPool }}
       timeoutInMinutes: 120
       strategy:
@@ -83,6 +98,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
+                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
@@ -105,14 +121,18 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
 
-  - stage: catalyst_device_tests
-    displayName: macOS Device Tests
-    dependsOn: []
+  - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn:
+        - catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
-    - job: catalyst_device_tests
+    - job: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "macOS tests"
+      displayName: "macOS"
       pool: ${{ parameters.catalystPool }}
       timeoutInMinutes: 240
       strategy:
@@ -125,6 +145,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.catalyst }}
+                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if eq(version, 'latest') }}:
                       DEVICE: maccatalyst
                     ${{ else }}:
@@ -146,14 +167,18 @@ stages:
             poolName: 'Azure Pipelines'
 
 
-  - stage: windows_device_tests
-    displayName: Windows Device Tests
-    dependsOn: []
+  - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} Windows Device Tests
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn:
+        - windows_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ else }}:
+      dependsOn: []
     jobs:
-    - job: windows_device_tests
+    - job: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
       workspace:
         clean: all
-      displayName: "Windows device tests"
+      displayName: "Windows"
       pool: ${{ parameters.windowsPool }}
       timeoutInMinutes: 240 # how long to run the job before automatically cancelling
       strategy:
@@ -166,6 +191,7 @@ stages:
                   PROJECT_PATH: ${{ project.windows }}
                   PACKAGE_ID: ${{ project.windowsPackageId }}
                   DEVICE: ${{ version }}
+                  TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
       steps:
         - template: device-tests-steps.yml
           parameters:

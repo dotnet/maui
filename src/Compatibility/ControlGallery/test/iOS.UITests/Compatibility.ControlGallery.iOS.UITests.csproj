@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);__IOS__;UITEST;__SHELL__;IOS;iOS</DefineConstants>
-    <NoWarn>1701;1702;0618;0612;CA1307;CA1309</NoWarn>
+    <NoWarn>1701;1702;0618;0612;CA1307;CA1309;CS0672;CS0618</NoWarn>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 

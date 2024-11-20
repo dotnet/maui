@@ -1,10 +1,14 @@
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-public class Bugzilla25979 : TestNavigationPage
+[Issue(IssueTracker.Bugzilla, 25979, "https://bugzilla.xamarin.com/show_bug.cgi?id=25979")]
+public class Bugzilla25979 : NavigationPage
 {
-	[Preserve(AllMembers = true)]
+	public Bugzilla25979()
+	{
+		// Initialize ui here instead of ctor
+		Navigation.PushAsync(new MyPage());
+	}
+
 	internal sealed class MyPage : ContentPage
 	{
 		public MyPage()
@@ -39,7 +43,7 @@ public class Bugzilla25979 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	internal sealed class MyPage2 : ContentPage
 	{
 		public MyPage2()
@@ -79,7 +83,7 @@ public class Bugzilla25979 : TestNavigationPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	internal sealed class MyPage3 : ContentPage
 	{
 		public MyPage3()
@@ -105,11 +109,5 @@ public class Bugzilla25979 : TestNavigationPage
 					}
 			};
 		}
-	}
-
-	protected override void Init()
-	{
-		// Initialize ui here instead of ctor
-		Navigation.PushAsync(new MyPage() { Title = "Navigation Stack" });
 	}
 }

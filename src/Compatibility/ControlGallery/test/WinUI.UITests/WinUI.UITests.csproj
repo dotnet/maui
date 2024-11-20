@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
     <DefineConstants>$(DefineConstants);WINDOWS;UITEST</DefineConstants>
-    <NoWarn>0114;0108;4014;0649;0169;0168;0219;0618;0612;CA1307;CA1309</NoWarn>
+    <NoWarn>0114;0108;4014;0649;0169;0168;0219;0618;0612;CA1307;CA1309;CS0672;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

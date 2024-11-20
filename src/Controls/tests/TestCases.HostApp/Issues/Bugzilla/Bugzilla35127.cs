@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 35127, "It is possible to craft a page such that it will never display on Windows")]
 	public class Bugzilla35127 : ContentPage
@@ -9,7 +7,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Content = new StackLayout
 			{
-				Children = 
+				Children =
 				{
 					new Label { Text = "See me?" },
 					new ScrollView {

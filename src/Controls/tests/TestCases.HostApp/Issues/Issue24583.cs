@@ -1,6 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 24583, "Text in the Editor control disappeared when reducing the Scale", PlatformAffected.iOS)]
 
 public partial class Issue24583 : ContentPage

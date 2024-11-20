@@ -1,10 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
 using ILayout = Microsoft.Maui.ILayout;
 
 namespace Maui.Controls.Sample.Issues;
@@ -22,7 +16,8 @@ public class MeasuredLabel : Label
 
 	public long? LastArrangedTicks { get; set; }
 
-	public long? GetArrangeTicks() {
+	public long? GetArrangeTicks()
+	{
 		if (LastArrangedTicks is { } ticks)
 		{
 			var elapsed = Stopwatch.GetElapsedTime(ticks);
@@ -40,7 +35,7 @@ public static class RenderingPerformanceExtensions
 {
 	public static MauiAppBuilder RenderingPerformanceAddMappers(this MauiAppBuilder builder)
 	{
-		builder.ConfigureMauiHandlers(handlers => 
+		builder.ConfigureMauiHandlers(handlers =>
 		{
 			Microsoft.Maui.Handlers.LabelHandler.CommandMapper.AppendToMapping(nameof(IView.Frame), (handler, view, arg) =>
 			{
@@ -55,7 +50,6 @@ public static class RenderingPerformanceExtensions
 	}
 }
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.None, 0, "Rendering performance", PlatformAffected.All)]
 public partial class RenderingPerformance : ContentPage
 {

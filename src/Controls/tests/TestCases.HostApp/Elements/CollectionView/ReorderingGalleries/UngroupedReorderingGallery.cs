@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using Maui.Controls.Sample.CollectionViewGalleries.SpacingGalleries;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.ReorderingGalleries
 {

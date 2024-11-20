@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Storage;
 
@@ -88,6 +89,10 @@ namespace Microsoft.Maui.Storage
 				{
 					appDataContainer.Values[key] = dt.ToBinary();
 				}
+				else if (value is DateTimeOffset dto)
+				{
+					appDataContainer.Values[key] = dto.ToString("O");
+				}
 				else
 				{
 					appDataContainer.Values[key] = value;
@@ -108,6 +113,13 @@ namespace Microsoft.Maui.Storage
 						if (defaultValue is DateTime dt)
 						{
 							return (T)(object)DateTime.FromBinary((long)tempValue);
+						}
+						else if (defaultValue is DateTimeOffset dto)
+						{
+							if (DateTimeOffset.TryParse((string)tempValue, out var dateTimeOffset))
+							{
+								return (T)(object)dateTimeOffset;
+							}
 						}
 						else
 						{
@@ -182,6 +194,10 @@ namespace Microsoft.Maui.Storage
 
 			if (value is null)
 				prefs.TryRemove(key, out _);
+			else if (value is DateTime dt)
+				prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", dt.ToBinary());
+			else if (value is DateTimeOffset dto)
+				prefs[key] = dto.ToString("O");
 			else
 				prefs[key] = string.Format(CultureInfo.InvariantCulture, "{0}", value);
 
@@ -194,6 +210,19 @@ namespace Microsoft.Maui.Storage
 			{
 				if (inner.TryGetValue(key, out var value) && value is not null)
 				{
+					if (defaultValue is DateTime dt)
+					{
+						long tempValue = (long)Convert.ChangeType(value, typeof(long), CultureInfo.InvariantCulture);
+						return (T)(object)DateTime.FromBinary(tempValue);
+					}
+					else if (defaultValue is DateTimeOffset dto)
+					{
+						if (DateTimeOffset.TryParse((string)value, out var dateTimeOffset))
+						{
+							return (T)(object)dateTimeOffset;
+						}
+					}
+
 					try
 					{
 						return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
@@ -217,9 +246,7 @@ namespace Microsoft.Maui.Storage
 			{
 				using var stream = File.OpenRead(AppPreferencesPath);
 
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-				var readPreferences = JsonSerializer.Deserialize<PreferencesDictionary>(stream);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+				PreferencesDictionary readPreferences = JsonSerializer.Deserialize(stream, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
 
 				if (readPreferences != null)
 				{
@@ -240,12 +267,15 @@ namespace Microsoft.Maui.Storage
 			Directory.CreateDirectory(dir);
 
 			using var stream = File.Create(AppPreferencesPath);
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-			JsonSerializer.Serialize(stream, _preferences);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+			JsonSerializer.Serialize(stream, _preferences, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
 		}
 
 		static string CleanSharedName(string sharedName) =>
 			string.IsNullOrEmpty(sharedName) ? string.Empty : sharedName;
 	}
+}
+
+[JsonSerializable(typeof(PreferencesDictionary), TypeInfoPropertyName = nameof(PreferencesDictionary))]
+internal partial class PreferencesJsonSerializerContext : JsonSerializerContext
+{
 }

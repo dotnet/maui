@@ -79,6 +79,12 @@ parameters:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
   
+  - name: windowsBuildPool
+    type: object
+    default:
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
+
   - name: windowsPool
     type: object
     default:
@@ -124,17 +130,18 @@ stages:
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
       windowsPool: ${{ parameters.windowsPool }}
+      windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
       androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
       iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true

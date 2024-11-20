@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 465, "Change in Navigation.PushModal", PlatformAffected.All)]
 	public class Issue465 : TestTabbedPage
 	{
@@ -30,7 +19,6 @@ namespace Maui.Controls.Sample.Issues
 			await Navigation.PushModalAsync(new ModalPage());
 		}
 
-		[Preserve(AllMembers = true)]
 		public class ModalPage : ContentPage
 		{
 			public ModalPage()

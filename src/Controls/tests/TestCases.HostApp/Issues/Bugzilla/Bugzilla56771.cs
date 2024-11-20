@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 56771, "Multi-item add in INotifyCollectionChanged causes a NSInternalInconsistencyException in bindings on iOS", PlatformAffected.iOS)]
 	public class Bugzilla56771 : TestContentPage
 	{
@@ -83,7 +77,7 @@ namespace Maui.Controls.Sample.Issues
 			InitializeData();
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class OptimizedCollection<T> : ObservableCollection<T>
 		{
 			public OptimizedCollection()

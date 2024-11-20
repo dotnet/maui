@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls
 					_detail?.SendAppearing();
 				}
 
-				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
+				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail, NavigationType.PageSwap));
 				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
 			}
 		}
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 					_flyout?.SendAppearing();
 				}
 
-				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
+				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.PageSwap));
 				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
 		}
@@ -191,6 +191,7 @@ namespace Microsoft.Maui.Controls
 			return behavior != FlyoutLayoutBehavior.Split && !isSplitOnLandscape && !isSplitOnPortrait;
 		}
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			if (Flyout == null || Detail == null)
