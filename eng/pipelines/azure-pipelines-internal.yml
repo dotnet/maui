@@ -76,6 +76,7 @@ variables:
       value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
     - name: _Sign
       value: true
+    
 
 
 parameters:
