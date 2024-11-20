@@ -21,16 +21,7 @@ namespace Microsoft.Maui
 	abstract class ImageLoaderCallbackBase<T> : Java.Lang.Object, IImageLoaderCallback
 		where T : IImageSourceServiceResult
 	{
-		// Glide does not support starting new loads from Target callbacks.
-		//
-		// > You can't start or clear loads in RequestListener or Target callbacks.
-		// > If you're trying to start a fallback request when a load fails, use RequestBuilder#error(RequestBuilder).
-		// > Otherwise consider posting your into() or clear() calls to the main thread using a Handler instead.
-		//
-		// For this reason, if someone awaits for the result of the image loading, to start a new one
-		// we must ensure the new load happens asynchronously.
-		// This use case is covered by `LoadDrawableAsyncReturnsWithSameImageAndDoesNotHang` core device test.
-		readonly TaskCompletionSource<T?> _tcsResult = new(TaskCreationOptions.RunContinuationsAsynchronously);
+		readonly TaskCompletionSource<T?> _tcsResult = new();
 
 		public Task<T?> Result => _tcsResult.Task;
 

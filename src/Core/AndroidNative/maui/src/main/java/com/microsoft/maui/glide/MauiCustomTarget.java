@@ -9,13 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import com.microsoft.maui.ImageLoaderCallback;
 import com.microsoft.maui.PlatformLogger;
+import com.microsoft.maui.glide.MauiTarget;
 
-public class MauiCustomTarget extends CustomTarget<Drawable> {
+public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarget {
     private static final PlatformLogger logger = new PlatformLogger("MauiCustomTarget");
 
     private final Context context;
@@ -33,6 +35,10 @@ public class MauiCustomTarget extends CustomTarget<Drawable> {
         } else {
             this.resourceLogIdentifier = null;
         }
+    }
+
+    public void load(RequestBuilder<Drawable> builder) {
+        builder.into(this);
     }
 
     @Override

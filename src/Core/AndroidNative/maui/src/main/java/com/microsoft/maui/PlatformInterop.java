@@ -55,6 +55,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
+import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
 import java.io.InputStream;
@@ -295,7 +296,7 @@ public class PlatformInterop {
         }
     }
 
-    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -309,8 +310,7 @@ public class PlatformInterop {
                 .skipMemoryCache(true);
         }
 
-        builder
-            .into(target);
+        target.load(builder);
     }
 
     private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
