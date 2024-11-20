@@ -58,9 +58,9 @@ variables:
 - name: Codeql.Enabled
   value: false
 - name: _RunAsPublic
-  value: True
+  value: true
 - name: _RunAsInternal
-  value: False
+  value: false
 - name: _InternalBuildArgs
   value: ''
 
