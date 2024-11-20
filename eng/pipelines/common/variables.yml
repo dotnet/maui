@@ -55,10 +55,7 @@ variables:
   value: 7.4.0
 - name: Codeql.Enabled
   value: false
-
-# Variable groups required for private builds
-- ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-  - group: Xamarin-Secrets
+- group: Xamarin-Secrets
   
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
