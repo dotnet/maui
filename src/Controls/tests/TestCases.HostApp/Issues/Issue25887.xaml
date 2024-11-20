@@ -11,6 +11,9 @@
     </ControlTemplate>
 
     <Style x:Key="RadioButtonStyle" TargetType="RadioButton">
+      <Setter Property="MaximumWidthRequest" Value="100" />
+      <Setter Property="HorizontalOptions" Value="Start" />
+      <Setter Property="VerticalOptions" Value="Start" />
       <Setter Property="ControlTemplate"
               Value="{StaticResource RadioButtonTemplate}" />
     </Style>
