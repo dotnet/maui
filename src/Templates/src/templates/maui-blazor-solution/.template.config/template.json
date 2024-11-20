@@ -15,11 +15,9 @@
   "sourceName": "MauiApp.1",
   "primaryOutputs": [
     {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "MauiApp.1.Shared/Pages/Home.razor"
     },
     {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
       "path": "MauiApp.1.sln"
     },
     {
@@ -102,12 +100,6 @@
               "MauiApp.1.Web/Services/**",
               "MauiApp.1.Web.Client/Services/**",
               "MauiApp.1.Web.Client/wwwroot/**"
-            ]
-          },
-          {
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-            "exclude": [
-              "*.sln"
             ]
           }
         ]
