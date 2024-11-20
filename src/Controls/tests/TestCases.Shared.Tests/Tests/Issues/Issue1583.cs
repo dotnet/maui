@@ -11,13 +11,13 @@ public class Issue1583 : _IssuesUITest
 	}
 
 	public override string Issue => "NavigationPage.TitleIcon broken";
-	
+
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.Compatibility)]
-	[FailsOnIOS]
-	[FailsOnMac]
-	[FailsOnWindows]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Issue1583TitleIconTest()
 	{
 		App.WaitForElement("lblHello");

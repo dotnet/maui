@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Animation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue1937Test()
 		{
 			App.WaitForElement("FAST_TIMER");

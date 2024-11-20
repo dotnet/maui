@@ -24,7 +24,6 @@
   </Attributes>
   <Docs>
     <summary>Enumerates keyboard option flags that controls capitalization, spellcheck, and suggestion behavior.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="All">

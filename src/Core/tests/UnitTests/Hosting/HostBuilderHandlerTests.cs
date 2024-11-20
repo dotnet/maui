@@ -247,7 +247,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			Assert.Same(classHandler, handlerService);
 		}
 
-		class ChildViewStub : ViewStub, IParentAViewStub, IParentBViewStub {}
+		class ChildViewStub : ViewStub, IParentAViewStub, IParentBViewStub { }
 		interface IParentAViewStub : IViewStub { }
 		interface IParentBViewStub : IViewStub { }
 

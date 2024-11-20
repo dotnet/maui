@@ -35,7 +35,6 @@
         <summary>Indicates whether the application is being run in a previewer.</summary>
         <value>
           <see langword="true" /> if the application is being run in a previewer. <see langword="false" /> if the application is being run on a device or emulator.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

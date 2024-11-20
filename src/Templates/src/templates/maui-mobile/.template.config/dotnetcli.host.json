@@ -3,6 +3,15 @@
     "symbolInfo": {
       "Framework": {
         "longName": "framework"
+      },
+      "IncludeSampleContent": {
+
+        "longName":  "sample-content",
+        "shortName": "sc"
+      },
+      "skipRestore": {
+        "longName": "no-restore",
+        "shortName": ""
       }
     },
     "usageExamples": [

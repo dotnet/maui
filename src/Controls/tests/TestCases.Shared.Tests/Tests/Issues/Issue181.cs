@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Color not initialized for Label"; 
-		
+		public override string Issue => "Color not initialized for Label";
+
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]

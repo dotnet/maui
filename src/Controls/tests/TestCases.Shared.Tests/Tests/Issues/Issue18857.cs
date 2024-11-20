@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ImageButton)]
-		[FailsOnMac("VerifyScreenshot method not implemented")]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented")]
 		public async Task GradientImageButtonBackground()
 		{
 			App.WaitForElement("TestImageButton");

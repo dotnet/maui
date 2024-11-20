@@ -127,7 +127,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ValueChangedTriggeredOnSubscribeIfKeyAlreadyExists()
 		{
-			var label = new Label {
+			var label = new Label
+			{
 				Resources = new ResourceDictionary { { "foo", "FOO" } }
 			};
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
@@ -138,7 +139,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void RemoveDynamicResourceStopsUpdating()
 		{
-			var label = new Label          {
+			var label = new Label
+			{
 				Resources = new ResourceDictionary { { "foo", "FOO" } }
 			};
 			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);

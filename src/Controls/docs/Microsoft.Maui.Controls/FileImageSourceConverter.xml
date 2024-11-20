@@ -20,7 +20,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts to <see cref="T:Microsoft.Maui.Controls.FileImageSource" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,7 +36,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.FileImageSource" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -60,8 +58,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Creates a file image source given a path to an image.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -17,20 +17,20 @@ public class Issue264 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue264TestsPushAndPopModal()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Home"));
-	// 	RunningApp.WaitForElement(q => q.Button("About"));
-	// 	RunningApp.Screenshot("All elements present");
+	// 	App.WaitForElement(q => q.Marked("Home"));
+	// 	App.WaitForElement(q => q.Button("About"));
+	// 	App.Screenshot("All elements present");
 
-	// 	RunningApp.Tap(q => q.Button("About"));
-	// 	RunningApp.WaitForElement(q => q.Button("Close"));
-	// 	RunningApp.Screenshot("Modal pushed");
+	// 	App.Tap(q => q.Button("About"));
+	// 	App.WaitForElement(q => q.Button("Close"));
+	// 	App.Screenshot("Modal pushed");
 
-	// 	RunningApp.Tap(q => q.Button("Close"));
-	// 	RunningApp.WaitForElement(q => q.Button("About"));
-	// 	RunningApp.Screenshot("Modal popped");
+	// 	App.Tap(q => q.Button("Close"));
+	// 	App.WaitForElement(q => q.Button("About"));
+	// 	App.Screenshot("Modal popped");
 
-	// 	RunningApp.Tap(q => q.Button("Pop me"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Bug Repro's"));
-	// 	RunningApp.Screenshot("No crash");
+	// 	App.Tap(q => q.Button("Pop me"));
+	// 	App.WaitForElement(q => q.Marked("Bug Repro's"));
+	// 	App.Screenshot("No crash");
 	// }
 }

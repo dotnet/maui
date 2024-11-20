@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="RegisterEffectControlProvider">
@@ -46,7 +45,6 @@
         <param name="oldElement">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newElement">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UnregisterEffectControlProvider">
@@ -70,7 +68,6 @@
         <param name="self">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="element">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
