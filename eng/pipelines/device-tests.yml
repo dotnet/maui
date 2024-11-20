@@ -71,8 +71,8 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 14.5
+        - Agent.OSArchitecture -equals X64
 
   - name: iosPool
     type: object
