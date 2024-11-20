@@ -2,6 +2,12 @@ parameters:
   - name: condition
     default: true
 
+  - name: conditionMacTemplates
+    default: true
+  
+  - name: skipProvisioning
+    default: true
+
   - name: artifactName
     type: string
     default: nuget
@@ -52,8 +58,8 @@ jobs:
       clean: all
     displayName: 'Build ${{ category }}: macOS' 
     timeoutInMinutes: 240
-    condition: ${{ parameters.condition}}
-    pool: ${{ parameters.MacBuildPool}}
+    condition: ${{ parameters.conditionMacTemplates }}
+    pool: ${{ parameters.MacBuildPool }}
     steps:
       - template: maui-templates-steps.yml
         parameters:
@@ -63,6 +69,11 @@ jobs:
           checkoutDirectory: ${{ parameters.checkoutDirectory }}
           prepareSteps: ${{ parameters.prepareSteps }}
           category: ${{ category }}
+          skipXcode: false
+          ${{ if eq(parameters.skipProvisioning, 'true') }}:
+            skipProvisioning: true
+          ${{ else }}:  
+            skipProvisioning: false
 
 
 - ${{ each category in parameters.BuildCategories }}:

@@ -39,8 +39,6 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
-- name: skipProvisionator
-  value: $[ne(variables['provisioning'], 'true')]
 - name: provisionator.xcode
   value: 'eng/provisioning/xcode.csx'
 - name: provisionator.path
@@ -65,6 +63,8 @@ variables:
   value: ''
 
 # Variable groups required for private builds
+- group: Xamarin-Secrets
+
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
     - name: PrivateBuild
