@@ -13,15 +13,21 @@ class PrePost : IDisposable
         pre();
     }
 
-    public static PrePost NewBlock(IndentedTextWriter codeWriter) =>
+    public static PrePost NewBlock(IndentedTextWriter codeWriter, string begin = "{", string end = "}", int ident = 1, bool noTab = false) =>
         new(
             () => {
-                codeWriter.WriteLine("{");
-                codeWriter.Indent++;
+                if (noTab)
+                    codeWriter.WriteLineNoTabs(begin);
+                else
+                    codeWriter.WriteLine(begin);
+                codeWriter.Indent+=ident;
             },
             () => {
-                codeWriter.Indent--;
-                codeWriter.WriteLine("}");
+                codeWriter.Indent-=ident;
+                if (noTab)
+                    codeWriter.WriteLineNoTabs(end);
+                else
+                    codeWriter.WriteLine(end);
             });
 
     public void Dispose() => post();
