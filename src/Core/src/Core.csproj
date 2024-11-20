@@ -87,11 +87,12 @@
   <Target Name="_GenerateBundledVersions"
     BeforeTargets="Build;AssignTargetPaths"
     DependsOnTargets="SetVersions"
-    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
+    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)Directory.Build.props;$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
     Outputs="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets">
     <ItemGroup>
       <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
       <_ValuesToReplace Include="MINIMUM_SUPPORTED_TFM" PropertyName="_MauiMinimumSupportedDotNetTfm" />
+      <_ValuesToReplace Include="MINIMUM_SUPPORTED_WORKLOAD" PropertyName="MicrosoftMauiMinimumSupportedWorkloadVersion" />
     </ItemGroup>
     <Copy
       SourceFiles="nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
