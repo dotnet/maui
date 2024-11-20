@@ -24,6 +24,7 @@
     BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"
     Condition="
       '$(SkipCheckForMauiMinimumSupportedWorkloadVersion)' != 'true' and
+      '$(MauiWorkloadVersion)' != '' and
       $([MSBuild]::VersionLessThan('$(MauiWorkloadVersion)', '$(MauiMinimumSupportedWorkloadVersion)'))">
     
     <Error
