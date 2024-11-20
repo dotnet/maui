@@ -1,8 +1,8 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="9.0.101-servicing.24561.8">
+    <Dependency Name="Microsoft.NET.Sdk" Version="9.0.101-servicing.24569.41">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>8e8e27079dc1f0c53add11c3ac58fd9796aa8e73</Sha>
+      <Sha>8e18c80a3926c2259f9d7211c5e2c5d2f53052a1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -31,7 +31,7 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-rtm.24515.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100" Version="9.0.0" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>8be5676af1ccf568b258133788a24aedd1a80994</Sha>
     </Dependency>
