@@ -16,15 +16,21 @@
 				var button = new Button
 				{
 					Text = "Navigate to Flyout Page",
-					AutomationId = "button"
+					AutomationId = "mainPageButton"
 				};
 
 				button.Clicked += OnNavigateToFlyoutPageClicked;
 
+				var label = new Label
+				{
+					Text = "This is MainPage",
+					AutomationId = "mainPageLabel"
+				};
+
 				Content = new StackLayout
 				{
 					Padding = new Thickness(20),
-					Children = { button }
+					Children = { label, button }
 				};
 			}
 			private async void OnNavigateToFlyoutPageClicked(object sender, EventArgs e)
@@ -57,14 +63,19 @@
 				};
 				button.Clicked += OnGoBackClicked;
 
+				var label = new Label
+				{
+					Text = "This is FlyoutPage",
+					AutomationId = "flyoutPageLabel"
+				};
+
 				var detailPage = new ContentPage
 				{
 					Title = "Detail",
 					Content = new StackLayout
 					{
 						Padding = new Thickness(20),
-
-						Children = { button }
+						Children = { label, button }
 					}
 				};
 

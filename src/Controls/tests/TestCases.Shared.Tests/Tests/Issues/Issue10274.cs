@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,15 +16,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.FlyoutPage)]
 		public void FlyoutPageNavigation()
 		{
-			App.WaitForElement("button");
-			App.Tap("button");
+			App.WaitForElement("mainPageButton");
+			App.Tap("mainPageButton"); // Navigate to FlyoutPage using PushAsync()
 
-			App.WaitForElement("flyoutPageButton");
-			App.Tap("flyoutPageButton");
+			var flyoutLabel = App.WaitForElement("flyoutPageLabel");
+			Assert.That(flyoutLabel.GetText(), Is.EqualTo("This is FlyoutPage"));
 
-			App.WaitForElement("button");
-			VerifyScreenshot();
+			App.Tap("flyoutPageButton"); // Navigate to MainPage using PopAsync()
+
+			var mainLabel = App.WaitForElement("mainPageLabel");
+			Assert.That(mainLabel.GetText(), Is.EqualTo("This is MainPage"));
 		}
 	}
 }
-#endif
