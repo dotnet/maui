@@ -1,6 +1,9 @@
 parameters:
   - name: condition
     default: true
+
+  - name: conditionMacTemplates
+    default: true
   
   - name: skipProvisioning
     default: true
@@ -55,7 +58,7 @@ jobs:
       clean: all
     displayName: 'Build ${{ category }}: macOS' 
     timeoutInMinutes: 240
-    condition: ${{ parameters.condition }}
+    condition: ${{ parameters.conditionMacTemplates }}
     pool: ${{ parameters.MacBuildPool }}
     steps:
       - template: maui-templates-steps.yml

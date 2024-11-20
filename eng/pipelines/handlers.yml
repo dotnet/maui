@@ -347,6 +347,10 @@ stages:
           skipProvisioning: false
         ${{ else }}:
           skipProvisioning: true
+        conditionMacTemplates: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq(variables['System.TeamProject'], 'devdiv'))
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
