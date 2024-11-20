@@ -57,6 +57,12 @@ variables:
   value: 7.4.0
 - name: Codeql.Enabled
   value: false
+- name: _RunAsPublic
+  value: true
+- name: _RunAsInternal
+  value: false
+- name: _InternalBuildArgs
+  value: ''
 
 # Variable groups required for private builds
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
