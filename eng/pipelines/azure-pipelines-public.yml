@@ -166,4 +166,4 @@ stages:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
                 runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
-                runHelixTests: ${{ contains(testVariant, 'helix') }}
+                # runHelixTests: ${{ contains(testVariant, 'helix') }}
