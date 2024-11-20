@@ -1,0 +1,37 @@
+<Project>
+
+  <!-- 
+    Check to make sure that .NET MAUI packages are not installed as .NET Standard
+    when they are installed into a .NET "Core" project. If this happens, it means
+    that the user has installed a .NET MAUI package that requires a later TFM than
+    what the project has.
+
+    For example, installing a .NET 9 MAUI package into a .NET 8 project.
+
+    To skip this check, set $(MauiSkipCheckForPackageInstalledAsNetStandard) to true.
+  -->
+
+  <Target
+    Name="_CheckForPackageInstalledAsNetStandard"
+    BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"
+    Condition="
+      '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+      $([MSBuild]::VersionLessThan('$(_TargetFrameworkVersionWithoutV)', '$(MauiMinimumSupportedTargetFrameworkVersion)')) and
+      '$(TargetPlatformIdentifier)' != '' and
+      '$(MauiSkipCheckForPackageInstalledAsNetStandard)' != 'true'">
+    
+    <PropertyGroup>
+      <_MauiCurrentTargetPlatformVersion Condition="$(TargetFramework.EndsWith('$(TargetPlatformVersion)'))">$(TargetPlatformVersion)</_MauiCurrentTargetPlatformVersion>
+      <_MauiCurrentTargetPlatformIdentifier>$(TargetPlatformIdentifier.ToLower())</_MauiCurrentTargetPlatformIdentifier>
+      <_MauiMinimumTargetFrameworkString>net$(MauiMinimumSupportedTargetFrameworkVersion)-$(_MauiCurrentTargetPlatformIdentifier)$(_MauiCurrentTargetPlatformVersion)</_MauiMinimumTargetFrameworkString>
+    </PropertyGroup>
+
+    <Error
+      Code="MA003"
+      Text="This version of .NET MAUI requires at least a TargetFramework of '$(_MauiMinimumTargetFrameworkString)', which is greater than the current TargetFramework '$(TargetFramework)'." />
+
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Core.targets" />
+
+</Project>
