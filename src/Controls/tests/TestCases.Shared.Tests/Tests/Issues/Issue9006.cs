@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST // Getting an OpenQA.Selenium.InvalidSelectorException : XQueryError:6 - "invalid type" in Line: 23. Using timeout also not works.
+﻿#if TEST_FAILS_ON_CATALYST // Getting an OpenQA.Selenium.InvalidSelectorException : XQueryError:6 - "invalid type" in Line: 32. Using timeout also not works.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -8,8 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	public class Issue9006 : _IssuesUITest
 	{
 #if ANDROID
-		const string Back = "Navigate up";
-		const string Tab1 = "Navigate up";
+		const string Back = "";
+		const string Tab1 = "";
 #else
 		const string Back = "Back";
 		const string Tab1 = "Tab 1";
