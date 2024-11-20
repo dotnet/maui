@@ -225,7 +225,7 @@ extends:
       parameters:
         publishingInfraVersion: 3
         enableSymbolValidation: true
-        enableSigningValidation: true
+        enableSigningValidation: false
         # Disable for now as we test the new signing process
         enableSourceLinkValidation: false
         validateDependsOn:
