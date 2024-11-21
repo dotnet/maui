@@ -16,7 +16,12 @@ namespace Microsoft.Maui.Controls
 
 		public MenuFlyoutSubItem()
 		{
-			LogicalChildrenInternalBackingStore = new CastingList<Element, IMenuElement>(_menus);
+			LogicalChildrenInternalBackingStore = new List<Element>();
+
+			foreach(var item in _menus)
+			{
+				LogicalChildrenInternalBackingStore.Add((Element)item);
+			}
 		}
 
 		private protected override IList<Element> LogicalChildrenInternalBackingStore { get; }
