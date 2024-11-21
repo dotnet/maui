@@ -1657,6 +1657,26 @@ namespace UITest.Appium
 			throw new InvalidOperationException($"Could not get the performance data");
 		}
 
+		/// <summary>
+		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapBackArrow(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("Back"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("NavigationViewBackButton"));
+			}
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
