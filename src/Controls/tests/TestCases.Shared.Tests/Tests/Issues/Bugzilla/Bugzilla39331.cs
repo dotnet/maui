@@ -12,21 +12,17 @@ public class Bugzilla39331 : _IssuesUITest
 
 	public override string Issue => "[Android] BoxView Is InputTransparent Even When Set to False";
 
-	// [FailsOnAndroidWhenRunningOnXamarinUITest]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
-	// [Category(UITestCategories.InputTransparent)]
-	// public void Bugzilla39331Test()
-	// {
-	// 	App.WaitForElement("btnLogin");
-	// 	App.Tap("btnLogin");
+	[Test]
+	[Category(UITestCategories.InputTransparent)]
+	public void Bugzilla39331Test()
+	{
+		App.WaitForElement("btnLogin");
+		App.Tap("btnLogin");
 
-	// 	App.WaitForTextToBePresentInElement("btnLogin", "Blocked?");
+		App.WaitForElement("Blocked?");
 
-	// 	App.Tap("btnLogin");
+		App.Tap("btnLogin");
 
-	// 	Assert.That(App.FindElement("btnLogin").GetText()?
-	// 		.Equals("Guess Not", StringComparison.OrdinalIgnoreCase),
-	// 		Is.False);
-	// }
+		App.WaitForElement("Guess Not");
+	}
 }

@@ -1,4 +1,4 @@
-/*
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,16 +15,13 @@ public class Bugzilla32040 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Cells)]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
- 	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void TappedWorksForEntryAndSwithCellTest()
-	{ 	
+	{ 
 		App.WaitForElement("blahblah");
- 	 	App.Tap("blahblah");
- 	 	App.Tap("yaddayadda");
+		App.Tap("blahblah");
+		App.WaitForElement("Tapped");
 
- 	 	Assert.That(App.FindElements("Tapped").Count,
- 	 		Is.GreaterThanOrEqualTo(2));
+		App.Tap("Click Here");
+		Assert.That(App.WaitForElement("yaddayadda").GetText(), Is.EqualTo("Tapped"));
 	}
 }
-*/

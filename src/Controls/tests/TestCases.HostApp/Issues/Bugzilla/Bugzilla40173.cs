@@ -94,6 +94,7 @@ public class Bugzilla40173 : TestContentPage
 			{
 				Color = Colors.Pink.MultiplyAlpha(0.5f)
 			};
+			boxView.SetBinding(BoxView.AutomationIdProperty, ".");
 
 			grid.Children.Add(itemLabel);
 			grid.Children.Add(boxView);
