@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Issue25893">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Label AutomationId="WaitForStubControl" Text="Issue25893"/>
+    <ContentView x:Name="ViewWithMenu" Grid.Row="1" Grid.RowSpan="2" BackgroundColor="LightGray">
+      <FlyoutBase.ContextFlyout>
+        <MenuFlyout x:Name="ContextMenu">
+          <MenuFlyoutItem IconImageSource="dotnet_bot.png" Text="Item1" />
+          <MenuFlyoutSubItem IconImageSource="dotnet_bot.png" Text="SubItem1" />
+        </MenuFlyout>
+      </FlyoutBase.ContextFlyout>
+    </ContentView>
+  </Grid>
+</ContentPage>
