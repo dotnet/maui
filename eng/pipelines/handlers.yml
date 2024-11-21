@@ -49,6 +49,11 @@ variables:
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
+
+  - name: UseProvisionator
+    type: boolean
+    default: false
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -70,10 +75,15 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
+        demands:
+           - Agent.OS -equals Windows_NT        
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
+        demands:
+          - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
         artifact: build-macos
  
   - name: PackPlatforms
@@ -82,10 +92,15 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
+        demands: 
+          - Agent.OS -equals Windows_NT
         artifact: nuget
       - name: macOS
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
+        demands:
+          - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
         artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
@@ -94,10 +109,15 @@ parameters:
       - name: Windows
         poolName: $(windowsVmPool)
         vmImage: $(windowsVmImage)
+        demands: 
+          - Agent.OS -equals Windows_NT
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
+        demands:
+          - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
         artifact: build-macos
 
   - name: RunTemplatePlatforms
@@ -117,6 +137,15 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
+
+  - name: MacTemplatePool
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals arm64
 
   - name: TestTargetFrameworks
     type: object
@@ -159,19 +188,20 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Sonoma
-                - macOS.Architecture -equals x64
+              demands: ${{ BuildPlatform.demands }}
             steps:
               - template: common/provision.yml
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
-                  # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   skipAndroidSdks: true
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
-                  skipProvisioning: true
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
+                  ${{ if parameters.UseProvisionator }}:
+                    skipProvisioning: false
+                    gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  ${{ else }}:  
+                    skipProvisioning: true
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -206,9 +236,7 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Sonoma
-              - macOS.Architecture -equals x64
+            demands: ${{ PackPlatform.demands }}
           variables:
             - name: _buildScript
               value: $(Build.SourcesDirectory)/build.cmd -ci
@@ -238,13 +266,16 @@ stages:
                     parameters:
                       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       skipAndroidSdks: true
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
-                      skipProvisioning: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-
+                      ${{ if parameters.UseProvisionator }}:
+                        skipProvisioning: false
+                        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                      ${{ else }}:  
+                        skipProvisioning: true
+                      
   - stage: samples_net
     displayName: Test .NET MAUI Samples
     dependsOn: pack_net
@@ -258,9 +289,7 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            demands:
-               - macOS.Name -equals Sonoma
-               - macOS.Architecture -equals x64
+            demands: ${{ BuildPlatform.demands }}
           steps:
             - template: common/provision.yml
               parameters:
@@ -268,9 +297,12 @@ stages:
                 skipAndroidSdks: true
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
-                skipProvisioning: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-
+                ${{ if parameters.UseProvisionator }}:
+                  skipProvisioning: false
+                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                ${{ else }}:  
+                  skipProvisioning: true
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'
               inputs:
@@ -310,8 +342,15 @@ stages:
       parameters:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
+        MacBuildPool: ${{ parameters.MacTemplatePool }}
+        ${{ if parameters.UseProvisionator }}:
+          skipProvisioning: false
+        ${{ else }}:
+          skipProvisioning: true
+        conditionMacTemplates: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq(variables['System.TeamProject'], 'devdiv'))
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

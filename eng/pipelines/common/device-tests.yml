@@ -8,6 +8,7 @@ parameters:
   iosDeviceVersions: [ '15' ]
   catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  skipProvisioning: true
   agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
@@ -73,6 +74,7 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: ${{ parameters.androidPool.name }}
             androidConfiguration: $(ANDROID_CONFIGURATION)
+            skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
@@ -120,6 +122,7 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
+            skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
@@ -165,6 +168,7 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
+            skipProvisioning: ${{ parameters.skipProvisioning }}
 
 
   - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
@@ -206,3 +210,4 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            skipProvisioning: ${{ parameters.skipProvisioning }}
