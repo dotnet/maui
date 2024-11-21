@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -16,11 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Picker)]
 		public void Issue16737Test()
 		{
-			_ = App.WaitForElement("picker");
+			_ = App.WaitForElement("label");
 
 			// The test passes if the title's color is red
 			VerifyScreenshot();
 		}
 	}
 }
-#endif
