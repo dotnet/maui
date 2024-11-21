@@ -6,24 +6,24 @@ namespace Microsoft.Maui.IntegrationTests;
 public class SimpleTemplateTest : BaseTemplateTests
 {
 	[Test]
-	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams
-	[TestCase("maui", DotNetPrevious, "Debug", false, "")]
-	[TestCase("maui", DotNetPrevious, "Release", false, "")]
-	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "")]
-	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content")]
-	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content")]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty")]
-	[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
-	[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
-	[TestCase("mauilib", DotNetCurrent, "Release", true, "")]
-	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams)
+	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
+	[TestCase("maui", DotNetPrevious, "Debug", false, "","")]
+	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
+	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty","")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty","TrimMode=partial")]
+	[TestCase("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	[TestCase("mauilib", DotNetPrevious, "Release", true, "","")]
+	[TestCase("mauilib", DotNetCurrent, "Debug", true, "", "")]
+	[TestCase("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
+	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)	
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -33,7 +33,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// TODO: remove this if as we should be able to build tizen net8
 		if (framework != DotNetPrevious)
-		EnableTizen(projectFile);
+			EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
@@ -49,10 +49,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
 			};
 		}
+		
+		var buildProps = BuildProps;
 
+		if (additionalDotNetBuildParams is not "" and not null)
+		{
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
+		}
 
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -102,20 +108,20 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	// Parameters: short name, target framework, build config, use pack target
-	[TestCase("maui", DotNetPrevious, "Debug", false)]
-	[TestCase("maui", DotNetPrevious, "Release", false)]
-	[TestCase("maui", DotNetCurrent, "Debug", false)]
-	[TestCase("maui", DotNetCurrent, "Release", false)]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
-	[TestCase("mauilib", DotNetPrevious, "Debug", true)]
-	[TestCase("mauilib", DotNetPrevious, "Release", true)]
-	[TestCase("mauilib", DotNetCurrent, "Debug", true)]
-	[TestCase("mauilib", DotNetCurrent, "Release", true)]
-	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack)
+	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
+	[TestCase("maui", DotNetPrevious, "Debug", false, "")]
+	[TestCase("maui", DotNetPrevious, "Release", false, "")]
+	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	[TestCase("maui-blazor", DotNetPrevious, "Debug", false,	"")]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", false,	"")]
+	[TestCase("maui-blazor", DotNetCurrent, "Debug", false,	"")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
+	[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
+	[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
+	[TestCase("mauilib", DotNetCurrent, "Debug", true, "")]
+	[TestCase("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
+	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -140,8 +146,15 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\log\\{Path.GetFileName(projectDir)}.binlog");
 
+		var buildProps = BuildProps;
+
+		if (additionalDotNetBuildParams is not "" and not null)
+		{
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
+		}
+
 		string target = shouldPack ? "Pack" : "";
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: BuildProps),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, binlogPath: binlogDir, properties: buildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
@@ -266,13 +279,13 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui", "Debug", "2.0", "2")]
-	[TestCase("maui", "Release", "2.0", "2")]
-	[TestCase("maui", "Release", "0.3", "3")]
-	[TestCase("maui-blazor", "Debug", "2.0", "2")]
-	[TestCase("maui-blazor", "Release", "2.0", "2")]
-	[TestCase("maui-blazor", "Release", "0.3", "3")]
-	public void BuildWithDifferentVersionNumber(string id, string config, string display, string version)
+	[TestCase("maui", "Debug", "2.0", "2", "")]
+	[TestCase("maui", "Release", "2.0", "2", "TrimMode=partial")]
+	[TestCase("maui", "Release", "0.3", "3", "TrimMode=partial")]
+	[TestCase("maui-blazor", "Debug", "2.0", "2", "")]
+	[TestCase("maui-blazor", "Release", "2.0", "2",	"TrimMode=partial")]
+	[TestCase("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
+	public void BuildWithDifferentVersionNumber(string id, string config, string display, string version, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -288,7 +301,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"<ApplicationVersion>1</ApplicationVersion>",
 			$"<ApplicationVersion>{version}</ApplicationVersion>");
 
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		var buildProps = BuildProps;
+
+		if (additionalDotNetBuildParams is not "" and not null)
+		{
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
+		}
+		
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 }

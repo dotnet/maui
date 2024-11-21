@@ -344,7 +344,7 @@ namespace UITest.Appium
 		public static void DoubleTap(this IApp app, string element)
 		{
 			var elementToDoubleTap = app.FindElement(element);
-		
+
 			app.DoubleTap(elementToDoubleTap);
 		}
 
@@ -408,7 +408,7 @@ namespace UITest.Appium
 		public static void TouchAndHold(this IApp app, string element)
 		{
 			var elementToTouchAndHold = app.FindElement(element);
-		
+
 			app.TouchAndHold(elementToTouchAndHold);
 		}
 
@@ -1169,7 +1169,7 @@ namespace UITest.Appium
 		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			if (element is not null)
-			{ 
+			{
 				app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
 				{
 					{ "element", element },
@@ -1770,6 +1770,26 @@ namespace UITest.Appium
 
 			var pageSource = aaa.Driver.PageSource;
 			Console.WriteLine(pageSource);
+    }
+    
+		/// <summary>
+		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapBackArrow(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("Back"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("NavigationViewBackButton"));
+			}
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
@@ -1837,6 +1857,14 @@ namespace UITest.Appium
 				result = app.FindElementsByText(element);
 
 			return result;
+		}
+
+
+		public static void SetTestConfigurationArg(this IConfig config, string key, string value)
+		{
+			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+			startupArg.Add(key, value);
+			config.SetProperty("TestConfigurationArgs", startupArg);
 		}
 	}
 }

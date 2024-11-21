@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue5555(TestDevice device) : base(device)
 		{
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.TableView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]

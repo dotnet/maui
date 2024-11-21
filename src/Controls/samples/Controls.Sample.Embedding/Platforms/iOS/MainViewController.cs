@@ -129,7 +129,7 @@ public class MainViewController : UIViewController
 
 		public override void LayoutSubviews()
 		{
-			if (Subviews?.FirstOrDefault() is {} view)
+			if (Subviews?.FirstOrDefault() is { } view)
 				view.Frame = Bounds;
 		}
 

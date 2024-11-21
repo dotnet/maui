@@ -18,34 +18,34 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class Maui21757_2
 {
-    public Maui21757_2()
-    {
-        InitializeComponent();
-    }
+	public Maui21757_2()
+	{
+		InitializeComponent();
+	}
 
-    public Maui21757_2(bool useCompiledXaml)
-    {
-        //this stub will be replaced at compile time
-    }
+	public Maui21757_2(bool useCompiledXaml)
+	{
+		//this stub will be replaced at compile time
+	}
 
-    [TestFixture]
-    class Test
-    {
-        [SetUp]
-        public void Setup()
-        {
-            Application.SetCurrentApplication(new MockApplication());
-            DispatcherProvider.SetCurrent(new DispatcherProviderStub());
-        }
+	[TestFixture]
+	class Test
+	{
+		[SetUp]
+		public void Setup()
+		{
+			Application.SetCurrentApplication(new MockApplication());
+			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		}
 
-        [TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
-        [Test]
-        public void TypeLiteralAndXTypeCanBeUsedInterchangeably()
-        {
-            Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui21757_2)));
-        }
-    }
+		[Test]
+		public void TypeLiteralAndXTypeCanBeUsedInterchangeably()
+		{
+			Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui21757_2)));
+		}
+	}
 }
 
 public class ViewModelMainPage21757_2
