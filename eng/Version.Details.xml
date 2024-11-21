@@ -1,8 +1,8 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-alpha.1.24570.21">
+    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-alpha.1.24571.2">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>893096d63a82eb4dc245e082d543fc2ef0ba4bad</Sha>
+      <Sha>9dd1da535ea87cbd9d72795f3a63abe5a5a3c3cd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.24570.2" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -31,10 +31,10 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <!-- <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest.Transport-10.0.100" Version="9.0.0" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100" Version="10.0.0-alpha.1.24467.3">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>763d10a1a251be35337ee736832bfde3f9200672</Sha>
-    </Dependency> -->
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-alpha.2.24570.6">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>5493b413d1df3aaf00651bdf1cbd8135fa63f517</Sha>
