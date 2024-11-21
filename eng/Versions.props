@@ -29,7 +29,7 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>9.0.0</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftNETSdkPackageVersion>10.0.100-alpha.1.24571.2</MicrosoftNETSdkPackageVersion>
+    <MicrosoftNETSdkPackageVersion>10.0.100-alpha.1.24571.3</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-alpha.1.24570.2</MicrosoftNETCoreAppRefPackageVersion>
@@ -52,10 +52,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>35.99.0-ci.main.27</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet90_180PackageVersion>18.0.9617</MicrosoftMacCatalystSdknet90_180PackageVersion>
-    <MicrosoftmacOSSdknet90_150PackageVersion>15.0.9617</MicrosoftmacOSSdknet90_150PackageVersion>
-    <MicrosoftiOSSdknet90_180PackageVersion>18.0.9617</MicrosoftiOSSdknet90_180PackageVersion>
-    <MicrosofttvOSSdknet90_180PackageVersion>18.0.9617</MicrosofttvOSSdknet90_180PackageVersion>
+    <MicrosoftMacCatalystSdknet10_181PackageVersion>18.0.9617</MicrosoftMacCatalystSdknet10_181PackageVersion>
+    <MicrosoftmacOSSdknet10_151PackageVersion>15.0.9617</MicrosoftmacOSSdknet10_151PackageVersion>
+    <MicrosoftiOSSdknet10_181PackageVersion>18.0.9617</MicrosoftiOSSdknet10_181PackageVersion>
+    <MicrosofttvOSSdknet10_181PackageVersion>18.0.9617</MicrosofttvOSSdknet10_181PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -178,9 +178,9 @@
     <DotNetAndroidManifestVersionBand>9.0.100</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>9.0.100</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
-    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet90_180PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet90_150PackageVersion)</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet90_180PackageVersion)</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet90_180PackageVersion)</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet10_181PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet10_151PackageVersion)</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet10_181PackageVersion)</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>$(MicrosofttvOSSdknet10_181PackageVersion)</MicrosofttvOSSdkPackageVersion>
   </PropertyGroup>
 </Project>
