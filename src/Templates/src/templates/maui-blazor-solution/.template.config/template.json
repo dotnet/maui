@@ -103,6 +103,12 @@
               "MauiApp.1.Web.Client/Services/**",
               "MauiApp.1.Web.Client/wwwroot/**"
             ]
+          },
+          {
+            "condition": "(HostIdentifier == \"vs\")",
+            "exclude": [
+              "*.sln"
+            ]
           }
         ]
     }
