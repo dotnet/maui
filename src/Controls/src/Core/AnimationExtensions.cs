@@ -275,14 +275,22 @@ namespace Microsoft.Maui.Controls
 
 			if (self is VisualElement ve)
 			{
-				ve.Unloaded += (s, e) =>
-				{
-					s_animations.Remove(key);
-				};
+				ve.Unloaded += OnVisualElementUnloaded;
 			}
 
 			info.Callback(0.0f);
 			tweener.Start();
+
+			void OnVisualElementUnloaded(object sender, EventArgs args)
+			{
+				if (sender is not VisualElement visualElement)
+				{
+					return;
+				}
+
+				s_animations.Remove(key);
+				visualElement.Unloaded -= OnVisualElementUnloaded;
+			}
 		}
 
 		static void AnimateKineticInternal(IAnimatable self, IAnimationManager animationManager, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
