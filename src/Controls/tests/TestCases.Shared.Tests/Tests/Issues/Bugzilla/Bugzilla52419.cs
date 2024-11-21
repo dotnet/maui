@@ -1,6 +1,4 @@
-﻿//#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
-//TapBackArrow doesn't work on iOS and Mac. On the Android platform, tapping on Page 2 doesn't work.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
