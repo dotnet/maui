@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			DrawerArrowDrawable icon = null;
 			bool defaultDrawerArrowDrawable = false;
 
-			var tintColor = Colors.White;
+			var tintColor = Shell.GetForegroundColor(page) ?? Shell.GetForegroundColor(_shell) ?? Colors.White;
 			if (TintColor != null)
 				tintColor = TintColor;
 
