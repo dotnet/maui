@@ -140,8 +140,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				IItemsViewSource source = ViewController.ItemsSource;
 
-				firstVisibleItemIndex = GetItemIndex(First, source);
-				centerItemIndex = GetItemIndex(Center, source);
+				firstVisibleItemIndex = (int)First.Item;
+				centerItemIndex = (int)Center.Item;
 				lastVisibleItemIndex = GetItemIndex(Last, source);
 			}
 			return (VisibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
