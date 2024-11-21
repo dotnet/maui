@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (image != null)
 				{
-					icon = result?.Value;
+					icon = ResizeImage(result?.Value, new CGSize(23f, 23f));
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
@@ -465,6 +465,51 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateBackButtonTitle();
 		}
 
+		string GenerateImageHash(UIImage image)
+		{
+			if (image == null)
+				return string.Empty;
+			using (NSData imageData = image.AsPNG())
+			{
+				using (var sha256 = System.Security.Cryptography.SHA256.Create())
+				{
+					byte[] hashBytes = sha256.ComputeHash(imageData.ToArray());
+					return Convert.ToBase64String(hashBytes);
+				}
+			}
+		}
+		UIImage ResizeImage(UIImage sourceImage, CGSize targetSize)
+		{
+			// Generate a unique cache key based on the Hash of the source image and target size
+			string cacheKey = $"{GenerateImageHash(sourceImage)}_{targetSize.Width}_{targetSize.Height}";
+			// Attempt to retrieve the image from the cache
+			UIImage img = (UIImage)_nSCache.ObjectForKey((NSString)cacheKey);
+			if (img is not null)
+			{
+				return img;
+			}
+			// Create a graphics context with the target size
+			UIGraphics.BeginImageContextWithOptions(targetSize, false, 0.0f);
+			try
+			{
+				// Draw the image into the context with the new size
+				sourceImage.Draw(new CGRect(0, 0, targetSize.Width, targetSize.Height));
+				// Get the resized image from the context
+				img = UIGraphics.GetImageFromCurrentImageContext();
+				if (img is not null)
+				{
+					// Store the resized image in the cache
+					_nSCache.SetObjectforKey(img, (NSString)cacheKey);
+				}
+
+				return img;
+			}
+			finally
+			{
+				// End the graphics context
+				UIGraphics.EndImageContext();
+			}
+		}
 
 		void UpdateBackButtonTitle()
 		{
