@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,6 +18,24 @@ public class Issue25893 : _IssuesUITest
 	public void MenuFlyoutSubItemWithIconNoCrash()
 	{
 		App.WaitForElement("WaitForStubControl");
+
+		var result1 = App.FindElement("WaitForStubControl").GetText();
+		ClassicAssert.AreEqual("3", result1);
+
+		App.Tap("AddMenuItem");
+		
+		var result2 = App.FindElement("WaitForStubControl").GetText();
+		ClassicAssert.AreEqual("4", result2);
+
+		App.Tap("RemoveMenuItem");
+		App.Tap("RemoveMenuItem");
+		
+		var result3 = App.FindElement("WaitForStubControl").GetText();
+		ClassicAssert.AreEqual("2", result3);
+
+		App.RightClick("WaitForStubControl");
+
+		VerifyScreenshot();
 
 		// Without crashing, the test has passed.
 	}
