@@ -101,11 +101,13 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Adjust the ScrollViewer's hit test visibility if it exists
 			if (_scrollViewer is not null)
 			{
-				// If the empty view is visible, we don't want to hit test the ScrollViewer 
-				// because on the template, the empty view is on bottom of the ScrollViewer
-				_scrollViewer.IsHitTestVisible = !(visibility == WVisibility.Visible);
+				// When the empty view is visible, disable hit testing for the ScrollViewer.
+				// This ensures that interactions are directed to the empty view instead of the ScrollViewer.
+				// In the template, the empty view is placed below the ScrollViewer in the visual tree.
+				_scrollViewer.IsHitTestVisible = visibility != WVisibility.Visible;
 			}
 
 			_emptyViewContentControl.Visibility = visibility;

@@ -16,9 +16,9 @@ public class Issue19609 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void CanTapButtonOnEmptyView()
 	{
-		App.WaitForElement("btnClick");
-		App.Tap("btnClick");
-		var text = App.WaitForElement("btnClick").GetText();
-		Assert.That("Clicked" == text);
+		var btnElementId = "btnClick";
+		App.WaitForElement(btnElementId, $"Can t find the button {btnElementId}", timeout: TimeSpan.FromSeconds(10));
+		App.Tap(btnElementId);
+		App.WaitForTextToBePresentInElement(btnElementId, "Clicked", timeout: TimeSpan.FromSeconds(10));
 	}
 }
