@@ -1692,6 +1692,21 @@ namespace UITest.Appium
 			}
 		}
 
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="elementId">The id of the element to wait for.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+		{
+			if(app is AppiumCatalystApp)
+				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
+				
+			app.WaitForElement(elementId, timeout: timeout);
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,

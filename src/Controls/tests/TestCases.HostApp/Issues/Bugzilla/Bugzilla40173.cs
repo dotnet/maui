@@ -30,8 +30,7 @@ public class Bugzilla40173 : TestContentPage
 		var boxView = new BoxView
 		{
 			AutomationId = "nontransparentBoxView",
-			Color = Colors.Pink.MultiplyAlpha(0.5f), 
-			InputTransparent = false
+			Color = Colors.Pink.MultiplyAlpha(0.5f)
 		};
 
 		// Bump up the elevation on Android so the Button is covered (FastRenderers)

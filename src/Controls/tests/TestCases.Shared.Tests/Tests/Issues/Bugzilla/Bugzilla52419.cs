@@ -28,21 +28,13 @@ public class Bugzilla52419 : _IssuesUITest
 	 [Category(UITestCategories.TabbedPage)]
 	 public void Bugzilla52419Test()
 	 {
-#if MACCATALYST
-		App.WaitForElement(AppiumQuery.ById(PushNewPage));
-#endif
-	 	App.WaitForElement(PushNewPage);
+		App.WaitForElementTillPageNavigationSettled(PushNewPage);
 	 	App.Tap(PushNewPage);
-#if MACCATALYST
-		App.WaitForElement(AppiumQuery.ById(PushNewPage));
-#endif
-	 	App.WaitForElement(PushNewPage);
+		App.WaitForElementTillPageNavigationSettled(PushNewPage);
 	 	App.Tap(PushNewPage);
-#if MACCATALYST
-		App.WaitForElement(AppiumQuery.ById(PushNewPage));
-#endif
-	 	App.WaitForElement(PushNewPage);
+		App.WaitForElementTillPageNavigationSettled(PushNewPage);
 	 	App.Tap(PushNewPage);
+		App.WaitForElementTillPageNavigationSettled(TabPage2);
 	 	App.Tap(TabPage2);
 	 	App.Tap(TabPage1);
 	 	App.Tap(TabPage2);

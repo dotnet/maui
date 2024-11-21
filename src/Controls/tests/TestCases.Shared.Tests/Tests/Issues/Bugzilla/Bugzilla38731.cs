@@ -16,6 +16,10 @@ public class Bugzilla38731 : _IssuesUITest
 	const string PageTwo = "Page two";
 	const string PageOne = "Page one";
 #endif
+    const string btn1 = "btn1";
+	const string btn2 = "btn2";
+	const string btn3 = "btn3";
+
 	public Bugzilla38731(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -26,33 +30,21 @@ public class Bugzilla38731 : _IssuesUITest
 	 [Category(UITestCategories.Navigation)]
 	 public void Bugzilla38731Test ()
 	 {
-	 	App.WaitForElement("btn1");
-	 	App.Tap("btn1");
+	 	App.WaitForElement(btn1);
+	 	App.Tap(btn1);
 
-	 	App.WaitForElement("btn2");
-	 	App.Tap("btn2");
+	 	App.WaitForElement(btn2);
+	 	App.Tap(btn2);
 
-	 	App.WaitForElement("btn3");
-	 	App.Tap("btn3");
+	 	App.WaitForElement(btn3);
+	 	App.Tap(btn3);
 
-#if MACCATALYST    
-		App.WaitForElement(AppiumQuery.ById("FinalPage"));
-#endif
+        App.WaitForElementTillPageNavigationSettled("FinalPage");
 		App.TapBackArrow(PageThree);
-		
-#if MACCATALYST    
-		App.WaitForElement(AppiumQuery.ById("btn3"));
-#endif
-		App.WaitForElement("btn3");
+        App.WaitForElementTillPageNavigationSettled(btn3);
 	 	App.TapBackArrow(PageTwo);
-#if MACCATALYST    
-		App.WaitForElement(AppiumQuery.ById("btn2"));
-#endif
-		App.WaitForElement("btn2");
+        App.WaitForElementTillPageNavigationSettled(btn2);
 	 	App.TapBackArrow(PageOne);
-#if MACCATALYST		
-		App.WaitForElement(AppiumQuery.ById("btn1"));
-#endif
-		App.WaitForElement("btn1");
+		App.WaitForElementTillPageNavigationSettled(btn1);
 	}
 }

@@ -22,6 +22,9 @@ public class Bugzilla32040 : _IssuesUITest
 		App.WaitForElement("Tapped");
 
 		App.Tap("Click Here");
+
+		//FindElements consistently returns a zero count, despite the "Tapped" text being visible in the UI.
+		//Assert.That(App.FindElements("Tapped").Count, Is.GreaterThanOrEqualTo(2));
 		App.WaitForTextToBePresentInElement("yaddayadda", "Tapped");
 	}
 }

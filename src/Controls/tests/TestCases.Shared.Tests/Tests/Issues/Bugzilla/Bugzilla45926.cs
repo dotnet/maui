@@ -27,20 +27,15 @@ public class Bugzilla45926 : _IssuesUITest
 		App.WaitForElement("New Page");
 
 		App.Tap("New Page");
-#if MACCATALYST
-		App.WaitForElement(AppiumQuery.ById("Second Page #1"));
-#else
-		App.WaitForElement("Second Page #1");
-#endif
-#if MACCATALYST || IOS
+		App.WaitForElementTillPageNavigationSettled("Second Page #1");
+
+		//Getting nullreference exception on iOS while tapping back button. so using waitforElement for back button element.
+#if IOS 
 		App.WaitForElement("Back");
 #endif
+
 		App.TapBackArrow(BackButtonIdentifier1);
-#if MACCATALYST
-		App.WaitForElement(AppiumQuery.ById("Intermediate Page"));
-#else
-		App.WaitForElement("Intermediate Page");
-#endif
+		App.WaitForElementTillPageNavigationSettled("Intermediate Page");
 		App.TapBackArrow(BackButtonIdentifier2);
 		App.WaitForElement("Do GC");
 		App.Tap("Do GC");
