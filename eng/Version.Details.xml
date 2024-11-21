@@ -5,12 +5,12 @@
       <Sha>8e18c80a3926c2259f9d7211c5e2c5d2f53052a1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0" CoherentParentDependency="Microsoft.NET.Sdk">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d3981726bc8b0e179db50301daf9f22d42393096</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.18">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.0.20">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>20f08bd2086f9bf6d48ce658c62298f68af9881f</Sha>
+      <Sha>c2909ce7fd34407327b759b300909fa6230920ae</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net9.0_18.0" Version="18.0.9617">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -33,7 +33,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100" Version="9.0.0" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>8be5676af1ccf568b258133788a24aedd1a80994</Sha>
+      <Sha>763d10a1a251be35337ee736832bfde3f9200672</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
