@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID //Issue reproduced on android and logged the issue: 
+﻿#if TEST_FAILS_ON_ANDROID //Issue reproduced on android and logged the issue: https://github.com/dotnet/maui/issues/26026
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
