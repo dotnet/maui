@@ -461,7 +461,10 @@ namespace Microsoft.Maui.Controls
 		{
 			Frame = this.ComputeFrame(bounds);
 			Handler?.PlatformArrange(Frame);
-
+			if (this is IScrollView scrollView)
+			{
+				return scrollView.ArrangeContentUnbounded(Frame);
+			}
 			return Frame.Size;
 		}
 
