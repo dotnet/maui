@@ -10,7 +10,7 @@ public class Issue19609 : _IssuesUITest
 {
 	public Issue19609(TestDevice device) : base(device) { }
 
-	public override string Issue => "Navigating Back to FlyoutPage Renders Blank Page";
+	public override string Issue => "Button clicked event and command will not be occurred in EmptyView of CollectionView";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
