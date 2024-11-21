@@ -18,8 +18,13 @@ namespace Microsoft.Maui.Controls
 		{
 			var commandElement = (ICommandElement)bo;
 			if (n is ICommand newCommand)
+			{
 				newCommand.CanExecuteChanged += commandElement.CanExecuteChanged;
-			commandElement.CanExecuteChanged(bo, EventArgs.Empty);
+
+				//HandleTearDown(commandElement);
+
+				commandElement.CanExecuteChanged(bo, EventArgs.Empty);
+			}
 		}
 
 		public static void OnCommandParameterChanged(BindableObject bo, object o, object n)
@@ -34,6 +39,23 @@ namespace Microsoft.Maui.Controls
 				return true;
 
 			return commandElement.Command.CanExecute(commandElement.CommandParameter);
+		}
+
+		static void HandleTearDown(ICommandElement commandElement)
+		{
+			if (commandElement is not VisualElement ve)
+				return;
+
+			ve.Unloaded -= OnUnloaded;
+			ve.Unloaded += OnUnloaded;
+
+			static void OnUnloaded(object? sender, EventArgs e)
+			{
+				if (sender is ICommandElement element && element.Command is not null)
+				{
+					element.Command.CanExecuteChanged -= element.CanExecuteChanged;
+				}
+			}
 		}
 	}
 }
