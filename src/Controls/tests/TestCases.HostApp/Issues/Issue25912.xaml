@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
-             x:Class="Maui.Controls.Sample.Issues.Issue25912">
+             x:Class="Maui.Controls.Sample.Issues.Issue25912MainPage">
 
 			 <ContentPage.ToolbarItems>
-				<ToolbarItem x:Name="toolbarItem" IconImageSource="{FontImage Glyph='+',Color=Yellow,Size=22}"/>
+				<ToolbarItem x:Name="toolbarItem" IconImageSource="{FontImage Glyph='+',Color=Red,Size=30}"/>
 			 </ContentPage.ToolbarItems>
 
 
@@ -13,4 +13,4 @@
 				<Label Text="ToolbarItemIconColorTest" AutomationId="Label"/>
 			 </ContentPage.Content>
     
-</ContentPage>
+</controls:TestContentPage>

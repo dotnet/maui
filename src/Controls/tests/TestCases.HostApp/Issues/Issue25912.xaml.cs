@@ -2,12 +2,25 @@
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 25912, "ToolbarItem color when used with IconImageSource is always white", PlatformAffected.iOS | PlatformAffected.macOS)]
-	public partial class Issue25912 : ContentPage
+		public class Issue25912 : NavigationPage
+	{
+		public Issue25912()
+		{
+			Navigation.PushAsync(new Issue25912MainPage());
+		}
+	}
+	
+	public partial class Issue25912MainPage : TestContentPage
 	{
 
-		public Issue25912()
+		public Issue25912MainPage()
 		{
 			InitializeComponent();
 		}
+
+		protected override void Init()
+		{
+		}
+
 	}
 }
