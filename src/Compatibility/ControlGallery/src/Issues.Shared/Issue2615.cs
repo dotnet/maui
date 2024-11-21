@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2615, "iOS Cell Reuse screws up when cells are both ViewCell with different children", PlatformAffected.iOS)]
-	#if UITEST
+#if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
-	#endif
+#endif
 	public class Issue2615 : ContentPage
 	{
 		public Issue2615()

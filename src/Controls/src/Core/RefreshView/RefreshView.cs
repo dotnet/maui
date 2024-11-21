@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
-			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), 
+			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView),
 			propertyChanging: CommandElement.OnCommandChanging,
 			propertyChanged: CommandElement.OnCommandChanged);
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls
 		object ICommandElement.CommandParameter => CommandParameter;
 
 		protected override bool IsEnabledCore => base.IsEnabledCore && CommandElement.GetCanExecute(this);
-		
+
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
 			if (IsRefreshing)

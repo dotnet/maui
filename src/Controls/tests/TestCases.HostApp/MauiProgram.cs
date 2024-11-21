@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample
 #if IOS || MACCATALYST
 
 			appBuilder.ConfigureCollectionViewHandlers();
-				
+
 #endif
 
 			appBuilder.Services.AddTransient<TransientPage>();

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using System.Runtime.CompilerServices;
 
 namespace Controls.TestCases.HostApp.Issues
 {

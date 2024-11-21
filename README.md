@@ -20,6 +20,7 @@
 ## Current News
 * November 13, 2024 - [What's new in .NET MAUI for .NET 9](https://learn.microsoft.com/dotnet/maui/whats-new/dotnet-9)
 * November 12, 2024 - [Announcing .NET 9](https://devblogs.microsoft.com/dotnet/announcing-dotnet-9/#.net-maui-–-enhancing-multi-platform-app-development)
+* October 22, 2024 - [.NET MAUI Welcomes Syncfusion Open-source Contributions](https://devblogs.microsoft.com/dotnet/dotnet-maui-welcomes-syncfusion-open-source-contributions/)
 
 Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 

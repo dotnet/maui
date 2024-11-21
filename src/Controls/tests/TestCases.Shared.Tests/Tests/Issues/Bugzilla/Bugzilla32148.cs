@@ -12,7 +12,7 @@ public class Bugzilla32148 : _IssuesUITest
 	}
 
 	public override string Issue => " Pull to refresh hides the first item on a list view";
-  
+
 	[Test]
 	[Category(UITestCategories.ListView)]
 	[FailsOnIOSWhenRunningOnXamarinUITest]

@@ -9,6 +9,7 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  skipProvisioning: true
   agentPoolAccessToken: ''
   runCompatibilityTests: false
   categoryGroupsToTest:
@@ -56,6 +57,7 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "Mono"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot
@@ -73,6 +75,7 @@ stages:
               parameters:
                   runtimeVariant: "NativeAOT"
                   platform: ios
+                  skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
@@ -87,6 +90,7 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 platform: windows
+                skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: android_ui_tests
     displayName: Android UITests
@@ -124,6 +128,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -165,6 +170,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -202,6 +208,7 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: ios_ui_tests_nativeaot
@@ -244,6 +251,7 @@ stages:
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
+                        skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
@@ -275,6 +283,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -307,6 +316,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - ${{ if eq(parameters.runCompatibilityTests, true) }}:  
     - stage: android_compatibility_ui_tests
@@ -341,6 +351,7 @@ stages:
                           DEVICE: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        skipProvisioning: ${{ parameters.skipProvisioning }}
 
     - stage: ios_compatibility_ui_tests
       displayName: iOS Compatibility UITests
@@ -377,3 +388,4 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        skipProvisioning: ${{ parameters.skipProvisioning }}
