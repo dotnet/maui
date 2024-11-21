@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class FormsListView : Microsoft.UI.Xaml.Controls.ListView, IEmptyView
 	{
 		ContentControl _emptyViewContentControl;
+		ScrollViewer _scrollViewer;
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 
@@ -68,6 +69,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 
+			_scrollViewer = GetTemplateChild("ScrollViewer") as ScrollViewer;
+
 			if (_emptyView != null)
 			{
 				_emptyViewContentControl.Content = _emptyView;
@@ -96,6 +99,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_emptyViewContentControl == null)
 			{
 				return;
+			}
+
+			if (_scrollViewer == null)
+			{
+				// If the empty view is visible, we don't want to hit test the ScrollViewer 
+				// because on the template, the empty view is on bottom of the ScrollViewer
+				_scrollViewer.IsHitTestVisible = !(visibility == WVisibility.Visible);
 			}
 
 			_emptyViewContentControl.Visibility = visibility;
