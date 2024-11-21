@@ -17,7 +17,7 @@ public class Issue12777 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue12777Test()
 	// {
-	// 	RunningApp.WaitForElement("TestCarouselView");
-	// 	RunningApp.Screenshot("Test passed");
+	// 	App.WaitForElement("TestCarouselView");
+	// 	App.Screenshot("Test passed");
 	// }
 }

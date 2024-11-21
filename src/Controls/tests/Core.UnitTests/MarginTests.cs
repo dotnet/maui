@@ -9,13 +9,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class MarginTests : BaseTestFixture
 	{
-
-		public MarginTests()
-		{
-
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (b, d, e) => new SizeRequest(new Size(100, 50));
-		}
-
 		[Fact]
 		public void GetSizeRequestIncludesMargins()
 		{
@@ -23,12 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			var child = new Button
-			{
-				Text = "Test",
-				IsPlatformEnabled = true,
-			};
-
+			var child = MockPlatformSizeService.Sub<Button>(GetPlatformSize, text: "Test");
 
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
@@ -44,12 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			var child = new Button
-			{
-				Text = "Test",
-				IsPlatformEnabled = true,
-			};
-
+			var child = MockPlatformSizeService.Sub<Button>(GetPlatformSize, text: "Test");
 
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
@@ -65,14 +48,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				IsPlatformEnabled = true,
 			};
-			var child = new Button
-			{
-				Text = "Test",
-				VerticalOptions = LayoutOptions.Start,
-				HorizontalOptions = LayoutOptions.Start,
-				IsPlatformEnabled = true,
-			};
-
+			var child = MockPlatformSizeService.Sub<Button>(
+				GetPlatformSize,
+				text: "Test",
+				horizOpts: LayoutOptions.Start,
+				vertOpts: LayoutOptions.Start);
 
 			child.Margin = new Thickness(10, 20, 30, 40);
 			parent.Content = child;
@@ -93,19 +73,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handler = Substitute.For<IViewHandler>();
 			parent.Handler = handler;
 
-			var child1 = new Button
-			{
-				Text = "Test",
-				VerticalOptions = LayoutOptions.Start,
-				HorizontalOptions = LayoutOptions.Start,
-				IsPlatformEnabled = true,
-			};
+			var child1 = MockPlatformSizeService.Sub<Button>(
+				GetPlatformSize,
+				text: "Test",
+				horizOpts: LayoutOptions.Start,
+				vertOpts: LayoutOptions.Start);
 
-			var child2 = new Button
-			{
-				Text = "Test",
-				IsPlatformEnabled = true,
-			};
+			var child2 = MockPlatformSizeService.Sub<Button>(GetPlatformSize, text: "Test");
 
 			child2.Margin = new Thickness(5, 10, 15, 20);
 
@@ -132,5 +106,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			handler.Received().Invoke(Arg.Is(nameof(IView.InvalidateMeasure)), Arg.Any<object>());
 			handler.ClearReceivedCalls();
 		}
+
+		static SizeRequest GetPlatformSize(VisualElement _, double w, double h) => new(new(100, 50));
 	}
 }

@@ -260,7 +260,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 			{
 				// This is the reason why I call SendDisappearing() here.
 				// When OnChildRemove is called first like how it is called in Navigation.PopToRootAsync(),
-				// you can not controll using SendDisappearing() on the lower class.
+				// you cannot control using SendDisappearing() on the lower class.
 				(Element as IPageController)?.SendDisappearing();
 
 				if (Element != null)

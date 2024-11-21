@@ -17,25 +17,25 @@ public class Issue1439 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue1439Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked(A));
-	// 	RunningApp.Tap(q => q.Marked(A));
+	// 	App.WaitForElement(q => q.Marked(A));
+	// 	App.Tap(q => q.Marked(A));
 
-	// 	Assert.AreEqual(A, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
-	// 	Assert.AreEqual(Group_1, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
+	// 	Assert.AreEqual(A, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_1, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
-	// 	RunningApp.Tap(q => q.Marked(B));
+	// 	App.Tap(q => q.Marked(B));
 
-	// 	Assert.AreEqual(B, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
-	// 	Assert.AreEqual(Group_1, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
+	// 	Assert.AreEqual(B, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_1, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
-	// 	RunningApp.Tap(q => q.Marked(C));
+	// 	App.Tap(q => q.Marked(C));
 
-	// 	Assert.AreEqual(C, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
-	// 	Assert.AreEqual(Group_2, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
+	// 	Assert.AreEqual(C, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_2, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
-	// 	RunningApp.Tap(q => q.Marked(D));
+	// 	App.Tap(q => q.Marked(D));
 
-	// 	Assert.AreEqual(D, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
-	// 	Assert.AreEqual(Group_2, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
+	// 	Assert.AreEqual(D, App.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+	// 	Assert.AreEqual(Group_2, App.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 	// }
 }

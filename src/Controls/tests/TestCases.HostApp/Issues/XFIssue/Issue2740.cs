@@ -20,13 +20,27 @@ public class Issue2740 : TestFlyoutPage
 		Detail = new NavigationPage(page);
 	}
 
-	public partial class AddressListView : ContentPage
+	public class AddressListView : ContentPage
 	{
 
 		public AddressListView()
 		{
 			var listview = new ListView();
 			listview.ItemsSource = new List<string> { "1", "2" };
+
+			listview.ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.AutomationIdProperty, new Binding("."));
+				var viewCell = new ViewCell
+				{
+					View = label
+				};
+
+				return viewCell;
+			});
+
 			listview.ItemTapped += OnItemTapped;
 			Content = listview;
 			Title = "Unit List";
@@ -39,7 +53,7 @@ public class Issue2740 : TestFlyoutPage
 		}
 	}
 
-	public partial class UnitViolationView : ContentPage
+	public class UnitViolationView : ContentPage
 	{
 		public UnitViolationView()
 		{

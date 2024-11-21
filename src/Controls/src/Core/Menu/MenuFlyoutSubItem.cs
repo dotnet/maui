@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			LogicalChildrenInternalBackingStore = new CastingList<Element, IMenuElement>(_menus);
 		}
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore {get; }
+		private protected override IList<Element> LogicalChildrenInternalBackingStore { get; }
 
 		public IMenuElement this[int index]
 		{

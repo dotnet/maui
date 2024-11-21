@@ -10,7 +10,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class FormsGridView : GridView, IEmptyView
+	internal partial class FormsGridView : GridView, IEmptyView
 	{
 		int _span;
 		ItemsWrapGrid _wrapGrid;

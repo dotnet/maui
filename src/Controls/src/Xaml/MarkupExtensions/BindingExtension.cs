@@ -1,11 +1,12 @@
 using System;
 using System.ComponentModel;
-using System.Linq.Expressions;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Path))]
+	[RequireService([typeof(IXamlTypeResolver), typeof(IXamlDataTypeProvider)])]
 	public sealed class BindingExtension : IMarkupExtension<BindingBase>
 	{
 		public string Path { get; set; } = Binding.SelfPath;
@@ -21,9 +22,29 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (TypedBinding is null) {
+			if (TypedBinding is null)
+			{
+				return CreateBinding();
+			}
+
+			TypedBinding.Mode = Mode;
+			TypedBinding.Converter = Converter;
+			TypedBinding.ConverterParameter = ConverterParameter;
+			TypedBinding.StringFormat = StringFormat;
+			TypedBinding.Source = Source;
+			TypedBinding.UpdateSourceEventName = UpdateSourceEventName;
+			TypedBinding.FallbackValue = FallbackValue;
+			TypedBinding.TargetNullValue = TargetNullValue;
+			return TypedBinding;
+
+			[UnconditionalSuppressMessage("TrimAnalysis", "IL2026",
+				Justification = "If this method is invoked, we have already produced warnings in XamlC " +
+					"when the compilation of this binding failed or was skipped.")]
+			BindingBase CreateBinding()
+			{
 				Type bindingXDataType = null;
-				if ((serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
+				if (serviceProvider is not null &&
+					(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver)
 					&& (serviceProvider.GetService(typeof(IXamlDataTypeProvider)) is IXamlDataTypeProvider dataTypeProvider)
 					&& dataTypeProvider.BindingDataType != null)
 				{
@@ -37,16 +58,6 @@ namespace Microsoft.Maui.Controls.Xaml
 					DataType = bindingXDataType,
 				};
 			}
-
-			TypedBinding.Mode = Mode;
-			TypedBinding.Converter = Converter;
-			TypedBinding.ConverterParameter = ConverterParameter;
-			TypedBinding.StringFormat = StringFormat;
-			TypedBinding.Source = Source;
-			TypedBinding.UpdateSourceEventName = UpdateSourceEventName;
-			TypedBinding.FallbackValue = FallbackValue;
-			TypedBinding.TargetNullValue = TargetNullValue;
-			return TypedBinding;
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

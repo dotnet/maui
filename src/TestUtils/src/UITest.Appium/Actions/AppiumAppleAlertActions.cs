@@ -40,7 +40,7 @@ public abstract class AppiumAppleAlertActions : ICommandExecutionGroup
 	CommandResponse GetAlerts(IDictionary<string, object> parameters)
 	{
 		var alerts = OnGetAlerts(_appiumApp, parameters);
-		
+
 		if (alerts is null || alerts.Count == 0)
 			return CommandResponse.FailedEmptyResponse;
 

@@ -36,13 +36,13 @@ public class Issue1342 : TestNavigationPage
 	}
 
 
-	public partial class MainPageCode : TabbedPage
+	public class MainPageCode : TabbedPage
 	{
 		public MainPageCode()
 		{
-			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "add1" });
-			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = $"{add2}" });
-			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = $"{add3}" });
+			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "add1" , AutomationId = "add1" });
+			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = $"{add2}", AutomationId = add2 });
+			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = $"{add3}", AutomationId = add3 });
 			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "reload" });
 			ToolbarItems.Add(new Microsoft.Maui.Controls.ToolbarItem() { Text = "visible" });
 
@@ -129,7 +129,7 @@ public class Issue1342 : TestNavigationPage
 	}
 
 
-	public partial class ListPageCode : ContentPage
+	public class ListPageCode : ContentPage
 	{
 		public ListPageCode()
 		{

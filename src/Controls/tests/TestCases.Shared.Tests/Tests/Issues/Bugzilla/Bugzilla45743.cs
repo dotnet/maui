@@ -15,7 +15,7 @@ public class Bugzilla45743 : _IssuesUITest
 	// TODO From Xamarin.UITest Migration: needs better way to detect actionsheet
 	// [Test]
 	// [Category(UITestCategories.DisplayAlert)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla45743Test()
 	// {
 	// 	App.WaitForElement("ActionSheet Title");

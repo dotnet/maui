@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls
 			try
 			{
 				_eventinfo = bindable.GetType().GetRuntimeEvent(Event);
-				_handlerdelegate = s_handlerinfo.CreateDelegate(_eventinfo.EventHandlerType, this);
+				_handlerdelegate = ((EventHandler)OnEventTriggered).Method.CreateDelegate(_eventinfo.EventHandlerType, this);
 			}
 			catch (Exception)
 			{
@@ -94,7 +94,6 @@ namespace Microsoft.Maui.Controls
 				_eventinfo.RemoveEventHandler(bindable, _handlerdelegate);
 		}
 
-		[Preserve]
 		void OnEventTriggered(object sender, EventArgs e)
 		{
 			var bindable = (BindableObject)sender;

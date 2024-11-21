@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.NUI;
 using NView = Tizen.NUI.BaseComponents.View;
@@ -435,7 +436,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				TextColor = Colors.Black,
 			};
-			label.SetBinding(XLabel.TextProperty, new Binding(".", converter: new ToTextConverter()));
+			label.SetBinding(XLabel.TextProperty, static (object source) => source, converter: new ToTextConverter());
 
 			return new Controls.StackLayout
 			{

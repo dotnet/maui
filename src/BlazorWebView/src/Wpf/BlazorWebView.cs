@@ -255,7 +255,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
 			string appRootDir;
+#pragma warning disable IL3000 // 'System.Reflection.Assembly.Location.get' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
 			var entryAssemblyLocation = Assembly.GetEntryAssembly()?.Location;
+#pragma warning restore IL3000
 			if (!string.IsNullOrEmpty(entryAssemblyLocation))
 			{
 				appRootDir = Path.GetDirectoryName(entryAssemblyLocation)!;

@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control whether elements in a picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Immediately">

@@ -17,7 +17,7 @@ public class Issue2767 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue2767Test()
 	// {
-	// 	RunningApp.WaitForElement("Label 1:1");
-	// 	Assert.IsEmpty(RunningApp.Query("Collapsed"));
+	// 	App.WaitForElement("Label 1:1");
+	// 	Assert.IsEmpty(App.Query("Collapsed"));
 	// }
 }

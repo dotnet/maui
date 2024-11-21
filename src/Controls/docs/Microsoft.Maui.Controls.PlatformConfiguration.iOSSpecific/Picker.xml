@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The picker instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetUpdateMode">
@@ -38,7 +37,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
         <returns>A value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetUpdateMode">
@@ -63,7 +61,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetUpdateMode">
@@ -89,7 +86,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateMode">
@@ -113,7 +109,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
         <returns>A value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateModeProperty">
@@ -132,7 +127,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -12,7 +12,7 @@ public class Bugzilla43941 : _IssuesUITest
 
 	public override string Issue => "Memory leak with ListView's RecycleElement on iOS";
 
-	// [FailsOnAndroid]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// [Test]
 	// [Category(UITestCategories.ListView)]
 	// public void Bugzilla43941Test()

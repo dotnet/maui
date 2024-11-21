@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Wait for main page to be visible
 			App.WaitForElement("goToChildPage");
-			
+
 			// A crash may happen briefly, await for a while to make sure it doesn't happen
 			await Task.Delay(1000);
 		}

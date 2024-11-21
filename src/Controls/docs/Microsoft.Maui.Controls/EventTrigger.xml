@@ -86,7 +86,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.EventTrigger" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Actions">
@@ -110,7 +109,6 @@
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.TriggerAction" /> objects that will be invoked when the event that is identified by the <see cref="P:Microsoft.Maui.Controls.EventTrigger.Event" /> property is raised.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Event">
@@ -134,7 +132,6 @@
         <summary>Gets or sets the name of the event that will cause the actions that are contained in the <see cref="P:Microsoft.Maui.Controls.EventTrigger.Actions" /> to be invoked.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

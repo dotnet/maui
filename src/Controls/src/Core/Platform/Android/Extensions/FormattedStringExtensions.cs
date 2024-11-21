@@ -131,7 +131,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return spannable;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (element?.FormattedText?.Spans is null || element.FormattedText.Spans.Count == 0)
 				return;
@@ -202,7 +204,8 @@ namespace Microsoft.Maui.Controls.Platform
 					var spanStartX = (int)layout.GetPrimaryHorizontal(startOffset);
 
 					var endOffset = (curLine == spanEndLine) ? spanEndOffset : lineVisibleEndOffset;
-					var spanEndX = (int)layout.GetSecondaryHorizontal(endOffset);
+					var validEndOffset = System.Math.Min(endOffset, layout.GetLineEnd(curLine));
+					var spanEndX = (int)layout.GetSecondaryHorizontal(validEndOffset);
 
 					var spanWidth = spanEndX - spanStartX;
 					var spanLeftX = spanStartX;

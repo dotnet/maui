@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignorePlatformSelectionChange = false;
 		}
 
-		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
+		partial class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
 		{
 			public object Convert(object value, Type targetType, object parameter, string language)
 			{

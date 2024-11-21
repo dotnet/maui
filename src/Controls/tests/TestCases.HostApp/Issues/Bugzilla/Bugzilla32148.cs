@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 

@@ -18,24 +18,24 @@ public class Issue3475 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue3475TestsLayoutCompressionPerformance()
 	// {
-	// 	RunningApp.WaitForElement(_titleLabelId);
-	// 	RunningApp.WaitForElement(_withoutCompressionBtnId);
-	// 	RunningApp.WaitForElement(_withCompressionBtnId);
+	// 	App.WaitForElement(_titleLabelId);
+	// 	App.WaitForElement(_withoutCompressionBtnId);
+	// 	App.WaitForElement(_withCompressionBtnId);
 
-	// 	RunningApp.Tap(_withoutCompressionBtnId);
-	// 	RunningApp.WaitForElement(DoneLabelId);
-	// 	RunningApp.Screenshot("Without Layout Compression");
+	// 	App.Tap(_withoutCompressionBtnId);
+	// 	App.WaitForElement(DoneLabelId);
+	// 	App.Screenshot("Without Layout Compression");
 
-	// 	int elapsedWithoutCompression = GetMs(RunningApp.Query(ElapsedLabelId).First().Text);
+	// 	int elapsedWithoutCompression = GetMs(App.Query(ElapsedLabelId).First().Text);
 
-	// 	RunningApp.Tap(BackButtonId);
-	// 	RunningApp.WaitForElement(_withCompressionBtnId);
+	// 	App.Tap(BackButtonId);
+	// 	App.WaitForElement(_withCompressionBtnId);
 
-	// 	RunningApp.Tap(_withCompressionBtnId);
-	// 	RunningApp.WaitForElement(DoneLabelId);
-	// 	RunningApp.Screenshot("With Layout Compression");
+	// 	App.Tap(_withCompressionBtnId);
+	// 	App.WaitForElement(DoneLabelId);
+	// 	App.Screenshot("With Layout Compression");
 
-	// 	int elapsedWithCompression = GetMs(RunningApp.Query(ElapsedLabelId).First().Text);
+	// 	int elapsedWithCompression = GetMs(App.Query(ElapsedLabelId).First().Text);
 	// 	var delta = elapsedWithCompression - elapsedWithoutCompression;
 
 	// 	//if layoutcompressions is slower than 100 then there is a problem.

@@ -9,12 +9,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	class TypeRefComparer : IEqualityComparer<TypeReference>
 	{
-		static string GetAssembly(TypeReference typeRef)
+		static string GetAssemblyName(TypeReference typeRef)
 		{
 			if (typeRef.Scope is ModuleDefinition md)
-				return md.Assembly.FullName;
+				return md.Assembly.Name.Name;
 			if (typeRef.Scope is AssemblyNameReference anr)
-				return anr.FullName;
+				return anr.Name;
 			throw new ArgumentOutOfRangeException(nameof(typeRef));
 		}
 
@@ -30,8 +30,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var yname = y.FullName.EndsWith("&", StringComparison.InvariantCulture) ? y.FullName.Substring(0, y.FullName.Length - 1) : y.FullName;
 			if (xname != yname)
 				return false;
-			var xasm = GetAssembly(x);
-			var yasm = GetAssembly(y);
+			var xasm = GetAssemblyName(x);
+			var yasm = GetAssemblyName(y);
 
 			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
 			if ((xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public int GetHashCode(TypeReference obj)
 		{
-			return $"{GetAssembly(obj)}//{obj.FullName}".GetHashCode();
+			return $"{GetAssemblyName(obj)}//{obj.FullName}".GetHashCode();
 		}
 
 		static TypeRefComparer s_default;

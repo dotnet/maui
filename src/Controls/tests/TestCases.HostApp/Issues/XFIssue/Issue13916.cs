@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 
-[Issue(IssueTracker.Github, 13916, "[iOS] iOS Application crashes on Back press when navigated to using GoToAsync with \"//\" or \"///\" route if 2 or more things are removed from the navigation stack",
+[Issue(IssueTracker.Github, 13916, "[iOS] iOS Application crashes on Back press when navigated to using GoToAsync with double or triple slash route if 2 or more things are removed from the navigation stack",
 	PlatformAffected.iOS)]
 
 public class Issue13916 : TestShell

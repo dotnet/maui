@@ -17,11 +17,11 @@ public class Issue2953 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue2953Test()
 	// {
-	// 	RunningApp.Screenshot("I am at Issue 2953");
-	// 	RunningApp.WaitForElement(q => q.Marked("Header 3"));
-	// 	RunningApp.Screenshot("I see the Header 3");
-	// 	RunningApp.Tap(q => q.Marked("btnRemove"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Header 3"));
-	// 	RunningApp.Screenshot("I still see the Header 3");
+	// 	App.Screenshot("I am at Issue 2953");
+	// 	App.WaitForElement(q => q.Marked("Header 3"));
+	// 	App.Screenshot("I see the Header 3");
+	// 	App.Tap(q => q.Marked("btnRemove"));
+	// 	App.WaitForElement(q => q.Marked("Header 3"));
+	// 	App.Screenshot("I still see the Header 3");
 	// }
 }

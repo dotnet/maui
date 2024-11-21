@@ -16,7 +16,7 @@ public class Bugzilla44886 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla44886Test()
 	// {
 	// 	App.WaitForElement("Item 1");

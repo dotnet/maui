@@ -17,11 +17,11 @@ public class Issue12685 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void ShapesPathReceiveGestureRecognizers()
 	// {
-	// 	var testLabel = RunningApp.WaitForFirstElement(StatusLabelId);
+	// 	var testLabel = App.WaitForFirstElement(StatusLabelId);
 	// 	Assert.AreEqual(ResetStatus, testLabel.ReadText());
-	// 	var testPath = RunningApp.WaitForFirstElement(PathId);
+	// 	var testPath = App.WaitForFirstElement(PathId);
 	// 	var pathRect = testPath.Rect;
-	// 	RunningApp.TapCoordinates(pathRect.X + 1, pathRect.Y + 1);
-	// 	Assert.AreEqual(ClickedStatus, RunningApp.WaitForFirstElement(StatusLabelId).ReadText());
+	// 	App.TapCoordinates(pathRect.X + 1, pathRect.Y + 1);
+	// 	Assert.AreEqual(ClickedStatus, App.WaitForFirstElement(StatusLabelId).ReadText());
 	// }
 }

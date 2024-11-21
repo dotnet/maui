@@ -13,7 +13,7 @@ public class Issue20696Test : ContentPage
 					{
 						Text = "Go To Test",
 						AutomationId = "GoToTest",
-						Command = new Command(() => Application.Current.MainPage = new Issue20696())
+						Command = new Command(() => this.Window.Page = new Issue20696())
 					}
 				}
 		};

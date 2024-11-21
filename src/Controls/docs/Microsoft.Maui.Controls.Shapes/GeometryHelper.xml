@@ -12,8 +12,6 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="FlattenArc">
@@ -50,8 +48,6 @@
         <param name="isLargeArc">To be added.</param>
         <param name="isCounterclockwise">To be added.</param>
         <param name="tolerance">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlattenCubicBezier">
@@ -82,8 +78,6 @@
         <param name="ptCtrl2">To be added.</param>
         <param name="ptEnd">To be added.</param>
         <param name="tolerance">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlattenGeometry">
@@ -106,9 +100,6 @@
       <Docs>
         <param name="geoSrc">To be added.</param>
         <param name="tolerance">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlattenGeometry">
@@ -135,8 +126,6 @@
         <param name="geoSrc">To be added.</param>
         <param name="tolerance">To be added.</param>
         <param name="matxPrevious">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlattenQuadraticBezier">
@@ -165,8 +154,6 @@
         <param name="ptCtrl">To be added.</param>
         <param name="ptEnd">To be added.</param>
         <param name="tolerance">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

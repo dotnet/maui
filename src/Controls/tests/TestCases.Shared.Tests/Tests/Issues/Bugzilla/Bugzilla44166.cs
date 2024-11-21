@@ -16,7 +16,7 @@ public class Bugzilla44166 : _IssuesUITest
 	// TODO From Xamarin.UITest Migration: this test references elements directly, needs to be rewritten
 	// [Test]
 	// [Category(UITestCategories.Performance)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla44166Test()
 	// {
 	// 	App.WaitForElement("Go");

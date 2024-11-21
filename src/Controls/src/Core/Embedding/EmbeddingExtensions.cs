@@ -24,13 +24,16 @@ namespace Microsoft.Maui.Controls.Embedding;
 /// <summary>
 /// A set of extension methods that allow for embedding a MAUI view within a native application.
 /// </summary>
-internal static class EmbeddingExtensions
+public static class EmbeddingExtensions
 {
 	/// <summary>
 	/// Enables MAUI to be embedded in native platform application by injecting embedded handlers into the service collection.
 	/// </summary>
 	/// <param name="builder">The <see cref="MauiAppBuilder"/> instance.</param>
 	/// <returns>The <see cref="MauiAppBuilder"/> instance.</returns>
+	/// <remarks>
+	/// This is internal as it is exposed in Controls.Xaml since it needs to setup XAML defaults.
+	/// </remarks>
 	internal static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder)
 	{
 #if ANDROID

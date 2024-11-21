@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Maui.IntegrationTests
 {
+	[Category(Categories.Samples)]
 	public class SampleTests : BaseBuildTest
 	{
 		public static IEnumerable SampleTestMatrix

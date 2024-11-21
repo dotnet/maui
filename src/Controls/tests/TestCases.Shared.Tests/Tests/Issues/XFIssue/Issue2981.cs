@@ -20,11 +20,11 @@ public class Issue2981 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue2981Test()
 	// {
-	// 	RunningApp.Screenshot("I am at Issue 1");
-	// 	RunningApp.TouchAndHold(q => q.Marked("Cell1"));
-	// 	RunningApp.Screenshot("Long Press first cell");
-	// 	RunningApp.TouchAndHold(q => q.Marked("Cell2"));
-	// 	RunningApp.Screenshot("Long Press second cell");
+	// 	App.Screenshot("I am at Issue 1");
+	// 	App.TouchAndHold(q => q.Marked("Cell1"));
+	// 	App.Screenshot("Long Press first cell");
+	// 	App.TouchAndHold(q => q.Marked("Cell2"));
+	// 	App.Screenshot("Long Press second cell");
 	// }
 }
 #endif

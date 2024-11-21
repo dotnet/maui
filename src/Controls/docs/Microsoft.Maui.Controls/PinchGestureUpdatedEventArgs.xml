@@ -15,7 +15,6 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments for the <see cref="E:Microsoft.Maui.Controls.PinchGestureRecognizer.PinchUpdated" /> event.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
       <Docs>
         <param name="status">The new gesture status.</param>
         <summary>Constructs a new <see cref="T:Microsoft.Maui.Controls.PinchGestureUpdatedEventArgs" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">

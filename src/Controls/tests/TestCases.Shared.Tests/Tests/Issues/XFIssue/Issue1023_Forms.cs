@@ -20,19 +20,19 @@ public class Issue1023_Forms : _IssuesUITest
 	// {
 	// 	for (var n = 0; n < 10; n++)
 	// 	{
-	// 		RunningApp.WaitForElement(q => q.Marked("Push"));
-	// 		RunningApp.Tap(q => q.Marked("Push"));
+	// 		App.WaitForElement(q => q.Marked("Push"));
+	// 		App.Tap(q => q.Marked("Push"));
 
-	// 		RunningApp.WaitForElement(q => q.Marked("ListView"));
-	// 		RunningApp.Back();
+	// 		App.WaitForElement(q => q.Marked("ListView"));
+	// 		App.Back();
 	// 	}
 
 	// 	// At this point, the counter can be any value, but it's most likely not zero.
 	// 	// Invoking GC once is enough to clean up all garbage data and set counter to zero
-	// 	RunningApp.WaitForElement(q => q.Marked("GC"));
-	// 	RunningApp.Tap(q => q.Marked("GC"));
+	// 	App.WaitForElement(q => q.Marked("GC"));
+	// 	App.Tap(q => q.Marked("GC"));
 
-	// 	RunningApp.WaitForElement(q => q.Marked("Counter: 0"));
+	// 	App.WaitForElement(q => q.Marked("Counter: 0"));
 	// }
 }
 #endif

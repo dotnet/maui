@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>Contains constants for describing focus directions.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Back">
@@ -38,7 +37,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the back focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Down">
@@ -57,7 +55,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the down focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Forward">
@@ -76,7 +73,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the forward focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Left">
@@ -95,7 +91,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the left focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="None">
@@ -114,7 +109,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying no focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Right">
@@ -133,7 +127,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the right focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Up">
@@ -152,7 +145,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the up focus direction.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,11 +14,12 @@ public class Bugzilla60524 : _IssuesUITest
 
 	public override string Issue => "NRE when rendering ListView with grouping enabled and HasUnevenRows set to true";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Bugzilla60524Test()
-	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Group 1"));
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	public void Bugzilla60524Test()
+	{
+		App.WaitForElement("Group 1");
+	}
 }
+#endif

@@ -17,11 +17,11 @@ public class Issue3139 : _IssuesUITest
 	// [Category(UITestCategories.ActionSheet)]
 	// public void Issue3139Test ()
 	// {
-	// 	RunningApp.WaitForElement (q => q.Marked ("Click Yes"));
-	// 	RunningApp.Tap (c => c.Marked ("Yes"));
-	// 	RunningApp.WaitForElement (q => q.Marked ("Again Yes"));
-	// 	RunningApp.Tap (c => c.Marked ("Yes"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Test passed"));
+	// 	App.WaitForElement (q => q.Marked ("Click Yes"));
+	// 	App.Tap (c => c.Marked ("Yes"));
+	// 	App.WaitForElement (q => q.Marked ("Again Yes"));
+	// 	App.Tap (c => c.Marked ("Yes"));
+	// 	App.WaitForElement(q => q.Marked("Test passed"));
 	// }
 }
 #endif

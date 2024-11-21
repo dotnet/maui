@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellContent']/Docs/*" />
 	[ContentProperty(nameof(Content))]
+	[TypeConverter(typeof(ShellContentConverter))]
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
@@ -53,36 +54,45 @@ namespace Microsoft.Maui.Controls
 		EventHandler _isPageVisibleChanged;
 		event EventHandler IShellContentController.IsPageVisibleChanged { add => _isPageVisibleChanged += value; remove => _isPageVisibleChanged -= value; }
 
+		bool _createdViaService;
 		Page IShellContentController.GetOrCreateContent()
 		{
 			var template = ContentTemplate;
 			var content = Content;
 
 			Page result = null;
-			if (template == null)
+			if (template is null)
 			{
 				if (content is Page page)
 					result = page;
 			}
 			else
 			{
-				if (template.Type != null)
+				if (template.Type is not null)
 				{
 					template.LoadTemplate = () =>
 					{
 						var services = Parent?.FindMauiContext()?.Services;
-						if (services != null)
+						if (services is not null)
 						{
-							return services.GetService(template.Type) ?? Activator.CreateInstance(template.Type);
+							var result = services.GetService(template.Type);
+							if (result is not null)
+							{
+								_createdViaService = true;
+								return result;
+							}
 						}
-						return Activator.CreateInstance(template.Type);
+
+						_createdViaService = false;
+						return Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(services, template.Type);
 					};
 				}
+
 				result = ContentCache ?? (Page)template.CreateContent(content, this);
 				ContentCache = result;
 			}
 
-			if (result == null)
+			if (result is null)
 				throw new InvalidOperationException($"No Content found for {nameof(ShellContent)}, Title:{Title}, Route {Route}");
 
 			if (result is TabbedPage)
@@ -107,7 +117,10 @@ namespace Microsoft.Maui.Controls
 		Page _contentCache;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
-		public ShellContent() => ((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
+		public ShellContent()
+		{
+			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
+		}
 
 		internal bool IsVisibleContent => Parent is ShellSection shellSection && shellSection.IsVisibleSection && shellSection.CurrentItem == this;
 
@@ -186,17 +199,76 @@ namespace Microsoft.Maui.Controls
 				var oldCache = _contentCache;
 				_contentCache = value;
 				if (oldCache != null)
-					RemoveLogicalChild(oldCache);
-
-				if (value != null && value.Parent != this)
 				{
-					AddLogicalChild(value);
+					RemoveLogicalChild(oldCache);
+					oldCache.Unloaded -= OnPageUnloaded;
 				}
 
-				if (Parent != null)
+				if (value is not null && value.Parent != this)
+				{
+					AddLogicalChild(value);
+
+					if (_createdViaService)
+					{
+						value.Unloaded += OnPageUnloaded;
+					}
+				}
+
+				if (Parent is not null)
+				{
 					((ShellSection)Parent).UpdateDisplayedPage();
+				}
 			}
 		}
+
+		internal void EvaluateDisconnect()
+		{
+			if (!_createdViaService)
+				return;
+
+			// If the user has set the IsVisible property on this shell content to false
+			bool disconnect = true;
+
+			if (Parent is ShellSection shellSection &&
+				shellSection.Parent is ShellItem shellItem &&
+				shellItem.Parent is Shell shell)
+			{
+				disconnect =
+					!this.IsVisible || // user has set the IsVisible property to false
+					(_contentCache is not null && !_contentCache.IsVisible) || // user has set IsVisible on the Page to false
+					shell.CurrentItem != shellItem || // user has navigated to a different TabBar or a different FlyoutItem
+					!shellSection.IsVisible || // user has set IsVisible on the ShellSection to false
+					this.Window is null; // user has set the main page to a different shell instance
+			}
+
+			if (!disconnect)
+			{
+				return;
+			}
+
+			if (_contentCache is not null)
+			{
+				_contentCache.Unloaded -= OnPageUnloaded;
+				RemoveLogicalChild(_contentCache);
+			}
+
+			_contentCache = null;
+		}
+
+		protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == WindowProperty.PropertyName)
+			{
+				if (_contentCache?.IsLoaded == true)
+					return;
+
+				EvaluateDisconnect();
+			}
+		}
+
+		void OnPageUnloaded(object sender, EventArgs e) => EvaluateDisconnect();
 
 		public static implicit operator ShellContent(TemplatedPage page)
 		{
@@ -212,9 +284,9 @@ namespace Microsoft.Maui.Controls
 			shellContent.Route = Routing.GenerateImplicitRoute(pageRoute);
 
 			shellContent.Content = page;
-			shellContent.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: page));
-			shellContent.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: page));
-			shellContent.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: page));
+			shellContent.SetBinding(TitleProperty, static (TemplatedPage page) => page.Title, BindingMode.OneWay, source: page);
+			shellContent.SetBinding(IconProperty, static (TemplatedPage page) => page.IconImageSource, BindingMode.OneWay, source: page);
+			shellContent.SetBinding(FlyoutIconProperty, static (TemplatedPage page) => page.IconImageSource, BindingMode.OneWay, source: page);
 
 			return shellContent;
 		}
@@ -222,6 +294,7 @@ namespace Microsoft.Maui.Controls
 		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var shellContent = (ShellContent)bindable;
+			shellContent._createdViaService = false;
 			// This check is wrong but will work for testing
 			if (shellContent.ContentTemplate == null)
 			{
@@ -295,42 +368,45 @@ namespace Microsoft.Maui.Controls
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);
 
-			var type = content.GetType();
-			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-			if (queryPropertyAttributes.Length == 0)
+			if (RuntimeFeature.IsQueryPropertyAttributeSupported)
 			{
-				ClearQueryIfAppliedToPage(query, content);
-				return;
-			}
-
-			foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
-			{
-				if (query.TryGetValue(attrib.QueryId, out var value))
+				var type = content.GetType();
+				var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
+				if (queryPropertyAttributes.Length == 0)
 				{
-					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
+					ClearQueryIfAppliedToPage(query, content);
+					return;
+				}
 
-					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
+				foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
+				{
+					if (query.TryGetValue(attrib.QueryId, out var value))
 					{
-						if (prop.PropertyType == typeof(string))
-						{
-							if (value != null)
-								value = global::System.Net.WebUtility.UrlDecode((string)value);
+						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
-							prop.SetValue(content, value);
-						}
-						else
+						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
 						{
-							var castValue = Convert.ChangeType(value, prop.PropertyType);
-							prop.SetValue(content, castValue);
+							if (prop.PropertyType == typeof(string))
+							{
+								if (value != null)
+									value = global::System.Net.WebUtility.UrlDecode((string)value);
+
+								prop.SetValue(content, value);
+							}
+							else
+							{
+								var castValue = Convert.ChangeType(value, prop.PropertyType);
+								prop.SetValue(content, castValue);
+							}
 						}
 					}
-				}
-				else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
-				{
-					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
+					else if (oldQuery.TryGetValue(attrib.QueryId, out var oldValue))
+					{
+						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
-					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						prop.SetValue(content, null);
+						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
+							prop.SetValue(content, null);
+					}
 				}
 			}
 
@@ -342,6 +418,30 @@ namespace Microsoft.Maui.Controls
 				// parameters used during navigation
 				if (content is ContentPage)
 					query.ResetToQueryParameters();
+			}
+		}
+
+		private sealed class ShellContentConverter : TypeConverter
+		{
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(TemplatedPage);
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+				=> false;
+
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			{
+				if (value is TemplatedPage templatedPage)
+				{
+					return (ShellContent)templatedPage;
+				}
+
+				throw new NotSupportedException();
+			}
+
+			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+			{
+				throw new NotSupportedException();
 			}
 		}
 	}

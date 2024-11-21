@@ -9,10 +9,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
 	public partial class Label
 	{
-		[Obsolete("Use LabelHandler.Mapper instead.")]
-		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper =
-			new ControlsMapper<ILabel, LabelHandler>(LabelHandler.Mapper);
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Label legacy behaviors

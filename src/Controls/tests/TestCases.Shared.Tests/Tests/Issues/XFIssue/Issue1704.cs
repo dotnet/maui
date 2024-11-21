@@ -17,20 +17,20 @@ public class Issue1704 : _IssuesUITest
 	// [Category(UITestCategories.ManualReview)]
 	// public void Issue1704Test()
 	// {
-	// 	RunningApp.WaitForElement("On Load");
-	// 	RunningApp.WaitForElement("On Start");
-	// 	RunningApp.WaitForElement("Source");
-	// 	RunningApp.WaitForElement("Misc");
+	// 	App.WaitForElement("On Load");
+	// 	App.WaitForElement("On Start");
+	// 	App.WaitForElement("Source");
+	// 	App.WaitForElement("Misc");
 
-	// 	RunningApp.Tap(q => q.Marked("On Load"));
-	// 	RunningApp.Tap(q => q.Marked("On Start"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Start Animation"));
-	// 	RunningApp.Tap(q => q.Marked("Start Animation"));
-	// 	RunningApp.Tap(q => q.Marked("Stop Animation"));
+	// 	App.Tap(q => q.Marked("On Load"));
+	// 	App.Tap(q => q.Marked("On Start"));
+	// 	App.WaitForElement(q => q.Marked("Start Animation"));
+	// 	App.Tap(q => q.Marked("Start Animation"));
+	// 	App.Tap(q => q.Marked("Stop Animation"));
 
-	// 	RunningApp.Tap(q => q.Marked("Misc"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Start Animation"));
-	// 	RunningApp.Tap(q => q.Marked("Start Animation"));
-	// 	RunningApp.Tap(q => q.Marked("Stop Animation"));
+	// 	App.Tap(q => q.Marked("Misc"));
+	// 	App.WaitForElement(q => q.Marked("Start Animation"));
+	// 	App.Tap(q => q.Marked("Start Animation"));
+	// 	App.Tap(q => q.Marked("Stop Animation"));
 	// }
 }

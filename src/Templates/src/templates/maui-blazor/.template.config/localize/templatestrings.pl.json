@@ -5,5 +5,8 @@
   "postActions/openInEditor/description": "Otwiera plik Components/Pages/Home.razor w edytorze.",
   "symbols/applicationId/description": "Zastępuje $(ApplicationId) w projekcie",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "_Include sample pages",
+  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns.",
+  "symbols/Empty/description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
 }
