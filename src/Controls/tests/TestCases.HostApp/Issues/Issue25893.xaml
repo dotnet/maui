@@ -8,7 +8,7 @@
       <FlyoutBase.ContextFlyout>
         <MenuFlyout x:Name="ContextMenu">
           <MenuFlyoutItem IconImageSource="dotnet_bot.png" Text="Copy" />
-          <MenuFlyoutSubItem IconImageSource="dotnet_bot.png" Text="Zoom"  />
+          <MenuFlyoutSubItem IconImageSource="dotnet_bot.png" Text="Zoom" />
         </MenuFlyout>
       </FlyoutBase.ContextFlyout>
     </ContentView>
