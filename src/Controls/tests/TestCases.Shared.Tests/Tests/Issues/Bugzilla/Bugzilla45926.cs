@@ -1,6 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
-//TapBackArrow doesn't work on iOS and Mac.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -8,6 +6,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla45926 : _IssuesUITest
 {
+#if ANDROID
+	const string BackButtonIdentifier1 = "";
+	const string BackButtonIdentifier2 = "";
+#else
+	const string BackButtonIdentifier1 = "Back";
+	const string BackButtonIdentifier2 = "Test";
+#endif
+
 	public Bugzilla45926(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -21,10 +27,22 @@ public class Bugzilla45926 : _IssuesUITest
 		App.WaitForElement("New Page");
 
 		App.Tap("New Page");
+#if MACCATALYST
+		App.WaitForElement(AppiumQuery.ById("Second Page #1"));
+#else
 		App.WaitForElement("Second Page #1");
-		App.TapBackArrow();
+#endif
+#if MACCATALYST || IOS
+		App.WaitForElement("Back");
+#endif
+		App.TapBackArrow(BackButtonIdentifier1);
+#if MACCATALYST
+		App.WaitForElement(AppiumQuery.ById("Intermediate Page"));
+#else
 		App.WaitForElement("Intermediate Page");
-		App.TapBackArrow();
+#endif
+		App.TapBackArrow(BackButtonIdentifier2);
+		App.WaitForElement("Do GC");
 		App.Tap("Do GC");
 		App.Tap("Do GC");
 		App.Tap("Send Message");
@@ -34,4 +52,3 @@ public class Bugzilla45926 : _IssuesUITest
 		App.WaitForElement("Messages: 0");
 	}
 }
-#endif

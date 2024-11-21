@@ -6,6 +6,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla38731 : _IssuesUITest
 {
+
+#if ANDROID
+	const string PageThree = "";
+	const string PageTwo = "";
+	const string PageOne = "";
+#else
+	const string PageThree = "Page three";
+	const string PageTwo = "Page two";
+	const string PageOne = "Page one";
+#endif
 	public Bugzilla38731(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -24,14 +34,25 @@ public class Bugzilla38731 : _IssuesUITest
 
 	 	App.WaitForElement("btn3");
 	 	App.Tap("btn3");
-#if ANDROID && WINDOWS
-		App.TapBackArrow();
-	 	App.TapBackArrow();
-	 	App.TapBackArrow();
-#else
-		App.Back();
-		App.Back();
-		App.Back();
+
+#if MACCATALYST    
+		App.WaitForElement(AppiumQuery.ById("FinalPage"));
 #endif
+		App.TapBackArrow(PageThree);
+		
+#if MACCATALYST    
+		App.WaitForElement(AppiumQuery.ById("btn3"));
+#endif
+		App.WaitForElement("btn3");
+	 	App.TapBackArrow(PageTwo);
+#if MACCATALYST    
+		App.WaitForElement(AppiumQuery.ById("btn2"));
+#endif
+		App.WaitForElement("btn2");
+	 	App.TapBackArrow(PageOne);
+#if MACCATALYST		
+		App.WaitForElement(AppiumQuery.ById("btn1"));
+#endif
+		App.WaitForElement("btn1");
 	}
 }

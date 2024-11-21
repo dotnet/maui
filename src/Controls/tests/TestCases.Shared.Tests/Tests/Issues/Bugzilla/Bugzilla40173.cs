@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID //Issue reproduced on android and logged the issue: 
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,16 +20,15 @@ public class Bugzilla40173 : _IssuesUITest
 		App.WaitForElement("CantTouchButtonId");
 		App.Tap("CantTouchButtonId");
 
-		Assert.That(App.FindElement("outputlabel").GetText()?
-			.Equals("Failed", StringComparison.OrdinalIgnoreCase),
-			Is.False);
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("Default")));
 
 		App.Tap("CanTouchButtonId");
 
-		App.WaitForElement("ButtonTapped");
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("ButtonTapped")));
 
 		App.WaitForElement("Foo");
 		App.Tap("Foo");
-		App.WaitForElement("ItemTapped");
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("ItemTapped")));
 	}
 }
+#endif

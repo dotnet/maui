@@ -18,7 +18,7 @@ public class Bugzilla40173 : TestContentPage
 
 	protected override void Init()
 	{
-		var outputLabel = new Label() { AutomationId = "outputlabel" };
+		var outputLabel = new Label() { Text="Default", AutomationId = "outputlabel" };
 		var testButton = new Button
 		{
 			Text = "Can't Touch This",
@@ -30,7 +30,8 @@ public class Bugzilla40173 : TestContentPage
 		var boxView = new BoxView
 		{
 			AutomationId = "nontransparentBoxView",
-			Color = Colors.Pink.MultiplyAlpha(0.5f)
+			Color = Colors.Pink.MultiplyAlpha(0.5f), 
+			InputTransparent = false
 		};
 
 		// Bump up the elevation on Android so the Button is covered (FastRenderers)

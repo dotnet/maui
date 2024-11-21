@@ -22,6 +22,6 @@ public class Bugzilla32040 : _IssuesUITest
 		App.WaitForElement("Tapped");
 
 		App.Tap("Click Here");
-		Assert.That(App.WaitForElement("yaddayadda").GetText(), Is.EqualTo("Tapped"));
+		App.WaitForTextToBePresentInElement("yaddayadda", "Tapped");
 	}
 }

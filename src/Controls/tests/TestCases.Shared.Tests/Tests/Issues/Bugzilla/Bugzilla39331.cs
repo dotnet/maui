@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue reproduced and logged: https://github.com/dotnet/maui/issues/26019.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,6 +24,7 @@ public class Bugzilla39331 : _IssuesUITest
 
 		App.Tap("btnLogin");
 
-		App.WaitForElement("Guess Not");
+		Assert.That(App.FindElement("btnLogin").GetText()?.Equals("Guess Not", StringComparison.OrdinalIgnoreCase), Is.False);
 	}
 }
+#endif

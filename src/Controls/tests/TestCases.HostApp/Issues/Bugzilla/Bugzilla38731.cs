@@ -95,6 +95,7 @@ public class Bugzilla38731 : TestNavigationPage
 		{
 			var label = new Label();
 			label.Text = "Last page... Tap back very quick";
+			label.AutomationId = "FinalPage";
 			label.HorizontalTextAlignment = TextAlignment.Center;
 
 			var content = new StackLayout();
