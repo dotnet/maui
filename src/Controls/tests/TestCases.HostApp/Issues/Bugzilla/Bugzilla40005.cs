@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public class MainPage : ContentPage
 		{
+			public const string GoToPage1 = "Go to Page 1";
 			public const string GoToPage2 = "Go to Page 2";
 			public const string PageOneLabel = "Page 1";
 			public const string PageTwoLabel = "Page 2";
@@ -20,7 +21,23 @@ namespace Maui.Controls.Sample.Issues
 
 			public MainPage()
 			{
-				Application.Current.MainPage = new NavigationPage(new Page1());
+
+				Content = new StackLayout
+				{
+					VerticalOptions = LayoutOptions.Center,
+					Children =
+					{
+						new Button
+						{
+							AutomationId = GoToPage1,
+							Text = GoToPage1,
+							Command = new Command(() =>
+							{
+								Navigation.PushAsync(new Page1());
+							})
+						}
+					}
+				};
 			}
 
 			public class Page1 : ContentPage
