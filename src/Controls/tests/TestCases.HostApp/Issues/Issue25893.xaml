@@ -5,7 +5,7 @@
                           x:Class="Maui.Controls.Sample.Issues.Issue25893">
   <Grid RowDefinitions="Auto,*,Auto">
     <Label AutomationId="WaitForStubControl" x:Name="InfoLabel" />
-    <ContentView x:Name="ViewWithMenu" Grid.Row="1" BackgroundColor="LightGray">
+    <ContentView x:Name="ViewWithMenu" AutomationId="ViewWithMenu" Grid.Row="1" BackgroundColor="LightGray">
       <FlyoutBase.ContextFlyout>
         <MenuFlyout x:Name="ContextMenu">
           <MenuFlyoutItem IconImageSource="dotnet_bot.png" Text="Item1" />
