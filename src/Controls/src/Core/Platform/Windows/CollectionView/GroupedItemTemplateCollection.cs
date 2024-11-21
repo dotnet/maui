@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 		bool _disposedValue;
 
-		~GroupedItemTemplateCollection() => _proxy.Unsubscribe();
+		~GroupedItemTemplateCollection() => _proxy?.Unsubscribe();
 
 		public GroupedItemTemplateCollection(IEnumerable itemsSource, DataTemplate itemTemplate,
 			DataTemplate groupHeaderTemplate, DataTemplate groupFooterTemplate, BindableObject container, IMauiContext mauiContext = null)

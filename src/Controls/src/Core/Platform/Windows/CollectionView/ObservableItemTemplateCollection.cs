@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (disposing)
 				{
 					CollectionChanged -= TemplateCollectionChanged;
-					_proxy.Unsubscribe();
+					_proxy?.Unsubscribe();
 				}
 				_disposedValue = true;
 			}
