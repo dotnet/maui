@@ -170,12 +170,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateEmptyViewVisibility(WVisibility visibility)
 		{
-			if (_emptyViewContentControl == null)
+			if (_emptyViewContentControl is null)
 			{
 				return;
 			}
 
-			if (_scrollViewer == null)
+			if (_scrollViewer is not null)
 			{
 				// If the empty view is visible, we don't want to hit test the ScrollViewer 
 				// because on the template, the empty view is on bottom of the ScrollViewer
