@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
@@ -29,11 +30,13 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
+				handlers.AddHandler<Button, ButtonHandler>();
+
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
-				handlers.AddHandler<Shape, ShapeViewHandler>();
+
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
@@ -41,6 +44,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Frame, FrameRenderer>();
 #pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
+				handlers.AddHandler<Grid, LayoutHandler>();
 				handlers.AddHandler<HybridWebView, HybridWebViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
@@ -57,6 +61,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
 				handlers.AddHandler<SearchBar, SearchBarHandler>();
+				handlers.AddHandler<Shape, ShapeViewHandler>();
 				handlers.AddHandler<Slider, SliderHandler>();
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
@@ -177,7 +182,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #if ANDROID
 		// NOTE: skip certain controls on older Android devices
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
-				return;
+			return;
 
 		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
 		{
@@ -559,6 +564,45 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 #endif
 
+	[Fact("CommandElement, as Button, doesn't leak")]
+	public async Task DoesNotLeak()
+	{
+		SetupBuilder();
+
+		// Long-lived ICommand, like a Singleton ViewModel
+		var command = new MyCommand();
+		WeakReference reference = null;
+		var navPage = new NavigationPage(new ContentPage());
+		// Several GCs required on iOS
+
+		await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async window =>
+		{
+			var layout = new Grid();
+
+			var btn = new Button
+			{
+				Command = command
+			};
+
+			var label = new Label();
+			layout.Add(btn);
+
+			var page2 = new ContentPage
+			{
+				Content = layout
+			};
+
+			reference = new(btn);
+			await navPage.PushAsync(page2);
+			await OnLoadedAsync(btn);
+			await navPage.PopAsync();
+			await OnUnloadedAsync(page2);
+		});
+		Assert.NotNull(reference);
+
+		await AssertionExtensions.WaitForGC(reference);
+	}
+	
 	[Fact]
 	public async Task TweenersWillNotLeakDuringInfiniteAnimation()
 	{
