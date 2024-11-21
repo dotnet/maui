@@ -4,7 +4,8 @@
                           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                           x:Class="Maui.Controls.Sample.Issues.Issue25893">
   <Grid RowDefinitions="Auto,*,Auto">
-    <ContentView Grid.Row="0" Grid.RowSpan="3">
+    <Label AutomationId="WaitForStubControl" Text="Issue25893"/>
+    <ContentView Grid.Row="1" Grid.RowSpan="2" BackgroundColor="LightGray">
       <FlyoutBase.ContextFlyout>
         <MenuFlyout x:Name="ContextMenu">
           <MenuFlyoutItem IconImageSource="dotnet_bot.png" Text="Copy" />
