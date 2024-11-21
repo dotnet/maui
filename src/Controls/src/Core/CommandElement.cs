@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 			{
 				newCommand.CanExecuteChanged += commandElement.CanExecuteChanged;
 
-				//HandleTearDown(commandElement);
+				HandleTearDown(commandElement);
 
 				commandElement.CanExecuteChanged(bo, EventArgs.Empty);
 			}
