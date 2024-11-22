@@ -29,11 +29,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
-			App.WaitForElement(FinalLabel);	
+			App.WaitForElement(FinalLabel);
 			App.TapBackArrow(Back);
 			App.TapBackArrow(Tab1);
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
+			App.WaitForElement(FinalLabel);
 			Assert.That(App.WaitForElement(FinalLabel)?.GetText(), Is.EqualTo("Success"));
 		}
 	}

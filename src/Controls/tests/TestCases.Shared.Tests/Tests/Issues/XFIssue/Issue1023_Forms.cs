@@ -22,6 +22,9 @@ public class Issue1023_Forms : _IssuesUITest
 			App.Tap("Push");
 
 			App.WaitForElement("ListView");
+#if IOS //Getting null reference exception while tap the back button without WaitForElement in iOS.
+			App.WaitForElement("Back");
+#endif
 			App.TapBackArrow();
 
 		}
