@@ -12,7 +12,14 @@ namespace Microsoft.Maui.Controls
 
 		internal DefinitionCollection() => _internalList = new List<T>();
 
-		internal DefinitionCollection(params T[] items) => _internalList = new List<T>(items);
+		internal DefinitionCollection(params T[] items)
+		{
+			_internalList = new List<T>(items);
+			foreach (var item in items)
+			{
+				(item as IDefinition).SizeChanged += OnItemSizeChanged;
+			}
+		}
 
 		internal DefinitionCollection(List<T> items, bool copy) => _internalList = copy ? new List<T>(items) : items;
 
