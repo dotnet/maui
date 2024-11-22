@@ -29,6 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(GoForward);
 			App.Tap(GoForward);
+			App.WaitForElement("Click Back Button");
 			App.TapBackArrow(BackButtonIdentifier);
 			App.WaitForElement(tab2);
 			App.Tap(tab2);
