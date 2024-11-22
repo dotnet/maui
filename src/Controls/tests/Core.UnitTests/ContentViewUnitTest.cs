@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DoesntInheritBindingContextToContentFromControlTemplate()
+		public void DoesNotInheritBindingContextToContentFromControlTemplate()
 		{
 			var contentView = new ContentView();
 			var child1 = new View();
@@ -339,23 +339,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
 			contentView.Content = child1;
 
-			var bc = "Test";
+			var bcContentView = "Test";
 			var bcSimpleTemplate = "other context";
-			contentView.BindingContext = bc;
+			contentView.BindingContext = bcContentView;
 
 			var simpleTemplate = contentView.GetVisualTreeDescendants().OfType<SimpleTemplate>().Single();
+			var cp = contentView.GetVisualTreeDescendants().OfType<ContentPresenter>().Single();
 			simpleTemplate.BindingContext = bcSimpleTemplate;
 
-			Assert.Equal(bc, child1.BindingContext);
+			Assert.Equal(bcContentView, child1.BindingContext);
 			Assert.Equal(contentView.BindingContext, child1.BindingContext);
 			Assert.Equal(bcSimpleTemplate, simpleTemplate.BindingContext);
 
 			// Change out content and make sure simple templates BC doesn't propagate
 			contentView.Content = child2;
 
-			Assert.Equal(bc, child2.BindingContext);
+			Assert.Equal(bcContentView, child2.BindingContext);
 			Assert.Equal(contentView.BindingContext, child2.BindingContext);
 			Assert.Equal(bcSimpleTemplate, simpleTemplate.BindingContext);
+			Assert.Equal(bcSimpleTemplate, cp.BindingContext);
 		}
 
 		[Fact]
