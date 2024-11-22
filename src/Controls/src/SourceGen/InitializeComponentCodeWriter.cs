@@ -92,8 +92,8 @@ exit:
         rootnode.Accept(new PruneIgnoredNodesVisitor(useDesignProperties), null);
         if (useDesignProperties)
             rootnode.Accept(new RemoveDuplicateDesignNodes(), null);
-        // rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
         rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
+        rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null); //set namescopes for {x:Reference} and FindByName
         rootnode.Accept(new SetFieldsForXNamesVisitor(visitorContext), null);
         // rootnode.Accept(new SimplifyTypeExtensionVisitor(), null);
         // rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
