@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
+﻿#if TEST_FAILS_ON_WINDOWS    //The images generated from the CI do not display the toolbar on the Windows platform. However, the icon color issue does not exist on Windows. Therefore, the test is restricted to exclude the Windows platform.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium;
