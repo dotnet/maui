@@ -96,34 +96,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (headerView is UITableViewHeaderFooterView header && TableView is TableView table)
 			{
 				var sectionHeaderTextColor = table.Model.GetSectionTextColor((int)section);
-				var sectionHeaderTitle = table.Model.GetSectionTitle((int)section);
-
-				if (UIDevice.CurrentDevice.CheckSystemVersion(14, 0))
+				if (sectionHeaderTextColor is not null)
 				{
-					// iOS 14.0 and later
-					var configuration = UIListContentConfiguration.CellConfiguration;
-					if (sectionHeaderTitle is not null)
-					{
-						configuration.Text = sectionHeaderTitle;
-					}
-
-					if (sectionHeaderTextColor is not null)
-					{
-						configuration.TextProperties.Color = sectionHeaderTextColor.ToPlatform();
-					}
-
-					header.ContentConfiguration = configuration;
-				}
-				else
-				{
-#pragma warning disable CA1416, CA1422 // 'UITableViewHeaderFooterView.TextLabel' is unsupported on: 'ios' 14.0 and later
-					if (sectionHeaderTextColor is not null && header.TextLabel is not null)
+#pragma warning disable CA1416, CA1422 // TODO:  'UITableViewHeaderFooterView.TextLabel' is unsupported on: 'ios' 14.0 and later
+					if (header.TextLabel is not null)
 					{
 						header.TextLabel.TextColor = sectionHeaderTextColor.ToPlatform();
 					}
 #pragma warning restore CA1416, CA1422
 				}
-
 			}
 		}
 
