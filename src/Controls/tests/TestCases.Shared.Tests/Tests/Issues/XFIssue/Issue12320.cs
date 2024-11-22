@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,13 +16,8 @@ public class Issue12320 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void PopLogicExecutesWhenUsingBackButtonBehavior()
 	{
-		App.WaitForElement("TestReady");
-        // In the Catalyst App, the TapBackArrow() function does not work when the back button icon is replaced with a new image on the navigation page.
-#if MACCATALYST
-		App.ClickCoordinates(422.24f,223.03f);
-#else
-		App.TapBackArrow();
-#endif
+		App.WaitForElementTillPageNavigationSettled("TestReady");
+		App.TapBackArrow("BackButtonImage");
 		App.WaitForElement("Tab 1");
 	}
 }

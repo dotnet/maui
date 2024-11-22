@@ -1680,24 +1680,54 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		public static void TapBackArrow(this IApp app)
-		{
-			if (app is AppiumAndroidApp)
-			{
-				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"));
-			}
-			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
-			{
-				app.Tap(AppiumQuery.ByAccessibilityId("Back"));
-			}
-			else if (app is AppiumWindowsApp)
-			{
-				app.Tap(AppiumQuery.ByAccessibilityId("NavigationViewBackButton"));
-			}
-		}
+        /// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
+        /// </summary>
+        /// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
+        /// <param name="customBackButtonIdentifier">Optional. The custom identifier for the back button. If not provided, default platform-specific identifiers will be used.</param>
+        public static void TapBackArrow(this IApp app, string customBackButtonIdentifier = "")
+        {
+            switch (app)
+            {
+                case AppiumAndroidApp _:
+                    app.Tap(AppiumQuery.ByXPath(string.IsNullOrEmpty(customBackButtonIdentifier)
+                        ? "//android.widget.ImageButton[@content-desc='Navigate up']"
+                        : $"//android.widget.ImageButton[@content-desc='{customBackButtonIdentifier}']"));
+                    break;
+
+                case AppiumIOSApp _:
+                case AppiumCatalystApp _:
+                    if (string.IsNullOrEmpty(customBackButtonIdentifier))
+                    {
+                        app.Tap(AppiumQuery.ByAccessibilityId("Back"));
+                    }
+                    else
+                    {
+                        app.Tap(app is AppiumIOSApp
+                            ? AppiumQuery.ByXPath($"//XCUIElementTypeButton[@name='{customBackButtonIdentifier}']")
+                            : AppiumQuery.ByName(customBackButtonIdentifier));
+                    }
+                    break;
+
+                case AppiumWindowsApp _:
+                    app.Tap(AppiumQuery.ByAccessibilityId("NavigationViewBackButton"));
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+        /// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+        /// </summary>
+        /// <param name="app">The IApp instance.</param>
+        /// <param name="elementId">The id of the element to wait for.</param>
+        /// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+        public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+        {
+            if(app is AppiumCatalystApp)
+                app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
+                
+            app.WaitForElement(elementId, timeout: timeout);
+        }
 
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
