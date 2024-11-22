@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Platform
 					if (weakRecognizer.Target is IPinchGestureController pinchGestureRecognizer &&
 						weakEventTracker.Target is GesturePlatformManager eventTracker &&
 						eventTracker._handler?.VirtualView is View view &&
-						eventTracker.PlatformView is {} platformView)
+						eventTracker.PlatformView is { } platformView)
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);

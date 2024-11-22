@@ -5,7 +5,7 @@ namespace UITest.Appium;
 public class AppiumCatalystAlertActions : AppiumAppleAlertActions
 {
 	// Selects the inner "popover contents" of a popover window.
-	const string PossibleActionSheetXPath = 
+	const string PossibleActionSheetXPath =
 		"/XCUIElementTypeApplication/XCUIElementTypeWindow/XCUIElementTypePopover";
 
 	const string DismissAlertCommand = "dismissAlert";

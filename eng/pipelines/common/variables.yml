@@ -8,7 +8,7 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 9.0.100-rc.2.24474.11
+  value: 9.0.100
 - name: REQUIRED_XCODE
   value: 16.0.0
 - name: DEVICETESTS_REQUIRED_XCODE
@@ -39,8 +39,6 @@ variables:
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
   value: $(Build.ArtifactStagingDirectory)/test-results
-- name: skipProvisionator
-  value: $[ne(variables['provisioning'], 'true')]
 - name: provisionator.xcode
   value: 'eng/provisioning/xcode.csx'
 - name: provisionator.path
@@ -57,8 +55,17 @@ variables:
   value: 7.4.0
 - name: Codeql.Enabled
   value: false
+- name: _RunAsPublic
+  value: true
+- name: _RunAsInternal
+  value: false
+- name: _InternalBuildArgs
+  value: ''
 
-# Variable groups required for private builds
+# Variable groups required for private builds but not prs
+- ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+  - group: Xamarin-Secrets
+
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
     - name: PrivateBuild

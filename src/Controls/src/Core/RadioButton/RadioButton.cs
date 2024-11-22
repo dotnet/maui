@@ -643,8 +643,17 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => this.ToFont();
 
-#if ANDROID
-		object IContentView.Content => ContentAsString();
+#if ANDROID	
+		object IContentView.Content 
+		{
+			get
+			{
+				if (ResolveControlTemplate() == null)
+					return ContentAsString();
+
+				return Content;
+			}
+		}
 #endif
 
 		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? (Content as IView);

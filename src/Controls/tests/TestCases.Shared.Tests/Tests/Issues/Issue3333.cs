@@ -3,8 +3,8 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
-{ 
-    public class Issue3333 : _IssuesUITest
+{
+	public class Issue3333 : _IssuesUITest
 	{
 		const string KSuccess = "If you're reading this the test has passed";
 

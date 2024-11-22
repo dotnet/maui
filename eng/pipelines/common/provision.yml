@@ -2,7 +2,7 @@ parameters:
   poolName: ''
   clearCaches: true
   skipXcode: false
-  skipProvisioning: $(skipProvisionator)
+  skipProvisioning: true
   skipAndroidSdks: false
   skipAndroidImages: false
   installDefaultAndroidApi: false
@@ -20,27 +20,28 @@ parameters:
 
 steps:
   # Prepare macOS
-  # - ${{ if ne(parameters.poolName, 'Azure Pipelines') }}:
-  #   - template: agent-cleanser/v1.yml@yaml-templates
-  #     parameters:
-  #       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-  #       UninstallMono: false
-  #       UninstallXamarinMac: false
-  #       CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
-  #       SelfHealPowerShell: false
-  #       AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+  - ${{ if or(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.poolName, 'Azure Pipelines')) }}:
+    - template: agent-cleanser/v1.yml@yaml-templates
+      parameters:
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        UninstallMono: false
+        UninstallXamarinMac: false
+        CleanseAgentToolsDotNet: true
+        SelfHealPowerShell: false
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
-    # - task: xamops.azdevex.provisionator-task.provisionator@2
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-    #   displayName: 'Provision Xcode'
-    #   inputs:
-    #     provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
-    #     provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-    #     github_token: ${{ parameters.gitHubToken }}
-    #   env:
-    #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-    #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+    - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        displayName: 'Provision Xcode'
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+          AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
 
     - script: |
         echo Remove old Xamarin Settings
@@ -67,25 +68,26 @@ steps:
 
 
   # Provision Additional Software
-  #- ${{ if ne(parameters.skipProvisioning, 'true') }}:
-    # - task: xamops.azdevex.provisionator-task.provisionator@2
-    #   displayName: 'Provision Additional Software'
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-    #   continueOnError: true
-    #   inputs:
-    #     provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
-    #     provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-    #     github_token: ${{ parameters.gitHubToken }}
-    #   env:
-    #     PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-    #     AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-    #     ${{ if eq(parameters.skipAndroidSdks, true) }}:
-    #       SKIP_ANDROID_API_SDKS: 'true'
-    #     ${{ if eq(parameters.skipAndroidImages, true) }}:
-    #       SKIP_ANDROID_API_IMAGES: 'true'
-    #     ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-    #       INSTALL_DEFAULT_ANDROID_API: 'true'
-
+  - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+    - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        displayName: 'Provision Additional Software'
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        continueOnError: true
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+          AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+          ${{ if eq(parameters.skipAndroidSdks, true) }}:
+            SKIP_ANDROID_API_SDKS: 'true'
+          ${{ if eq(parameters.skipAndroidImages, true) }}:
+            SKIP_ANDROID_API_IMAGES: 'true'
+          ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+            INSTALL_DEFAULT_ANDROID_API: 'true'
+ 
   # Setup JDK Paths (gradle needs it)
   - bash: |
       echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_17_X64)"
@@ -132,17 +134,12 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
   # Prepare Both
-  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+  - task: UseDotNet@2
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:
       packageType: sdk
       version: $(DOTNET_VERSION)
       includePreviewVersions: true
-
-  - pwsh: |
-      dotnet --version
-      dotnet --list-sdks
-    displayName: 'Show .NET SDK info'
 
   - ${{ if eq(parameters.clearCaches, 'true') }}:
     - pwsh: dotnet nuget locals all --clear

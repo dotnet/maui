@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var content = template.CreateContent();
 				View = content as View;
 
-				if(View is null)
+				if (View is null)
 				{
 					throw new InvalidOperationException($"{template} could not be created from {content}");
 				}
