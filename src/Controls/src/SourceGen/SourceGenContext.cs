@@ -1,3 +1,4 @@
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -19,4 +20,5 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
     public void ReportDiagnostic(Diagnostic diagnostic) => _sourceProductionContext.ReportDiagnostic(diagnostic);
     public string? FilePath {get; set;}
 	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
+	public IDictionary<INode, (LocalVariable namescope, IList<string> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IList<string>)>(); 
 }
