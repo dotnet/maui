@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -105,7 +105,7 @@ static class XmlTypeExtensions
 						continue;
 					}
 
-					if (!IsPublicOrVisibleInternal(type, xmlnsCache.InternalsVisible))
+					if (!type.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
 					{
 						continue;
 					}
@@ -124,26 +124,4 @@ static class XmlTypeExtensions
 		return typeName;
 #nullable enable
 	}
-
-	static bool IsPublicOrVisibleInternal(INamedTypeSymbol type, IEnumerable<IAssemblySymbol> internalsVisible)
-	{
-		// return types that are public
-		if (type.DeclaredAccessibility == Accessibility.Public)
-		{
-			return true;
-		}
-
-		// only return internal types if they are visible to us
-		if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	public static bool CanAdd(this ITypeSymbol type) 
-		=> type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable")
-		&& type.GetAllMethods("Add").Any(m => m.Parameters.Length == 1);
-	
 }

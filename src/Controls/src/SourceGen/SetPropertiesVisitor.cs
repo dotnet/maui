@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 
 using System.CodeDom.Compiler;
 using System.Collections.Immutable;
-
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -112,13 +112,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             //if it require a serviceprovider, create one
             if (!acceptEmptyServiceProvider)
             {
-                var serviceProviderSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider")!;
-                var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(Context, "xamlServiceProvider");
-
-                Context.ServiceProviders[node] = new LocalVariable(serviceProviderSymbol, serviceProviderVariableName);
-                Writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
-
-                Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVariableName});");
+                var serviceProviderVar = node.GetOrCreateServiceProvider(Writer, context, requiredServices);                
+                Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
             }
             else
                 Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
@@ -198,7 +193,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         //TODO I believe ContentProperty should be resolved here
         var localName = propertyName.LocalName;
-        var bpFieldSymbol = GetBindableProperty(parentVar.Type, propertyName.NamespaceURI, ref localName, out bool attached, context, iXmlLineInfo);
+        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, iXmlLineInfo);
 
         //TODO event
 
@@ -230,28 +225,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         writer.WriteLine($"// SetPropertyValue UNHANDLED {parentVar} {propertyName} {valueNode}");
     }
 
-    static IFieldSymbol? GetBindableProperty(ITypeSymbol type, string ns, ref string localName, out System.Boolean attached, SourceGenContext context, IXmlLineInfo? iXmlLineInfo)
-    {
-        var bpParentType = type;
-        //if the property assignment is attahced one, like Grid.Row, update the localname and the bpParentType
-        attached = GetNameAndTypeRef(ref bpParentType, ns, ref localName, context, iXmlLineInfo);
-        var name = $"{localName}Property";
-        return bpParentType.GetAllMembers().FirstOrDefault(f => f.Name == name) as IFieldSymbol;        
-    }
 
-    static bool GetNameAndTypeRef(ref ITypeSymbol elementType, string namespaceURI, ref string localname,
-        SourceGenContext context, IXmlLineInfo? lineInfo)
-    {
-        var dotIdx = localname.IndexOf('.');
-        if (dotIdx > 0)
-        {
-            var typename = localname.Substring(0, dotIdx);
-            localname = localname.Substring(dotIdx + 1);
-            elementType = new XmlType(namespaceURI, typename, null).ResolveTypeSymbol(context)!;
-            return true;
-        }
-        return false;
-    }
+
 
     static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
     {
@@ -296,7 +271,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var property = parentVar.Type.GetAllProperties().First(p => p.Name == localName);
         
         //generated code could fail, so add location info
-        using (PrePost.NewBlock(writer, $"#line {iXmlLineInfo.LineNumber} \"{context.FilePath}\"", "#line default", ident: 0, noTab: true))
+        using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
         {
             if (node is ValueNode valueNode)
             {
@@ -333,7 +308,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     static bool CanAdd(LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context)
     {
         var localName = propertyName.LocalName;
-        var bpFieldSymbol = GetBindableProperty(parentVar.Type, propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
+        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
         if (!(valueNode is ElementNode en))
             return false;
         
@@ -355,7 +330,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         //FIXME should handle BP
         var localName = propertyName.LocalName;
-        var bpFieldSymbol = GetBindableProperty(parentVar.Type, propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
+        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
 
         
         // if (!CanGetValue(parentVar, bpFieldSymbol, en, context)

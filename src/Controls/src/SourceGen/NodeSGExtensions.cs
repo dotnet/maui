@@ -62,6 +62,8 @@ static class NodeSGExtensions
         var valueString = valueNode.Value as string ?? string.Empty;
         if (typeConverter != null)
             return valueNode.ConvertWithConverter(typeConverter, context, iXmlLineInfo);
+        if (toType.NullableAnnotation == NullableAnnotation.Annotated)
+            toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		return toType.ToString() switch
 		{
 			"System.SByte" or "sbyte" or "System.Int16" or "short" or "System.Int32" or "int" or "System.Int64" or "long" or "System.Byte" or "byte" or "System.UInt16" or "ushort" or "System.UInt32" or "uint" or "System.UInt64" or "ulong" or "System.Single" or "float" or "System.Double" or "double" or "System.Decimal" => valueString,
@@ -81,10 +83,17 @@ static class NodeSGExtensions
         //TODO check if there's a SourceGen version of the converter
         if (typeConverter.Implements(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.IExtendedTypeConverter")!))
         {
-            //TODO
-            //check the required services
-            return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", /*TODO*/ null)";
+
+            var (acceptEmptyServiceProvider, requiredServices) = typeConverter.GetServiceProviderAttributes(context);
+            if (!acceptEmptyServiceProvider)
+            {
+                var serviceProvider = valueNode.GetOrCreateServiceProvider(context.Writer, context, requiredServices);
+                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name})";
+            }
+            else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
+                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", null)";
         }
+        
         return $"new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")";
     }
 
@@ -117,7 +126,7 @@ static class NodeSGExtensions
             return false;
 
         var requireServiceAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RequireServiceAttribute")!;
-         requiredServices = variable.Type.GetAttributes(requireServiceAttribute).FirstOrDefault()?.ConstructorArguments[0].Values.Where(ca => ca.Value is ITypeSymbol).Select(ca => (ca.Value as ITypeSymbol)!).ToImmutableArray() ?? null;
+        requiredServices = variable.Type.GetAttributes(requireServiceAttribute).FirstOrDefault()?.ConstructorArguments[0].Values.Where(ca => ca.Value is ITypeSymbol).Select(ca => (ca.Value as ITypeSymbol)!).ToImmutableArray() ?? null;
         
         var acceptEmptyServiceProviderAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AcceptEmptyServiceProviderAttribute")!;
         acceptEmptyServiceProvider = variable.Type.GetAttributes(acceptEmptyServiceProviderAttribute).Any();

@@ -277,6 +277,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 					return value;
 				n = n.Parent;
 			}
+
 			return null;
 		}
 	}

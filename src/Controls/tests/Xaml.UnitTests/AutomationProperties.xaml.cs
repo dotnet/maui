@@ -43,7 +43,7 @@ public partial class AutomationProperties : ContentPage
 			var layout = new AutomationProperties(inflator);
 			Application.Current.LoadPage(layout);
 
-			Assert.AreEqual(true, (bool)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
+			Assert.AreEqual(true, (bool?)layout.entry.GetValue(Microsoft.Maui.Controls.AutomationProperties.IsInAccessibleTreeProperty));
 		}
 
 		[Test]
