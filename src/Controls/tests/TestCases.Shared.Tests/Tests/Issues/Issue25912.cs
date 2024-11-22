@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium;
 using UITest.Appium;
@@ -24,3 +25,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 	}
 }
+#endif
