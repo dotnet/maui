@@ -22,15 +22,15 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 
-			IView content = Content;
+			if (Content is View content)
+			{
+				SetInheritedBindingContext(content, BindingContext);
+			}
+		}
 
-			if (content == null && (this as IContentView)?.PresentedContent is IView presentedContent)
-				content = presentedContent;
-
-			ControlTemplate controlTemplate = ControlTemplate;
-
-			if (content is BindableObject bindableContent && controlTemplate != null)
-				SetInheritedBindingContext(bindableContent, BindingContext);
+		internal override void SetChildInheritedBindingContext(Element child, object context)
+		{
+			SetInheritedBindingContext(child, context);
 		}
 
 		internal override void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)
@@ -39,9 +39,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			base.OnControlTemplateChanged(oldValue, newValue);
-			View content = Content;
-			ControlTemplate controlTemplate = ControlTemplate;
-			if (content != null && controlTemplate != null)
+			if (Content is View content)
 			{
 				SetInheritedBindingContext(content, BindingContext);
 			}

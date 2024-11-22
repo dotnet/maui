@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DoesNotInheritBindingContextToTemplate()
+		public void DoesInheritBindingContextToTemplate()
 		{
 			var contentView = new ContentView();
 			var child = new View();
@@ -326,8 +326,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bc = "Test";
 			contentView.BindingContext = bc;
 
-			Assert.NotEqual(bc, ((IElementController)contentView).LogicalChildren[0].BindingContext);
-			Assert.Null(((IElementController)contentView).LogicalChildren[0].BindingContext);
+			Assert.Equal(bc, ((IElementController)contentView).LogicalChildren[0].BindingContext);
+		}
+
+		[Fact]
+		public void DoesntInheritBindingContextToContentFromControlTemplate()
+		{
+			var contentView = new ContentView();
+			var child1 = new View();
+			var child2 = new View();
+
+			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
+			contentView.Content = child1;
+
+			var bc = "Test";
+			var bcSimpleTemplate = "other context";
+			contentView.BindingContext = bc;
+
+			var simpleTemplate = contentView.GetVisualTreeDescendants().OfType<SimpleTemplate>().Single();
+			simpleTemplate.BindingContext = bcSimpleTemplate;
+
+			Assert.Equal(bc, child1.BindingContext);
+			Assert.Equal(contentView.BindingContext, child1.BindingContext);
+			Assert.Equal(bcSimpleTemplate, simpleTemplate.BindingContext);
+
+			// Change out content and make sure simple templates BC doesn't propagate
+			contentView.Content = child2;
+
+			Assert.Equal(bc, child2.BindingContext);
+			Assert.Equal(contentView.BindingContext, child2.BindingContext);
+			Assert.Equal(bcSimpleTemplate, simpleTemplate.BindingContext);
 		}
 
 		[Fact]
@@ -346,7 +374,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ContentParentIsNotInsideTempalte()
+		public void ContentParentIsNotInsideTemplate()
 		{
 			var contentView = new ContentView();
 			var child = new View();
@@ -383,6 +411,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Single(internalChildren);
 			Assert.Same(expected, internalChildren[0]);
+		}
+
+
+		[Fact]
+		public void BindingContextNotLostWhenSwitchingTemplates()
+		{
+			var bc = new object();
+			var contentView = new ContentView()
+			{
+				BindingContext = bc
+			};
+
+
+			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
+
+			var simpleTemplate1 = contentView.GetVisualTreeDescendants().OfType<SimpleTemplate>().Single();
+			contentView.Content = new Label();
+
+			Assert.Same(bc, simpleTemplate1.BindingContext);
+
+			contentView.ControlTemplate = new ControlTemplate(typeof(SimpleTemplate));
+
+			var simpleTemplate2 = contentView.GetVisualTreeDescendants().OfType<SimpleTemplate>().Single();
+
+			Assert.NotSame(simpleTemplate1, simpleTemplate2);
+			Assert.Same(bc, simpleTemplate2.BindingContext);
 		}
 	}
 }
