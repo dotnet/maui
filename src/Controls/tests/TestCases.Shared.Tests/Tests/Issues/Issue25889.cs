@@ -14,11 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public async Task RemainingItemsThresholdReachedCommandFired()
+		public void RemainingItemsThresholdReachedCommandFired()
 		{
 			App.WaitForElement("collectionView");
 			App.ScrollDown("collectionView");
-			await Task.Delay(1000);
 			var label = App.WaitForElement("mainPageLabel");
 			Assert.That(label.GetText(), Is.EqualTo("Command Fired!"));
 		}
