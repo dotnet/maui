@@ -200,6 +200,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateSelectedIndex();
 			ShellSection.PropertyChanged += OnShellSectionPropertyChanged;
+			foreach (var shellContent in ShellSectionController.GetItems())
+			{
+				shellContent.PropertyChanged += OnShellContentPropertyChanged;
+			}
 		}
 
 		protected virtual Type GetCellType()
@@ -217,6 +221,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((IShellController)_shellContext.Shell).RemoveAppearanceObserver(this);
 				ShellSectionController.ItemsCollectionChanged -= OnShellSectionItemsChanged;
 				ShellSection.PropertyChanged -= OnShellSectionPropertyChanged;
+				foreach (var shellContent in ShellSectionController.GetItems())
+				{
+					shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+				}
 
 				ShellSection = null;
 				_bar.RemoveFromSuperview();
@@ -282,6 +290,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ReloadData();
 		}
 
+		void OnShellContentPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(ShellContent.Title))
+			{
+				if (sender is ShellContent shellContent)
+				{
+					int index = ShellSectionController.GetItems().IndexOf(shellContent);
+					if (index >= 0)
+					{
+						UpdateHeaderTitle(index, shellContent);
+					}
+				}
+			}
+		}
+
+		void UpdateHeaderTitle(int index, ShellContent shellContent)
+		{
+			if (CollectionView.CellForItem(NSIndexPath.FromItemSection(index, 0)) is ShellSectionHeaderCell cell)
+			{
+				cell.Label.Text = shellContent.Title;
+				CollectionView.CollectionViewLayout.InvalidateLayout();
+			}
+		}
+		
 		void ReloadData()
 		{
 			if (_isDisposed)
