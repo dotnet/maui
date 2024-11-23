@@ -22,7 +22,7 @@ class StaticCAGradientLayer : CAGradientLayer, IAutoSizableCALayer
 		base.RemoveFromSuperLayer();
 	}
 
-	public void AutoSizeToSuperLayer()
+	void IAutoSizableCALayer.AutoSizeToSuperLayer()
 	{
 		_boundsObserver?.Dispose();
 		_boundsObserver = CALayerAutosizeObserver.Attach(this);

@@ -37,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 				view.Layer.AddSublayer((CALayer)sublayer);
 
 				sublayer.AutoSizeToSuperLayer();
+				view.Frame = new CoreGraphics.CGRect(0, 0, 100, 100);
 			});
 
 			await AssertionExtensions.WaitForGC(viewReference, layerReference, sublayerReference);
