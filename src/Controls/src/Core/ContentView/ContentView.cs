@@ -33,18 +33,6 @@ namespace Microsoft.Maui.Controls
 			SetInheritedBindingContext(child, context);
 		}
 
-		internal override void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)
-		{
-			if (oldValue == null)
-				return;
-
-			base.OnControlTemplateChanged(oldValue, newValue);
-			if (Content is View content)
-			{
-				SetInheritedBindingContext(content, BindingContext);
-			}
-		}
-
 		object IContentView.Content => Content;
 
 		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
