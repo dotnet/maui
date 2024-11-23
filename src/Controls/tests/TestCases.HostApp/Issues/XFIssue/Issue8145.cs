@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 8145, "Shell System.ObjectDisposedException: 'Cannot access a disposed object. Object name: 'Android.Support.Design.Widget.BottomSheetDialog'.'", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 8145, "Shell System.ObjectDisposedException: Cannot access a disposed object. Object name: Android.Support.Design.Widget.BottomSheetDialog", PlatformAffected.Android)]
 public class Issue8145 : TestShell
 {
 	string _titleElement = "Connect";
@@ -51,8 +51,40 @@ public class Issue8145 : TestShell
 						Items = {
 									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
 								}
-					},
-				new Tab {
+					},new Tab {
+						Title = "notme",
+						Items = {
+									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
+								}
+#if WINDOWS || MACCATALYST // Add more tab for desktop platforms to make the more button visible
+					},new Tab {
+						Title = "notme",
+						Items = {
+									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
+								}
+					},new Tab {
+						Title = "notme",
+						Items = {
+									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
+								}
+					},new Tab {
+						Title = "notme",
+						Items = {
+									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
+								}
+
+					},new Tab {
+						Title = "notme",
+						Items = {
+									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
+								}
+					},new Tab {
+						Title = "notme",
+						Items = {
+									new ContentPage { Title = "notme",  Content = new Label  { Text = "Click More, then choose the target. If it does not crash, this test has passed." } }
+								}
+#endif
+					},new Tab {
 						Title = "target",
 						Items = {
 									new ContentPage { Title = "Target",  Content = new Label  { Text = "Success" } }
