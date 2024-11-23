@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void DateTime_Supports_Reading_String_Compat()
 		{
 			// This is a special test where when unpackaged on windows in .NET 8
-			// dates were stored as ToString but in .NET 6 they are stored as ToBinary.
+			// dates were stored as ToString but in .NET 9 they are stored as ToBinary.
 			// This test ensures that the compat layer is working correctly
 			// and that the date is read correctly regardless of the storage format.
 			// This test is only valid on windows unpackaged.
