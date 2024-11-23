@@ -1658,38 +1658,70 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
+		/// Navigates back in the application using default platform-specific identifiers.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
-		/// <param name="customBackButtonIdentifier">Optional. The custom identifier for the back button. If not provided, default platform-specific identifiers will be used.</param>
-		public static void TapBackArrow(this IApp app, string customBackButtonIdentifier = "")
+		public static void TapBackArrow(this IApp app)
 		{
-			switch (app)
+			TapBackArrow(app, GetDefaultBackArrowQuery(app));
+		}
+
+		/// <summary>
+		/// Navigates back in the application using a custom identifier string.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
+		/// <param name="customBackButtonIdentifier">The custom identifier string for the back button.</param>
+		public static void TapBackArrow(this IApp app, string customBackButtonIdentifier)
+		{
+			TapBackArrow(app, GetCustomBackArrowQuery(app, customBackButtonIdentifier));
+		}
+
+		/// <summary>
+		/// Navigates back in the application using a custom IQuery.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
+		/// <param name="query">The custom IQuery for the back button.</param>
+		public static void TapBackArrow(this IApp app, IQuery query)
+		{
+			app.Tap(query);
+		}
+        
+		/// <summary>
+		/// Gets the default query for the back arrow button based on the app type.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>An IQuery for the default back arrow button.</returns>
+		/// <exception cref="ArgumentException">Thrown when an unsupported app type is provided.</exception>
+		static IQuery GetDefaultBackArrowQuery(IApp app)
+		{
+			return app switch
 			{
-				case AppiumAndroidApp _:
-					app.Tap(AppiumQuery.ByXPath(string.IsNullOrEmpty(customBackButtonIdentifier)
-						? "//android.widget.ImageButton[@content-desc='Navigate up']"
-						: $"//android.widget.ImageButton[@content-desc='{customBackButtonIdentifier}']"));
-					break;
+				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
+				_ => throw new ArgumentException("Unsupported app type", nameof(app))
+			};
+		}
 
-				case AppiumIOSApp _:
-				case AppiumCatalystApp _:
-					if (string.IsNullOrEmpty(customBackButtonIdentifier))
-					{
-						app.Tap(AppiumQuery.ByAccessibilityId("Back"));
-					}
-					else
-					{
-						app.Tap(app is AppiumIOSApp
-							? AppiumQuery.ByXPath($"//XCUIElementTypeButton[@name='{customBackButtonIdentifier}']")
-							: AppiumQuery.ByName(customBackButtonIdentifier));
-					}
-					break;
-
-				case AppiumWindowsApp _:
-					app.Tap(AppiumQuery.ByAccessibilityId("NavigationViewBackButton"));
-					break;
-			}
+		/// <summary>
+		/// Gets a custom query for the back arrow button based on the app type and a custom identifier.
+		/// Note that for Windows apps, the back button is not customizable, so the default identifier is used.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="customBackButtonIdentifier">The custom identifier for the back button.</param>
+		/// <returns>An IQuery for the custom back arrow button.</returns>
+		/// <exception cref="ArgumentException">Thrown when an unsupported app type is provided.</exception>
+		static IQuery GetCustomBackArrowQuery(IApp app, string customBackButtonIdentifier)
+		{
+			return app switch
+			{
+				AppiumAndroidApp _ => AppiumQuery.ByXPath($"//android.widget.ImageButton[@content-desc='{customBackButtonIdentifier}']"),
+				AppiumIOSApp _ => AppiumQuery.ByXPath($"//XCUIElementTypeButton[@name='{customBackButtonIdentifier}']"),
+				AppiumCatalystApp _ => AppiumQuery.ByName(customBackButtonIdentifier),
+				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
+				_ => throw new ArgumentException("Unsupported app type", nameof(app))
+			};
 		}
 
 		/// <summary>
@@ -1703,10 +1735,24 @@ namespace UITest.Appium
 		{
 			if(app is AppiumCatalystApp)
 				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
-				
+
 			app.WaitForElement(elementId, timeout: timeout);
 		}
 
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="query">The query to use for finding the element.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
+		{
+			if(app is AppiumCatalystApp)
+				app.WaitForElement(query, timeout: timeout);
+
+			app.WaitForElement(query, timeout: timeout);
+		}
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
