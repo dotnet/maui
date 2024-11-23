@@ -1724,35 +1724,35 @@ namespace UITest.Appium
 			};
 		}
 
-    /// <summary>
-    /// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
-    /// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
-    /// </summary>
-    /// <param name="app">The IApp instance.</param>
-    /// <param name="elementId">The id of the element to wait for.</param>
-    /// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
-    public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
-    {
-        if(app is AppiumCatalystApp)
-            app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="elementId">The id of the element to wait for.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+		{
+			if(app is AppiumCatalystApp)
+				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
 
-        app.WaitForElement(elementId, timeout: timeout);
-    }
+			app.WaitForElement(elementId, timeout: timeout);
+		}
 
 		/// <summary>
-    /// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
-    /// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
-    /// </summary>
-    /// <param name="app">The IApp instance.</param>
-    /// <param name="query">The query to use for finding the element.</param>
-    /// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
-    public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
-    {
-        if(app is AppiumCatalystApp)
-            app.WaitForElement(query, timeout: timeout);
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="query">The query to use for finding the element.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
+		{
+			if(app is AppiumCatalystApp)
+				app.WaitForElement(query, timeout: timeout);
 
-        app.WaitForElement(query, timeout: timeout);
-    }
+			app.WaitForElement(query, timeout: timeout);
+		}
 
 		/// <summary>
 		///  Flyout icon opens flyout page in the application by simulating a tap on the platform-specific Flyout Icon button.
@@ -1771,10 +1771,10 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-    /// Taps an item in the flyout menu.
-    /// </summary>
-    /// <param name="app">The IApp instance representing the application.</param>
-    /// <param name="flyoutitem">The text or accessibility identifier of the flyout item to tap.</param>
+		/// Taps an item in the flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutitem">The text or accessibility identifier of the flyout item to tap.</param>
 		public static void TapInFlyout(this IApp app, string flyoutitem)
 		{
 			app.TapFlyoutIcon();
