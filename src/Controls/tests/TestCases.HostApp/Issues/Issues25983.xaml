@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25983">
+
+  <StackLayout>
+    <Button Text="Resize row" AutomationId="resizeRowButton" Clicked="Button_Clicked"></Button>
+    <Button Text="Resize column" AutomationId="resizeColumnButton" Clicked="Button2_Clicked"></Button>
+    <Grid x:Name="grid" AutomationId="grid" RowDefinitions="50,100,200" ColumnDefinitions="100,100">
+      <Label x:Name="resizeRowResultLabel" AutomationId="resizeRowResultLabel" BackgroundColor="Red" Grid.Row="1" Grid.Column="0"></Label>
+      <Label x:Name="resizeColumnResultLabel" AutomationId="resizeColumnResultLabel" BackgroundColor="Blue" Grid.Row="2" Grid.Column="1"></Label>
+    </Grid>
+  </StackLayout>
+
+</ContentPage>
