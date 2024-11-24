@@ -28,6 +28,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal override void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)
+		{
+			base.OnControlTemplateChanged(oldValue, newValue);
+
+			if (Content is View content)
+			{
+				SetInheritedBindingContext(content, BindingContext);
+			}
+		}
+
 		internal override void SetChildInheritedBindingContext(Element child, object context)
 		{
 			SetInheritedBindingContext(child, context);
