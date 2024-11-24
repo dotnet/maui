@@ -329,6 +329,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return layout;
 			}
 
+			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
+
+			if (isHeader)
+			{
+				// We need to re-render the header to ensure it is properly measured and laid out.
+				// This is necessary because headers often have different layouts and sizes compared to regular cells,
+				// and reusing a view for a header can result in incorrect measurements and layout issues.
+				convertView = null;
+			}
+
 			AView view = CellFactory.GetCell(cell, convertView, parent, _context, _listView);
 
 			Performance.Start(reference, "AddView");
@@ -337,6 +347,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (convertView != view)
 				{
+					view.RemoveFromParent();
 					layout.RemoveViewAt(0);
 					layout.AddView(view, 0);
 				}
@@ -350,8 +361,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			Performance.Stop(reference, "AddView");
-
-			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
 			AView bline;
 
