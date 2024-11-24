@@ -9,10 +9,10 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly List<IElement> _menus = new List<IElement>();
 
-        public MenuFlyoutSubItem()
-        {
-            LogicalChildrenInternalBackingStore = new CastingList<Element, IElement>(_menus);
-        }
+		public MenuFlyoutSubItem()
+		{
+			LogicalChildrenInternalBackingStore = new CastingList<Element, IElement>(_menus);
+		}
 
 		private protected override IList<Element> LogicalChildrenInternalBackingStore { get; }
 
@@ -53,10 +53,10 @@ namespace Microsoft.Maui.Controls
 			_menus.CopyTo(array, arrayIndex);
 		}
 
-        public IEnumerator<IMenuElement> GetEnumerator()
-        {
-            return _menus.Cast<IMenuElement>().GetEnumerator();
-        }
+		public IEnumerator<IMenuElement> GetEnumerator()
+		{
+			return _menus.Cast<IMenuElement>().GetEnumerator();
+		}
 
 		public int IndexOf(IMenuElement item)
 		{
