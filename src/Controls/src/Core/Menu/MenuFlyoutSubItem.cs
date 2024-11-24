@@ -1,34 +1,24 @@
 #nullable disable
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Windows.Input;
-using Microsoft.Maui.Controls.StyleSheets;
-using Microsoft.Maui.Graphics;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class MenuFlyoutSubItem : MenuFlyoutItem, IMenuFlyoutSubItem
 	{
-		readonly List<IMenuElement> _menus = new List<IMenuElement>();
+		readonly List<IElement> _menus = new List<IElement>();
 
-		public MenuFlyoutSubItem()
-		{
-			LogicalChildrenInternalBackingStore = new List<Element>();
-
-			foreach(var item in _menus)
-			{
-				LogicalChildrenInternalBackingStore.Add((Element)item);
-			}
-		}
+        public MenuFlyoutSubItem()
+        {
+            LogicalChildrenInternalBackingStore = new CastingList<Element, IElement>(_menus);
+        }
 
 		private protected override IList<Element> LogicalChildrenInternalBackingStore { get; }
 
 		public IMenuElement this[int index]
 		{
-			get { return _menus[index]; }
+			get { return _menus[index] as IMenuElement; }
 			set
 			{
 				RemoveAt(index);
@@ -63,10 +53,10 @@ namespace Microsoft.Maui.Controls
 			_menus.CopyTo(array, arrayIndex);
 		}
 
-		public IEnumerator<IMenuElement> GetEnumerator()
-		{
-			return _menus.GetEnumerator();
-		}
+        public IEnumerator<IMenuElement> GetEnumerator()
+        {
+            return _menus.Cast<IMenuElement>().GetEnumerator();
+        }
 
 		public int IndexOf(IMenuElement item)
 		{
@@ -92,7 +82,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var item = _menus[index];
 			RemoveLogicalChild((Element)item, index);
-			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item as IMenuElement);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
