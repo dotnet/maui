@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.Widget;
 
 namespace Microsoft.Maui.Platform
@@ -62,6 +61,11 @@ namespace Microsoft.Maui.Platform
 
 				if (seekBar.IsAlive() && thumbDrawable != null)
 					seekBar.SetThumb(thumbDrawable);
+			}
+			else if (slider.Handler is SliderHandler sliderHandler)
+			{
+				seekBar.SetThumb(sliderHandler.defaultThumbDrawable);
+				seekBar.UpdateThumbColor(slider);
 			}
 		}
 	}

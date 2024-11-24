@@ -8,14 +8,18 @@ namespace Microsoft.Maui.Handlers
 	public partial class SliderHandler : ViewHandler<ISlider, SeekBar>
 	{
 		SeekBarChangeListener ChangeListener { get; } = new SeekBarChangeListener();
+		internal Drawable? defaultThumbDrawable;
 
 		protected override SeekBar CreatePlatformView()
 		{
-			return new SeekBar(Context)
+			var seekBar = new SeekBar(Context)
 			{
 				DuplicateParentStateEnabled = false,
 				Max = (int)SliderExtensions.PlatformMaxValue
 			};
+
+			defaultThumbDrawable = seekBar.Thumb;
+			return seekBar;
 		}
 
 		protected override void ConnectHandler(SeekBar platformView)
