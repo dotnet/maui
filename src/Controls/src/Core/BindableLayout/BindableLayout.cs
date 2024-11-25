@@ -378,6 +378,7 @@ namespace Microsoft.Maui.Controls
 			var index = 0;
 			do
 			{
+				// the enumerator.Current item does not have the properties set anymore when we come back
 				var item = enumerator.Current;
 				if (index < childrenCount)
 				{
@@ -465,6 +466,9 @@ namespace Microsoft.Maui.Controls
 
 		DataTemplate SelectTemplate(object item, IBindableLayout layout)
 		{
+			var one = _itemTemplate;
+			var two = _itemTemplateSelector?.SelectTemplate(item, layout as BindableObject);
+			var three = DefaultItemTemplate;
 			return _itemTemplate ?? _itemTemplateSelector?.SelectTemplate(item, layout as BindableObject) ?? DefaultItemTemplate;
 		}
 
@@ -542,9 +546,14 @@ namespace Microsoft.Maui.Controls
 			var template = SelectTemplate(item, layout);
 			var child = (BindableObject)layoutChildren[index]!;
 			var currentTemplate = GetBindableLayoutTemplate(child);
+			var c = child.BindingContext;
+
 			if (currentTemplate == template)
 			{
-				child.BindingContext = item;
+				// child.ClearValue(BindableObject.BindingContextProperty);
+				// child.BindingContext = null;
+				child.BindingContext = item; // TJ - is this replacing the BindingContext incorrectly?
+				// child.BindingContext = c = item; // TJ - is this replacing the BindingContext incorrectly?
 			}
 			else
 			{

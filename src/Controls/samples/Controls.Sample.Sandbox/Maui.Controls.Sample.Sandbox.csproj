@@ -36,6 +36,16 @@
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="Refractored.MvvmHelpers" Version="1.6.2" />
+  </ItemGroup>
+<!-- 
+  <PropertyGroup>
+    <SuppressNETSdk1202Warning>true</SuppressNETSdk1202Warning>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup> -->
+
   <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
