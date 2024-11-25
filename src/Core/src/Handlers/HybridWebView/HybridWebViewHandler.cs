@@ -499,26 +499,27 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 		internal static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
 #endif	
-	static readonly string AllQuotesWithPrecedingBackslashsPattern = (@"(\\*?)'";
+		static readonly string AllQuotesWithPrecedingBackslashsPattern = (@"(\\*?)'";
 
-	internal partial class RegexHelper
-	{
-#if NET7_0_OR_GREATER
-		// .NET 9 allows partial properties, no need for method
-		// get every quote in the string along with all the backslashes preceding it
-		[GeneratedRegex(AllQuotesWithPrecedingBackslashsPattern , RegexOptions.None, matchTimeoutMilliseconds: 1000)]
-		public static partial Regex AllQuotesWithPrecedingBackslashsRegex
+		internal partial class RegexHelper
 		{
-			get;
-		}
+#if NET7_0_OR_GREATER
+
+			// get every quote in the string along with all the backslashes preceding it
+			[GeneratedRegex (@"(\\*?)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			public static partial Regex AllQuotesWithPrecedingBackslashsRegex
+			{
+				get;
+			}
 #else
-		public static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
-										new (
-											// get every quote in the string along with all the backslashes preceding it
-											AllQuotesWithPrecedingBackslashsPattern,
-											RegexOptions.Compiled,
-											TimeSpan.FromMilliseconds(1000) 		// against malicious input
-											);		
+			static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
+											new (
+												// get every quote in the string along with all the backslashes preceding it
+												@"(\\*?)'",
+												RegexOptions.Compiled,
+												TimeSpan.FromMilliseconds(1000) 		// against malicious input
+												);		
 #endif											
+		}
 	}
 }
