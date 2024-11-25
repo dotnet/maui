@@ -17,9 +17,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ImageButton)]
 		public void ImageButtonAspectFitWorks()
 		{
-			App.WaitForElement("WaitForStubControl");
-			App.Tap("UpdateAspect");
-			VerifyScreenshot();
+			try
+			{
+				App.ToggleSystemAnimations(false);
+
+				App.WaitForElement("WaitForStubControl");
+				App.Tap("UpdateAspect");
+
+				Thread.Sleep(1000);
+				VerifyScreenshot();
+			}
+			finally
+			{
+				App.ToggleSystemAnimations(true);
+			}
 		}
 	}
 }
