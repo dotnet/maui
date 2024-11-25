@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 	{
 		private delegate void ContentUpdatedHandler(string assemblyName, string relativePath);
 
-		private readonly static Regex ContentUrlRegex = new Regex("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)");
+		private readonly static Regex ContentUrlRegex = RegexHelper.ContentUrlRegex;
 		private static event ContentUpdatedHandler? OnContentUpdated;
 
 		// If the current platform can't tell us the application entry assembly name, we can use a placeholder name
@@ -154,6 +154,26 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 			public Task SetParametersAsync(ParameterView parameters)
 				=> Task.CompletedTask;
+		}
+
+		static readonly string ContentAssemblynamePattern = "^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)";
+
+		internal static partial class RegexHelper
+		{
+#if NET7_0_OR_GREATER
+			[GeneratedRegex (ContentAssemblynamePattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			static partial Regex ContentUrlRegex
+			{
+				get;
+			}
+#else
+			static readonly Regex ContentUrlRegex =
+											new (
+												ContentAssemblynamePattern,
+												RegexOptions.Compiled,		
+												TimeSpan.FromMilliseconds(1000)							// against malicious input
+												);
+#endif
 		}
 	}
 }

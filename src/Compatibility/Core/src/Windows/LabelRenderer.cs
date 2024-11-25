@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			// Just in case we are not given text with elements.
 			var modifiedText = string.Format("<div>{0}</div>", text);
-			modifiedText = Regex.Replace(modifiedText, "<br>", "<br></br>", RegexOptions.IgnoreCase);
+			modifiedText = RegexHelper.NewLinesRegex.Replace(modifiedText, "<br></br>");
 			// reset the text because we will add to it.
 			Control.Inlines.Clear();
 			try
@@ -430,6 +430,25 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 					Element.Padding.Top,
 					Element.Padding.Right,
 					Element.Padding.Bottom);
+		}
+
+		static readonly string brPattern = "<br>";
+		internal static partial class RegexHelper
+		{
+#if NET7_0_OR_GREATER
+			[GeneratedRegex (brPattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			static partial Regex ContentUrlRegex
+			{
+				get;
+			}
+#else
+			static readonly Regex ContentUrlRegex =
+											new (
+												brPattern,
+												RegexOptions.Compiled,		
+												TimeSpan.FromMilliseconds(1000)							// against malicious input
+												);
+#endif
 		}
 	}
 }
