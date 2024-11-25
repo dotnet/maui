@@ -1119,7 +1119,7 @@ namespace UITest.Appium
 			app.ScrollDownTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
-		internal static void ScrollDownTo(this IApp app, string toMarked, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)	
+		internal static void ScrollDownTo(this IApp app, string toMarked, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			if (element is not null)
 			{
@@ -1318,7 +1318,7 @@ namespace UITest.Appium
 			}
 
 			var response = app.CommandExecutor.Execute("getClipboardText", new Dictionary<string, object>());
-			
+
 			if (response?.Value != null)
 			{
 				return (string)response.Value;
@@ -1848,8 +1848,8 @@ namespace UITest.Appium
 
 			var pageSource = aaa.Driver.PageSource;
 			Console.WriteLine(pageSource);
-    }
-    
+		}
+
 		/// <summary>
 		/// Retrieve visibility and bounds information of the status and navigation bars
 		/// </summary>
@@ -1870,8 +1870,8 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the Android System Bars");
-    }
-    
+		}
+
 		/// <summary>
 		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
 		/// </summary>
