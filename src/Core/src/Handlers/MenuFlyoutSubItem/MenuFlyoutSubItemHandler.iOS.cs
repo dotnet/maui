@@ -1,4 +1,6 @@
-﻿using UIKit;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -15,8 +17,10 @@ namespace Microsoft.Maui.Handlers
 				uIMenuBuilder = builder;
 			}
 
+			var menuItems = ((IMenuFlyoutSubItem)VirtualView).OfType<IMenuElement>().ToList();
+			
 			var menu =
-				VirtualView.ToPlatformMenu(
+				menuItems.ToPlatformMenu(
 					VirtualView.Text,
 					VirtualView.Source,
 					MauiContext!,

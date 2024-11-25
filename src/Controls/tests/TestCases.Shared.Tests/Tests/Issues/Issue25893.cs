@@ -1,4 +1,4 @@
-﻿#if WINDOWS
+﻿#if MACCATALYST || WINDOWS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
