@@ -78,12 +78,14 @@ static class NodeSGExtensions
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		return toType.ToString() switch
 		{
-			"System.SByte" or "sbyte" or "System.Int16" or "short" or "System.Int32" or "int" or "System.Int64" or "long" or "System.Byte" or "byte" or "System.UInt16" or "ushort" or "System.UInt32" or "uint" or "System.UInt64" or "ulong" or "System.Single" or "float" or "System.Double" or "double" or "System.Decimal" => valueString,
+			"System.SByte" or "sbyte" or "System.Int16" or "short" or "System.Int32" or "int" or "System.Int64" or "long" or "System.Byte" or "byte" or "System.UInt16" or "ushort" or "System.UInt32" or "uint" or "System.UInt64" or "ulong" or "System.Single" or "float" or "System.Double" or "double" => valueString,
 			"System.Boolean" or "bool" => valueString.ToLowerInvariant(),
 			"System.String" or "string" => $"\"{valueString}\"",
 			"System.Object" or "object" => "new()",
 			"System.Char" or "char" => $"'{valueString}'",
 			"System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
+            "System.DateTime" => $"new global::System.DateTime({DateTime.Parse(valueString).Ticks})",
+            "System.Decimal" => $"new global::System.Decimal({decimal.Parse(valueString)})",
 			"System.Uri" => $"new global::System.Uri(\"{valueString}\", global:System.UriKind.RelativeOrAbsolute)",
 			_ => $"\"{valueString}\"",
 		};
