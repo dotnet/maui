@@ -18,7 +18,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     SourceGenContext Context => context;
     IndentedTextWriter Writer => Context.Writer;
 
-    public static readonly IList<XmlName> skips = [
+     public static readonly IList<XmlName> skips = [
         XmlName.xArguments,
         XmlName.xClass,
         XmlName.xDataType,
@@ -34,12 +34,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     public bool VisitNodeOnDataTemplate => true;
     public bool SkipChildren(INode node, INode parentNode) => false;
 
-	public bool IsResourceDictionary(ElementNode node) => false;
-		// {
-		// 	var parentVar = Context.Variables[(IElementNode)node];
-		// 	return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
-		// 		|| parentVar.VariableType.Resolve().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
-		// }
+	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
     public void Visit(ValueNode node, INode parentNode)
     {
@@ -106,7 +101,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                 out ImmutableArray<ITypeSymbol>? requiredServices))
         {
             var valueProviderVariable = Context.Variables[node];
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, returnType!.Name!.Split('.').Last().ToLowerInvariant());
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, returnType!.Name!.Split('.').Last());
             Context.Variables[node] = new LocalVariable(returnType, variableName);
 
             //if it require a serviceprovider, create one
@@ -127,19 +122,16 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                 return;
             SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node);
         }
-        //single element in a collection
         else if (parentNode.IsCollectionItem(node) && parentNode is IElementNode)
         {
-
             var parentVar = Context.Variables[(IElementNode)parentNode];
             string? contentProperty;
 
-            // if (CanAddToRD)
-            // RD.Add()
-            // }
-            // else 
-        
-            if ((contentProperty = parentVar.Type.GetContentPropertyName()) != null)
+            if (CanAddToResourceDictionary(parentVar, parentVar.Type, node, node as IXmlLineInfo, Context))
+            {
+                AddToResourceDictionary(Writer, parentVar, node, node as IXmlLineInfo, Context);
+            }
+            else if ((contentProperty = parentVar.Type.GetContentPropertyName()) != null)
             {
                 var name = new XmlName(node.NamespaceURI, contentProperty);
                 if (skips.Contains(name))
@@ -189,8 +181,16 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         Writer.WriteLine($"// ListNode {node} parent {parentNode}");
     }
 
-    static void SetPropertyValue(IndentedTextWriter writer, LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    internal static void SetPropertyValue(IndentedTextWriter writer, LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
+        //FIXME Special case or RD.Source. should go away as as soon as we sourcegen the RDSourceTypeConverter
+        if (propertyName.Equals("", "Source") && parentVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!))
+        {
+            // LoadFromSource(ResourceDictionary rd, Uri source, string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
+            writer.WriteLine($"global::Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers.LoadFromSource({parentVar.Name}, new global::System.Uri(\"{((ValueNode)valueNode).Value}\", global::System.UriKind.RelativeOrAbsolute), \"{((ValueNode)valueNode).Value}\", typeof({context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).Assembly, null);");
+            return;
+        }
+
         //TODO I believe ContentProperty should be resolved here
         var localName = propertyName.LocalName;
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, iXmlLineInfo);
@@ -270,17 +270,15 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         var property = parentVar.Type.GetAllProperties().First(p => p.Name == localName);
         
-        //generated code could fail, so add location info
-        using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
+        if (node is ValueNode valueNode)
         {
-            if (node is ValueNode valueNode)
-            {
-                var valueString = valueNode.ConvertTo(property, context, iXmlLineInfo);
+            var valueString = valueNode.ConvertTo(property, context, iXmlLineInfo);
+            using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
                 writer.WriteLine($"{parentVar.Name}.{localName} = {valueString};");
-            }
-            else if (node is ElementNode elementNode)
-                writer.WriteLine($"{parentVar.Name}.{localName} = {context.Variables[elementNode].Name};");
         }
+        else if (node is ElementNode elementNode)
+            using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
+                writer.WriteLine($"{parentVar.Name}.{localName} = {context.Variables[elementNode].Name};");
     }
 
     static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
@@ -308,8 +306,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     static bool CanAdd(LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context)
     {
         var localName = propertyName.LocalName;
-        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
-        if (!(valueNode is ElementNode en))
+        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, valueNode as IXmlLineInfo);
+        
+        if (valueNode is not ElementNode en)
             return false;
         
         // if (!CanGetValue(parentVar, bpFieldSymbol, en, context)
@@ -323,10 +322,29 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var prop = parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == propertyName.LocalName);
         var propertyType = prop.Type;
                 
-        return propertyType.CanAdd();
+        if(propertyType.CanAdd())
+            return true;
+
+        return CanAddToResourceDictionary(parentVar, propertyType, en, valueNode as IXmlLineInfo, context);
+
     }
 
-    static void Add(IndentedTextWriter writer, LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+	static bool CanAddToResourceDictionary(LocalVariable parentVar, ITypeSymbol collectionType, IElementNode node, IXmlLineInfo? lineInfo, SourceGenContext context)
+	{
+		if (!collectionType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!))
+            return false;
+        if (node.Properties.ContainsKey(XmlName.xKey))
+            //TODO check for dupe key
+            return true;
+        //is there an Add() overload that takes the type of the element ?
+        var nodeType = context.Variables[node].Type;
+        if (collectionType.GetAllMethods("Add").FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
+            return true;
+        //TODO FAIL ?
+        return false;     
+	}
+
+	static void Add(IndentedTextWriter writer, LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         //FIXME should handle BP
         var localName = propertyName.LocalName;
@@ -346,4 +364,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         writer.WriteLine($"{parentVar.Name}.{propertyName.LocalName}.Add({context.Variables[valueNode].Name});");
     }
 
+    static void AddToResourceDictionary(IndentedTextWriter writer, LocalVariable parentVar, IElementNode node, IXmlLineInfo? lineInfo, SourceGenContext context)
+    {
+        if (node.Properties.TryGetValue(XmlName.xKey, out var keyNode))
+        {
+            var key = ((ValueNode)keyNode).Value as string;
+            writer.WriteLine($"{parentVar.Name}.Add(\"{key}\", {context.Variables[node].Name});");
+            return;
+        }
+        writer.WriteLine($"{parentVar.Name}.Add({context.Variables[node].Name});");
+    }
 }

@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class AccessModifiersControl : View
 	{
-		public static BindableProperty PublicFooProperty = BindableProperty.Create("PublicFoo",
+		public static BindableProperty PublicFooProperty = BindableProperty.Create(nameof(PublicFoo),
 			typeof(string),
 			typeof(AccessModifiersControl),
 			"");
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			set => SetValue(PublicFooProperty, value);
 		}
 
-		internal static BindableProperty InternalBarProperty = BindableProperty.Create("InternalBar",
+		internal static BindableProperty InternalBarProperty = BindableProperty.Create(nameof(InternalBar),
 			typeof(string),
 			typeof(AccessModifiersControl),
 			"");
@@ -34,26 +34,20 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public string Bar => "Bar";
 	}
 
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class BindablePropertiesAccessModifiers : ContentPage
 	{
 
 
-		public BindablePropertiesAccessModifiers()
-		{
-			InitializeComponent();
-		}
-
-		public BindablePropertiesAccessModifiers(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+		public BindablePropertiesAccessModifiers() => InitializeComponent();
 
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BindProperties(bool useCompiledXaml)
+			[SetUp] public void Setup() => Application.Current = new MockApplication();
+			[TearDown] public void TearDown() => Application.Current = null;
+
+			[Test] public void BindProperties([Values]XamlInflator inflator)
 			{
 				var page = new BindablePropertiesAccessModifiers(useCompiledXaml);
 				page.BindingContext = new BindablePropertiesAccessModifiersVM();

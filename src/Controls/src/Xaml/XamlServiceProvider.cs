@@ -40,7 +40,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode, context));
 		}
 
-		public XamlServiceProvider() => IValueConverterProvider = defaultValueConverterProvider;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public XamlServiceProvider(object rootObject) : this()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			Add(typeof(IRootObjectProvider), new XamlRootObjectProvider(rootObject));
+		}
+		public XamlServiceProvider()
+			=> IValueConverterProvider = defaultValueConverterProvider;
 
 		internal IProvideValueTarget IProvideValueTarget
 		{
