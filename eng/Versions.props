@@ -138,6 +138,8 @@
     <MicroBuildPluginsSwixBuildDotnetPackageVersion>1.1.87-gba258badda</MicroBuildPluginsSwixBuildDotnetPackageVersion>
     <MicrosoftDotNetRemoteExecutorPackageVersion>9.0.0-beta.24562.13</MicrosoftDotNetRemoteExecutorPackageVersion>
     <MicrosoftDotNetXUnitExtensionsPackageVersion>9.0.0-beta.24562.13</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <!-- Security SBOM targets-->
+    <MicrosoftSbomTargetsPackageVersion>3.0.0</MicrosoftSbomTargetsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftNETTestSdkPackageVersion>17.6.0</MicrosoftNETTestSdkPackageVersion>
