@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-static class ITypeSymbolExtensions
+static partial class ITypeSymbolExtensions
 {
     public static string? GetContentPropertyName(this ITypeSymbol type)
         => type.GetAllAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToString() == "Microsoft.Maui.Controls.ContentPropertyAttribute")?.ConstructorArguments[0].Value as string;           
@@ -182,4 +182,21 @@ static class ITypeSymbolExtensions
 
         return (false, XamlInflator.Default);
     }
+    public static bool IsPublicOrVisibleInternal(this ITypeSymbol type, IEnumerable<IAssemblySymbol> internalsVisible)
+	{
+		// return types that are public
+		if (type.DeclaredAccessibility == Accessibility.Public)
+			return true;
+
+		// only return internal types if they are visible to us
+		if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
+			return true;
+
+		return false;
+	}
+
+	public static bool CanAdd(this ITypeSymbol type) 
+		=> type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable")
+		&& type.GetAllMethods("Add").Any(m => m.Parameters.Length == 1);
+
 }
