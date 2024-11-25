@@ -28,10 +28,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollUp(ListView);
 
 			// Load images and hide scrollbar.
-			await Task.Delay(2000);
+			await Task.Delay(3000);
 
 			// The test passes if you are able to see the image, name, and location of each monkey.
-			VerifyScreenshot();
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }

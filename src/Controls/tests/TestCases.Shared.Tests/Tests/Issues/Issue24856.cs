@@ -19,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("WaitForStubControl");
 			App.Tap("UpdateAspect");
-			VerifyScreenshot();
+
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }

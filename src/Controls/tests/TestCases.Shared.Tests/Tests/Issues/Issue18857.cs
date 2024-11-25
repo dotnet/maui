@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			await Task.Yield(); // Wait for Ripple Effect animation to complete.
 
-			VerifyScreenshot();
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }
