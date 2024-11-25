@@ -19,13 +19,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
     public bool StopOnResourceDictionary => false;
     public bool VisitNodeOnDataTemplate => false;
     public bool SkipChildren(INode node, INode parentNode) => false;
-
-    public bool IsResourceDictionary(ElementNode node) => false;
-    // {
-    // 	var parentVar = Context.Variables[(IElementNode)node];
-    // 	return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
-    // 		|| parentVar.VariableType.Resolve().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
-    // }
+    public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
 	{
@@ -99,7 +93,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	LocalVariable GetOrCreateNameScope(ElementNode node)
 	{
- 		var namescope = NamingHelpers.CreateUniqueVariableName(Context, "namescope");
+ 		var namescope = NamingHelpers.CreateUniqueVariableName(Context, "NameScope");
 		Writer.Write($"var {namescope} = ");
 		if (Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
 			Writer.Write($"global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope({Context.Variables[node].Name}) ?? ");
@@ -110,7 +104,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	LocalVariable CreateNamescope()
 	{
-        var namescope = NamingHelpers.CreateUniqueVariableName(Context, "namescope");
+        var namescope = NamingHelpers.CreateUniqueVariableName(Context, "NameScope");
 		Writer.WriteLine($"var {namescope} = new global::Microsoft.Maui.Controls.Internals.NameScope();");
         return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}

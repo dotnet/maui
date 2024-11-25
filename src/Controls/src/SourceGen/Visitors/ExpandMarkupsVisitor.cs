@@ -17,7 +17,6 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 		XmlName.xTypeArguments,
 		XmlName.xFactoryMethod,
 		XmlName.xName,
-		XmlName.xDataType
 	];
 
 	SourceGenContext Context { get; }
@@ -26,7 +25,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 	public bool StopOnResourceDictionary => false;
 	public bool VisitNodeOnDataTemplate => true;
 	public bool SkipChildren(INode node, INode parentNode) => false;
-	public bool IsResourceDictionary(ElementNode node) => false;
+	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
 	public void Visit(ValueNode node, INode parentNode)
 	{
