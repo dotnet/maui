@@ -31,8 +31,21 @@
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
+  <ItemGroup>
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
+  </ItemGroup>
+
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
   </ItemGroup>
 
   <ItemGroup>
