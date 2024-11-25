@@ -156,6 +156,26 @@ namespace Microsoft.AspNetCore.Components.WebView
 				=> Task.CompletedTask;
 		
 		}
+
+		static readonly string ContentAssemblynamePattern = "^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)";
+
+		internal static partial class RegexHelper
+		{
+#if NET7_0_OR_GREATER
+			[GeneratedRegex (ContentAssemblynamePattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			static partial Regex ContentUrlRegex
+			{
+				get;
+			}
+#else
+			static readonly Regex ContentUrlRegex =
+											new (
+												ContentAssemblynamePattern,
+												RegexOptions.Compiled,		
+												TimeSpan.FromMilliseconds(1000)							// against malicious input
+												);
+#endif
+		}
 	}
 	internal static partial class RegexHelper
 	{

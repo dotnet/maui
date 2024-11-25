@@ -55,26 +55,7 @@ namespace Microsoft.Maui.Controls
 
 			try
 			{
-				var regex = new Regex(@"
-                    # Match colors
-                    (
-                        \#([0-9a-fA-F]{3,8}) # Hex colors (#RGB, #RRGGBB, #RRGGBBAA)
-                        |rgb\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*\) # rgb(percent, percent, percent)
-                        |rgba\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(percent, percent, percent, alpha)
-                        |rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\) # rgb(int, int, int)
-                        |rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(int, int, int, alpha)
-                        |hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, lightness)
-                        |hsla\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, lightness, alpha)
-                        |hsv\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, value)
-                        |hsva\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, value, alpha)
-                        |[a-zA-Z]+ # X11 named colors (e.g., AliceBlue, limegreen)
-    
-                    )
-                    | # Match numbers
-                    (
-                        -?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?  # Floats or scientific notation
-                    )
-                ", RegexOptions.IgnorePatternWhitespace);
+				var regex = RegexHelper.RegexColorsAndNumbers;
 
 				var matches = regex.Matches(strValue);
 				//var parts = matches.Select(m => m.Value).ToArray();
@@ -182,5 +163,46 @@ namespace Microsoft.Maui.Controls
 
 			throw new InvalidOperationException("Cannot convert Shadow to string: Brush is not a valid SolidColorBrush or has no Color.");
 		}
+	}
+
+	internal partial class RegexHelper
+	{
+			static readonly ReadOnlySpan<char> r = @"
+                    # Match colors
+                    (
+                        \#([0-9a-fA-F]{3,8}) # Hex colors (#RGB, #RRGGBB, #RRGGBBAA)
+                        |rgb\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*\) # rgb(percent, percent, percent)
+                        |rgba\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(percent, percent, percent, alpha)
+                        |rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\) # rgb(int, int, int)
+                        |rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(int, int, int, alpha)
+                        |hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, lightness)
+                        |hsla\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, lightness, alpha)
+                        |hsv\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, value)
+                        |hsva\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, value, alpha)
+                        |[a-zA-Z]+ # X11 named colors (e.g., AliceBlue, limegreen)
+    
+                    )
+                    | # Match numbers
+                    (
+                        -?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?  # Floats or scientific notation
+                    )
+					";
+#if NET7_0_OR_GREATER
+
+		// get every quote in the string along with all the backslashes preceding it
+		[GeneratedRegex (r, RegexOptions.IgnorePatternWhitespace, matchTimeoutMilliseconds: 1000)]
+		public static partial Regex RegexColorsAndNumbers
+		{
+			get;
+		}
+#else
+		static readonly Regex RegexColorsAndNumbers =
+										new (
+											// get every quote in the string along with all the backslashes preceding it
+											r,
+											RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled,
+											TimeSpan.FromMilliseconds(1000) 		// against malicious input
+											);		
+#endif											
 	}
 }

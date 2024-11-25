@@ -129,16 +129,18 @@ namespace Microsoft.Maui.Platform
 
 			return XElement.Load(reader);
 		}
-
 	}
+
 
 	internal partial class RegexHelper
 	{
+		static readonly ReadOnlySpan<char> brPattern = @"<br>";
+
 #if NET7_0_OR_GREATER
 		// .NET 9 allows partial properties, no need for method
 		// get every quote in the string along with all the backslashes preceding it
-		[GeneratedRegex (@"<br>", RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
-		internal static partial Regex NewLinesRegex
+		[GeneratedRegex (brPattern, RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
+		static partial Regex AllQuotesWithPrecedingBackslashsRegex
 		{
 			get;
 		}
@@ -146,7 +148,7 @@ namespace Microsoft.Maui.Platform
 		internal static readonly Regex NewLinesRegex =
 										new (
 											// get every quote in the string along with all the backslashes preceding it
-											@"<br>",
+											brPattern,
 											RegexOptions.Compiled | RegexOptions.IgnoreCase,
 											TimeSpan.FromMilliseconds(1000) 		// against malicious input
 											);		

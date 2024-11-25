@@ -435,19 +435,22 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		internal static partial class RegexHelper
 		{
 #if NET7_0_OR_GREATER
+
+			// get every quote in the string along with all the backslashes preceding it
 			[GeneratedRegex ("<br>", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
-			static partial Regex NewLinesRegex
+			public static partial Regex NewLinesRegex
 			{
 				get;
 			}
 #else
 			static readonly Regex NewLinesRegex =
 											new (
+												// get every quote in the string along with all the backslashes preceding it
 												"<br>",
-												RegexOptions.Compiled,		
-												TimeSpan.FromMilliseconds(1000)							// against malicious input
-												);
-#endif
+												RegexOptions.Compiled,
+												TimeSpan.FromMilliseconds(1000) 		// against malicious input
+												);		
+#endif											
 		}
 	}
 }
