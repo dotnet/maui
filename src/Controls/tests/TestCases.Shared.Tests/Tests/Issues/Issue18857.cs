@@ -18,26 +18,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented")]
 		public async Task GradientImageButtonBackground()
 		{
-			try
-			{
-				App.ToggleSystemAnimations(false);
+			App.WaitForElement("TestImageButton");
 
-				App.WaitForElement("TestImageButton");
+			App.Tap("TestRemoveBackgroundButton");
+			App.Tap("TestUpdateBackgroundButton");
 
-				App.Tap("TestRemoveBackgroundButton");
-				App.Tap("TestUpdateBackgroundButton");
+			App.WaitForElement("TestImageButton");
 
-				App.WaitForElement("TestImageButton");
+			await Task.Yield(); // Wait for Ripple Effect animation to complete.
 
-				await Task.Yield(); // Wait for Ripple Effect animation to complete.
-
-				Thread.Sleep(1000);
-				VerifyScreenshot();
-			}
-			finally
-			{
-				App.ToggleSystemAnimations(true);
-			}
+			VerifyScreenshot();
 		}
 	}
 }
