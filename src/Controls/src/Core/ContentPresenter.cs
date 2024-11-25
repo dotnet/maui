@@ -23,36 +23,39 @@ namespace Microsoft.Maui.Controls
 		{
 			SetBinding(
 				ContentProperty,
-				new TypedBinding<object, View>(
-					getter: static source =>
+				binding: new TypedBinding<object, object>(
+					getter: static (object source) =>
 					{
-						var content = (source as IContentView)?.Content as View ?? UnsafeGetContent(source);
+						object content = (source as IContentView)?.Content;
+						if (content is null)
+						{
+							content = GetContentUsingReflection(source);
+							if (content is not null)
+							{
+								// Produce a warning if the IContentView.Content returns null but we are able to get a value using reflection.
+								Application.Current?.FindMauiContext()?.CreateLogger<ContentPresenter>()?.LogWarning(
+									$"The {nameof(ContentPresenter)} is falling back to reflection to get access to the {nameof(IContentView.Content)} property of {source.GetType()}. " +
+									$"Consider implementing {nameof(IContentView)}.{nameof(IContentView.Content)} on {source.GetType()} if you own this type.");
+							}
+						}
+
 						return (content, true);
 					},
 					setter: null,
-					handlers: [ new(static source => source, nameof(IContentView.Content)) ])
-					{
-						Source = RelativeBindingSource.TemplatedParent,
-						Converter = new ContentConverter(),
-						ConverterParameter = this,
-					});
+					handlers: [new(static source => source, nameof(IContentView.Content))])
+				{
+					Source = RelativeBindingSource.TemplatedParent,
+					Converter = new ContentConverter(),
+					ConverterParameter = this,
+				});
 		}
 
 		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075:RequiresUnreferencedCodeMessage",
 			Justification = "Best effort to get the content property using reflection.")]
-		private static View UnsafeGetContent(object source)
+		private static object GetContentUsingReflection(object source)
 		{
-			var property = source.GetType().GetProperty(nameof(IContentView.Content), BindingFlags.Public | BindingFlags.Instance);
-			var value = property?.GetValue(source) as View;
-
-			if (value is not null)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<ContentPresenter>()?.LogWarning(
-					$"The {nameof(ContentPresenter)} is falling back to reflection to get access to the {nameof(IContentView.Content)} property of {source.GetType()}. " +
-					$"Consider implementing {nameof(IContentView)}.{nameof(IContentView.Content)} on {source.GetType()} if you own this type.");
-			}
-
-			return value;
+			PropertyInfo property = source.GetType().GetProperty(nameof(IContentView.Content), BindingFlags.Public | BindingFlags.Instance);
+			return property?.GetValue(source);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
