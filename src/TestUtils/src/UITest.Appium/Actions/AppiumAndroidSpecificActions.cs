@@ -71,7 +71,7 @@ namespace UITest.Appium
 			{
 				string performanceDataType = (string)parameters["performanceDataType"];
 
-				if(string.IsNullOrEmpty(performanceDataType))
+				if (string.IsNullOrEmpty(performanceDataType))
 				{
 					performanceDataType = "memoryinfo";
 				}

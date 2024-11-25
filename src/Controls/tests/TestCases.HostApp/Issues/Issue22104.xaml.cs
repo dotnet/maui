@@ -1,7 +1,7 @@
-using Microsoft.Maui.Controls.Internals;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 

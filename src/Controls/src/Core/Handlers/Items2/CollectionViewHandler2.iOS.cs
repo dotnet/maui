@@ -12,9 +12,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	internal class LayoutHeaderFooterInfo
 	{
 		public IView FooterView { get; set; }
-		public IView HeaderView { get; set; }	
-		public DataTemplate FooterTemplate  { get; set; }
-		public DataTemplate HeaderTemplate  { get; set; }
+		public IView HeaderView { get; set; }
+		public DataTemplate FooterTemplate { get; set; }
+		public DataTemplate HeaderTemplate { get; set; }
 		public bool HasHeader { get; set; }
 		public bool HasFooter { get; set; }
 	}
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
 					args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
 					args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-					args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) || 
+					args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
 					args.PropertyName == nameof(GridItemsLayout.Span) ||
 					args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
 
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapHeaderTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateLayout();
-		//	(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
+			//	(handler.Controller as StructuredItemsViewController2<ReorderableItemsView>)?.UpdateHeaderView();
 		}
 
 		public static void MapFooterTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)

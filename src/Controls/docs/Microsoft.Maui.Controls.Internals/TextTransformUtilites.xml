@@ -17,8 +17,6 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetTransformedText">
@@ -46,9 +44,6 @@
       <Docs>
         <param name="source">To be added.</param>
         <param name="textTransform">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetPlainText">
@@ -76,8 +71,6 @@
       <Docs>
         <param name="inputView">To be added.</param>
         <param name="platformText">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Benchmarks
 			}
 		};
 		readonly MyObject Target = new() { Name = "B" };
-		
+
 		[Benchmark]
 		public void TypedBindName()
 		{
@@ -51,11 +51,12 @@ namespace Microsoft.Maui.Benchmarks
 					handlers: new[] {
 						Tuple.Create<Func<MyObject, object>, string>(o => o, "Name")
 					}
-				) { Source = Source };
+				)
+				{ Source = Source };
 				Target.SetBinding(MyObject.NameProperty, binding);
 			}
 		}
-		
+
 		[Benchmark]
 		public void TypedBindChild()
 		{
@@ -69,11 +70,12 @@ namespace Microsoft.Maui.Benchmarks
 						Tuple.Create<Func<MyObject, object>, string>(o => o, "Child"),
 						Tuple.Create<Func<MyObject, object>, string>(o => o.Child, "Name"),
 					}
-				) { Source = Source };
+				)
+				{ Source = Source };
 				Target.SetBinding(MyObject.NameProperty, binding);
 			}
 		}
-		
+
 		[Benchmark]
 		public void TypedBindChildIndexer()
 		{
@@ -88,7 +90,8 @@ namespace Microsoft.Maui.Benchmarks
 						Tuple.Create<Func<MyObject, object>, string>(o => o.Children, "Item[0]"),
 						Tuple.Create<Func<MyObject, object>, string>(o => o.Children[0], "Name"),
 					}
-				) { Source = Source };
+				)
+				{ Source = Source };
 				Target.SetBinding(MyObject.NameProperty, binding);
 			}
 		}

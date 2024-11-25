@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue2842Test()
 		{
 			App.WaitForElement("btnClick");

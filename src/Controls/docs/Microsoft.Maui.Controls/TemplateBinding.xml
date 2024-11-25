@@ -49,7 +49,6 @@
       <Parameters />
       <Docs>
         <summary>Creates an empty template binding.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -77,7 +76,6 @@
         <param name="converterParameter">A parameter to pass to the converter.</param>
         <param name="stringFormat">A format string to use for displaying property values.</param>
         <summary>Creates a new TemplateBinding with the specified values. Must be non-empty and non-null.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Converter">
@@ -96,8 +94,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the type converter to use to convert strings into instances of the bound property type.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConverterParameter">
@@ -116,8 +112,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a format string to use for displaying property values.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Path">
@@ -136,8 +130,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a string that identifies the property to which to bind.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

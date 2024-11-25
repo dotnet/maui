@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
 		internal readonly MergedStyle _mergedStyle;
-		
+
 		protected ImageSource()
 		{
 			_mergedStyle = new MergedStyle(GetType(), this);

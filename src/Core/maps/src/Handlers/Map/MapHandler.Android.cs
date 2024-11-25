@@ -543,7 +543,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_polygons = new List<APolygon>();
 
 			var options = polygon.ToHandler(MauiContext!)?.PlatformView as PolygonOptions;
-			if(options is null)
+			if (options is null)
 			{
 				throw new System.Exception("PolygonOptions is null");
 			}
@@ -564,7 +564,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				_circles = new List<ACircle>();
 
 			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
-			if(options is null)
+			if (options is null)
 			{
 				throw new System.Exception("CircleOptions is null");
 			}

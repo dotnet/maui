@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void ViewCellInTableViewDoesNotCrash()
 		{
 			App.WaitForNoElement(Success);

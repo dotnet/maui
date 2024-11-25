@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Controls the mixed content mode on web views on the Android platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DisplayZoomControls">
@@ -37,8 +36,6 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisplayZoomControlsProperty">
@@ -55,8 +52,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableZoomControls">
@@ -79,8 +74,6 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableZoomControlsProperty">
@@ -97,8 +90,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetDisplayZoomControls">
@@ -119,9 +110,6 @@
       </Parameters>
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnableZoomControls">
@@ -142,9 +130,6 @@
       </Parameters>
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMixedContentMode">
@@ -167,8 +152,6 @@
       <Docs>
         <param name="element">The Android web view for which to get the loading behavior for content that is a mix of secure and insecure content.</param>
         <summary>Returns the mixed content mode for the web view.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MixedContentMode">
@@ -191,8 +174,6 @@
       <Docs>
         <param name="config">The platform configuration for the Android web view for which to get the loading behavior for content that is a mix of secure and insecure content.</param>
         <summary>Gets the mixed content loading behavior.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MixedContentModeProperty">
@@ -211,7 +192,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the loading behavior for content that is a mix of secure and insecure content.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetDisplayZoomControls">
@@ -234,9 +214,6 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetDisplayZoomControls">
@@ -259,8 +236,6 @@
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetEnableZoomControls">
@@ -283,9 +258,6 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetEnableZoomControls">
@@ -308,8 +280,6 @@
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetMixedContentMode">
@@ -334,7 +304,6 @@
         <param name="element">The Android web view for which to set the loading behavior for content that is a mix of secure and insecure content.</param>
         <param name="value">The new mixed content mode.</param>
         <summary>Sets the mixed content mode for the web view.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetMixedContentMode">
@@ -359,8 +328,6 @@
         <param name="config">The platform configuration for the Android web view for which to set the loading behavior for content that is a mix of secure and insecure content.</param>
         <param name="value">The new mixed content mode.</param>
         <summary>Sets the mixed content mode for the web view.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ZoomControlsDisplayed">
@@ -381,9 +348,6 @@
       </Parameters>
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ZoomControlsEnabled">
@@ -404,9 +368,6 @@
       </Parameters>
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

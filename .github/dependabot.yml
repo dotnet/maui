@@ -46,6 +46,9 @@ updates:
       patterns:
         - "xunit"
         - "xunit.runner.*"
+    SyncfusionToolkit:
+      patterns:
+        - "Syncfusion.Maui.Toolkit"
   ignore:
     - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro

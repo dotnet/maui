@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue1436Test()
 		{
 			App.WaitForElement("TestReady");

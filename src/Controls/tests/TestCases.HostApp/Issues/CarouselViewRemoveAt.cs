@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.None, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgumentOutOfRangeException", PlatformAffected.iOS)]
 	public class CarouselViewRemoveAt : ContentPage
 	{
-		readonly CarouselView _carousel;
+		readonly CarouselView2 _carousel;
 
 		public class ModalPage : ContentPage
 		{
@@ -47,7 +47,7 @@ namespace Maui.Controls.Sample.Issues
 				new ModelCarouselViewRemoveAt("8", Colors.IndianRed),
 				new ModelCarouselViewRemoveAt("9", Colors.Khaki),
 			});
-			_carousel = new CarouselView
+			_carousel = new CarouselView2
 			{
 				ItemTemplate = new DataTemplate(() =>
 			{

@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (!e.HasFocus)
 			{
-			  VirtualView?.Completed();
+				VirtualView?.Completed();
 			}
 		}
 

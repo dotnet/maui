@@ -11,7 +11,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class LayoutRenderer : ViewRenderer<Layout, FrameworkElement>
+	public partial class LayoutRenderer : ViewRenderer<Layout, FrameworkElement>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Layout> e)
 		{

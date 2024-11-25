@@ -16,7 +16,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
-	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
+	public partial class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
 																																	  where TNativeElement : FrameworkElement
 	{
 		string _defaultAutomationPropertiesName;

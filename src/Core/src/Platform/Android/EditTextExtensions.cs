@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Platform
 		{
 			editText.SetInputType(entry);
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
-			
+
 			// Restart the input on the current focused EditText
 			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
 			imm?.RestartInput(editText);

@@ -25,7 +25,10 @@ public partial class TaskView
 	private void CheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var checkbox = (CheckBox)sender;
-		var task = (ProjectTask)checkbox.BindingContext;
+		
+		if (checkbox.BindingContext is not ProjectTask task)
+			return;
+		
 		if (task.IsCompleted == e.Value)
 			return;
 

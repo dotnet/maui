@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,13 +13,14 @@ public class Issue1875 : _IssuesUITest
 
 	public override string Issue => "NSRangeException adding items through ItemAppearing";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void NSRangeException()
-	// {
-	// 	App.WaitForElement(q => q.Marked("Load"));
-	// 	App.Tap(q => q.Marked("Load"));
-	// 	App.WaitForElement(q => q.Marked("5"));
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	public void NSRangeException()
+	{
+		App.WaitForElement("Load");
+		App.Tap("Load");
+		App.WaitForElement("5");
+	}
 }
+#endif

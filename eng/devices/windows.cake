@@ -96,7 +96,7 @@ Task("GenerateMsixCert")
 	{
 		Information("Generating cert");
 		var rsa = RSA.Create();
-		var req = new CertificateRequest("CN=" + certCN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+		var req = new CertificateRequest("CN=" + certCN, rsa, System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
 		req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
 		{

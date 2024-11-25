@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments for the <see cref="T:Microsoft.Maui.Controls.PropertyChangingEventHandler" /> delegate.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -46,7 +45,6 @@
       <Docs>
         <param name="propertyName">To be added.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.PropertyChangingEventArgs" /> object that indicates that <paramref name="propertyName" /> is changing.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PropertyName">
@@ -72,7 +70,6 @@
       <Docs>
         <summary>Gets the name of the property that is changing.</summary>
         <value>The name of the property that is changing.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

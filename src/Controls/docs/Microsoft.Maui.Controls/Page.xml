@@ -66,7 +66,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.Page" /> element with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ActionSheetSignalName">
@@ -85,7 +84,6 @@
       </ReturnValue>
       <Docs>
         <summary>This method is for internal use.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AlertSignalName">
@@ -104,7 +102,6 @@
       </ReturnValue>
       <Docs>
         <summary>This method is for internal use.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Appearing">
@@ -129,7 +126,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates that the <see cref="T:Microsoft.Maui.Controls.Page" /> is about to appear.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundImage">
@@ -162,8 +158,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the image used as a background for the <see cref="T:Microsoft.Maui.Controls.Page" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundImageProperty">
@@ -196,7 +190,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.Page.BackgroundImage" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundImageSource">
@@ -213,9 +206,6 @@
         <ReturnType>Microsoft.Maui.Controls.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundImageSourceProperty">
@@ -232,8 +222,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BusySetSignalName">
@@ -252,7 +240,6 @@
       </ReturnValue>
       <Docs>
         <summary>This method is for internal use.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainerArea">
@@ -279,8 +266,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Disappearing">
@@ -380,8 +365,6 @@
         <param name="message">The body text of the alert dialog.</param>
         <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
         <summary>Presents an alert dialog to the application user with a single cancel button.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisplayAlert">
@@ -417,7 +400,6 @@
         <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
         <summary>Presents an alert dialog to the application user with an accept and a cancel button.</summary>
         <returns>A task that contains the user's choice as a Boolean value. <see langword="true" /> indicates that the user accepted the alert. <see langword="false" /> indicates that the user cancelled the alert.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisplayPromptAsync">
@@ -458,9 +440,6 @@
         <param name="placeholder">To be added.</param>
         <param name="maxLength">To be added.</param>
         <param name="keyboard">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisplayPromptAsync">
@@ -495,9 +474,6 @@
         <param name="maxLength">To be added.</param>
         <param name="keyboard">To be added.</param>
         <param name="initialValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ForceLayout">
@@ -523,7 +499,6 @@
       <Parameters />
       <Docs>
         <summary>Forces the <see cref="T:Microsoft.Maui.Controls.Page" /> to perform a layout pass.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Icon">
@@ -556,8 +531,6 @@
       </ReturnValue>
       <Docs>
         <summary>Resource identifier for the <see cref="T:Microsoft.Maui.Controls.Page" />'s associated icon.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconImageSource">
@@ -574,9 +547,6 @@
         <ReturnType>Microsoft.Maui.Controls.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconImageSourceProperty">
@@ -593,8 +563,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconProperty">
@@ -627,7 +595,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.Page.Icon" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IgnoresContainerArea">
@@ -654,8 +621,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InternalChildren">
@@ -682,8 +647,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsBusy">
@@ -734,7 +697,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.Page.IsBusy" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChanged">
@@ -762,7 +724,6 @@
       </ReturnValue>
       <Docs>
         <summary>Raised when the layout of the <see cref="T:Microsoft.Maui.Controls.Page" /> has changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChildren">
@@ -797,7 +758,6 @@
         <param name="width">Width of layout area.</param>
         <param name="height">Height of layout area.</param>
         <summary>Lays out children <see cref="T:Microsoft.Maui.Controls.Element" />s into the specified area.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -828,8 +788,6 @@
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Page" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAppearing">
@@ -855,7 +813,6 @@
       <Parameters />
       <Docs>
         <summary>When overridden, allows application developers to customize behavior immediately prior to the <see cref="T:Microsoft.Maui.Controls.Page" /> becoming visible.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBackButtonPressed">
@@ -943,7 +900,6 @@
         <param name="sender">The object that raised the event.</param>
         <param name="e">The event arguments.</param>
         <summary>Indicates that the preferred size of a child <see cref="T:Microsoft.Maui.Controls.Element" /> has changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnDisappearing">
@@ -995,7 +951,6 @@
       <Parameters />
       <Docs>
         <summary>Called when the <see cref="T:Microsoft.Maui.Controls.Page" />'s <see cref="P:Microsoft.Maui.Controls.Element.Parent" /> property has changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeAllocated">
@@ -1026,7 +981,6 @@
         <param name="width">The width allocated to the <see cref="T:Microsoft.Maui.Controls.Page" />.</param>
         <param name="height">The height allocated to the <see cref="T:Microsoft.Maui.Controls.Page" />.</param>
         <summary>Indicates that the <see cref="T:Microsoft.Maui.Controls.Page" /> has been assigned a size.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Padding">
@@ -1051,8 +1005,6 @@
       </ReturnValue>
       <Docs>
         <summary>The space between the content of the <see cref="T:Microsoft.Maui.Controls.Page" /> and it's border.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PaddingProperty">
@@ -1077,7 +1029,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.Page.Padding" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PromptSignalName">
@@ -1094,8 +1045,6 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendAppearing">
@@ -1123,7 +1072,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendBackButtonPressed">
@@ -1146,8 +1094,6 @@
       <Parameters />
       <Docs>
         <summary>Calls <see cref="M:Microsoft.Maui.Controls.Page.OnBackButtonPressed" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendDisappearing">
@@ -1175,7 +1121,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Title">
@@ -1200,8 +1145,6 @@
       </ReturnValue>
       <Docs>
         <summary>The <see cref="T:Microsoft.Maui.Controls.Page" />'s title.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleProperty">
@@ -1226,7 +1169,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.Page.Title" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToolbarItems">
@@ -1251,8 +1193,6 @@
       </ReturnValue>
       <Docs>
         <summary>A set of <see cref="T:Microsoft.Maui.Controls.ToolbarItem" />s, implemented in a platform-specific manner.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateChildrenLayout">
@@ -1278,7 +1218,6 @@
       <Parameters />
       <Docs>
         <summary>Requests that the children <see cref="T:Microsoft.Maui.Controls.Element" />s of the <see cref="T:Microsoft.Maui.Controls.Page" /> update their layouts.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -14,32 +14,32 @@ public class Issue8964 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.CarouselView)]
-//	[FailsOnAndroid]
-//	[FailsOnIOS]
-//	public void Issue8964Test()
-//	{
-//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-//		var rect = App.Query("carouseView")[0].Rect;
-//		SwipePreviousItem(rect);
-//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-//		SwipePreviousItem(rect);
-//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-//		SwipePreviousItem(rect);
-//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-//		SwipePreviousItem(rect);
-//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-//		SwipePreviousItem(rect);
-//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-//		App.WaitForElement(q => q.Marked($"Counter 6"));
+	//	[FailsOnAndroid]
+	//	[FailsOnIOS]
+	//	public void Issue8964Test()
+	//	{
+	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
+	//		var rect = App.Query("carouseView")[0].Rect;
+	//		SwipePreviousItem(rect);
+	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
+	//		SwipePreviousItem(rect);
+	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
+	//		SwipePreviousItem(rect);
+	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
+	//		SwipePreviousItem(rect);
+	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
+	//		SwipePreviousItem(rect);
+	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
+	//		App.WaitForElement(q => q.Marked($"Counter 6"));
 
-//	}
+	//	}
 
-//	void SwipePreviousItem(Xamarin.UITest.Queries.AppRect rect)
-//	{
-//#if ANDROID
-//		App.DragCoordinates(rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
-//#else
-//		App.SwipeLeftToRight("carouseView");
-//#endif
-//	}
+	//	void SwipePreviousItem(Xamarin.UITest.Queries.AppRect rect)
+	//	{
+	//#if ANDROID
+	//		App.DragCoordinates(rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
+	//#else
+	//		App.SwipeLeftToRight("carouseView");
+	//#endif
+	//	}
 }

@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control whether an editor will change size to accommodate input as the user enters it.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Disabled">

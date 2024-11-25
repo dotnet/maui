@@ -1,5 +1,4 @@
-﻿/*
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,14 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
 		public void CollectionViewInShellShouldBeVisible()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.iOS, TestDevice.Mac]);
-
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 	}
 }
-*/

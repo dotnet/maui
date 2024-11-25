@@ -21,15 +21,15 @@ public class Bugzilla44044 : _IssuesUITest
 	// public void Bugzilla44044Test()
 	// {
 	// 	App.WaitForElement(_btnToggleSwipe);
-		
+
 	// 	App.SwipeRightToLeft();
 	// 	App.WaitForNoElement(_btnToggleSwipe);
 	// 	App.WaitForElement(_btnDisplayAlert);
-		
+
 	// 	App.SwipeLeftToRight();
 	// 	App.WaitForNoElement(_btnDisplayAlert);
 	// 	App.WaitForElement(_btnToggleSwipe);
-		
+
 	// 	App.Tap(_btnToggleSwipe);
 	// 	App.SwipeRightToLeft();
 	// 	App.WaitForNoElement(_btnDisplayAlert);

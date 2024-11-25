@@ -15,7 +15,7 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	//[Test]
 	//[Category(UITestCategories.Shell)]
 	//[FailsOnAndroid]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void FlyoutContentOffsetsCorrectly()
 	//{
 	//	App.WaitForElement("PageLoaded");

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,25 +13,25 @@ public class Bugzilla33612 : _IssuesUITest
 
 	public override string Issue => "(A) Removing a page from the navigation stack causes an 'Object reference' exception in Android only";
 
-	// [Test]
-	// [Category(UITestCategories.Navigation)]
-	// //[UiTest(typeof(NavigationPage))]
-	// public void Issue33612RemovePagesWithoutRenderers()
-	// {
-	// 	App.WaitForElement("Go To Page 2");
-	// 	App.Tap("Go To Page 2");
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void Issue33612RemovePagesWithoutRenderers()
+	{
+		App.WaitForElement("Go To Page 2");
+		App.Tap("Go To Page 2");
 
-	// 	App.WaitForElement("This is Page 2");
-	// 	App.Screenshot("At Page 2");
-	// 	App.Tap("Go to Page 3");
+		App.WaitForElement("This is Page 2");
+		App.Screenshot("At Page 2");
+		App.Tap("Go To Page 3");
 
-	// 	App.WaitForElement("This is Page 3");
-	// 	App.WaitForElement("Return To Page 2",
-	// 		timeout: TimeSpan.FromSeconds(15));
-	// 	App.Screenshot("At Page 3");
-	// 	App.Tap("Return To Page 2");
+		App.WaitForElement("This is Page 3");
+		App.WaitForElement("Return To Page 2",
+			timeout: TimeSpan.FromSeconds(15));
+		App.Screenshot("At Page 3");
+		App.Tap("Return To Page 2");
 
-	// 	App.WaitForElement("If you're seeing this, nothing crashed. Yay!");
-	// 	App.Screenshot("Success Page");
-	// }
+		App.WaitForElement("If you are seeing this, nothing crashed.");
+		App.Screenshot("Success Page");
+	}
 }
+#endif

@@ -124,18 +124,6 @@ namespace Microsoft.Maui.Controls
 			var isApplied = IsApplied;
 
 			var bindingContext = src ?? Context ?? context;
-
-			// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disabled
-			bool skipTypeMismatchCheck = Source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
-			if (!skipTypeMismatchCheck)
-			{
-				if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
-				{
-					BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({DataType}) and the current binding context ({bindingContext.GetType()}).");
-					bindingContext = null;
-				}
-			}
-
 			base.Apply(bindingContext, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
 			if (src != null && isApplied && fromBindingContextChanged)

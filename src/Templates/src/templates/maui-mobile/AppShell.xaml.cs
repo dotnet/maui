@@ -1,4 +1,4 @@
-﻿#if (SampleContent)
+﻿#if (IncludeSampleContent)
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Font = Microsoft.Maui.Font;
@@ -10,12 +10,12 @@ public partial class AppShell : Shell
 	public AppShell()
 	{
 		InitializeComponent();
-#if (SampleContent)
+#if (IncludeSampleContent)
 		var currentTheme = Application.Current!.UserAppTheme;		
 		ThemeSegmentedControl.SelectedIndex = currentTheme == AppTheme.Light ? 0 : 1;
 #endif
 	}
-#if (SampleContent)
+#if (IncludeSampleContent)
 	public static async Task DisplaySnackbarAsync(string message)
 	{
 		CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -37,6 +37,10 @@ public partial class AppShell : Shell
 
 	public static async Task DisplayToastAsync(string message)
 	{
+		// Toast is currently not working in MCT on Windows
+		if (OperatingSystem.IsWindows())
+			return;
+
 		var toast = Toast.Make(message, textSize: 18);
 
 		var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));

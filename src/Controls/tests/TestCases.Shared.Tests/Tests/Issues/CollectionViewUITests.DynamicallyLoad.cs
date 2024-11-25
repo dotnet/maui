@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// CollectionViewShouldSourceShouldUpdateWhileInvisible (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13126.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void DynamicallyLoadCollectionView()
 		{
 			App.WaitForNoElement(Success);
