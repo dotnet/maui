@@ -9,11 +9,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class Utils
 	{
-		static readonly Regex rxResourceFilenameValidation
-			= new Regex(@"^[a-z]([a-z0-9_]*[a-z0-9])?$", RegexOptions.Singleline | RegexOptions.Compiled);
-
 		public static bool IsValidResourceFilename(string filename)
-			=> rxResourceFilenameValidation.IsMatch(Path.GetFileNameWithoutExtension(filename));
+			=> RegexHelper.ResourceFilenameRegex.IsMatch(Path.GetFileNameWithoutExtension(filename));
 
 		public static SKColor? ParseColorString(string tint)
 		{
@@ -66,6 +63,26 @@ namespace Microsoft.Maui.Resizetizer
 			var attributes = File.GetAttributes(source);
 			if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
 				File.SetAttributes(source, attributes & ~FileAttributes.ReadOnly);
+		}
+
+		static readonly string ResourceFilenameRegexPattern = @"^[a-z]([a-z0-9_]*[a-z0-9])?$";
+
+		internal static partial class RegexHelper
+		{
+#if NET7_0_OR_GREATER
+			[GeneratedRegex (ResourceFilenameRegexPattern, RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
+			static partial Regex ResourceFilenameRegex
+			{
+				get;
+			}
+#else
+			public static readonly Regex ResourceFilenameRegex =
+											new (
+												ResourceFilenameRegexPattern,
+												RegexOptions.Compiled | RegexOptions.Singleline,		
+												TimeSpan.FromMilliseconds(1000)							// against malicious input
+												);
+#endif
 		}
 	}
 }
