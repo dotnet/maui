@@ -66,29 +66,45 @@ namespace Microsoft.Maui.Controls
 
 		static void BindTextProperties(BindableObject content)
 		{
-			BindProperty(content, TextElement.TextColorProperty, typeof(ITextElement));
-			BindProperty(content, TextElement.CharacterSpacingProperty, typeof(ITextElement));
-			BindProperty(content, TextElement.TextTransformProperty, typeof(ITextElement));
+			var source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(ITextElement));
+			if (ShouldSetBinding(content, TextElement.TextColorProperty))
+			{
+				content.SetBinding(TextElement.TextColorProperty, static (ITextElement te) => te.TextColor, source: source);
+			}
+
+			if (ShouldSetBinding(content, TextElement.CharacterSpacingProperty))
+			{
+				content.SetBinding(TextElement.CharacterSpacingProperty, static (ITextElement te) => te.CharacterSpacing, source: source);
+			}
+
+			if (ShouldSetBinding(content, TextElement.TextTransformProperty))
+			{
+				content.SetBinding(TextElement.TextTransformProperty, static (ITextElement te) => te.TextTransform, source: source);
+			}
 		}
 
 		static void BindFontProperties(BindableObject content)
 		{
-			BindProperty(content, FontElement.FontAttributesProperty, typeof(IFontElement));
-			BindProperty(content, FontElement.FontSizeProperty, typeof(IFontElement));
-			BindProperty(content, FontElement.FontFamilyProperty, typeof(IFontElement));
-		}
-
-		static void BindProperty(BindableObject content, BindableProperty property, Type type)
-		{
-			if (content.IsSet(property) || content.GetIsBound(property))
+			var source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, typeof(IFontElement));
+			if (ShouldSetBinding(content, FontElement.FontAttributesProperty))
 			{
-				// Don't override the property if user has already set it
-				return;
+				content.SetBinding(FontElement.FontAttributesProperty, static (IFontElement fe) => fe.FontAttributes, source: source);
 			}
 
-			content.SetBinding(property,
-					new Binding(property.PropertyName,
-					source: new RelativeBindingSource(RelativeBindingSourceMode.FindAncestor, type)));
+			if (ShouldSetBinding(content, FontElement.FontSizeProperty))
+			{
+				content.SetBinding(FontElement.FontSizeProperty, static (IFontElement fe) => fe.FontSize, source: source);
+			}
+
+			if (ShouldSetBinding(content, FontElement.FontFamilyProperty))
+			{
+				content.SetBinding(FontElement.FontFamilyProperty, static (IFontElement fe) => fe.FontFamily, source: source);
+			}	
+		}
+
+		static bool ShouldSetBinding(BindableObject content, BindableProperty property)
+		{
+			return !content.IsSet(property) && !content.GetIsBound(property);
 		}
 
 		static bool HasTemplateAncestor(ContentPresenter presenter, Type type)

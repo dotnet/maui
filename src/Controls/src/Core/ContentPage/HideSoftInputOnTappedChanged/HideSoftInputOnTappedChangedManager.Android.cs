@@ -3,6 +3,7 @@ using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
+using AViewGroup = Android.Views.ViewGroup;
 
 namespace Microsoft.Maui.Controls
 {
@@ -43,20 +44,11 @@ namespace Microsoft.Maui.Controls
 		// This is called from InputViews as they are added to the visual tree
 		IDisposable? SetupHideSoftInputOnTapped(AView aView)
 		{
-			if (aView is SearchView sv &&
-				sv.GetFirstChildOfType<EditText>() is EditText editText)
+			if (aView is AViewGroup vg &&
+				vg.GetFirstChildOfType<EditText>() is {} editText)
 			{
 				aView = editText;
 			}
-
-			if (aView is AndroidX.AppCompat.Widget.SearchView svX &&
-				svX.GetFirstChildOfType<EditText>() is EditText editTextX)
-			{
-				aView = editTextX;
-			}
-
-			if (aView is null)
-				return null;
 
 			if (!FeatureEnabled)
 				return null;

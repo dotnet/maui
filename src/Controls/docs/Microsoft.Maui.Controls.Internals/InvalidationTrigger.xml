@@ -21,7 +21,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="HorizontalOptionsChanged">

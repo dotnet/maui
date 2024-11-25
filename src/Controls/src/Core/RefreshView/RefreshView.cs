@@ -2,13 +2,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView
+	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
 		public event EventHandler Refreshing;
@@ -67,19 +68,10 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
-			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), propertyChanged: OnCommandChanged);
+			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), 
+			propertyChanging: CommandElement.OnCommandChanging,
+			propertyChanged: CommandElement.OnCommandChanged);
 
-		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			RefreshView refreshView = (RefreshView)bindable;
-			if (oldValue is ICommand oldCommand)
-				oldCommand.CanExecuteChanged -= refreshView.RefreshCommandCanExecuteChanged;
-
-			if (newValue is ICommand newCommand)
-				newCommand.CanExecuteChanged += refreshView.RefreshCommandCanExecuteChanged;
-
-			refreshView.RefreshCommandCanExecuteChanged(bindable, EventArgs.Empty);
-		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='Command']/Docs/*" />
 		public ICommand Command
@@ -94,28 +86,13 @@ namespace Microsoft.Maui.Controls
 				typeof(object),
 				typeof(RefreshView),
 				null,
-				propertyChanged: (bindable, oldvalue, newvalue) => ((RefreshView)(bindable)).RefreshCommandCanExecuteChanged(((RefreshView)(bindable)).Command, EventArgs.Empty));
+				propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandParameter']/Docs/*" />
 		public object CommandParameter
 		{
 			get { return GetValue(CommandParameterProperty); }
 			set { SetValue(CommandParameterProperty, value); }
-		}
-
-		void RefreshCommandCanExecuteChanged(object sender, EventArgs eventArgs)
-		{
-			if (IsRefreshing)
-				return;
-
-			if (Command != null)
-			{
-				SetValue(IsEnabledProperty, Command.CanExecute(CommandParameter));
-			}
-			else
-			{
-				SetValue(IsEnabledProperty, true);
-			}
 		}
 
 		/// <summary>Bindable property for <see cref="RefreshColor"/>.</summary>
@@ -133,6 +110,20 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, RefreshView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		ICommand ICommandElement.Command => Command;
+
+		object ICommandElement.CommandParameter => CommandParameter;
+
+		protected override bool IsEnabledCore => base.IsEnabledCore && CommandElement.GetCanExecute(this);
+		
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
+		{
+			if (IsRefreshing)
+				return;
+
+			RefreshIsEnabledProperty();
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)

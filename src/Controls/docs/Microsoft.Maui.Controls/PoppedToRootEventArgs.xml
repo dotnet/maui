@@ -41,7 +41,6 @@
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="poppedPages">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PoppedPages">

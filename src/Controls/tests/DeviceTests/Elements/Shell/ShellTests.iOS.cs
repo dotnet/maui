@@ -18,7 +18,9 @@ using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -279,6 +281,120 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(platformShellTitleView.Frame, CGRect.Empty);
 				Assert.Equal(platformShellTitleView.BackgroundColor.ToColor(), expected);
 			});
+		}
+
+		[Fact(DisplayName = "TitleView can use constraints to expand area")]
+		public async Task TitleViewConstraints()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					SetupShellHandlers(handlers);
+					handlers.AddHandler(typeof(Shell), typeof(CustomShellHandler));
+				});
+			});
+
+			var shellTitleView = new VerticalStackLayout { BackgroundColor = Colors.Green };
+			var titleViewContent = new Label { Text = "Full Height TitleView" };
+			shellTitleView.Children.Add(titleViewContent);
+
+			var label = new Label { Text = "Page Content", Background = Colors.LightBlue };
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+
+				shell.CurrentItem = new ContentPage(){
+					Content = new VerticalStackLayout {
+						Background = Colors.Gray,
+						Children = { label }
+					}
+				};
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await Task.Delay(50);
+				var titleView = GetTitleView(handler) as UIView;
+				var originalFrame = (handler as CustomShellHandler).PreviousFrame;
+				var expandedFrame = titleView.Frame;
+				var relativeTitleViewFrame = titleView.ConvertRectToView(titleView.Bounds, null);
+				var uiLabel = label.ToPlatform();
+				var relativeLabelFrame = uiLabel.ConvertRectToView(uiLabel.Bounds, null);
+
+				// Make sure the titleView is touching the label. Happens by default on iPhone but not on iPad
+				Assert.True(relativeTitleViewFrame.Bottom == relativeLabelFrame.Top);
+				Assert.True(expandedFrame.Width > originalFrame.Width);
+			});
+		}
+
+		class CustomShellHandler : ShellRenderer
+		{
+			protected override IShellNavBarAppearanceTracker CreateNavBarAppearanceTracker() => new CustomShellNavBarAppearanceTracker(this, base.CreateNavBarAppearanceTracker()) {handler = this};
+
+			public CGRect PreviousFrame { get; set; }
+		}
+
+		class CustomShellNavBarAppearanceTracker : IShellNavBarAppearanceTracker
+		{
+			readonly IShellContext _context;
+			readonly IShellNavBarAppearanceTracker _baseTracker;
+
+			public CGRect previousFrame { get; set; } = CGRect.Empty;
+
+			public CustomShellHandler handler { get; set; }
+
+			public CustomShellNavBarAppearanceTracker(IShellContext context, IShellNavBarAppearanceTracker baseTracker)
+			{
+				_context = context;
+				_baseTracker = baseTracker;
+			}
+
+			public void Dispose() => _baseTracker.Dispose();
+
+			public void ResetAppearance(UINavigationController controller) => _baseTracker.ResetAppearance(controller);
+
+			public void SetAppearance(UINavigationController controller, ShellAppearance appearance) => _baseTracker.SetAppearance(controller, appearance);
+
+			public void SetHasShadow(UINavigationController controller, bool hasShadow) => _baseTracker.SetHasShadow(controller, hasShadow);
+
+			public void UpdateLayout(UINavigationController controller)
+			{
+				UIView titleView = Shell.GetTitleView(_context.Shell.CurrentPage)?.Handler?.PlatformView as UIView ?? Shell.GetTitleView(_context.Shell)?.Handler?.PlatformView as UIView;
+
+				UIView parentView = GetParentByType(titleView, typeof(UIKit.UIControl));
+				handler.PreviousFrame = parentView.Frame;
+
+				if (parentView != null)
+				{
+					// height constraint
+					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Bottom, 1.0f, 0.0f).Active = true;
+					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Top, 1.0f, 0.0f).Active = true;
+
+					// width constraint
+					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Leading, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Leading, 1.0f, 0.0f).Active = true;
+					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Trailing, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Trailing, 1.0f, 0.0f).Active = true;
+				}
+				_baseTracker.UpdateLayout(controller);
+			}
+
+			static UIView GetParentByType(UIView view, Type type)
+			{
+				UIView currentView = view;
+
+				while (currentView != null)
+				{
+					if (currentView.GetType().UnderlyingSystemType == type)
+					{
+						break;
+					}
+
+					currentView = currentView.Superview;
+				}
+
+				return currentView;
+			}
 		}
 
 		protected async Task OpenFlyout(ShellRenderer shellRenderer, TimeSpan? timeOut = null)

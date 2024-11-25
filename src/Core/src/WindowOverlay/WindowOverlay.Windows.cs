@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui
 		W2DGraphicsView? _graphicsView;
 		Frame? _frame;
 		WindowRootViewContainer? _panel;
-		FrameworkElement? _platformElement;
+		WeakReference<FrameworkElement>? _platformElement;
 
 		/// <inheritdoc/>
 		public virtual bool Initialize()
@@ -24,9 +25,10 @@ namespace Microsoft.Maui
 			if (Window?.Content == null)
 				return false;
 
-			_platformElement = Window.Content.ToPlatform();
-			if (_platformElement == null)
+			var platformElement = Window.Content.ToPlatform();
+			if (platformElement is null)
 				return false;
+			_platformElement = new(platformElement);
 
 			var handler = Window.Handler as WindowHandler;
 			if (handler?.PlatformView is not Window _window)
@@ -38,7 +40,7 @@ namespace Microsoft.Maui
 
 			// Capture when the frame is navigating.
 			// When it is, we will clear existing adorners.
-			if (_platformElement is Frame frame)
+			if (platformElement is Frame frame)
 			{
 				_frame = frame;
 				_frame.Navigating += FrameNavigating;
@@ -48,8 +50,8 @@ namespace Microsoft.Maui
 			if (_graphicsView == null)
 				return false;
 
-			_platformElement.Tapped += ViewTapped;
-			_platformElement.PointerMoved += PointerMoved;
+			platformElement.Tapped += ViewTapped;
+			platformElement.PointerMoved += PointerMoved;
 			_graphicsView.Tapped += ViewTapped;
 			_graphicsView.PointerMoved += PointerMoved;
 
@@ -82,10 +84,10 @@ namespace Microsoft.Maui
 		{
 			if (_frame != null)
 				_frame.Navigating -= FrameNavigating;
-			if (_platformElement != null)
+			if (_platformElement is not null && _platformElement.TryGetTarget(out var platformElement))
 			{
-				_platformElement.Tapped -= ViewTapped;
-				_platformElement.PointerMoved -= PointerMoved;
+				platformElement.Tapped -= ViewTapped;
+				platformElement.PointerMoved -= PointerMoved;
 			}
 			if (_graphicsView != null)
 			{

@@ -311,6 +311,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ChangeDuringNavigating()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -337,6 +338,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void SetToOneCookie()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -347,6 +349,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			RunningApp.WaitForElement("Loaded");

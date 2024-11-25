@@ -101,10 +101,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void TearDownOldElement(CarouselView oldElement)
 		{
-			if (ItemsView != null)
+			if (ItemsView is not null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
 			ClearLayoutListener();
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			base.TearDownOldElement(oldElement);
 		}
 
@@ -128,9 +129,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var oldItemViewAdapter = ItemsViewAdapter;
 
+			UnsubscribeCollectionItemsSourceChanged(ItemsViewAdapter);
 			if (oldItemViewAdapter != null && _initialized)
 			{
-				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
 				ItemsView.SetValueFromRenderer(CarouselView.CurrentItemProperty, null);
 			}
@@ -319,7 +320,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Carousel.Position = position;
 			}
 			else
+			{
 				position = Carousel.Position;
+				if (Carousel.Loop && position == 0)
+				{
+					itemCount = ItemsViewAdapter.ItemsSource.Count;
+				}
+			}
 
 			_oldPosition = position;
 

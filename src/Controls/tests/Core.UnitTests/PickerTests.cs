@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -54,6 +58,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 			{
 				throw new NotImplementedException();
+			}
+		}
+
+		class ObservableRangeCollection<T> : ObservableCollection<T>
+		{
+			static readonly PropertyChangedEventArgs CountChangedArgs = new(nameof(Count));
+			static readonly PropertyChangedEventArgs IndexerChangedArgs = new("Item[]");
+
+			public void InsertRange(int index, IEnumerable<T> items)
+			{
+				CheckReentrancy();
+				int currIndex = index;
+				foreach (T item in items)
+				{
+					Items.Insert(currIndex++, item);
+				}
+
+				OnPropertyChanged(CountChangedArgs);
+				OnPropertyChanged(IndexerChangedArgs);
+				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, items.ToList(), index));
+			}
+
+			public void RemoveRange(int index, int count)
+			{
+				CheckReentrancy();
+				T[] removeItems = new T[count];
+				for (int i = 0; i < count; i++)
+				{
+					// Always remove at index, since removing each item at index shifts the next item to that spot
+					removeItems[i] = Items[index];
+					Items.RemoveAt(index);
+				}
+
+				OnPropertyChanged(CountChangedArgs);
+				OnPropertyChanged(IndexerChangedArgs);
+				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removeItems, index));
 			}
 		}
 
@@ -336,6 +376,251 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.RemoveAt(1);
 			Assert.Equal(2, picker.Items.Count);
 			Assert.Equal("Ringo", picker.Items[1]);
+		}
+
+		[Theory]
+		[InlineData(0, new string[] { "George" })]
+		[InlineData(1, new string[] { "George" })]
+		[InlineData(2, new string[] { "George" })]
+		[InlineData(3, new string[] { "George" })]
+		[InlineData(0, new string[] { "George", "Pete" })]
+		[InlineData(1, new string[] { "George", "Pete" })]
+		[InlineData(2, new string[] { "George", "Pete" })]
+		[InlineData(3, new string[] { "George", "Pete" })]
+		public void TestItemsSourceCollectionChangedInsertBeforeSelected(int insertionIndex, string[] insertNames)
+		{
+			var items = new ObservableRangeCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 1
+			};
+			items.InsertRange(insertionIndex, insertNames.Select(name => new { Name = name }));
+			Assert.Equal(3 + insertNames.Length, picker.Items.Count);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Theory]
+		[InlineData(0, 1)]
+		[InlineData(1, 1)]
+		[InlineData(2, 1)]
+		[InlineData(0, 2)]
+		[InlineData(1, 2)]
+		[InlineData(2, 2)]
+		public void TestItemsSourceCollectionChangedRemoveBeforeSelected(int removeIndex, int removeCount)
+		{
+			var items = new ObservableRangeCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" },
+				new { Name = "George" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 1
+			};
+			items.RemoveRange(removeIndex, removeCount);
+
+			Assert.Equal(4 - removeCount, picker.Items.Count);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Theory]
+		[InlineData(1)]
+		[InlineData(2)]
+		public void TestItemsSourceCollectionChangedRemoveAtEndSelected(int removeCount)
+		{
+			var items = new ObservableRangeCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo" },
+				new { Name = "George" }
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+				SelectedIndex = 4 - removeCount
+			};
+			items.RemoveRange(4 - removeCount, removeCount);
+
+			Assert.Equal(4 - removeCount, picker.Items.Count);
+			Assert.Equal(items.Count - 1, picker.SelectedIndex);
+			Assert.Equal(items[^1], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedAppend()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				"Ringo"
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.Add(new { Name = "George" });
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("George", picker.Items[picker.Items.Count - 1]);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedClear()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				"Paul",
+				"Ringo"
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.Clear();
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Empty(picker.Items);
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedInsert()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				"Paul",
+				"Ringo"
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.Insert(1, new { Name = "George" });
+				}
+			};
+
+			picker.SelectedIndex = 2;
+
+			Assert.Equal(4, picker.Items.Count);
+			Assert.Equal("George", picker.Items[1]);
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal(items[2], picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedIndexAssignedItemsSourceCollectionChangedReAssign()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				"Paul",
+				"Ringo"
+			};
+			var bindingContext = new { Items = items };
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				BindingContext = bindingContext
+			};
+			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items = new ObservableCollection<object>
+					{
+						"Peach",
+						"Orange"
+					};
+					picker.BindingContext = new { Items = items };
+					picker.ItemDisplayBinding = null;
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("Peach", picker.Items[0]);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Orange", picker.SelectedItem);
+		}
+
+		[Fact]
+		public void TestSelectedItemAssignedItemsSourceCollectionChangedRemove()
+		{
+			var items = new ObservableCollection<object>
+			{
+				new { Name = "John" },
+				new { Name = "Paul" },
+				new { Name = "Ringo"},
+			};
+			var picker = new Picker
+			{
+				ItemDisplayBinding = new Binding("Name"),
+				ItemsSource = items,
+			};
+
+			picker.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Picker.SelectedIndex))
+				{
+					items.RemoveAt(1);
+				}
+			};
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(2, picker.Items.Count);
+			Assert.Equal("Ringo", picker.Items[1]);
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal(items[1], picker.SelectedItem);
 		}
 
 		[Fact]

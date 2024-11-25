@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Platform
 			return alignment switch
 			{
 				TextAlignment.Center => UITextAlignment.Center,
+				TextAlignment.Justify => UITextAlignment.Justified,
 				TextAlignment.End => UITextAlignment.Right,
 				TextAlignment.Start => UITextAlignment.Left,
 				_ => UITextAlignment.Left,

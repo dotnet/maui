@@ -92,18 +92,6 @@ public void PrintEnvironmentVariables()
     };
 }
 
-void SetDotNetEnvironmentVariables(string dotnetDir)
-{
-    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
-    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
-    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
-    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("PATH", dotnet, prepend: true);
-}
-
 void SetEnvironmentVariable(string name, string value, bool prepend = false)
 {
     var target = EnvironmentVariableTarget.Process;
@@ -121,38 +109,3 @@ bool IsTarget(string target) =>
 
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
-
-void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
-{
-    try
-    {
-        NUnit3(new [] { unitTestLibrary }, settings);
-    }
-    catch
-    {
-        SetTestResultsEnvironmentVariables(settings.Work?.ToString());
-        throw;
-    }
-
-    SetTestResultsEnvironmentVariables(settings.Work?.ToString());
-
-    void SetTestResultsEnvironmentVariables(string path)
-    {
-        var doc = new System.Xml.XmlDocument();
-        if(string.IsNullOrEmpty(path))
-        {
-            doc.Load("TestResult.xml");
-        }
-        else
-        {
-            doc.Load($"{path}/TestResult.xml");
-        }
-                
-        var root = doc.DocumentElement;
-
-        foreach(System.Xml.XmlAttribute attr in root.Attributes)
-        {
-            SetEnvironmentVariable($"NUNIT_{attr.Name}", attr.Value);
-        }
-    }
-}

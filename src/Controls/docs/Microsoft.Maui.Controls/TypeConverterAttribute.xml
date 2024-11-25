@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>Attribute that specifies the type of <see cref="T:System.ComponentModel.TypeConverter" /> used by its target.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -47,7 +46,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:System.ComponentModel.TypeConverterAttribute" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -73,7 +71,6 @@
       <Docs>
         <param name="typeName">The name of the type that this attribute can decorate.</param>
         <summary>Creates a new <see cref="T:System.ComponentModel.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to the <paramref name="typeName" /> type.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -99,7 +96,6 @@
       <Docs>
         <param name="type">The type that this attribute can decorate.</param>
         <summary>reates a new <see cref="T:System.ComponentModel.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to <paramref name="type" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConverterTypeName">
@@ -124,8 +120,6 @@
       </ReturnValue>
       <Docs>
         <summary>The name of the type to which the class decorated with this attribute can convert values.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Default">
@@ -150,7 +144,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:System.ComponentModel.TypeConverterAttribute" /> that contains no information about the types to which the class that it decorates can convert values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -179,8 +172,6 @@
       <Docs>
         <param name="obj">The object against which to do the comparison.</param>
         <summary>Returns true if <paramref name="obj" /> is a <see cref="T:System.ComponentModel.TypeConverterAttribute" /> and has the same <see cref="P:System.ComponentModel.TypeConverterAttribute.ConverterTypeName" /> value.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -206,8 +197,6 @@
       <Parameters />
       <Docs>
         <summary>Returns a value that is used for efficient storage and lookup of this <see cref="T:System.ComponentModel.TypeConverterAttribute" /> object.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -108,21 +108,21 @@
   </Target>
 
   <Target Name="_CopyAdditionalFIles" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSha).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(SourceRevisionId).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageVersion).$(BUILDVERSION).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageVersion).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(Version)/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitSha).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitSemVerLabel).json" />
-    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(GitBranch).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(SourceRevisionId).json" />
+    <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageVersion).json" />
+    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(BUILD_SOURCEBRANCHNAME).json" />
     <Copy SourceFiles="$(OutputPath)Rollback.json" DestinationFiles="$(PackageOutputPath)/metadata/rollbacks/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSha).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSemVerLabel).$(BUILDVERSION).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(GitSemVerLabel).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(SourceRevisionId).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageVersion).$(BUILDVERSION).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageVersion).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(Version)/$(PackageReferenceVersion).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitSha).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitSemVerLabel).json" />
-    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(GitBranch).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(SourceRevisionId).json" />
+    <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageVersion).json" />
+    <Copy Condition="$(CI) and '$(BUILD_SOURCEBRANCHNAME)' != ''" SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(BUILD_SOURCEBRANCHNAME).json" />
     <Copy SourceFiles="$(OutputPath)SdkInstaller.json" DestinationFiles="$(PackageOutputPath)/metadata/sdks/$(PackageReferenceVersion).json" />
   </Target>
 

@@ -41,6 +41,7 @@ updates:
         - "Microsoft.Graphics.Win2D"
         - "Microsoft.Windows.SDK.BuildTools"
         - "Microsoft.WindowsAppSDK"
+        - "Microsoft.Web.WebView2"
     xunit:
       patterns:
         - "xunit"
@@ -51,13 +52,14 @@ updates:
     - dependency-name: "Microsoft.DotNet.XHarness*"           # maestro
     - dependency-name: "Svg.*"                                # needs to be done manually because it relies on a specific verion of Fizzler
     - dependency-name: "Fizzler"                              # needs to be done manually because it is specific to the Svg.* version
+    - dependency-name: "ExCSS"                                # needs to be done manually because it is specific to the Svg.* version
     - dependency-name: "SkiaSharp*"                           # needs to be done manually with maui graphics
     - dependency-name: "HarfBuzzSharp*"                       # needs to be done manually with maui graphics
     - dependency-name: "Newtonsoft.Json"                      # needs to be done manually to match VS
     - dependency-name: "Microsoft.Build*"                     # these packages neet to be kept on old version that supports netstandard2.0
     - dependency-name: "Selenium.*"                           # needs to be done manually because other packages need to be compiled with these new versions
-      
+
   labels:
       - "nuget"
       - "dependencies"
-      - "area/upstream"
+      - "area-infrastructure"

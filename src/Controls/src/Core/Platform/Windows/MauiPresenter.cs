@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class MauiPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
+	internal partial class MauiPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
 	{
 		public MauiPresenter()
 		{

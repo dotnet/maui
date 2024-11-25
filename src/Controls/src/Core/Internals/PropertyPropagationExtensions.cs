@@ -22,6 +22,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == Shell.TabBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.TabBarIsVisibleProperty, element);
+			
+			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
 			foreach (var child in children)
 			{

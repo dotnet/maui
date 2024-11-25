@@ -10,6 +10,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2143, "Picker on windows phone", PlatformAffected.WinPhone)]
+	#if UITEST
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TableView)]
+	#endif
 	public class Issue2143 : ContentPage
 	{
 		public Issue2143()

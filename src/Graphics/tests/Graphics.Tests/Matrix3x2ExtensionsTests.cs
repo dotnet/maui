@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Graphics.Tests
 
 			var b = Matrix3x2.Identity;
 			b *= Matrix3x2.CreateScale(-1, -1);
-			b *= Matrix3x2.CreateRotation((float)Math.PI);
+			b *= Matrix3x2.CreateRotation(MathF.PI);
 
 			AssertEqual(a, b, 6);
 		}
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Graphics.Tests
 
 			m1 = Matrix3x2.Identity;
 			m1 *= Matrix3x2.CreateScale(scaleX, scaleY);
-			m1 = m1.WithRotation(scaleX >= 0 ? rotation : rotation + (float)Math.PI);
+			m1 = m1.WithRotation(scaleX >= 0 ? rotation : rotation + MathF.PI);
 			m1 *= Matrix3x2.CreateTranslation(translation);
 			AssertOrthogonal(m1, 7);
 			AssertEqual(reference, m1, 4);
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Graphics.Tests
 
 			var hand = Vector3.Transform(Vector3.UnitX, r);
 
-			rotation = (float)Math.Atan2(hand.Y, hand.X);
+			rotation = MathF.Atan2(hand.Y, hand.X);
 		}
 	}
 }

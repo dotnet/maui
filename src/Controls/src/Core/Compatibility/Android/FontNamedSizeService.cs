@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					case NamedSize.Title:
 						return 24;
 					default:
-						throw new ArgumentOutOfRangeException("size");
+						throw new ArgumentOutOfRangeException(nameof(size));
 				}
 			}
 			switch (size)
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				case NamedSize.Title:
 					return 24;
 				default:
-					throw new ArgumentOutOfRangeException("size");
+					throw new ArgumentOutOfRangeException(nameof(size));
 			}
 		}
 

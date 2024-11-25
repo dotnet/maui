@@ -1,4 +1,6 @@
-﻿using UITest.Core;
+﻿using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
+using UITest.Core;
 
 namespace UITest.Appium
 {
@@ -6,19 +8,23 @@ namespace UITest.Appium
 	{
 		const string LaunchAppCommand = "launchApp";
 		const string BackgroundAppCommand = "backgroundApp";
+		const string ForegroundAppCommand = "foregroundApp";
 		const string ResetAppCommand = "resetApp";
 		const string CloseAppCommand = "closeApp";
 		const string BackCommand = "back";
+		const string RefreshCommand = "refresh";
 
 		protected readonly AppiumApp _app;
 
 		readonly List<string> _commands = new()
 		{
 			LaunchAppCommand,
+			ForegroundAppCommand,
 			BackgroundAppCommand,
 			ResetAppCommand,
 			CloseAppCommand,
-			BackCommand
+			BackCommand,
+			RefreshCommand
 		};
 
 		public AppiumLifecycleActions(AppiumApp app)
@@ -36,10 +42,12 @@ namespace UITest.Appium
 			return commandName switch
 			{
 				LaunchAppCommand => LaunchApp(parameters),
+				ForegroundAppCommand => ForegroundApp(parameters),
 				BackgroundAppCommand => BackgroundApp(parameters),
 				ResetAppCommand => ResetApp(parameters),
 				CloseAppCommand => CloseApp(parameters),
 				BackCommand => Back(parameters),
+				RefreshCommand => Refresh(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -49,7 +57,51 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.LaunchApp();
+			if (_app.GetTestDevice() == TestDevice.Mac)
+			{
+				_app.Driver.ExecuteScript("macos: activateApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+				});
+			}
+			else if (_app.Driver is WindowsDriver windowsDriver)
+			{
+				// Appium driver removed the LaunchApp method in 5.0.0, so we need to use the executeScript method instead
+				// Currently the appium-windows-driver reports the following commands as compatible:
+				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
+				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
+				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+			}
+			else if(_app.Driver is IOSDriver iOSDriver)
+			{
+				var args = _app.Config.GetProperty<Dictionary<string,string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },					
+					{ "environment", args },
+				});
+			}
+			else
+			{
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse ForegroundApp(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			if (_app.Driver is WindowsDriver wd)
+			{
+				wd.SwitchTo().Window(wd.WindowHandles.First());
+			}
+			else
+			{
+				_app.Driver.ActivateApp(_app.GetAppId());
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -60,6 +112,8 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			_app.Driver.BackgroundApp();
+			if (_app.GetTestDevice() == TestDevice.Android)
+				Thread.Sleep(500);
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -69,17 +123,60 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.ResetApp();
+			CloseApp(parameters);
+			LaunchApp(parameters);
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
 		CommandResponse CloseApp(IDictionary<string, object> parameters)
 		{
-			if (_app?.Driver is null)
-				return CommandResponse.FailedEmptyResponse;
+			try
+			{
+				if (_app is null || _app.Driver is null)
+					return CommandResponse.FailedEmptyResponse;
 
-			_app.Driver.CloseApp();
+				if (_app.AppState == ApplicationState.NotRunning)
+					return CommandResponse.SuccessEmptyResponse;
+			}
+			catch (Exception)
+			{
+				// TODO: Pass in logger so we can log these exceptions
+				
+				// Occasionally the app seems to get so locked up it can't 
+				// even report back the appstate. In that case, we'll just
+				// try to trigger a reset.
+			}
+
+			try
+			{
+				if (_app.GetTestDevice() == TestDevice.Mac)
+				{
+					_app.Driver.ExecuteScript("macos: terminateApp", new Dictionary<string, object>
+					{
+						{ "bundleId", _app.GetAppId() },
+					});
+				}
+				else if (_app.Driver is WindowsDriver windowsDriver)
+				{
+					// This is still here for now, but it looks like it will get removed just like
+					// LaunchApp was in 5.0.0, in which case we may need to use:
+					// windowsDriver.ExecuteScript("windows: closeApp", [_app.GetAppId()]);
+					windowsDriver.CloseApp();
+				}
+				else
+				{
+					_app.Driver.TerminateApp(_app.GetAppId());
+				}
+			}
+			catch (Exception)
+			{
+				// TODO Pass in logger so we can log these exceptions
+
+				// Occasionally the app seems like it's already closed before we get here
+				// and then this throws an exception.
+				return CommandResponse.FailedEmptyResponse;
+			}
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
@@ -89,8 +186,26 @@ namespace UITest.Appium
 			if (_app?.Driver is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			// Navigate backwards in the history, if possible.
-			_app.Driver.Navigate().Back();
+			try
+			{
+				// Navigate backwards in the history, if possible.
+				_app.Driver.Navigate().Back();
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+
+		CommandResponse Refresh(IDictionary<string, object> parameters)
+		{
+			if (_app?.Driver is null)
+				return CommandResponse.FailedEmptyResponse;
+
+			// Refresh the current page.
+			_app.Driver.Navigate().Refresh();
 
 			return CommandResponse.SuccessEmptyResponse;
 		}

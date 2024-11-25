@@ -46,6 +46,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 				}
 
+				if (_headerUIView is MauiView hv)
+				{
+					hv.LayoutChanged -= HeaderViewLayoutChanged;
+				}
+
+				if (_footerUIView is MauiView fv)
+				{
+					fv.LayoutChanged -= FooterViewLayoutChanged;
+				}
+
 				_headerUIView = null;
 				_headerViewFormsElement = null;
 				_footerUIView = null;
@@ -105,6 +115,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateSubview(ItemsView?.Footer, ItemsView?.FooterTemplate, FooterTag,
 				ref _footerUIView, ref _footerViewFormsElement);
 			UpdateHeaderFooterPosition();
+
+			if (_footerUIView is MauiView mv)
+			{
+				mv.LayoutChanged += FooterViewLayoutChanged;
+			}
 		}
 
 		internal void UpdateHeaderView()
@@ -112,7 +127,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateSubview(ItemsView?.Header, ItemsView?.HeaderTemplate, HeaderTag,
 				ref _headerUIView, ref _headerViewFormsElement);
 			UpdateHeaderFooterPosition();
+
+			if(_headerUIView is MauiView mv)
+			{
+				mv.LayoutChanged += HeaderViewLayoutChanged;
+			}
 		}
+
 
 		internal void UpdateSubview(object view, DataTemplate viewTemplate, nint viewTag, ref UIView uiView, ref VisualElement formsElement)
 		{
@@ -133,16 +154,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (formsElement != null)
+			{
 				ItemsView.AddLogicalChild(formsElement);
+			}
 
 			if (formsElement != null)
 			{
 				RemeasureLayout(formsElement);
 				formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
 			}
-			else if (uiView != null)
+			else
 			{
-				uiView.SizeToFit();
+				uiView?.SizeToFit();
 			}
 		}
 
@@ -159,7 +182,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
 				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
+				{
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
+				}
 
 				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
 					_footerUIView.Frame = new CoreGraphics.CGRect(ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth, CollectionView.Frame.Height);
@@ -234,6 +259,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_footerViewFormsElement != null)
 				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
+		}
+
+		void HeaderViewLayoutChanged(object sender, EventArgs e)
+		{
+			HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
+		}
+
+		void FooterViewLayoutChanged(object sender, EventArgs e)
+		{
+			HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
 		}
 	}
 }

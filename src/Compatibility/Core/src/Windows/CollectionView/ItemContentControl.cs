@@ -10,7 +10,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete]
-	public class ItemContentControl : ContentControl
+	public partial class ItemContentControl : ContentControl
 	{
 		VisualElement _visualElement;
 		IVisualElementRenderer _renderer;

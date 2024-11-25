@@ -3,7 +3,12 @@
   "name": "Aplikace .NET MAUI",
   "description": "Projekt pro vytvoření .NET MAUI aplikace pro iOS, Android, Mac Catalyst, Tizen a WinUI",
   "postActions/openInEditor/description": "Otevře soubor MainPage.xaml v editoru.",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "symbols/applicationId/description": "Přepíše v projektu $(ApplicationId).",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "_Include sample content",
+  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
+  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
 }

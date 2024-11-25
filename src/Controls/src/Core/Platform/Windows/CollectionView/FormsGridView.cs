@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,7 +10,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class FormsGridView : GridView, IEmptyView
+	internal partial class FormsGridView : GridView, IEmptyView
 	{
 		int _span;
 		ItemsWrapGrid _wrapGrid;
@@ -113,11 +114,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_orientation == Orientation.Horizontal)
 			{
-				_wrapGrid.ItemHeight = _wrapGrid.ActualHeight / Span;
+				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
 			}
 			else
 			{
-				_wrapGrid.ItemWidth = _wrapGrid.ActualWidth / Span;
+				_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
 			}
 		}
 

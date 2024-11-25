@@ -35,6 +35,16 @@ namespace Microsoft.Maui.Platform
 				textInput.SetKeyboardType(UIKeyboardType.PhonePad);
 			else if (keyboard == Keyboard.Url)
 				textInput.SetKeyboardType(UIKeyboardType.Url);
+			else if (keyboard == Keyboard.Date || keyboard == Keyboard.Time)
+			{
+				textInput.SetTextContentType(UITextContentType.DateTime);
+				textInput.SetKeyboardType(UIKeyboardType.NumbersAndPunctuation);
+			}
+			else if (keyboard == Keyboard.Password)
+			{
+				textInput.SetKeyboardType(UIKeyboardType.Default);
+				textInput.SetSecureTextEntry(true); 
+			}
 			else if (keyboard is CustomKeyboard)
 			{
 				var custom = (CustomKeyboard)keyboard;

@@ -38,6 +38,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (!UpdateSafeAreaMargin())
 				base.LayoutSubviews();
+
+			OnHeaderSizeChanged();
 		}
 
 		public override void SafeAreaInsetsDidChange()

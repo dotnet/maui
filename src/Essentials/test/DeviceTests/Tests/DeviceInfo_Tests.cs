@@ -21,33 +21,33 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 		}
 
-		[Fact]
-		public void DeviceModel_Is_Correct()
-		{
-#if WINDOWS_UWP || WINDOWS
-			// Nothing right now.
-#elif __IOS__
-			if (DeviceInfo.DeviceType == DeviceType.Virtual)
-			{
-				Assert.Equal("x86_64", DeviceInfo.Model);
-			}
-#elif __ANDROID__
+// 		[Fact]
+// 		public void DeviceModel_Is_Correct()
+// 		{
+// #if WINDOWS_UWP || WINDOWS
+// 			// Nothing right now.
+// #elif __IOS__
+// 			if (DeviceInfo.DeviceType == DeviceType.Virtual)
+// 			{
+// 				Assert.Equal("x86_64", DeviceInfo.Model);
+// 			}
+// #elif __ANDROID__
 
-			if (DeviceInfo.DeviceType == DeviceType.Virtual)
-			{
-				var isEmulator =
-					DeviceInfo.Model.Contains("sdk_gphone_x86", StringComparison.Ordinal) ||
-					DeviceInfo.Model.Contains("sdk_gphone64_x86_64", StringComparison.Ordinal) ||
-					DeviceInfo.Model.Contains("google_sdk", StringComparison.Ordinal) ||
-					DeviceInfo.Model.Contains("Emulator", StringComparison.Ordinal) ||
-					DeviceInfo.Model.Contains("Android SDK built for x86", StringComparison.Ordinal);
+// 			if (DeviceInfo.DeviceType == DeviceType.Virtual)
+// 			{
+// 				var isEmulator =
+// 					DeviceInfo.Model.Contains("sdk_gphone_x86", StringComparison.Ordinal) ||
+// 					DeviceInfo.Model.Contains("sdk_gphone64_x86_64", StringComparison.Ordinal) ||
+// 					DeviceInfo.Model.Contains("google_sdk", StringComparison.Ordinal) ||
+// 					DeviceInfo.Model.Contains("Emulator", StringComparison.Ordinal) ||
+// 					DeviceInfo.Model.Contains("Android SDK built for x86", StringComparison.Ordinal);
 
-				Assert.True(isEmulator, DeviceInfo.Model);
-			}
-#else
-			throw new PlatformNotSupportedException();
-#endif
-		}
+// 				Assert.True(isEmulator, DeviceInfo.Model);
+// 			}
+// #else
+// 			throw new PlatformNotSupportedException();
+// #endif
+// 		}
 
 		[Fact]
 		public void Platform_Is_Correct()

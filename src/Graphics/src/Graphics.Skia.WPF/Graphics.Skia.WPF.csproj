@@ -11,6 +11,16 @@
     <NoWarn>$(NoWarn);RS0041</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.WPF" />
   </ItemGroup>

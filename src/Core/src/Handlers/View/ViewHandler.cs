@@ -57,7 +57,9 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
+#pragma warning restore CS0618 // Type or member is obsolete
 #if ANDROID || WINDOWS || TIZEN
 				[nameof(IToolbarElement.Toolbar)] = MapToolbar,
 #endif
@@ -413,12 +415,24 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapContainerView(IViewHandler handler, IView view)
 		{
+			bool hasContainerOldValue = handler.HasContainer;
+
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
 				handler.HasContainer = view.NeedsContainer();
+
+			if(hasContainerOldValue != handler.HasContainer)
+			{
+				handler.UpdateValue(nameof(IView.Visibility));
+	
+				#if WINDOWS
+				handler.UpdateValue(nameof(IView.Opacity));
+				#endif
+			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		/// <summary>
 		/// Maps the abstract <see cref="IBorder.Border"/> property to the platform-specific implementations.
 		/// </summary>
@@ -430,6 +444,7 @@ namespace Microsoft.Maui.Handlers
 
 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		static partial void MappingFrame(IViewHandler handler, IView view);
 

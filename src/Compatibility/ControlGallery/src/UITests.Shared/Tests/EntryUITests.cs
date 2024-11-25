@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		// TODO
 		// Implement control specific ui tests
-		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(Entry), "Completed")]
 		[Category(UITestCategories.UwpIgnore)]

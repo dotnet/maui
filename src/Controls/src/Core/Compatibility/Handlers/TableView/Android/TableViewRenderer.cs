@@ -117,7 +117,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (double.IsInfinity(heightConstraint))
 			{

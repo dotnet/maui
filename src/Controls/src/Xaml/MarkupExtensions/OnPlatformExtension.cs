@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,12 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Default))]
+	[RequireService(
+		[typeof(IProvideValueTarget),
+		 typeof(IValueConverterProvider),
+		 typeof(IXmlLineInfoProvider),
+		 typeof(IConverterOptions)])]
+	[RequiresUnreferencedCode("The OnPlatformExtension is not trim safe. Use OnPlatform<T> instead.")]
 	public class OnPlatformExtension : IMarkupExtension
 	{
 		static object s_notset = new object();

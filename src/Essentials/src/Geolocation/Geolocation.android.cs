@@ -22,10 +22,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		static ContinuousLocationListener? continuousListener;
 		static List<string>? listeningProviders;
 
-		static LocationManager? locationManager;
-
 		static LocationManager? LocationManager =>
-			locationManager ??= Application.Context.GetSystemService(Context.LocationService) as LocationManager;
+			Application.Context.GetSystemService(Context.LocationService) as LocationManager;
 
 		/// <summary>
 		/// Indicates if currently listening to location updates while the app is in foreground.
@@ -178,7 +176,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			if (listeningProviders.Count == 0)
 				listeningProviders.Add(providerInfo.Provider);
 
-			var continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
+			continuousListener = new ContinuousLocationListener(LocationManager, providerInfo.Accuracy, listeningProviders);
 			continuousListener.LocationHandler = HandleLocation;
 			continuousListener.ErrorHandler = HandleError;
 

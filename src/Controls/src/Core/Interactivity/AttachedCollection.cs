@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		public void AttachTo(BindableObject bindable)
 		{
 			if (bindable == null)
-				throw new ArgumentNullException("bindable");
+				throw new ArgumentNullException(nameof(bindable));
 			OnAttachedTo(bindable);
 		}
 

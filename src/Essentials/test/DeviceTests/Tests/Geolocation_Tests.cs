@@ -88,5 +88,25 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.True(location.Timestamp < DateTimeOffset.UtcNow);
 			Assert.True(location.Timestamp > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
 		}
+
+		[Fact]
+		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
+		public async Task Geolocation_IsListeningForeground()
+		{
+			await MainThread.InvokeOnMainThreadAsync(async () =>
+			{
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+			});
+
+			var request = new GeolocationListeningRequest(GeolocationAccuracy.Best);
+			request.DesiredAccuracy = GeolocationAccuracy.Low;
+			request.MinimumTime = TimeSpan.FromSeconds(5);
+
+			bool hasServiceStarted = await Geolocation.StartListeningForegroundAsync(request);
+
+			bool isListeningForeground = Geolocation.IsListeningForeground;
+
+			Assert.Equal(hasServiceStarted, isListeningForeground);
+		}
 	}
 }

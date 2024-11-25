@@ -44,6 +44,15 @@ namespace Microsoft.Maui.Graphics.Platform
 			throw new PlatformNotSupportedException();
 		}
 
+		/// <summary>
+		/// Saves the contents of this image to the provided <see cref="Stream"/> object.
+		/// </summary>
+		/// <param name="stream">The destination stream the bytes of this image will be saved to.</param>
+		/// <param name="format">The destination format of the image.</param>
+		/// <param name="quality">The destination quality of the image.</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="quality"/> is less than 0 or more than 1.</exception>
+		/// <exception cref="NotImplementedException">Thrown when the provided value in <paramref name="format"/> does not match with the original format for this image.</exception>
+		/// <remarks>The <paramref name="quality"/> value is currently unused.</remarks>
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
@@ -59,6 +68,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
+		/// <inheritdoc cref="Save"/>
 		public Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)

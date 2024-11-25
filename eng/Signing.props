@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
+  <ItemGroup Label="Third Party Assemblies">
+    <FileSignInfo Include="GMap.NET.Core.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="GMap.NET.GTK.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="webkit-sharp.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Mdb.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Pdb.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Svg.Skia.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Svg.Custom.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Svg.Model.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="ShimSkiaSharp.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Fizzler.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="ExCSS.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+
+    <FileSignInfo Include="OpenSans-Regular.ttf" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenSans-Semibold.ttf" CertificateName="3PartySHA2" />
+  </ItemGroup>
+
+</Project>   

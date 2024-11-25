@@ -49,8 +49,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (oldListViewBase != null)
 			{
-				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
 				oldListViewBase.SelectionChanged -= PlatformSelectionChanged;
+				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
 			}
 
 			if (ItemsView != null)
@@ -126,6 +126,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
+			UpdateItemContentControlSelection();
 			_ignorePlatformSelectionChange = false;
 		}
 
@@ -160,13 +161,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					break;
 			}
 
-			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
-
-			foreach (var formsItemContentControl in formsItemContentControls)
-			{
-				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
-				formsItemContentControl.UpdateIsSelected(isSelected);
-			}
+			UpdateItemContentControlSelection();
 		}
 
 		void UpdateVirtualSingleSelection()
@@ -200,6 +195,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsView.SelectionChanged += VirtualSelectionChanged;
 		}
 
+		void UpdateItemContentControlSelection()
+		{
+			var formsItemContentControls = ListViewBase.GetChildren<ItemContentControl>();
+
+			foreach (var formsItemContentControl in formsItemContentControls)
+			{
+				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
+				formsItemContentControl.UpdateIsSelected(isSelected);
+			}
+		}
+
 		protected override void UpdateItemsSource()
 		{
 			_ignorePlatformSelectionChange = true;
@@ -210,7 +216,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignorePlatformSelectionChange = false;
 		}
 
-		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
+		partial class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
 		{
 			public object Convert(object value, Type targetType, object parameter, string language)
 			{

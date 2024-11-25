@@ -1,5 +1,6 @@
 using System;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using AColor = Android.Graphics.Color;
 using AColorFilter = Android.Graphics.ColorFilter;
 using ADrawable = Android.Graphics.Drawables.Drawable;
@@ -57,6 +58,20 @@ namespace Microsoft.Maui.Platform
 		{
 			if (drawable is not null)
 				PlatformInterop.SetColorFilter(drawable, color, (int)mode);
+		}
+
+		internal static IAnimatable? AsAnimatable(this ADrawable? drawable)
+		{
+			if (drawable is null)
+				return null;
+
+			if (drawable is IAnimatable animatable)
+				return animatable;
+
+			if (PlatformInterop.GetAnimatable(drawable) is IAnimatable javaAnimatable)
+				return javaAnimatable;
+
+			return null;
 		}
 	}
 }

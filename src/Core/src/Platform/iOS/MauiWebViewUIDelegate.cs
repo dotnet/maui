@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiWebViewUIDelegate(IWebViewHandler handler)
 		{
-			_ = handler ?? throw new ArgumentNullException("handler");
+			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 			_handler = new WeakReference<IWebViewHandler>(handler);
 		}
 
@@ -22,18 +22,21 @@ namespace Microsoft.Maui.Platform
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
 				return;
 
+			UIContextMenuConfiguration? uIContextMenuConfiguration = null;
 			foreach (var interaction in webView.Interactions)
 			{
 				if (interaction is MauiUIContextMenuInteraction cmi)
 				{
 					var contextMenu = cmi.GetConfigurationForMenu();
 					if (contextMenu != null)
-						completionHandler(contextMenu);
+					{
+						uIContextMenuConfiguration = contextMenu;
+					}
 
 					break;
 				}
 			}
-
+			completionHandler(uIContextMenuConfiguration!);
 			return;
 		}
 

@@ -1,15 +1,13 @@
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-const string defaultVersion = "10.0.19041";
-const string dotnetVersion = "net8.0";
+const string defaultVersion = "10.0.19041.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+string DEFAULT_WINDOWS_PROJECT = "../../src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj";
+FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_WINDOWS_PROJECT);
 // Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
@@ -18,7 +16,7 @@ var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
@@ -29,6 +27,8 @@ var TEST_RESULTS = Argument("results", EnvironmentVariable("WINDOWS_TEST_RESULTS
 string CONFIGURATION = Argument("configuration", "Debug");
 
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
+
+var dotnetToolPath = GetDotnetToolPath();
 
 // other
 string PLATFORM = "windows";
@@ -56,6 +56,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
+Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
 
 Setup(context =>
@@ -140,23 +141,19 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+    var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
 	Information("new dotnet root: {0}", localDotnetRoot);
-
 	DOTNET_ROOT = localDotnetRoot.ToString();
-
 	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-	var toolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("toolPath: {0}", toolPath);
+	
+    Information("toolPath: {0}", dotnetToolPath);
 
 	Information("Building and publishing device test app");
 
 	// Build the app in publish mode
 	// Using the certificate thumbprint for the cert we just created
 	var s = new DotNetPublishSettings();
-	s.ToolPath = toolPath;
+	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
 	s.MSBuildSettings = new DotNetMSBuildSettings();
@@ -204,14 +201,22 @@ Task("Test")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	var waitForResultTimeoutInSeconds = 120;
+	var waitForResultTimeoutInSeconds = 240;
 
 	CleanDirectories(TEST_RESULTS);
 
 	Information("Cleaned directories");
 
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}";
+
+	if (!string.IsNullOrWhiteSpace(testFilter))
+	{
+		testResultsFile += SanitizeTestResultsFilename($"-{testFilter}");
+	}
+
+	testResultsFile += ".xml";
+
 	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
 
 	Information($"Test Results File: {testResultsFile}");
@@ -229,22 +234,63 @@ Task("Test")
 
 	if (isPackagedTestRun)
 	{
+		Information("isPackagedTestRuns");
 		// Try to uninstall the app if it exists from before
 		uninstallPS();
 
 		Information("Uninstalled previously deployed app");
 
 		var projectDir = PROJECT.GetDirectory();
-		var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
-		var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
+		Information($"Get Cert {projectDir}");
 
+		var cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+		var msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
+		if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/"));
+			}	
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				projectDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/"));
+			}
+			cerPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer");
+		    msixPaths = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix");
+			if(cerPaths.Count() == 0 || msixPaths.Count() == 0)
+			{
+				Error("Error: Couldn't find .cer or .msix file");
+				throw new Exception("Error: Couldn't find .cer or .msix file");
+			}
+		}
+
+		var msixPath = msixPaths.First();
+		var cerPath = cerPaths.First();
 		Information($"Found MSIX, installing: {msixPath}");
 
 		// Install dependencies
 		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
 		foreach (var dep in dependencies) {
 			Information("Installing Dependency MSIX: {0}", dep);
-			StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+			try {
+				StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+			} catch { 
+				Warning($"Failed to install dependency: {dep}");
+			}
 		}
 
 		// Install the DeviceTests app
@@ -389,16 +435,48 @@ Task("SetupTestPaths")
 			throw new Exception("If no app was specified, an app must be provided.");
 		}
 
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+		var winVersion = $"{DotnetVersion}-windows{windowsVersion}";
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("Controls.TestCases.HostApp").Combine(CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM);
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		if (apps.Any()) {
-			TEST_APP = apps.First().FullPath;
+		if (apps.Count() == 0) 
+		{
+			var arcadeBin = new DirectoryPath("../../artifacts/bin/");
+			if(TEST_APP_PROJECT.FullPath.Contains("Controls.TestCases.HostApp"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.TestCases.HostApp/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+
+			if(PROJECT.FullPath.Contains("Controls.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Controls.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Core.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Core.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Graphics.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Graphics.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("MauiBlazorWebView.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/MauiBlazorWebView.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+			if(PROJECT.FullPath.Contains("Essentials.DeviceTests"))
+			{
+				binDir = MakeAbsolute(new DirectoryPath(arcadeBin + "/Essentials.DeviceTests/" + CONFIGURATION + "/" + winVersion).Combine(DOTNET_PLATFORM));
+			}
+
+			Information("Looking for .exe in arcade binDir {0}", binDir);
+			apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
+			if(apps.Count() == 0 )
+			{
+				Error("Error: Couldn't find .exe file");
+				throw new Exception("Error: Couldn't find .exe file");
+			}
 		}
-		else {
-			Error("Error: Couldn't find .exe file");
-			throw new Exception("Error: Couldn't find .exe file");
-		}
+		TEST_APP = apps.First().FullPath;
 	}
 
 	if (string.IsNullOrEmpty(TEST_RESULTS))
@@ -443,29 +521,37 @@ Task("uitest")
 	Information("old dotnet root: {0}", DOTNET_ROOT);
 	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("new dotnet toolPath: {0}", localToolPath);
-
-	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	var buildSettings = new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = localToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
-	});
+	};
+
+	string? localToolPath = null;
+
+	if (localDotnet)
+	{
+		var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
+
+		DOTNET_ROOT = localDotnetRoot.ToString();
+
+		localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+		Information("new dotnet toolPath: {0}", localToolPath);
+
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+		buildSettings.ToolPath = localToolPath;
+	}
+
+	DotNetBuild(PROJECT.FullPath, buildSettings);
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");

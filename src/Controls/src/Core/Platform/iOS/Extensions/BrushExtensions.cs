@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (brush is SolidColorBrush solidColorBrush)
 			{
-				var linearGradientLayer = new CALayer
+				var linearGradientLayer = new StaticCALayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var p1 = linearGradientBrush.StartPoint;
 				var p2 = linearGradientBrush.EndPoint;
 
-				var linearGradientLayer = new CAGradientLayer
+				var linearGradientLayer = new StaticCAGradientLayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var center = radialGradientBrush.Center;
 				var radius = radialGradientBrush.Radius;
 
-				var radialGradientLayer = new CAGradientLayer
+				var radialGradientLayer = new StaticCAGradientLayer
 				{
 					Name = BackgroundLayer,
 					ContentsGravity = CALayer.GravityResizeAspectFill,
@@ -164,10 +164,11 @@ namespace Microsoft.Maui.Controls.Platform
 				if (layer.Name == BackgroundLayer)
 					layer?.RemoveFromSuperLayer();
 
-				if (layer.Sublayers == null || layer.Sublayers.Count() == 0)
+				var sublayers = layer.Sublayers;
+				if (sublayers is null || sublayers.Length == 0)
 					return;
 
-				foreach (var subLayer in layer.Sublayers)
+				foreach (var subLayer in sublayers)
 				{
 					if (subLayer.Name == BackgroundLayer)
 						subLayer?.RemoveFromSuperLayer();
@@ -175,29 +176,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public static void UpdateBackgroundLayer(this UIView view)
-		{
-			if (view == null || view.Frame.IsEmpty)
-				return;
-
-			var layer = view.Layer;
-
-			UpdateBackgroundLayer(layer, view.Bounds);
-		}
-
-		static void UpdateBackgroundLayer(this CALayer layer, CGRect bounds)
-		{
-			if (layer != null && layer.Sublayers != null)
-			{
-				foreach (var sublayer in layer.Sublayers)
-				{
-					UpdateBackgroundLayer(sublayer, bounds);
-
-					if (sublayer.Name == BackgroundLayer && sublayer.Frame != bounds)
-						sublayer.Frame = bounds;
-				}
-			}
-		}
+		public static void UpdateBackgroundLayer(this UIView view) =>
+			view.UpdateBackgroundLayerFrame(BackgroundLayer);
 
 		static CGPoint GetRadialGradientBrushEndPoint(Point startPoint, double radius)
 		{

@@ -8,9 +8,9 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
-  where : "cat==Issues"
   targetSample: "dotnet-legacy-controlgallery"
   provisionPlatform: "windows"
+  testFilter: ''
 
 steps:
   - bash: |
@@ -43,9 +43,6 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
-    displayName: 'Build the MSBuild Tasks'
-
   - pwsh: ./build.ps1 --target=${{ parameters.targetSample }} --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic
     displayName: 'Build the Legacy ControlGallery'
 
@@ -56,7 +53,7 @@ steps:
     condition: ${{ eq(parameters.platform, 'ios') }}
     continueOnError: true
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: $(Agent.JobName)
     # retryCountOnTaskFailure: 2
 
@@ -72,10 +69,9 @@ steps:
     displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
-      testResultsFormat: NUnit
-      testResultsFiles: '**/TestResult*.xml'
+      testResultsFormat: VSTest
+      testResultsFiles: '$(TestResultsDirectory)/*.trx'
       testRunTitle: '$(System.PhaseName)'
-      searchFolder: '$(TestResultsDirectory)'
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1

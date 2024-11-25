@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="MauiApp._1.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21631">
+    <WebView
+        AutomationId="WaitForWebView"
+        x:Name="WaitForWebView">
+        <WebView.Source>
+            <HtmlWebViewSource 
+                Html="&lt;html&gt;&lt;body&gt;&lt;h1&gt;hello world&lt;/h1&gt;&lt;img src='appiconLargeTile.scale-100.png'/&gt;&lt;/html&gt;"/>
+        </WebView.Source>
+    </WebView>
+</ContentPage>

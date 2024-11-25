@@ -18,8 +18,11 @@ namespace Microsoft.Maui.Controls
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
+		internal readonly MergedStyle _mergedStyle;
+		
 		protected ImageSource()
 		{
+			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
@@ -52,16 +55,14 @@ namespace Microsoft.Maui.Controls
 			if (!IsLoading)
 				return Task.FromResult(false);
 
-			var tcs = new TaskCompletionSource<bool>();
-			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
-			if (original == null)
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, new TaskCompletionSource<bool>(), null);
+			if (original is null)
 			{
 				_cancellationTokenSource.Cancel();
+				return Task.FromResult(false);
 			}
-			else
-				tcs = original;
 
-			return tcs.Task;
+			return original.Task;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromFile']/Docs/*" />

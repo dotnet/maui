@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
@@ -17,10 +18,13 @@ namespace UITest.Appium
 			_config = config ?? throw new ArgumentNullException(nameof(config));
 
 			_commandExecutor = new AppiumCommandExecutor();
-			_commandExecutor.AddCommandGroup(new AppiumPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
+			_commandExecutor.AddCommandGroup(new AppiumDeviceActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumPinchToZoomActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumSliderActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumSwipeActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumScrollActions(this));
@@ -38,7 +42,7 @@ namespace UITest.Appium
 		public FileInfo Screenshot(string fileName)
 		{
 			Screenshot screenshot = _driver.GetScreenshot();
-			screenshot.SaveAsFile(fileName, ScreenshotImageFormat.Png);
+			screenshot.SaveAsFile(fileName);
 			var file = new FileInfo(fileName);
 			return file;
 		}
@@ -83,9 +87,21 @@ namespace UITest.Appium
 			return q.FindElement(this);
 		}
 
+#nullable disable
+		public virtual IUIElement FindElementByText(string text)
+		{
+			return AppiumQuery.ByXPath("//*[@text='" + text + "']").FindElement(this);
+		}
+#nullable enable
+
 		public virtual IReadOnlyCollection<IUIElement> FindElements(string id)
 		{
 			return Query.ById(id);
+		}
+
+		public virtual IReadOnlyCollection<IUIElement> FindElementsByText(string text)
+		{
+			return AppiumQuery.ByXPath("//*[@text='" + text + "']").FindElements(this);
 		}
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(IQuery query)
@@ -112,6 +128,9 @@ namespace UITest.Appium
 
 			if (config.GetProperty<bool>("FullReset"))
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
+
+			if (config.GetProperty<bool>("NoReset"))
+				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
 
 			var appPath = config.GetProperty<string>("AppPath");
 			if (!string.IsNullOrEmpty(appPath))

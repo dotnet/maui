@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal static void Cleanup(this Element self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			foreach (Element element in self.Descendants())
 			{

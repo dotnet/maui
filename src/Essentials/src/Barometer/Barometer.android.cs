@@ -8,11 +8,9 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class BarometerImplementation : IBarometer
 	{
-		static SensorManager? _sensorManager;
 		static Sensor? _sensor;
 
-		static SensorManager? SensorManager =>
-			_sensorManager ??= Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+		static SensorManager? SensorManager => Application.Context.GetSystemService(Context.SensorService) as SensorManager;
 
 		static Sensor? Sensor =>
 			_sensor ??= SensorManager?.GetDefaultSensor(SensorType.Pressure);

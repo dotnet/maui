@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 		public MauiWKWebView(CGRect frame, WebViewHandler handler, WKWebViewConfiguration configuration)
 			: base(frame, configuration)
 		{
-			_ = handler ?? throw new ArgumentNullException("handler");
+			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 			_handler = new WeakReference<WebViewHandler>(handler);
 
 			BackgroundColor = UIColor.Clear;
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
-		[Export("webView:didFinishNavigation:")]
+		[Obsolete("Use MauiWebViewNavigationDelegate.DidFinishNavigation instead.")]
 		public async void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var url = CurrentUrl;
@@ -86,6 +86,13 @@ namespace Microsoft.Maui.Platform
 
 			if (_handler.TryGetTarget(out var handler))
 				await handler.ProcessNavigatedAsync(url);
+		}
+
+		[Export("webViewWebContentProcessDidTerminate:")]
+		public void ContentProcessDidTerminate(WKWebView webView)
+		{
+			if (_handler.TryGetTarget(out var handler))
+				handler.VirtualView.ProcessTerminated(new WebProcessTerminatedEventArgs(webView));
 		}
 
 		public void LoadHtml(string? html, string? baseUrl)

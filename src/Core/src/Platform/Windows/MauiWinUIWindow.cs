@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 		{
 			_windowManager = WindowMessageManager.Get(this);
 			_viewSettings = new ViewManagement.UISettings();
-
+			
 			Activated += OnActivated;
 			Closed += OnClosedPrivate;
 			VisibilityChanged += OnVisibilityChanged;
@@ -75,6 +75,14 @@ namespace Microsoft.Maui
 				else
 					_enableResumeEvent = true;
 			}
+			else if (args.WindowActivationState == UI.Xaml.WindowActivationState.Deactivated &&
+				!_isActivated)
+			{
+				// Don't invoke deactivated event if we're not activated. It's possible we can
+				// recieve this event multiple times if we start a new child process and that 
+				// process creates a new window
+				return;
+			}
 			else
 			{
 				_isActivated = false;
@@ -87,6 +95,9 @@ namespace Microsoft.Maui
 		{
 			OnClosed(sender, args);
 
+			Activated -= OnActivated;
+			Closed -= OnClosedPrivate;
+			VisibilityChanged -= OnVisibilityChanged;
 			_viewSettings.ColorValuesChanged -= _viewSettings_ColorValuesChanged;
 
 			if (_windowIcon != IntPtr.Zero)
@@ -157,10 +168,10 @@ namespace Microsoft.Maui
 				}
 				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
 				{
-					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
 					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
 					{
-						bool hasTitleBar = (styleChange.StyleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
+						var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+						bool hasTitleBar = PlatformMethods.HasStyle(styleChange.StyleNew, PlatformMethods.WindowStyles.WS_CAPTIONANDSYSTEMMENU);
 
 						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
 						if (rootManager != null)
@@ -215,7 +226,8 @@ namespace Microsoft.Maui
 
 				titleBar.ButtonBackgroundColor = Colors.Transparent;
 				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-				titleBar.ButtonForegroundColor = _viewSettings.GetColorValue(ViewManagement.UIColorType.Foreground);
+				titleBar.ButtonForegroundColor = UI.Xaml.Application.Current.RequestedTheme == UI.Xaml.ApplicationTheme.Dark ?
+					Colors.White : Colors.Black;
 			}
 		}
 

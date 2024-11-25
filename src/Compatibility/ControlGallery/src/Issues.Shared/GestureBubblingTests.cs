@@ -35,12 +35,16 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		static NavigationPage NavigationPage;
 
 #if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS] // on iOS only menuItem=Slider, frameShouldRegisterTap=False fails
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS] // on iOS only menuItem=Slider, frameShouldRegisterTap=False fails
 		[Test, TestCaseSource(nameof(TestCases))]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public void VerifyTapBubbling(string menuItem, bool frameShouldRegisterTap)
 		{
+			if (menuItem == "Frame" && frameShouldRegisterTap)
+			{
+				Assert.Ignore("FailsOnMauiAndroid");
+			}
+			
 			var results = RunningApp.WaitForElement(q => q.Marked(menuItem));
 
 			if (results.Length > 1)

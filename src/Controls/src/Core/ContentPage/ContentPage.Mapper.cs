@@ -12,7 +12,23 @@ namespace Microsoft.Maui.Controls
 		internal new static void RemapForControls()
 		{
 			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(nameof(ContentPage.HideSoftInputOnTapped), MapHideSoftInputOnTapped);
+#if IOS
+			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName, MapPrefersHomeIndicatorAutoHidden);
+			PageHandler.Mapper.ReplaceMapping<ContentPage, IPageHandler>(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName, MapPrefersStatusBarHidden);
+#endif
 		}
+
+#if IOS
+		static void MapPrefersHomeIndicatorAutoHidden(IPageHandler handler, ContentPage page)
+		{
+			handler?.UpdateValue(nameof(IiOSPageSpecifics.IsHomeIndicatorAutoHidden));
+		}
+
+		static void MapPrefersStatusBarHidden(IPageHandler handler, ContentPage page)
+		{
+			handler?.UpdateValue(nameof(IiOSPageSpecifics.PrefersStatusBarHiddenMode));
+		}
+#endif
 
 		static void MapHideSoftInputOnTapped(IPageHandler handler, ContentPage page)
 		{

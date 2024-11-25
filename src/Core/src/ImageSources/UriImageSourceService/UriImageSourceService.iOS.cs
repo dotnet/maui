@@ -47,9 +47,7 @@ namespace Microsoft.Maui
 		{
 			// TODO: use a real caching library with the URI
 
-			var hash = Crc64.ComputeHashString(imageSource.Uri.OriginalString);
-			var ext = Path.GetExtension(imageSource.Uri.OriginalString);
-			var filename = $"{hash}{ext}";
+			var filename = GetCachedFileName(imageSource);
 			var pathToImageCache = Path.Combine(CacheDirectory, filename);
 
 			NSData? imageData;
@@ -116,6 +114,14 @@ namespace Microsoft.Maui
 				throw new InvalidOperationException($"Unable to load image stream data from '{path}'.");
 
 			return imageData;
+		}
+
+		internal string GetCachedFileName(IUriImageSource imageSource)
+		{
+			var hash = Crc64.ComputeHashString(imageSource.Uri.OriginalString);
+			var ext = Path.GetExtension(imageSource.Uri.AbsolutePath);
+			var filename = $"{hash}{ext}";
+			return filename;
 		}
 #pragma warning restore CA1822 // Mark members as static
 	}

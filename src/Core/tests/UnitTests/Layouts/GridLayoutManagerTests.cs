@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -90,6 +91,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		static GridLength GridLengthFromString(string gridLength)
 		{
+			CultureInfo usCulture = new CultureInfo("en-US"); // Ensure we're using a period as the decimal separator
+
 			gridLength = gridLength.Trim();
 
 			if (gridLength.EndsWith("*"))
@@ -101,7 +104,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 					return GridLength.Star;
 				}
 
-				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
+				return new GridLength(double.Parse(gridLength, usCulture), GridUnitType.Star);
 			}
 
 			if (gridLength.ToLowerInvariant() == "auto")
@@ -109,7 +112,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				return GridLength.Auto;
 			}
 
-			return new GridLength(double.Parse(gridLength));
+			return new GridLength(double.Parse(gridLength, CultureInfo.InvariantCulture));
 		}
 
 		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)
@@ -2795,7 +2798,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		 * is determined to return a measure size larger than the constraints it's given. We have to ensure 
 		 * that the sizes of the containing * row/column don't expand beyond their natural confines even if 
 		 * the containing control asks for it. (The control itself may still be larger than the row/column 
-		 * size, and when laid out it may exceed the boundaries of the row/column. But the row/column itself
+		 * size, and when arranged it may exceed the boundaries of the row/column. But the row/column itself
 		 * must still adhere to the constraints given by the column definitions and grid size constraints.)
 		 */
 

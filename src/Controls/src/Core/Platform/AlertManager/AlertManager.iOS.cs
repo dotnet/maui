@@ -177,11 +177,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 			static void PresentPopUp(Page sender, Window virtualView, UIWindow platformView, UIAlertController alert, ActionSheetArguments arguments = null)
 			{
-				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
+				UIWindow presentingWindow = platformView;
+
+				if (sender.Handler is IPlatformViewHandler pvh &&
+					pvh.PlatformView?.Window is UIWindow senderPageWindow &&
+					senderPageWindow != platformView &&
+					senderPageWindow.RootViewController is not null)
 				{
+					presentingWindow = senderPageWindow;
+				}
+
+				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad &&
+					arguments is not null &&
+					alert.PopoverPresentationController is not null &&
+					platformView.RootViewController?.View is not null)
+				{
+					var topViewController = GetTopUIViewController(presentingWindow);
 					UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 					var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
-						n => { alert.PopoverPresentationController.SourceRect = platformView.RootViewController.View.Bounds; });
+						n => alert.PopoverPresentationController.SourceRect = topViewController.View.Bounds);
 
 					arguments.Result.Task.ContinueWith(t =>
 					{
@@ -189,18 +203,9 @@ namespace Microsoft.Maui.Controls.Platform
 						UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
 					}, TaskScheduler.FromCurrentSynchronizationContext());
 
-					alert.PopoverPresentationController.SourceView = platformView.RootViewController.View;
-					alert.PopoverPresentationController.SourceRect = platformView.RootViewController.View.Bounds;
+					alert.PopoverPresentationController.SourceView = topViewController.View;
+					alert.PopoverPresentationController.SourceRect = topViewController.View.Bounds;
 					alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
-				}
-
-				UIWindow presentingWindow = platformView;
-				if (sender.Handler is IPlatformViewHandler pvh &&
-					pvh.PlatformView?.Window is UIWindow senderPageWindow &&
-					senderPageWindow != platformView &&
-					senderPageWindow.RootViewController is not null)
-				{
-					presentingWindow = senderPageWindow;
 				}
 
 				presentingWindow.BeginInvokeOnMainThread(() =>
@@ -214,7 +219,7 @@ namespace Microsoft.Maui.Controls.Platform
 			static UIViewController GetTopUIViewController(UIWindow platformWindow)
 			{
 				var topUIViewController = platformWindow.RootViewController;
-				while (topUIViewController.PresentedViewController is not null)
+				while (topUIViewController?.PresentedViewController is not null)
 				{
 					topUIViewController = topUIViewController.PresentedViewController;
 				}

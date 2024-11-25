@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	public partial class StreamImageSource : ImageSource, IStreamImageSource
 	{
 		/// <summary>Bindable property for <see cref="Stream"/>.</summary>
-		public static readonly BindableProperty StreamProperty = BindableProperty.Create("Stream", typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
+		public static readonly BindableProperty StreamProperty = BindableProperty.Create(nameof(Stream), typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
 			default(Func<CancellationToken, Task<Stream>>));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />

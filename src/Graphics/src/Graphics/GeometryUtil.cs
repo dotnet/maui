@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Graphics
 			var a = x2 - x1;
 			var b = y2 - y1;
 
-			return (float)Math.Sqrt(a * a + b * b);
+			return MathF.Sqrt(a * a + b * b);
 		}
 
 		public static float GetAngleAsDegrees(float x1, float y1, float x2, float y2)
@@ -19,15 +19,15 @@ namespace Microsoft.Maui.Graphics
 			var dx = x1 - x2;
 			var dy = y1 - y2;
 
-			var radians = (float)Math.Atan2(dy, dx);
-			var degrees = radians * 180.0f / (float)Math.PI;
+			var radians = MathF.Atan2(dy, dx);
+			var degrees = radians * 180.0f / MathF.PI;
 
 			return 180 - degrees;
 		}
 
 		public static float DegreesToRadians(float angle)
 		{
-			return (float)Math.PI * angle / 180;
+			return MathF.PI * angle / 180;
 		}
 
 		public static double DegreesToRadians(double angle)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static float RadiansToDegrees(float angle)
 		{
-			return angle * (180 / (float)Math.PI);
+			return angle * (180 / MathF.PI);
 		}
 
 		public static double RadiansToDegrees(double angle)
@@ -49,8 +49,8 @@ namespace Microsoft.Maui.Graphics
 		{
 			var radians = DegreesToRadians(angle);
 
-			var x = (float)(Math.Cos(radians) * point.X - Math.Sin(radians) * point.Y);
-			var y = (float)(Math.Sin(radians) * point.X + Math.Cos(radians) * point.Y);
+			var x = MathF.Cos(radians) * point.X - MathF.Sin(radians) * point.Y;
+			var y = MathF.Sin(radians) * point.X + MathF.Cos(radians) * point.Y;
 
 			return new PointF(x, y);
 		}
@@ -58,8 +58,8 @@ namespace Microsoft.Maui.Graphics
 		public static PointF RotatePoint(PointF center, PointF point, float angle)
 		{
 			var radians = DegreesToRadians(angle);
-			var x = center.X + (float)(Math.Cos(radians) * (point.X - center.X) - Math.Sin(radians) * (point.Y - center.Y));
-			var y = center.Y + (float)(Math.Sin(radians) * (point.X - center.X) + Math.Cos(radians) * (point.Y - center.Y));
+			var x = center.X + MathF.Cos(radians) * (point.X - center.X) - MathF.Sin(radians) * (point.Y - center.Y);
+			var y = center.Y + MathF.Sin(radians) * (point.X - center.X) + MathF.Cos(radians) * (point.Y - center.Y);
 			return new PointF(x, y);
 		}
 
@@ -91,8 +91,8 @@ namespace Microsoft.Maui.Graphics
 
 		public static PointF PolarToPoint(float angleInRadians, float fx, float fy)
 		{
-			var sin = (float)Math.Sin(angleInRadians);
-			var cos = (float)Math.Cos(angleInRadians);
+			var sin = MathF.Sin(angleInRadians);
+			var cos = MathF.Cos(angleInRadians);
 			return new PointF(fx * cos, fy * sin);
 		}
 
