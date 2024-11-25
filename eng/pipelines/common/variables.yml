@@ -62,8 +62,9 @@ variables:
 - name: _InternalBuildArgs
   value: ''
 
-# Variable groups required for private builds
-- group: Xamarin-Secrets
+# Variable groups required for private builds but not prs
+- ${{ if ne(variables['Build.DefinitionName'], 'maui-pr') }}:
+  - group: Xamarin-Secrets
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
