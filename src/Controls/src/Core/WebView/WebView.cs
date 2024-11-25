@@ -385,14 +385,11 @@ namespace Microsoft.Maui.Controls
 			ProcessTerminated?.Invoke(this, webViewProcessTerminatedEventArgs);
 		}
 
-		static readonly string AllQuotesWithPrecedingBackslashsPattern = @"(\\*?)'";
-
 		internal partial class RegexHelper
 		{
 #if NET7_0_OR_GREATER
-			// .NET 9 allows partial properties, no need for method
 			// get every quote in the string along with all the backslashes preceding it
-			[GeneratedRegex (AllQuotesWithPrecedingBackslashsPattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			[GeneratedRegex (@"(\\*?)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
 			public static partial Regex AllQuotesWithPrecedingBackslashsRegex
 			{
 				get;
@@ -401,7 +398,7 @@ namespace Microsoft.Maui.Controls
 			public static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
 											new (
 												// get every quote in the string along with all the backslashes preceding it
-												AllQuotesWithPrecedingBackslashsPattern,
+												@"(\\*?)'",
 												RegexOptions.Compiled,
 												TimeSpan.FromMilliseconds(1000) 		// against malicious input
 												);		
