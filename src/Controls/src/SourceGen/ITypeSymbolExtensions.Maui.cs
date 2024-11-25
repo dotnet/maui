@@ -12,28 +12,8 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-static class SymbolExtensions
+static partial class ITypeSymbolExtensions
 {
-    public static bool IsPublicOrVisibleInternal(this INamedTypeSymbol type, IEnumerable<IAssemblySymbol> internalsVisible)
-	{
-		// return types that are public
-		if (type.DeclaredAccessibility == Accessibility.Public)
-		{
-			return true;
-		}
-
-		// only return internal types if they are visible to us
-		if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	public static bool CanAdd(this ITypeSymbol type) 
-		=> type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable")
-		&& type.GetAllMethods("Add").Any(m => m.Parameters.Length == 1);
 	
 	public static IFieldSymbol? GetBindableProperty(this ITypeSymbol type, string ns, ref string localName, out System.Boolean attached, SourceGenContext context, IXmlLineInfo? iXmlLineInfo)
     {

@@ -38,7 +38,10 @@ static class NodeSGExtensions
         return parentList.CollectionItems.Contains(node);
     }
 
-    public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
+        => context.Variables[(IElementNode)node].Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!);
+
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter();
         if (typeandconverter == null)
@@ -56,12 +59,21 @@ static class NodeSGExtensions
         var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
         return valueNode.ConvertTo(property.Type, typeConverter, context, iXmlLineInfo);
     }
+
+    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+        List<AttributeData> attributes = [.. toType.GetAttributes()];
+        
+        var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
+
+        return valueNode.ConvertTo(toType, typeConverter, context, iXmlLineInfo);
+    }
     
     public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
         if (typeConverter != null)
-            return valueNode.ConvertWithConverter(typeConverter, context, iXmlLineInfo);
+            return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
         if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 		return toType.ToString() switch
@@ -77,7 +89,7 @@ static class NodeSGExtensions
 		};
 	}
 
-    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
         //TODO check if there's a SourceGen version of the converter
@@ -88,13 +100,16 @@ static class NodeSGExtensions
             if (!acceptEmptyServiceProvider)
             {
                 var serviceProvider = valueNode.GetOrCreateServiceProvider(context.Writer, context, requiredServices);
-                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name})";
+                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name}) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
             }
             else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
-                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", null)";
+                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
         }
-        
-        return $"new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")";
+        //TypeConverter returns an object, so we need to cast it to the target type
+        if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
+            return $"((global::System.ComponentModel.TypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\") as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
+        else
+            return $"({targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")";
     }
 
     public static bool IsValueProvider(this INode node, SourceGenContext context, 

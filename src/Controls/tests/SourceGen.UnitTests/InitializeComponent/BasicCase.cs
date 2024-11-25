@@ -58,9 +58,9 @@ public partial class TestPage
 	{
 		var button0 = new global::Microsoft.Maui.Controls.Button();
 		global::Test.TestPage __root = this;
-		var namescope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, namescope0);
-		namescope0.RegisterName("MyButton", button0);
+		var nameScope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope0);
+		nameScope0.RegisterName("MyButton", button0);
 		this.MyButton = button0;
 		button0.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
 		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, button0);

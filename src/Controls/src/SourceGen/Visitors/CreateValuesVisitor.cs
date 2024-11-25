@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Xml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -23,7 +25,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
     public bool StopOnResourceDictionary => false;
     public bool VisitNodeOnDataTemplate => false;
     public bool SkipChildren(INode node, INode parentNode) => false;
-    public bool IsResourceDictionary(ElementNode node) => false;
+    public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
     public void Visit(ValueNode node, INode parentNode)
     {
@@ -37,32 +39,53 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
     public void Visit(ElementNode node, INode parentNode)
     {
-        //var typeName = GetTypeName(node.XmlType, Context, globalAlias: false);
-        var type = node.XmlType.ResolveTypeSymbol(Context);
-        //TODO fail if type is null
+        var type = node.XmlType.ResolveTypeSymbol(Context) 
+            ?? throw new Exception($"Type {node.XmlType.Name} not found");
 
-        //if type is ArrayExtension
+		//if type is ArrayExtension
 
-        //if type is Xaml2009Primitive
-        if (IsXaml2009LanguagePrimitive(node)) {
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
+		//if type is Xaml2009Primitive
+		if (IsXaml2009LanguagePrimitive(node)) {
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
             Context.Variables[node] = new LocalVariable(type, variableName);
 
             Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = {ValueForLanguagePrimitive(type, node)};");
+            return;
         }
 
-		//suports factorymethod, ctor args, etc
+        //TODO xome markup extensions can be vcompiled here
+
+		//TODO suports factorymethod, ctor args, etc
+
+        IMethodSymbol? ctor = null;
+
+        //does it has a default parameterless ctor ?
 		if (type is INamedTypeSymbol namedType)
 		{
 			var ctors = namedType.InstanceConstructors;
-			var ctor = ctors.FirstOrDefault(c => c.Parameters.Length == 0);
-			if (ctor != null)
-			{
-				var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last().ToLowerInvariant());
-				Context.Variables[node] = new LocalVariable(type, variableName);
-				Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
-			}
+			ctor = ctors.FirstOrDefault(c => c.Parameters.Length == 0);
 		}
+
+        bool isColor = type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color"), SymbolEqualityComparer.Default);
+
+        if (   node.CollectionItems.Count == 1 
+            && node.CollectionItems[0] is ValueNode valueNode
+            && (isColor || type.IsValueType))
+        { //<Color>HotPink</Color>
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            Context.Variables[node] = new LocalVariable(type, variableName);
+            var valueString = valueNode.ConvertTo(type, Context, valueNode as IXmlLineInfo);
+            Writer.WriteLine($"var {variableName} = {valueString};");
+            return;
+        } 
+        else if (ctor != null)
+        {
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            Context.Variables[node] = new LocalVariable(type, variableName);
+
+            Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
+            return;
+        }
 	}
 
     public void Visit(ListNode node, INode parentNode)

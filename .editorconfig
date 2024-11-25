@@ -30,6 +30,7 @@ dotnet_diagnostic.CA1309.severity = error
 dotnet_diagnostic.CA1311.severity = error
 dotnet_diagnostic.CA1815.severity = error
 dotnet_diagnostic.CA1825.severity = error
+dotnet_diagnostic.CA2211.severity = none
 
 # nullability checks
 

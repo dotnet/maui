@@ -1,12 +1,15 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+#nullable enable
 static class NamingHelpers
 {
     static IDictionary<object, IDictionary<string, int>> _lastId = new Dictionary<object, IDictionary<string, int>>();
     public static string CreateUniqueVariableName(object context, string typeName)
     {
+        typeName = CamelCase(typeName);
         if (!_lastId.TryGetValue(context, out var lastIdForContext))
         {
             lastIdForContext = new Dictionary<string, int>();
@@ -19,5 +22,14 @@ static class NamingHelpers
         var name = $"{typeName}{lastId}";
         lastIdForContext[typeName] = lastId + 1;
         return name;
+    }
+
+    static string CamelCase(string name)
+    {
+        name = name.Replace(".", "_");
+        if (string.IsNullOrEmpty(name))
+            return name;
+        name = Regex.Replace(name, "([A-Z])([A-Z]+)($|[A-Z])", m => m.Groups[1].Value + m.Groups[2].Value.ToLowerInvariant() + m.Groups[3].Value);
+        return char.ToLowerInvariant(name[0]) + name.Substring(1);        
     }
 }

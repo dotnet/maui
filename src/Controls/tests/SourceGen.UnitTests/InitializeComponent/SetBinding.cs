@@ -55,20 +55,20 @@ public partial class TestPage
 {
 	private partial void InitializeComponentSourceGen()
 	{
-		var bindingextension0 = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
+		var bindingExtension0 = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
 		global::Test.TestPage __root = this;
-		var namescope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, namescope0);
+		var nameScope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope0);
 #line 1 "Test.xaml"
-		bindingextension0.Path = "Title";
+		bindingExtension0.Path = "Title";
 #line default
 		var xamlServiceProvider0 = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider();
 		var nsResolver0 = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();
 		nsResolver0.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
 		nsResolver0.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xamlServiceProvider0.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(nsResolver0, typeof(global::Test.TestPage).Assembly));
-		global::Microsoft.Maui.Controls.BindingBase bindingbase0 = ((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingextension0).ProvideValue(xamlServiceProvider0);
-		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingbase0);
+		global::Microsoft.Maui.Controls.BindingBase bindingBase0 = ((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingExtension0).ProvideValue(xamlServiceProvider0);
+		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase0);
 	}
 }
 

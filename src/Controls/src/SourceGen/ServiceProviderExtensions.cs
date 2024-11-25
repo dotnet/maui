@@ -25,14 +25,14 @@ static class ServiceProviderExtensions
         var localName = propertyName.LocalName;
         var parentVar = context.Variables[node.Parent];
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, null);
-        var propertySymbol = parentVar.Type.GetAllProperties(localName).SingleOrDefault();
+        var propertySymbol = parentVar.Type.GetAllProperties(localName).FirstOrDefault();
         
 
         //TODO based on the node, the service provider, or some of the services, could be reused
         var serviceProviderSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider")!;
-        var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(context, "xamlServiceProvider");
+        var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(context, "XamlServiceProvider");
 
-        writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
+        writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}(this);");
   
         node.AddServices(writer, serviceProviderVariableName, requiredServices, context, bpFieldSymbol, propertySymbol);
 
@@ -47,11 +47,13 @@ static class ServiceProviderExtensions
             || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideParentValues")!, SymbolEqualityComparer.Default)
             || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IReferenceProvider")!, SymbolEqualityComparer.Default))
         {
-            var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, "simpleValueTargetProvider");
+            var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, "ValueTargetProvider");
             writer.WriteLine($"var {simpleValueTargetProvider} = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(");
             writer.Indent++;
             writer.WriteLine($"new object[] {{{String.Join(", ", node.Parents(context).Select(v=>v.Name))}}},");
-            writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType)) : propertySymbol != null ? "typeof(Foo).GetProperty(Bar)" : "null")},");
+            var bpinfo = bpFieldSymbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType)) ?? String.Empty;
+            var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
+            writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
             writer.WriteLine($"null,");
             writer.WriteLine($"false);");
             writer.Indent--;
@@ -63,7 +65,7 @@ static class ServiceProviderExtensions
         if (createAllServices
             || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IXamlTypeResolver")!, SymbolEqualityComparer.Default))      
         {
-            var nsResolver = NamingHelpers.CreateUniqueVariableName(context, "nsResolver");
+            var nsResolver = NamingHelpers.CreateUniqueVariableName(context, "NSResolver");
             writer.WriteLine($"var {nsResolver} = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();");
             
             foreach (var kvp in node.NamespaceResolver!.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
