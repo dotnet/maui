@@ -26,10 +26,10 @@ public class Issue1323 : TestTabbedPage
 		base.OnAppearing();
 		BarTextColor = Colors.White;
 		Children.RemoveAt(1);
-		Children.Insert(1, new ContentPage { Title = "Page5", IconImageSource = "Loyalty.png" });
+		Children.Insert(1, new ContentPage { Title = "Page5", IconImageSource = "coffee.png" }); // Need to replace the image as Loyalty.png once it got available
 
 		Children.RemoveAt(3);
-		Children.Insert(2, new ContentPage { Title = "Page6", IconImageSource = "Gift.png" });
+		Children.Insert(2, new ContentPage { Title = "Page6", IconImageSource = "star_flyout.png" }); // Need to replace the image as Gift.png once it got available
 		BarTextColor = Colors.White;
 	}
 }
