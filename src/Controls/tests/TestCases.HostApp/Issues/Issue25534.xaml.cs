@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				Source = "dotnet_bot_shell.png"
+				Source = "dotnet_bot_resized.png"
 			};
 
             var button = new Button
@@ -96,8 +96,8 @@ namespace Maui.Controls.Sample.Issues
 	internal partial class Issue25534PageModel : INotifyPropertyChanged
 	{
 		//As per MS doc this should be a valid image path with file extension and the SVG file in .NET MAUI app project should be referenced with a .png extension. Refer https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/image?view=net-maui-8.0#load-a-font-icon
-		protected const string ButtonEmpty = "button_empty.png"; 
-		protected const string ButtonNote = "button_note.png";
+		protected const string ButtonEmpty = "dotnet_bot_resized2.png"; 
+		protected const string ButtonNote = "dotnet_bot_resized3.png";
 
 		private string? noteIcon = ButtonEmpty;
 		public string? NoteIcon
