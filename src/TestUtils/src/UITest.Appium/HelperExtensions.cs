@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
@@ -1188,6 +1189,65 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Get the current device orientation.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>The current device orientation</returns>
+		public static OpenQA.Selenium.ScreenOrientation GetOrientation(this IApp app)
+		{
+			var response = app.CommandExecutor.Execute("getOrientation", new Dictionary<string, object>());
+
+			if (response?.Value != null)
+			{
+				return (OpenQA.Selenium.ScreenOrientation)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the current orientation");
+		}
+
+		/// <summary>
+		/// Get the text of the system clipboard.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>Clipboard content as string or an empty string if the clipboard is empty.</returns>
+		public static string GetClipboardText(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"GetClipboard is not supported");
+			}
+
+			var response = app.CommandExecutor.Execute("getClipboardText", new Dictionary<string, object>());
+			
+			if (response?.Value != null)
+			{
+				return (string)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get clipboard text");
+		}
+
+		/// <summary>
+		/// Set the content of the system clipboard.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="content">The actual clipboard content.</param>
+		/// <param name="label">Clipboard data label for Android.</param>
+		public static void SetClipboardText(this IApp app, string content, string? label = null)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetClipboard is not supported");
+			}
+
+			app.CommandExecutor.Execute("setClipboardText", new Dictionary<string, object>
+			{
+				{ "content", content },
+				{ "label", label! }
+			});
+		}
+
+		/// <summary>
 		/// Performs a mouse click on the given coordinates.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1615,7 +1675,7 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Switch the state of the wifi service.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android. 
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
@@ -1627,6 +1687,24 @@ namespace UITest.Appium
 			}
 
 			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Switch the state of data service.
+		/// Functionality that's only available on Android.
+		/// This API does not work for Android API level 21+ because it requires system or carrier privileged permission, 
+		/// and Android <= 21 does not support granting permissions.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleData(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleData is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleData", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1657,6 +1735,28 @@ namespace UITest.Appium
 			throw new InvalidOperationException($"Could not get the performance data");
 		}
 
+		/// <summary>
+		/// Retrieve visibility and bounds information of the status and navigation bars
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>Information about visibility and bounds of status and navigation bar.</returns>
+		public static IDictionary<string, object> GetSystemBars(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"GetSystemBars is only supported on AppiumAndroidApp");
+			}
+
+			var response = app.CommandExecutor.Execute("getSystemBars", new Dictionary<string, object>());
+
+			if (response?.Value != null)
+			{
+				return (IDictionary<string, object>)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the Android System Bars");
+    }
+    
 		/// <summary>
 		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
 		/// </summary>
