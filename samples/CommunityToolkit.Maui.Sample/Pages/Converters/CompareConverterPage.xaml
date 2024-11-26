@@ -1,0 +1,48 @@
+<pages:BasePage
+    x:Class="CommunityToolkit.Maui.Sample.Pages.Converters.CompareConverterPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:CommunityToolkit.Maui.Sample.Converters"
+    xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:pages="clr-namespace:CommunityToolkit.Maui.Sample.Pages"
+    xmlns:vm="clr-namespace:CommunityToolkit.Maui.Sample.ViewModels.Converters"
+    x:DataType="vm:CompareConverterViewModel"
+    x:TypeArguments="vm:CompareConverterViewModel">
+
+    <pages:BasePage.Resources>
+        <ResourceDictionary>
+            <x:Double x:Key="ComparingValue">5.0</x:Double>
+            <Color x:Key="LightGreen">LightGreen</Color>
+            <Color x:Key="PaleVioletRed">PaleVioletRed</Color>
+
+            <converters:CompareDoubleToColorConverter
+                x:Key="isLargerThanOneConverter"
+                ComparingValue="5"
+                ComparisonOperator="Greater"
+                FalseObject="PaleVioletRed"
+                TrueObject="LightGreen" />
+        </ResourceDictionary>
+    </pages:BasePage.Resources>
+
+    <VerticalStackLayout Spacing="20">
+
+        <Label Text="The CompareConverter is a Converter that converts an object of a type implementing IComparable, and returns the comparison result as a bool if no objects were specified through the TrueObject and/or FalseObject properties. If values are assigned to the TrueObject and/or FalseObject properties, the CompareConverter returns the respective object assigned." TextColor="{StaticResource NormalLabelTextColor}" />
+
+        <Slider
+            HorizontalOptions="FillAndExpand"
+            Maximum="10"
+            Minimum="0"
+            Value="{Binding SliderValue, Mode=TwoWay}" />
+
+        <Label
+            Padding="4,0"
+            BackgroundColor="{Binding SliderValue, Mode=OneWay, Converter={StaticResource isLargerThanOneConverter}}"
+            Text="The background of this label will be green if the value of the slider is greater than 1, and red otherwise."
+            TextColor="Black" />
+
+        <Label Text="The following label will show whether the value of the slider is greater than or equal to 50%:" TextColor="{StaticResource NormalLabelTextColor}" />
+
+        <Label Text="{Binding SliderValue, Mode=OneWay, Converter={mct:CompareConverter ComparingValue={StaticResource ComparingValue}, ComparisonOperator=GreaterOrEqual}}" />
+
+    </VerticalStackLayout>
+</pages:BasePage>
