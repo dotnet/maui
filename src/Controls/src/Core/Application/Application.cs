@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 
 #pragma warning disable CS0612 // Type or member is obsolete
-		readonly Lazy<IResourceDictionary> _systemResources;
+		readonly Lazy<IResourceDictionary?> _systemResources;
 #pragma warning restore CS0612 // Type or member is obsolete
 
 		IAppIndexingProvider? _appIndexProvider;
@@ -40,10 +40,13 @@ namespace Microsoft.Maui.Controls
 				SetCurrentApplication(this);
 
 #pragma warning disable CS0612 // Type or member is obsolete
-			_systemResources = new Lazy<IResourceDictionary>(() =>
+			_systemResources = new Lazy<IResourceDictionary?>(() =>
 			{
 				var systemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
-				systemResources.ValuesChanged += OnParentResourcesChanged;
+				if (systemResources is not null)
+				{
+					systemResources.ValuesChanged += OnParentResourcesChanged;
+				}
 				return systemResources;
 			});
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -127,7 +130,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy? NavigationProxy { get; private set; }
 
-		internal IResourceDictionary SystemResources => _systemResources.Value;
+		internal IResourceDictionary? SystemResources => _systemResources.Value;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
