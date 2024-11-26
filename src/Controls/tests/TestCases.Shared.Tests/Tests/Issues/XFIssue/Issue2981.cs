@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST // TouchAndHold not supported in catalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +17,13 @@ public class Issue2981 : _IssuesUITest
 	public void Issue2981Test()
 	{
 		App.WaitForElement("Cell1");
+		
+#if MACCATALYST
+		App.LongPress("Cell1");
+		App.LongPress("Cell2");
+#else
 		App.TouchAndHold("Cell1");
 		App.TouchAndHold("Cell2");
+#endif
 	}
 }
-#endif
