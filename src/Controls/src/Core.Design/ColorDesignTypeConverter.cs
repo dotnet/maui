@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Design
 		internal static partial class RegexHelper
 		{
 #if NET7_0_OR_GREATER
-			[GeneratedRegex (RxColorHexPattern, RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
+			[GeneratedRegex (@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
 			static partial Regex RxColorHex
 			{
 				get;
@@ -229,14 +229,15 @@ namespace Microsoft.Maui.Controls.Design
 #else
 			static readonly Regex RxColorHex =
 											new (
-												RxColorHexPattern,
+												@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$",
 												RegexOptions.Compiled | RegexOptions.Singleline,		
 												TimeSpan.FromMilliseconds(1000)							// against malicious input
 												);
 #endif
 
 #if NET7_0_OR_GREATER
-			[GeneratedRegex (RxFuncPattern,  RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
+			[GeneratedRegex ("^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",  
+							RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
 			static partial Regex RxFunc
 			{
 				get;
@@ -244,7 +245,7 @@ namespace Microsoft.Maui.Controls.Design
 #else
 			static readonly Regex RxFunc =
 											new (
-												RxFuncPattern,
+												"^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",
 												RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline,		
 												TimeSpan.FromMilliseconds(1000)							// against malicious input
 												);
