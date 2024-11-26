@@ -22,5 +22,14 @@
 		{
 		}
 
+		private void Button_Clicked(object sender, EventArgs e)
+		{
+			toolbarItem.IconImageSource = new FontImageSource
+			{
+				Glyph ="+",
+				Color = Colors.Green
+			};
+		}
+
 	}
 }

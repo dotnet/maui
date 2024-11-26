@@ -19,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ToolbarItem)]
 		public void VerifyToolbarItemIconColor()
 		{
-			App.WaitForElement("Label");
+			App.WaitForElement("Button");
+			App.Tap("Button");
 			VerifyScreenshot();
 		}
 

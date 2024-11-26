@@ -10,7 +10,7 @@
 
 
 			 <ContentPage.Content>
-				<Label Text="ToolbarItemIconColorTest" AutomationId="Label"/>
+				<Button Text="Change Icon" Clicked="Button_Clicked" AutomationId="Button"/>
 			 </ContentPage.Content>
     
 </controls:TestContentPage>
