@@ -220,7 +220,6 @@ namespace Microsoft.Maui.UnitTests
 
 						foreach (JsonProperty property in original.EnumerateObject())
 						{
-							string propertyPath = string.IsNullOrEmpty(path) ? property.Name : $"{path}.{property.Name}";
 							if (localized.TryGetProperty(property.Name, out JsonElement localizedProperty))
 							{
 								if (localizedProperty.GetRawText() == property.Value.GetRawText())
@@ -241,6 +240,122 @@ namespace Microsoft.Maui.UnitTests
 							writer.WriteLine($"File: {localizedJson}");
 							writer.WriteLine(sb.ToString());
 						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// This test looks at the keys in the standard json files and makes sure that those keys are in the corresponding lcl file.
+		/// Keys that are not included will be stored in a txt file for viewing:
+		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/LclFilesMissingJsonKeys_<locale>.txt
+		/// </summary>
+		[Theory]
+		[InlineData("cs")]
+		[InlineData("de")]
+		[InlineData("es")]
+		[InlineData("fr")]
+		[InlineData("it")]
+		[InlineData("ja")]
+		[InlineData("ko")]
+		[InlineData("pl")]
+		[InlineData("pt-BR")]
+		[InlineData("ru")]
+		[InlineData("tr")]
+		[InlineData("zh-Hans")]
+		[InlineData("zh-Hant")]
+		public void LclFilesMissingJsonKeys(string culture)
+		{
+			var jsonfiles = Directory.GetFiles(_mauiRoot, "*templatestrings.json", SearchOption.AllDirectories);
+
+			string lclFilePath = Path.Combine(_mauiRoot, "loc", culture);
+			var lclFiles = Directory.GetFiles(lclFilePath, "*.json.lcl", SearchOption.AllDirectories);
+
+			var outputFilePath = Path.Combine("localizationTestsOutput", "LclFilesMissingJsonKeys_" + culture + ".txt");
+
+			// Ensure the directory exists
+			var directoryPath = Path.GetDirectoryName(outputFilePath);
+			if (!Directory.Exists(directoryPath))
+			{
+				Directory.CreateDirectory(directoryPath);
+			}
+
+			using (var writer = new StreamWriter(outputFilePath))
+			{
+				writer.WriteLine("This file is created by the LclFilesMissingJsonKeys test.");
+				writer.WriteLine("This test looks at the keys in the standard json files and makes sure that those keys are in the corresponding lcl file.\n");
+
+				foreach (var file in jsonfiles)
+				{
+					var sb = new StringBuilder();
+
+					string directory = Path.GetDirectoryName(file);
+
+					while (directory is not null)
+					{
+						if (Path.GetFileName(directory) == ".template.config")
+						{
+							directory = Directory.GetParent(directory)?.FullName;
+							break;
+						}
+
+						directory = Directory.GetParent(directory)?.FullName;
+					}
+
+					if (directory is null)
+					{
+						throw new Exception("Could not find the directory above '.template.config'");
+					}
+
+					directory = Path.GetFileName(directory);
+
+					var correspondingLclFile = string.Empty;
+
+					foreach (var lcl in lclFiles)
+					{
+						if (lcl.Contains(directory, StringComparison.Ordinal))
+						{
+							correspondingLclFile = lcl;
+							break;
+						}
+					}
+
+					if (correspondingLclFile == string.Empty)
+					{
+						writer.WriteLine($"*** No corresponding lcl file for: {directory}\n");
+						continue;
+					}
+
+					var originalJson = File.ReadAllText(file);
+
+					using (JsonDocument originalDoc = JsonDocument.Parse(originalJson))
+					{
+						foreach (JsonProperty property in originalDoc.RootElement.EnumerateObject())
+						{
+							var lclKeys = LoadKeysFromLcl(correspondingLclFile);
+							var isFound = false;
+
+							foreach (var lclKey in lclKeys)
+							{
+								if (lclKey.Key == ";" + property.Name)
+								{
+									isFound = true;
+									break;
+								}
+							}
+
+							if (!isFound)
+							{
+								sb.AppendLine($"    Key not found in lcl file: {property.Name}");
+							}
+						}
+					}
+
+					if (sb.Length > 0)
+					{
+						writer.WriteLine($"Json File: {file}");
+						writer.WriteLine($"Lcl File: {correspondingLclFile}");
+						writer.WriteLine(sb.ToString());
 					}
 				}
 			}
