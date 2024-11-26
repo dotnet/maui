@@ -3,22 +3,19 @@ using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: NET8 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
-	// This type adds support to the SelectionChanged event
-	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
+	public partial class EntryHandler : ViewHandler<IEntry, MauiAppCompatEditText>
 	{
 		Drawable? _clearButtonDrawable;
 		bool _clearButtonVisible;
 		bool _set;
 
-		protected override AppCompatEditText CreatePlatformView()
+		protected override MauiAppCompatEditText CreatePlatformView()
 		{
 			var nativeEntry = new MauiAppCompatEditText(Context);
 			return nativeEntry;
@@ -32,15 +29,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (!_set && PlatformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged += OnSelectionChanged;
+			if (!_set)
+			{
+				PlatformView.SelectionChanged += OnSelectionChanged;
+			}
 
 			_set = true;
 		}
 
-		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
-		protected override void ConnectHandler(AppCompatEditText platformView)
+		protected override void ConnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
@@ -48,8 +45,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
-		protected override void DisconnectHandler(AppCompatEditText platformView)
+		protected override void DisconnectHandler(MauiAppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
 			platformView.TextChanged -= OnTextChanged;
@@ -57,9 +53,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (_set && platformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged -= OnSelectionChanged;
+			if (_set)
+			{
+				platformView.SelectionChanged -= OnSelectionChanged;
+			}
 
 			_set = false;
 		}
@@ -100,8 +97,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry)
 		{
-			if (handler is EntryHandler platformHandler)
+			if (handler is EntryHandler)
+			{
 				handler.PlatformView?.UpdatePlaceholderColor(entry);
+			}
 		}
 
 		public static void MapFont(IEntryHandler handler, IEntry entry) =>
@@ -136,18 +135,22 @@ namespace Microsoft.Maui.Handlers
 		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry)
 		{
 			if (handler is EntryHandler platformHandler)
+			{
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
+			}
 		}
 
 		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
 		{
 			if (args is FocusRequest request)
+			{
 				handler.PlatformView.Focus(request);
+			}
 		}
 
 		void OnTextChanged(object? sender, TextChangedEventArgs e)
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
 			{
 				return;
 			}
@@ -165,7 +168,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnFocusedChange(object? sender, FocusChangeEventArgs e)
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
 			{
 				return;
 			}
@@ -176,7 +179,7 @@ namespace Microsoft.Maui.Handlers
 		// Check whether the touched position inbounds with clear button.
 		void OnTouch(object? sender, TouchEventArgs e) =>
 			e.Handled =
-				_clearButtonVisible && VirtualView != null &&
+				_clearButtonVisible && VirtualView is not null &&
 				PlatformView.HandleClearButtonTouched(e, GetClearButtonDrawable);
 
 		void OnEditorAction(object? sender, EditorActionEventArgs e)
@@ -187,7 +190,7 @@ namespace Microsoft.Maui.Handlers
 			// This means, just by subscribing to EditorAction/KeyPressed/etc.. you change the behavior of the control
 			// So, we are setting handled to false here in order to maintain default behavior
 			bool handled = false;
-			if (returnType != null)
+			if (returnType is not null)
 			{
 				var actionId = e.ActionId;
 				var evt = e.Event;
@@ -225,10 +228,14 @@ namespace Microsoft.Maui.Handlers
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
 			if (VirtualView.CursorPosition != cursorPosition)
+			{
 				VirtualView.CursorPosition = cursorPosition;
+			}
 
 			if (VirtualView.SelectionLength != selectedTextLength)
+			{
 				VirtualView.SelectionLength = selectedTextLength;
+			}
 		}
 
 		internal void ShowClearButton()
@@ -241,14 +248,22 @@ namespace Microsoft.Maui.Handlers
 			var drawable = GetClearButtonDrawable();
 
 			if (VirtualView?.TextColor is not null)
+			{
 				drawable?.SetColorFilter(VirtualView.TextColor.ToPlatform(), FilterMode.SrcIn);
+			}
 			else
+			{
 				drawable?.ClearColorFilter();
+			}
 
 			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
+			{
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+			}
 			else
+			{
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+			}
 
 			_clearButtonVisible = true;
 		}
