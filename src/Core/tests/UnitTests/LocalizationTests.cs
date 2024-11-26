@@ -5,6 +5,8 @@ using System.Xml;
 using System.Globalization;
 using System.Resources;
 using Xunit;
+using System.Text.Json;
+using System.Text;
 
 
 namespace Microsoft.Maui.UnitTests
@@ -18,13 +20,13 @@ namespace Microsoft.Maui.UnitTests
 		/// This test checks that all the .lcl files' <str> elements have a corresponding
 		/// <tgt> element with their translations. Since there may be times that we have untranslated
 		/// elements, instead of failing the test when something is missing, the strings without
-		/// translations will be stored in a txt file for viewing: artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/LocalizationMissingTargets.txt
+		/// translations will be stored in a txt file for viewing: artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/ResxLocalizationMissingTargets.txt
 		/// </summary>
 		[Fact]
-		public void LocalizationStringsAreTranslated()
+		public void ResxLocalizationStringsAreTranslated()
 		{
 			string lclFilePath = Path.Combine(_mauiRoot, "loc");
-			string outputFilePath = Path.Combine("localizationTestsOutput", "LocalizationMissingTargets.txt");
+			string outputFilePath = Path.Combine("localizationTestsOutput", "ResxLocalizationMissingTargets.txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -37,8 +39,12 @@ namespace Microsoft.Maui.UnitTests
 
 			using (var writer = new StreamWriter(outputFilePath))
 			{
+				writer.WriteLine("This file is created by the ResxLocalizationStringsAreTranslated test.");
+				writer.WriteLine("This test checks that all the strings in our .lcl files have a corresponding 'Target' tag.\n");
+
 				foreach (var file in lclFiles)
 				{
+					var sb = new StringBuilder();
 					var localizedKeys = LoadKeysFromLcl(file);
 
 					foreach (var key in localizedKeys)
@@ -46,8 +52,16 @@ namespace Microsoft.Maui.UnitTests
 						if (key.Value.Target is null)
 						{
 							var filePath = file.Replace(_mauiRoot, "", StringComparison.Ordinal);
-							writer.WriteLine($"File: {filePath}, Key: {key.Key}, Source: {key.Value.Source}");
+							sb.AppendLine($"    Missing Target:");
+							sb.AppendLine($"        Key: {key.Key}");
+							sb.AppendLine($"        Source: {key.Value.Source}");
 						}
+					}
+
+					if (sb.Length > 0)
+					{
+						writer.WriteLine($"File: {file}");
+						writer.WriteLine(sb.ToString());
 					}
 				}
 			}
@@ -57,7 +71,8 @@ namespace Microsoft.Maui.UnitTests
 		/// This test checks that the strings inside the resx files are actually translated inside the assemblies
 		/// when the locale is changed. It compares the actual value inside the assembly to the culture specific .lcl file.
 		/// Strings that are not translated will be stored in a txt file for viewing:
-		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/LocalizationTranslationsNotDisplayed_<locale>.txt
+		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/ResxLocalizationTranslationsNotDisplayed_<locale>.txt
+		/// NOTE: Link any new resx files as EmbeddedResource in the Core.UnitTests.csproj file.
 		/// </summary>
 		[Theory]
 		[InlineData("cs", "cs-CZ")]
@@ -73,7 +88,7 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("tr", "tr-TR")]
 		[InlineData("zh-Hans", "zh-Hans")]
 		[InlineData("zh-Hant", "zh-Hant")]
-		public void LocalizationStringsAreDisplayedProperly(string cultureAbbreviation, string culture)
+		public void ResxLocalizationStringsAreDisplayedProperly(string cultureAbbreviation, string culture)
 		{
 			string lclFilePath = Path.Combine(_mauiRoot, "loc", cultureAbbreviation);
 
@@ -84,7 +99,7 @@ namespace Microsoft.Maui.UnitTests
 
 			var count = 0;
 
-			var outputFilePath = Path.Combine("localizationTestsOutput", "LocalizationTranslationsNotDisplayed_" + cultureAbbreviation + ".txt");
+			var outputFilePath = Path.Combine("localizationTestsOutput", "ResxLocalizationTranslationsNotDisplayed_" + cultureAbbreviation + ".txt");
 
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
@@ -95,12 +110,17 @@ namespace Microsoft.Maui.UnitTests
 
 			using (var writer = new StreamWriter(outputFilePath))
 			{
+				writer.WriteLine("This file is created by the ResxLocalizationStringsAreDisplayedProperly test.");
+				writer.WriteLine("This test checks that the strings inside the resx files are actually translated inside the assemblies when the locale is changed. It compares the actual value inside the assembly to the culture specific .lcl file.");
+				writer.WriteLine("Following lines in this file mean that those strings showing up as the 'actual' are what we see from the ResourceManager when using a different locale and we would expect them to match 'expected' string from the lcl file.\n");
+				
 				foreach (var file in lclFiles)
 				{
 					string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
 					string resourceName = fileNameWithoutExtension.Split('.')[0];
 					var filePath = file.Replace(_mauiRoot, "", StringComparison.Ordinal);
 					var localizedKeys = LoadKeysFromLcl(file);
+					var sb = new StringBuilder();
 
 					// Check each key in the localization
 					foreach (var key in localizedKeys)
@@ -114,7 +134,9 @@ namespace Microsoft.Maui.UnitTests
 							// Compare with the expected translation in the .lcl file
 							if (key.Value.Target != actualTranslation)
 							{
-								writer.WriteLine($"File: {filePath}, Key: {keyName}, Expected: {key.Value.Target}, Actual: {actualTranslation}");
+								sb.AppendLine($"    Key: {keyName}");
+								sb.AppendLine($"        Expected: {key.Value.Target}");
+								sb.AppendLine($"        Actual: {actualTranslation}");
 							}
 							else
 							{
@@ -122,9 +144,105 @@ namespace Microsoft.Maui.UnitTests
 							}
 						}
 					}
+
+					if (sb.Length > 0)
+					{
+						writer.WriteLine($"File: {filePath}");
+						writer.WriteLine(sb.ToString());
+					}
 				}
 
 				writer.WriteLine($"Number of correctly displayed translated strings: {count}");
+			}
+		}
+
+		/// <summary>
+		/// This test compares the localized json translations with the standard json files and makes sure they are not equal.
+		/// This test will not be able to compare if both strings are still english but just different, so it is not a perfect test.
+		/// Strings that are not translated will be stored in a txt file for viewing:
+		/// artifacts/bin/Core.UnitTests/Debug/net9.0/localizationTestsOutput/JsonLocalizationTranslationsIncorrect_<locale>.txt
+		/// </summary>
+		[Theory]
+		[InlineData("cs")]
+		[InlineData("de")]
+		[InlineData("es")]
+		[InlineData("fr")]
+		[InlineData("it")]
+		[InlineData("ja")]
+		[InlineData("ko")]
+		[InlineData("pl")]
+		[InlineData("pt-BR")]
+		[InlineData("ru")]
+		[InlineData("tr")]
+		[InlineData("zh-Hans")]
+		[InlineData("zh-Hant")]
+		public void JsonLocalizationStringsAreTranslated(string culture)
+		{
+			var jsonfiles = Directory.GetFiles(_mauiRoot, "*templatestrings.json", SearchOption.AllDirectories);
+
+			var outputFilePath = Path.Combine("localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
+			
+			// Ensure the directory exists
+			var directoryPath = Path.GetDirectoryName(outputFilePath);
+			if (!Directory.Exists(directoryPath))
+			{
+				Directory.CreateDirectory(directoryPath);
+			}
+
+			using (var writer = new StreamWriter(outputFilePath))
+			{
+				writer.WriteLine("This file is created by the JsonLocalizationStringsAreTranslated test.");
+				writer.WriteLine("This test compares the localized json translations with the standard json files and makes sure they are not equal.");
+				writer.WriteLine("This test will not be able to compare if both strings are still english but just different, so it is not a perfect test.\n");
+
+				foreach (var file in jsonfiles)
+				{
+					string directory = Path.GetDirectoryName(file);
+					string localizedJson = Path.Combine(directory, $"templatestrings.{culture}.json");
+
+					if (!File.Exists(localizedJson))
+					{
+						writer.WriteLine($"*** File does not exist!!: {localizedJson}");
+						return;
+					}
+
+					var originalJson = File.ReadAllText(file);
+					var localizedJsonContent = File.ReadAllText(localizedJson);
+
+					using (JsonDocument originalDoc = JsonDocument.Parse(originalJson))
+					using (JsonDocument localizedDoc = JsonDocument.Parse(localizedJsonContent))
+					{
+						var path = string.Empty;
+						var original = originalDoc.RootElement;
+						var localized = localizedDoc.RootElement;
+
+						var sb = new StringBuilder();
+
+						foreach (JsonProperty property in original.EnumerateObject())
+						{
+							string propertyPath = string.IsNullOrEmpty(path) ? property.Name : $"{path}.{property.Name}";
+							if (localized.TryGetProperty(property.Name, out JsonElement localizedProperty))
+							{
+								if (localizedProperty.GetRawText() == property.Value.GetRawText())
+								{
+									sb.AppendLine($"    String not translated:");
+									sb.AppendLine($"        Name: {property.Name}");
+									sb.AppendLine($"        Value: {localizedProperty}");
+								}
+							}
+							else
+							{
+								sb.AppendLine($"    Missing property in localized file: Name: {property.Name}");
+							}
+						}
+
+						if (sb.Length > 0)
+						{
+							writer.WriteLine($"File: {localizedJson}");
+							writer.WriteLine(sb.ToString());
+						}
+					}
+				}
 			}
 		}
 
