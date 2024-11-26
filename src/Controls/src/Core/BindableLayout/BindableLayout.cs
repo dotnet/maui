@@ -550,10 +550,7 @@ namespace Microsoft.Maui.Controls
 
 			if (currentTemplate == template)
 			{
-				// child.ClearValue(BindableObject.BindingContextProperty);
-				// child.BindingContext = null;
 				child.BindingContext = item; // TJ - is this replacing the BindingContext incorrectly?
-				// child.BindingContext = c = item; // TJ - is this replacing the BindingContext incorrectly?
 			}
 			else
 			{

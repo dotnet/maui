@@ -4,18 +4,30 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample">
 
     <Grid RowSpacing="10" RowDefinitions="400,Auto,Auto" Margin="10">
-        <StackLayout Grid.Row="0" BindableLayout.ItemsSource="{Binding CurrentItems}" Orientation="Vertical">
+        <!-- <StackLayout Grid.Row="0" BindableLayout.ItemsSource="{Binding CurrentItems}" Orientation="Vertical">
             <BindableLayout.ItemTemplate>
                 <DataTemplate>
                     <Grid RowDefinitions="50,*,50" RowSpacing="25">
                         <Label Grid.Row="0" Text="{Binding Title}" HorizontalOptions="Center" FontAttributes="Bold" FontSize="Large"></Label>
-                        <Picker Grid.Row="1" Title="---Select---" ItemsSource="{Binding Choices}"  ItemDisplayBinding="{Binding ChoiceText}" SelectedItem="{Binding SelectedChoice}"></Picker>
+                        <Picker Grid.Row="1" Title="-Select-" ItemsSource="{Binding Choices}"  ItemDisplayBinding="{Binding ChoiceText}" SelectedItem="{Binding SelectedChoice}"></Picker>
                         
                         <Label Grid.Row="2" Text="{Binding SelectedChoiceText, StringFormat='Selected Choice: {0}'}"></Label>
                     </Grid>
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
-        </StackLayout>
+        </StackLayout> -->
+
+        <!-- <StackLayout Grid.Row="0" BindableLayout.ItemsSource="{Binding CurrentItems}" Orientation="Vertical">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate> -->
+                    <Grid RowDefinitions="50,*,50" RowSpacing="25">
+                        <Label Grid.Row="0" Text="{Binding Title}" HorizontalOptions="Center" FontAttributes="Bold" FontSize="Large"></Label>
+                        <Picker x:Name="myPicker" Grid.Row="1" Title="---Select---" ItemsSource="{Binding Choices}"  ItemDisplayBinding="{Binding ChoiceText}" SelectedItem="{Binding SelectedChoice}"></Picker>
+                        <Label Grid.Row="2" Text="{Binding SelectedChoiceText, StringFormat='Selected Choice: {0}'}"></Label>
+                    </Grid>
+                <!-- </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </StackLayout> -->
         
         <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
             <Button Grid.Column="0" Text="Section 1" Command="{Binding LoadSection1Command}"></Button>

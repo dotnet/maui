@@ -1,3 +1,4 @@
 {
-    "dotnet.defaultSolution": "Microsoft.Maui-vscode.sln"
+    "dotnet.defaultSolution": "Microsoft.Maui-vscode.sln",
+    "git.ignoreLimitWarning": true
 }
