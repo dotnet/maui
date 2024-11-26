@@ -1,4 +1,4 @@
-#if !WINDOWS && !MACCATALYST
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // SetOrientationLandscape method is not implemented on Windows and Catalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
