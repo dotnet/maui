@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
 #if MAUI_GRAPHICS_WIN2D
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
-
+		internal IBorderStroke? BorderStroke => _borderStroke;
 		internal FrameworkElement? Content
 		{
 			get => _content;
@@ -61,7 +60,7 @@ namespace Microsoft.Maui.Platform
 			var size = new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
 
 			// We need to update the clip since the content's position might have changed
-			_ = UpdateClipAsync(_borderStroke?.Shape, size.Width, size.Height);
+			UpdateClip(_borderStroke?.Shape, size.Width, size.Height);
 
 			return size;
 		}
@@ -90,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
-			_ = UpdateClipAsync(_borderStroke?.Shape, width, height);
+			UpdateClip(_borderStroke?.Shape, width, height);
 		}
 
 		internal void EnsureBorderPath(bool containsCheck = true)
@@ -160,10 +159,10 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			_ = UpdateClipAsync(strokeShape, width, height);
+			UpdateClip(strokeShape, width, height);
 		}
 
-		async Task UpdateClipAsync(IShape? borderShape, double width, double height)
+		void UpdateClip(IShape? borderShape, double width, double height)
 		{
 			if (Content is null)
 			{
@@ -183,11 +182,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
-
-			visual.Clip = null;
-
-			//Adding Task.Yield ensures that all layouts are properly updated before applying the clip.
-			await Task.Yield();
 
 			var compositor = visual.Compositor;
 
