@@ -11,6 +11,7 @@ namespace UITest.Appium
 			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumWindowsStepperActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumWindowsThemeChangeAction());
 		}
 
 		public override ApplicationState AppState
