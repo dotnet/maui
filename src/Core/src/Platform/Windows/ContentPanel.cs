@@ -182,7 +182,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
-
 			var compositor = visual.Compositor;
 
 			PathF? clipPath;
