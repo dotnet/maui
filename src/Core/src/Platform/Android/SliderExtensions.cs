@@ -10,6 +10,10 @@ namespace Microsoft.Maui.Platform
 	{
 		public const double PlatformMaxValue = int.MaxValue;
 
+
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
+		public static Drawable? defaultDrawable = null;
+
 		public static void UpdateMinimum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
 
 		public static void UpdateMaximum(this SeekBar seekBar, ISlider slider) => UpdateValue(seekBar, slider);
@@ -62,6 +66,17 @@ namespace Microsoft.Maui.Platform
 
 				if (seekBar.IsAlive() && thumbDrawable != null)
 					seekBar.SetThumb(thumbDrawable);
+			}
+			else
+			{
+				if(seekBar.Thumb is  Android.Graphics.Drawables.AnimatedStateListDrawable)
+				{
+					defaultDrawable = seekBar.Thumb;
+				}
+				else if (seekBar.Thumb is BitmapDrawable)
+				{
+					seekBar.SetThumb(defaultDrawable);
+				}
 			}
 		}
 	}
