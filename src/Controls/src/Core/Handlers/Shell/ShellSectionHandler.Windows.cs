@@ -103,11 +103,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (_shellSection is not null)
+			if (_shellSection is null)
+				return;
+
+			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
-				var shellItem = _shellSection.Parent as ShellItem;
-				var shellItemHandler = shellItem?.Handler as ShellItemHandler;
-				shellItemHandler?.MapMenuItems();
+				shellItemHandler.MapMenuItems();
 			}
 		}
 
