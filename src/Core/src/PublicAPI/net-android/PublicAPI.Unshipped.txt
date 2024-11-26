@@ -58,8 +58,10 @@ Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
 Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
 override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
 override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
