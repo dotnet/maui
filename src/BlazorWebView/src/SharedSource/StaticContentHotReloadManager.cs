@@ -157,12 +157,10 @@ namespace Microsoft.AspNetCore.Components.WebView
 		
 		}
 
-		static readonly string ContentAssemblynamePattern = "^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)";
-
 		internal static partial class RegexHelper
 		{
 #if NET7_0_OR_GREATER
-			[GeneratedRegex (ContentAssemblynamePattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			[GeneratedRegex ("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
 			static partial Regex ContentUrlRegex
 			{
 				get;
@@ -170,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 #else
 			static readonly Regex ContentUrlRegex =
 											new (
-												ContentAssemblynamePattern,
+												"^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)",
 												RegexOptions.Compiled,		
 												TimeSpan.FromMilliseconds(1000)							// against malicious input
 												);
