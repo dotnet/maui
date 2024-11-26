@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
     public class _25943MainPageViewModel : INotifyPropertyChanged
     {
-        private DateTime _date = DateTime.Now;
+        private DateTime _date = new DateTime(2024, 1, 1);
         public DateTime Date
         {
             get => _date;
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
             }
         }
 
-        private DateTime _maxDate = DateTime.Now + TimeSpan.FromDays(60);
+        private DateTime _maxDate = new DateTime(2024, 2, 29);
         public DateTime MaxDate
         {
             get => _maxDate;
@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.Issues
             }
         }
 
-        private DateTime _minDate = DateTime.Now - TimeSpan.FromDays(60);
+        private DateTime _minDate = new DateTime(2023, 11, 1);
         public DateTime MinDate
         {
             get => _minDate;
