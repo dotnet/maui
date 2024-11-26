@@ -7,8 +7,10 @@ namespace UITest.Appium
 	{
 		const string ToggleAirplaneModeCommand = "toggleAirplaneMode";
 		const string ToggleWifiCommand = "toggleWifi";
+		const string ToggleDataCommand = "toggleData";
 		const string GetPerformanceDataCommand = "getPerformanceData";
 		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
+		const string GetSystemBarsCommand = "getSystemBars";
 
 		readonly AppiumApp _appiumApp;
 
@@ -16,8 +18,10 @@ namespace UITest.Appium
 		{
 			ToggleAirplaneModeCommand,
 			ToggleWifiCommand,
+			ToggleDataCommand,
 			GetPerformanceDataCommand,
 			ToggleSystemAnimationsCommand,
+			GetSystemBarsCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -36,8 +40,10 @@ namespace UITest.Appium
 			{
 				ToggleAirplaneModeCommand => ToggleAirplaneMode(parameters),
 				ToggleWifiCommand => ToggleWifi(parameters),
+				ToggleDataCommand => ToggleData(parameters),
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
 				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
+				GetSystemBarsCommand => GetSystemBars(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -48,6 +54,18 @@ namespace UITest.Appium
 			{
 				// Toggle airplane mode on device.
 				androidDriver.ToggleAirplaneMode();
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse ToggleData(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				androidDriver.ToggleData();
 
 				return CommandResponse.SuccessEmptyResponse;
 			}
@@ -115,6 +133,18 @@ namespace UITest.Appium
 			{
 				return CommandResponse.FailedEmptyResponse;
 			}
+		}
+    
+		CommandResponse GetSystemBars(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				IDictionary<string, object> result = androidDriver.GetSystemBars();
+
+				return new CommandResponse(result, CommandResponseResult.Success);
+			}
+
+			return CommandResponse.FailedEmptyResponse;
 		}
 	}
 }
