@@ -13,6 +13,7 @@ parameters:
   useArtifacts: false
   rebootAgent: true
   poolName: 'Azure Pipelines'
+  skipProvisioning: true
 
 steps:
   - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
@@ -30,13 +31,17 @@ steps:
       ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android'))}}:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      skipProvisioning: true
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
       skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
       skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      ${{ if not(parameters.skipProvisioning) }}:
+        skipProvisioning: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+      ${{ else }}:  
+        skipProvisioning: true
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
@@ -149,7 +154,7 @@ steps:
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
-  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines'), eq(variables['System.TeamProject'], 'devdiv') ) }}:
     # This must always be placed as the last step in the job
     - template: agent-rebooter/mac.v1.yml@yaml-templates
       parameters:

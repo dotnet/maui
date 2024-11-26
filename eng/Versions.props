@@ -1,14 +1,11 @@
 <Project>
   <PropertyGroup>
-    <!-- The .NET product branding version -->
-    <ProductVersion>9.0.0</ProductVersion>
     <MajorVersion>9</MajorVersion>
     <MinorVersion>0</MinorVersion>
-    <PatchVersion>10</PatchVersion>
+    <PatchVersion>20</PatchVersion>
     <SdkBandVersion>9.0.100</SdkBandVersion>
-    <PreReleaseVersionLabel>ci.net9</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>
-    </PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>ci.main</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration></PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
@@ -63,7 +60,7 @@
     <MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>9.0.0</MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest90100TransportVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.6.240923002</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.6.241114003</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.756</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.2.0</MicrosoftGraphicsWin2DPackageVersion>
     <MicrosoftWindowsWebView2PackageVersion>1.0.2792.45</MicrosoftWindowsWebView2PackageVersion>

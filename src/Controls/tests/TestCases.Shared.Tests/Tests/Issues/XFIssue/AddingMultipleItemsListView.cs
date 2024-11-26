@@ -7,49 +7,45 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 [Category(UITestCategories.ListView)]
 public class AddingMultipleItemsListView : _IssuesUITest
 {
-	public AddingMultipleItemsListView(TestDevice testDevice) : base(testDevice)
-	{
-	}
 
-	public override string Issue => "Adding Multiple Items to a ListView";
+    public AddingMultipleItemsListView(TestDevice testDevice) : base(testDevice)
+    {
+    }
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void AddingMultipleListViewTests1AllElementsPresent()
-	// {
-	//     App.WaitForElement("Big Job");
-	//     App.WaitForElement("Smaller Job");
-	//     App.WaitForElement("Add On Job");
-	//     App.WaitForElement("Add One");
-	//     App.WaitForElement("Add Two");
-	//     App.WaitForElement("3672");
-	//     App.WaitForElement("6289");
-	//     App.WaitForElement("3672-41");
-	//     App.WaitForElement("2");
-	//     App.WaitForElement("2");
-	//     App.WaitForElement("23");
-	//     App.Screenshot("All elements are present");
-	// }
+    public override string Issue => "Adding Multiple Items to a ListView";
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void AddingMultipleListViewTests2AddOneElementToList()
-	// {
-	//     App.Tap("Add One");
+    [Test]
+    public void AddingMultipleListViewTests1AllElementsPresent()
+    {
+        App.WaitForElement("Big Job");
+        App.FindElement("Smaller Job");
+        App.FindElement("Add On Job");
+        App.FindElement("Add One");
+        App.FindElement("Add Two");
+        App.FindElement("3672");
+        App.FindElement("6289");
+        App.FindElement("3672-41");
+        App.FindElement("2");
+        App.FindElement("2");
+        App.FindElement("23");
+    }
 
-	//     App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
-	//     App.Screenshot("One more element exists");
-	// }
+    [Test]
+    public void AddingMultipleListViewTests2AddOneElementToList()
+    {
+        App.WaitForElement("Add One");
+        App.Tap("Add One");
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void AddingMultipleListViewTests3AddTwoElementToList()
-	// {
-	//     App.Screenshot("Click 'Add Two'");
-	//     App.Tap("Add Two");
+        App.WaitForElement("1234", timeout: TimeSpan.FromSeconds(2));
+    }
 
-	//     App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
-	//     App.WaitForElement("8888", timeout: TimeSpan.FromSeconds(2));
-	//     App.Screenshot("Two more element exist");
-	// }
+    [Test]
+    public void AddingMultipleListViewTests3AddTwoElementToList()
+    {
+        App.WaitForElement("Add Two");
+        App.Tap("Add Two");
+
+        App.WaitForElement("9999", timeout: TimeSpan.FromSeconds(2));
+        App.FindElement("8888");
+    }
 }
