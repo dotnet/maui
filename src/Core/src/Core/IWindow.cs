@@ -130,13 +130,12 @@ namespace Microsoft.Maui
 
 		float RequestDisplayDensity();
 
-#if WINDOWS
+#if WINDOWS || MACCATALYST
 		ITitleBar? TitleBar => null;
-		Rect[]? TitleBarDragRectangles => null;
 #endif
 
-#if MACCATALYST
-		ITitleBar? TitleBar => null;
+#if WINDOWS
+		Rect[]? TitleBarDragRectangles => null;
 #endif
 	}
 }
