@@ -34,8 +34,6 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Func<long, bool> _step;
 
-
-
 		public TweenerAnimation(Func<long, bool> step)
 		{
 			_step = step;
