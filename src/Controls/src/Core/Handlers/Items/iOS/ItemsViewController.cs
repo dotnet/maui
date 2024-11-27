@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal virtual void Disconnect()
 		{
-			
+			DisposeItemsSource();
 		}
 
 		protected override void Dispose(bool disposing)
