@@ -197,11 +197,10 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
+                  ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'True')) }}:
                     skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                  ${{ else }}:  
-                    skipProvisionator: true
+            
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -299,10 +298,10 @@ stages:
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
                 ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
-                  skipProvisioning: false
+                  skipProvisionator: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
-                  skipProvisioning: true
+                  skipProvisionator: true
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'
               inputs:
@@ -344,9 +343,9 @@ stages:
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
         MacBuildPool: ${{ parameters.MacTemplatePool }}
         ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
-          skipProvisioning: false
+          skipProvisionator: false
         ${{ else }}:
-          skipProvisioning: true
+          skipProvisionator: true
         conditionMacTemplates: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),

@@ -68,7 +68,7 @@ steps:
 
 
   # Provision Additional Software
-  - ${{ if not(parameters.skipProvisioning) }}:
+  - ${{ if not(parameters.skipProvisionator) }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
