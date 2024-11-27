@@ -214,12 +214,12 @@ namespace Microsoft.Maui.Controls.Design
 #if NET7_0_OR_GREATER
 		// #rgb, #rrggbb, #aarrggbb are all valid 
 		[GeneratedRegex (@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-		static partial Regex RxColorHex
+		internal static partial Regex RxColorHex
 		{
 			get;
 		}
 #else
-		static readonly Regex RxColorHex =
+		internal static readonly Regex RxColorHex =
 										new (
 											@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$",
 											RegexOptions.Compiled | RegexOptions.Singleline,		
@@ -236,12 +236,12 @@ namespace Microsoft.Maui.Controls.Design
 		// HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
 		[GeneratedRegex ("^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",  
 						RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-		static partial Regex RxFunc
+		internal static partial Regex RxFunc
 		{
 			get;
 		}
 #else
-		static readonly Regex RxFunc =
+		internal static readonly Regex RxFunc =
 										new (
 											"^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",
 											RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline,		
