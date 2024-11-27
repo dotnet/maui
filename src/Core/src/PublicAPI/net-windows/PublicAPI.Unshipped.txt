@@ -54,6 +54,7 @@ Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Microsoft.Web.WebView
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Microsoft.UI.Xaml.Controls.WebView2!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.WebView2! platformView) -> void
+override Microsoft.Maui.Handlers.LayoutHandler.ConnectHandler(Microsoft.Maui.Platform.LayoutPanel! platformView) -> void
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
