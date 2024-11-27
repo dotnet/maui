@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,9 +18,26 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue25991Test()
 		{
 			App.WaitForElement("WaitForStubControl");
+			
+			var result1 = App.FindElement("InfoLabel").GetText();
+			ClassicAssert.AreEqual("0", result1);
+
 			App.Click("ScrollToPerson2Button");
 			App.Click("AddItemButton");
-			VerifyScreenshot();
+
+			var result2 = App.FindElement("InfoLabel").GetText();
+			ClassicAssert.AreEqual("1", result2);
+
+			App.Click("KeepItemsInViewButton");
+			App.Click("AddItemButton");
+			var result3 = App.FindElement("InfoLabel").GetText();
+			ClassicAssert.AreEqual("0", result2);
+
+			App.Click("KeepLastItemInViewButton");
+			App.Click("AddItemButton");
+			var result4 = App.FindElement("InfoLabel").GetText();
+			ClassicAssert.AreEqual("4", result2);
+
 		}
 	}
 }
