@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Documents;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class TextBlockExtensions
+	public static partial class TextBlockExtensions
 	{
 		public static void UpdateFont(this TextBlock platformControl, Font font, IFontManager fontManager)
 		{
@@ -130,25 +130,26 @@ namespace Microsoft.Maui.Platform
 			return XElement.Load(reader);
 		}
 
-		internal partial class RegexHelper
-		{
+	}
+
+	internal partial class RegexHelper
+	{
 #if NET7_0_OR_GREATER
-			// .NET 9 allows partial properties, no need for method
-			// get every quote in the string along with all the backslashes preceding it
-			[GeneratedRegex (@"<br>", RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
-			static partial Regex AllQuotesWithPrecedingBackslashsRegex
-			{
-				get;
-			}
-#else
-			static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
-											new (
-												// get every quote in the string along with all the backslashes preceding it
-												@"<br>",
-												RegexOptions.Compiled | RegexOptions.IgnoreCase,
-												TimeSpan.FromMilliseconds(1000) 		// against malicious input
-												);		
-#endif											
+		// .NET 9 allows partial properties, no need for method
+		// get every quote in the string along with all the backslashes preceding it
+		[GeneratedRegex (@"<br>", RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex AllQuotesWithPrecedingBackslashsRegex
+		{
+			get;
 		}
+#else
+		internal static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
+										new (
+											// get every quote in the string along with all the backslashes preceding it
+											@"<br>",
+											RegexOptions.Compiled | RegexOptions.IgnoreCase,
+											TimeSpan.FromMilliseconds(1000) 		// against malicious input
+											);		
+#endif											
 	}
 }
