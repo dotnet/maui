@@ -18,7 +18,7 @@ variables:
 - name: isMainBranch
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isLocBranch
-  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/loc'), startsWith(variables['Build.SourceBranch'], 'refs/heads/loc-'))]
+  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/lego'), startsWith(variables['Build.SourceBranch'], 'refs/heads/lego-'))]
 - name: isTargetMainBranch
   value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
 - name: isLocPRBranch
