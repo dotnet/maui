@@ -8,7 +8,6 @@ using Xunit;
 using System.Text.Json;
 using System.Text;
 
-
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core)]
@@ -237,7 +236,7 @@ namespace Microsoft.Maui.UnitTests
 
 						if (sb.Length > 0)
 						{
-							writer.WriteLine($"File: {localizedJson}");
+							writer.WriteLine($"File: {GetRelativePathFromSrc(localizedJson)}");
 							writer.WriteLine(sb.ToString());
 						}
 					}
@@ -353,7 +352,7 @@ namespace Microsoft.Maui.UnitTests
 
 					if (sb.Length > 0)
 					{
-						writer.WriteLine($"Json File: {file}");
+						writer.WriteLine($"Json File: {GetRelativePathFromSrc(file)}");
 						writer.WriteLine($"Lcl File: {correspondingLclFile}");
 						writer.WriteLine(sb.ToString());
 					}
@@ -388,10 +387,23 @@ namespace Microsoft.Maui.UnitTests
 			return translations;
 		}
 
-		private string GetLocalizedString(string resourceString, string key)
+		string GetLocalizedString(string resourceString, string key)
 		{
 			var resourceManager = new ResourceManager("Core.UnitTests.Resources." + resourceString, typeof(LocalizationTests).Assembly);
 			return resourceManager.GetString(key, CultureInfo.CurrentUICulture);
+		}
+
+		static string GetRelativePathFromSrc(string path)
+		{
+			var srcDirectory = "src";
+			var index = path.IndexOf(srcDirectory, StringComparison.Ordinal);
+
+			if (index >= 0)
+			{
+				return path.Substring(index);
+			}
+
+			return path;
 		}
 	}
 
