@@ -344,10 +344,6 @@ stages:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
         MacBuildPool: ${{ parameters.MacTemplatePool }}
-        ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
-          skipProvisionator: false
-        ${{ else }}:
-          skipProvisionator: true
         conditionMacTemplates: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
