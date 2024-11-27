@@ -198,10 +198,10 @@ stages:
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
                   ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
-                    skipProvisioning: false
+                    skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:  
-                    skipProvisioning: true
+                    skipProvisionator: true
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -270,11 +270,11 @@ stages:
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
-                        skipProvisioning: false
+                      ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                        skipProvisionator: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
-                        skipProvisioning: true
+                        skipProvisionator: true
                       
   - stage: samples_net
     displayName: Test .NET MAUI Samples
