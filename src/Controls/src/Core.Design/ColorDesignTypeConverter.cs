@@ -176,7 +176,6 @@ namespace Microsoft.Maui.Controls.Design
 		protected override string[] KnownValues => knownValues;
 
 		static readonly Lazy<Regex> RxColorHex = new(() => RegexHelper.RxColorHex);
-		static readonly Lazy<Regex> RxFuncExpr = new(() => RegexHelper.RxFunc);
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
@@ -207,40 +206,6 @@ namespace Microsoft.Maui.Controls.Design
 
 			return false;
 		}
-
-		internal static partial class RegexHelper
-		{
-#if NET7_0_OR_GREATER
-			[GeneratedRegex (@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-			static partial Regex RxColorHex
-			{
-				get;
-			}
-#else
-			static readonly Regex RxColorHex =
-											new (
-												@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$",
-												RegexOptions.Compiled | RegexOptions.Singleline,		
-												TimeSpan.FromMilliseconds(1000)							// against malicious input
-												);
-#endif
-
-#if NET7_0_OR_GREATER
-			[GeneratedRegex ("^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",  
-							RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-			static partial Regex RxFunc
-			{
-				get;
-			}
-#else
-			static readonly Regex RxFunc =
-											new (
-												"^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",
-												RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline,		
-												TimeSpan.FromMilliseconds(1000)							// against malicious input
-												);
-#endif
-		}
 	}
 
 	internal static partial class RegexHelper
@@ -262,5 +227,5 @@ namespace Microsoft.Maui.Controls.Design
 											TimeSpan.FromMilliseconds(1000)							// against malicious input
 											);
 #endif
-
+	}
 }
