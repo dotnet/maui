@@ -26,7 +26,8 @@ namespace Maui.Controls.Sample
 				.Issue18720AddMappers()
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
-				.Issue18720TimePickerAddMappers();
+				.Issue18720TimePickerAddMappers()
+				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
 
