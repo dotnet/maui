@@ -175,17 +175,7 @@ namespace Microsoft.Maui.Controls.Design
 
 		protected override string[] KnownValues => knownValues;
 
-		// #rgb, #rrggbb, #aarrggbb are all valid 
-		const string RxColorHexPattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
 		static readonly Lazy<Regex> RxColorHex = new(() => RegexHelper.RxColorHex);
-
-		// RGB		rgb(255,0,0), rgb(100%,0%,0%)					values in range 0-255 or 0%-100%
-		// RGBA		rgba(255, 0, 0, 0.8), rgba(100%, 0%, 0%, 0.8)	opacity is 0.0-1.0
-		// HSL		hsl(120, 100%, 50%)								h is 0-360, s and l are 0%-100%
-		// HSLA		hsla(120, 100%, 50%, .8)						opacity is 0.0-1.0
-		// HSV		hsv(120, 100%, 50%)								h is 0-360, s and v are 0%-100%
-		// HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
-		const string RxFuncPattern = "^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$";
 		static readonly Lazy<Regex> RxFuncExpr = new(() => RegexHelper.RxFuncPattern);
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
@@ -217,39 +207,47 @@ namespace Microsoft.Maui.Controls.Design
 
 			return false;
 		}
-
-		internal static partial class RegexHelper
-		{
-#if NET7_0_OR_GREATER
-			[GeneratedRegex (@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-			static partial Regex RxColorHex
-			{
-				get;
-			}
-#else
-			static readonly Regex RxColorHex =
-											new (
-												@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$",
-												RegexOptions.Compiled | RegexOptions.Singleline,		
-												TimeSpan.FromMilliseconds(1000)							// against malicious input
-												);
-#endif
-
-#if NET7_0_OR_GREATER
-			[GeneratedRegex ("^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",  
-							RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-			static partial Regex RxFunc
-			{
-				get;
-			}
-#else
-			static readonly Regex RxFunc =
-											new (
-												"^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",
-												RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline,		
-												TimeSpan.FromMilliseconds(1000)							// against malicious input
-												);
-#endif
-		}
 	}
+
+	internal static partial class RegexHelper
+	{
+#if NET7_0_OR_GREATER
+		// #rgb, #rrggbb, #aarrggbb are all valid 
+		[GeneratedRegex (@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
+		static partial Regex RxColorHex
+		{
+			get;
+		}
+#else
+		static readonly Regex RxColorHex =
+										new (
+											@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$",
+											RegexOptions.Compiled | RegexOptions.Singleline,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+#endif
+
+#if NET7_0_OR_GREATER
+		// RGB		rgb(255,0,0), rgb(100%,0%,0%)					values in range 0-255 or 0%-100%
+		// RGBA		rgba(255, 0, 0, 0.8), rgba(100%, 0%, 0%, 0.8)	opacity is 0.0-1.0
+		// HSL		hsl(120, 100%, 50%)								h is 0-360, s and l are 0%-100%
+		// HSLA		hsla(120, 100%, 50%, .8)						opacity is 0.0-1.0
+		// HSV		hsv(120, 100%, 50%)								h is 0-360, s and v are 0%-100%
+		// HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
+		[GeneratedRegex ("^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",  
+						RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
+		static partial Regex RxFunc
+		{
+			get;
+		}
+#else
+		static readonly Regex RxFunc =
+										new (
+											"^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$",
+											RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+#endif
+	}
+
 }
