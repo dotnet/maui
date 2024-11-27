@@ -42,11 +42,11 @@ steps:
       skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if not(parameters.skipProvisioning) }}:
+      ${{ if parameters.skipProvisioning }}:
+        skipProvisioning: true
+      ${{ else }}:  
         skipProvisioning: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-      ${{ else }}:  
-        skipProvisioning: true
 
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')
