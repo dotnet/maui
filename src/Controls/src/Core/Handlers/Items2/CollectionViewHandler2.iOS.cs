@@ -172,7 +172,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Fall back to vertical list
 			var fallbackItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
 			ItemsView.ItemsLayout = fallbackItemsLayout;
-			SubscribeToItemsLayoutPropertyChanged(fallbackItemsLayout);
 			return LayoutFactory2.CreateList(fallbackItemsLayout, groupInfo, headerFooterInfo);
 		}
 
