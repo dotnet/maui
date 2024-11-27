@@ -176,6 +176,7 @@ namespace Microsoft.Maui.Controls.Design
 		protected override string[] KnownValues => knownValues;
 
 		static readonly Lazy<Regex> RxColorHex = new(() => RegexHelper.RxColorHex);
+		static readonly Lazy<Regex> RxFuncExpr = new(() => RegexHelper.RxFunc);
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
