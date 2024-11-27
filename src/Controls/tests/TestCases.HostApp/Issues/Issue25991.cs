@@ -10,13 +10,14 @@ namespace Maui.Controls.Sample.Issues
 			public string Text { get; set; }
 		}
 
-		ObservableCollection<Issue25991Model> _collection = new ObservableCollection<Issue25991Model>() 
-		{ 
-			new Issue25991Model() { Text = "Item 1" }, 
-			new Issue25991Model() { Text = "Item 2" } 
+		ObservableCollection<Issue25991Model> _collection = new ObservableCollection<Issue25991Model>()
+		{
+			new Issue25991Model() { Text = "Item 1" },
+			new Issue25991Model() { Text = "Item 2" }
 		};
 
-		private CarouselView MyCarouselView { get; set; }
+		Label InfoLabel { get; set; }
+		CarouselView TestCarouselView { get; set; }
 
 		public Issue25991()
 		{
@@ -33,13 +34,21 @@ namespace Maui.Controls.Sample.Issues
 			};
 			mainStackLayout.Add(labelInstructions);
 
-			MyCarouselView = new CarouselView()
+			InfoLabel = new Label()
 			{
+				AutomationId = "InfoLabel",
+			};
+
+			mainStackLayout.Add(InfoLabel);
+
+			TestCarouselView = new CarouselView()
+			{
+				ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
 				ItemsSource = _collection,
 				Loop = false
 			};
 
-			MyCarouselView.ItemTemplate = new DataTemplate(() =>
+			TestCarouselView.ItemTemplate = new DataTemplate(() =>
 			{
 				StackLayout stackLayout = new StackLayout();
 				Label nameLabel = new Label();
@@ -50,7 +59,8 @@ namespace Maui.Controls.Sample.Issues
 				return stackLayout;
 			});
 
-			mainStackLayout.Add(MyCarouselView);
+			TestCarouselView.CurrentItemChanged += OnTestCarouselViewCurrentItemChanged;
+			mainStackLayout.Add(TestCarouselView);
 
 			Button scrollToPerson2Button = new Button()
 			{
@@ -68,12 +78,42 @@ namespace Maui.Controls.Sample.Issues
 			addItemButton.Clicked += OnAddButtonClicked;
 			mainStackLayout.Add(addItemButton);
 
+
+			HorizontalStackLayout buttonsStackLayout = new HorizontalStackLayout();
+			Button keepItemsInViewButton = new Button()
+			{
+				AutomationId = "KeepItemsInViewButton",
+				Text = "keepItemsInView",
+			};
+			keepItemsInViewButton.Clicked += OnKeepItemsInViewButtonClicked;
+			buttonsStackLayout.Add(keepItemsInViewButton);
+			Button keepScrollOffsetButton = new Button()
+			{
+				AutomationId = "KeepScrollOffsetButton",
+				Text = "KeepScrollOffset",
+			};
+			keepScrollOffsetButton.Clicked += OnKeepScrollOffsetButtonClicked;
+			buttonsStackLayout.Add(keepScrollOffsetButton);
+			Button keepLastItemInViewButton = new Button()
+			{
+				AutomationId = "KeepLastItemInViewButton",
+				Text = "KeepLastItemInView",
+			};
+			keepLastItemInViewButton.Clicked += OnKeepLastItemInViewButtonClicked;
+			buttonsStackLayout.Add(keepLastItemInViewButton);
+			mainStackLayout.Add(buttonsStackLayout);
+
 			Content = mainStackLayout;
+		}
+
+		void OnTestCarouselViewCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
+		{
+			InfoLabel.Text = TestCarouselView.Position.ToString();
 		}
 
 		void OnScrollToPerson2ButtonClicked(object sender, EventArgs e)
 		{
-			MyCarouselView.ScrollTo(1);
+			TestCarouselView.ScrollTo(1);
 		}
 
 		void OnAddButtonClicked(object sender, EventArgs e)
@@ -82,6 +122,21 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Text = "Item " + (_collection.Count + 1),
 			});
+		}
+
+		void OnKeepItemsInViewButtonClicked(object sender, EventArgs e)
+		{
+			TestCarouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepItemsInView;
+		}
+
+		void OnKeepScrollOffsetButtonClicked(object sender, EventArgs e)
+		{
+			TestCarouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
+		}
+
+		void OnKeepLastItemInViewButtonClicked(object sender, EventArgs e)
+		{
+			TestCarouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView;
 		}
 	}
 }
