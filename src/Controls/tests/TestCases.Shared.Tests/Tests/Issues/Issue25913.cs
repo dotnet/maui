@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("HideTop3");
 			App.Tap("HideTop3");
 #if WINDOWS
-			App.Tap("Tab1");
+			App.Tap("Tab 1");
 #endif
 			VerifyScreenshot();
 		}
