@@ -138,12 +138,12 @@ namespace Microsoft.Maui.Platform
 		// .NET 9 allows partial properties, no need for method
 		// get every quote in the string along with all the backslashes preceding it
 		[GeneratedRegex (@"<br>", RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
-		internal static partial Regex AllQuotesWithPrecedingBackslashsRegex
+		internal static partial Regex NewLinesRegex
 		{
 			get;
 		}
 #else
-		internal static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
+		internal static readonly Regex NewLinesRegex =
 										new (
 											// get every quote in the string along with all the backslashes preceding it
 											@"<br>",
