@@ -68,7 +68,7 @@ steps:
 
 
   # Provision Additional Software
-  - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+  - ${{ if not(parameters.skipProvisioning) }}:
     - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Additional Software'

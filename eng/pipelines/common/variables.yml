@@ -43,6 +43,11 @@ variables:
   value: 'eng/provisioning/xcode.csx'
 - name: provisionator.path
   value: 'eng/provisioning/provisioning.csx'
+- name: internalProvisioning
+  value: $[or(
+            eq(variables['provisioning'], 'true'),
+            eq(variables['System.TeamProject'], 'devdiv')
+          )]
 - name: provisionator.extraArguments
   value: '-vvvv'
 - name: DotNet.Dir
@@ -68,6 +73,8 @@ variables:
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
   - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+    - name: internalProvisioning
+      value: true
     - name: PrivateBuild
       value: false
     - name: _RunAsPublic

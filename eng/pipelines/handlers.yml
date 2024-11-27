@@ -197,7 +197,7 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if parameters.UseProvisionator }}:
+                  ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
                     skipProvisioning: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:  
@@ -270,7 +270,7 @@ stages:
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if parameters.UseProvisionator }}:
+                      ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
                         skipProvisioning: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
@@ -298,7 +298,7 @@ stages:
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if parameters.UseProvisionator }}:
+                ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
                   skipProvisioning: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
@@ -343,7 +343,7 @@ stages:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
         MacBuildPool: ${{ parameters.MacTemplatePool }}
-        ${{ if parameters.UseProvisionator }}:
+        ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
           skipProvisioning: false
         ${{ else }}:
           skipProvisioning: true
