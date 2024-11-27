@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.Xaml;
 using Samples.View;
 using Device = Microsoft.Maui.Controls.Device;
@@ -14,8 +16,11 @@ namespace Samples
 		public App()
 		{
 			InitializeComponent();
+		}
 
-			MainPage = new NavigationPage(new HomePage());
+		protected override Window CreateWindow(IActivationState activationState)
+		{
+			return new Window(new NavigationPage(new HomePage()));
 		}
 
 		public static void HandleAppActions(AppAction appAction)
@@ -31,8 +36,8 @@ namespace Samples
 
 				if (page != null)
 				{
-					await Application.Current.MainPage.Navigation.PopToRootAsync();
-					await Application.Current.MainPage.Navigation.PushAsync(page);
+					await Application.Current.Windows[0].Page.Navigation.PopToRootAsync();
+					await Application.Current.Windows[0].Page.Navigation.PushAsync(page);
 				}
 			});
 		}

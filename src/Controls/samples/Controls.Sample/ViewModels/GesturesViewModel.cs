@@ -11,7 +11,9 @@ namespace Maui.Controls.Sample.ViewModels
 		{
 			new SectionModel(typeof(DragAndDropBetweenLayouts), "Drag And Drop",
 				"Drag and Drop Views."),
-			new SectionModel(typeof(PanGestureGalleryPage), "Pan Gesture",
+			new SectionModel(typeof(DropFileToMauiApp), "Drag and Drop file from OS",
+				"Drop File to App"),
+			new SectionModel(typeof(PanGestureGallery), "Pan Gesture",
 				"Pan Gesture."),
 			new SectionModel(typeof(PinchGestureTestPage), "Pinch Gesture",
 				"Pinch Gesture."),

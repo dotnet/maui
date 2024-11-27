@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Xml;
@@ -8,6 +9,12 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Default))]
+	[RequireService(
+		[typeof(IProvideValueTarget),
+		 typeof(IValueConverterProvider),
+		 typeof(IXmlLineInfoProvider),
+		 typeof(IConverterOptions)])]
+	[RequiresUnreferencedCode("The OnIdiomExtension is not trim safe. Use OnIdiom<T> instead.")]
 	public class OnIdiomExtension : IMarkupExtension
 	{
 		// See Device.Idiom

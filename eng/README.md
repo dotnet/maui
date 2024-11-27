@@ -49,9 +49,32 @@ release branch is created, someone with `darc` installed locally will need to
 run the `add-subscription` command to configure updates against that new branch.
 
 
+#### Build Asset Manifest Promotion
+
+Builds from main and release branches will push NuGet package metadata to the
+darc/maestro Build Asset Registry.  This build information will also be promoted
+to a default darc/maestro channel if one is configured.  Default channels are
+manually managed at this time.  To configure a new default repo+branch <-> channel
+association, run the [`darc add-default-channel`][6] command:
+```
+darc add-default-channel --channel ".NET 9.0.1xx SDK" --branch "net9.0" --repo https://github.com/dotnet/maui
+```
+
+When a new release branch is created, this command should look something like this:
+```
+darc add-default-channel --channel ".NET 9.0.1xx SDK Preview 1" --branch "release/9.0.1xx-preview1" --repo https://github.com/dotnet/maui
+```
+
+Other products/tools can consume our package version info in the following way:
+```
+darc add-dependency -n Microsoft.Maui.Sdk -t product -r https://github.com/dotnet/maui -v 1.2.3
+```
+
+
 [0]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md
 [1]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md#setting-up-your-darc-client
 [2]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md#authenticate
 [3]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md#add-dependency
 [4]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md#update-dependencies
 [5]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md#add-subscription
+[6]: https://github.com/dotnet/arcade/blob/ea609b8e036359934332480de9336d98fcbb3f91/Documentation/Darc.md#add-default-channel

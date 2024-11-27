@@ -1,3 +1,13 @@
+#addin "nuget:?package=NuGet.Packaging&version=6.7.0"
+#addin "nuget:?package=NuGet.Protocol&version=6.7.0"
+
+using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
+
 bool isCleanSet = HasArgument("clean") || IsTarget("clean");
 
 Task("Clean")
@@ -92,18 +102,6 @@ public void PrintEnvironmentVariables()
     };
 }
 
-void SetDotNetEnvironmentVariables(string dotnetDir)
-{
-    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
-    SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_ROOT", dotnet);
-    SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
-    SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0");
-    SetEnvironmentVariable("MSBuildEnableWorkloadResolver", "true");
-    SetEnvironmentVariable("PATH", dotnet, prepend: true);
-}
-
 void SetEnvironmentVariable(string name, string value, bool prepend = false)
 {
     var target = EnvironmentVariableTarget.Process;
@@ -122,37 +120,34 @@ bool IsTarget(string target) =>
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
 
-void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
+public async Task DownloadNuGetPackageAsync(string packageId, string version, string outputDirectory, string feedUri)
 {
-    try
-    {
-        NUnit3(new [] { unitTestLibrary }, settings);
-    }
-    catch
-    {
-        SetTestResultsEnvironmentVariables(settings.Work?.ToString());
-        throw;
-    }
+    // Create a source repository
+    var repository = Repository.Factory.GetCoreV3(feedUri);
+    
+    // Find the package
+    var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+    var packageVersion = NuGetVersion.Parse(version);
+    var cacheContext = new SourceCacheContext();
+    
+    // Set up logging (optional, use NullLogger if you don't need logging)
+    ILogger logger = NullLogger.Instance;
 
-    SetTestResultsEnvironmentVariables(settings.Work?.ToString());
-
-    void SetTestResultsEnvironmentVariables(string path)
+    // Download the package to the output directory
+    EnsureDirectoryExists(outputDirectory);
+    var packagePath = System.IO.Path.Combine(outputDirectory, $"{packageId}.{version}.nupkg");
+    
+    using (var fileStream = new FileStream(packagePath, FileMode.Create, FileAccess.Write, FileShare.None))
     {
-        var doc = new System.Xml.XmlDocument();
-        if(string.IsNullOrEmpty(path))
-        {
-            doc.Load("TestResult.xml");
-        }
-        else
-        {
-            doc.Load($"{path}/TestResult.xml");
-        }
-                
-        var root = doc.DocumentElement;
+        // Download package
+        var success = await resource.CopyNupkgToStreamAsync(
+            packageId, packageVersion, fileStream, cacheContext, logger, default);
 
-        foreach(System.Xml.XmlAttribute attr in root.Attributes)
+        if (!success)
         {
-            SetEnvironmentVariable($"NUNIT_{attr.Name}", attr.Value);
+            throw new Exception("Failed to download the package.");
         }
+
+        Information("Package '{0} v{1}' downloaded successfully to {2}", packageId, version, packagePath);
     }
 }

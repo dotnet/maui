@@ -20,11 +20,6 @@ namespace Microsoft.Maui.Handlers
 			};
 		}
 
-		protected override void ConnectHandler(ContentView platformView)
-		{
-			base.ConnectHandler(platformView);
-		}
-
 		protected override void DisconnectHandler(ContentView platformView)
 		{
 			base.DisconnectHandler(platformView);
@@ -59,17 +54,6 @@ namespace Microsoft.Maui.Handlers
 				platformContent.Tag = ContentView.ContentTag;
 				platformView.AddSubview(platformContent);
 			}
-		}
-
-		public override void PlatformArrange(Rect rect)
-		{
-			// Disable the animation during arrange for the Border; otherwise, all resizing actions
-			// will animate, and it makes the Border lag behind its content.
-
-			CATransaction.Begin();
-			CATransaction.AnimationDuration = 0;
-			base.PlatformArrange(rect);
-			CATransaction.Commit();
 		}
 	}
 }

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18242_2">
+  <ScrollView>
+    <VerticalStackLayout 
+      Margin="0,10,0,0">
+      <Label 
+        Text="Image on Bottom" 
+        HorizontalTextAlignment="Center" />
+      <Button 
+        x:Name="BottonButton"
+        ImageSource="dotnet_bot.png" 
+        Text="Button 1"
+        TextColor="Black"
+        ContentLayout="Bottom, 20" 
+        Background="LightGray"/>
+      <BoxView 
+        HeightRequest="30"/>
+      <Label 
+        Text="Image on Top" 
+        HorizontalTextAlignment="Center" />
+      <Button 
+        x:Name="TopButton"
+        ImageSource="dotnet_bot.png" 
+        Text="Button 2"
+        TextColor="Black"
+        ContentLayout="Top, 20" 
+        Background="LightGray"/>
+      <BoxView 
+        HeightRequest="30"/>
+      <Label 
+        Text="Image on Left" 
+        HorizontalTextAlignment="Center" />
+      <Button 
+        x:Name="LeftButton"
+        ImageSource="dotnet_bot.png" 
+        Text="Button 3"
+        TextColor="Black"
+        ContentLayout="Left, 20" 
+        Background="LightGray"/>
+      <BoxView 
+        HeightRequest="30"/>
+      <Label 
+        Text="Image on Right"
+        HorizontalTextAlignment="Center" />
+      <Button 
+        x:Name="RightButton"
+        ImageSource="dotnet_bot.png" 
+        Text="Button 4"
+        TextColor="Black"
+        ContentLayout="Right, 20" 
+        Background="LightGray"/>
+      <BoxView 
+        HeightRequest="30"/>
+      <Label 
+        Text="Button Padding"/>
+      <Slider 
+        Minimum="0"
+        Maximum="40"
+        Value="20"
+        ValueChanged="OnSliderPaddingValueChanged"/>
+      <Label
+        Text="Button Size"/>
+      <Button
+        Text="Update Button Size"
+        Clicked="OnUpdateSizeButtonClicked"/>
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <MauiRootDirectory>$(MSBuildThisFileDirectory)..\..\..\..\..\..\..\..\..\</MauiRootDirectory>
+    <MauiRootDirectory>$(MSBuildThisFileDirectory)..\..\..\..\..\..\..\</MauiRootDirectory>
     <MauiSrcDirectory>$(MauiRootDirectory)src\</MauiSrcDirectory>
     <_MauiBuildTasksLocation>$(MauiRootDirectory).buildtasks\</_MauiBuildTasksLocation>
   </PropertyGroup>

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		Element _parent;
 		bool _canRecycle; // aka IsDeclarative
 
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		readonly Type _type;
 
 		internal ElementTemplate()
@@ -21,11 +21,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal ElementTemplate(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 			: this()
 		{
 			if (type == null)
-				throw new ArgumentNullException("type");
+				throw new ArgumentNullException(nameof(type));
 
 			_canRecycle = true;
 			_type = type;
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			LoadTemplate = () => Activator.CreateInstance(type);
 		}
 
-		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException("loadTemplate");
+		internal ElementTemplate(Func<object> loadTemplate) : this() => LoadTemplate = loadTemplate ?? throw new ArgumentNullException(nameof(loadTemplate));
 
 		public Func<object> LoadTemplate { get; set; }
 
@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal bool CanRecycle => _canRecycle;
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		internal Type Type => _type;
 
 		Element IElementDefinition.Parent

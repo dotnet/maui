@@ -142,8 +142,10 @@ namespace Microsoft.Maui.Networking
 		{
 			var ip = new IPAddress(0);
 			defaultRouteReachability = new NetworkReachability(ip);
+#pragma warning disable CA1422 // obsolete in MacCatalyst 15, iOS 13
 			defaultRouteReachability.SetNotification(OnChange);
 			defaultRouteReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
+#pragma warning restore CA1422
 
 			remoteHostReachability = new NetworkReachability(Reachability.HostName);
 
@@ -151,8 +153,10 @@ namespace Microsoft.Maui.Networking
 			// this only happens when you create NetworkReachability from a hostname
 			remoteHostReachability.TryGetFlags(out var flags);
 
+#pragma warning disable CA1422 // obsolete in MacCatalyst 15, iOS 13
 			remoteHostReachability.SetNotification(OnChange);
 			remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
+#pragma warning restore CA1422
 
 #if !(MACCATALYST || MACOS)
 #pragma warning disable BI1234, CA1416 // Analyzer bug https://github.com/dotnet/roslyn-analyzers/issues/5938

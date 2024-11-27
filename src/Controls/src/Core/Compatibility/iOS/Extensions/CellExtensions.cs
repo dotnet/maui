@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		internal static NSIndexPath GetIndexPath(this Cell self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			NSIndexPath path;
 

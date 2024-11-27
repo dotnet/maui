@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 
 			SetSearchBarIconColor(uiButton, targetColor, _defaultPlaceholderTintColor);
-			uiButton.TintColor = targetColor.ToPlatform() ?? _defaultPlaceholderTintColor;
+			uiButton.TintColor = targetColor?.ToPlatform() ?? _defaultPlaceholderTintColor;
 		}
 
 		void UpdateClearIconColor(Color targetColor)
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			button.SetImage(newIcon, UIControlState.Normal);
 			button.SetImage(newIcon, UIControlState.Selected);
 			button.SetImage(newIcon, UIControlState.Highlighted);
-			button.TintColor = button.ImageView.TintColor = targetColor != null ? targetColor.ToPlatform() : defaultTintColor;
+			button.TintColor = button.ImageView.TintColor = targetColor?.ToPlatform() ?? defaultTintColor;
 		}
 
 		protected virtual void Dispose(bool disposing)

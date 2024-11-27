@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			class IssueModel
 			{
 				public IssueTracker IssueTracker { get; set; }
-				public int IssueNumber { get; set; }
+				public string IssueNumber { get; set; }
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
 				public string Description { get; set; }

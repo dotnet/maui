@@ -24,11 +24,11 @@ namespace Microsoft.Maui.Layouts
 			heightConstraint -= margin.VerticalThickness;
 
 			// Ask the handler to do the actual measuring
-			var measureWithMargins = view.Handler.GetDesiredSize(widthConstraint, heightConstraint);
+			var measureWithoutMargins = view.Handler.GetDesiredSize(widthConstraint, heightConstraint);
 
 			// Account for the margins when reporting the desired size value
-			return new Size(measureWithMargins.Width + margin.HorizontalThickness,
-				measureWithMargins.Height + margin.VerticalThickness);
+			return new Size(measureWithoutMargins.Width + margin.HorizontalThickness,
+				measureWithoutMargins.Height + margin.VerticalThickness);
 		}
 
 		public static Rect ComputeFrame(this IView view, Rect bounds)

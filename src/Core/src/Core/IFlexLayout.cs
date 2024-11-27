@@ -25,7 +25,7 @@ namespace Microsoft.Maui
 		FlexAlignContent AlignContent { get; }
 
 		/// <summary>
-		/// Gets a value that controls how child elements are laid out within their row or column.
+		/// Gets a value that controls how child elements are arranged within their row or column.
 		/// </summary>
 		FlexAlignItems AlignItems { get; }
 

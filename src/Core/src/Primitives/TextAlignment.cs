@@ -8,6 +8,7 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/TextAlignment.xml" path="//Member[@MemberName='Center']/Docs/*" />
 		Center,
 		/// <include file="../../docs/Microsoft.Maui/TextAlignment.xml" path="//Member[@MemberName='End']/Docs/*" />
-		End
+		End,
+		Justify
 	}
 }

@@ -5,13 +5,9 @@ using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using Microsoft.Maui.ApplicationModel;
-#if WINDOWS
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
-#else
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media.Imaging;
-#endif
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Media
 {
@@ -32,32 +28,59 @@ namespace Microsoft.Maui.Media
 
 		public async Task<IScreenshotResult> CaptureAsync(UIElement element)
 		{
-			var bmp = new RenderTargetBitmap();
+			if (element is WebView2 webView)
+			{
+				InMemoryRandomAccessStream stream = new();
+				await webView.CoreWebView2.CapturePreviewAsync(Web.WebView2.Core.CoreWebView2CapturePreviewImageFormat.Png, stream);
 
-			// NOTE: Return to the main thread so we can access view properties such as
-			//       width and height. Do not ConfigureAwait!
-			await bmp.RenderAsync(element);
+				BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
+				PixelDataProvider provider = await decoder.GetPixelDataAsync();
+				byte[] byteArray = provider.DetachPixelData();
 
-			// get the view information first
-			var width = bmp.PixelWidth;
-			var height = bmp.PixelHeight;
+				return new ScreenshotResult((int)decoder.PixelWidth, (int)decoder.PixelHeight, byteArray, decoder.DpiX, decoder.DpiY);
+			}
+			else
+			{
+				var bmp = new RenderTargetBitmap();
 
-			// then potentially move to a different thread
-			var pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
+				// NOTE: Return to the main thread so we can access view properties such as
+				//       width and height. Do not ConfigureAwait!
+				await bmp.RenderAsync(element);
 
-			return new ScreenshotResult(width, height, pixels);
+				// get the view information first
+				var width = bmp.PixelWidth;
+				var height = bmp.PixelHeight;
+
+				// then potentially move to a different thread
+				IBuffer pixels = await bmp.GetPixelsAsync().AsTask().ConfigureAwait(false);
+
+				return new ScreenshotResult(width, height, pixels);
+			}
 		}
 	}
 
 	partial class ScreenshotResult
 	{
-		readonly byte[] bytes;
+		readonly double _dpiX;
+		readonly double _dpiY;
+		readonly byte[] _bytes;
+
+		internal ScreenshotResult(int width, int height, byte[] bytes, double dpiX, double dpiY)
+		{
+			Width = width;
+			Height = height;
+			_bytes = bytes;
+			_dpiX = dpiX;
+			_dpiY = dpiY;
+		}
 
 		public ScreenshotResult(int width, int height, IBuffer pixels)
 		{
 			Width = width;
 			Height = height;
-			bytes = pixels?.ToArray() ?? throw new ArgumentNullException(nameof(pixels));
+			_bytes = pixels.ToArray() ?? throw new ArgumentNullException(nameof(pixels));
+			_dpiX = 96;
+			_dpiY = 96;
 		}
 
 		async Task<Stream> PlatformOpenReadAsync(ScreenshotFormat format, int quality)
@@ -74,14 +97,14 @@ namespace Microsoft.Maui.Media
 		}
 
 		Task<byte[]> PlatformToPixelBufferAsync() =>
-			Task.FromResult(bytes);
+			Task.FromResult(_bytes);
 
 		async Task EncodeAsync(ScreenshotFormat format, IRandomAccessStream ms)
 		{
 			var f = ToBitmapEncoder(format);
 
 			var encoder = await BitmapEncoder.CreateAsync(f, ms).AsTask().ConfigureAwait(false);
-			encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)Width, (uint)Height, 96, 96, bytes);
+			encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)Width, (uint)Height, _dpiX, _dpiY, _bytes);
 			await encoder.FlushAsync().AsTask().ConfigureAwait(false);
 		}
 

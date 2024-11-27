@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
 		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>
-		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create("IsRunning", typeof(bool), typeof(ActivityIndicator), default(bool));
+		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create(nameof(IsRunning), typeof(bool), typeof(ActivityIndicator), default(bool));
 
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;

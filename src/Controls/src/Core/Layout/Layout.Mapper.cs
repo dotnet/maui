@@ -12,8 +12,5 @@ namespace Microsoft.Maui.Controls
 		internal static new void RemapForControls()
 		{
 		}
-
-		[Obsolete("Use LayoutHandler.Mapper instead.")]
-		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<IView, IViewHandler>(ControlsVisualElementMapper);
 	}
 }

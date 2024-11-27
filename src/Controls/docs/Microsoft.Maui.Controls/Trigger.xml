@@ -131,7 +131,6 @@
       <Docs>
         <param name="targetType">The view type to which the trigger will be added.</param>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.Trigger" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Property">
@@ -153,8 +152,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the property whose value will be compared to <see cref="P:Microsoft.Maui.Controls.Trigger.Value" /> to determine when to invoke the setters.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Setters">
@@ -176,8 +173,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.Setter" /> objects that will be applied when the property that is named by <see cref="P:Microsoft.Maui.Controls.Trigger.Property" /> becomes equal to <see cref="P:Microsoft.Maui.Controls.Trigger.Value" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -199,8 +194,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the value of the property, named by the <see cref="P:Microsoft.Maui.Controls.Trigger.Property" /> property, that will cause the setters to be applied.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Xaml.IValueProvider.ProvideValue">
@@ -229,8 +222,6 @@
       <Docs>
         <param name="serviceProvider">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

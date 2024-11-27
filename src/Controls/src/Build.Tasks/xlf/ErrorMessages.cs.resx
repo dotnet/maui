@@ -232,7 +232,7 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType očekává řetězcový literál, značku {{x:Type}} nebo {{x:Nul}l}.</value>
+    <value>x:DataType očekává řetězcový literál, značku {{x:Type}} nebo {{x:Null}}.</value>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Nedeklarovaná předpona xmlns: {0}</value>

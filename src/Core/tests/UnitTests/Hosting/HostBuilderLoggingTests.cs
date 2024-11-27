@@ -35,6 +35,10 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var mauiApp = builder.Build();
 
 			ILogger logger = mauiApp.Services.GetService<ILogger<HostBuilderLoggingTests>>();
+
+			// When running in parallel "build" might generate messages
+			// from the dispatcher so let's clear those up before starting our test
+			loggerProvider.Messages.Clear();
 			logger.LogError("An error");
 			Assert.Single(loggerProvider.Messages);
 			Assert.Equal("An error", loggerProvider.Messages[0]);

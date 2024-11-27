@@ -1,15 +1,33 @@
-﻿
+﻿using System.Globalization;
+
 namespace Microsoft.Maui.IntegrationTests
 {
-	public class BaseBuildTest
+	public enum RuntimeVariant
 	{
-		public const string DotNetCurrent = "net8.0";
-		public const string DotNetPrevious = "net7.0";
+		Mono,
+		NativeAOT
+	}
 
-		public const string MauiVersionCurrent = "8.0.0-rc.1.9171"; // this should not be the same as the last release
-		public const string MauiVersionPrevious = "7.0.86"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+	public abstract class BaseBuildTest
+	{
+		public const string DotNetCurrent = "net9.0";
+		public const string DotNetPrevious = "net8.0";
 
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
+		public const string MauiVersionCurrent = "9.0.0-rc.1.24453.9"; // this should not be the same as the last release
+		public const string MauiVersionPrevious = "8.0.72"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
+
+		public string MauiPackageVersion
+		{
+			get
+			{
+				var version = Environment.GetEnvironmentVariable("MAUI_PACKAGE_VERSION");
+				if (string.IsNullOrWhiteSpace(version))
+					throw new Exception("MAUI_PACKAGE_VERSION was not set.");
+				return version;
+			}
+		}
 
 		public string TestName
 		{
@@ -20,7 +38,14 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					result = result.Replace(c, '_');
 				}
-				return result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+				result = result.Replace("_", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+				if (result.Length > 20)
+				{
+					// If the test name is too long, hash it to avoid path length issues
+					result = result.Substring(0, 15) + Convert.ToString(Math.Abs(string.GetHashCode(result.AsSpan(), StringComparison.Ordinal)), CultureInfo.InvariantCulture);
+				}
+				return result;
 			}
 		}
 
@@ -61,6 +86,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"Microsoft.Maui.Essentials.*.nupkg",
 				"Microsoft.Maui.Graphics.*.nupkg",
 				"Microsoft.Maui.Maps.*.nupkg",
+				"Microsoft.Maui.Resizetizer.*.nupkg",
 				"Microsoft.AspNetCore.Components.WebView.*.nupkg",
 			};
 
@@ -81,9 +107,8 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
-			FileUtilities.ReplaceInFile(TestNuGetConfig,
-				"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
-				$"<add key=\"nuget-only\" value=\"{extraPacksDir}\" />");
+			FileUtilities.ReplaceInFile(TestNuGetConfig, "<add key=\"nuget-only\" value=\"true\" />", "");
+			FileUtilities.ReplaceInFile(TestNuGetConfig, "NUGET_ONLY_PLACEHOLDER", extraPacksDir);
 		}
 
 		[SetUp]

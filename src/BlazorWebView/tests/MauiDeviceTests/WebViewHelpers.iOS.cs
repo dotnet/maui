@@ -1,28 +1,18 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using WebKit;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
-	public static class WebViewHelpers
+	public static partial class WebViewHelpers
 	{
-		const int MaxWaitTimes = 30;
-		const int WaitTimeInMS = 250;
-
 		public static async Task WaitForWebViewReady(WKWebView webview)
 		{
-			for (int i = 0; i < MaxWaitTimes; i++)
+			await Retry(async () =>
 			{
 				var blazorObject = await ExecuteScriptAsync(webview, "(window.Blazor !== null).toString()");
-				if (blazorObject == "true")
-				{
-					return;
-				}
-				await Task.Delay(WaitTimeInMS);
-			}
-
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get window.Blazor to be non-null.");
+				return blazorObject == "true";
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get window.Blazor to be non-null.")));
 		}
 
 		public static async Task<string> ExecuteScriptAsync(WKWebView webview, string script)
@@ -34,17 +24,12 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		public static async Task WaitForControlDiv(WKWebView webView, string controlValueToWaitFor)
 		{
 			var latestControlValue = "<no value yet>";
-			for (int i = 0; i < MaxWaitTimes; i++)
+
+			await Retry(async () =>
 			{
 				latestControlValue = await ExecuteScriptAsync(webView, "(document.getElementById('controlDiv') === null ? null : document.getElementById('controlDiv').innerText)");
-				if (latestControlValue == controlValueToWaitFor)
-				{
-					return;
-				}
-				await Task.Delay(WaitTimeInMS);
-			}
-
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'.");
+				return latestControlValue == controlValueToWaitFor;
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'.")));
 		}
 	}
 }

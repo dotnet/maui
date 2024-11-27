@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 		internal override void TearDown(BindableObject bindable)
 		{
 			bindable.RemoveBinding(_boundProperty);
-			bindable.ClearValue(_boundProperty);
+			bindable.ClearValue(_boundProperty, SetterSpecificity.FromBinding);
 		}
 
 		static IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();

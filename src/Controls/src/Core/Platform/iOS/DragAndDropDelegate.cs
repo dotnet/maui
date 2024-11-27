@@ -90,15 +90,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			UIDropOperation operation = UIDropOperation.Cancel;
 
-			if (session.LocalDragSession == null)
-				return new UIDropProposal(operation);
-
 			DataPackage package = null;
-
-			if (session.LocalDragSession.Items.Length > 0 &&
-				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
+			if (session.LocalDragSession != null)
 			{
-				package = cdi.DataPackage;
+				if (session.LocalDragSession.Items.Length > 0 &&
+					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
+				{
+					package = cdi.DataPackage;
+				}
 			}
 
 			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);

@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public sealed class ActionSheetContent : UserControl
+	public sealed partial class ActionSheetContent : UserControl
 	{
 		readonly ActionSheetArguments _options;
 
@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_options = sheetOptions;
 
 			TitleBlock.Text = _options.Title ?? string.Empty;
+			TitleBlock.SetAutomationPropertiesAutomationId("ActionSheetTitle");
+
 			OptionsList.ItemsSource = _options.Buttons.ToList();
 
 			if (_options.FlowDirection == Maui.FlowDirection.RightToLeft)

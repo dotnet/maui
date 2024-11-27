@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Mac;
 using UITest.Core;
@@ -10,28 +10,38 @@ namespace UITest.Appium
 		public AppiumCatalystApp(Uri remoteAddress, IConfig config)
 			: base(new MacDriver(remoteAddress, GetOptions(config)), config)
 		{
-			_commandExecutor.AddCommandGroup(new AppiumCatalystPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystTouchActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystVirtualKeyboardActions(this));
 		}
 
 		public override ApplicationState AppState
 		{
 			get
 			{
-				var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
-				var state = _driver?.ExecuteScript("macos: queryAppState", new Dictionary<string, object>
-						{
-							{ "bundleId", appId },
-						});
-
-				// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
-				return Convert.ToInt32(state) switch
+				try
 				{
-					1 => ApplicationState.NotRunning,
-					2 or
-					3 or
-					4 => ApplicationState.Running,
-					_ => ApplicationState.Unknown,
-				};
+					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
+					var state = _driver?.ExecuteScript("macos: queryAppState", new Dictionary<string, object>
+					{
+						{ "bundleId", appId },
+					});
+
+					// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
+					return Convert.ToInt32(state) switch
+					{
+						1 => ApplicationState.NotRunning,
+						2 or
+						3 or
+						4 => ApplicationState.Running,
+						_ => ApplicationState.Unknown,
+					};
+				}
+				catch
+				{
+					return ApplicationState.Unknown;
+				}
 			}
 		}
 

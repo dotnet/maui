@@ -5,6 +5,7 @@ using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
 using NLayoutGroup = Tizen.NUI.LayoutGroup;
 using NLinearLayout = Tizen.NUI.LinearLayout;
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
 
 namespace Microsoft.Maui.Platform
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Platform
 
 		MauiToolbar? _toolbar;
 
-		IReadOnlyList<IView> NavigationStack { get; set; } = new List<IView>();
+		List<IView> NavigationStack { get; set; } = new List<IView>();
 
 		protected IMauiContext? MauiContext { get; set; }
 
@@ -70,14 +71,14 @@ namespace Microsoft.Maui.Platform
 
 		public virtual async void RequestNavigation(NavigationRequest e)
 		{
-			IReadOnlyList<IView> newPageStack = new List<IView>(e.NavigationStack);
+			var newPageStack = new List<IView>(e.NavigationStack);
 			var previousNavigationStack = NavigationStack;
 			var previousNavigationStackCount = previousNavigationStack.Count;
 			bool initialNavigation = previousNavigationStackCount == 0;
 
 			if (initialNavigation)
 			{
-				await InitializeStack(newPageStack, e.Animated);
+				await InitializeStack((IReadOnlyList<IView>)newPageStack, e.Animated);
 				NavigationStack = newPageStack;
 				NavigationFinished(NavigationStack);
 				return;
@@ -121,7 +122,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void SyncBackStackToNavigationStack(IReadOnlyList<IView> newStack)
+		void SyncBackStackToNavigationStack(List<IView> newStack)
 		{
 			if (newStack.Count > NavigationStack.Count)
 			{
@@ -151,7 +152,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task PushToSync(IReadOnlyList<IView> newStack, bool animated)
+		async Task PushToSync(List<IView> newStack, bool animated)
 		{
 			int start = NavigationStack.Count;
 			for (int i = start; i < newStack.Count; i++)
@@ -161,7 +162,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		async Task PopToSync(IReadOnlyList<IView> newStack, bool animated)
+		async Task PopToSync(List<IView> newStack, bool animated)
 		{
 			int start = newStack.Count;
 			for (int i = start; i < NavigationStack.Count; i++)
@@ -186,7 +187,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void NavigationFinished(IReadOnlyList<IView> stack)
+		void NavigationFinished(List<IView> stack)
 		{
 			NavigationView?.NavigationFinished(stack);
 		}
@@ -214,3 +215,4 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 }
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance

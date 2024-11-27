@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>Default keyboard and base class for specialized keyboards, such as those for telephone numbers, email, and URLs.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Chat">
@@ -50,8 +49,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "ChatKeyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create">
@@ -80,8 +77,6 @@
       <Docs>
         <param name="flags">The flags that control the keyboard's appearance and behavior.</param>
         <summary>Returns a new keyboard with the specified <see cref="T:Microsoft.Maui.KeyboardFlags" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Default">
@@ -106,8 +101,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "Keyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Email">
@@ -132,8 +125,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "EmailKeyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Numeric">
@@ -158,8 +149,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "NumericKeyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Plain">
@@ -178,8 +167,6 @@
       </ReturnValue>
       <Docs>
         <summary>Returns a new keyboard with None <see cref="T:Microsoft.Maui.KeyboardFlags" /> ".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Telephone">
@@ -204,8 +191,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "TelephoneKeyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Text">
@@ -230,8 +215,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "TextKeyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Url">
@@ -256,8 +239,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets an instance of type "UrlKeyboard".</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -14,6 +14,11 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerProxyStub : ElementHandler<IWindow, PlatformView>, IWindowHandler
 	{
+		public WindowHandlerProxyStub() : this(new PropertyMapper<IWindow, IWindowHandler>(), new CommandMapper<IWindow, IWindowHandler>())
+		{
+
+		}
+
 		public WindowHandlerProxyStub(IPropertyMapper<IWindow, IWindowHandler> mapper = null, CommandMapper<IWindow, IWindowHandler> commandMapper = null)
 			: base(mapper ?? new PropertyMapper<IWindow, IWindowHandler>(), commandMapper ?? new CommandMapper<IWindow, IWindowHandler>())
 		{

@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <Import Project="../Shared/Common.targets" />
-
-  <PropertyGroup>
-    <OutputPath>$(DotNetPacksDirectory)$(PackageId)/$(PackageVersion)/</OutputPath>
-  </PropertyGroup>
+  <Import Project="../Shared/Maestro.targets" />
 
   <PropertyGroup>
     <!-- NuGet package information -->
@@ -28,6 +25,7 @@
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
+    <_ValuesToReplace Include="MicrosoftWindowsWebView2PackageVersion" PropertyName="MicrosoftWindowsWebView2PackageVersion" />
     <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />
     <_ValuesToReplace Include="_XamarinAndroidGlideVersion" PropertyName="_XamarinAndroidGlideVersion" />
     <_ValuesToReplace Include="_XamarinAndroidXSecurityVersion" PropertyName="_XamarinAndroidXSecurityVersion" />
@@ -62,6 +60,18 @@
       />
       <FileWrites Include="$(IntermediateOutputPath)BundledVersions.targets" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyWorkloadFiles" AfterTargets="_GenerateBundledVersions">
+    <PropertyGroup>
+      <_DestinationFolder>$(DotNetPacksDirectory)$(PackageId)/$(PackageReferenceVersion)/Sdk/</_DestinationFolder>
+    </PropertyGroup>
+    <ItemGroup>
+      <_Files Include="Sdk/*" />
+      <_Files Include="$(IntermediateOutputPath)BundledVersions.targets" />
+    </ItemGroup>
+    <MakeDir Directories="$(_DestinationFolder)" />
+    <Copy SourceFiles="@(_Files)" DestinationFolder="$(_DestinationFolder)" />
   </Target>
 
 </Project>

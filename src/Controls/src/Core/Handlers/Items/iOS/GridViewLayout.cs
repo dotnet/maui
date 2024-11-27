@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void HandlePropertyChanged(PropertyChangedEventArgs propertyChanged)
 		{
-			if (propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty,
+			if (CollectionView != null && propertyChanged.IsOneOf(GridItemsLayout.SpanProperty, GridItemsLayout.HorizontalItemSpacingProperty,
 				GridItemsLayout.VerticalItemSpacingProperty))
 			{
 				// Update the constraints; ConstrainTo will pick up the new span
@@ -243,7 +243,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return false;
 			}
 
-			if (layoutAttributesForRectElements[0].Frame.Top != CollectionView.Frame.Top + CollectionView.ContentInset.Bottom)
+			// We need to determine whether this 'if' statement is needed, as its relevance is currently uncertain.
+			if (layoutAttributesForRectElements[0].Frame.Top != CollectionView.Frame.Top)
 			{
 				return false;
 			}

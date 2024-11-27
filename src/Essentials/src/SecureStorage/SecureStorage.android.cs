@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using AndroidX.Security.Crypto;
 using Java.Security;
+using Javax.Crypto;
 using Xamarin.Google.Crypto.Tink.Shaded.Protobuf;
 
 namespace Microsoft.Maui.Storage
@@ -15,9 +16,11 @@ namespace Microsoft.Maui.Storage
 			{
 				try
 				{
-					ISharedPreferences sharedPreferences = GetEncryptedSharedPreferences();
-					if (sharedPreferences != null)
-						return sharedPreferences.GetString(key, null);
+					var prefs = GetEncryptedSharedPreferences();
+					if (prefs != null)
+					{
+						return prefs.GetString(key, null);
+					}
 
 					// TODO: Use Logger here?
 					System.Diagnostics.Debug.WriteLine(
@@ -48,11 +51,16 @@ namespace Microsoft.Maui.Storage
 		{
 			return Task.Run(() =>
 			{
-				using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
+				using var prefs = GetEncryptedSharedPreferences();
+				using var editor = prefs?.Edit();
 				if (data is null)
+				{
 					editor?.Remove(key);
+				}
 				else
+				{
 					editor?.PutString(key, data);
+				}
 
 				editor?.Apply();
 			});
@@ -60,50 +68,75 @@ namespace Microsoft.Maui.Storage
 
 		bool PlatformRemove(string key)
 		{
-			using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
+			using var prefs = GetEncryptedSharedPreferences();
+			using var editor = prefs?.Edit();
 			editor?.Remove(key)?.Apply();
 			return true;
 		}
 
 		void PlatformRemoveAll()
 		{
-			using var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit();
+			using var prefs = GetEncryptedSharedPreferences();
+			using var editor = prefs?.Edit();
 			editor?.Clear()?.Apply();
 		}
 
-		ISharedPreferences _prefs;
+		static void DeleteSharedPreferences()
+		{
+			// Open an editor to the preferences we can clear, using the alias for storing encrypted values
+			var editPreferences = Application.Context.GetSharedPreferences(Alias, FileCreationMode.Private).Edit();
+			// Commit is synchronous here so we can be sure it's done before trying to create the encrypted preferences again
+			editPreferences?.Clear()?.Commit();
+		}
+
 		ISharedPreferences GetEncryptedSharedPreferences()
 		{
-			if (_prefs is not null)
-			{
-				return _prefs;
-			}
-
 			try
 			{
-				var context = Application.Context;
-
-				MasterKey prefsMainKey = new MasterKey.Builder(context, Alias)
-					.SetKeyScheme(MasterKey.KeyScheme.Aes256Gcm)
-					.Build();
-
-				var sharedPreferences = EncryptedSharedPreferences.Create(
-					context,
-					Alias,
-					prefsMainKey,
-					EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
-					EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
-
-				return _prefs = sharedPreferences;
+				return CreateEncryptedSharedPreferences();
 			}
-			catch (InvalidProtocolBufferException)
+			catch (System.Exception ex)
+			when (ex is InvalidProtocolBufferException or Android.Security.KeyStoreException or KeyStoreException or BadPaddingException)
 			{
-				// TODO: Use Logger here?
-				System.Diagnostics.Debug.WriteLine(
-					"Unable get encrypted shared preferences, which is likely due to an app uninstall. Removing all keys and returning null.");
-				PlatformRemoveAll();
+				// If we encounter any of these exceptions, it's likely due to a corrupt key or bad migration between devices
+				// There isn't much to do at this point except try to delete the shared preferences so we can recreate them
+				try
+				{
+					System.Diagnostics.Debug.WriteLine(
+						"Unable get encrypted shared preferences, which is likely due to corrupt encryption key or bad app cache backup/restore. Removing all keys and returning null.");
+					System.Diagnostics.Debug.WriteLine(ex);
+
+					// Delete the shared preferences
+					DeleteSharedPreferences();
+
+					// Try to return a new instance now that we've deleted the old
+					return CreateEncryptedSharedPreferences();
+				}
+				catch (System.Exception ex2)
+				{
+					// If we still can't create things, we'll have to give up and return null
+					// TODO: Use Logger here?
+					System.Diagnostics.Debug.WriteLine("Still unable to create encrypted shared preferences after attempting to deleting them. Returning null.");
+					System.Diagnostics.Debug.WriteLine(ex2);
+				}
 				return null;
 			}
+		}
+
+		ISharedPreferences CreateEncryptedSharedPreferences()
+		{
+			var context = Application.Context;
+
+			var prefsMainKey = new MasterKey.Builder(context, Alias)
+				.SetKeyScheme(MasterKey.KeyScheme.Aes256Gcm)
+				.Build();
+
+			return EncryptedSharedPreferences.Create(
+				context,
+				Alias,
+				prefsMainKey,
+				EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
+				EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
 		}
 	}
 }

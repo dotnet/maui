@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[Description ("Verify the layout lays out on rotations")]
 		[UiTest (typeof(StackLayout))]

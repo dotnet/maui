@@ -108,19 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
-			{
-				var actualWidth = collectionView.ContentSize.Width - collectionView.Bounds.Size.Width;
-				if (collectionView.ContentOffset.X >= actualWidth || collectionView.ContentOffset.X < 0)
-					return;
-			}
-			else
-			{
-				var actualHeight = collectionView.ContentSize.Height - collectionView.Bounds.Size.Height;
-
-				if (collectionView.ContentOffset.Y >= actualHeight || collectionView.ContentOffset.Y < 0)
-					return;
-			}
+			ViewController?.CellDisplayingEndedFromDelegate(cell, indexPath);
 		}
 
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()

@@ -61,6 +61,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(30, layout.label0.WidthRequest);
+
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(0.0, layout.label0.WidthRequest);
 			}
 
 			[TestCase(false)]
@@ -74,6 +78,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Bar", layout.label0.Text);
+
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(null, layout.label0.Text);
 			}
 
 			[TestCase(false)]
@@ -87,7 +95,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual(FontAttributes.Bold, (FontAttributes)onplat);
 				mockDeviceInfo.Platform = DevicePlatform.Android;
 				Assert.AreEqual(FontAttributes.Italic, (FontAttributes)onplat);
-
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				Assert.AreEqual(FontAttributes.None, (FontAttributes)onplat);
 			}
 
 			[TestCase(false)]
@@ -119,6 +128,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(21, layout.label0.HeightRequest);
 
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(63.0, layout.label0.HeightRequest);
 
 				mockDeviceInfo.Platform = DevicePlatform.Create("FooBar");
 				layout = new OnPlatform(useCompiledXaml);
@@ -132,6 +144,45 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				mockDeviceInfo.Platform = DevicePlatform.Create("\ud83d\ude80");
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(63, layout.label0.HeightRequest);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void OnPlatformInStyle0(bool useCompiledXaml)
+			{
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(36, layout.button0.FontSize);
+
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(0.0, layout.button0.FontSize);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void OnPlatformInStyle1(bool useCompiledXaml)
+			{
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(36, layout.button1.FontSize);
+
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(0.0, layout.button1.FontSize);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void OnPlatformInline(bool useCompiledXaml)
+			{
+				mockDeviceInfo.Platform = DevicePlatform.iOS;
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(36, layout.button2.FontSize);
+
+				mockDeviceInfo.Platform = DevicePlatform.MacCatalyst;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(0.0, layout.button2.FontSize);
 			}
 		}
 	}

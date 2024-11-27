@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -22,8 +22,13 @@ namespace Maui.Controls.Sample.Pages
 		Bottom
 	}
 
-	public class DockLayout : Layout<View>
+	public class DockLayout : Layout
 	{
+		protected override ILayoutManager CreateLayoutManager()
+		{
+			return new DockLayoutManager(this);
+		}
+
 		public static readonly BindableProperty DockProperty =
 			BindableProperty.Create(nameof(Dock), typeof(Dock), typeof(DockLayout), Dock.Left,
 				BindingMode.TwoWay, null);
@@ -53,119 +58,131 @@ namespace Maui.Controls.Sample.Pages
 			set { SetValue(LastChildFillProperty, value); }
 		}
 
-		protected override void LayoutChildren(double x, double y, double width, double height)
+
+		class DockLayoutManager : LayoutManager
 		{
-			SizeRequest sizeRequest = new SizeRequest();
-			int i = 0;
+			readonly DockLayout _layout;
 
-			foreach (var child in Children)
+			public DockLayoutManager(DockLayout layout) : base(layout)
 			{
-				if (child.IsVisible)
-				{
-					i++;
-
-					sizeRequest = child.Measure(width, height, MeasureFlags.IncludeMargins);
-
-					double childX = 0;
-					double childY = 0;
-					Size request = sizeRequest.Request;
-					double childWidth = Math.Min(width, request.Width);
-					double childHeight = Math.Min(height, request.Height);
-
-					bool lastItem = i == Children.Count;
-					if (lastItem & LastChildFill)
-					{
-						LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
-						return;
-					}
-
-					switch (GetDock(child))
-					{
-						case Dock.Left:
-							{
-								childX = x;
-								childY = y;
-								childHeight = height;
-								x += childWidth;
-								width -= childWidth;
-								break;
-							}
-						case Dock.Top:
-							{
-								childX = x;
-								childY = y;
-								childWidth = width;
-								y += childHeight;
-								height -= childHeight;
-								break;
-							}
-						case Dock.Right:
-							{
-								childX = x + width - childWidth;
-								childY = y;
-								childHeight = height;
-								width -= childWidth;
-								break;
-							}
-						case Dock.Bottom:
-							{
-								childX = x;
-								childY = y + height - childHeight;
-								childWidth = width;
-								height -= childHeight;
-								break;
-							}
-						default:
-							{
-								goto case Dock.Left;
-							}
-					}
-
-					LayoutChildIntoBoundingRegion(child, new Rect(childX, childY, childWidth, childHeight));
-				}
+				_layout = layout;
 			}
-		}
 
-		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
-		{
-			double height = 0;
-			double width = 0;
-			double finalWidth = 0;
-			double finalHeight = 0;
-
-			foreach (var child in Children)
+			public override Size ArrangeChildren(Rect bounds)
 			{
-				if (child.IsVisible)
-				{
-					SizeRequest sizeRequest = child.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
-					Size request = sizeRequest.Request;
+				var (x, y, width, height) = bounds;
+				Size sizeRequest = Size.Zero;
+				int i = 0;
 
-					switch (GetDock(child))
+				foreach (View child in _layout)
+				{
+					if (child.IsVisible)
 					{
-						case Dock.Left:
-						case Dock.Right:
-							{
-								width += request.Width;
-								finalWidth = Math.Max(finalWidth, width);
-								finalHeight = Math.Max(finalHeight, height + request.Height);
-								break;
-							}
-						case Dock.Top:
-						case Dock.Bottom:
-							{
-								height += request.Height;
-								finalWidth = Math.Max(finalWidth, width + request.Width);
-								finalHeight = Math.Max(finalHeight, height);
-								break;
-							}
-						default:
-							{
-								goto case Dock.Right;
-							}
+						i++;
+
+						double childX = 0;
+						double childY = 0;
+						Size request = sizeRequest;
+						double childWidth = Math.Min(width, request.Width);
+						double childHeight = Math.Min(height, request.Height);
+
+						bool lastItem = i == _layout.Count;
+						if (lastItem & _layout.LastChildFill)
+						{
+							((IView)child).Arrange(new Rect(x, y, width, height));
+							return sizeRequest;
+						}
+
+						switch (_layout.GetDock(child))
+						{
+							case Dock.Left:
+								{
+									childX = x;
+									childY = y;
+									childHeight = height;
+									x += childWidth;
+									width -= childWidth;
+									break;
+								}
+							case Dock.Top:
+								{
+									childX = x;
+									childY = y;
+									childWidth = width;
+									y += childHeight;
+									height -= childHeight;
+									break;
+								}
+							case Dock.Right:
+								{
+									childX = x + width - childWidth;
+									childY = y;
+									childHeight = height;
+									width -= childWidth;
+									break;
+								}
+							case Dock.Bottom:
+								{
+									childX = x;
+									childY = y + height - childHeight;
+									childWidth = width;
+									height -= childHeight;
+									break;
+								}
+							default:
+								{
+									goto case Dock.Left;
+								}
+						}
+
+						((IView)child).Arrange(new Rect(childX, childY, childWidth, childHeight));
 					}
 				}
+
+				return sizeRequest;
 			}
-			return new SizeRequest(new Size(finalWidth, finalHeight));
+
+			public override Size Measure(double widthConstraint, double heightConstraint)
+			{
+				double height = 0;
+				double width = 0;
+				double finalWidth = 0;
+				double finalHeight = 0;
+
+				foreach (View child in _layout)
+				{
+					if (child.IsVisible)
+					{
+						var request = child.Measure(widthConstraint, heightConstraint);
+
+						switch (_layout.GetDock(child))
+						{
+							case Dock.Left:
+							case Dock.Right:
+								{
+									width += request.Width;
+									finalWidth = Math.Max(finalWidth, width);
+									finalHeight = Math.Max(finalHeight, height + request.Height);
+									break;
+								}
+							case Dock.Top:
+							case Dock.Bottom:
+								{
+									height += request.Height;
+									finalWidth = Math.Max(finalWidth, width + request.Width);
+									finalHeight = Math.Max(finalHeight, height);
+									break;
+								}
+							default:
+								{
+									goto case Dock.Right;
+								}
+						}
+					}
+				}
+
+				return new Size(finalWidth, finalHeight);
+			}
 		}
 	}
 }

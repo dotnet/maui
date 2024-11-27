@@ -127,6 +127,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				void InitialLoad(GenericGlobalLayoutListener listener, AView view)
 				{
+					// This means the handler was disconnected before the flyout was loaded
+					if (_shellContext?.Shell is null)
+					{
+						listener.Invalidate();
+						sfl.LayoutChanging -= OnFlyoutViewLayoutChanging;
+						return;
+					}
+
 					OnFlyoutViewLayoutChanging();
 
 					if (_flyoutContentView == null || ggll == null)
@@ -366,7 +374,31 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (flyoutView?.LayoutParameters is ViewGroup.MarginLayoutParams cl)
 			{
 				var viewMargin = _contentView?.View?.Margin ?? Thickness.Zero;
-				var bottomMarginPx = (int)_rootView.Context.ToPixels(viewMargin.Bottom);
+				var bottomOffset = GetFooterViewTotalHeight() + (int)_rootView.Context.ToPixels(viewMargin.Bottom);
+				var headerViewHeight = _headerView?.MeasuredHeight ?? 0;
+
+				// If the ScrollFlag on the LayoutParams are not set to zero than the content will automatically offset
+				// By the height of the action bar so we can subtract that out of how much margin needs to be applied
+				// to make room for the footer.
+				//
+				// The Flyout Content is already going to be offset by the app bar height
+				// so we don't need to add that to the bottom margin
+				if (headerViewHeight > 0 &&
+					_headerFrameLayout?.LayoutParameters is AppBarLayout.LayoutParams alp &&
+					alp.ScrollFlags != 0)
+				{
+					bottomOffset += _headerView?.MeasuredHeight ?? 0;
+
+					var headerViewMinHeight = _headerView?.MinimumHeight ?? 0;
+					if (bottomOffset > headerViewMinHeight)
+						bottomOffset -= headerViewMinHeight;
+				}
+
+				if (cl.BottomMargin != bottomOffset)
+				{
+					cl.BottomMargin = bottomOffset;
+					returnValue = true;
+				}
 
 				// For scrollable content we use padding so once it's all the way scrolled up
 				// the bottom of the view isn't obscured by the footer view
@@ -374,47 +406,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (flyoutView is AndroidX.Core.View.IScrollingView &&
 					flyoutView is ViewGroup vg)
 				{
-					var bottomPadding = GetFooterViewTotalHeight();
-					returnValue = true;
-
-					if (cl.BottomMargin != bottomMarginPx)
-						cl.BottomMargin = bottomMarginPx;
-
-					if (vg.PaddingBottom != bottomPadding)
+					if (vg.PaddingBottom != bottomOffset)
 					{
-						vg.SetPadding(0, 0, 0, bottomPadding);
+						vg.SetPadding(0, 0, 0, bottomOffset);
 						returnValue = true;
 					}
 
 					vg.SetClipToPadding(false);
-				}
-				else
-				{
-					var bottomMargin = GetFooterViewTotalHeight() + bottomMarginPx;
-					var headerViewHeight = _headerView?.MeasuredHeight ?? 0;
-
-					// If the ScrollFlag on the LayoutParams are not set to zero than the content will automatically offset
-					// By the height of the action bar so we can subtract that out of how much margin needs to be applied
-					// to make room for the footer.
-					//
-					// The Flyout Content is already going to be offset by the app bar height
-					// so we don't need to add that to the bottom margin
-					if (headerViewHeight > 0 &&
-						_headerFrameLayout?.LayoutParameters is AppBarLayout.LayoutParams alp &&
-						alp.ScrollFlags != 0)
-					{
-						bottomMargin += _headerView?.MeasuredHeight ?? 0;
-
-						var headerViewMinHeight = _headerView?.MinimumHeight ?? 0;
-						if (bottomMargin > headerViewMinHeight)
-							bottomMargin -= headerViewMinHeight;
-					}
-
-					if (cl.BottomMargin != bottomMargin)
-					{
-						cl.BottomMargin = bottomMargin;
-						returnValue = true;
-					}
 				}
 
 				// Set the XPLAT frame to the measured size of the platform
@@ -789,7 +787,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					frameLayoutView.SetMinimumHeight(minHeight);
 				}
 
-				if (PlatformView.MinimumHeight != minHeight)
+				if (PlatformView is not null && PlatformView.MinimumHeight != minHeight)
 				{
 					PlatformView.SetMinimumHeight(minHeight);
 				}

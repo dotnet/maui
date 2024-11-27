@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Member))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticExtension")]
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 	public class StaticExtension : IMarkupExtension
 	{
 		public string Member { get; set; }

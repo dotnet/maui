@@ -23,8 +23,9 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (SetterValueIsCollection(bpRef, module, node, context))
 				yield break;
 
+			// valueNode is null, for example, when OnPlatform doesn't have a match for the current platform, so the property should not be set
 			if (valueNode == null)
-				throw new XamlParseException("Missing Value for Setter", (IXmlLineInfo)node);
+				yield break;
 
 			//if it's an elementNode, there's probably no need to convert it
 			if (valueNode is IElementNode)
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield return instruction;
 
 			//push the value
-			foreach (var instruction in ((ValueNode)valueNode).PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context, bpRef: bpRef), boxValueTypes: true, unboxValueTypes: false))
+			foreach (var instruction in ((ValueNode)valueNode).PushConvertedValue(context, bpRef, (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, bpRef: bpRef), boxValueTypes: true, unboxValueTypes: false))
 				yield return instruction;
 
 			//set the value

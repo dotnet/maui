@@ -47,8 +47,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
+			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			if (platformView.FillViewport)
 			{
@@ -147,7 +147,13 @@ namespace Microsoft.Maui.Handlers
 			var verticalOffsetDevice = (int)context.ToPixels(request.VerticalOffset);
 
 			handler.PlatformView.ScrollTo(horizontalOffsetDevice, verticalOffsetDevice,
-				request.Instant, () => handler.VirtualView.ScrollFinished());
+				request.Instant, () =>
+				{
+					if (handler.IsConnected())
+					{
+						handler.VirtualView.ScrollFinished();
+					}
+				});
 		}
 
 		/*

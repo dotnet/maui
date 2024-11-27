@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
-using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Devices
 {
@@ -114,17 +113,90 @@ namespace Microsoft.Maui.Devices
 			}
 		}
 
-		static readonly int SM_CONVERTIBLESLATEMODE = 0x2003;
-		static readonly int SM_TABLETPC = 0x56;
+		/// <summary>
+		/// Whether or not the device is in "tablet mode" or not. This
+		/// has to be implemented by the device manufacturer.
+		/// </summary>
+		const int SM_CONVERTIBLESLATEMODE = 0x2003;
+
+		/// <summary>
+		/// How many fingers (aka touches) are supported for touch control
+		/// </summary>
+		const int SM_MAXIMUMTOUCHES = 95;
+
+		/// <summary>
+		/// Whether a physical keyboard is attached or not.
+		/// Manufacturers have to remember to set this.
+		/// Defaults to not-attached.
+		/// </summary>
+		const int SM_ISDOCKED = 0x2004;
+
 
 		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		static extern int GetSystemMetrics(int nIndex);
 
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		static extern bool GetAutoRotationState(ref AutoRotationState pState);
+
+		[DllImport("Powrprof.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		static extern PowerPlatformRole PowerDeterminePlatformRoleEx(ulong Version);
+
 		static bool GetIsInTabletMode()
 		{
-			var supportsTablet = GetSystemMetrics(SM_TABLETPC) != 0;
-			var inTabletMode = GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0;
-			return inTabletMode && supportsTablet;
+			// Adopt Chromium's methodology for determining tablet mode
+			// https://source.chromium.org/chromium/chromium/src/+/main:base/win/win_util.cc;l=537;drc=ac83a5a2d3c04763d86ce16d92f3904cc9566d3a;bpv=0;bpt=1
+			// Device does not have a touchscreen
+			if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0)
+			{
+				return false;
+			}
+
+			// If the device is docked, user is treating as a PC
+			if (GetSystemMetrics(SM_ISDOCKED) != 0)
+			{
+				return false;
+			}
+
+			// Fetch device rotation. Possible for this to fail.
+			AutoRotationState rotationState = AutoRotationState.AR_ENABLED;
+			bool success = GetAutoRotationState(ref rotationState);
+
+			// Fetch succeeded and device does not support rotation
+			if (success && (rotationState & (AutoRotationState.AR_NOT_SUPPORTED | AutoRotationState.AR_LAPTOP | AutoRotationState.AR_NOSENSOR)) != 0)
+			{
+				return false;
+			}
+
+			// Check if power management says we are mobile (laptop) or a tablet
+			if ((PowerDeterminePlatformRoleEx(2) & (PowerPlatformRole.PlatformRoleMobile | PowerPlatformRole.PlatformRoleSlate)) != 0)
+			{
+				// Check if tablet mode is 0. 0 is default value.
+				return GetSystemMetrics(SM_CONVERTIBLESLATEMODE) == 0;
+			}
+
+			return false;
 		}
+	}
+
+	/// <summary>
+	/// Represents the OEM's preferred power management profile,
+	/// Useful in-case OEM implements one but not the other
+	/// </summary>
+	enum PowerPlatformRole
+	{
+		PlatformRoleMobile = 2,
+		PlatformRoleSlate = 8,
+	}
+
+	/// <summary>
+	/// Whether rotation is supported or not.
+	/// Rotation is only supported if AR_ENABLED is true
+	/// </summary>
+	enum AutoRotationState
+	{
+		AR_ENABLED = 0x0,
+		AR_NOT_SUPPORTED = 0x20,
+		AR_LAPTOP = 0x80,
+		AR_NOSENSOR = 0x10,
 	}
 }

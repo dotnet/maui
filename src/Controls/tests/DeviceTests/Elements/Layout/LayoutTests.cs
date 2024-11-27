@@ -326,6 +326,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		[Category(TestCategory.Button, TestCategory.FlexLayout)]
+		public async Task ButtonWithImageInFlexLayoutInGridDoesNotCycle()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
+			// Cycle does not occur on first run
+			await ButtonWithImageInFlexLayoutInGridDoesNotCycleCore();
+		}
+
+		async Task ButtonWithImageInFlexLayoutInGridDoesNotCycleCore()
+		{
+			var grid = new Grid() { MaximumWidthRequest = 150 };
+			grid.AddRowDefinition(new RowDefinition(GridLength.Auto));
+
+			var flexLayout = new FlexLayout() { Wrap = Layouts.FlexWrap.Wrap };
+			grid.Add(flexLayout);
+
+			for (int i = 0; i < 2; i++)
+			{
+				var button = new Button { ImageSource = "black.png" };
+				flexLayout.Add(button);
+			}
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				// If this can be attached to the hierarchy and make it through a layout
+				// without crashing, then we're good.
+				await AttachAndRun(grid, (handler) => { });
+			});
+		}
+
 		/* Commented out of for now due to inconsistent platform behavior
 		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
 		public async Task Issue15330()
@@ -453,6 +493,85 @@ namespace Microsoft.Maui.DeviceTests
 				var expectation = () => button.Width == expectedWidth;
 
 				await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
+			});
+		}
+
+		[Fact]
+		public async Task MinimumSizeRequestsCanBeCleared()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var button = new Button()
+			{
+				Text = "X",
+				MinimumWidthRequest = 300,
+				MinimumHeightRequest = 200,
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Start,
+			};
+
+			var grid = new Grid { button };
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await AttachAndRun(grid, async _ =>
+				{
+					// The size should be the minimum requested size, since that will easily hold the "X" text
+					Assert.Equal(300, button.Width, 0.5);
+					Assert.Equal(200, button.Height, 0.5);
+
+					button.ClearValue(VisualElement.MinimumWidthRequestProperty);
+					button.ClearValue(VisualElement.MinimumHeightRequestProperty);
+
+					// The new size should just be enough to hold the "X" text
+					await AssertionExtensions.AssertEventually(() => button.Width < 100 && button.Height < 100);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task SizeRequestIsClampedToMinimumAndMaximum()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var button = new Button()
+			{
+				WidthRequest = 20, // request smaller than the minimum
+				MinimumWidthRequest = 200,
+				MaximumWidthRequest = 300,
+
+				HeightRequest = 400, // request larger than the maximum
+				MinimumHeightRequest = 200,
+				MaximumHeightRequest = 300,
+
+				HorizontalOptions = LayoutOptions.Start,
+				VerticalOptions = LayoutOptions.Start,
+			};
+
+			var grid = new Grid { button };
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await AttachAndRun(grid, _ =>
+				{
+					// The size should be the minimum requested size, since that will easily hold the "X" text
+					Assert.Equal(button.MinimumWidthRequest, button.Width, 0.5);
+					Assert.Equal(button.MaximumHeightRequest, button.Height, 0.5);
+				});
 			});
 		}
 	}

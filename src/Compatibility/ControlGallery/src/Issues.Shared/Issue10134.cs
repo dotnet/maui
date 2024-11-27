@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __SHELL__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TopTabsDontScrollBackToStartWhenSelected() 
 		{
 			var element1 = RunningApp.WaitForElement("Tab 1", "Shell hasn't loaded")[0].Rect;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
 #if !WINDOWS && !ANDROID && !IOS && !MACCATALYST
-	public static class WebViewHelpers
+	public static partial class WebViewHelpers
 	{
 		public static Task WaitForWebViewReady(object platformWebView)
 		{

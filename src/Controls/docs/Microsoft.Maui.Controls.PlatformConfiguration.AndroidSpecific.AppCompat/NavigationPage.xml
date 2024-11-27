@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Appcompat platform specific navigation page.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="BarHeightProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the height of the navigation bar.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBarHeight">
@@ -57,7 +55,6 @@
         <param name="element">The element whose bar height to get.</param>
         <summary>Gets the navigation bar height for the specified <paramref name="element" />.</summary>
         <returns>The new bar height.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBarHeight">
@@ -81,7 +78,6 @@
         <param name="config">The platform configuration for the element whose bar height to get.</param>
         <summary>Gets the navigation bar height for the specified element.</summary>
         <returns>The new bar height.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBarHeight">
@@ -106,7 +102,6 @@
         <param name="element">The element whose bar height to set.</param>
         <param name="value">The new bar height value.</param>
         <summary>Sets the new bar height value for the element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBarHeight">
@@ -132,7 +127,6 @@
         <param name="value">The new bar height value.</param>
         <summary>Sets the new bar height value for the element and returns a fluid API object.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

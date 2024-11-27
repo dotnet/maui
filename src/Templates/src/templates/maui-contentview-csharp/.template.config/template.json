@@ -38,6 +38,10 @@
         "description": "Namespace for the generated code.",
         "replaces": "MauiApp1",
         "type": "parameter"
+      },
+      "HostIdentifier": {
+          "type": "bind",
+          "binding": "HostIdentifier"
       }
     }
   }

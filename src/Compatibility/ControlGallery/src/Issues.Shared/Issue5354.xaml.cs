@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.MovedToAppium]
 		public void CollectionViewItemsLayoutUpdate()
 		{
 			RunningApp.WaitForElement("CollectionView5354");

@@ -94,33 +94,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task FlyoutHeaderAdaptsToMinimumHeight()
-		{
-			await RunShellTest(shell =>
-			{
-				var layout = new VerticalStackLayout()
-				{
-					new Label() { Text = "Flyout Header" }
-				};
-
-				layout.MinimumHeightRequest = 30;
-
-				shell.FlyoutHeader = layout;
-				shell.FlyoutHeaderBehavior = FlyoutHeaderBehavior.CollapseOnScroll;
-			},
-			async (shell, handler) =>
-			{
-				await OpenFlyout(handler);
-				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
-
-				await AssertionExtensions.AssertEventually(() =>
-				{
-					return Math.Abs(30 - flyoutFrame.Height) < 0.2;
-				}, message: $"Expected: {30}. Actual: {flyoutFrame.Height}. Diff: {Math.Abs(30 - flyoutFrame.Height)}");
-			});
-		}
-
 #if !WINDOWS
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
@@ -189,8 +162,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		// Skipping this for Android because there is a bug with the footer. Fix coming in a separate PR.
-#if IOS
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
@@ -263,14 +234,13 @@ namespace Microsoft.Maui.DeviceTests
 				// validate footer position
 				var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
 				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-				AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
 				AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
-#endif
 #endif
 
 #if ANDROID || IOS

@@ -44,11 +44,7 @@ namespace Microsoft.Maui.Controls.XamlC
 						 || parent.XmlType.Name == nameof(MultiTrigger)
 						 || parent.XmlType.Name == nameof(Style)))
 					{
-						var ttnode = (parent as ElementNode).Properties[new XmlName("", "TargetType")];
-						if (ttnode is ValueNode)
-							typeName = (ttnode as ValueNode).Value as string;
-						else if (ttnode is IElementNode)
-							typeName = ((ttnode as IElementNode).CollectionItems.FirstOrDefault() as ValueNode)?.Value as string ?? ((ttnode as IElementNode).Properties[new XmlName("", "TypeName")] as ValueNode)?.Value as string;
+						typeName = GetTargetTypeName(parent);
 					}
 					else if (parent.XmlType.NamespaceUri == XamlParser.MauiUri && parent.XmlType.Name == nameof(VisualState))
 					{
@@ -57,12 +53,7 @@ namespace Microsoft.Maui.Controls.XamlC
 				}
 				else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
 				{
-					var targetTypeNode = (node.Parent as ElementNode).Properties[new XmlName("", "TargetType")];
-					if (targetTypeNode is ValueNode valueNode)
-						typeName = valueNode.Value as string;
-					else if (targetTypeNode is ElementNode elementNode && elementNode.XmlType.Name == "TypeExtension")
-						typeName = (elementNode.Properties[new XmlName("", "TypeName")] as ValueNode).Value as string;
-					
+					typeName = GetTargetTypeName(node.Parent);
 				}
 				propertyName = parts[0];
 			}
@@ -85,6 +76,9 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (bpRef == null)
 				throw new BuildException(PropertyResolution, node, null, propertyName, typeRef.Name);
 			return bpRef;
+
+			static string GetTargetTypeName(INode node)
+				=> ((node as ElementNode).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 		}
 
 		static string FindTypeNameForVisualState(IElementNode parent, IXmlLineInfo lineInfo)

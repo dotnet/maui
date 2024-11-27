@@ -50,25 +50,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return xmlnsDefinitions;
 		}
 
-		public static TypeReference GetTypeReference(XamlCache cache, string xmlType, ModuleDefinition module, BaseNode node)
+		public static TypeReference GetTypeReference(XamlCache cache, string typeName, ModuleDefinition module, BaseNode node)
 		{
-			var split = xmlType.Split(':');
-			if (split.Length > 2)
-				throw new BuildException(BuildExceptionCode.InvalidXaml, node as IXmlLineInfo, null, xmlType);
-
-			string prefix, name;
-			if (split.Length == 2)
+			try
 			{
-				prefix = split[0];
-				name = split[1];
+				XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName, node.NamespaceResolver, (IXmlLineInfo)node);
+				return GetTypeReference(xmlType, cache, module, node as IXmlLineInfo);
 			}
-			else
+			catch (XamlParseException)
 			{
-				prefix = "";
-				name = split[0];
+				throw new BuildException(BuildExceptionCode.InvalidXaml, node as IXmlLineInfo, null, typeName);
 			}
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			return GetTypeReference(new XmlType(namespaceuri, name, null), cache, module, node as IXmlLineInfo);
 		}
 
 		public static TypeReference GetTypeReference(XamlCache cache, string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)

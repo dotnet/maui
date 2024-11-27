@@ -89,31 +89,36 @@ namespace Microsoft.Maui.Storage
 		static FilePickerFileType PlatformImageFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.iOS, new[] { (string)UTType.Image } }
+				{ DevicePlatform.iOS, new[] { (string)UTType.Image } },
+				{ DevicePlatform.MacCatalyst, new[] { (string)UTType.Image } }
 			});
 
 		static FilePickerFileType PlatformPngFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.iOS, new[] { (string)UTType.PNG } }
+				{ DevicePlatform.iOS, new[] { (string)UTType.PNG } },
+				{ DevicePlatform.MacCatalyst, new[] { (string)UTType.PNG } }
 			});
 
 		static FilePickerFileType PlatformJpegFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.iOS, new[] { (string)UTType.JPEG } }
+				{ DevicePlatform.iOS, new[] { (string)UTType.JPEG } },
+				{ DevicePlatform.MacCatalyst, new[] { (string)UTType.JPEG } }
 			});
 
 		static FilePickerFileType PlatformVideoFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.iOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
+				{ DevicePlatform.iOS, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } },
+				{ DevicePlatform.MacCatalyst, new string[] { UTType.MPEG4, UTType.Video, UTType.AVIMovie, UTType.AppleProtectedMPEG4Video, "mp4", "m4v", "mpg", "mpeg", "mp2", "mov", "avi", "mkv", "flv", "gifv", "qt" } }
 			});
 
 		static FilePickerFileType PlatformPdfFileType() =>
 			new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
 			{
-				{ DevicePlatform.iOS, new[] { (string)UTType.PDF } }
+				{ DevicePlatform.iOS, new[] { (string)UTType.PDF } },
+				{ DevicePlatform.MacCatalyst, new[] { (string)UTType.PDF } }
 			});
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416

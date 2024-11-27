@@ -1,7 +1,7 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Mobile" ],
     "identity": "Microsoft.Maui.MauiApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.App",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
@@ -21,6 +21,9 @@
       {
         "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
         "path": "MainPage.xaml"
+      },
+      {
+        "path": "MauiApp.1.csproj"
       }
     ],
     "postActions": [
@@ -34,13 +37,51 @@
                 "files": "0;1"
             },
             "continueOnError": true
+        },
+        {
+          "id": "restore",
+          "condition": "(!skipRestore)",
+          "description": "Restore NuGet packages required by this project.",
+          "manualInstructions": [
+            {
+              "text": "Run 'dotnet restore'"
+            }
+          ],
+          "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+          "continueOnError": true
         }
     ],
     "sources": [
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+        {
+          "condition": "(!IncludeSampleContent)",
+          "exclude": [
+            "Data/**",
+            "GlobalUsings.cs",
+            "Messages/**",
+            "Models/**",
+            "PageModels/**",
+            "Pages/**",
+            "Resources/Raw/SeedData.json",
+            "Resources/Fonts/FluentSystemIcons-Regular.ttf",
+            "Resources/Fonts/SegoeUI-Semibold.ttf",
+            "Resources/Fonts/FluentUI.cs",
+            "Services/**",
+            "Resources/Styles/AppStyles.xaml",
+            "Utilities/**"
+          ]
+        },
+        {
+          "condition": "(IncludeSampleContent)",
+          "exclude": [
+            "MainPage.xaml",
+            "MainPage.xaml.cs"
+          ]
+        }]
       }
     ],
     "preferNameDirectory": true,
@@ -103,6 +144,12 @@
           ]
         }
       },
+      "XmlEncodedAppNameParam": {
+        "type": "derived",
+        "valueSource": "name",
+        "valueTransform": "encode",
+        "replaces": "XmlEncodedAppName"
+      },
       "defaultAppId":{
         "type": "generated",
         "generator": "join",
@@ -127,6 +174,24 @@
           "fallbackVariableName": "defaultAppId"
         },
         "replaces": "com.companyname.mauiapp"
+      },
+      "IncludeSampleContent": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "displayName": "_Include sample content",
+        "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
+      },
+      "skipRestore": {
+        "type": "parameter",
+        "datatype": "bool",
+        "description": "If specified, skips the automatic restore of the project on create.",
+        "defaultValue": "false"
+      }
+    },
+    "forms": {
+      "encode": {
+        "identifier": "xmlEncode"
       }
     },
     "defaultName": "MauiApp1"

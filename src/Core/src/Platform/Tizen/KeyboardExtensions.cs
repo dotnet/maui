@@ -23,6 +23,14 @@ namespace Microsoft.Maui.Platform
 			{
 				return TKeyboard.Url;
 			}
+			else if (keyboard == Keyboard.Date || keyboard == Keyboard.Time)
+			{
+				return TKeyboard.DateTime;
+			}
+			else if (keyboard == Keyboard.Password)
+			{
+				return TKeyboard.Password;
+			}
 			else
 			{
 				return TKeyboard.Normal;

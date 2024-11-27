@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Controls.Platform
 			page.Handler?.DisconnectHandler();
 		}
 
+		IDisposable? _waitingForIncomingPage;
 		void SetCurrent(
 			Page newPage,
 			Page previousPage,
@@ -79,6 +80,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			try
 			{
+				_waitingForIncomingPage?.Dispose();
+
 				if (popping)
 				{
 					RemovePage(previousPage, popping);
@@ -101,26 +104,41 @@ namespace Microsoft.Maui.Controls.Platform
 					newPage.Toolbar ??= new Toolbar(newPage);
 					_ = newPage.Toolbar.ToPlatform(modalContext);
 
-					var windowManager = modalContext.GetNavigationRootManager();
-
-					if (windowManager.RootView is WindowRootView wrv)
+					// Hide titlebar on previous page
+					var previousContext = previousPage.FindMauiContext();
+					if (previousContext is not null)
 					{
-						wrv.SetTitleBarBackgroundToTransparent(false);
+						var navRoot = previousContext.GetNavigationRootManager();
+						if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
+						{
+							wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Collapsed);
+						}
 					}
 
-					windowManager.Connect(newPage.ToPlatform(modalContext));
+					var windowManager = modalContext.GetNavigationRootManager();
+					var platform = newPage.ToPlatform(modalContext);
+					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
+					windowManager.Connect(platform);
 					Container.AddPage(windowManager.RootView);
 				}
 				// popping modal
 				else
 				{
-					var windowManager = newPage.FindMauiContext()?.GetNavigationRootManager() ??
+					var context = newPage.FindMauiContext();
+					var windowManager = context?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
+					// Toggle the titlebar visibility on the new page
+					var navRoot = context.GetNavigationRootManager();
+					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
+					{
+						wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Visible);
+					}
+
+					var platform = newPage.ToPlatform();
+					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
 					Container.AddPage(windowManager.RootView);
 				}
-
-				completedCallback?.Invoke();
 			}
 			catch (Exception error) when (error.HResult == -2147417842)
 			{

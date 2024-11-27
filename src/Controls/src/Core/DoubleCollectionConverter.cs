@@ -10,13 +10,24 @@ namespace Microsoft.Maui.Controls
 	public class DoubleCollectionConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-			=> sourceType == typeof(string);
+			=> sourceType == typeof(string)
+				|| sourceType == typeof(double[])
+				|| sourceType == typeof(float[]);
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			if (value is double[] doublesArray)
+			{
+				return (DoubleCollection)doublesArray;
+			}
+			else if (value is float[] floatsArray)
+			{
+				return (DoubleCollection)floatsArray;
+			}
+
 			var strValue = value?.ToString();
 
 			string[] doubles = strValue.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);

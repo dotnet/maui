@@ -7,7 +7,7 @@ using Windows.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFooterView : Microsoft.UI.Xaml.Controls.ContentControl
+	public partial class ShellFooterView : Microsoft.UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 
@@ -22,8 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnShellFooterViewSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			if (Element is Controls.Compatibility.Layout layout)
-				layout.ForceLayout();
+			Element?.InvalidateMeasure();
 		}
 
 		internal VisualElement Element { get; set; }

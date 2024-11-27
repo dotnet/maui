@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			var index = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 
 			AddItemTemplateContexts(args.NewItems, startIndex);
 		}
