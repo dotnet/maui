@@ -28,13 +28,18 @@ public class Issue8461 : _IssuesUITest
 		App.Tap(ButtonId);
 
 		App.WaitForElement(InstructionsLabel);
-		Assert.That(App.FindElements(ButtonId).Count, Is.EqualTo(1));
+		Assert.That(App.FindElements(InstructionsLabel).Count, Is.EqualTo(1));
 
 		// Swipe in from left across 1/2 of screen width
 		App.SwipeLeftToRight(LayoutId, 0.99, 500, false);
 		// Swipe in from left across full screen width
 		App.SwipeLeftToRight(LayoutId);
-
+        
+		// On Android, swiping causes flyout items to overlap with the back arrow.
+		// Touch actions may need to be performed twice to work around this issue.
+#if ANDROID 
+		App.TapBackArrow();
+#endif
 		App.TapBackArrow();
 
 		App.WaitForElement(ButtonId);
