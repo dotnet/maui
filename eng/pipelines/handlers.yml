@@ -197,9 +197,11 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'True')) }}:
+                  ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'True') ) }}:
                     skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                  ${{ else }}:
+                    skipProvisionator: true
             
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
