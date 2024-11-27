@@ -920,10 +920,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion IDisposable Support
 
 		#region IAppearanceObserver
-		public void OnAppearanceChanged(ShellAppearance appearance)
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
 			UpdateToolbarItemsInternal(true, appearance?.TitleColor);
 		}
+		
 		#endregion
 	}
 }

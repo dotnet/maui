@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
-		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, Color itemColor)
+		internal static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, Color itemColor)
 		{
 			return new PrimaryToolbarItem(item, false, itemColor);
 		}
