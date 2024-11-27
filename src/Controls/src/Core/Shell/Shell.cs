@@ -937,7 +937,7 @@ namespace Microsoft.Maui.Controls
 
 			if(shellContent is not null)
 			{
-				var existing = (ShellRouteParameters)shellContent?.GetValue(ShellContent.QueryAttributesProperty);
+				var existing = (ShellRouteParameters)shellContent.GetValue(ShellContent.QueryAttributesProperty);
 				if (existing is null && source is not (ShellNavigationSource.Push or
 					ShellNavigationSource.Pop or
 					ShellNavigationSource.PopToRoot or
