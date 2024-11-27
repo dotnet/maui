@@ -305,6 +305,11 @@
         Version="$(SystemDrawingCommonPackageVersion)"
     />
 
+    <PackageReference
+        Update="System.Formats.Asn1"
+        Version="$(SystemFormatsAsn1PackageVersion)"
+    />
+
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
     <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
