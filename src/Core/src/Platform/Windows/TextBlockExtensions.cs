@@ -150,5 +150,5 @@ namespace Microsoft.Maui.Platform
 											RegexOptions.Compiled | RegexOptions.IgnoreCase,
 											TimeSpan.FromMilliseconds(1000) 		// against malicious input
 											);		
-}
+	}
 }
