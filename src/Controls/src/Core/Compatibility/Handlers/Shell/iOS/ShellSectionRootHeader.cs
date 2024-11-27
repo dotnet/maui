@@ -307,20 +307,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateHeaderTitle(int index, ShellContent shellContent)
 		{
-			int sectionCount = (int)CollectionView.NumberOfSections();
-
-			var indexPath = NSIndexPath.FromItemSection(index, 0);
-
-			if (CollectionView.CellForItem(indexPath) is ShellSectionHeaderCell cell)
+			if (CollectionView.CellForItem(NSIndexPath.FromItemSection(index, 0)) is ShellSectionHeaderCell cell)
 			{
 				cell.Label.Text = shellContent.Title;
-				UIView.PerformWithoutAnimation(() =>
-				{
-					CollectionView.ReloadItems(new[] { indexPath });
-				});
+				CollectionView.CollectionViewLayout.InvalidateLayout();
 			}
 		}
-
+		
 		void ReloadData()
 		{
 			if (_isDisposed)
@@ -374,16 +367,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				return new CGSize(Label.SizeThatFits(size).Width + 30, 35);
 			}
-
-			internal void UpdateTitleWithoutLayout(string newTitle)
-    {
-        Label.Text = newTitle;
-        Label.SetNeedsDisplay();
-        
-        // Optionally, adjust the label's frame if needed
-        CGSize newSize = Label.SizeThatFits(Bounds.Size);
-        Label.Frame = new CGRect(Label.Frame.Location, newSize);
-    }
 		}
 	}
 }
