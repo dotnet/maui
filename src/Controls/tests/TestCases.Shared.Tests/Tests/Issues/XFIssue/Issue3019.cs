@@ -16,6 +16,7 @@ public class Issue3019 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void MakeSureListGroupShowsUpAndItemsAreClickable()
 	{
+		App.WaitForElement("Grouped Item: 0");
 		App.Tap("Grouped Item: 0");
 		Assert.That(App.WaitForElement("MessageLabel").GetText(), Is.EqualTo("Grouped Item: 0 Clicked"));
 		App.Tap("Grouped Item: 1");
