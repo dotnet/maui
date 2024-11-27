@@ -1,6 +1,6 @@
 #if !WINDOWS
-// In Windows, the foreground color is not applied to the custom icon, 
-// so as of now, the test is not applicable for Windows.
+// https://github.com/dotnet/maui/issues/26148
+// In Windows, the foreground color is not applied to the custom icon, so as of now, the test is not applicable for Windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
