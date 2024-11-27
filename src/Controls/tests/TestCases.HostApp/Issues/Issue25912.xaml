@@ -10,7 +10,7 @@
 
 
 			 <ContentPage.Content>
-				<Button Text="Change Icon" Clicked="Button_Clicked" AutomationId="Button"/>
+				<Button Text="Change Icon" WidthRequest="150" HeightRequest="50" Clicked="Button_Clicked" AutomationId="Button"/>
 			 </ContentPage.Content>
     
 </controls:TestContentPage>
