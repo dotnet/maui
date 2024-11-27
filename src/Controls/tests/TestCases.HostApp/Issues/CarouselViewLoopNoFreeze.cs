@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 		readonly string _btnSwipeAutomationId = "btnSwipe";
 
 		readonly ViewModelIssue12574 _viewModel;
-		readonly CarouselView _carouselView;
+		readonly CarouselView1 _carouselView;
 		readonly Button _btn;
 		readonly Button _btn2;
 		readonly Button _btn3;
