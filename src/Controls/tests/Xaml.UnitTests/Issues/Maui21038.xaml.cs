@@ -35,8 +35,11 @@ public partial class Maui21038
         [Test]
         public void XamlParseErrorsHaveFileInfo([Values(false, true)] bool useCompiledXaml)
         {
-            if (useCompiledXaml)            
-                Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui21038)));
+            if (useCompiledXaml)
+            {
+                MockCompiler.Compile(typeof(Maui21038), out var md, out var hasLoggedErrors);
+                Assert.That(hasLoggedErrors);
+            }                
             else
                 Assert.Throws<XamlParseException>(() => new Maui21038(useCompiledXaml));
         }
