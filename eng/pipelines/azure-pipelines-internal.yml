@@ -149,8 +149,9 @@ extends:
           enableTelemetry: true
           enableSourceBuild: false
           enableSourceIndex: true
+          sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
           publishAssetsImmediately: true
-           # Publish build logs
+          # Publish build logs
           enablePublishBuildArtifacts: true
           # Publish test logs
           enablePublishTestResults: true
