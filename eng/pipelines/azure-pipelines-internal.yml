@@ -81,6 +81,7 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
+    type: boolean
     default: true
 
   - name: VM_IMAGE_HOST
@@ -102,6 +103,7 @@ parameters:
       artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
   - name: Skip1ESComplianceTasks
+    type: boolean
     default: false
 
 resources:
