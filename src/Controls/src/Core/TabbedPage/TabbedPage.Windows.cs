@@ -66,8 +66,7 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			if (args?.OldHandler?.PlatformView is FrameworkElement fe)
-				OnHandlerDisconnected(fe);
+			OnHandlerDisconnected((ElementHandler?)(args?.OldHandler));
 		}
 
 		void OnHandlerConnected()
@@ -116,7 +115,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnHandlerDisconnected(FrameworkElement? platformView)
+		void OnHandlerDisconnected(ElementHandler? elementHandler)
 		{
 			if (!_connectedToHandler)
 				return;
@@ -128,13 +127,16 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			if (platformView is WFrame wFrame)
+			if (elementHandler?.PlatformView is WFrame wFrame)
 				wFrame.Navigated -= OnNavigated;
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
+			{
+				_navigationView.SelectedItem = null;
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+			}
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
 
@@ -152,10 +154,7 @@ namespace Microsoft.Maui.Controls
 		void OnTabbedPageDisappearing(object? sender, EventArgs e)
 		{
 			if (_navigationView != null)
-			{
 				_navigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
-				_navigationView.SelectedItem = null;
-			}
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
