@@ -45,11 +45,10 @@ namespace UITest.Appium
 			if (element is null)
 				return CommandResponse.FailedEmptyResponse;
 
-			var appiumElement = GetAppiumElement(element);
-
-			if (appiumElement is not null)
+			var target = element as IUIElement;
+	
+			if (target is not null)
 			{
-				var target = _app.WaitForElement(appiumElement.Id);
 				var rect = target.GetRect();
 				var rootViewRect = GetRootViewRect(_app);
 
