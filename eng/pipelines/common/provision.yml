@@ -66,9 +66,9 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
 
-
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisionator, true) }}:
+    # Prepare macOS
     - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
@@ -87,17 +87,7 @@ steps:
         ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
           INSTALL_DEFAULT_ANDROID_API: 'true'
  
-  # Setup JDK Paths (gradle needs it)
-  - bash: |
-      echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_17_X64)"
-      echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_17_X64)"
-    #  brew install --cask microsoft-openjdk@17
-    displayName: 'Setup JDK Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
- 
-  # Prepare Windows
-  # Provision Additional Software
-  - ${{ if ne(parameters.skipProvisioning, true) }}:
+    # Prepare Windows
     - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
@@ -113,6 +103,15 @@ steps:
           SKIP_ANDROID_API_IMAGES: 'true'
         ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
           INSTALL_DEFAULT_ANDROID_API: 'true'
+
+  # Prepare Both
+  # Setup JDK Paths (gradle needs it)
+  - bash: |
+      echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_17_X64)"
+      echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_17_X64)"
+    #  brew install --cask microsoft-openjdk@17
+    displayName: 'Setup JDK Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
 
   - pwsh: |
       if ($env:JAVA_HOME_17_X64) {
@@ -132,7 +131,6 @@ steps:
     displayName: 'Setup JDK Paths'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
-  # Prepare Both
   - task: UseDotNet@2
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:
