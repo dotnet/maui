@@ -58,13 +58,37 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//TODO suports factorymethod, ctor args, etc
 
         IMethodSymbol? ctor = null;
-
+        INamedTypeSymbol? namedType = type as INamedTypeSymbol;
+        var ctors = namedType?.InstanceConstructors;
+        
         //does it has a default parameterless ctor ?
-		if (type is INamedTypeSymbol namedType)
-		{
-			var ctors = namedType.InstanceConstructors;
-			ctor = ctors.FirstOrDefault(c => c.Parameters.Length == 0);
-		}
+        ctor = ctors?.FirstOrDefault(c => c.Parameters.Length == 0);
+
+        if (ctor is null /* && factoryMethod is null*/)
+        {
+            //TODO we need an extension method for that and cache the result. it happens eveytime we have a Style
+            ctor = ctors?.FirstOrDefault(c 
+                => c.Parameters.Length >=0
+                && c.Parameters.All(p => p.GetAttributes().Any(a => a?.AttributeClass?.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute"), SymbolEqualityComparer.Default)?? false))
+                );
+            //TODO validate ctor arguments
+            if (ctor is not null)
+            {
+                var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+                var parameters = ctor.Parameters
+                    .Select(p => (  p.Type, 
+                                    p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute"), SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as string,
+                                    p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("System.ComponentModel.TypeConverterAttribute"), SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as ITypeSymbol
+                                    ))
+                    .Select(p => (p.Item1, node.Properties[new XmlName("", p.Item2)], p.Item3))
+                    .Select(p => p.Item2 is ValueNode vn ? vn.ConvertTo(p.Item1, p.Item3, Context, vn as IXmlLineInfo) : p.Item2 is ElementNode en ? Context.Variables[en].Name : "null").ToList();
+
+                Context.Variables[node] = new LocalVariable(type, variableName);
+                Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters)});");
+                return;
+            }
+
+        }
 
         bool isColor = type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color"), SymbolEqualityComparer.Default);
 
@@ -73,29 +97,33 @@ class CreateValuesVisitor : IXamlNodeVisitor
             && (isColor || type.IsValueType))
         { //<Color>HotPink</Color>
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            Context.Variables[node] = new LocalVariable(type, variableName);
             var valueString = valueNode.ConvertTo(type, Context, valueNode as IXmlLineInfo);
+            
+            Context.Variables[node] = new LocalVariable(type, variableName);
             Writer.WriteLine($"var {variableName} = {valueString};");
             return;
         } 
         else if (ctor != null)
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            
             Context.Variables[node] = new LocalVariable(type, variableName);
-
             Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
             return;
         }
+
 	}
 
     public void Visit(ListNode node, INode parentNode)
     {
-
+        if (node.TryGetPropertyName(parentNode, out XmlName name))
+            node.XmlName = name;
     }
 
     public void Visit(RootNode node, INode parentNode)
     {
-        var variableName = "__root";                    
+        var variableName = "__root";
+
         Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
         Writer.WriteLine($"{Context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = this;");
     }

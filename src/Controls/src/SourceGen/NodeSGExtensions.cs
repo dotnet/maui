@@ -82,8 +82,6 @@ static class NodeSGExtensions
             SpecialType.System_Byte or SpecialType.System_UInt16 or SpecialType.System_UInt32 or SpecialType.System_UInt64 or 
             SpecialType.System_Single or SpecialType.System_Double => valueString,
             SpecialType.System_Boolean => valueString.ToLowerInvariant(),
-            SpecialType.System_String => $"\"{valueString}\"",
-            SpecialType.System_Object => "new()",
             SpecialType.System_Char => $"'{valueString}'",
             SpecialType.System_DateTime => $"new global::System.DateTime({DateTime.Parse(valueString).Ticks})",
             SpecialType.System_Decimal => $"new global::System.Decimal({decimal.Parse(valueString)})",
@@ -140,6 +138,7 @@ static class NodeSGExtensions
             out ImmutableArray<ITypeSymbol>? requiredServices)
     {
         returnType = context.Compilation.ObjectType;
+        
         iface = null;
         acceptEmptyServiceProvider = false;
         requiredServices = null;
@@ -149,6 +148,9 @@ static class NodeSGExtensions
         
         if (variable.Type.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
         {
+            //HACK waiting for the ServiceProvider to be compiled
+            if (variable.Type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, SymbolEqualityComparer.Default))
+                returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
         }
         else if (variable.Type.ImplementsGeneric(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
         {

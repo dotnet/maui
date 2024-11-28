@@ -81,7 +81,6 @@ static partial class ITypeSymbolExtensions
         }
     }
 
-
 	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name)
         => symbol.GetAllAttributes().Where(ad => ad.AttributeClass?.ToString() == name);
 

@@ -62,7 +62,7 @@ public partial class TestPage
 #line 1 "Test.xaml"
 		bindingExtension0.Path = "Title";
 #line default
-		var xamlServiceProvider0 = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider();
+		var xamlServiceProvider0 = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(this);
 		var nsResolver0 = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();
 		nsResolver0.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
 		nsResolver0.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");

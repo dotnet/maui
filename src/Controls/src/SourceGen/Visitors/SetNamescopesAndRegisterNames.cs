@@ -41,31 +41,31 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		Context.Scopes[node] = Context.Scopes[parentNode];
 	}
 
-		public void Visit(ElementNode node, INode parentNode)
+	public void Visit(ElementNode node, INode parentNode)
+	{
+		LocalVariable namescope;
+		IList<string> namesInNamescope;
+		var setNameScope = false;
+
+		if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node))
 		{
-			LocalVariable namescope;
-			IList<string> namesInNamescope;
-			var setNameScope = false;
-
-			if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node))
-			{
-				namescope = CreateNamescope();
-				namesInNamescope = [];
-				setNameScope = true;
-			}
-			else
-			{
-				namescope = Context.Scopes[parentNode].namescope;
-				namesInNamescope = Context.Scopes[parentNode].namesInScope;
-			}
-			if (setNameScope && Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
-				Writer.Write($"global::Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
-			//workaround when VSM tries to apply state before parenting
-			else if (Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
-				Writer.WriteLine($"{Context.Variables[node].Name}.transientNamescope = {namescope.Name};");
-
-			Context.Scopes[node] = (namescope, namesInNamescope);
+			namescope = CreateNamescope();
+			namesInNamescope = [];
+			setNameScope = true;
 		}
+		else
+		{
+			namescope = Context.Scopes[parentNode].namescope;
+			namesInNamescope = Context.Scopes[parentNode].namesInScope;
+		}
+		if (setNameScope && Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+			Writer.Write($"global::Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
+		//workaround when VSM tries to apply state before parenting
+		else if (Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
+			Writer.WriteLine($"{Context.Variables[node].Name}.transientNamescope = {namescope.Name};");
+
+		Context.Scopes[node] = (namescope, namesInNamescope);
+	}
 
 	public void Visit(RootNode node, INode parentNode)
 	{
