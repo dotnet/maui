@@ -18,13 +18,13 @@ public class Issue7339 : _IssuesUITest
 	public void MaterialFrameDisposesCorrectly()
 	{
 		App.WaitForElement("InstructionLabel");
-		App.TapInFlyout("Item1");
+		App.TapInShellFlyout("Item1");
 		App.WaitForElementTillPageNavigationSettled("InstructionLabel");
-		App.TapInFlyout("Item2");
+		App.TapInShellFlyout("Item2");
 		App.WaitForElementTillPageNavigationSettled("FrameContent");
-		App.TapInFlyout("Item1");
+		App.TapInShellFlyout("Item1");
 		App.WaitForElementTillPageNavigationSettled("InstructionLabel");
-		App.TapInFlyout("Item2");
+		App.TapInShellFlyout("Item2");
 		App.WaitForElementTillPageNavigationSettled("FrameContent");
 
 	}
