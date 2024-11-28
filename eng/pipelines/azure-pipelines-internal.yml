@@ -83,11 +83,6 @@ parameters:
   - name: pushMauiPackagesToMaestro
     default: true
 
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -151,7 +146,7 @@ extends:
           enablePublishBuildAssets: true
           enableTelemetry: true
           enableSourceBuild: false
-          enableSourceIndex: false
+          enableSourceIndex: true
           publishAssetsImmediately: true
            # Publish build logs
           enablePublishBuildArtifacts: true
