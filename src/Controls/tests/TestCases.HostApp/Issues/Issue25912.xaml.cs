@@ -1,8 +1,8 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 25912, "ToolbarItem color when used with IconImageSource is always white", PlatformAffected.iOS | PlatformAffected.macOS)]
-		public class Issue25912 : NavigationPage
+	[Issue(IssueTracker.Github, 25912, "ToolbarItem color when used with IconImageSource is always white", PlatformAffected.iOS | PlatformAffected.macOS)]
+	public class Issue25912 : NavigationPage
 	{
 		public Issue25912()
 		{
@@ -22,7 +22,7 @@
 		{
 		}
 
-		private void Button_Clicked(object sender, EventArgs e)
+		void Button_Clicked(object sender, EventArgs e)
 		{
 			toolbarItem.IconImageSource = new FontImageSource
 			{
