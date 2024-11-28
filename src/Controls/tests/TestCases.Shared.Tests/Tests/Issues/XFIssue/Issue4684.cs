@@ -16,14 +16,14 @@ public class Issue4684 : _IssuesUITest
 	//public void NavigatingBackAndForthDoesNotCrash()
 	//{
 	//	TapInFlyout("Connect");
-	//	RunningApp.Tap("Control");
+	//	App.Tap("Control");
 
 	//	TapInFlyout("Home");
 	//	TapInFlyout("Connect");
 
-	//	RunningApp.Tap("Connect");
-	//	RunningApp.Tap("Control");
+	//	App.Tap("Connect");
+	//	App.Tap("Control");
 
-	//	RunningApp.WaitForElement("Success");
+	//	App.WaitForElement("Success");
 	//}
 }

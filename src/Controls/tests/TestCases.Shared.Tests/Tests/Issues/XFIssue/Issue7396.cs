@@ -18,11 +18,11 @@ public class Issue7396 : _IssuesUITest
 	//public void BottomTabColorTest()
 	//{
 	//	//7396 Issue | Shell: Setting Shell.BackgroundColor overrides all colors of TabBar
-	//	RunningApp.WaitForElement(CreateBottomTabButton);
-	//	RunningApp.Tap(CreateBottomTabButton);
-	//	RunningApp.Tap(CreateBottomTabButton);
-	//	RunningApp.Tap(ChangeShellColorButton);
-	//	RunningApp.Screenshot("I should see a bottom tabbar icon");
+	//	App.WaitForElement(CreateBottomTabButton);
+	//	App.Tap(CreateBottomTabButton);
+	//	App.Tap(CreateBottomTabButton);
+	//	App.Tap(ChangeShellColorButton);
+	//	App.Screenshot("I should see a bottom tabbar icon");
 	//	Assert.Inconclusive("Check that bottom tabbar icon is visible");
 	//}
 }

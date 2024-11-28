@@ -16,9 +16,9 @@ public class ShellSearchHandlerItemSizing : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void SearchHandlerSizesCorrectly()
 	//{
-	//	RunningApp.WaitForElement("SearchHandler");
-	//	RunningApp.EnterText("SearchHandler", "Hello");
-	//	var contentSize = RunningApp.WaitForElement("searchresult")[0].Rect;
+	//	App.WaitForElement("SearchHandler");
+	//	App.EnterText("SearchHandler", "Hello");
+	//	var contentSize = App.WaitForElement("searchresult")[0].Rect;
 	//	Assert.Less(contentSize.Height, 100);
 	//}
 }

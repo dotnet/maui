@@ -10,7 +10,7 @@
                 </DataTemplate>
             </control:CustomHorizontalListview.ItemTemplate>
         </control:CustomHorizontalListview>
-        <Label BindingContext="{x:Reference listViewHorizontal}" Text="{Binding IsEnabled}" FontAttributes="Bold" FontSize="Large" HorizontalOptions="Center" />
+    <Label BindingContext="{x:Reference listViewHorizontal}" Text="{Binding IsEnabled}" AutomationId="{Binding IsEnabled}" FontAttributes="Bold" FontSize="Large" HorizontalOptions="Center" />
         <Button x:Name="btnToggle" AutomationId="Button" Text="Toggle ScrollView.IsEnabled" HorizontalOptions="Center" Clicked="ToggleScrollViewIsEnabled" />
     </StackLayout>
 </local:TestContentPage>

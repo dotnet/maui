@@ -17,16 +17,16 @@ public class Issue5500 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void VerifyEditorTextChangeEventsAreFiring()
 	//{
-	//	RunningApp.WaitForElement("EditorAutomationId");
-	//	RunningApp.EnterText("EditorAutomationId", "Test 1");
+	//	App.WaitForElement("EditorAutomationId");
+	//	App.EnterText("EditorAutomationId", "Test 1");
 
-	//	Assert.AreEqual("Test 1", RunningApp.WaitForElement("EditorAutomationId")[0].ReadText());
-	//	Assert.AreEqual("Test 1", RunningApp.WaitForElement("EntryAutomationId")[0].ReadText());
+	//	Assert.AreEqual("Test 1", App.WaitForElement("EditorAutomationId")[0].ReadText());
+	//	Assert.AreEqual("Test 1", App.WaitForElement("EntryAutomationId")[0].ReadText());
 
-	//	RunningApp.ClearText("EntryAutomationId");
-	//	RunningApp.EnterText("EntryAutomationId", "Test 2");
+	//	App.ClearText("EntryAutomationId");
+	//	App.EnterText("EntryAutomationId", "Test 2");
 
-	//	Assert.AreEqual("Test 2", RunningApp.WaitForElement("EditorAutomationId")[0].ReadText());
-	//	Assert.AreEqual("Test 2", RunningApp.WaitForElement("EntryAutomationId")[0].ReadText());
+	//	Assert.AreEqual("Test 2", App.WaitForElement("EditorAutomationId")[0].ReadText());
+	//	Assert.AreEqual("Test 2", App.WaitForElement("EntryAutomationId")[0].ReadText());
 	//}
 }

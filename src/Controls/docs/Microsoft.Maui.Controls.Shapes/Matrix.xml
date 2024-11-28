@@ -17,8 +17,6 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -46,8 +44,6 @@
         <param name="m22">To be added.</param>
         <param name="offsetX">To be added.</param>
         <param name="offsetY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Append">
@@ -68,8 +64,6 @@
       </Parameters>
       <Docs>
         <param name="matrix">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Determinant">
@@ -86,9 +80,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasInverse">
@@ -105,9 +96,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Identity">
@@ -124,9 +112,6 @@
         <ReturnType>Microsoft.Maui.Controls.Shapes.Matrix</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Invert">
@@ -144,8 +129,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsIdentity">
@@ -162,9 +145,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="M11">
@@ -181,9 +161,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="M12">
@@ -200,9 +177,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="M21">
@@ -219,9 +193,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="M22">
@@ -238,9 +209,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Multiply">
@@ -263,9 +231,6 @@
       <Docs>
         <param name="trans1">To be added.</param>
         <param name="trans2">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OffsetX">
@@ -282,9 +247,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OffsetY">
@@ -301,9 +263,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Multiply">
@@ -326,9 +285,6 @@
       <Docs>
         <param name="trans1">To be added.</param>
         <param name="trans2">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Prepend">
@@ -349,8 +305,6 @@
       </Parameters>
       <Docs>
         <param name="matrix">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Rotate">
@@ -371,8 +325,6 @@
       </Parameters>
       <Docs>
         <param name="angle">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotateAt">
@@ -397,8 +349,6 @@
         <param name="angle">To be added.</param>
         <param name="centerX">To be added.</param>
         <param name="centerY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotateAtPrepend">
@@ -423,8 +373,6 @@
         <param name="angle">To be added.</param>
         <param name="centerX">To be added.</param>
         <param name="centerY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotatePrepend">
@@ -445,8 +393,6 @@
       </Parameters>
       <Docs>
         <param name="angle">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Scale">
@@ -469,8 +415,6 @@
       <Docs>
         <param name="scaleX">To be added.</param>
         <param name="scaleY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleAt">
@@ -497,8 +441,6 @@
         <param name="scaleY">To be added.</param>
         <param name="centerX">To be added.</param>
         <param name="centerY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleAtPrepend">
@@ -525,8 +467,6 @@
         <param name="scaleY">To be added.</param>
         <param name="centerX">To be added.</param>
         <param name="centerY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScalePrepend">
@@ -549,8 +489,6 @@
       <Docs>
         <param name="scaleX">To be added.</param>
         <param name="scaleY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIdentity">
@@ -568,8 +506,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Skew">
@@ -592,8 +528,6 @@
       <Docs>
         <param name="skewX">To be added.</param>
         <param name="skewY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SkewPrepend">
@@ -616,8 +550,6 @@
       <Docs>
         <param name="skewX">To be added.</param>
         <param name="skewY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Transform">
@@ -638,9 +570,6 @@
       </Parameters>
       <Docs>
         <param name="point">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Transform">
@@ -661,8 +590,6 @@
       </Parameters>
       <Docs>
         <param name="points">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Translate">
@@ -685,8 +612,6 @@
       <Docs>
         <param name="offsetX">To be added.</param>
         <param name="offsetY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TranslatePrepend">
@@ -709,8 +634,6 @@
       <Docs>
         <param name="offsetX">To be added.</param>
         <param name="offsetY">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.UnitTests
 			var list = new WeakList<object> { expected, evict };
 			evict = null;
 			list.CleanupThreshold = 1;
-			
+
 			Assert.False(await weakReference.WaitForCollect(), "Object failed to be collected");
 
 			foreach (var item in list)
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.UnitTests
 			var list = new WeakList<object> { expected, evict };
 			evict = null;
 			list.CleanupThreshold = 1;
-			
+
 			Assert.False(await weakReference.WaitForCollect(), "Object failed to be collected");
 
 			var triggerCleanup = new object();

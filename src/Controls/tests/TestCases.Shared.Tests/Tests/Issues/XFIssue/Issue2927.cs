@@ -17,19 +17,19 @@ public class Issue2927 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue2927Test()
 	// {
-	// 	RunningApp.Screenshot("I am at Issue 2927");
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 0"));
-	// 	RunningApp.Tap(q => q.Marked("Cell1 0"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 1"));
-	// 	RunningApp.Screenshot("Tapped Once");
-	// 	RunningApp.Tap(q => q.Marked("Cell1 1"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 2"));
-	// 	RunningApp.Screenshot("Tapped Twice");
-	// 	RunningApp.Tap(q => q.Marked("Cell3 0"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell3 1"));
-	// 	RunningApp.Screenshot("Click other cell");
-	// 	RunningApp.Tap(q => q.Marked("Cell1 2"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 3"));
-	// 	RunningApp.Screenshot("Click first cell again");
+	// 	App.Screenshot("I am at Issue 2927");
+	// 	App.WaitForElement(q => q.Marked("Cell1 0"));
+	// 	App.Tap(q => q.Marked("Cell1 0"));
+	// 	App.WaitForElement(q => q.Marked("Cell1 1"));
+	// 	App.Screenshot("Tapped Once");
+	// 	App.Tap(q => q.Marked("Cell1 1"));
+	// 	App.WaitForElement(q => q.Marked("Cell1 2"));
+	// 	App.Screenshot("Tapped Twice");
+	// 	App.Tap(q => q.Marked("Cell3 0"));
+	// 	App.WaitForElement(q => q.Marked("Cell3 1"));
+	// 	App.Screenshot("Click other cell");
+	// 	App.Tap(q => q.Marked("Cell1 2"));
+	// 	App.WaitForElement(q => q.Marked("Cell1 3"));
+	// 	App.Screenshot("Click first cell again");
 	// }
 }

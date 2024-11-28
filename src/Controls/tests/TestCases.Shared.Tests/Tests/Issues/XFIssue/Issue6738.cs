@@ -17,17 +17,17 @@ public class Issue6738 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void FlyoutNavigationBetweenItemsWithNavigationStacks()
 	//{
-	//	RunningApp.WaitForElement(pushAutomationId);
-	//	RunningApp.Tap(pushAutomationId);
-	//	RunningApp.WaitForElement(insertAutomationId);
-	//	RunningApp.Tap(insertAutomationId);
+	//	App.WaitForElement(pushAutomationId);
+	//	App.Tap(pushAutomationId);
+	//	App.WaitForElement(insertAutomationId);
+	//	App.Tap(insertAutomationId);
 
 	//	TapInFlyout(flyoutOtherTitle, timeoutMessage: flyoutOtherTitle);
 	//	TapInFlyout(flyoutMainTitle, timeoutMessage: flyoutMainTitle);
 
-	//	RunningApp.WaitForElement(returnAutomationId);
-	//	RunningApp.Tap(returnAutomationId);
-	//	RunningApp.NavigateBack();
-	//	RunningApp.NavigateBack();
+	//	App.WaitForElement(returnAutomationId);
+	//	App.Tap(returnAutomationId);
+	//	App.NavigateBack();
+	//	App.NavigateBack();
 	//}
 }

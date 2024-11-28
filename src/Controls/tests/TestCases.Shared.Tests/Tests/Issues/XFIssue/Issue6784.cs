@@ -16,39 +16,39 @@ public class Issue6784 : _IssuesUITest
 	//[Test]
 	//public void CurrentItemIsSetWhenSelectingShellSectionAggregatedInMoreTab()
 	//{
-	//	RunningApp.WaitForElement(x => x.Class("UITabBarButton").Marked("More"));
-	//	RunningApp.Tap(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.WaitForElement(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.Tap(x => x.Class("UITabBarButton").Marked("More"));
 
-	//	RunningApp.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 5"));
-	//	RunningApp.Tap(x => x.Class("UITableViewCell").Text("Tab 5"));
+	//	App.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 5"));
+	//	App.Tap(x => x.Class("UITableViewCell").Text("Tab 5"));
 
-	//	RunningApp.WaitForElement(x => x.Text("Success"));
+	//	App.WaitForElement(x => x.Text("Success"));
 	//}
 
 	//[Test]
 	//public void MoreControllerOpensOnFirstClick()
 	//{
-	//	RunningApp.WaitForElement(x => x.Class("UITabBarButton").Marked("More"));
-	//	RunningApp.Tap(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.WaitForElement(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.Tap(x => x.Class("UITabBarButton").Marked("More"));
 
-	//	RunningApp.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 5"));
-	//	RunningApp.Tap(x => x.Class("UITableViewCell").Text("Tab 5"));
+	//	App.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 5"));
+	//	App.Tap(x => x.Class("UITableViewCell").Text("Tab 5"));
 
-	//	RunningApp.Tap(x => x.Class("UITabBarButton").Marked("Tab 4"));
-	//	RunningApp.WaitForElement("Tab 4 Content");
+	//	App.Tap(x => x.Class("UITabBarButton").Marked("Tab 4"));
+	//	App.WaitForElement("Tab 4 Content");
 
-	//	RunningApp.Tap(x => x.Class("UITabBarButton").Marked("More"));
-	//	RunningApp.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 6"));
+	//	App.Tap(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 6"));
 	//}
 
 	//[Test]
 	//public void MoreControllerDoesNotShowEditButton()
 	//{
-	//	RunningApp.WaitForElement(x => x.Class("UITabBarButton").Marked("More"));
-	//	RunningApp.Tap(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.WaitForElement(x => x.Class("UITabBarButton").Marked("More"));
+	//	App.Tap(x => x.Class("UITabBarButton").Marked("More"));
 
-	//	RunningApp.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 5"));
+	//	App.WaitForElement(x => x.Class("UITableViewCell").Text("Tab 5"));
 
-	//	Assert.AreEqual(RunningApp.Query(x => x.Marked("Edit")).Count(), 0);
+	//	Assert.AreEqual(App.Query(x => x.Marked("Edit")).Count(), 0);
 	//}
 }

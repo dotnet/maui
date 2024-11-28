@@ -21,8 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[FailsOnAndroid("PointerGestureRecognizer doesn't work with mouse in Android")]
-		[FailsOnIOS("PointerGestureRecognizer doesn't work with mouse in iOS")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("PointerGestureRecognizer doesn't work with mouse in Android")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("PointerGestureRecognizer doesn't work with mouse in iOS")]
 		public void PointerGestureTest()
 		{
 			App.WaitForElement("TargetView");
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("DoubleTapResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void SingleTap()
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("SingleTapGestureResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DisabledSingleTap()

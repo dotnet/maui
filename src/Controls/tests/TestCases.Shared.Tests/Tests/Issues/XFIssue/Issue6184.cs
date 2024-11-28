@@ -16,9 +16,9 @@ public class Issue6184 : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void GitHubIssue6184()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("More"));
-	//	RunningApp.Tap(q => q.Marked("More"));
-	//	RunningApp.Tap(q => q.Marked("Issue 5"));
-	//	RunningApp.WaitForElement(q => q.Marked("Issue 5"));
+	//	App.WaitForElement(q => q.Marked("More"));
+	//	App.Tap(q => q.Marked("More"));
+	//	App.Tap(q => q.Marked("Issue 5"));
+	//	App.WaitForElement(q => q.Marked("Issue 5"));
 	//}
 }

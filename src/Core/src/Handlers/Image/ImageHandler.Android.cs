@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-		
+
 		protected override ImageView CreatePlatformView()
 		{
 			var imageView = new AppCompatImageView(Context);
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 			// Glide will automatically clear out the image if the Fragment or Activity is destroyed
 			// So we want to reload the image here if it's supposed to have an image
 			if (imageHandler.SourceLoader.CheckForImageLoadedOnAttached &&
-				imageHandler.PlatformView.Drawable is null && 
+				imageHandler.PlatformView.Drawable is null &&
 				imageHandler.VirtualView.Source is not null)
 			{
 				imageHandler.SourceLoader.CheckForImageLoadedOnAttached = false;

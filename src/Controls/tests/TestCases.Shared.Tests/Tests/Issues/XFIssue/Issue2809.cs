@@ -18,17 +18,17 @@ public class Issue2809 : _IssuesUITest
 	// 	public void TestPageDoesntCrash()
 	// 	{
 	// 		ShouldShowMenu();
-	// 		RunningApp.Tap(c => c.Marked("Item 1"));
-	// 		RunningApp.Screenshot("Didn't crash");
+	// 		App.Tap(c => c.Marked("Item 1"));
+	// 		App.Screenshot("Didn't crash");
 	// 	}
 
 	// 	void ShouldShowMenu()
 	// 	{
 	// #if ANDROID
 	// 		//show secondary menu
-	// 		RunningApp.TapOverflowMenuButton();
+	// 		App.TapOverflowMenuButton();
 	// #elif WINDOWS
-	// 		RunningApp.Tap ("MoreButton");
+	// 		App.Tap ("MoreButton");
 	// #endif
 	// 	}
 }

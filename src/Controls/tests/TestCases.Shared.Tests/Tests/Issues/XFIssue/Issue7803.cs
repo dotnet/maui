@@ -17,20 +17,20 @@ public class Issue7803 : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 	//{
-	//	var collectionView = RunningApp.WaitForElement(q => q.Marked("CollectionView7803"))[0];
+	//	var collectionView = App.WaitForElement(q => q.Marked("CollectionView7803"))[0];
 
-	//	RunningApp.Pan(new Drag(collectionView.Rect, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
+	//	App.Pan(new Drag(collectionView.Rect, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
 
-	//	RunningApp.WaitForElement(q => q.Marked("Count: 20"));
-	//	RunningApp.WaitForNoElement(q => q.Marked("Count: 30"));
+	//	App.WaitForElement(q => q.Marked("Count: 20"));
+	//	App.WaitForNoElement(q => q.Marked("Count: 30"));
 
 	//	AppResult[] lastCellResults = null;
 
-	//	RunningApp.QueryUntilPresent(() =>
+	//	App.QueryUntilPresent(() =>
 	//	{
-	//		RunningApp.DragCoordinates(collectionView.Rect.CenterX, collectionView.Rect.Y + collectionView.Rect.Height - 50, collectionView.Rect.CenterX, collectionView.Rect.Y + 5);
+	//		App.DragCoordinates(collectionView.Rect.CenterX, collectionView.Rect.Y + collectionView.Rect.Height - 50, collectionView.Rect.CenterX, collectionView.Rect.Y + 5);
 
-	//		lastCellResults = RunningApp.Query("19");
+	//		lastCellResults = App.Query("19");
 
 	//		return lastCellResults;
 	//	}, 10, 1);

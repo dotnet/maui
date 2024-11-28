@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			out MethodDefinition methodDefinition,
 			string targetFramework = null,
 			bool treatWarningsAsErrors = false,
-			bool compileBindingsWithSource = true)
+			bool compileBindingsWithSource = true,
+			bool generateFullIl = true)
 		{
 			methodDefinition = null;
 			var assembly = type.Assembly.Location;
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				OptimizeIL = true,
 				DebugSymbols = false,
 				ValidateOnly = true,
+				GenerateFullILInValidateOnlyMode = generateFullIl,
 				Type = type.FullName,
 				TargetFramework = targetFramework,
 				TreatWarningsAsErrors = treatWarningsAsErrors,

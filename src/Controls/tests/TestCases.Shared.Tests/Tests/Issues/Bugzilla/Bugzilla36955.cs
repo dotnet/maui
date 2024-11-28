@@ -19,10 +19,10 @@ public class Bugzilla36955 : _IssuesUITest
 	// [Test]
 	// public void Bugzilla36955Test()
 	// {
-	// 	AppResult[] buttonFalse = RunningApp.Query(q => q.Button().Text("False"));
+	// 	AppResult[] buttonFalse = App.Query(q => q.Button().Text("False"));
 	// 	Assert.AreEqual(buttonFalse.Length == 1, true);
-	// 	RunningApp.Tap(q => q.Class("Switch"));
-	// 	AppResult[] buttonTrue = RunningApp.Query(q => q.Button().Text("True"));
+	// 	App.Tap(q => q.Class("Switch"));
+	// 	AppResult[] buttonTrue = App.Query(q => q.Button().Text("True"));
 	// 	Assert.AreEqual(buttonTrue.Length == 1, true);
 	// }
 }

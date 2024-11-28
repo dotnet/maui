@@ -151,6 +151,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		/// </summary>
 		public bool ValidateOnly { get; set; }
 
+		internal bool GenerateFullILInValidateOnlyMode { get; set; }
+
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
 			thrownExceptions = null;
@@ -322,7 +324,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									LoggingHelperExtensions.LoggedErrors = null;
 								}
 							}
-							
+
 							if (initComp.HasCustomAttributes)
 							{
 								var suppressMessageAttribute = initComp.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute");
@@ -415,7 +417,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					XamlFilePath = xamlFilePath,
 					LoggingHelper = loggingHelper,
-					ValidateOnly = ValidateOnly,
+					ValidateOnly = ValidateOnly && !GenerateFullILInValidateOnlyMode,
 					CompileBindingsWithSource = CompileBindingsWithSource,
 				};
 

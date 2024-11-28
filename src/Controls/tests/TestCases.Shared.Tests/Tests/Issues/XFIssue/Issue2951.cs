@@ -17,12 +17,12 @@ public class Issue2951 : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void Issue2951Test()
 	//{
-	//	RunningApp.WaitForElement("Ready");
-	//	var bt = RunningApp.WaitForElement(c => c.Marked("btnChangeStatus"));
+	//	App.WaitForElement("Ready");
+	//	var bt = App.WaitForElement(c => c.Marked("btnChangeStatus"));
 
-	//	var buttons = RunningApp.QueryUntilPresent(() =>
+	//	var buttons = App.QueryUntilPresent(() =>
 	//	{
-	//		var results = RunningApp.Query("btnChangeStatus");
+	//		var results = App.Query("btnChangeStatus");
 	//		if (results.Length == 3)
 	//			return results;
 
@@ -30,11 +30,11 @@ public class Issue2951 : _IssuesUITest
 	//	});
 
 	//	Assert.That(buttons.Length, Is.EqualTo(3));
-	//	RunningApp.Tap(c => c.Marked("btnChangeStatus").Index(1));
+	//	App.Tap(c => c.Marked("btnChangeStatus").Index(1));
 
-	//	buttons = RunningApp.QueryUntilPresent(() =>
+	//	buttons = App.QueryUntilPresent(() =>
 	//	{
-	//		var results = RunningApp.Query("btnChangeStatus");
+	//		var results = App.Query("btnChangeStatus");
 	//		if ((results[1].Text ?? results[1].Label) == "B")
 	//			return results;
 
@@ -43,11 +43,11 @@ public class Issue2951 : _IssuesUITest
 
 	//	var text = buttons[1].Text ?? buttons[1].Label;
 	//	Assert.That(text, Is.EqualTo("B"));
-	//	RunningApp.Tap(c => c.Marked("btnChangeStatus").Index(1));
+	//	App.Tap(c => c.Marked("btnChangeStatus").Index(1));
 
-	//	buttons = RunningApp.QueryUntilPresent(() =>
+	//	buttons = App.QueryUntilPresent(() =>
 	//	{
-	//		var results = RunningApp.Query("btnChangeStatus");
+	//		var results = App.Query("btnChangeStatus");
 	//		if (results.Length == 2)
 	//			return results;
 

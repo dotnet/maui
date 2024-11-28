@@ -17,6 +17,6 @@ public class Issue6077 : _IssuesUITest
 	//public void LastColumnShouldBeVisible()
 	//{
 	//	// If the partial column shows up, then Item 5 will be in it
-	//	RunningApp.WaitForElement("Item 5");
+	//	App.WaitForElement("Item 5");
 	//}
 }

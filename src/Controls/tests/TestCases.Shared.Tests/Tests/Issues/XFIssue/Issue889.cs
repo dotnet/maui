@@ -17,13 +17,13 @@ public class Issue889 : _IssuesUITest
 	//[Description("Reproduce app crash - Issue #983")]
 	//public void Issue899TestsAppCrashWhenSwitchingTabs()
 	//{
-	//	RunningApp.Tap(q => q.Marked("Push new page"));
-	//	RunningApp.WaitForElement(q => q.Marked("I have been pushed"));
-	//	RunningApp.Screenshot("Push page");
-	//	RunningApp.Back();
-	//	RunningApp.Screenshot("Navigate back");
+	//	App.Tap(q => q.Marked("Push new page"));
+	//	App.WaitForElement(q => q.Marked("I have been pushed"));
+	//	App.Screenshot("Push page");
+	//	App.Back();
+	//	App.Screenshot("Navigate back");
 
-	//	RunningApp.Tap(q => q.Marked("Tab 2 Title"));
-	//	RunningApp.Screenshot("Go to second tab");
+	//	App.Tap(q => q.Marked("Tab 2 Title"));
+	//	App.Screenshot("Go to second tab");
 	//}
 }

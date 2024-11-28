@@ -40,21 +40,23 @@ public partial class Maui18545 : ContentPage
 		[Test]
 		public void DynamicResourcesOnGradient([Values(false, true)] bool useCompiledXaml)
 		{
-			var lighttheme = new ResourceDictionary{
+			var lighttheme = new ResourceDictionary
+			{
 				["GradientColorStart"] = Colors.Red,
 				["GradientColorEnd"] = Colors.Blue
 			};
-			var darktheme = new ResourceDictionary{
+			var darktheme = new ResourceDictionary
+			{
 				["GradientColorStart"] = Colors.Green,
 				["GradientColorEnd"] = Colors.Yellow
 			};
 			Application.Current.Resources.MergedDictionaries.Add(lighttheme);
 			var page = new Maui18545(useCompiledXaml);
 			Application.Current.MainPage = page;
-			
-            Assert.That(page.label.Background, Is.TypeOf<LinearGradientBrush>());
-            var brush = (LinearGradientBrush)page.label.Background;
-            Assert.That(brush.GradientStops[0].Color, Is.EqualTo(Colors.Red));
+
+			Assert.That(page.label.Background, Is.TypeOf<LinearGradientBrush>());
+			var brush = (LinearGradientBrush)page.label.Background;
+			Assert.That(brush.GradientStops[0].Color, Is.EqualTo(Colors.Red));
 
 			Application.Current.Resources.MergedDictionaries.Remove(lighttheme);
 			Application.Current.Resources.MergedDictionaries.Add(darktheme);

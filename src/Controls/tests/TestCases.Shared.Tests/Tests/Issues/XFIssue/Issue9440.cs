@@ -17,7 +17,7 @@ public class Issue9440 : _IssuesUITest
 	//public void GitHubIssue9440()
 	//{
 	//	DoubleTapInFlyout(Test1);
-	//	RunningApp.WaitForElement(q => q.Marked(Test1));
+	//	App.WaitForElement(q => q.Marked(Test1));
 	//	Assert.AreEqual(false, FlyoutIsPresented);
 	//}
 }

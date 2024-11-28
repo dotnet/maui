@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue10222Test()
 		{
 			try

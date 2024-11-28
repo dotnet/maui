@@ -16,19 +16,19 @@ public class Issue7311 : _IssuesUITest
 	//[Category(UITestCategories.Picker)]
 	//public void OpeningPickerPressingBackButtonTwiceShouldNotOpenPickerAgain()
 	//{
-	//	RunningApp.WaitForElement(PickerId);
-	//	RunningApp.Tap(PickerId);
+	//	App.WaitForElement(PickerId);
+	//	App.Tap(PickerId);
 
-	//	RunningApp.WaitForElement(FirstPickerItem);
+	//	App.WaitForElement(FirstPickerItem);
 
-	//	RunningApp.Back();
+	//	App.Back();
 
-	//	RunningApp.WaitForNoElement(FirstPickerItem);
+	//	App.WaitForNoElement(FirstPickerItem);
 
-	//	RunningApp.Back();
+	//	App.Back();
 
-	//	RunningApp.WaitForNoElement(FirstPickerItem, "Picker is again visible after second back button press", TimeSpan.FromSeconds(10));
+	//	App.WaitForNoElement(FirstPickerItem, "Picker is again visible after second back button press", TimeSpan.FromSeconds(10));
 
-	//	RunningApp.Screenshot("Back at the previous page, not showing the picker again");
+	//	App.Screenshot("Back at the previous page, not showing the picker again");
 	//}
 }

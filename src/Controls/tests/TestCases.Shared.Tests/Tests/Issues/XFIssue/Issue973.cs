@@ -14,29 +14,29 @@ public class Issue973 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.TabbedPage)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//[Description("Test tab reset when swapping out detail")]
 	//public void Issue973TestsTabResetAfterDetailSwap()
 	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Initial Page Left aligned"));
-	//	RunningApp.WaitForElement(q => q.Marked("Tab 1"));
+	//	App.WaitForElement(q => q.Marked("Initial Page Left aligned"));
+	//	App.WaitForElement(q => q.Marked("Tab 1"));
 
-	//	RunningApp.Tap(q => q.Marked("Tab 2"));
-	//	RunningApp.WaitForElement(q => q.Marked("Initial Page Right aligned"));
-	//	RunningApp.Screenshot("Tab 2 showing");
+	//	App.Tap(q => q.Marked("Tab 2"));
+	//	App.WaitForElement(q => q.Marked("Initial Page Right aligned"));
+	//	App.Screenshot("Tab 2 showing");
 
-	//	RunningApp.Tap(q => q.Marked("Present Flyout"));
+	//	App.Tap(q => q.Marked("Present Flyout"));
 
-	//	RunningApp.Tap(q => q.Marked("Page 4"));
-	//	RunningApp.Screenshot("Change detail page");
+	//	App.Tap(q => q.Marked("Page 4"));
+	//	App.Screenshot("Change detail page");
 
-	//	RunningApp.Tap(q => q.Marked("Close Flyout"));
+	//	App.Tap(q => q.Marked("Close Flyout"));
 
-	//	RunningApp.WaitForElement(q => q.Marked("Page 4 Left aligned"));
-	//	RunningApp.Screenshot("Tab 1 Showing and tab 1 should be selected");
+	//	App.WaitForElement(q => q.Marked("Page 4 Left aligned"));
+	//	App.Screenshot("Tab 1 Showing and tab 1 should be selected");
 
-	//	RunningApp.Tap(q => q.Marked("Tab 2"));
-	//	RunningApp.WaitForElement(q => q.Marked("Page 4 Right aligned"));
-	//	RunningApp.Screenshot("Tab 2 showing");
+	//	App.Tap(q => q.Marked("Tab 2"));
+	//	App.WaitForElement(q => q.Marked("Page 4 Right aligned"));
+	//	App.Screenshot("Tab 2 showing");
 	//}
 }

@@ -19,17 +19,17 @@ public class Issue5503 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void ToggleAppearanceApiBackgroundColorListView()
 	//{
-	//	RunningApp.WaitForElement(ChangeBackgroundButtonAutomationId);
+	//	App.WaitForElement(ChangeBackgroundButtonAutomationId);
 
-	//	RunningApp.Screenshot("ListView cells have clear background, default color from code");
+	//	App.Screenshot("ListView cells have clear background, default color from code");
 
-	//	RunningApp.Tap(ChangeBackgroundButtonAutomationId);
-	//	RunningApp.NavigateBack();
-	//	RunningApp.WaitForNoElement(ChangeBackgroundButtonAutomationId);
+	//	App.Tap(ChangeBackgroundButtonAutomationId);
+	//	App.NavigateBack();
+	//	App.WaitForNoElement(ChangeBackgroundButtonAutomationId);
 	//	AppSetup.NavigateToIssue(typeof(Issue5503), RunningApp);
-	//	RunningApp.WaitForElement(ChangeBackgroundButtonAutomationId);
+	//	App.WaitForElement(ChangeBackgroundButtonAutomationId);
 
-	//	RunningApp.Screenshot("ListView cells have Red background, set by Appearance API");
+	//	App.Screenshot("ListView cells have Red background, set by Appearance API");
 
 	//}
 }

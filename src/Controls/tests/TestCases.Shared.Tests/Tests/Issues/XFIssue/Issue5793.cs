@@ -17,15 +17,15 @@ public class Issue5793 : _IssuesUITest
 	//[Category(UITestCategories.CollectionView)]
 	//public void Reset()
 	//{
-	//	RunningApp.WaitForElement("Reset");
+	//	App.WaitForElement("Reset");
 
 	//	// Verify the item is there
-	//	RunningApp.WaitForElement("cover1.jpg, 0");
+	//	App.WaitForElement("cover1.jpg, 0");
 
 	//	// Clear the collection
-	//	RunningApp.Tap("Reset");
+	//	App.Tap("Reset");
 
 	//	// Verify the item is gone
-	//	RunningApp.WaitForNoElement("cover1.jpg, 0");
+	//	App.WaitForNoElement("cover1.jpg, 0");
 	//}
 }

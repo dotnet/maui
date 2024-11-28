@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var template = new ControlTemplate(() =>
 			{
 				label = new Label();
-				label.SetBinding(Label.TextProperty, static (Frame frame) => frame.StyleId,  source: RelativeBindingSource.TemplatedParent);
+				label.SetBinding(Label.TextProperty, static (Frame frame) => frame.StyleId, source: RelativeBindingSource.TemplatedParent);
 				return label;
 			});
 

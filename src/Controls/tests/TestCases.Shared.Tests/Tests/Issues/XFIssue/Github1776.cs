@@ -18,8 +18,8 @@ public class Github1776 : _IssuesUITest
 	// [Category(UITestCategories.Button)]
 	// public void GitHub1776Test()
 	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("TheButton"));
-	// 	RunningApp.Tap(q => q.Marked("TheButton"));
+	// 	App.WaitForElement(q => q.Marked("TheButton"));
+	// 	App.Tap(q => q.Marked("TheButton"));
 
 	// 	Assert.AreEqual(1, _pressedCount, "Pressed should fire once per tap");
 	// 	Assert.AreEqual(1, _releasedCount, "Released should fire once per tap");

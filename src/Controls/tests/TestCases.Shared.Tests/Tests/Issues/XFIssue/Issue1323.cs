@@ -19,8 +19,8 @@ public class Issue1323 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue1323Test()
 	// {
-	// 	RunningApp.WaitForElement(X => X.Marked("Page 1"));
-	// 	RunningApp.WaitForElement(X => X.Marked("Page5"));
-	// 	RunningApp.Screenshot("All tab bar items text should be white");
+	// 	App.WaitForElement(X => X.Marked("Page 1"));
+	// 	App.WaitForElement(X => X.Marked("Page5"));
+	// 	App.Screenshot("All tab bar items text should be white");
 	// }
 }

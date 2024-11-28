@@ -4,7 +4,7 @@
 public partial class Issue7886 : TestContentPage
 {
 	const string TriggerModalAutomationId = "TriggerModal";
-	const string PopModalAutomationId = "PopModal";
+	const string PopModalAutomationId = "Done";
 
 	public string ButtonAutomationId { get => TriggerModalAutomationId; }
 

@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumeration specifying the various states of a gesture.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Began">

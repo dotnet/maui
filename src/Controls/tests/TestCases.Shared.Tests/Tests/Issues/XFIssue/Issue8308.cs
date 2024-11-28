@@ -16,12 +16,12 @@ public class Issue8308 : _IssuesUITest
 	//[Category(UITestCategories.CollectionView)]
 	//public void NavigatingBackToCollectionViewShouldNotCrash()
 	//{
-	//	RunningApp.WaitForElement("Instructions");
+	//	App.WaitForElement("Instructions");
 
 	//	TapInFlyout("Page 2");
-	//	RunningApp.WaitForElement("Instructions2");
+	//	App.WaitForElement("Instructions2");
 
 	//	TapInFlyout("Page 1");
-	//	RunningApp.WaitForElement("Instructions");
+	//	App.WaitForElement("Instructions");
 	//}
 }

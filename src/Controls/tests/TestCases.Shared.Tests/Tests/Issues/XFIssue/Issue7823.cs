@@ -14,25 +14,25 @@ public class Issue7823_XF : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Frame)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue7823TestIsClippedIssue()
 	//{
-	//	RunningApp.WaitForElement(RootFrame);
+	//	App.WaitForElement(RootFrame);
 	//	AssertIsClipped(true);
-	//	RunningApp.Tap(SetClipBounds);
+	//	App.Tap(SetClipBounds);
 	//	AssertIsClipped(false);
 	//}
 
 	//void AssertIsClipped(bool expected)
 	//{
-	//	if (RunningApp.IsApiHigherThan(21))
+	//	if (App.IsApiHigherThan(21))
 	//	{
-	//		var cliptoOutlineValue = RunningApp.InvokeFromElement<bool>(SecondaryFrame, GetClipToOutline)[0];
+	//		var cliptoOutlineValue = App.InvokeFromElement<bool>(SecondaryFrame, GetClipToOutline)[0];
 	//		Assert.AreEqual(expected, cliptoOutlineValue);
 	//	}
-	//	else if (RunningApp.IsApiHigherThan(19))
+	//	else if (App.IsApiHigherThan(19))
 	//	{
-	//		var clipBounds = RunningApp.InvokeFromElement<object>(SecondaryFrame, GetClipBounds)[0];
+	//		var clipBounds = App.InvokeFromElement<object>(SecondaryFrame, GetClipBounds)[0];
 	//		if (expected)
 	//			Assert.IsNotNull(clipBounds);
 	//		else
@@ -40,7 +40,7 @@ public class Issue7823_XF : _IssuesUITest
 	//	}
 	//	else
 	//	{
-	//		var clipChildrenValue = RunningApp.InvokeFromElement<bool>(SecondaryFrame, GetClipChildren)[0];
+	//		var clipChildrenValue = App.InvokeFromElement<bool>(SecondaryFrame, GetClipChildren)[0];
 	//		Assert.AreEqual(expected, clipChildrenValue);
 	//	}
 	//}
