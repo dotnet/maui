@@ -1,39 +1,28 @@
-using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Default, true)]
+public partial class ColorConverter : ContentPage
 {
-	public partial class ColorConverter : ContentPage
+	class Data
 	{
-		class Data
-		{
-			public string ButtonBackground => "#fc87ad";
-		}
+		public string ButtonBackground => "#fc87ad";
+	}
 
-		public ColorConverter()
-		{
-			InitializeComponent();
-		}
+	public ColorConverter() => InitializeComponent();
 
-		public ColorConverter(bool useCompiledXaml)
+	[TestFixture]
+	public class Tests
+	{
+		[Test] public void StringsAreValidAsColor([Values]XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
+			var page = new ColorConverter(inflator);
+			page.BindingContext = new Data();
 
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void StringsAreValidAsColor(bool useCompiledXaml)
-			{
-				var page = new ColorConverter(useCompiledXaml);
-				page.BindingContext = new Data();
-
-				var expected = Color.FromArgb("#fc87ad");
-				Assert.AreEqual(expected, page.Button0.BackgroundColor);
-			}
+			var expected = Color.FromArgb("#fc87ad");
+			Assert.AreEqual(expected, page.Button0.BackgroundColor);
 		}
 	}
 }
