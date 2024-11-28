@@ -63,10 +63,10 @@ namespace UITest.Appium
 		{
 			try
 			{
-				var screenbounds = GetRootViewRect(_app);
+				var screenBounds = GetRootViewRect(_app);
 
-				var centerX = screenbounds.Width / 2;
-				var centerY = screenbounds.Height / 2;
+				var centerX = screenBounds.Width / 2;
+				var centerY = screenBounds.Height / 2;
 
 				_app.TapCoordinates(centerX, centerY);
 
