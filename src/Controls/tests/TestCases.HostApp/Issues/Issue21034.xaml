@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Maui.Controls.Sample.Issues.Issue21034">
+        <Label TextColor="Blue"
+               AutomationId="Label"
+               Margin="30"
+               VerticalOptions="Center"
+               TextDecorations="Underline"
+               FontAttributes="Bold">
+                <Label.FormattedText>
+                        <FormattedString>
+                                <Span Text="Bold, underlined, blue"/>
+                                <Span Text="  "
+                                      TextDecorations="None"/>
+                                <Span Text="Green, italic"
+                                      TextColor="Green"
+                                      TextDecorations="None"
+                                      FontAttributes="Italic"/>
+                                <Span Text="  "
+                                      TextDecorations="None"/>
+                                <Span FontAttributes="Bold"
+                                      TextColor="Red"
+                                      TextDecorations="Strikethrough"
+                                      Text="Red, bold, strikethrough"/>
+                                <Span Text="  "
+                                      TextDecorations="None"/>
+                                <Span TextColor="Black"
+                                      FontFamily="FA"
+                                      Text="&#xf133;"/>
+                        </FormattedString>
+                </Label.FormattedText>
+        </Label>
+</ContentPage>

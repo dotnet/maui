@@ -21,14 +21,16 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString? ToNSAttributedString(this Label label)
-			=> ToNSAttributedString(
+			=> ToNSAttributedStringExtended(
 				label.FormattedText,
 				label.RequireFontManager(),
 				label.LineHeight,
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.TextDecorations,
+				label.FontAttributes);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -38,6 +40,18 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+				=> formattedString.ToNSAttributedStringExtended(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
+
+		internal static NSAttributedString ToNSAttributedStringExtended(
+			this FormattedString formattedString,
+			IFontManager fontManager,
+			double defaultLineHeight = 0d,
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default,
+			TextDecorations defaultTextDecorations = TextDecorations.None,
+			FontAttributes defaultFontAttributes = FontAttributes.None)
 		{
 			if (formattedString == null)
 				return new NSAttributedString(string.Empty);
@@ -49,8 +63,8 @@ namespace Microsoft.Maui.Controls.Platform
 				if (span.Text == null)
 					continue;
 
-				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform));
+				attributed.Append(span.ToNSAttributedStringExtended(fontManager, defaultLineHeight, defaultHorizontalAlignment,
+					defaultFont, defaultColor, defaultTextTransform, defaultTextDecorations, defaultFontAttributes));
 			}
 
 			return attributed;
@@ -64,6 +78,19 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
+				=> span.ToNSAttributedStringExtended(fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform);
+
+
+		internal static NSAttributedString ToNSAttributedStringExtended(
+			this Span span,
+			IFontManager fontManager,
+			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for NET8
+			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
+			Font? defaultFont = null,
+			Color? defaultColor = null,
+			TextTransform defaultTextTransform = TextTransform.Default,
+			TextDecorations defaultTextDecorations = TextDecorations.None,
+			FontAttributes defaultFontAttributes = FontAttributes.None)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -102,6 +129,27 @@ namespace Microsoft.Maui.Controls.Platform
 				var textDecorations = span.TextDecorations;
 				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
 				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
+			}
+			else if (defaultTextDecorations != TextDecorations.None)
+			{
+				hasUnderline = (defaultTextDecorations & TextDecorations.Underline) != 0;
+				hasStrikethrough = (defaultTextDecorations & TextDecorations.Strikethrough) != 0;
+			}
+
+			if (span.IsSet(Span.FontAttributesProperty))
+			{
+				var fontAttributes = span.FontAttributes;
+				if (fontAttributes.HasFlag(FontAttributes.Bold))
+					font = font.WithWeight(FontWeight.Bold);
+				if (fontAttributes.HasFlag(FontAttributes.Italic))
+					font = font.WithSlant(FontSlant.Italic);
+			}
+			else if(defaultFontAttributes != FontAttributes.None)
+			{
+				if (defaultFontAttributes.HasFlag(FontAttributes.Bold))
+					font = font.WithWeight(FontWeight.Bold);
+				if (defaultFontAttributes.HasFlag(FontAttributes.Italic))
+					font = font.WithSlant(FontSlant.Italic);
 			}
 
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
