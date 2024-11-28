@@ -195,7 +195,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var localName = propertyName.LocalName;
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, iXmlLineInfo);
 
-        //TODO event
+        // event
+        if (CanConnectEvent(parentVar, localName, valueNode, attached, context))
+        {
+            ConnectEvent(writer, parentVar, localName, valueNode, context, iXmlLineInfo);
+            return;
+        }
 
         //TODO dynamicresource
 
@@ -225,8 +230,15 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         writer.WriteLine($"// SetPropertyValue UNHANDLED {parentVar} {propertyName} {valueNode}");
     }
 
+    static bool CanConnectEvent(LocalVariable parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
+	{
+		return !attached && valueNode is ValueNode && parentVar.Type.GetMembers().OfType<IEventSymbol>().Any(e => e.Name == localName);
+	}
 
-
+    static void ConnectEvent(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+        writer.WriteLine($"{parentVar.Name}.{localName} += {((ValueNode)valueNode).Value};");
+    }
 
     static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
     {

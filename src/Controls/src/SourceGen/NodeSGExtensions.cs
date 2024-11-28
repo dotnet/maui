@@ -76,20 +76,39 @@ static class NodeSGExtensions
             return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
         if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
-		return toType.ToString() switch
-		{
-			"System.SByte" or "sbyte" or "System.Int16" or "short" or "System.Int32" or "int" or "System.Int64" or "long" or "System.Byte" or "byte" or "System.UInt16" or "ushort" or "System.UInt32" or "uint" or "System.UInt64" or "ulong" or "System.Single" or "float" or "System.Double" or "double" => valueString,
-			"System.Boolean" or "bool" => valueString.ToLowerInvariant(),
-			"System.String" or "string" => $"\"{valueString}\"",
-			"System.Object" or "object" => "new()",
-			"System.Char" or "char" => $"'{valueString}'",
-			"System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
-            "System.DateTime" => $"new global::System.DateTime({DateTime.Parse(valueString).Ticks})",
-            "System.Decimal" => $"new global::System.Decimal({decimal.Parse(valueString)})",
-			"System.Uri" => $"new global::System.Uri(\"{valueString}\", global:System.UriKind.RelativeOrAbsolute)",
-			_ => $"\"{valueString}\"",
-		};
+        return toType.SpecialType switch
+        {
+            SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_Int32 or SpecialType.System_Int64 or 
+            SpecialType.System_Byte or SpecialType.System_UInt16 or SpecialType.System_UInt32 or SpecialType.System_UInt64 or 
+            SpecialType.System_Single or SpecialType.System_Double => valueString,
+            SpecialType.System_Boolean => valueString.ToLowerInvariant(),
+            SpecialType.System_String => $"\"{valueString}\"",
+            SpecialType.System_Object => "new()",
+            SpecialType.System_Char => $"'{valueString}'",
+            SpecialType.System_DateTime => $"new global::System.DateTime({DateTime.Parse(valueString).Ticks})",
+            SpecialType.System_Decimal => $"new global::System.Decimal({decimal.Parse(valueString)})",
+            SpecialType.None => DetermineToType(toType, valueString),
+            _ => $"\"{valueString}\"",
+        };
 	}
+
+    static string DetermineToType(ITypeSymbol toType, string valueString)
+    {
+        if (toType.TypeKind == TypeKind.Enum)
+        {
+            var enumValues = valueString.Split([','], StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}");
+                                        
+            return string.Join(" | ", enumValues);
+        }
+
+        return toType.ToString() switch
+        {
+            "System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
+            "System.Uri" => $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)",
+            _ => $"\"{valueString}\"",
+        };
+    }
 
     public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
