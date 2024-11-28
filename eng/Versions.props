@@ -131,8 +131,7 @@
     <FizzlerPackageVersion>1.3.0</FizzlerPackageVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <ExCSSPackageVersion>4.2.3</ExCSSPackageVersion>
-    <SystemDrawingCommonPackageVersion>8.0.3</SystemDrawingCommonPackageVersion>
-    <SystemFormatsAsn1PackageVersion>9.0.0</SystemFormatsAsn1PackageVersion>
+    <SystemDrawingCommonPackageVersion>9.0.0</SystemDrawingCommonPackageVersion>
     <MicrosoftDotNetBuildTasksFeedVersion>9.0.0-beta.24572.2</MicrosoftDotNetBuildTasksFeedVersion>
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>9.0.0-beta.24572.2</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>9.0.0-beta.24572.2</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
