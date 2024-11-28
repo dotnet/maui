@@ -42,7 +42,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         var type = node.XmlType.ResolveTypeSymbol(Context) 
             ?? throw new Exception($"Type {node.XmlType.Name} not found");
 
-		//if type is ArrayExtension
+		//TODO if type is ArrayExtension
 
 		//if type is Xaml2009Primitive
 		if (IsXaml2009LanguagePrimitive(node)) {
@@ -130,6 +130,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         return false;
     }
 
+    // TODO duplicate code with NodeSGExtensions.cs, should we share somehow?
     static string ValueForLanguagePrimitive(ITypeSymbol type, ElementNode node)
     {
         var hasValue = node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode &&
@@ -137,29 +138,43 @@ class CreateValuesVisitor : IXamlNodeVisitor
         if (!hasValue)
             return "default";
         var valueString = (string)((ValueNode)node.CollectionItems[0]).Value;
-        switch (type.ToString())
+        switch (type.SpecialType)
         {
-            case "System.SByte":
-            case "System.Int16":
-            case "System.Int32":
-            case "System.Int64":
-            case "System.Byte":
-            case "System.UInt16":
-            case "System.UInt32":
-            case "System.UInt64":
-            case "System.Single":
-            case "System.Double":
-            case "System.Decimal": return valueString;
-            case "System.Boolean": return valueString.ToLowerInvariant();
-            case "System.String": return $"\"{valueString}\"";
-            case "System.Object": return "new()";
-            case "System.Char": return $"'{valueString}'";
-            case "System.TimeSpan":
-                var span = TimeSpan.Parse(valueString);
-                return $"new global::System.TimeSpan({span.Ticks})";
-            case "System.Uri": return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
+            case SpecialType.System_SByte:
+            case SpecialType.System_Int16:
+            case SpecialType.System_Int32:
+            case SpecialType.System_Int64:
+            case SpecialType.System_Byte:
+            case SpecialType.System_UInt16:
+            case SpecialType.System_UInt32:
+            case SpecialType.System_UInt64:
+            case SpecialType.System_Single:
+            case SpecialType.System_Double:
+            case SpecialType.System_Decimal: return valueString;
+            case SpecialType.System_Boolean: return valueString.ToLowerInvariant();
+            case SpecialType.System_String: return $"\"{valueString}\"";
+            case SpecialType.System_Object: return "new()";
+            case SpecialType.System_Char: return $"'{valueString}'";
+            case SpecialType.None: return DetermineToType(type, valueString);
             default: return "default";
         }
+    }
+
+    static string DetermineToType(ITypeSymbol toType, string valueString)
+    {
+        if (toType.TypeKind == TypeKind.Enum)
+        {
+            var enumValues = valueString.Split([','], StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}");
+            return string.Join(" | ", enumValues);
+        }
+
+        return toType.ToString() switch
+        {
+            "System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
+            "System.Uri" => $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)",
+            _ => "default"
+        };
     }
 }
 
