@@ -10,7 +10,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ItemContentControl : ContentControl
+	public partial class ItemContentControl : ContentControl
 	{
 		VisualElement _visualElement;
 		IViewHandler _handler;
@@ -172,7 +172,14 @@ namespace Microsoft.Maui.Controls.Platform
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
-				_visualElement = dataTemplate.CreateContent() as VisualElement;
+				var content = dataTemplate.CreateContent();
+				_visualElement = content as VisualElement;
+
+				if(_visualElement is null)
+				{
+					throw new InvalidOperationException($"{dataTemplate} could not be created from {content}");
+				}
+
 				_visualElement.BindingContext = dataContext;
 				_handler = _visualElement.ToHandler(mauiContext);
 
@@ -203,6 +210,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			itemsView?.AddLogicalChild(_visualElement);
+
+			if (itemsView is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode is not SelectionMode.None)
+			{
+				bool isSelected = false;
+				if (selectableItemsView.SelectionMode == SelectionMode.Single)
+					isSelected = selectableItemsView.SelectedItem == FormsDataContext;
+				else
+					isSelected = selectableItemsView.SelectedItems.Contains(FormsDataContext);
+
+				if (isSelected)
+					UpdateIsSelected(isSelected);
+			}
 		}
 
 		void SetNativeStateConsistent(VisualElement visualElement)
@@ -320,7 +339,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal VisualElement GetVisualElement() => _visualElement;
 
-		class ContentLayoutPanel : Panel
+		partial class ContentLayoutPanel : Panel
 		{
 			IView _view;
 			public ContentLayoutPanel(IView view)

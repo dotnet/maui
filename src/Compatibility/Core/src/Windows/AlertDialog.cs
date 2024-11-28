@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class AlertDialog : ContentDialog
+	public partial class AlertDialog : ContentDialog
 	{
 		public Microsoft.UI.Xaml.Controls.ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
 

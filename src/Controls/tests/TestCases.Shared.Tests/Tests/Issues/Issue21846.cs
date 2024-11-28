@@ -14,10 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void WebViewNoCrashPopup()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Windows]);
-
 			App.WaitForElement("OpenModalButton");
 			App.Click("OpenModalButton");
 

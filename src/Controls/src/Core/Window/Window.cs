@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -60,6 +59,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="MinimumHeight"/>.</summary>
 		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
 			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
+
+		/// <summary>Bindable property for <see cref="TitleBar"/>.</summary>
+		public static readonly BindableProperty TitleBarProperty = BindableProperty.Create(
+			nameof(TitleBar), typeof(TitleBar), typeof(Window), null, propertyChanged: TitleBarChanged);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
@@ -162,6 +165,12 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MinimumHeightProperty, value);
 		}
 
+		public ITitleBar? TitleBar
+		{
+			get => (ITitleBar?)GetValue(TitleBarProperty);
+			set => SetValue(TitleBarProperty, value);
+		}
+
 		double IWindow.X => GetPositionCoordinate(XProperty);
 
 		double IWindow.Y => GetPositionCoordinate(YProperty);
@@ -202,58 +211,38 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.FrameChanged(Rect frame)
 		{
-			var x = X;
-			var y = Y;
-			var width = Width;
-			var height = Height;
-			if (new Rect(x, y, width, height) == frame)
+			if (new Rect(X, Y, Width, Height) == frame)
+			{
 				return;
+			}
 
 			_batchFrameUpdate++;
 
-			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
-			SetPropertyChanging(YProperty, nameof(Y), y, frame.Y);
-			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
-			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
+			var shouldTriggerSizeChanged = (Width != frame.Width) || (Height != frame.Height);
 
-			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
-			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValue(XProperty, frame.X, SetterSpecificity.FromHandler);
+			SetValue(YProperty, frame.Y, SetterSpecificity.FromHandler);
+			SetValue(WidthProperty, frame.Width, SetterSpecificity.FromHandler);
+			SetValue(HeightProperty, frame.Height, SetterSpecificity.FromHandler);
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
 				_batchFrameUpdate = 0;
 
-			if (_batchFrameUpdate == 0)
+			if (_batchFrameUpdate == 0 && shouldTriggerSizeChanged)
 			{
-				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
-				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
-				SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
-				SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
-
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
+		}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
+		private protected override void UpdateHandlerValue(string property, bool valueChanged)
+		{
+			if (valueChanged && _batchFrameUpdate > 0 && (property == nameof(X) || property == nameof(Y) || property == nameof(Width) || property == nameof(Height)))
 			{
-				if (oldValue == newValue)
-					return;
-
-				property.PropertyChanging?.Invoke(this, oldValue, newValue);
-				OnPropertyChanging(name);
+				return;
 			}
 
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
-			{
-				if (oldValue == newValue)
-					return;
-
-				OnPropertyChanged(name);
-				property.PropertyChanged?.Invoke(this, oldValue, newValue);
-			}
+			base.UpdateHandlerValue(property, valueChanged);
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;
@@ -396,6 +385,23 @@ namespace Microsoft.Maui.Controls
 				((IVisualTreeElement)bindable).GetVisualChildren());
 		}
 
+		static void TitleBarChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var self = (Window)bindable;
+			if (self != null)
+			{
+				if (oldValue is TitleBar prevTitleBar)
+				{
+					self.RemoveLogicalChild(prevTitleBar);
+				}
+
+				if (newValue is TitleBar titleBar)
+				{
+					self.AddLogicalChild(titleBar);
+				}
+			}
+		}
+
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 
 		Window IWindowController.Window
@@ -404,7 +410,7 @@ namespace Microsoft.Maui.Controls
 			set => throw new InvalidOperationException("A window cannot set a window.");
 		}
 
-		IView IWindow.Content =>
+		IView? IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		Application? Application => Parent as Application;
@@ -633,7 +639,18 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (newPage is Shell newShell)
+			{
 				newShell.PropertyChanged += ShellPropertyChanged;
+			}
+
+			if (oldPage?.IsLoaded == true)
+			{
+				this.OnUnloaded(() => oldPage.DisconnectHandlers());
+			}
+			else
+			{
+				oldPage?.DisconnectHandlers();
+			}
 
 			Handler?.UpdateValue(nameof(IWindow.FlowDirection));
 		}

@@ -74,7 +74,7 @@ namespace Cadenza.Collections
 		public OrderedDictionary(ICollection<KeyValuePair<TKey, TValue>> dictionary, IEqualityComparer<TKey> equalityComparer) : this(dictionary != null ? dictionary.Count : 0, equalityComparer)
 		{
 			if (dictionary == null)
-				throw new ArgumentNullException("dictionary");
+				throw new ArgumentNullException(nameof(dictionary));
 
 			foreach (KeyValuePair<TKey, TValue> kvp in dictionary)
 				Add(kvp.Key, kvp.Value);
@@ -124,11 +124,11 @@ namespace Cadenza.Collections
 		void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 		{
 			if (array == null)
-				throw new ArgumentNullException("array");
+				throw new ArgumentNullException(nameof(array));
 			if (Count > array.Length - arrayIndex)
 				throw new ArgumentException("Not enough space in array to copy");
 			if (arrayIndex < 0)
-				throw new ArgumentOutOfRangeException("arrayIndex");
+				throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 
 			for (var i = 0; i < _keyOrder.Count; ++i)
 			{
@@ -296,7 +296,7 @@ namespace Cadenza.Collections
 		public int IndexOf(TKey key)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 
 			return _keyOrder.IndexOf(key);
 		}
@@ -312,7 +312,7 @@ namespace Cadenza.Collections
 		public int IndexOf(TKey key, int startIndex)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 
 			return _keyOrder.IndexOf(key, startIndex);
 		}
@@ -335,7 +335,7 @@ namespace Cadenza.Collections
 		public int IndexOf(TKey key, int startIndex, int count)
 		{
 			if (key == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException(nameof(key));
 
 			return _keyOrder.IndexOf(key, startIndex, count);
 		}
@@ -391,11 +391,11 @@ namespace Cadenza.Collections
 			public void CopyTo(TValue[] array, int arrayIndex)
 			{
 				if (array == null)
-					throw new ArgumentNullException("array");
+					throw new ArgumentNullException(nameof(array));
 				if (Count > array.Length - arrayIndex)
 					throw new ArgumentException("Not enough space in array to copy");
 				if (arrayIndex < 0 || arrayIndex > array.Length)
-					throw new ArgumentOutOfRangeException("arrayIndex");
+					throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 
 				for (var i = 0; i < _odict.Count; ++i)
 					array[arrayIndex++] = _odict[i];

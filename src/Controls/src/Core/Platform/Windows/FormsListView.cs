@@ -10,7 +10,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class FormsListView : Microsoft.UI.Xaml.Controls.ListView, IEmptyView
+	internal partial class FormsListView : Microsoft.UI.Xaml.Controls.ListView, IEmptyView
 	{
 		ContentControl _emptyViewContentControl;
 		FrameworkElement _emptyView;

@@ -1,4 +1,4 @@
-# if IOS
+#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public void ErrorShouldNotBeThrown()
 		{
 			try

@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			// we need to make sure we are big enough to be laid out at 0,0
+			// we need to make sure we are big enough to be arranged at 0,0
 			if (_childView != null)
 			{
 				SetMeasuredDimension((int)Context.ToPixels(_childView.Bounds.Right + _parent.Padding.Right), (int)Context.ToPixels(_childView.Bounds.Bottom + _parent.Padding.Bottom));

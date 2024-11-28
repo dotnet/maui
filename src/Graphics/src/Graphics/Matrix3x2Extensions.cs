@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static float GetRotation(this in Matrix3x2 matrix)
 		{
-			return (float)Math.Atan2(matrix.M12, matrix.M11);
+			return MathF.Atan2(matrix.M12, matrix.M11);
 		}
 
 		public static Vector2 GetTranslation(this in Matrix3x2 matrix)
@@ -141,8 +141,8 @@ namespace Microsoft.Maui.Graphics
 		public static float GetLengthScale(this in Matrix3x2 matrix)
 		{
 			var determinant = matrix.GetDeterminant();
-			var areaScale = Math.Abs(determinant);
-			return (float)Math.Sqrt(areaScale);
+			var areaScale = MathF.Abs(determinant);
+			return MathF.Sqrt(areaScale);
 		}
 
 		public static void CopyTo(this in Matrix3x2 matrix, float[] dst, int offset = 0, int count = 6)
@@ -163,9 +163,9 @@ namespace Microsoft.Maui.Graphics
 		public static void DeconstructScales(this in Matrix3x2 value, out float scale, out float scalex, out float scaley)
 		{
 			var det = value.GetDeterminant();
-			scale = (float)Math.Sqrt(Math.Abs(det));
-			scalex = value.M12 == 0 ? Math.Abs(value.M11) : new Vector2(value.M11, value.M12).Length();
-			scaley = value.M21 == 0 ? Math.Abs(value.M22) : new Vector2(value.M21, value.M22).Length();
+			scale = MathF.Sqrt(MathF.Abs(det));
+			scalex = value.M12 == 0 ? MathF.Abs(value.M11) : new Vector2(value.M11, value.M12).Length();
+			scaley = value.M21 == 0 ? MathF.Abs(value.M22) : new Vector2(value.M21, value.M22).Length();
 			if (det < 0)
 				scaley = -scaley;
 		}

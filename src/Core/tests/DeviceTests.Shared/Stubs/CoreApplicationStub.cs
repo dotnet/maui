@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			if (_singleWindow is not null)
 				return _singleWindow;
-				
+
 			_windows.Add(new WindowStub());
 			return _windows.Last();
 		}
@@ -35,6 +35,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			_windows.Remove(window);
 		}
+
+		public void ActivateWindow(IWindow window) { }
 
 		public void ThemeChanged() { }
 

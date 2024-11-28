@@ -36,15 +36,15 @@ namespace Microsoft.Maui.Resizetizer
 			Filename = filename;
 			BaseSize = baseSize;
 			BackgroundColor = backgroundColor;
+			Paint = new SKPaint
+			{
+				FilterQuality = SKFilterQuality.High
+			};
 
 			if (tintColor is SKColor tint)
 			{
 				Logger?.Log($"Detected a tint color of {tint}");
-
-				Paint = new SKPaint
-				{
-					ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn)
-				};
+				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
 		}
 

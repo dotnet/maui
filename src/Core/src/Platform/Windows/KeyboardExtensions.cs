@@ -41,6 +41,18 @@ namespace Microsoft.Maui.Platform
 			{
 				name.NameValue = InputScopeNameValue.Url;
 			}
+			else if (self == Keyboard.Password)
+			{
+				name.NameValue = InputScopeNameValue.Password;
+			}
+			else if (self == Keyboard.Date)
+			{
+				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
+			}
+			else if (self == Keyboard.Time)
+			{
+				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
+			}
 			else
 			{
 				var custom = (CustomKeyboard)self;
@@ -84,7 +96,7 @@ namespace Microsoft.Maui.Platform
 		public static InputScope ToInputScope(this Keyboard self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			var result = new InputScope();
 			var name = new InputScopeName();
@@ -115,6 +127,18 @@ namespace Microsoft.Maui.Platform
 			else if (self == Keyboard.Url)
 			{
 				name.NameValue = InputScopeNameValue.Url;
+			}
+			else if (self == Keyboard.Password)
+			{
+				name.NameValue = InputScopeNameValue.Password;
+			}
+			else if (self == Keyboard.Date)
+			{
+				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
+			}
+			else if (self == Keyboard.Time)
+			{
+				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
 			}
 			else
 			{

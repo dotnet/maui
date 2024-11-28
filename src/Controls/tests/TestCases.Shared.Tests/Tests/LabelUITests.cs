@@ -1,4 +1,3 @@
-using Maui.Controls.Sample;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -6,6 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests;
 
+[Category(UITestCategories.Label)]
 public class LabelUITests : _ViewUITests
 {
 	const string LabelGallery = "Label Gallery";
@@ -18,13 +18,12 @@ public class LabelUITests : _ViewUITests
 	protected override void NavigateToGallery() =>
 		App.NavigateToGallery(LabelGallery);
 
-	public override void _IsEnabled()
+	public override void IsEnabled()
 	{
 		Assert.Ignore("Labels do not really have a concept of being \"disabled\".");
 	}
 
 	[Test]
-	[Category(UITestCategories.Label)]
 	public void SpanTapped()
 	{
 		if (Device == TestDevice.Mac)
@@ -45,5 +44,22 @@ public class LabelUITests : _ViewUITests
 
 		var textAfterClick = remote.GetEventLabel().GetText();
 		ClassicAssert.AreEqual("Event: SpanTapped (fired 1)", textAfterClick);
+	}
+
+	[Test]
+	public void FontFamily()
+	{
+		var remote = GoToStateRemote();
+
+		//VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+
+		// This works though?!
+		remote.TapStateButton();
+		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
+
+		// TODO: fix me -- broken in WinAppSDK 1.6 for some unknown reason
+		// Issue12153 covers font awesome tests, so not totally sure what's going on
+		//remote.TapStateButton();
+		//VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
 	}
 }

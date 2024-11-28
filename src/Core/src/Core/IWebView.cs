@@ -72,5 +72,15 @@ namespace Microsoft.Maui
 		/// Raised after web navigation completes.
 		/// </summary>
 		void Navigated(WebNavigationEvent evnt, string url, WebNavigationResult result);
+
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// Raised when a WebView process ends unexpectedly.
+		/// </summary>
+#if NETSTANDARD2_0
+		void ProcessTerminated(WebProcessTerminatedEventArgs args);
+#else
+		void ProcessTerminated(WebProcessTerminatedEventArgs args) { }
+#endif
 	}
 }

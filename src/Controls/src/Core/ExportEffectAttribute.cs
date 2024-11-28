@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,7 +11,9 @@ namespace Microsoft.Maui.Controls
 	public sealed class ExportEffectAttribute : Attribute
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ExportEffectAttribute.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
-		public ExportEffectAttribute(Type effectType, string uniqueName)
+		public ExportEffectAttribute(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] Type effectType,
+			string uniqueName)
 		{
 			if (uniqueName.IndexOf(".", StringComparison.Ordinal) != -1)
 				throw new ArgumentException("uniqueName must not contain a .");
@@ -20,6 +23,7 @@ namespace Microsoft.Maui.Controls
 
 		internal string Id { get; private set; }
 
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 		internal Type Type { get; private set; }
 	}
 }

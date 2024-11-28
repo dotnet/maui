@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		public LockingSemaphore(int initialCount)
 		{
 			if (initialCount < 0)
-				throw new ArgumentOutOfRangeException("initialCount");
+				throw new ArgumentOutOfRangeException(nameof(initialCount));
 			_currentCount = initialCount;
 		}
 

@@ -30,7 +30,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
+	public partial class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
 				new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			AutoPackage = false;
 		}
 
-		internal sealed class ListViewTransparent : WListView
+		internal sealed partial class ListViewTransparent : WListView
 		{
 			internal ListViewRenderer ListViewRenderer { get; }
 			public ListViewTransparent(ListViewRenderer listViewRenderer) : base()
@@ -260,8 +260,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ClearSizeEstimate();
 				ReloadData();
 			}
-
-			Element.Dispatcher.DispatchIfRequired(() => List?.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -321,47 +319,51 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
-				if (List != null)
-				{
-					foreach (ViewToHandlerConverter.WrapperControl wrapperControl in FindDescendants<ViewToHandlerConverter.WrapperControl>(List))
-					{
-						wrapperControl.CleanUp();
-					}
-
-					if (_subscribedToTapped)
-					{
-						_subscribedToTapped = false;
-						List.Tapped -= ListOnTapped;
-					}
-					if (_subscribedToItemClick)
-					{
-						_subscribedToItemClick = false;
-						List.ItemClick -= OnListItemClicked;
-					}
-
-					List.SelectionChanged -= OnControlSelectionChanged;
-					if (_collectionViewSource != null)
-						_collectionViewSource.Source = null;
-
-					List.DataContext = null;
-
-					// Leaving this here as a warning because setting this to null causes
-					// an AccessViolationException if you run Issue1975
-					// List.ItemsSource = null;
-
-					List = null;
-				}
-
-				if (_zoom != null)
-				{
-					_zoom.ViewChangeCompleted -= OnViewChangeCompleted;
-					_zoom = null;
-				}
+				CleanUpResources();
 			}
 
 			base.Dispose(disposing);
 		}
 
+		void CleanUpResources()
+		{
+			if (List != null)
+			{
+				foreach (ViewToHandlerConverter.WrapperControl wrapperControl in FindDescendants<ViewToHandlerConverter.WrapperControl>(List))
+				{
+					wrapperControl.CleanUp();
+				}
+
+				if (_subscribedToTapped)
+				{
+					_subscribedToTapped = false;
+					List.Tapped -= ListOnTapped;
+				}
+				if (_subscribedToItemClick)
+				{
+					_subscribedToItemClick = false;
+					List.ItemClick -= OnListItemClicked;
+				}
+
+				List.SelectionChanged -= OnControlSelectionChanged;
+				if (_collectionViewSource != null)
+					_collectionViewSource.Source = null;
+
+				List.DataContext = null;
+
+				// Leaving this here as a warning because setting this to null causes
+				// an AccessViolationException if you run Issue1975
+				// List.ItemsSource = null;
+
+				List = null;
+			}
+
+			if (_zoom != null)
+			{
+				_zoom.ViewChangeCompleted -= OnViewChangeCompleted;
+				_zoom = null;
+			}
+		}
 		static IEnumerable<T> FindDescendants<T>(DependencyObject dobj) where T : DependencyObject
 		{
 			int count = VisualTreeHelper.GetChildrenCount(dobj);
@@ -800,6 +802,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				OnListItemClicked(selectedItemIndex);
 			}
+		}
+
+		private protected override void DisconnectHandlerCore()
+		{
+			CleanUpResources();
+			base.DisconnectHandlerCore();
 		}
 
 		void OnControlSelectionChanged(object sender, WSelectionChangedEventArgs e)

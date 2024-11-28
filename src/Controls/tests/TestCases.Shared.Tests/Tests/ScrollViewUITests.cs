@@ -20,9 +20,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(LayoutGallery);
 		}
 
+#if ANDROID
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the start")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollToElement1Start()
 		{
 			if (Device == TestDevice.Android)
@@ -43,8 +46,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the center")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollToElement2Center()
 		{
 			if (Device == TestDevice.Android)
@@ -68,8 +73,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll element to the end")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollToElement3End()
 		{
 			if (Device == TestDevice.Android)
@@ -91,6 +98,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Description("ScrollTo Y = 100")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollToY()
 		{
 			if (Device == TestDevice.Android)
@@ -109,6 +119,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
 		[Test]
 		[Description("ScrollTo Y = 100")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollToYTwice()
 		{
 			if (Device == TestDevice.Android)
@@ -128,10 +141,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
 		}
+#endif
+
 #if ANDROID || IOS
 		[Test]
-		[Category(UITestCategories.ScrollView)]
 		[Description("Scroll down the ScrollView using a gesture")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void ScrollUpAndDownWithGestures()
 		{
 			App.ScrollDown("thescroller", ScrollStrategy.Gesture, 0.75);

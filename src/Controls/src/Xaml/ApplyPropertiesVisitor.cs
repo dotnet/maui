@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -14,6 +15,10 @@ using static System.String;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 	class ApplyPropertiesVisitor : IXamlNodeVisitor
 	{
 		public static readonly IList<XmlName> Skips = new List<XmlName> {
@@ -49,7 +54,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 
 
-			if (TryGetPropertyName(node, parentNode, out XmlName propertyName))
+			if (node.TryGetPropertyName(parentNode, out XmlName propertyName))
 			{
 				if (TrySetRuntimeName(propertyName, source, value, node))
 					return;
@@ -83,7 +88,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (TryGetPropertyName(node, parentNode, out XmlName propertyName) && propertyName == XmlName._CreateContent)
+			if (node.TryGetPropertyName(parentNode, out XmlName propertyName) && propertyName == XmlName._CreateContent)
 			{
 				var s0 = Values[parentNode];
 				if (s0 is ElementTemplate)
@@ -107,7 +112,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!Values.TryGetValue(node, out var value) && Context.ExceptionHandler != null)
 				return;
 
-			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName))
+			if (propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName))
 			{
 				if (Skips.Contains(propertyName))
 					return;
@@ -176,7 +181,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					return;
 				}
 
-				xpe = xpe ?? new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
+				xpe = xpe ?? new XamlParseException($"Cannot set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 				if (Context.ExceptionHandler != null)
 					Context.ExceptionHandler(xpe);
 				else
@@ -227,22 +232,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(ListNode node, INode parentNode)
 		{
-		}
-
-		public static bool TryGetPropertyName(INode node, INode parentNode, out XmlName name)
-		{
-			name = default(XmlName);
-			var parentElement = parentNode as IElementNode;
-			if (parentElement == null)
-				return false;
-			foreach (var kvp in parentElement.Properties)
-			{
-				if (kvp.Value != node)
-					continue;
-				name = kvp.Key;
-				return true;
-			}
-			return false;
 		}
 
 		internal static bool IsCollectionItem(INode node, INode parentNode)
@@ -358,6 +347,13 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var serviceProvider = new XamlServiceProvider(node, context);
 			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
+
+			// Special handling for ResourceDictionary.Source
+			if (xamlelement is ResourceDictionary rd && propertyName.LocalName == "Source" && propertyName.NamespaceURI == "")
+			{
+				ResourceDictionaryHelpers.LoadFromSource(rd, (string)value, rootElement.GetType(), lineInfo);
+				return;
+			}
 
 			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
 				return;

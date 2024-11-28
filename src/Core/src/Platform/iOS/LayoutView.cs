@@ -11,14 +11,14 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.SubviewAdded(uiview);
-			Superview?.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
 		}
 
 		public override void WillRemoveSubview(UIView uiview)
 		{
 			InvalidateConstraintsCache();
 			base.WillRemoveSubview(uiview);
-			Superview?.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
 		}
 
 		public override UIView? HitTest(CGPoint point, UIEvent? uievent)

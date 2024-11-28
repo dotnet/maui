@@ -56,5 +56,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(2, entry.CursorPosition);
 		}
+
+		[Fact]
+		[Category(TestCategory.Entry)]
+		public async Task UpdateTextWithTextLongerThanMaxLength()
+		{
+			string longText = "A text longer than 4 characters";
+			var entry = new Entry
+			{
+				MaxLength = 4,
+			};
+
+			await SetValueAsync<string, EntryHandler>(entry, longText, SetPlatformText);
+
+			Assert.Equal(longText[..4], entry.Text);
+		}
 	}
 }

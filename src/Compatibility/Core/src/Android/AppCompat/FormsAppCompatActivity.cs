@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Android.App;
@@ -101,10 +102,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public void SetStatusBarColor(AColor color)
 		{
+#pragma warning disable CA1422 // Obsolete in API 35 https://developer.android.com/reference/android/view/Window#setStatusBarColor(int)
 			Window.SetStatusBarColor(color);
+#pragma warning restore CA1422 // Obsolete in API 35
 		}
 
-		static void RegisterHandler(Type target, Type handler, Type filter)
+		static void RegisterHandler(Type target, [DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type handler, Type filter)
 		{
 			Profile.FrameBegin();
 
@@ -459,7 +462,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		// This is currently being used by the previewer please do not change or remove this
-		void RegisterHandlerForDefaultRenderer(Type target, Type handler, Type filter)
+		void RegisterHandlerForDefaultRenderer(Type target, [DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type handler, Type filter)
 		{
 			RegisterHandler(target, handler, filter);
 		}

@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 #if UITEST
+		[MovedToAppium]
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
 		[Compatibility.UITests.FailsOnMauiAndroid]

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
-		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
+		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(Source), typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
 				var source = oldvalue as WebViewSource;
@@ -31,12 +31,12 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
-		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly("CanGoBack", typeof(bool), typeof(WebView), false);
+		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly(nameof(CanGoBack), typeof(bool), typeof(WebView), false);
 
 		/// <summary>Bindable property for <see cref="CanGoBack"/>.</summary>
 		public static readonly BindableProperty CanGoBackProperty = CanGoBackPropertyKey.BindableProperty;
 
-		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly("CanGoForward", typeof(bool), typeof(WebView), false);
+		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly(nameof(CanGoForward), typeof(bool), typeof(WebView), false);
 
 		/// <summary>Bindable property for <see cref="CanGoForward"/>.</summary>
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
@@ -191,6 +191,11 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<WebNavigatingEventArgs> Navigating;
 
+		/// <summary>
+		///  Raised when a WebView process ends unexpectedly.
+		/// </summary>
+		public event EventHandler<WebViewProcessTerminatedEventArgs> ProcessTerminated;
+
 		/// <inheritdoc/>
 		protected override void OnBindingContextChanged()
 		{
@@ -282,7 +287,7 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		static string EscapeJsString(string js)
+		private static string EscapeJsString(string js)
 		{
 			if (js == null)
 				return null;
@@ -360,6 +365,23 @@ namespace Microsoft.Maui.Controls
 		{
 			var args = new WebNavigatedEventArgs(evnt, new UrlWebViewSource { Url = url }, url, result);
 			(this as IWebViewController)?.SendNavigated(args);
+		}
+
+		void IWebView.ProcessTerminated(WebProcessTerminatedEventArgs args)
+		{
+#if ANDROID
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender, args.RenderProcessGoneDetail);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#elif IOS || MACCATALYST
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#elif WINDOWS
+			var platformArgs = new PlatformWebViewProcessTerminatedEventArgs(args.Sender, args.CoreWebView2ProcessFailedEventArgs);
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs(platformArgs);
+#else
+			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs();
+#endif
+			ProcessTerminated?.Invoke(this, webViewProcessTerminatedEventArgs);
 		}
 	}
 }

@@ -35,11 +35,10 @@ namespace Microsoft.Maui.DeviceTests
 #if MACCATALYST || WINDOWS
 
 		[Fact(
-#if MACCATALYST
-			Skip = "Setting Location on MacCatalyst is currently not supported"
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
 #endif
-			)]
-
+		)]
 		public async Task InitialPositionsAreTakenIntoAccount()
 		{
 			var window = new Window(new NavigationPage(new ContentPage()))
@@ -50,20 +49,132 @@ namespace Microsoft.Maui.DeviceTests
 				Y = 500
 			};
 
-			await RunWindowTest(window, async handler =>
+			await RunWindowTest(window, handler =>
 			{
-				// Just let things settle for good measure
-				await Task.Delay(100);
+#if MACCATALYST
+				// these are updated by the OS
+				Assert.True(window.Width > 0, $"Expected Width to be >= 0, but was {window.Width}");
+				Assert.True(window.Height > 0, $"Expected Height to be >= 0, but was {window.Height}");
+				// these are not available from the OS...
+				Assert.True(window.X == 0, $"Expected X to be == 0, but was {window.X}");
+				Assert.True(window.Y == 0, $"Expected Y to be == 0, but was {window.Y}");
+#elif WINDOWS
 				Assert.Equal(200, window.Width);
 				Assert.Equal(500, window.Height);
 				Assert.Equal(0, window.X);
 				Assert.Equal(500, window.Y);
+#endif
 			});
 		}
 
 		[Fact(
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
+		public async Task UpdatedPositionsAreTakenIntoAccount()
+		{
+			var window = new Window(new NavigationPage(new ContentPage()));
+
+			await RunWindowTest(window, async handler =>
+			{
+				var currentFrame = new Rect(window.X, window.Y, window.Width, window.Height);
+
+				window.Width = 200;
+				window.Height = 500;
+				window.X = 0;
+				window.Y = 0;
+
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
+
 #if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
+				// Mac Catalyst does not support this operation, so it should never change
+				Assert.Equal(currentFrame, new Rect(window.X, window.Y, window.Width, window.Height));
+#elif WINDOWS
+				Assert.Equal(200, window.Width);
+				Assert.Equal(500, window.Height);
+				Assert.Equal(0, window.X);
+				Assert.Equal(0, window.Y);
+#endif
+			});
+		}
+
+		[Fact(
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
+		public async Task ChangingTitleWhileChangingTitle()
+		{
+			var window = new Window(new NavigationPage(new ContentPage()))
+			{
+				Title = "Initial"
+			};
+
+			window.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(Window.Title) && window.Title == "Changed")
+				{
+					window.Title = "Final";
+				}
+			};
+
+			await RunWindowTest(window, handler =>
+			{
+				window.Title = "Changed";
+
+				Assert.Equal("Final", window.Title);
+			});
+		}
+
+		[Fact(
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
+#endif
+		)]
+		public async Task ChangingSizeWhileChangingSize()
+		{
+			var window = new Window(new NavigationPage(new ContentPage()))
+			{
+				Width = 300,
+				Height = 500,
+				X = 0,
+				Y = 500
+			};
+
+			window.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(Window.Width) && window.Width == 400)
+				{
+					window.Width = 250;
+				}
+			};
+
+			await RunWindowTest(window, async handler =>
+			{
+				var currentFrame = new Rect(window.X, window.Y, window.Width, window.Height);
+
+				window.Width = 400;
+
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
+
+#if MACCATALYST
+				// Mac Catalyst does not support this operation, so it should never change
+				Assert.Equal(currentFrame, new Rect(window.X, window.Y, window.Width, window.Height));
+#elif WINDOWS
+				Assert.Equal(250, window.Width);
+				Assert.Equal(500, window.Height);
+				Assert.Equal(0, window.X);
+				Assert.Equal(500, window.Y);
+#endif
+			});
+		}
+
+		[Fact(
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
 #endif
 		)]
 		public async Task WindowSupportsEmptyPage()
@@ -77,8 +188,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
 #endif
 		)]
 		[InlineData(150, 300)]
@@ -101,15 +212,16 @@ namespace Microsoft.Maui.DeviceTests
 
 				window.MinimumWidth = min;
 
-				await Task.Delay(100); // mac catalyst seems to have delays
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
 
 				Assert.Equal(expected, window.Width);
 			});
 		}
 
 		[Theory(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
 #endif
 		)]
 		[InlineData(150, 300)]
@@ -132,15 +244,16 @@ namespace Microsoft.Maui.DeviceTests
 
 				window.MinimumHeight = min;
 
-				await Task.Delay(100); // mac catalyst seems to have delays
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
 
 				Assert.Equal(expected, window.Height);
 			});
 		}
 
 		[Theory(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
 #endif
 		)]
 		[InlineData(150, 150)]
@@ -163,15 +276,16 @@ namespace Microsoft.Maui.DeviceTests
 
 				window.MaximumWidth = max;
 
-				await Task.Delay(100); // mac catalyst seems to have delays
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
 
 				Assert.Equal(expected, window.Width);
 			});
 		}
 
 		[Theory(
-#if MACCATALYST
-		Skip = "Causes Catalyst test run to hang"
+#if CI && MACCATALYST
+			Skip = "Causes Catalyst test run to hang"
 #endif
 		)]
 		[InlineData(150, 150)]
@@ -194,7 +308,8 @@ namespace Microsoft.Maui.DeviceTests
 
 				window.MaximumHeight = max;
 
-				await Task.Delay(100); // mac catalyst seems to have delays
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
 
 				Assert.Equal(expected, window.Height);
 			});
@@ -232,6 +347,10 @@ namespace Microsoft.Maui.DeviceTests
 				// If we don't wait for the content to load then the CloseWindow call crashes
 				await ((IPlatformViewHandler)window.Page.Handler).PlatformView.OnLoadedAsync();
 #endif
+
+				// Just let things settle as some platforms require a few UI cycles to update bounds
+				await Task.Delay(100);
+
 				try
 				{
 					await action(windowHandler);

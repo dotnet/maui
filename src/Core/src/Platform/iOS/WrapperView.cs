@@ -11,6 +11,18 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
+		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
+
+		internal ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
+			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+
+		double _lastMeasureHeight = double.NaN;
+		double _lastMeasureWidth = double.NaN;
+
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
@@ -24,6 +36,19 @@ namespace Microsoft.Maui.Platform
 		public WrapperView(CGRect frame)
 			: base(frame)
 		{
+		}
+
+		internal bool IsMeasureValid(double widthConstraint, double heightConstraint)
+		{
+			// Check the last constraints this View was measured with; if they're the same,
+			// then the current measure info is already correct and we don't need to repeat it
+			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
+		}
+
+		internal void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
+		{
+			_lastMeasureWidth = widthConstraint;
+			_lastMeasureHeight = heightConstraint;
 		}
 
 		CAShapeLayer? MaskLayer
@@ -103,62 +128,139 @@ namespace Microsoft.Maui.Platform
 			SetClip();
 			SetShadow();
 			SetBorder();
+
+			var boundWidth = Bounds.Width;
+			var boundHeight = Bounds.Height;
+
+			if (!IsMeasureValid(boundWidth, boundHeight))
+			{
+				CrossPlatformLayout?.CrossPlatformMeasure(boundWidth, boundHeight);
+				CacheMeasureConstraints(boundWidth, boundHeight);
+			}
+
+			CrossPlatformLayout?.CrossPlatformArrange(Bounds.ToRectangle());
 		}
 
+		internal void Disconnect()
+		{
+			MaskLayer = null;
+			BackgroundMaskLayer = null;
+			ShadowLayer = null;
+			_borderView?.RemoveFromSuperview();
+		}
+
+
+		// TODO obsolete or delete this for NET9
 		public new void Dispose()
 		{
-			DisposeClip();
-			DisposeShadow();
-			DisposeBorder();
-
+			Disconnect();
 			base.Dispose();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			var subviews = Subviews;
+			CGSize returnSize;
+
 			if (subviews.Length == 0)
-				return base.SizeThatFits(size);
-
-			var child = subviews[0];
-
-			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
-			// This also affects ImageButtons
-			if (child is UIImageView imageView)
 			{
-				return imageView.SizeThatFitsImage(size);
-			}
-			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
-			{
-				return imageButton.ImageView.SizeThatFitsImage(size);
+				returnSize = base.SizeThatFits(size);
 			}
 
-			return child.SizeThatFits(size);
+			else
+			{
+				var child = subviews[0];
+
+				// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+				// This also affects ImageButtons
+				if (child is UIImageView imageView)
+				{
+					returnSize = imageView.SizeThatFitsImage(size);
+				}
+				else if (CrossPlatformLayout is not null)
+				{
+					returnSize = CrossPlatformLayout.CrossPlatformMeasure(size.Width, size.Height).ToCGSize();
+				}
+				else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
+				{
+					returnSize = imageButton.ImageView.SizeThatFitsImage(size);
+				}
+				else
+				{
+					returnSize = child.SizeThatFits(size);
+				}
+			}
+
+			CacheMeasureConstraints(size.Width, size.Height);
+			return returnSize;
 		}
 
-		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
+		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight, IView view)
 		{
 			var subviews = Subviews;
+			CGSize returnSize;
+			var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
+			var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
+
 			if (subviews.Length == 0)
-				return base.SizeThatFits(originalSpec);
-
-			var child = subviews[0];
-
-			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 			{
-				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
-				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
-				return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+				returnSize = base.SizeThatFits(originalSpec);
 			}
 
-			return SizeThatFits(originalSpec);
+			else
+			{
+				var child = subviews[0];
+
+				if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
+				{
+					if (CrossPlatformLayout is not null)
+					{
+						returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+					}
+					else
+					{
+						returnSize = SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+					}
+				}
+
+				else if (CrossPlatformLayout is not null)
+				{
+					returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				}
+				else
+				{
+					returnSize = SizeThatFits(originalSpec);
+				}
+			}
+
+			CacheMeasureConstraints(widthConstraint, heightConstraint);
+			return returnSize;
 		}
 
 		public override void SetNeedsLayout()
 		{
 			base.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
+		}
 
-			Superview?.SetNeedsLayout();
+		private protected void TryToInvalidateSuperView(bool onlyIfPending)
+		{
+			if (onlyIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				return;
+			}
+
+			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+			// To a SuperView that's been disposed which will cause a crash when trying to access it
+			if (Window is not null)
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+				this.Superview?.SetNeedsLayout();
+			}
+			else
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
+			}
 		}
 
 		partial void ClipChanged()
@@ -186,7 +288,7 @@ namespace Microsoft.Maui.Platform
 			var path = _clip?.PathForBounds(bounds);
 			var nativePath = path?.AsCGPath();
 
-			mask ??= MaskLayer = new CAShapeLayer();
+			mask ??= MaskLayer = new StaticCAShapeLayer();
 			mask.Path = nativePath;
 
 			var backgroundLayer = GetBackgroundLayer();
@@ -196,14 +298,8 @@ namespace Microsoft.Maui.Platform
 			if (backgroundLayer is null)
 				return;
 
-			backgroundMask ??= BackgroundMaskLayer = new CAShapeLayer();
+			backgroundMask ??= BackgroundMaskLayer = new StaticCAShapeLayer();
 			backgroundMask.Path = nativePath;
-		}
-
-		void DisposeClip()
-		{
-			MaskLayer = null;
-			BackgroundMaskLayer = null;
 		}
 
 		void SetShadow()
@@ -213,7 +309,7 @@ namespace Microsoft.Maui.Platform
 			if (shadowLayer == null && Shadow == null)
 				return;
 
-			shadowLayer ??= ShadowLayer = new CAShapeLayer();
+			shadowLayer ??= ShadowLayer = new StaticCAShapeLayer();
 
 			var frame = Frame;
 			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
@@ -230,11 +326,6 @@ namespace Microsoft.Maui.Platform
 				shadowLayer.SetShadow(Shadow);
 		}
 
-		void DisposeShadow()
-		{
-			ShadowLayer = null;
-		}
-
 		void SetBorder()
 		{
 			if (Border == null)
@@ -249,11 +340,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_borderView.UpdateMauiCALayer(Border);
-		}
-
-		void DisposeBorder()
-		{
-			_borderView?.RemoveFromSuperview();
 		}
 
 		CALayer? GetLayer()
@@ -294,6 +380,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			TryToInvalidateSuperView(true);
 		}
 	}
 }

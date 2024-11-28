@@ -1,5 +1,4 @@
-﻿using Maui.Controls.Sample;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -24,8 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Button)]
 		public void Clicked()
 		{
-			var remote = new EventViewContainerRemote(UITestContext, Test.Button.Clicked);
-			remote.GoTo();
+			var remote = GoToEventRemote();
 
 			var textBeforeClick = remote.GetEventLabel().GetText();
 			ClassicAssert.AreEqual("Event: Clicked (none)", textBeforeClick);

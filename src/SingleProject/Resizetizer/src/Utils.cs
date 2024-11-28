@@ -57,5 +57,15 @@ namespace Microsoft.Maui.Resizetizer
 			var modified = exists ? File.GetLastWriteTimeUtc(path) : System.DateTime.MinValue;
 			return (exists, modified);
 		}
+
+		public static void SetWriteable(string source, bool checkExists = true)
+		{
+			if (checkExists && !File.Exists(source))
+				return;
+
+			var attributes = File.GetAttributes(source);
+			if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+				File.SetAttributes(source, attributes & ~FileAttributes.ReadOnly);
+		}
 	}
 }

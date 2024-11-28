@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 #nullable disable
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			static bool IsValueOfXDataTypeOrTargetType(ElementNode node, INode parentNode, out XmlName propertyName)
-				=> ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName)
+				=> node.TryGetPropertyName(parentNode, out propertyName)
 					&& (IsXDataType(propertyName) || IsTargetTypePropertyOfMauiType(parentNode, propertyName));
 
 			static bool IsTargetTypePropertyOfMauiType(INode parentNode, XmlName propertyName)
@@ -55,16 +55,22 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			static bool IsTypeExtension(ElementNode node, out ValueNode typeNameValueNode)
 			{
-				XmlName typeNameXmlName = new("", "TypeName");
-
-				if (node.XmlType.Name == nameof(TypeExtension)
-					&& node.XmlType.NamespaceUri == XamlParser.X2009Uri
-					&& node.Properties.ContainsKey(typeNameXmlName)
-					&& node.Properties[typeNameXmlName] is ValueNode valueNode
-					&& valueNode.Value is string)
+				if (node.XmlType.Name == nameof(TypeExtension) && node.XmlType.NamespaceUri == XamlParser.X2009Uri)
 				{
-					typeNameValueNode = valueNode;
-					return true;
+					XmlName typeNameXmlName = new("", "TypeName");
+					if (node.Properties.ContainsKey(typeNameXmlName)
+						&& node.Properties[typeNameXmlName] is ValueNode { Value: string } propertyValueNode)
+					{
+						typeNameValueNode = propertyValueNode;
+						return true;
+					}
+
+					if (node.CollectionItems.Count == 1
+						&& node.CollectionItems[0] is ValueNode { Value: string } collectionValueNode)
+					{
+						typeNameValueNode = collectionValueNode;
+						return true;
+					}
 				}
 
 				typeNameValueNode = null;

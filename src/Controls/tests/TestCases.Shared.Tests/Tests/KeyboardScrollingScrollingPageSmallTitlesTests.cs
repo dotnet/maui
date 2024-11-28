@@ -1,5 +1,4 @@
 ﻿#if IOS
-using Maui.Controls.Sample;
 using NUnit.Framework;
 using UITest.Core;
 

@@ -1,241 +1,149 @@
 #nullable enable
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Android.Views.View!
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragShadowBuilder(Android.Views.View.DragShadowBuilder! dragShadowBuilder) -> void
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetClipData(Android.Content.ClipData! clipData) -> void
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetLocalData(Java.Lang.Object! localData) -> void
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragFlags(Android.Views.DragFlags dragFlags) -> void
-Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
-Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> Android.Views.View!
-Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragEvent.get -> Android.Views.DragEvent!
-Microsoft.Maui.Controls.PlatformDragEventArgs
-Microsoft.Maui.Controls.PlatformDragEventArgs.Sender.get -> Android.Views.View!
-Microsoft.Maui.Controls.PlatformDragEventArgs.DragEvent.get -> Android.Views.DragEvent!
-Microsoft.Maui.Controls.PlatformDropEventArgs
-Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> Android.Views.View!
-Microsoft.Maui.Controls.PlatformDropEventArgs.DragEvent.get -> Android.Views.DragEvent!
-Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragEventArgs?
-Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs?
-Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
-Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs?
-Microsoft.Maui.Controls.KeyboardAccelerator
-Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
-Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void
-Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs!>?
-Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.get -> System.Windows.Input.ICommand!
-Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.set -> void
-Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameter.get -> object!
-Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameter.set -> void
-Microsoft.Maui.Controls.DragGestureRecognizer.DropCompleted -> System.EventHandler<Microsoft.Maui.Controls.DropCompletedEventArgs!>?
-Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.get -> System.Windows.Input.ICommand!
-Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.set -> void
-Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.get -> object!
-Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set -> void
-Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
-Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView!
-Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
-Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string?
-Microsoft.Maui.Controls.KeyboardAccelerator.Key.set -> void
-Microsoft.Maui.Controls.KeyboardAccelerator.KeyboardAccelerator() -> void
-Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
-Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.set -> void
-Microsoft.Maui.Controls.MenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.KeyboardAccelerator!>!
-Microsoft.Maui.Controls.InputView.CursorPosition.get -> int
-Microsoft.Maui.Controls.InputView.CursorPosition.set -> void
-Microsoft.Maui.Controls.InputView.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
-Microsoft.Maui.Controls.InputView.FontAttributes.set -> void
-Microsoft.Maui.Controls.InputView.FontAutoScalingEnabled.get -> bool
-Microsoft.Maui.Controls.InputView.FontAutoScalingEnabled.set -> void
-Microsoft.Maui.Controls.InputView.FontSize.get -> double
-Microsoft.Maui.Controls.InputView.FontSize.set -> void
-Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
-Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameter.get -> object!
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameter.set -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleased -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> System.Windows.Input.ICommand!
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
-override Microsoft.Maui.Controls.GradientBrush.IsEmpty.get -> bool
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewModelRenderer.GetItemViewType(int position) -> int
-override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnAttachedToWindow() -> void
-override Microsoft.Maui.Controls.Handlers.Items.MauiCarouselRecyclerView.OnDetachedFromWindow() -> void
-static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
-static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
-virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-*REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-Microsoft.Maui.Controls.Border.~Border() -> void
-Microsoft.Maui.Controls.IWindowCreator
-Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper) -> void
-Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper! commandMapper) -> void
-Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
-Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
-override Microsoft.Maui.Controls.Handlers.Items.CarouselViewAdapter<TItemsView, TItemsViewSource>.GetItemViewType(int position) -> int
-override Microsoft.Maui.Controls.Handlers.Items.ItemsViewAdapter<TItemsView, TItemsViewSource>.GetItemId(int position) -> long
-Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.~MauiRecyclerView() -> void
-override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
-Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
-Microsoft.Maui.Controls.Platform.ShapesExtensions
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> object!
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> object!
-Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> object!
-*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> System.Windows.Input.ICommand!
-*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
-*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
-Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
-Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
-Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
-Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
-override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
-override Microsoft.Maui.Controls.Region.GetHashCode() -> int
-override Microsoft.Maui.Controls.Shapes.Matrix.GetHashCode() -> int
-override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
-override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
-Microsoft.Maui.Controls.Handlers.BoxViewHandler
-Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
-static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
-static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
-static Microsoft.Maui.Controls.Platform.ShapesExtensions.UpdatePath(this Microsoft.Maui.Graphics.Platform.PlatformGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
-static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
-static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
-static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
-static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
-virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
-Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
-override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
-override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
-override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
-~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
-~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
-~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
-~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
-~override Microsoft.Maui.Controls.Handlers.Compatibility.CellRenderer.DisconnectHandler(Android.Views.View platformView) -> void
-~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.DisconnectHandler(AndroidX.RecyclerView.Widget.RecyclerView platformView) -> void
-~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
-~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
-~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
-~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
-~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
-~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.InputView.FontFamilyProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.InputView.FontSizeProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.InputView.SelectionLengthProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionIcon(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
-~virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.UpdateShellSectionTitle(Microsoft.Maui.Controls.ShellSection shellSection, Android.Views.IMenuItem menuItem) -> void
-*REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
-*REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>
-*REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.set -> void
-*REMOVED*~static readonly Microsoft.Maui.Controls.OpenGLView.HasRenderLoopProperty -> Microsoft.Maui.Controls.BindableProperty
-*REMOVED*Microsoft.Maui.Controls.IOpenGlViewController
-*REMOVED*Microsoft.Maui.Controls.IOpenGlViewController.DisplayRequested -> System.EventHandler
-*REMOVED*Microsoft.Maui.Controls.OpenGLView
-*REMOVED*Microsoft.Maui.Controls.OpenGLView.Display() -> void
-*REMOVED*Microsoft.Maui.Controls.OpenGLView.DisplayRequested -> System.EventHandler
-*REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
-*REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
-*REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
-*REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
-*REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
-Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
-Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
-~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int left, int right, int top, int bottom) -> void
-~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
-~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
-~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
-~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
-Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(string! key, object! value) -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(System.Collections.Generic.KeyValuePair<string!, object!> item) -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Clear() -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Contains(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.ContainsKey(string! key) -> bool
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.CopyTo(System.Collections.Generic.KeyValuePair<string!, object!>[]! array, int arrayIndex) -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Count.get -> int
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, object!>>!
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.IsReadOnly.get -> bool
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Keys.get -> System.Collections.Generic.ICollection<string!>!
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Remove(string! key) -> bool
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Remove(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters() -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters(System.Collections.Generic.IDictionary<string!, object!>! dictionary) -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object!>>! collection) -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.this[string! key].get -> object!
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.this[string! key].set -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, out object! value) -> bool
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Collections.Generic.ICollection<object!>!
-~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
-~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
-*REMOVED*~Microsoft.Maui.Controls.ItemsView.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
-*REMOVED*~Microsoft.Maui.Controls.ItemsView.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
-*REMOVED*~Microsoft.Maui.Controls.Shell.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
-*REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
-Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
-Microsoft.Maui.Controls.PlatformPointerEventArgs
-Microsoft.Maui.Controls.PlatformPointerEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
-Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Android.Views.View!
-*REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
-~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
-Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
-Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
-*REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
-*REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
-*REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.set -> void
-*REMOVED*Microsoft.Maui.Controls.Editor.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
-*REMOVED*Microsoft.Maui.Controls.Editor.FontAttributes.set -> void
-*REMOVED*Microsoft.Maui.Controls.Editor.FontAutoScalingEnabled.get -> bool
-*REMOVED*Microsoft.Maui.Controls.Editor.FontAutoScalingEnabled.set -> void
-*REMOVED*Microsoft.Maui.Controls.Editor.FontSize.get -> double
-*REMOVED*Microsoft.Maui.Controls.Editor.FontSize.set -> void
-*REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
-*REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
-*REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.get -> string
-*REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.set -> void
-*REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.get -> int
-*REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.set -> void
-*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
-*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAttributes.set -> void
-*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAutoScalingEnabled.get -> bool
-*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAutoScalingEnabled.set -> void
-*REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.get -> double
-*REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
-*REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.get -> int
-*REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.get -> string
-*REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.set -> void
-*REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.get -> int
-*REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.set -> void
-*REMOVED*Microsoft.Maui.Controls.Entry.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
-*REMOVED*Microsoft.Maui.Controls.Entry.FontAttributes.set -> void
-*REMOVED*Microsoft.Maui.Controls.Entry.FontAutoScalingEnabled.get -> bool
-*REMOVED*Microsoft.Maui.Controls.Entry.FontAutoScalingEnabled.set -> void
-*REMOVED*Microsoft.Maui.Controls.Entry.FontSize.get -> double
-*REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
-*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
-*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.MenuItem.StyleClass.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.class.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.get -> Microsoft.Maui.Controls.Style
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
+*REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
+*REMOVED*~Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void
+~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
+~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Application.ControlsApplicationMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication, Microsoft.Maui.Handlers.ApplicationHandler>
+~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.DarkSlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.DimGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.Grey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.LightGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.LightSlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+~static Microsoft.Maui.Controls.Brush.SlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+*REMOVED*~static Microsoft.Maui.Controls.Button.ControlsButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IButton, Microsoft.Maui.Handlers.ButtonHandler>
+*REMOVED*~static Microsoft.Maui.Controls.DatePicker.ControlsDatePickerMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IDatePicker, Microsoft.Maui.Handlers.DatePickerHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Editor.ControlsEditorMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEditor, Microsoft.Maui.Handlers.EditorHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Element.ControlsElementMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement, Microsoft.Maui.IElementHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Entry.ControlsEntryMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEntry, Microsoft.Maui.Handlers.EntryHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Label.ControlsLabelMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ILabel, Microsoft.Maui.Handlers.LabelHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Layout.ControlsLayoutMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IView, Microsoft.Maui.IViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.NavigationPage.ControlsNavigationPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IStackNavigationView, Microsoft.Maui.Handlers.NavigationViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Picker.ControlsPickerMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IPicker, Microsoft.Maui.Handlers.PickerHandler>
+*REMOVED*~static Microsoft.Maui.Controls.RadioButton.ControlsRadioButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.RadioButton, Microsoft.Maui.Handlers.RadioButtonHandler>
+*REMOVED*~static Microsoft.Maui.Controls.RefreshView.ControlsRefreshViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IRefreshView, Microsoft.Maui.Handlers.RefreshViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.ScrollView.ControlsScrollViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IScrollView, Microsoft.Maui.Handlers.ScrollViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.SearchBar.ControlsSearchBarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ISearchBar, Microsoft.Maui.Handlers.SearchBarHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Shapes.Shape.ControlsShapeViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IShapeView, Microsoft.Maui.Handlers.IShapeViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.TabbedPage.ControlsTabbedPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ITabbedView, Microsoft.Maui.Handlers.ITabbedViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.TimePicker.ControlsTimePickerMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ITimePicker, Microsoft.Maui.Handlers.TimePickerHandler>
+*REMOVED*~static Microsoft.Maui.Controls.VisualElement.ControlsVisualElementMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IView, Microsoft.Maui.IViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
+*REMOVED*~static Microsoft.Maui.Controls.Window.ControlsWindowMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.WindowHandler>
+~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
+const Microsoft.Maui.Controls.TitleBar.ContentHiddenState = "ContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.ContentVisibleState = "ContentVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.IconHiddenState = "IconCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.IconVisibleState = "IconVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.LeadingHiddenState = "LeadingContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.LeadingVisibleState = "LeadingContentVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleHiddenState = "SubtitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleVisibleState = "SubtitleVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.TemplateRootName = "PART_Root" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarActiveState = "TitleBarTitleActive" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarContent = "PART_Content" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarIcon = "PART_Icon" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarInactiveState = "TitleBarTitleInactive" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarLeading = "PART_LeadingContent" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarSubtitle = "PART_Subtitle" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarTitle = "PART_Title" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleBarTrailing = "PART_TrailingContent" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleHiddenState = "TitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.TitleVisibleState = "TitleVisible" -> string!
+const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
+Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
+Microsoft.Maui.Controls.HandlerProperties
+Microsoft.Maui.Controls.HybridWebView
+Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
+Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void
+Microsoft.Maui.Controls.HybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
+Microsoft.Maui.Controls.HybridWebView.HybridRoot.get -> string?
+Microsoft.Maui.Controls.HybridWebView.HybridRoot.set -> void
+Microsoft.Maui.Controls.HybridWebView.HybridWebView() -> void
+Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
+Microsoft.Maui.Controls.HybridWebView.RawMessageReceived -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs
+Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.HybridWebViewRawMessageReceivedEventArgs(string? message) -> void
+Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.Message.get -> string?
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
+Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
+Microsoft.Maui.Controls.StyleableElement
+Microsoft.Maui.Controls.StyleableElement.class.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.StyleableElement.class.set -> void
+Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style!
+Microsoft.Maui.Controls.StyleableElement.Style.set -> void
+Microsoft.Maui.Controls.StyleableElement.StyleableElement() -> void
+Microsoft.Maui.Controls.StyleableElement.StyleClass.get -> System.Collections.Generic.IList<string!>!
+Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
+Microsoft.Maui.Controls.TimeChangedEventArgs
+Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
+Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
+Microsoft.Maui.Controls.TitleBar
+Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.Content.set -> void
+Microsoft.Maui.Controls.TitleBar.ForegroundColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Controls.TitleBar.ForegroundColor.set -> void
+Microsoft.Maui.Controls.TitleBar.Icon.get -> Microsoft.Maui.Controls.ImageSource!
+Microsoft.Maui.Controls.TitleBar.Icon.set -> void
+Microsoft.Maui.Controls.TitleBar.LeadingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.LeadingContent.set -> void
+Microsoft.Maui.Controls.TitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
+Microsoft.Maui.Controls.TitleBar.Subtitle.get -> string!
+Microsoft.Maui.Controls.TitleBar.Subtitle.set -> void
+Microsoft.Maui.Controls.TitleBar.Title.get -> string!
+Microsoft.Maui.Controls.TitleBar.Title.set -> void
+Microsoft.Maui.Controls.TitleBar.TitleBar() -> void
+Microsoft.Maui.Controls.TitleBar.TrailingContent.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Controls.TitleBar.TrailingContent.set -> void
+Microsoft.Maui.Controls.VisualElement.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.WebView.ProcessTerminated -> System.EventHandler<Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs>
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs
+Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.WebViewProcessTerminatedEventArgs() -> void
+Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
+Microsoft.Maui.Controls.Window.TitleBar.set -> void
+Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
+override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.Layout.Measure(double widthConstraint, double heightConstraint, Microsoft.Maui.Controls.MeasureFlags flags = Microsoft.Maui.Controls.MeasureFlags.None) -> Microsoft.Maui.SizeRequest
+override Microsoft.Maui.Controls.TitleBar.OnApplyTemplate() -> void
+static Microsoft.Maui.Controls.BindableObjectExtensions.SetBinding<TSource, TProperty>(this Microsoft.Maui.Controls.BindableObject! self, Microsoft.Maui.Controls.BindableProperty! targetProperty, System.Func<TSource, TProperty>! getter, Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default, Microsoft.Maui.Controls.IValueConverter? converter = null, object? converterParameter = null, string? stringFormat = null, object? source = null, object? fallbackValue = null, object? targetNullValue = null) -> void
+static Microsoft.Maui.Controls.BindingBase.Create<TSource, TProperty>(System.Func<TSource, TProperty>! getter, Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default, Microsoft.Maui.Controls.IValueConverter? converter = null, object? converterParameter = null, string? stringFormat = null, object? source = null, object? fallbackValue = null, object? targetNullValue = null) -> Microsoft.Maui.Controls.BindingBase!
+static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.CreateEmbeddedWindowContext(this Microsoft.Maui.Hosting.MauiApp! mauiApp, Android.App.Activity! platformWindow) -> Microsoft.Maui.IMauiContext!
+static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.Hosting.MauiApp! mauiApp, Android.App.Activity! platformWindow) -> Android.Views.View!
+static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.ToPlatformEmbedded(this Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> Android.Views.View!
+*REMOVED*static Microsoft.Maui.Controls.FlyoutPage.ControlsFlyoutPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IFlyoutView!, Microsoft.Maui.Handlers.FlyoutViewHandler!>!
+static Microsoft.Maui.Controls.HandlerProperties.GetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target) -> Microsoft.Maui.HandlerDisconnectPolicy
+static Microsoft.Maui.Controls.HandlerProperties.SetDisconnectPolicy(Microsoft.Maui.Controls.BindableObject! target, Microsoft.Maui.HandlerDisconnectPolicy value) -> void
+static Microsoft.Maui.Controls.TitleBar.DefaultTemplate.get -> Microsoft.Maui.Controls.ControlTemplate!
+*REMOVED*static Microsoft.Maui.Controls.Toolbar.ControlsToolbarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.Controls.Toolbar!, Microsoft.Maui.Handlers.ToolbarHandler!>!
+static Microsoft.Maui.Controls.ViewExtensions.InvalidateMeasure(this Microsoft.Maui.Controls.VisualElement! view) -> void
+static readonly Microsoft.Maui.Controls.HandlerProperties.DisconnectPolicyProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.HybridWebView.DefaultFileProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.HybridWebView.HybridRootProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.StyleableElement.StyleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.ContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.ForegroundColorProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.IconProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.LeadingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.SubtitleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
+virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void

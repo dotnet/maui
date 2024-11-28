@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Controls.Platform
 		FrameworkElement? _container;
 		FrameworkElement? _control;
 		VisualElement? _element;
+		TappedEventHandler? _tappedEventHandler;
+		DoubleTappedEventHandler? _doubleTappedEventHandler;
 
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
@@ -103,10 +105,17 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_control == value)
 					return;
 
-				if (_control != null)
+				if (_control is not null)
 				{
-					_control.Tapped -= HandleTapped;
-					_control.DoubleTapped -= HandleDoubleTapped;
+					if ((_subscriptionFlags & SubscriptionFlags.ControlTapEventSubscribed) != 0)
+					{
+						_control.Tapped -= HandleTapped;
+					}
+
+					if ((_subscriptionFlags & SubscriptionFlags.ControlDoubleTapEventSubscribed) != 0)
+					{
+						_control.DoubleTapped -= HandleDoubleTapped;
+					}
 				}
 
 				_control = value;
@@ -277,26 +286,16 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_element == value)
 					return;
 
-				if (_element != null)
+				if (_element is View && ElementGestureRecognizers is {} gestureRecognizersBefore)
 				{
-					var view = _element as View;
-					if (view != null)
-					{
-						if (ElementGestureRecognizers != null)
-							ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
-					}
+					gestureRecognizersBefore.CollectionChanged -= _collectionChangedHandler;
 				}
 
 				_element = value;
 
-				if (_element != null)
+				if (_element is View && ElementGestureRecognizers is {} gestureRecognizersAfter)
 				{
-					var view = _element as View;
-					if (view != null)
-					{
-						if (ElementGestureRecognizers != null)
-							ElementGestureRecognizers.CollectionChanged += _collectionChangedHandler;
-					}
+					gestureRecognizersAfter.CollectionChanged += _collectionChangedHandler;
 				}
 			}
 		}
@@ -315,6 +314,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDragEventsSubscribed;
 
+					_container.CanDrag = false;
 					_container.DragStarting -= HandleDragStarting;
 					_container.DropCompleted -= HandleDropCompleted;
 				}
@@ -323,6 +323,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDropEventsSubscribed;
 
+					_container.AllowDrop = false;
 					_container.DragOver -= HandleDragOver;
 					_container.Drop -= HandleDrop;
 					_container.DragLeave -= HandleDragLeave;
@@ -332,7 +333,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
-					_container.Tapped -= OnTap;
+					_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
+					_tappedEventHandler = null;
 					_container.RightTapped -= OnTap;
 				}
 
@@ -340,7 +342,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
-					_container.DoubleTapped -= OnTap;
+					_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
+					_doubleTappedEventHandler = null;
 				}
 
 				if ((_subscriptionFlags & SubscriptionFlags.ContainerPgrPointerEventsSubscribed) != 0)
@@ -361,9 +364,6 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.ManipulationDelta -= OnManipulationDelta;
 					_container.ManipulationStarted -= OnManipulationStarted;
 					_container.ManipulationCompleted -= OnManipulationCompleted;
-					_container.PointerPressed -= OnPointerPressed;
-					_container.PointerExited -= OnPointerExited;
-					_container.PointerReleased -= OnPointerReleased;
 					_container.PointerCanceled -= OnPointerCanceled;
 				}
 			}
@@ -372,30 +372,35 @@ namespace Microsoft.Maui.Controls.Platform
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_isDisposed)
+			{
 				return;
+			}
 
 			_isDisposed = true;
 
 			if (!disposing)
+			{
 				return;
+			}
 
 			ClearContainerEventHandlers();
 
-			if (_element != null)
+			if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
 			{
-
-				var view = _element as View;
-				if (view != null)
-				{
-					if (ElementGestureRecognizers != null)
-						ElementGestureRecognizers.CollectionChanged -= _collectionChangedHandler;
-				}
+				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
 
-			if (_control != null)
+			if (_control is not null)
 			{
-				_control.Tapped -= HandleTapped;
-				_control.DoubleTapped -= HandleDoubleTapped;
+				if ((_subscriptionFlags & SubscriptionFlags.ControlTapEventSubscribed) != 0)
+				{
+					_control.Tapped -= HandleTapped;
+				}
+
+				if ((_subscriptionFlags & SubscriptionFlags.ControlDoubleTapEventSubscribed) != 0)
+				{
+					_control.DoubleTapped -= HandleDoubleTapped;
+				}
 			}
 
 			Control = null;
@@ -540,9 +545,16 @@ namespace Microsoft.Maui.Controls.Platform
 					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerExited(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerExited(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+			{
+				OnPointerExited(sender, e);
+			}
+		}
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
@@ -550,14 +562,28 @@ namespace Microsoft.Maui.Controls.Platform
 					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerPressed(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerPressed(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+			{
+				OnPointerPressed(sender, e);
+			}
+		}
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerReleased(view, (relativeTo)
-					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+		{
+			HandlePgrPointerEvent(e, (view, recognizer)
+						=> recognizer.SendPointerReleased(view, (relativeTo)
+							=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+			if ((_subscriptionFlags & SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed) != 0)
+			{
+				OnPointerReleased(sender, e);
+			}
+		}
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
@@ -587,6 +613,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var view = Element as View;
 			if (view == null)
 				return;
+
+			if (!view.IsEnabled)
+			{
+				return;
+			}
 
 			var tapPosition = e.GetPositionRelativeToPlatformElement(Control);
 
@@ -705,29 +736,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateDragAndDropGestureRecognizers()
 		{
-			if (_container is null)
-			{
-				return;
-			}
-
-			var view = Element as View;
-			IList<IGestureRecognizer>? gestures = view?.GestureRecognizers;
-
-			if (gestures is null)
+			if (_container is null || Element is not View view || view.GestureRecognizers is not IList<IGestureRecognizer> gestures)
 			{
 				return;
 			}
 
 			bool canDrag = gestures.FirstGestureOrDefault<DragGestureRecognizer>()?.CanDrag ?? false;
-			_container.CanDrag = canDrag;
-
 			bool allowDrop = gestures.FirstGestureOrDefault<DropGestureRecognizer>()?.AllowDrop ?? false;
-			_container.AllowDrop = allowDrop;
 
 			if (canDrag)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
 
+				_container.CanDrag = true;
 				_container.DragStarting += HandleDragStarting;
 				_container.DropCompleted += HandleDropCompleted;
 			}
@@ -736,6 +757,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
 				
+				_container.AllowDrop = true;
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
 				_container.DragLeave += HandleDragLeave;
@@ -761,14 +783,15 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
-				
-				_container.Tapped += OnTap;
+				_tappedEventHandler = new TappedEventHandler(OnTap);
+				_container.AddHandler(FrameworkElement.TappedEvent,_tappedEventHandler, true);
 				_container.RightTapped += OnTap;
 			}
 			else
 			{
-				if (_control != null && PreventGestureBubbling)
+				if (_control is not null && PreventGestureBubbling)
 				{
+					_subscriptionFlags |= SubscriptionFlags.ControlTapEventSubscribed;
 					_control.Tapped += HandleTapped;
 				}
 			}
@@ -777,27 +800,29 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
-
-				_container.DoubleTapped += OnTap;
+				_doubleTappedEventHandler = new DoubleTappedEventHandler(OnTap);
+				_container.AddHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler, true);
 			}
 			else
 			{
-				if (_control != null && PreventGestureBubbling)
+				if (_control is not null && PreventGestureBubbling)
 				{
+					_subscriptionFlags |= SubscriptionFlags.ControlDoubleTapEventSubscribed;
 					_control.DoubleTapped += HandleDoubleTapped;
 				}
 			}
 
-			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
-			_container.PointerEntered += OnPgrPointerEntered;
-			_container.PointerExited += OnPgrPointerExited;
-			_container.PointerMoved += OnPgrPointerMoved;
-			_container.PointerPressed += OnPgrPointerPressed;
-			_container.PointerReleased += OnPgrPointerReleased;
+			bool hasPointerGesture = ElementGestureRecognizers.HasAnyGesturesFor<PointerGestureRecognizer>();
+
+			if (hasPointerGesture)
+			{
+				SubscribePointerEvents(_container);
+			}
 
 			bool hasSwipeGesture = gestures.HasAnyGesturesFor<SwipeGestureRecognizer>();
 			bool hasPinchGesture = gestures.HasAnyGesturesFor<PinchGestureRecognizer>();
 			bool hasPanGesture = gestures.HasAnyGesturesFor<PanGestureRecognizer>();
+
 			if (!hasSwipeGesture && !hasPinchGesture && !hasPanGesture)
 			{
 				return;
@@ -816,15 +841,29 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Pan, pinch, and swipe gestures need pointer events if not subscribed yet.
+			if (!hasPointerGesture)
+			{
+				SubscribePointerEvents(_container);
+			}
+
 			_subscriptionFlags |= SubscriptionFlags.ContainerManipulationAndPointerEventsSubscribed;
 			_container.ManipulationMode = ManipulationModes.Scale | ManipulationModes.TranslateX | ManipulationModes.TranslateY;
 			_container.ManipulationDelta += OnManipulationDelta;
 			_container.ManipulationStarted += OnManipulationStarted;
 			_container.ManipulationCompleted += OnManipulationCompleted;
-			_container.PointerPressed += OnPointerPressed;
-			_container.PointerExited += OnPointerExited;
-			_container.PointerReleased += OnPointerReleased;
 			_container.PointerCanceled += OnPointerCanceled;
+		}
+
+		void SubscribePointerEvents(FrameworkElement container)
+		{
+			_subscriptionFlags |= SubscriptionFlags.ContainerPgrPointerEventsSubscribed;
+
+			container.PointerEntered += OnPgrPointerEntered;
+			container.PointerExited += OnPgrPointerExited;
+			container.PointerMoved += OnPgrPointerMoved;
+			container.PointerPressed += OnPgrPointerPressed;
+			container.PointerReleased += OnPgrPointerReleased;
 		}
 
 		void HandleTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -854,7 +893,9 @@ namespace Microsoft.Maui.Controls.Platform
 			ContainerPgrPointerEventsSubscribed = 1 << 2,
 			ContainerManipulationAndPointerEventsSubscribed = 1 << 3,
 			ContainerTapAndRightTabEventSubscribed = 1 << 4,
-			ContainerDoubleTapEventSubscribed = 1 << 5
+			ContainerDoubleTapEventSubscribed = 1 << 5,
+			ControlTapEventSubscribed = 1 << 6,
+			ControlDoubleTapEventSubscribed = 1 << 7
 		}
 	}
 }
