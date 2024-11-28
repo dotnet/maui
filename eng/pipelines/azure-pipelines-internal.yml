@@ -84,6 +84,10 @@ parameters:
     type: boolean
     default: true
 
+  - name: enableSourceIndex
+    type: boolean
+    default: true
+
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -148,7 +152,7 @@ extends:
           enablePublishBuildAssets: true
           enableTelemetry: true
           enableSourceBuild: false
-          enableSourceIndex: true
+          enableSourceIndex: ${{ parameters.enableSourceIndex }}
           sourceIndexParams:
             - sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
           publishAssetsImmediately: true
