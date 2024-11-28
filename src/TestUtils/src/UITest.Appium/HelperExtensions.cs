@@ -1758,22 +1758,17 @@ namespace UITest.Appium
     }
     
 		/// <summary>
-		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
+		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button or using a custom identifier.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
-		public static void TapBackArrow(this IApp app)
+		/// <param name="customBackButtonIdentifier">Optional custom identifier string for the back button. If not provided, the default back arrow query will be used.</param>
+		public static void TapBackArrow(this IApp app, string customBackButtonIdentifier = "")
 		{
-			TapBackArrow(app, GetDefaultBackArrowQuery(app));
-		}
+			var query = string.IsNullOrEmpty(customBackButtonIdentifier)
+				? GetDefaultBackArrowQuery(app)
+				: GetCustomBackArrowQuery(app, customBackButtonIdentifier);
 
-		/// <summary>
-		/// Navigates back in the application using a custom identifier string.
-		/// </summary>
-		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
-		/// <param name="customBackButtonIdentifier">The custom identifier string for the back button.</param>
-		public static void TapBackArrow(this IApp app, string customBackButtonIdentifier)
-		{
-			TapBackArrow(app, GetCustomBackArrowQuery(app, customBackButtonIdentifier));
+			TapBackArrow(app, query);
 		}
 
 		/// <summary>
