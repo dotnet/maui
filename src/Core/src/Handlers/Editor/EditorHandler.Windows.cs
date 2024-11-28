@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(TextBox platformView)
 		{
-			platformView.Loaded -= OnPlatformLoaded;
+			platformView.SizeChanged -= OnPlatformViewSizeChanged;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.LostFocus -= OnLostFocus;
 
