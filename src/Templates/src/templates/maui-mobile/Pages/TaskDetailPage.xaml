@@ -30,7 +30,9 @@
                     Hint="Completed">
                     <CheckBox
                         HorizontalOptions="End"
-                        IsChecked="{Binding IsCompleted}" SemanticProperties.Description="Mark this task as completed or not"/>
+                        IsChecked="{Binding IsCompleted}"
+                        SemanticProperties.Description="Completed Checkbox"
+                        SemanticProperties.Hint="Mark this task as completed or not"/>
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
