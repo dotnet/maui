@@ -299,7 +299,7 @@ stages:
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if or(parameters.UseProvisionator, variables['internalProvisioning']) }}:
+                ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
                   skipProvisionator: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
@@ -348,6 +348,9 @@ stages:
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
               eq(variables['System.TeamProject'], 'devdiv'))
-
+        ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+          skipProvisioning: false
+          
+        
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]

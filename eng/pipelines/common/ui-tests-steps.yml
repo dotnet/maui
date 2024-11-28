@@ -43,9 +43,9 @@ steps:
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.skipProvisioning }}:
-        skipProvisioning: true
+        skipProvisionator: true
       ${{ else }}:  
-        skipProvisioning: false
+        skipProvisionator: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - task: PowerShell@2

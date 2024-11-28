@@ -23,15 +23,14 @@ steps:
 
   - template: provision.yml
     parameters:
-      skipProvisioning: true
       # FIXME: 'Build the MSBuild Tasks' step fails for net9.0-android35 without API 35
       skipAndroidSdks: false
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.skipProvisioning }}:
-        skipProvisioning: true
+        skipProvisionator: true
       ${{ else }}:  
-        skipProvisioning: false
+        skipProvisionator: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       
   - task: PowerShell@2
