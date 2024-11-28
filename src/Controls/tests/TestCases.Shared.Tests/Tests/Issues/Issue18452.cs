@@ -17,7 +17,7 @@ public class Issue18452 : _IssuesUITest
 	[Test]
 	public void WebViewLoadedWithoutException()
 	{
-		App.WaitForElement("Label");
+		App.WaitForElement("Label", timeout: TimeSpan.FromSeconds(5));
 		string? label = App.FindElement("Label").GetText();
 		Assert.That(label, Is.EqualTo(expected));
 	}
