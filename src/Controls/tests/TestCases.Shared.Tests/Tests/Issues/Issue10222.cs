@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("goTo");
 			App.Tap("goTo");
-			App.WaitForElement("collectionView");
+			App.WaitForElement("items1");
 			App.WaitForElement("goTo");
 		}
 		
