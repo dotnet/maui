@@ -19,14 +19,17 @@ static class ServiceProviderExtensions
 {
     public static LocalVariable GetOrCreateServiceProvider(this INode node, IndentedTextWriter writer, SourceGenContext context, ImmutableArray<ITypeSymbol>? requiredServices)
     {
-        if (!node.TryGetPropertyName(node.Parent, out var propertyName))
-            throw new InvalidOperationException("Can't find property name for node");
-
-        var localName = propertyName.LocalName;
-        var parentVar = context.Variables[node.Parent];
-        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, null);
-        var propertySymbol = parentVar.Type.GetAllProperties(localName).FirstOrDefault();
-        
+        IFieldSymbol? bpFieldSymbol = null;
+        IPropertySymbol? propertySymbol = null;
+        if (node.TryGetPropertyName(node.Parent, out var propertyName))
+        {
+            var localName = propertyName.LocalName;
+            if (context.Variables.TryGetValue(node.Parent, out var parentVar))
+            {
+                bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, null);
+                propertySymbol = parentVar.Type.GetAllProperties(localName).FirstOrDefault();
+            }
+        }
 
         //TODO based on the node, the service provider, or some of the services, could be reused
         var serviceProviderSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider")!;
@@ -42,15 +45,16 @@ static class ServiceProviderExtensions
     static void AddServices (this INode node, IndentedTextWriter writer, string serviceProviderVariableName, ImmutableArray<ITypeSymbol>? requiredServices, SourceGenContext context, IFieldSymbol? bpFieldSymbol, IPropertySymbol? propertySymbol)
     {     
         var createAllServices = requiredServices is null;
-
-        if (createAllServices
-            || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideParentValues")!, SymbolEqualityComparer.Default)
-            || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IReferenceProvider")!, SymbolEqualityComparer.Default))
+        var objectAndParents = node.ObjectAndParents(context).ToArray();
+        if (   (   createAllServices
+                || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideParentValues")!, SymbolEqualityComparer.Default)
+                || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IReferenceProvider")!, SymbolEqualityComparer.Default))
+            && objectAndParents.Length > 0)
         {
             var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, "ValueTargetProvider");
             writer.WriteLine($"var {simpleValueTargetProvider} = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(");
             writer.Indent++;
-            writer.WriteLine($"new object[] {{{String.Join(", ", node.Parents(context).Select(v=>v.Name))}}},");
+            writer.WriteLine($"new object[] {{{String.Join(", ", node.ObjectAndParents(context).Select(v=>v.Name))}}},");
             var bpinfo = bpFieldSymbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType)) ?? String.Empty;
             var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
             writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
@@ -75,16 +79,20 @@ static class ServiceProviderExtensions
         }
     }
 
-    static IEnumerable<LocalVariable> Parents(this INode node, SourceGenContext context)
+    static IEnumerable<LocalVariable> ObjectAndParents(this INode node, SourceGenContext context)
     {
+        if (context.Variables.TryGetValue(node, out var variable))
+            yield return variable;
         var n = node.Parent;
         while (n is not null)
         {
-            if (n is IElementNode en && context.Variables.TryGetValue(en, out var parentVariable))
+            if (n is IElementNode en )
             {
-                yield return parentVariable;
+                if (context.Variables.TryGetValue(en, out var parentVariable))
+                    yield return parentVariable;
                 n = n.Parent;        
-            }
+            } else
+                break;
         }
     }
     public static (bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices) GetServiceProviderAttributes(this ITypeSymbol typeConverter, SourceGenContext context)

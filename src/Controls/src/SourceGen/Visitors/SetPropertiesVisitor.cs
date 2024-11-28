@@ -102,16 +102,18 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         {
             var valueProviderVariable = Context.Variables[node];
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, returnType!.Name!.Split('.').Last());
-            Context.Variables[node] = new LocalVariable(returnType, variableName);
 
             //if it require a serviceprovider, create one
             if (!acceptEmptyServiceProvider)
             {
                 var serviceProviderVar = node.GetOrCreateServiceProvider(Writer, context, requiredServices);                
-                Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
+                Context.Variables[node] = new LocalVariable(returnType, variableName);
+                Writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
             }
-            else
-                Writer.WriteLine($"{returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = (({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
+            else {
+                Context.Variables[node] = new LocalVariable(returnType, variableName);
+                Writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
+            }
         }
 
         if (propertyName != XmlName.Empty)
@@ -166,9 +168,34 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             // else
             //     throw new BuildException(BuildExceptionCode.ContentPropertyAttributeMissing, node, null, ((IElementNode)parentNode).XmlType.Name);
         }
-        else if (parentNode.IsCollectionItem(node) && parentNode is ListNode)
+        else if (parentNode.IsCollectionItem(node) && parentNode is ListNode parentList)
         {
-            Writer.WriteLine($"// Collection item {node} parent {parentNode}");
+            if (skips.Contains(parentList.XmlName))
+                return;
+
+            var parentVar = Context.Variables[(IElementNode)parentNode.Parent];
+            if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+					return;
+            var elementType = parentVar.Type;
+            var localName = parentList.XmlName.LocalName;
+            var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);        
+            var propertySymbol = parentVar.Type.GetAllProperties(localName).FirstOrDefault();
+            var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter();
+
+            var propertyType =  typeandconverter?.type ?? propertySymbol?.Type;
+            if (propertyType == null)
+                return;
+
+            var variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType.Name!.Split('.').Last()));
+            Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context, node as IXmlLineInfo)};");
+
+            if (CanAddToResourceDictionary(variable, propertyType, node, node as IXmlLineInfo, Context))
+            {
+                AddToResourceDictionary(Writer, variable, node, node as IXmlLineInfo, Context);
+                return;
+            }
+            Writer.WriteLine($"{variable.Name}.Add({Context.Variables[node].Name});");
+
         }
     }
 
@@ -263,6 +290,19 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {context.Variables[node].Name});");
 	}
 
+    static string GetOrGetValue(LocalVariable parentVar, IFieldSymbol? bpFieldSymbol, IPropertySymbol? property, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    {
+
+        if (bpFieldSymbol != null)
+        {
+            var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter();
+            return $"({typeandconverter?.type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){parentVar.Name}.GetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))})";
+        }
+        else if (property != null)
+            return $"{parentVar.Name}.{property.Name}";
+        else
+            return "null";        
+    }
     static bool CanSet(LocalVariable parentVar, string localName, INode node, SourceGenContext context)
     {
         if (parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == localName) is not IPropertySymbol property)
@@ -274,8 +314,18 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (node is not IElementNode elementNode)
             return false;
         var localVar = context.Variables[elementNode];
-        //TODO check if the property type is compatible with the element type
-        return true;
+        if (localVar.Type.InheritsFrom(property.Type))
+            return true;
+        //TODO if an implicit operator exists, return true
+
+        if (property.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+            return true;
+
+        //TODO could we replace this by a runimt check (generating a if/else) ?            
+        if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+            return true;
+
+        return false;
     }
 
     static void Set(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
