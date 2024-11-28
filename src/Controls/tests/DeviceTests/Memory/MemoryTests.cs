@@ -298,19 +298,19 @@ public class MemoryTests : ControlsHandlerTestBase
 			});
 
 
-			#if IOS
+#if IOS
 			var controller = (cv.Handler as CollectionViewHandler).Controller;
 			controllerReference = new WeakReference(controller);
 			controller = null;
-			#else
+#else
 			controllerReference = new WeakReference(new object());
-			#endif
+#endif
 
 			cv = null;
 
 			await navPage.Navigation.PopAsync();
 		});
-		
+
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
 	}
 
@@ -558,5 +558,73 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, recognizerReference);
 	}
 #endif
+
+	[Fact]
+	public async Task TweenersWillNotLeakDuringInfiniteAnimation()
+	{
+		SetupBuilder();
+		WeakReference animationReference = null;
+		WeakReference weak = null;
+
+		var page = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+
+		await CreateHandlerAndAddToWindow(new Window(page), async () =>
+		{
+			var page2 = new AnimationPage(shouldCreateClosureAnimation: false);
+			animationReference = new WeakReference(page2);
+			await OnLoadedAsync(page);
+			await page.Navigation.PushAsync(page2);
+			await OnLoadedAsync(page2);
+			weak = page2.Animation;
+			await Task.Delay(2_000);
+			await page2.Navigation.PopToRootAsync();
+			await OnUnloadedAsync(page2);
+			page2 = null;
+		});
+
+		Assert.True(AnimationExtensions.TweenersCounter <= 2);
+	}
+}
+
+sealed class AnimationPage : ContentPage
+{
+	Button CounterBtn { get; } = new();
+
+	public WeakReference Animation { get; private set; }
+
+	bool _shouldCreateClosureAnimation;
+
+	public AnimationPage(bool shouldCreateClosureAnimation) => _shouldCreateClosureAnimation = shouldCreateClosureAnimation;
+
+	void CreateClosureAnimation()
+	{
+		var animation = new Animation(v =>
+		{
+			int r = new Random().Next();
+			CounterBtn.Text = (r).ToString();
+		}, 0, 0);
+		Animation = new WeakReference(animation);
+		animation.Commit(this, "animation", 16, 250, null, null, () => true);
+	}
+
+	void CreateNonClosureAnimatino()
+	{
+		var animation = new Animation(static v =>
+		{
+			int r = new Random().Next();
+		}, 0, 0);
+		Animation = new WeakReference(animation);
+		animation.Commit(this, "animation", 16, 250, null, null, () => true);
+	}
+
+	protected override void OnAppearing()
+	{
+		if (_shouldCreateClosureAnimation)
+			CreateClosureAnimation();
+		else
+			CreateNonClosureAnimatino();
+
+	}
 }
 

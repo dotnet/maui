@@ -47,6 +47,12 @@ namespace Microsoft.Maui.Controls
 
 		static readonly Dictionary<AnimatableKey, Info> s_animations;
 		static readonly Dictionary<AnimatableKey, int> s_kinetics;
+
+		/// <summary>
+		/// This property is used for UnitTest 
+		/// </summary>
+		static internal int TweenersCounter => s_tweeners.Count;
+
 		static int s_currentTweener = 1;
 
 		static AnimationExtensions()
