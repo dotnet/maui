@@ -30,7 +30,7 @@
                     Hint="Completed">
                     <CheckBox
                         HorizontalOptions="End"
-                        IsChecked="{Binding IsCompleted}" />
+                        IsChecked="{Binding IsCompleted}" SemanticProperties.Description="Mark this task as completed or not"/>
                 </sf:SfTextInputLayout>
 
                 <sf:SfTextInputLayout 
@@ -46,7 +46,7 @@
                 <Button 
                     HeightRequest="{OnIdiom 44, Desktop=60}"
                     Text="Save"
-                    Command="{Binding SaveCommand}"/>
+                    Command="{Binding SaveCommand}" SemanticProperties.Hint="Click here to save the task"/>
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
