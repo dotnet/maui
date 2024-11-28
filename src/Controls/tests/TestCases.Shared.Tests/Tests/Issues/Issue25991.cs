@@ -31,12 +31,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("KeepItemsInViewButton");
 			App.Click("AddItemButton");
 			var result3 = App.FindElement("InfoLabel").GetText();
-			ClassicAssert.AreEqual("0", result2);
+			ClassicAssert.AreEqual("0", result3);
 
 			App.Click("KeepLastItemInViewButton");
 			App.Click("AddItemButton");
 			var result4 = App.FindElement("InfoLabel").GetText();
-			ClassicAssert.AreEqual("4", result2);
+			ClassicAssert.AreEqual("4", result4);
 
 		}
 	}
