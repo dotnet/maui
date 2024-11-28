@@ -39,3 +39,4 @@ public class Bugzilla58875 : _IssuesUITest
 		App.WaitForElement(ContextAction);
 	}
 }
+#endif
