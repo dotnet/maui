@@ -321,6 +321,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (property.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
             return true;
 
+        if (context.Compilation.HasImplicitConversion(localVar.Type, property.Type))
+            return true;
+
         //TODO could we replace this by a runimt check (generating a if/else) ?            
         if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
             return true;
