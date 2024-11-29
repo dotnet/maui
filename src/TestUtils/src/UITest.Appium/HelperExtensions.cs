@@ -1813,6 +1813,23 @@ namespace UITest.Appium
 			}
 		}
 
+		/// <summary>
+		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
