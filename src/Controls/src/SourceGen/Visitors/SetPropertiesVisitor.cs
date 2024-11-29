@@ -186,6 +186,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             if (propertyType == null)
                 return;
 
+            //TODO if the var is already created and in context.Variables, use that
+            //TODO if we don't need the var, don't create it (this will likely be optimized by the compiler anyway, but...)
             var variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType.Name!.Split('.').Last()));
             Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context, node as IXmlLineInfo)};");
 
@@ -195,7 +197,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                 return;
             }
             Writer.WriteLine($"{variable.Name}.Add({Context.Variables[node].Name});");
-
         }
     }
 
@@ -205,7 +206,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
     public void Visit(ListNode node, INode parentNode)
     {
-        Writer.WriteLine($"// ListNode {node} parent {parentNode}");
     }
 
     internal static void SetPropertyValue(IndentedTextWriter writer, LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
@@ -275,8 +275,20 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return true;
         if(!(node is ElementNode en))
             return false;
-        //TODO additional checks
-        return true;
+        
+        var localVar = context.Variables[en];
+
+        // If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
+        // Worst case scenario ? InvalidCastException at runtime
+        if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+            return true;
+
+        var bpTypeAndConverter = bpFieldSymbol.GetBPTypeAndConverter();
+        if (context.Compilation.HasImplicitConversion(localVar.Type, bpTypeAndConverter?.type))
+            return true;
+        
+        return localVar.Type.InheritsFrom(bpTypeAndConverter?.type!) 
+            || bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!);
     }
 
     static void SetValue(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
@@ -303,6 +315,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         else
             return "null";        
     }
+
     static bool CanSet(LocalVariable parentVar, string localName, INode node, SourceGenContext context)
     {
         if (parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == localName) is not IPropertySymbol property)
@@ -316,7 +329,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var localVar = context.Variables[elementNode];
         if (localVar.Type.InheritsFrom(property.Type))
             return true;
-        //TODO if an implicit operator exists, return true
 
         if (property.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
             return true;

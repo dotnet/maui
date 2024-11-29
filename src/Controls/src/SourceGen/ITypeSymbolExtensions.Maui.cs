@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static partial class ITypeSymbolExtensions
 {
-	
 	public static IFieldSymbol? GetBindableProperty(this ITypeSymbol type, string ns, ref string localName, out System.Boolean attached, SourceGenContext context, IXmlLineInfo? iXmlLineInfo)
     {
         var bpParentType = type;
@@ -36,5 +35,31 @@ static partial class ITypeSymbolExtensions
             return true;
         }
         return false;
+    }
+    public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol)
+    {
+        if (!fieldSymbol.Name.EndsWith("Property", StringComparison.InvariantCulture))
+            return null;
+            // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpRef.Name);
+        var bpName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
+        var owner = fieldSymbol.ContainingType;
+        var propertyName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
+        var property = owner.GetMembers(propertyName).OfType<IPropertySymbol>().SingleOrDefault();
+        var getter = property?.GetMethod
+                  ?? owner.GetMembers($"Get{propertyName}").OfType<IMethodSymbol>().SingleOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
+        if (getter == null)
+            return null;
+            // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
+        
+        List<AttributeData> attributes = new();
+        if (property != null){
+            attributes.AddRange(property.GetAttributes().ToList());
+            attributes.AddRange(property.Type.GetAttributes());
+        }
+        attributes.AddRange(getter.GetAttributes());
+        attributes.AddRange(getter.ReturnType.GetAttributes());
+
+        var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+        return (getter.ReturnType, typeConverter);
     }
 }
