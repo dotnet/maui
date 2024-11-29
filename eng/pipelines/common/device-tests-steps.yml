@@ -36,10 +36,10 @@ steps:
       installDefaultAndroidApi: ${{ or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'))  }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(parameters.skipProvisioning) }}:
-        skipProvisioning: false
+        skipProvisionator : false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       ${{ else }}:  
-        skipProvisioning: true
+        skipProvisionator: true
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
