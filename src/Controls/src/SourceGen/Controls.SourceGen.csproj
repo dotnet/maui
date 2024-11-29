@@ -9,7 +9,7 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
     <IsRoslynComponent>true</IsRoslynComponent>
-    <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants>
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__;_MAUIXAML_SG_LINEINFO</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
