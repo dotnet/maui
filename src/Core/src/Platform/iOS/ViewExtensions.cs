@@ -277,9 +277,9 @@ namespace Microsoft.Maui.Platform
 
 				if (layer.Name == layerName)
 				{
-					// Get the parent view of the gradient layer
-					var parentView = layer.SuperLayer?.Delegate as UIView;
-					var targetBounds = parentView?.Bounds ?? bounds;
+					// Retrieve the bounds of the gradient layer's superlayer
+					var targetBounds = layer.SuperLayer?.Bounds ?? bounds;
+
 					if (layer.Frame != targetBounds)
 					{
 						layer.Frame = targetBounds;
