@@ -87,32 +87,6 @@ static partial class ITypeSymbolExtensions
     public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol symbol, ITypeSymbol attributeType)
         => symbol.GetAttributes().Where(ad => SymbolEqualityComparer.Default.Equals(ad.AttributeClass, attributeType));
 
-    public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol)
-    {
-        if (!fieldSymbol.Name.EndsWith("Property", StringComparison.InvariantCulture))
-            return null;
-            // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpRef.Name);
-        var bpName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
-        var owner = fieldSymbol.ContainingType;
-        var propertyName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
-        var property = owner.GetMembers(propertyName).OfType<IPropertySymbol>().SingleOrDefault();
-        var getter = property?.GetMethod
-                  ?? owner.GetMembers($"Get{propertyName}").OfType<IMethodSymbol>().SingleOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
-        if (getter == null)
-            return null;
-            // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
-        
-        List<AttributeData> attributes = new();
-        if (property != null){
-            attributes.AddRange(property.GetAttributes().ToList());
-            attributes.AddRange(property.Type.GetAttributes());
-        }
-        attributes.AddRange(getter.GetAttributes());
-        attributes.AddRange(getter.ReturnType.GetAttributes());
-
-        var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
-        return (getter.ReturnType, typeConverter);
-    }
 
     public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType)
     {
@@ -132,6 +106,9 @@ static partial class ITypeSymbolExtensions
 
         return type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iface));
     }
+
+    public static bool IsInterface(this ITypeSymbol type)
+        => type.TypeKind == TypeKind.Interface;
 
     public static bool ImplementsGeneric(this ITypeSymbol type, ITypeSymbol iface, out ITypeSymbol[] typeArguments)
     {
@@ -197,5 +174,4 @@ static partial class ITypeSymbolExtensions
 	public static bool CanAdd(this ITypeSymbol type) 
 		=> type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable")
 		&& type.GetAllMethods("Add").Any(m => m.Parameters.Length == 1);
-
 }
