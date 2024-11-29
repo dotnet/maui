@@ -275,9 +275,15 @@ namespace Microsoft.Maui.Platform
 					UpdateBackgroundLayers(sublayers, layerName, bounds);
 				}
 
-				if (layer.Name == layerName && layer.Frame != bounds)
+				if (layer.Name == layerName)
 				{
-					layer.Frame = bounds;
+					// Get the parent view of the gradient layer
+					var parentView = layer.SuperLayer?.Delegate as UIView;
+					var targetBounds = parentView?.Bounds ?? bounds;
+					if (layer.Frame != targetBounds)
+					{
+						layer.Frame = targetBounds;
+					}
 				}
 			}
 		}
