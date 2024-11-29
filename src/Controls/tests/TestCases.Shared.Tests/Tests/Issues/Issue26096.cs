@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,11 +19,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("OpenTabbedPage");
 			App.Tap("OpenTabbedPage");
+#if __ANDROID__
+			App.Tap("PAGE 3");
+#elif __IOS__ || WINDOWS || MACCATALYST
 			App.Tap("Page 3");
+#endif
 			App.Tap("Back");
+			App.WaitForElement("OpenTabbedPage");
 			App.Tap("OpenTabbedPage");
-			VerifyScreenshot();
+		    VerifyScreenshot();
 		}
 	}
 }
-#endif
