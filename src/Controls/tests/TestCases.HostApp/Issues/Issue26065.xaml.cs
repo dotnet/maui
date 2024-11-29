@@ -15,8 +15,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			if(collView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 			{
-				linearItemsLayout.ItemSpacing = 20;
-				btn.Text = linearItemsLayout.ItemSpacing.ToString();
+				linearItemsLayout.ItemSpacing = 20;				
 			} 
 		}
 	}

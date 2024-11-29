@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using ObjCRuntime;
 using UIKit;
@@ -171,6 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			// Fall back to vertical list
 			var fallbackItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+			// Manually setting the value to ensure the property changed event is properly wired..
 			ItemsView.ItemsLayout = fallbackItemsLayout;
 			return LayoutFactory2.CreateList(fallbackItemsLayout, groupInfo, headerFooterInfo);
 		}

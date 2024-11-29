@@ -1,4 +1,5 @@
-﻿#if IOS || MACCATALYST // Issue occurs only in CollectionViewHandler2
+﻿#if IOS // Issue occurs only in CollectionViewHandler2
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("ToggleButton");
 			App.Tap("ToggleButton");
-			Assert.That(App.FindElement("ToggleButton").GetText(), Is.EqualTo("20"));
+			VerifyScreenshot();
 		}
 
 	}
