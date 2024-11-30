@@ -81,19 +81,25 @@ static class ServiceProviderExtensions
 
     static IEnumerable<LocalVariable> ObjectAndParents(this INode node, SourceGenContext context)
     {
-        if (context.Variables.TryGetValue(node, out var variable))
-            yield return variable;
-        var n = node.Parent;
-        while (n is not null)
+        var currentCtx = context;
+        while (currentCtx != null)
         {
-            if (n is IElementNode en )
+            if (currentCtx.Variables.TryGetValue(node, out var variable))
+                yield return variable;
+            var n = node.Parent;
+            while (n is not null)
             {
-                if (context.Variables.TryGetValue(en, out var parentVariable))
-                    yield return parentVariable;
-                n = n.Parent;        
-            } else
-                break;
+                if (n is IElementNode en )
+                {
+                    if (currentCtx.Variables.TryGetValue(en, out var parentVariable))
+                        yield return parentVariable;
+                    n = n.Parent;        
+                } else
+                    break;
+            }
+            currentCtx = currentCtx.ParentContext;
         }
+
     }
     public static (bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices) GetServiceProviderAttributes(this ITypeSymbol typeConverter, SourceGenContext context)
     {

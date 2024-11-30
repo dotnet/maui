@@ -23,4 +23,5 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
     public string? FilePath {get; set;}
 	public IDictionary<INode, LocalVariable> ServiceProviders { get; } = new Dictionary<INode, LocalVariable>();
 	public IDictionary<INode, (LocalVariable namescope, IList<string> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IList<string>)>(); 
+    public SourceGenContext? ParentContext {get;set;}
 }
