@@ -33,7 +33,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		namescope.namesInScope.Add(name);
         Writer.WriteLine($"{namescope.namescope.Name}.RegisterName(\"{name}\", {Context.Variables[(IElementNode)parentNode].Name});");
 		
-		// SetStyleId((string)node.Value, Context.Variables[(IElementNode)parentNode]);
+		SetStyleId((string)node.Value, Context.Variables[(IElementNode)parentNode]);
 	}
 
 	public void Visit(MarkupNode node, INode parentNode)
@@ -109,23 +109,11 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
         return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
-// 	void SetStyleId(string str, VariableDefinition element)
-// 	{
-// 		if (!element.VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element"))))
-// 			return;
+	void SetStyleId(string str, LocalVariable element)
+	{
+		if (!element.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
+			return;
 
-// 		var module = Context.Body.Method.Module;
-// 		var elementType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Element");
-// 		var elementTypeRef = module.GetTypeDefinition(Context.Cache, elementType);
-
-// 		var nop = Instruction.Create(OpCodes.Nop);
-// 		Context.IL.Append(element.LoadAs(Context.Cache, elementTypeRef, module));
-// 		Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertyGetterReference(Context.Cache, elementType, propertyName: "StyleId"));
-// 		Context.IL.Emit(OpCodes.Brtrue, nop);
-// 		Context.IL.Append(element.LoadAs(Context.Cache, elementTypeRef, module));
-// 		Context.IL.Emit(OpCodes.Ldstr, str);
-// 		Context.IL.Emit(OpCodes.Callvirt, module.ImportPropertySetterReference(Context.Cache, elementType, propertyName: "StyleId"));
-// 		Context.IL.Append(nop);
-// 	}
-// }
+		Writer.WriteLine($"{element.Name}.StyleId ??= \"{str}\";");
+	}
 }

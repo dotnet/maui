@@ -67,7 +67,7 @@ public partial class TestPage
 		nsResolver0.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
 		nsResolver0.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xamlServiceProvider0.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(nsResolver0, typeof(global::Test.TestPage).Assembly));
-		global::Microsoft.Maui.Controls.BindingBase bindingBase0 = ((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingExtension0).ProvideValue(xamlServiceProvider0);
+		var bindingBase0 = (global::Microsoft.Maui.Controls.BindingBase)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingExtension0).ProvideValue(xamlServiceProvider0);
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase0);
 	}
 }

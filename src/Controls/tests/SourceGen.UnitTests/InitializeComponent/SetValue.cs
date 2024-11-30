@@ -62,6 +62,7 @@ public partial class TestPage
 		var nameScope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope0);
 		nameScope0.RegisterName("MyButton", button0);
+		button0.StyleId ??= "MyButton";
 		this.MyButton = button0;
 		button0.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
 		button0.SetValue(global::Microsoft.Maui.Controls.Grid.RowProperty, 0);
