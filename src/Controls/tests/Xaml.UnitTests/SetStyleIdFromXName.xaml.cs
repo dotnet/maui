@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class SetStyleIdFromXName : ContentPage
 	{
 		public SetStyleIdFromXName() => InitializeComponent();
@@ -15,10 +16,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(false), TestCase(true)]
-			public void SetStyleId(bool useCompiledXaml)
+			[Test]
+			public void SetStyleId([Values]XamlInflator inflator)
 			{
-				var layout = new SetStyleIdFromXName(useCompiledXaml);
+				var layout = new SetStyleIdFromXName(inflator);
 				Assert.That(layout.label0.StyleId, Is.EqualTo("label0"));
 				Assert.That(layout.label1.StyleId, Is.EqualTo("foo"));
 				Assert.That(layout.label2.StyleId, Is.EqualTo("bar"));
