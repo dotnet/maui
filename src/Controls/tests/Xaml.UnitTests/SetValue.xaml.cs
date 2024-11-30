@@ -129,6 +129,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public ByteEnum ByteEnum { get; set; }
 	}
 
+	public class SetValue_ReverseConverter : IValueConverter
+	{
+		public static ReverseConverter Instance = new ReverseConverter();
+
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			var s = value as string;
+			if (s == null)
+				return value;
+			return new string(s.Reverse().ToArray());
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			var s = value as string;
+			if (s == null)
+				return value;
+			return new string(s.Reverse().ToArray());
+		}
+	}
+
 	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class SetValue : ContentPage
 	{
@@ -174,6 +195,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 				page.label11.BindingContext = new { labeltext = "Foo" };
 				Assert.AreEqual("Foo", page.label11.Text);
+			}
+
+			[Test]
+			public void SetBindingWithConverter([Values]XamlInflator inflator)
+			{
+				var page = new SetValue(inflator);
+				page.label15.BindingContext = new {labeltext = "Foo"};
+				Assert.AreEqual("ooF", page.label15.Text);
 			}
 
 			[Test]
