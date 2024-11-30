@@ -355,7 +355,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         }
         else if (node is ElementNode elementNode)
             using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
-                writer.WriteLine($"{parentVar.Name}.{localName} = {context.Variables[elementNode].Name};");
+                writer.WriteLine($"{parentVar.Name}.{localName} = ({property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){context.Variables[elementNode].Name};");
     }
 
     static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
