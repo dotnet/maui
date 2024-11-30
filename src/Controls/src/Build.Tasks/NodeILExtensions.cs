@@ -581,7 +581,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var scopes = new List<VariableDefinition>();
 			do
 			{
-
 				if (context.Scopes.TryGetValue(node, out var scope))
 					scopes.Add(scope.Item1);
 				node = node.Parent;

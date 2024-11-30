@@ -7,7 +7,16 @@ namespace Microsoft.Maui.Controls.SourceGen;
 static class NamingHelpers
 {
     static IDictionary<object, IDictionary<string, int>> _lastId = new Dictionary<object, IDictionary<string, int>>();
-    public static string CreateUniqueVariableName(object context, string typeName)
+    
+    public static string CreateUniqueVariableName(SourceGenContext context, string typeName)
+    {
+        while (context.ParentContext != null)
+            context = context.ParentContext;
+    
+        return CreateUniqueVariableName((object)context, typeName);
+    }
+    
+    static string CreateUniqueVariableName(object context, string typeName)
     {
         typeName = CamelCase(typeName);
         if (!_lastId.TryGetValue(context, out var lastIdForContext))
