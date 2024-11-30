@@ -9,14 +9,6 @@ namespace Microsoft.Maui.Controls.SourceGen;
 class PrePost : IDisposable
 {
     /// <summary>
-    /// Adds a new idented block between curly braces to the code writer
-    /// </summary>
-    /// <param name="codeWriter"></param>
-    /// <returns></returns>
-    public static PrePost NewBlock(IndentedTextWriter codeWriter)
-        => NewBlock(codeWriter, "{", "}");
-
-    /// <summary>
     /// Adds a #line directive to the code writer, reverts to default afterwards. No ident, no tabs
     /// </summary>
     /// <param name="codeWriter"></param>
@@ -24,7 +16,7 @@ class PrePost : IDisposable
     /// <param name="fileName"></param>
     /// <returns></returns>
     public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
-        => new PrePost(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
+        => new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
 
     readonly Action post;
     PrePost(Action pre, Action post)
@@ -35,7 +27,13 @@ class PrePost : IDisposable
 
     void IDisposable.Dispose() => post();
 
-    static PrePost NewBlock(IndentedTextWriter codeWriter, string begin, string end, int ident = 1, bool noTab = false) =>
+    /// <summary>
+    /// Adds a new idented block between curly braces to the code writer
+    /// </summary>
+    /// <param name="codeWriter"></param>
+    /// <param name="begin"></param>
+    /// <param name="end"></param>
+    public static PrePost NewBlock(IndentedTextWriter codeWriter, string begin="{", string end="}", int ident = 1, bool noTab = false) =>
         new(
             () => {
                 if (noTab)

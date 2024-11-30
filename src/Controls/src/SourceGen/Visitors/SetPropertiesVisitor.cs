@@ -87,11 +87,24 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if ((propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName)) && skips.Contains(propertyName))
             return;
 
-        // if (propertyName == XmlName._CreateContent)
-        // {
-        //     SetDataTemplate((IElementNode)parentNode, node, Context, node);
-        //     return;
-        // }
+        if (propertyName == XmlName._CreateContent)
+        {
+            var variable = Context.Variables[parentNode];
+            Writer.WriteLine($"{variable.Name}.LoadTemplate = () =>");
+            using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+            {
+                var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!) {FilePath = context.FilePath};
+
+                //inflate the template
+			    node.Accept(new CreateValuesVisitor(templateContext), null);
+			    node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
+			    // node.Accept(new SetFieldVisitor(templateContext), null);
+			    node.Accept(new SetResourcesVisitor(templateContext), null);
+			    node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
+                Writer.WriteLine($"return {templateContext.Variables[node].Name};");
+            }
+            return;
+        }
 
         //IMarkupExtension or IValueProvider => ProvideValue()
         if (node.IsValueProvider(context, 

@@ -69,8 +69,15 @@ static class InitializeComponentCodeWriter
                 codeWriter.WriteLine($"{accessModifier} partial class {rootTypeName}");
                 using (newblock()) {
                     codeWriter.WriteLine($"private partial void InitializeComponentSourceGen()");
-                    using(newblock()){
-                        Visit(root, new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!) {FilePath = xamlItem.ProjectItem.RelativePath});
+                    var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!) {FilePath = xamlItem.ProjectItem.RelativePath};
+                    using(newblock()) {
+                        Visit(root, sgcontext);
+                    }
+                    
+                    foreach (var writer in sgcontext.AddtitionalWriters)
+                    {
+                        codeWriter.Write(writer.ToString());
+                        codeWriter.WriteLine();
                     }
                 }
                 
@@ -79,7 +86,6 @@ static class InitializeComponentCodeWriter
 
             }
 exit:
-// codeWriter.WriteLine("*/");
             codeWriter.Flush();
             return codeWriter.InnerWriter.ToString();   
         }
