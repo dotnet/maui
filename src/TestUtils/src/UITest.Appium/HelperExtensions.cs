@@ -1690,6 +1690,27 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Switch the System animations state.
+		/// Optimize and accelerate tests, eliminating animations entirely when Appium is executing tests, as they serve no practical purpose in this context.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleSystemAnimations is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleSystemAnimations", new Dictionary<string, object>()
+			{
+				{ "enableSystemAnimations", enableSystemAnimations },
+			});
+		}
+    
+    /// <summary>
 		/// Switch the state of data service.
 		/// Functionality that's only available on Android.
 		/// This API does not work for Android API level 21+ because it requires system or carrier privileged permission, 
@@ -1848,6 +1869,60 @@ namespace UITest.Appium
 
 			app.WaitForElement(query, timeout: timeout);
 		}
+		/// <summary>
+		/// Waits for the flyout icon to appear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if(app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if(isShell){
+					app.WaitForElement("OK");
+				}
+				if (!isShell){		
+					if(app is AppiumWindowsApp)
+					{
+						app.WaitForElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.WaitForElement(automationId);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Shows the flyout menu in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="usingSwipe">Indicates whether to use swipe gesture to open the flyout (default is false).</param>
+		/// <param name="waitForFlyoutIcon">Indicates whether to wait for the flyout icon before showing the flyout (default is true).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void ShowFlyout(this IApp app, string automationId = "", bool usingSwipe = false, bool waitForFlyoutIcon = true, bool isShell = true)
+		{
+			if (waitForFlyoutIcon)
+			{
+				app.WaitForFlyoutIcon(automationId, isShell);
+			}
+
+			if (usingSwipe)
+			{
+				app.DragCoordinates(5, 500, 800, 500);
+			}
+			else
+			{
+				app.TapFlyoutIcon(automationId, isShell, false);
+			}
+		}
 
 		/// <summary>
 		/// Taps the Flyout icon for Shell or FlyoutPage.
@@ -1855,11 +1930,14 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="title">Optional title for FlyoutPage (default is empty string).</param>
 		/// <param name="isShell">Indicates whether the Flyout is for Shell (true) or FlyoutPage (false).</param>
-		private static void TapFlyoutIcon(this IApp app, string title = "", bool isShell = true)
+		private static void TapFlyoutIcon(this IApp app, string title = "", bool isShell = true, bool waitForFlyoutIcon = true)
 		{
+			if (waitForFlyoutIcon)
+			{
+				app.WaitForFlyoutIcon(title, isShell);
+			}
 			if (app is AppiumAndroidApp)
 			{
-				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
 				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
 			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
@@ -1872,12 +1950,10 @@ namespace UITest.Appium
 				{
 					if(app is AppiumWindowsApp)
 					{
-						app.WaitForElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
 						app.Tap(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
 					}
 					else
 					{
-						app.WaitForElement(title);
 						app.Tap(title);
 					}
 				}
@@ -1942,6 +2018,22 @@ namespace UITest.Appium
 		public static void TapInFlyoutPageFlyout(this IApp app, string flyoutItem)
 		{
 			app.TapInFlyout(flyoutItem, false);
+    }
+
+		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,

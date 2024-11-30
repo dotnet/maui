@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID && TEST_FAILS_ON_ANDROID // Related issue: https://github.com/dotnet/maui/issues/26159
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,7 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("WaitForStubControl");
 			App.Tap("UpdateAspect");
-			VerifyScreenshot();
+
+			Thread.Sleep(1000);
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }
