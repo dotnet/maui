@@ -1860,7 +1860,7 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		void NotifyFlyoutBehaviorObservers()
+		internal void NotifyFlyoutBehaviorObservers()
 		{
 			if (CurrentItem == null || GetVisiblePage() == null)
 				return;
