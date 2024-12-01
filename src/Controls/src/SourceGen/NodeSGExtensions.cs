@@ -148,9 +148,11 @@ static class NodeSGExtensions
         
         if (variable.Type.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
         {
-            //HACK waiting for the ServiceProvider to be compiled
+            //HACK waiting for the ValueProvider to be compiled
             if (variable.Type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, SymbolEqualityComparer.Default))
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
+            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!))
+                returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!;
         }
         else if (variable.Type.ImplementsGeneric(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
         {
