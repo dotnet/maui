@@ -39,10 +39,52 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
     public void Visit(ElementNode node, INode parentNode)
     {
-        var type = node.XmlType.ResolveTypeSymbol(Context) 
-            ?? throw new Exception($"Type {node.XmlType.Name} not found");
+        if (!node.XmlType.TryResolveTypeSymbol(null, Context.Compilation, Context.XmlnsCache, out var type) || type is null)
+            return;
 
-		//TODO if type is ArrayExtension
+        //x:Array
+        if (type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
+        {
+            //we might want to mive this to a separate method
+            var visitor = new SetPropertiesVisitor(Context);
+            // var children = node.Properties.Values.ToList();
+            // children.AddRange(node.CollectionItems);
+            foreach (var cn in node.CollectionItems)
+            {
+                if (cn is not ElementNode en)
+                    continue;
+                foreach (var n in en.Properties.Values.ToList())
+                    n.Accept(visitor, cn);
+                foreach (var n in en.CollectionItems)
+                    n.Accept(visitor, cn);
+            }
+
+            var typeNode = node.Properties[new XmlName("", "Type")];
+            ValueNode vTypeNode = typeNode as ValueNode ?? (typeNode as ElementNode)!.CollectionItems[0] as ValueNode ?? throw new Exception("ArrayExtension Type not found");
+            var arrayType = (vTypeNode.Value as string)?.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, vTypeNode as BaseNode) 
+                ?? throw new Exception($"Type {vTypeNode.Value} not found");
+
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, arrayType.Name!.Split('.').Last()+"Array");
+            Context.Variables[node] = new LocalVariable(Context.Compilation.CreateArrayTypeSymbol(arrayType), variableName);
+            Writer.WriteLine($"var {variableName} = new {arrayType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}[]");
+            using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+            {
+                foreach (var cn in node.CollectionItems)
+                {
+                    if (cn is not ElementNode en)
+                        continue;
+                    var enVariable = Context.Variables[en];
+                    Writer.WriteLine($"{enVariable.Name},");
+                }
+            }
+
+            //clean the node as it has been fully exhausted
+            foreach (var prop in node.Properties)
+                if (!node.SkipProperties.Contains(prop.Key))
+                    node.SkipProperties.Add(prop.Key);
+            node.CollectionItems.Clear();
+            return;
+        }
 
 		//if type is Xaml2009Primitive
 		if (IsXaml2009LanguagePrimitive(node)) {

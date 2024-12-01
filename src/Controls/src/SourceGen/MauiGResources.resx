@@ -119,7 +119,7 @@
   </resheader>
   <data name="XamlParsingErrorMessage" xml:space="preserve">
     <value>An error occured while parsing Xaml: {0}.</value>
-    <comment/>
+    <comment>{0} is the error message</comment>
   </data>
   <data name="XamlParsingFailed" xml:space="preserve">
     <value>XAML parsing failed.</value>
@@ -152,5 +152,17 @@
   <data name="CornerRadiusConversionFailed" xml:space="preserve">
     <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l"</value>
     <comment/>
+  </data>
+  <data name="SymbolResolution" xml:space="preserve">
+    <value>Symbol resolution failed.</value>
+    <comment/>
+  </data>
+  <data name="TypeResolutionMessage" xml:space="preserve">
+    <value>Cannot resolve type "{0}".</value>
+    <comment>{0} is a xmlnamespace and typename</comment>
+  </data>
+  <data name="DuplicateTypeError" xml:space="preserve">
+    <value>Multiple Types found for "{0}"</value>
+    <comment>/</comment>
   </data>
 </root>

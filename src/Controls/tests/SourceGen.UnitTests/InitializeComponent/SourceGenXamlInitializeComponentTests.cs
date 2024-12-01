@@ -2,7 +2,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen;
-using NUnit.Framework;
 
 using static Microsoft.Maui.Controls.Xaml.UnitTests.SourceGen.SourceGeneratorDriver;
 
@@ -23,5 +22,3 @@ public class SourceGenXamlInitializeComponentTestBase : SourceGenTestsBase
 		return (result, generated);
 	}
 }
-
-

@@ -31,7 +31,7 @@ static partial class ITypeSymbolExtensions
         {
             var typename = localname.Substring(0, dotIdx);
             localname = localname.Substring(dotIdx + 1);
-            elementType = new XmlType(namespaceURI, typename, null).ResolveTypeSymbol(context)!;
+            elementType = new XmlType(namespaceURI, typename, null).GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache)!;
             return true;
         }
         return false;

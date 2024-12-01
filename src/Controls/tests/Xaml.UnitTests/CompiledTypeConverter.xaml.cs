@@ -106,17 +106,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.AreEqual("Bar", p.List[1]);
 			}
 
-			[Test]
-			[TestCase(typeof(Microsoft.Maui.Controls.BrushTypeConverter))]
-			[TestCase(typeof(Microsoft.Maui.Controls.ImageSourceConverter))]
-			[TestCase(typeof(Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter))]
-			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]
-			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter))]
-			public void ConvertersAreReplaced([Values]XamlInflator inflator, Type converterType)
+			[Test] public void ConvertersAreReplaced(
+					[Values]XamlInflator inflator,
+					[Values (typeof(BrushTypeConverter), typeof(ImageSourceConverter), typeof(StrokeShapeTypeConverter), typeof(Graphics.Converters.PointTypeConverter), typeof(Graphics.Converters.RectTypeConverter))]Type converterType)
 			{
-				MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out var hasLoggedErrors);
-				Assert.That(!hasLoggedErrors);
-				Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
+				if (inflator == XamlInflator.XamlC)
+				{
+					MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef);
+					Assert.That(!hasLoggedErrors);
+					Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
+				}
 			}
 
 			bool HasConstructorForType(MethodDefinition methodDef, Instruction instruction, Type converterType)

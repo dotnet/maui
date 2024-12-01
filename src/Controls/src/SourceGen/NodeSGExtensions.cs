@@ -218,9 +218,6 @@ static class NodeSGExtensions
         return "default";
     }
 
-        return "default";
-    }
-
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
     {
         name = default(XmlName);
@@ -244,7 +241,7 @@ static class NodeSGExtensions
     }
 
 	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
-        => context.Variables[(IElementNode)node].Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!);
+        => context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!);
 
 	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {

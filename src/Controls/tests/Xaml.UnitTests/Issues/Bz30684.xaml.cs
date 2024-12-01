@@ -7,16 +7,12 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz30684 : ContentPage
 	{
 		public Bz30684()
 		{
 			InitializeComponent();
-		}
-
-		public Bz30684(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
 		}
 
 		[TestFixture]
@@ -25,11 +21,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void XReferenceFindObjectsInParentNamescopes(bool useCompiledXaml)
+			[Test] public void XReferenceFindObjectsInParentNamescopes([Values]XamlInflator inflator)
 			{
-				var layout = new Bz30684(useCompiledXaml);
+				var layout = new Bz30684(inflator);
 				var cell = (TextCell)layout.listView.TemplatedItems.GetOrCreateContent(0, null);
 				Assert.AreEqual("Foo", cell.Text);
 			}

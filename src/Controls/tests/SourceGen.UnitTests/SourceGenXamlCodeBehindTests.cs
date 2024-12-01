@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
 using NUnit.Framework;
 
@@ -34,10 +35,12 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
 
 		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+		Assert.IsTrue(generated.Contains("public partial class TestPage : global::Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
+		
 	}
 
 	[Test]
-	public void TestCodeBehindGenerator_LocalXaml()
+	public void TestCodeBehindGenerator_LocalXaml([Values]bool resolvedType)
 	{
 		var xaml =
 """
@@ -50,14 +53,46 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 		<local:TestControl x:Name="MyTestControl" />
 </ContentPage>
 """;
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class TestControl : ContentView
+{
+}
+""";
+
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		if (resolvedType)
+			compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+
 		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
-		Assert.IsFalse(result.Diagnostics.Any());
+		if (resolvedType)
+		{
+			Assert.IsFalse(result.Diagnostics.Any());
 
-		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
-
-		Assert.IsTrue(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
+			var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+			Assert.IsTrue(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
+		}
+		else
+		{
+			Assert.IsTrue(result.Diagnostics.Any(d => d.Descriptor.Id == "MAUIX2000"));
+		}
 	}
 
 	[Test]
@@ -205,5 +240,165 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 		};
 
 		VerifyStepRunReasons(result2, expectedReasons);
+	}
+
+	[Test] public void TestCodeBehindGenerator_DuplicateNames()
+	{
+		var xaml ="""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:ext="http://foo.bar/tests"
+	x:Class="Test.TestPage">
+	<StackLayout>
+		<ext:PublicInExternal x:Name="publicInExternal" />
+		<ext:PublicInHidden x:Name="publicInHidden" /> 
+		<ext:PublicInVisible x:Name="publicInVisible" />
+	</StackLayout>
+</ContentPage>
+""";
+
+		var code ="""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var externalone ="""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+
+[assembly: XmlnsDefinition("http://foo.bar/tests", "External")]
+[assembly: XmlnsDefinition("http://foo.bar/tests", "External", AssemblyName = "external2.Generated")]
+
+namespace External;
+
+public class PublicInExternal : Button { }
+internal class PublicInHidden : Button { }
+internal class PublicInVisible : Button { }
+public class PublicWithSuffix : Button { }
+
+""";
+
+		var externaltwo ="""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+
+namespace External;
+
+internal class PublicInExternal : Button { }
+public class PublicInHidden : Button { }
+internal class PublicInVisible : Button { }
+internal class PublicWithSuffixExtension : Button { }
+internal class InternalWithSuffixExtension : Button { }
+""";
+
+		var externalthree ="""
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls;
+
+[assembly: InternalsVisibleTo("SourceGeneratorDriver.Generated")]
+[assembly: XmlnsDefinition("http://foo.bar/tests", "External")]
+
+namespace External;
+
+internal class InternalButVisible : Label { }
+public class PublicInVisible : Button { }
+internal class InternalWithSuffix : Button { }
+""";
+
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code))
+			.AddReferences(
+				SourceGeneratorDriver.CreateMauiCompilation("external1.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalone)).ToMetadataReference(),
+				SourceGeneratorDriver.CreateMauiCompilation("external2.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externaltwo)).ToMetadataReference(),
+				SourceGeneratorDriver.CreateMauiCompilation("external3.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalthree)).ToMetadataReference());
+		
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+
+		Assert.IsTrue(generated.Contains("External.PublicInExternal publicInExternal", StringComparison.Ordinal));
+	}
+
+	[Test] public void TestCodeBehindGenerator_InternalsVisibleTo()
+	{
+		var xaml ="""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:ext="http://foo.bar/tests"
+	x:Class="Test.TestPage">
+	<StackLayout>
+		<ext:InternalButVisible x:Name="internalButVisible" />
+	</StackLayout>
+</ContentPage>
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+
+public class TestControl : ContentView
+{
+}
+""";
+
+		var externalcode =
+"""
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Maui.Controls;
+
+[assembly: InternalsVisibleTo("SourceGeneratorDriver.Generated")]
+[assembly: XmlnsDefinition("http://foo.bar/tests", "External")]
+
+namespace External;
+
+internal class InternalButVisible : Label { }
+""";
+
+
+		var externalCompilation = SourceGeneratorDriver.CreateMauiCompilation("external.Generated").AddSyntaxTrees(CSharpSyntaxTree.ParseText(externalcode));
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation().AddSyntaxTrees(CSharpSyntaxTree.ParseText(code)).AddReferences(externalCompilation.ToMetadataReference());
+		
+		
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+
+		Assert.IsTrue(generated.Contains("External.InternalButVisible internalButVisible", StringComparison.Ordinal));
 	}
 }

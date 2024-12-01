@@ -113,7 +113,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		});
 	}
 
-	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		ProjectItem? projItem;
 		if (xamlItem == null || (projItem = xamlItem.ProjectItem) == null)

@@ -51,6 +51,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz34037 : ContentPage
 	{
 		public Bz34037()
@@ -61,11 +62,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public string Property
 		{
 			get { return "FooBar"; }
-		}
-
-		public Bz34037(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
 		}
 
 		[TestFixture]
@@ -85,11 +81,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void ConverterParameterOrderDoesNotMatters(bool useCompiledXaml)
+			[Test]
+			public void ConverterParameterOrderDoesNotMatters([Values]XamlInflator inflator)
 			{
-				var layout = new Bz34037(useCompiledXaml);
+				var layout = new Bz34037(inflator);
 				Assert.AreEqual(1, Bz34037Converter0.Invoked);
 				Assert.AreEqual(1, Bz34037Converter1.Invoked);
 				Assert.AreEqual(typeof(string), Bz34037Converter0.Parameter);

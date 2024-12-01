@@ -158,6 +158,9 @@ static partial class ITypeSymbolExtensions
 
         return (false, XamlInflator.Default);
     }
+
+    public static bool IsPublic(this ISymbol symbol)
+        => symbol.DeclaredAccessibility == Accessibility.Public;
     public static bool IsPublicOrVisibleInternal(this ITypeSymbol type, IEnumerable<IAssemblySymbol> internalsVisible)
 	{
 		// return types that are public
