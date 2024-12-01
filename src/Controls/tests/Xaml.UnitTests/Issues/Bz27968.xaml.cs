@@ -12,16 +12,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 	}
 
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Bz27968 : Bz27968Page
 	{
 		public Bz27968()
 		{
 			InitializeComponent();
-		}
-
-		public Bz27968(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
 		}
 
 		[TestFixture]
@@ -30,11 +26,10 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[SetUp] public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			[TearDown] public void TearDown() => DispatcherProvider.SetCurrent(null);
 
-			[TestCase(true)]
-			[TestCase(false)]
-			public void BaseClassIdentifiersAreValidForResources(bool useCompiledXaml)
+			[Test]
+			public void BaseClassIdentifiersAreValidForResources([Values]XamlInflator inflator)
 			{
-				var layout = new Bz27968(useCompiledXaml);
+				var layout = new Bz27968(inflator);
 				Assert.That(layout.Resources["listView"], Is.TypeOf<ListView>());
 			}
 		}
