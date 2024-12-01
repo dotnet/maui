@@ -56,7 +56,7 @@ public partial class TestPage
 	private partial void InitializeComponentSourceGen()
 	{
 		var bindingExtension0 = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
-		global::Test.TestPage __root = this;
+		var __root = this;
 		var nameScope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope0);
 #line 1 "Test.xaml"

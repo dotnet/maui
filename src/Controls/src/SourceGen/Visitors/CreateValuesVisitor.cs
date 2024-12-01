@@ -125,7 +125,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         var variableName = "__root";
 
         Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
-        Writer.WriteLine($"{Context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = this;");
+        Writer.WriteLine($"var {variableName} = this;");
     }
     		
     static bool IsXaml2009LanguagePrimitive(IElementNode node)
