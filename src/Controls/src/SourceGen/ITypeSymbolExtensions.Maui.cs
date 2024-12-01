@@ -38,15 +38,16 @@ static partial class ITypeSymbolExtensions
     }
     public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol)
     {
+        //TODO shouldn't we be able to get the SyntaxTree from the BP Create call and get the targetType, and use this as a fallback ?
         if (!fieldSymbol.Name.EndsWith("Property", StringComparison.InvariantCulture))
             return null;
             // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpRef.Name);
         var bpName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
         var owner = fieldSymbol.ContainingType;
         var propertyName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
-        var property = owner.GetMembers(propertyName).OfType<IPropertySymbol>().SingleOrDefault();
+        var property = owner.GetAllMembers(propertyName).OfType<IPropertySymbol>().FirstOrDefault();
         var getter = property?.GetMethod
-                  ?? owner.GetMembers($"Get{propertyName}").OfType<IMethodSymbol>().SingleOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
+                  ?? owner.GetAllMembers($"Get{propertyName}").OfType<IMethodSymbol>().FirstOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
         if (getter == null)
             return null;
             // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
