@@ -263,8 +263,8 @@ static class GeneratorHelpers
 		}
 	}
 	
-	public static IDictionary<XmlType, string> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)
+	public static IDictionary<XmlType, ITypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)
 	{
-		return new Dictionary<XmlType, string>();
+		return new Dictionary<XmlType, ITypeSymbol>();
 	}
 }

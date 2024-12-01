@@ -65,9 +65,8 @@ public static class SourceGeneratorDriver
 		return (runResult1, runResult2);
 	}
 
-	public static Compilation CreateMauiCompilation()
+	public static Compilation CreateMauiCompilation(string name = $"{nameof(SourceGeneratorDriver)}.Generated" )
 	{
-		var name = $"{nameof(SourceGeneratorDriver)}.Generated";
 		var references = GetMauiReferences();
 
 		var compilation = CSharpCompilation.Create(name,

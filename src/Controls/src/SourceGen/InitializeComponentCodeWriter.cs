@@ -27,7 +27,7 @@ static class InitializeComponentCodeWriter
 #nullable enable
 ";
 
-    public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+    public static string GenerateInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
     {
         using (var codeWriter = new IndentedTextWriter(new StringWriter(CultureInfo.InvariantCulture), "\t") {NewLine = NewLine})
         {
