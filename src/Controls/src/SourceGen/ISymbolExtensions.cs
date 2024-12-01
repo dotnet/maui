@@ -9,9 +9,6 @@ namespace Microsoft.Maui.Controls.SourceGen;
 static class ISymbolExtensions
 {
     //FIXME use IMutable instead of IEnumerable
-    public static bool IsPublic(this ISymbol symbol)
-        => symbol.DeclaredAccessibility == Accessibility.Public;
-
     public static IEnumerable<AttributeData> GetAttributes(this ISymbol symbol, string name)
     {
         foreach (var attribute in symbol.GetAttributes()) {

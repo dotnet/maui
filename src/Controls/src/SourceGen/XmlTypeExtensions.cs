@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -14,60 +15,110 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class XmlTypeExtensions
 {
-	public static string GetTypeName(XmlType xmlType, SourceGenContext context, bool globalAlias = true)
-		=> GetTypeName(xmlType, context.Compilation, context.XmlnsCache, context.TypeCache, globalAlias);
-
-	public static ITypeSymbol? ResolveTypeSymbol(this XmlType xmlType, SourceGenContext context)
+	public static ITypeSymbol? GetTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache)
 	{
-		if (TryResolveTypeSymbol(xmlType, context, out var symbol))
+		if (TryResolveTypeSymbol(xmlType, reportDiagnostic, compilation, xmlnsCache, out var symbol))
 			return symbol!;
-		//FIXME reportDiagnostic
-		// throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");
-		return null;
+		if (reportDiagnostic is not null)
+		{
+			//FIXME report location
+			reportDiagnostic(Diagnostic.Create(Descriptors.TypeResolution, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
+			return null;
+		}
+		throw new Exception($"Unable to resolve {xmlType.NamespaceUri}:{xmlType.Name}");
 	}
 
-	public static bool TryResolveTypeSymbol(this XmlType xmlType, SourceGenContext context, out ITypeSymbol? symbol)
+	//todo this shouldn't report diagnostic directly, but that require changing GetTypeReference
+	public static bool TryResolveTypeSymbol(this XmlType xmlType, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, out INamedTypeSymbol? symbol)
 	{
-		var xmlnsDefinitions = context.XmlnsCache.XmlnsDefinitions;
+		//TODO we need to cache types symbols at this level
+
+		//This is a shortcut as we don't look for extensions, but used to work in the past, at least for XamlG
+		// var ns = GetClrNamespace(xmlType.NamespaceUri);
+		// if (ns != null )
+		// {
+		// 	var ss = compilation.GetTypesByMetadataName($"{ns}.{xmlType.Name}");
+		// 	var symbols = ss.Where(t=>t.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
+		// 				.ToImmutableArray();
+		// 	if (symbols.Length == 1)
+		// 	{
+		// 		symbol = symbols.Single();
+		// 		if (symbol.IsGenericType && xmlType.TypeArguments is not null)
+		// 		{
+		// 			var typeArguments = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
+		// 			symbol = symbol.Construct(typeArguments);
+		// 		}
+		// 		return true;
+		// 	}
+		// 	if (symbols.Length > 1)
+		// 	{
+		// 		symbol = null;
+		// 		if (reportDiagnostic is not null)
+		// 			reportDiagnostic(Diagnostic.Create(Descriptors.DuplicateTypeError, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
+								
+		// 		return false;
+		// 	}
+		// }
+	
+		var xmlnsDefinitions = xmlnsCache.XmlnsDefinitions;
 		symbol = xmlType.GetTypeReference(
 			xmlnsDefinitions,
-			context.Compilation.AssemblyName!, 
+			compilation.AssemblyName!, 
 			typeInfo =>
 			{
-				var t = context.Compilation.GetTypeByMetadataName($"{typeInfo.clrNamespace}.{typeInfo.typeName}");
-				if (t is not null && t.IsPublic())
-					return t;
+				var ts = compilation.GetTypesByMetadataName($"{typeInfo.clrNamespace}.{typeInfo.typeName}")
+						.Where(t=>t.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible));
+				if (ts.Count() == 1)
+					return ts.Single();
+				if (ts.Count() > 1 && reportDiagnostic is not null)
+					reportDiagnostic(Diagnostic.Create(Descriptors.DuplicateTypeError, null, $"{xmlType.NamespaceUri}:{xmlType.Name}"));
+
 				return null;
 			}
 		);
-		return symbol is not null;		
+
+		if (symbol is null)
+			return false;
+		if (symbol.IsGenericType && xmlType.TypeArguments is not null)
+		{
+			var typeArguments = xmlType.TypeArguments.Select(typeArg => typeArg.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)!).ToArray();
+			symbol = symbol.Construct(typeArguments);
+		}
+		return true;
 	}
+
+	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, BaseNode node)
+	{
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(nameAndPrefix, node.NamespaceResolver, (IXmlLineInfo)node);
+		return xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
+	}
+
 
 	//FIXME should return a ITypeSymbol, and properly construct it for generics. globalalias param should go away
-    public static string GetTypeName(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
-	{
-		if (typeCache.TryGetValue(xmlType, out string returnType))
-		{
-			if (globalAlias)
-				returnType = $"global::{returnType}";
-			return returnType;
-		}
+    // public static ITypeSymbol GetTypeSymbol(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)
+	// {
+	// 	if (typeCache.TryGetValue(xmlType, out string returnType))
+	// 	{
+	// 		if (globalAlias)
+	// 			returnType = $"global::{returnType}";
+	// 		return returnType;
+	// 	}
 
-		var ns = GetClrNamespace(xmlType.NamespaceUri);
-		if (ns != null)
-			returnType = $"{ns}.{xmlType.Name}";
-		else
-			// It's an external, non-built-in namespace URL.
-			returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
+	// 	var ns = GetClrNamespace(xmlType.NamespaceUri);
+	// 	if (ns != null)
+	// 		returnType = $"{ns}.{xmlType.Name}";
+	// 	else
+	// 		// It's an external, non-built-in namespace URL.
+	// 		returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
 
-		if (xmlType.TypeArguments != null)
-			returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
+	// 	if (xmlType.TypeArguments != null)
+	// 		returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
 
-		typeCache[xmlType] = returnType;
-		if (globalAlias)
-			returnType = $"global::{returnType}";
-		return returnType;
-	}
+	// 	typeCache[xmlType] = returnType;
+	// 	if (globalAlias)
+	// 		returnType = $"global::{returnType}";
+	// 	return returnType;
+	// }
 
 	static string? GetClrNamespace(string namespaceuri)
 	{
@@ -82,46 +133,46 @@ static class XmlTypeExtensions
 		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 	}
 
-	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
-	{
-#nullable disable
-		string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
-			(typeInfo) =>
-			{
-				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
-				string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
-				IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
+// 	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
+// 	{
+// #nullable disable
+// 		string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
+// 			(typeInfo) =>
+// 			{
+// 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
+// 				string fullName = $"{typeInfo.clrNamespace}.{typeInfo.typeName}";
+// 				IList<INamedTypeSymbol> types = compilation.GetTypesByMetadataName(fullName);
 
-				if (types.Count == 0)
-				{
-					return null;
-				}
+// 				if (types.Count == 0)
+// 				{
+// 					return null;
+// 				}
 
-				foreach (INamedTypeSymbol type in types)
-				{
-					// skip over types that are not in the correct assemblies
-					if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
-					{
-						continue;
-					}
+// 				foreach (INamedTypeSymbol type in types)
+// 				{
+// 					// skip over types that are not in the correct assemblies
+// 					if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
+// 					{
+// 						continue;
+// 					}
 
-					if (!type.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
-					{
-						continue;
-					}
+// 					if (!type.IsPublicOrVisibleInternal(xmlnsCache.InternalsVisible))
+// 					{
+// 						continue;
+// 					}
 
-					int i = fullName.IndexOf('`');
-					if (i > 0)
-					{
-						fullName = fullName.Substring(0, i);
-					}
-					return fullName;
-				}
+// 					int i = fullName.IndexOf('`');
+// 					if (i > 0)
+// 					{
+// 						fullName = fullName.Substring(0, i);
+// 					}
+// 					return fullName;
+// 				}
 
-				return null;
-			});
+// 				return null;
+// 			});
 
-		return typeName;
-#nullable enable
-	}
+// 		return typeName;
+// #nullable enable
+// 	}
 }

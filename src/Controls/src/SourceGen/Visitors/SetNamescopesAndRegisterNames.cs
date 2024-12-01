@@ -43,6 +43,8 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
+
+
 		LocalVariable namescope;
 		IList<string> namesInNamescope;
 		var setNameScope = false;
@@ -61,7 +63,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 		if (setNameScope && Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
 			Writer.Write($"global::Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
 		//workaround when VSM tries to apply state before parenting
-		else if (Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
+		else if (Context.Variables.TryGetValue(node, out var variable) && variable.Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
 			Writer.WriteLine($"{Context.Variables[node].Name}.transientNamescope = {namescope.Name};");
 
 		Context.Scopes[node] = (namescope, namesInNamescope);

@@ -27,8 +27,9 @@ static class CodeBehindCodeWriter
 //------------------------------------------------------------------------------
 #nullable enable
 ";
+	internal static readonly string[] accessModifiers = ["private", "public", "internal", "protected"];
 
-    public static void GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+	public static void GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		var projItem = xamlItem?.ProjectItem;
 
@@ -48,7 +49,7 @@ static class CodeBehindCodeWriter
 		}
 
 		var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
-		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, context.CancellationToken, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, context.CancellationToken, context, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
 		{
 			return;
 		}
@@ -91,7 +92,7 @@ static class CodeBehindCodeWriter
 			sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 		}
 
-		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType}");
+		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}");
 		sb.AppendLine("\t{");
 
 		//optional default ctor
@@ -226,7 +227,7 @@ static class CodeBehindCodeWriter
 		context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 	}
 
-	static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
+	static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, SourceProductionContext context, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out ITypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -276,9 +277,9 @@ static class CodeBehindCodeWriter
 			return true;
 		}
 
-		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken);
+		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, context);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeName(compilation, xmlnsCache, typeCache);
+		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(context.ReportDiagnostic, compilation, xmlnsCache);
 
 		// x:ClassModifier attribute
 		var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -313,7 +314,7 @@ static class CodeBehindCodeWriter
 			: $"@{identifier}";
 	}
 
-	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
+	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, SourceProductionContext context)
 	{
 		var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 		if (xPrefix == null)
@@ -339,12 +340,10 @@ static class CodeBehindCodeWriter
 									  : null);
 
 			var accessModifier = fieldModifier?.ToLowerInvariant().Replace("notpublic", "internal") ?? "private"; //notpublic is WPF for internal
-			if (!new[] { "private", "public", "internal", "protected" }.Contains(accessModifier)) //quick validation
-			{
+			if (!accessModifiers.Contains(accessModifier)) //quick validation
 				accessModifier = "private";
-			}
 
-			yield return (name ?? "", xmlType.GetTypeName(compilation, xmlnsCache, typeCache), accessModifier);
+			yield return (name ?? "", xmlType.GetTypeSymbol(context.ReportDiagnostic, compilation, xmlnsCache)?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "", accessModifier);
 		}
 	}
 
