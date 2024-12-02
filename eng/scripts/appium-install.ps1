@@ -144,7 +144,6 @@ if ($missingAppium -or ($appiumCurrentVersion -ne $appiumVersion)) {
 
 # Clean npm cache, just in case
 Write-Output  "Cleaning npm cache"
-
 npm cache clean --force
 
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
