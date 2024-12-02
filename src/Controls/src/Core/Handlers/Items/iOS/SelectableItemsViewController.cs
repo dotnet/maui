@@ -55,7 +55,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var index in selectedItemIndexes)
 			{
-				CollectionView.DeselectItem(index, true);
+				CollectionView.PerformBatchUpdates(null, _ =>
+				{
+					CollectionView.DeselectItem(index, true);
+				});
 			}
 		}
 
@@ -158,7 +161,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var itemAtPath = GetItemAtIndex(path);
 				if (!selectedItems.Contains(itemAtPath))
 				{
-					CollectionView.DeselectItem(path, true);
+					CollectionView.PerformBatchUpdates(null, _ =>
+					{
+						CollectionView.DeselectItem(path, true);
+					});
 				}
 				else
 				{
