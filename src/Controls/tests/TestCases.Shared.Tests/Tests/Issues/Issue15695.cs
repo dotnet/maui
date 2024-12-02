@@ -1,9 +1,3 @@
-#if !MACCATALYST
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,9 +17,37 @@ public class Issue15695 : _IssuesUITest
 	public void VerifySwitchOffColorAfterToggling()
 	{
 		App.WaitForElement("Switch");
-		App.Tap("SwitchButton");
-		App.Tap("SwitchButton");
+		App.Tap("ResetStateButton");
+		App.Tap("ToggleSwitch");
+		// Wait for the switch to animate
+		Task.Delay(500);
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void VerifySwitchOffColorAfterTogglingDarkTheme()
+	{
+		App.WaitForElement("Switch");
+		App.Tap("ResetStateButton");
+		App.Tap("ChangeThemeButton");
+		App.Tap("ToggleSwitch");
+		// Wait for the switch to animate
+		Task.Delay(500);
+		VerifyScreenshot();
+	}
+
+
+	[Test]
+	[Category(UITestCategories.Switch)]
+	public void VerifySwitchNullColor()
+	{
+		App.WaitForElement("Switch");
+		App.Tap("ResetStateButton");
+		App.Tap("NullOffColorButton");
+		App.Tap("ToggleSwitch");
+		// Wait for the switch to animate
+		Task.Delay(500);
 		VerifyScreenshot();
 	}
 }
-#endif
