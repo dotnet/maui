@@ -118,7 +118,7 @@ if ($AppiumHome) {
 
 # Check for an existing appium install version
 $appiumCurrentVersion = ""
-try { $appiumCurrentVersion = appium -v | Out-String } catch { Write-Debug "Problem" }
+try { $appiumCurrentVersion = (appium -v | Out-String).Trim() -replace "`r", "" -replace "`n", "" } catch { Write-Debug "Problem retrieving current Appium version" }
 
 if ($appiumCurrentVersion) {
     Write-Output  "Existing Appium version $appiumCurrentVersion"
