@@ -153,7 +153,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->
-    <AppiumVersion>2.11.5</AppiumVersion>
+    <AppiumVersion>2.12.2</AppiumVersion>
     <AppiumWindowsDriverVersion>2.12.32</AppiumWindowsDriverVersion>
     <AppiumXCUITestDriverVersion>7.27.0</AppiumXCUITestDriverVersion>
     <AppiumMac2DriverVersion>1.19.1</AppiumMac2DriverVersion>
