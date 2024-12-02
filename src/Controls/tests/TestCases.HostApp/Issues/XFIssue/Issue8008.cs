@@ -32,14 +32,12 @@ public class Issue8008 : TestShell
 		});
 
 		item2.Title = "Visible After Remove";
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-		Device.BeginInvokeOnMainThread(() =>
+
+		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			this.Items.Remove(item1);
 		});
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
+
 
 	}
 }
