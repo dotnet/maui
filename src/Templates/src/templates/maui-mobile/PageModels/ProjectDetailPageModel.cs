@@ -43,13 +43,13 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	[ObservableProperty]
 	private List<IconItem> _icons =	new List<IconItem>
 	{
-		new IconItem { IconName = FluentUI.ribbon_24_regular, DisplayName = "Ribbon Icon" },
-		new IconItem { IconName = FluentUI.ribbon_star_24_regular, DisplayName = "Ribbon Star Icon" },
-		new IconItem { IconName = FluentUI.trophy_24_regular, DisplayName = "Trophy Icon" },
-		new IconItem { IconName = FluentUI.badge_24_regular, DisplayName = "Badge Icon" },
-		new IconItem { IconName = FluentUI.book_24_regular, DisplayName = "Book Icon" },
-		new IconItem { IconName = FluentUI.people_24_regular, DisplayName = "People Icon" },
-		new IconItem { IconName = FluentUI.bot_24_regular, DisplayName = "Bot Icon" }
+		new IconItem { IconName = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" },
+		new IconItem { IconName = FluentUI.ribbon_star_24_regular, Description = "Ribbon Star Icon" },
+		new IconItem { IconName = FluentUI.trophy_24_regular, Description = "Trophy Icon" },
+		new IconItem { IconName = FluentUI.badge_24_regular, Description = "Badge Icon" },
+		new IconItem { IconName = FluentUI.book_24_regular, Description = "Book Icon" },
+		new IconItem { IconName = FluentUI.people_24_regular, Description = "People Icon" },
+		new IconItem { IconName = FluentUI.bot_24_regular, Description = "Bot Icon" }
 	};
 
 	public bool HasCompletedTasks
@@ -274,5 +274,5 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 public class IconItem
 {
     public string? IconName { get; set; } = null;
-    public string? DisplayName { get; set; }
+    public string? Description { get; set; }
 }

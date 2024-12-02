@@ -121,8 +121,8 @@
                                     FontSize="24" 
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
-                                    SemanticProperties.Description="{Binding DisplayName}"
-                                    SemanticProperties.Hint="Icon representing task completion. Tap to select."
+                                    SemanticProperties.Description="{Binding Description}"
+                                    SemanticProperties.Hint="Icon representing the type of task . Tap to select"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator" Color="{StaticResource Primary}" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
                             </Grid>                            
