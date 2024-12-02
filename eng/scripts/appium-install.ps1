@@ -142,6 +142,11 @@ if ($missingAppium -or ($appiumCurrentVersion -ne $appiumVersion)) {
     write-Output  "Installed appium $appiumVersion"
 }
 
+# Clean npm cache, just in case
+Write-Output  "Cleaning npm cache"
+
+npm cache clean --force
+
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
 
@@ -152,7 +157,7 @@ if ($IsWindows) {
         Write-Output  "Updated appium driver windows"
     } else {
         Write-Output  "Installing appium driver windows"
-        appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
+        appium driver install --source=npm appium-windows-driver@$windowsDriverVersion --verbose
         Write-Output  "Installed appium driver windows"
     }
 }
@@ -165,7 +170,7 @@ if ($IsMacOS) {
         Write-Output  "Updated appium driver xcuitest"
     } else {
         Write-Output  "Installing appium driver xcuitest"
-        appium driver install xcuitest@$iOSDriverVersion
+        appium driver install xcuitest@$iOSDriverVersion --verbose
         Write-Output  "Installed appium driver xcuitest"
     }
     if ($existingDrivers.mac2) {
@@ -174,7 +179,7 @@ if ($IsMacOS) {
         Write-Output  "Updated appium driver mac2"
     } else {
         Write-Output  "Installing appium driver mac2"
-        appium driver install mac2@$macDriverVersion
+        appium driver install mac2@$macDriverVersion --verbose
         Write-Output  "Installed appium driver mac2"
     }
 }
@@ -185,7 +190,7 @@ if ($existingDrivers.uiautomator2) {
     Write-Output  "Updated appium driver uiautomator2"
 } else {
     Write-Output  "Installing appium driver uiautomator2"
-    appium driver install uiautomator2@$androidDriverVersion
+    appium driver install uiautomator2@$androidDriverVersion --verbose
     Write-Output  "Installed appium driver uiautomator2"
 }
 
