@@ -41,16 +41,16 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	bool _isBusy;
 
 	[ObservableProperty]
-	private List<string> _icons =
-	[
-		FluentUI.ribbon_24_regular,
-		FluentUI.ribbon_star_24_regular,
-		FluentUI.trophy_24_regular,
-		FluentUI.badge_24_regular,
-		FluentUI.book_24_regular,
-		FluentUI.people_24_regular,
-		FluentUI.bot_24_regular
-	];
+	private List<IconItem> _icons =	new List<IconItem>
+	{
+		new IconItem { IconName = FluentUI.ribbon_24_regular, DisplayName = "Ribbon Icon" },
+		new IconItem { IconName = FluentUI.ribbon_star_24_regular, DisplayName = "Ribbon Star Icon" },
+		new IconItem { IconName = FluentUI.trophy_24_regular, DisplayName = "Trophy Icon" },
+		new IconItem { IconName = FluentUI.badge_24_regular, DisplayName = "Badge Icon" },
+		new IconItem { IconName = FluentUI.book_24_regular, DisplayName = "Book Icon" },
+		new IconItem { IconName = FluentUI.people_24_regular, DisplayName = "People Icon" },
+		new IconItem { IconName = FluentUI.bot_24_regular, DisplayName = "Bot Icon" }
+	};
 
 	public bool HasCompletedTasks
 		=> _project?.Tasks.Any(t => t.IsCompleted) ?? false;
@@ -269,4 +269,10 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		OnPropertyChanged(nameof(HasCompletedTasks));
 		await AppShell.DisplayToastAsync("All cleaned up!");
 	}
+}
+
+public class IconItem
+{
+    public string? IconName { get; set; } = null;
+    public string? DisplayName { get; set; }
 }
