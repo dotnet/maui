@@ -19,7 +19,7 @@ parameters:
     - 'Border,BoxView,Brush,Button'
     - 'CarouselView,Cells,CheckBox,CollectionView,ContextActions,CustomRenderers'
     - 'DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
-    - 'Editor,Effects,Entry,FlyoutPage,Focus,Frame,Gestures'
+    - 'Editor,Effects,Entry,FlyoutPage,Focus,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
     - 'Label,Layout,Lifecycle,ListView'
     - 'ManualReview,Maps,Navigation'
