@@ -37,9 +37,9 @@ public class MacTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui-blazor", "Debug", DotNetCurrent)]
-	[TestCase("maui-blazor", "Release", DotNetCurrent)]
-	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
+	[TestCase("maui-blazor", "Debug", DotNetCurrent, true)]
+	[TestCase("maui-blazor", "Release", DotNetCurrent, true)]
+	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
 		{
@@ -59,7 +59,7 @@ public class MacTemplateTest : BaseTemplateTests
 
 		List<string> buildWithCodeSignProps = new List<string>(BuildProps)
 		{
-			"EnableCodeSigning=true"
+			$"EnableCodeSigning={sign}"
 		};
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
@@ -74,13 +74,13 @@ public class MacTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui-blazor", "Debug", DotNetCurrent)]
-	[TestCase("maui-blazor", "Release", DotNetCurrent)]
-	[TestCase("maui", "Debug", DotNetCurrent)]
-	[TestCase("maui", "Release", DotNetCurrent)]
-	[TestCase("maui-multiproject", "Debug", DotNetCurrent)]
-	[TestCase("maui-multiproject", "Release", DotNetCurrent)]
-	public void CheckPrivacyManifestForiOS(string id, string config, string framework)
+	[TestCase("maui-blazor", "Debug", DotNetCurrent, false)]
+	[TestCase("maui-blazor", "Release", DotNetCurrent, false)]
+	[TestCase("maui", "Debug", DotNetCurrent, false)]
+	[TestCase("maui", "Release", DotNetCurrent, false)]
+	[TestCase("maui-multiproject", "Debug", DotNetCurrent, false)]
+	[TestCase("maui-multiproject", "Release", DotNetCurrent, false)]
+	public void CheckPrivacyManifestForiOS(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
 		{
@@ -107,8 +107,21 @@ public class MacTemplateTest : BaseTemplateTests
 				Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS", "bin", config, $"{framework}-ios", $"iossimulator-{arch}", appFileName);
 		}
 
+		List<string> buildWithCodeSignProps = new List<string>(BuildProps);
+
+		if(!sign && config == "Release")
+		{
+			// Skipping Release build without code signing."
+			buildWithCodeSignProps.Add("EnableCodeSigning=false");		
+			buildWithCodeSignProps.Add("_RequireCodeSigning=false");
+		}
+		else if (sign)
+		{
+			buildWithCodeSignProps.Add("EnableCodeSigning=true");
+		}
+
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		string manifestLocation = Path.Combine(appLocation, "PrivacyInfo.xcprivacy");

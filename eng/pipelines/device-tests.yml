@@ -51,6 +51,11 @@ variables:
     value: $(botdeploy--azdo--token)
 
 parameters:
+
+  - name: UseProvisionator
+    type: boolean
+    default: false
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -66,8 +71,8 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 14.5
+        - Agent.OSArchitecture -equals X64
 
   - name: iosPool
     type: object
@@ -122,12 +127,14 @@ stages:
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
+        skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
         iosVersions: [ 'simulator-18.0' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
+        skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       projects:
         - name: essentials
           desc: Essentials

@@ -3,4 +3,18 @@
       <PublishingVersion>3</PublishingVersion>
       <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
    </PropertyGroup>
+
+   <ItemGroup>
+    <_InstallerManifestFilesToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+  </ItemGroup>
+
+   <Target Name="_PublishBlobItems">
+    <ItemGroup>
+      <ItemsToPushToBlobFeed Include="@(_InstallerManifestFilesToPublish)">
+        <IsShipping>true</IsShipping>
+        <PublishFlatContainer>true</PublishFlatContainer>
+        <RelativeBlobPath>$(_UploadPathRoot)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
+      </ItemsToPushToBlobFeed>
+    </ItemGroup>
+  </Target>
 </Project>

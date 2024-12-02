@@ -22,8 +22,8 @@
 						{
 							Content = new Button
 							{
-								AutomationId = "Back",
-								Text = "Back",
+								AutomationId = "GoBack",
+								Text = "GoBack",
 								Command = new Command(async () => await Navigation.PopModalAsync()),
 							},
 						})),

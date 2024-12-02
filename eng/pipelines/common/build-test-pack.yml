@@ -3,6 +3,9 @@ parameters:
   - name: runAsPublic
     type: boolean
     default: false
+  - name: runAsInternal
+    type: boolean
+    default: true
   - name: buildScript
     type: string
   - name: buildConfig
@@ -120,8 +123,8 @@ steps:
   #       targetPath: '${{ parameters.repoArtifactsPath }}/CodeCoverage'
   #       artifactName: '$(Agent.JobName)_CodeCoverageResults'
 
-  # Run on windows, for internal pipeline, or public+non-helix-tests job
-  - ${{ if and(eq(parameters.isWindows, 'true'), or(ne(parameters.runAsPublic, 'true'), ne(parameters.runHelixTests, 'true'))) }}:
+  # Run on windows, for internal pipeline
+  - ${{ if and(eq(parameters.isWindows, 'true'), ne(parameters.runAsPublic, 'true') ) }}:
 
     - script: ${{ parameters.buildScript }}
               -pack 
@@ -132,27 +135,29 @@ steps:
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
     
-    # - script: ${{ parameters.buildScript }}
-    #     -restore -build
-    #     -sign $(_SignArgs)
-    #     -publish $(_PublishArgs)
-    #     -configuration $(_BuildConfig)
-    #     /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
-    #     -projects src/Workload/workloads.csproj
-    #     $(_OfficialBuildIdArgs)
-    #   displayName: Build Workloads
+    - ${{ if and(eq(parameters.isWindows, 'true'), eq(parameters.runAsInternal, 'true') ) }}:
+      # only for workloads
+      - script: ${{ parameters.buildScript }}
+          -restore -build
+          -sign $(_SignArgs)
+          -publish $(_PublishArgs)
+          -configuration $(_BuildConfig)
+          /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
+          -projects src/Workload/workloads.csproj
+          $(_OfficialBuildIdArgs)
+        displayName: Build Workloads
 
-    # - ${{ if eq(parameters.runAsPublic, 'true') }}:
-    #   - task: PublishPipelineArtifact@1
-    #     displayName: Publish VSDrop MSIs
-    #     inputs:
-    #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-    #       artifactName: VSDropInsertion
-    #       publishLocation: 'pipeline'
+      - ${{ if eq(parameters.runAsPublic, 'true') }}:
+        - task: PublishPipelineArtifact@1
+          displayName: Publish VSDrop MSIs
+          inputs:
+            targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+            artifactName: VSDropInsertion
+            publishLocation: 'pipeline'
 
-    # - ${{ if ne(parameters.runAsPublic, 'true') }}:
-    #   - task: 1ES.PublishPipelineArtifact@1
-    #     displayName: Publish VSDrop MSIs
-    #     inputs:
-    #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-    #       artifactName: VSDropInsertion
+      - ${{ if ne(parameters.runAsPublic, 'true') }}:
+        - task: 1ES.PublishPipelineArtifact@1
+          displayName: Publish VSDrop MSIs
+          inputs:
+            targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+            artifactName: VSDropInsertion

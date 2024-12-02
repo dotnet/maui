@@ -1,6 +1,6 @@
-﻿/*
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
@@ -14,13 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void DelayedAddingOfShellContentDoesntCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
-			App.WaitForNoElement("Success");
+			App.WaitForElement("Success");
 		}
 	}
 
@@ -34,13 +30,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void DelayedAddingOfShellSectionDoesntCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
-			App.WaitForNoElement("Success");
+			App.WaitForElement("Success");
 		}
 	}
 
@@ -54,14 +46,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void DelayedAddingOfShellItemDoesntCrash()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Mac, TestDevice.Windows]);
-
-			App.WaitForNoElement("Success");
+			App.WaitForElement("Success");
 		}
 	}
 }
-*/

@@ -28,7 +28,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void OnPlatformExtensionsAreSimplified([Values("net7.0-ios", "net7.0-android")] string targetFramework)
 			{
-				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, targetFramework);
+				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out var hasLoggedErrors, targetFramework);
+				Assert.That(!hasLoggedErrors);
 				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformExtensionCtor(methodDef, instr)), "This Xaml still generates a new OnPlatformExtension()");
 
 				var expected = targetFramework.EndsWith("-ios") ? "bar" : "foo";
@@ -48,7 +49,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Ignore("capability disabled for now")]
 			public void OnPlatformAreSimplified([Values("net6.0-ios", "net6.0-android")] string targetFramework)
 			{
-				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, targetFramework);
+				MockCompiler.Compile(typeof(OnPlatformOptimization), out var methodDef, out bool hasLoggedErrors, targetFramework);
+				Assert.That(!hasLoggedErrors);
 				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsOnPlatformCtor(methodDef, instr)), "This Xaml still generates a new OnPlatform()");
 				Assert.That(methodDef.Body.Instructions.Any(instr => InstructionIsLdstr(methodDef.Module, instr, "Mobile, eventually ?")), $"This Xaml doesn't generate content for {targetFramework}");
 				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsLdstr(methodDef.Module, instr, "Desktop, maybe ?")), $"This Xaml generates content not required for {targetFramework}");
