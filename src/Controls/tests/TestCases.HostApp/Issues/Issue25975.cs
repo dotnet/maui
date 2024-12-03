@@ -10,17 +10,32 @@
 				Text = "Hello",
 				AutomationId = "DoubleTapEditor",
 				FontSize = 24,
+				MaxLength = 5,
 				HorizontalTextAlignment = TextAlignment.Center,
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Fill,
 				AutoSize = EditorAutoSizeOption.TextChanges,
 			};
 
-			var tapGestureRecognizer = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
-			tapGestureRecognizer.Tapped += (s, e) => { editor.Text = "World"; };
-			editor.GestureRecognizers.Add(tapGestureRecognizer);
+			var entry = new Entry()
+			{
+				Text = "Entry",
+				AutomationId = "DoubleTapEntry",
+				FontSize = 24,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalTextAlignment = TextAlignment.Center,
+				HorizontalOptions = LayoutOptions.Fill,
+			};
 
-			Content = editor;
+			var stackLayout = new StackLayout()
+			{
+				Children =
+				{
+					editor, entry
+				}
+			};
+
+			Content = stackLayout;
 
 		}
 	}
