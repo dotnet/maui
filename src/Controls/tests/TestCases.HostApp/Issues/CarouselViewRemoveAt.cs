@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
 	// Issue10300 (src\ControlGallery\src\Issues.Shared\Issue10300.cs
-	[Issue(IssueTracker.None, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgementOutOfRangeException", PlatformAffected.iOS)]
+	[Issue(IssueTracker.None, 10300, "ObservableCollection.RemoveAt(index) with a valid index raises ArgumentOutOfRangeException", PlatformAffected.iOS)]
 	public class CarouselViewRemoveAt : ContentPage
 	{
-		readonly CarouselView _carousel;
+		readonly CarouselView2 _carousel;
 
 		public class ModalPage : ContentPage
 		{
@@ -51,7 +47,7 @@ namespace Maui.Controls.Sample.Issues
 				new ModelCarouselViewRemoveAt("8", Colors.IndianRed),
 				new ModelCarouselViewRemoveAt("9", Colors.Khaki),
 			});
-			_carousel = new CarouselView
+			_carousel = new CarouselView2
 			{
 				ItemTemplate = new DataTemplate(() =>
 			{
@@ -71,7 +67,7 @@ namespace Maui.Controls.Sample.Issues
 			_carousel.PositionChanged += Carousel_PositionChanged;
 
 			Grid.SetColumnSpan(_carousel, 2);
-						
+
 			_carousel.SetBinding(CarouselView.ItemsSourceProperty, new Binding("Items"));
 			_carousel.BindingContext = this;
 

@@ -1,7 +1,7 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "./uitests-shared.cake"
 
-const string DefaultVersion = "17.2";
+const string DefaultVersion = "18.0";
 const string DefaultTestDevice = $"ios-simulator-64_{DefaultVersion}";
 
 // Required arguments
@@ -49,8 +49,8 @@ Setup(context =>
 	{
 		return;
 	}
-
-	PerformCleanupIfNeeded(deviceCleanupEnabled, false);
+	bool createLogs = targetCleanup && IsCIBuild();
+	PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
 
 	// Device or simulator setup
 	if (testDevice.Contains("device"))
@@ -234,8 +234,8 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-ios.binlog";
-	var appiumLog = $"{binDir}/appium_ios.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-ios-{testFilter}");
+	var appiumLog = $"{binDir}/appium_ios_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -247,6 +247,10 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 			.Append("/bl:" + binlog)
 	});
 
+	var TEST_CONFIGURATION_ARGS = Argument("TEST_CONFIGURATION_ARGS", EnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "");
+
+	Information("TEST_CONFIGURATION_ARGS {0}", TEST_CONFIGURATION_ARGS);
+	SetEnvironmentVariable("TEST_CONFIGURATION_ARGS", TEST_CONFIGURATION_ARGS);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", appiumLog);
 
 	Information("Run UITests project {0}", project);

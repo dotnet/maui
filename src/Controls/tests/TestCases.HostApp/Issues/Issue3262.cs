@@ -1,17 +1,11 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Text.RegularExpressions;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Label = Microsoft.Maui.Controls.Label;
 using WebView = Microsoft.Maui.Controls.WebView;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...")]
 	public class Issue3262 : TestContentPage // or TestFlyoutPage, etc ...
 	{

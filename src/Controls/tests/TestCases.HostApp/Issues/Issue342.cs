@@ -1,12 +1,5 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.ManualTest, "342", "NRE when Image is not assigned source", PlatformAffected.WinPhone)]
 	public class Issue342NoSource : TestContentPage
 	{
@@ -27,7 +20,6 @@ namespace Maui.Controls.Sample.Issues
 		// Should not throw exception when user does not include image
 	}
 
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.ManualTest, "342 Delayed", "NRE when Image is delayed source", PlatformAffected.WinPhone)]
 	public class Issue342DelayedSource : TestContentPage
 	{

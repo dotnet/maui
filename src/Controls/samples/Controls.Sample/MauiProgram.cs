@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample
 			if (UseCollectionView2)
 			{
 #if IOS || MACCATALYST
-			
+
 				appBuilder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
@@ -126,6 +126,7 @@ namespace Maui.Controls.Sample
 			services.AddMauiBlazorWebView();
 #if DEBUG
 			services.AddBlazorWebViewDeveloperTools();
+			services.AddHybridWebViewDeveloperTools();
 #endif
 
 			services.AddLogging(logging =>
@@ -246,9 +247,7 @@ namespace Maui.Controls.Sample
 						.PerformActionForShortcutItem((a, b, c) => LogEvent(nameof(iOSLifecycle.PerformActionForShortcutItem)))
 						.WillEnterForeground((a) => LogEvent(nameof(iOSLifecycle.WillEnterForeground)))
 						.ApplicationSignificantTimeChange((a) => LogEvent(nameof(iOSLifecycle.ApplicationSignificantTimeChange)))
-						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate)))
-						.RegisteredForRemoteNotifications((a, b) => LogEvent(nameof(iOSLifecycle.RegisteredForRemoteNotifications)))
-						.ReceivedRemoteNotification((a,b) => LogEvent(nameof(iOSLifecycle.ReceivedRemoteNotification))));
+						.WillTerminate((a) => LogEvent(nameof(iOSLifecycle.WillTerminate))));
 #elif WINDOWS
 					// Log everything in this one
 					events.AddWindows(windows => windows

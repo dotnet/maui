@@ -9,6 +9,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>

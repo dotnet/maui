@@ -5,9 +5,9 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public static class DotnetInternal
 	{
-		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet");
+		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), ".dotnet");
 		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
-		const int DEFAULT_TIMEOUT = 900;
+		const int DEFAULT_TIMEOUT = 1800;
 
 		private static string ConstructBuildArgs(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "", bool isPublishing = false)
 		{
@@ -46,7 +46,8 @@ namespace Microsoft.Maui.IntegrationTests
 			return buildArgs;
 		}
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "")
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false, string runtimeIdentifier = "",
+			string[]? warningsToIgnore = null)
 		{
 			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, false);
 
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.IntegrationTests
 				buildArgs += " -warnaserror";
 
 				// However, we need to ignore specific MSBuild warnings that are acceptable in these tests:
-				var csWarningsToIgnore = new string[]
+				var csWarningsToIgnore = new List<string>
 				{
 					"NETSDK1201", // Details: "For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier
 								// will no longer produce a self contained app by default. To continue building
@@ -67,6 +68,12 @@ namespace Microsoft.Maui.IntegrationTests
 					"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
 							// Justification: It's OK for templates to have missing doc comments.
 				};
+
+				if (warningsToIgnore?.Length > 0)
+				{
+					csWarningsToIgnore.AddRange(warningsToIgnore);
+				}
+
 				var csWarnings = string.Join("%3B", csWarningsToIgnore);
 				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}

@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Element ParentOverride
 		{
-			get 
+			get
 			{
 				if (_parentOverride is null)
 				{
@@ -335,8 +335,8 @@ namespace Microsoft.Maui.Controls
 		WeakReference<Element> _realParent;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent 
-		{ 
+		public Element RealParent
+		{
 			get
 			{
 				if (_realParent is null)
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				return null;
-			} 
+			}
 			private set
 			{
 				if (value is null)
@@ -502,13 +502,19 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		//this is only used by XAMLC, not added to public API
+		[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public INameScope transientNamescope;
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>Returns the element that has the specified name.</summary>
 		/// <param name="name">The name of the element to be found.</param>
 		/// <returns>The element that has the specified name.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
 		public object FindByName(string name)
 		{
-			var namescope = GetNameScope();
+			var namescope = GetNameScope() ?? transientNamescope;
 			if (namescope == null)
 				throw new InvalidOperationException("this element is not in a namescope");
 			return namescope.FindByName(name);
@@ -628,11 +634,11 @@ namespace Microsoft.Maui.Controls
 		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
 		{
-			if(willFirePropertyChanged)
+			if (willFirePropertyChanged)
 			{
 				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
 			}
-			
+
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
 			UpdateHandlerValue(property.PropertyName, changed);
@@ -782,7 +788,7 @@ namespace Microsoft.Maui.Controls
 		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			base.OnSetDynamicResource(property, key, specificity);
-			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 < specificity)
+			if (!DynamicResources.TryGetValue(property, out var existing) || existing.Item2 <= specificity)
 				DynamicResources[property] = (key, specificity);
 			if (this.TryGetResource(key, out var value))
 				OnResourceChanged(property, value, specificity);
@@ -1060,8 +1066,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
 
-		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy 
-		{ 
+		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy
+		{
 			get => HandlerProperties.GetDisconnectPolicy(this);
 			set => HandlerProperties.SetDisconnectPolicy(this, value);
 		}

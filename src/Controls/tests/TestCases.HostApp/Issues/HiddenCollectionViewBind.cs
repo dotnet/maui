@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using System.Collections.Generic;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// CollectionShouldInvalidateOnVisibilityChange (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13203.cs)
 	[Issue(IssueTracker.None, 13203, "[Bug] [iOS] CollectionView does not bind to items if `IsVisible=False`", PlatformAffected.iOS)]

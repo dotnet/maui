@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.Maui.Controls.Platform;
 
-public sealed class PromptDialog : ContentDialog
+public sealed partial class PromptDialog : ContentDialog
 {
 	public PromptDialog()
 	{

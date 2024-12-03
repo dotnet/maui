@@ -13,8 +13,8 @@ namespace Microsoft.Maui.IntegrationTests
 		public const string DotNetCurrent = "net9.0";
 		public const string DotNetPrevious = "net8.0";
 
-		public const string MauiVersionCurrent = "9.0.0-preview.6.24327.7"; // this should not be the same as the last release
-		public const string MauiVersionPrevious = "8.0.60"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
+		public const string MauiVersionCurrent = "9.0.0-rc.1.24453.9"; // this should not be the same as the last release
+		public const string MauiVersionPrevious = "8.0.72"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', ' ', };
 

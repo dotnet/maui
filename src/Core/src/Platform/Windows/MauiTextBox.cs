@@ -70,13 +70,14 @@ namespace Microsoft.Maui.Platform
 			// Adjust the second column's width to 'Auto' when the delete button is enabled, and set it to zero when disabled.
 			if (deleteButton?.Parent is Grid rootGrid && rootGrid.ColumnDefinitions.Count > 1)
 			{
+				int deleteButtonColumnIndex = Grid.GetColumn(deleteButton);
 				if (GetIsDeleteButtonEnabled(element))
 				{
-					rootGrid.ColumnDefinitions[1].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Auto);
+					rootGrid.ColumnDefinitions[deleteButtonColumnIndex].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Auto);
 				}
 				else
 				{
-					rootGrid.ColumnDefinitions[1].Width = new UI.Xaml.GridLength(0);
+					rootGrid.ColumnDefinitions[deleteButtonColumnIndex].Width = new UI.Xaml.GridLength(0);
 				}
 			}
 		}

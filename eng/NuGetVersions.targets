@@ -138,6 +138,11 @@
         NoWarn="NU1605"
     />
     <PackageReference
+        Update="Microsoft.Web.WebView2"
+        Version="$(MicrosoftWindowsWebView2PackageVersion)"
+        NoWarn="NU1605"
+    />
+    <PackageReference
         Update="Microsoft.Windows.SDK.BuildTools"
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
     />
@@ -255,10 +260,6 @@
         Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.Web.WebView2"
-        Version="$(_MicrosoftWebWebView2Version)"
-    />
-    <PackageReference
         Update="Microsoft.CodeAnalysis.PublicApiAnalyzers"
         Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)"
     />
@@ -303,5 +304,10 @@
         Update="System.Drawing.Common"
         Version="$(SystemDrawingCommonPackageVersion)"
     />
+
+    <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
+    <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
+    <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
+    <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
 </Project>

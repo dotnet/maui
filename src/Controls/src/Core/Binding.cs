@@ -124,12 +124,6 @@ namespace Microsoft.Maui.Controls
 			var isApplied = IsApplied;
 
 			var bindingContext = src ?? Context ?? context;
-			if (DataType != null && bindingContext != null && !DataType.IsAssignableFrom(bindingContext.GetType()))
-			{
-				BindingDiagnostics.SendBindingFailure(this, "Binding", "Mismatch between the specified x:DataType and the current binding context");
-				bindingContext = null;
-			}
-
 			base.Apply(bindingContext, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
 			if (src != null && isApplied && fromBindingContextChanged)

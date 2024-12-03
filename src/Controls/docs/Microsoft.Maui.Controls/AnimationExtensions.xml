@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Extension methods for <see cref="T:Microsoft.Maui.Controls.IAnimatable" /> objects.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="AbortAnimation">
@@ -51,7 +50,6 @@
         <param name="self">The object on which this method will be run.</param>
         <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
         <summary>Stops the animation.</summary>
-        <returns>To be added.</returns>
         <remarks>If <paramref name="handle" /> refers to an animation that belongs to this <see cref="T:Microsoft.Maui.Controls.IAnimatable" /> instance, then its tweener handlers are removed, the tweener is stopped, the animation is removed from this <see cref="T:Microsoft.Maui.Controls.IAnimatable" /> instance, and it is marked as finished. If <paramref name="handle" /> refers to one of the kinetics that belong to this <see cref="T:Microsoft.Maui.Controls.IAnimatable" /> instance, then it and its ticker are removed.</remarks>
       </Docs>
     </Member>
@@ -95,7 +93,6 @@
         <param name="finished">An action to call when the animation is finished.</param>
         <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Animate">
@@ -138,7 +135,6 @@
         <param name="finished">An action to call when the animation is finished.</param>
         <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Animate">
@@ -185,7 +181,6 @@
         <param name="finished">An action to call when the animation is finished.</param>
         <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Animate&lt;T&gt;">
@@ -234,7 +229,6 @@
         <param name="finished">An action to call when the animation is finished.</param>
         <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AnimateKinetic">
@@ -273,7 +267,6 @@
         <param name="drag">The amount that the progression speed is reduced per frame. Can be negative.</param>
         <param name="finished">An action to call when the animation is finished.</param>
         <summary>Sets the specified parameters and starts the kinetic animation.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AnimationIsRunning">
@@ -304,8 +297,6 @@
         <param name="self">The object on which this method will be run.</param>
         <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
         <summary>Returns a Boolean value that indicates whether or not the animation that is specified by <paramref name="handle" /> is running.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Batch">
@@ -326,9 +317,6 @@
       </Parameters>
       <Docs>
         <param name="self">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Interpolate">

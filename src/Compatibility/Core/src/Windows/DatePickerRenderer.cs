@@ -15,7 +15,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
+	public partial class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
 	{
 		WBrush _defaultBrush;
 		bool _fontApplied;

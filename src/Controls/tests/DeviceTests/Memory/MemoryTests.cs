@@ -108,7 +108,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				pageToWaitFor = new ContentPage { Content = new Label() };
 				tabbedPage.Children.Add(pageToWaitFor);
 			}
-			
+
 			await navPage.Navigation.PushModalAsync(page);
 
 			references.Add(new(page));
@@ -257,6 +257,61 @@ public class MemoryTests : ControlsHandlerTestBase
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+	}
+
+	[Fact("CollectionView Header/Footer Doesn't Leak")]
+	public async Task CollectionViewHeaderFooterDoesntLeak()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference controllerReference = null;
+
+		var observable = new ObservableCollection<int> { 1 };
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var cv = new CollectionView
+			{
+				Footer = new VerticalStackLayout(),
+				Header = new VerticalStackLayout(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var view = new Label
+					{
+					};
+					view.SetBinding(Label.TextProperty, ".");
+					return view;
+				}),
+				ItemsSource = observable
+			};
+
+			viewReference = new WeakReference(cv);
+			handlerReference = new WeakReference(cv.Handler);
+
+
+			await navPage.Navigation.PushAsync(new ContentPage
+			{
+				Content = cv
+			});
+
+
+			#if IOS
+			var controller = (cv.Handler as CollectionViewHandler).Controller;
+			controllerReference = new WeakReference(controller);
+			controller = null;
+			#else
+			controllerReference = new WeakReference(new object());
+			#endif
+
+			cv = null;
+
+			await navPage.Navigation.PopAsync();
+		});
+		
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
 	}
 
 	[Theory("Gesture Does Not Leak")]

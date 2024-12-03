@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace Microsoft.Maui.Controls.Platform
 {
 	[Microsoft.UI.Xaml.Data.Bindable]
-	public class ShellView : RootNavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
+	public partial class ShellView : RootNavigationView, IAppearanceObserver, IFlyoutBehaviorObserver
 	{
 		internal static readonly global::Windows.UI.Color DefaultBackgroundColor = global::Windows.UI.Color.FromArgb(255, 3, 169, 244);
 		internal static readonly global::Windows.UI.Color DefaultForegroundColor = Microsoft.UI.Colors.White;
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		class FlyoutItemMenuSeparator : Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator
+		partial class FlyoutItemMenuSeparator : Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator
 		{
 			public FlyoutItemMenuSeparator(int separatorNumber)
 			{

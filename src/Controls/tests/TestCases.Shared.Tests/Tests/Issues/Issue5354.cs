@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsLayoutUpdate()
-		{	
+		{
 			App.WaitForElement("CollectionView5354");
 			App.WaitForElement("Button5354");
 
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				ClassicAssert.AreEqual(gridRect0.Y, gridRect1.Y);
 				ClassicAssert.AreEqual(gridRect0.Height, gridRect1.Height);
-				
+
 				App.Click("Button5354");
 			}
 		}

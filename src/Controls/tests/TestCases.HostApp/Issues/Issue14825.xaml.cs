@@ -1,7 +1,6 @@
 ﻿#nullable enable
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 14825, "Capture WebView screenshot", PlatformAffected.UWP)]
 public partial class Issue14825 : ContentPage
 {

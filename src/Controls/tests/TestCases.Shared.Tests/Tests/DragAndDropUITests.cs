@@ -20,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(DragAndDropGallery);
 		}
 
+		// https://github.com/dotnet/maui/issues/24914
+#if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
@@ -279,6 +281,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
 			ClassicAssert.True(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
 		}
+#endif
 
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
 		Point? GetCoordinatesFromLabel(string? labelText)

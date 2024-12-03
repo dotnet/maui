@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {

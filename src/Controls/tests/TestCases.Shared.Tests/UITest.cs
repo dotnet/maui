@@ -10,7 +10,7 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.TestCases.Tests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net8.0";
+			var frameworkVersion = "net9.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
@@ -84,6 +84,18 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 			}
 
+			// This currently doesn't work
+			if (!String.IsNullOrEmpty(TestContext.CurrentContext.Test.ClassName))
+			{
+				config.SetTestConfigurationArg("StartingTestClass", TestContext.CurrentContext.Test.ClassName);
+			}
+
+			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+			if (!String.IsNullOrEmpty(commandLineArgs))
+			{
+				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
+			}
+
 			return config;
 		}
 
@@ -92,8 +104,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null)
+		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
 		{
+			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
 			try
 			{
@@ -101,14 +114,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			catch
 			{
-				Thread.Sleep(500);
+				Thread.Sleep(retryDelay.Value);
 				Verify(name);
 			}
 
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
-				
+
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -132,7 +145,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
 						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
 
-						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
@@ -142,7 +155,11 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
 						{
 							environmentName = "ios";
 						}
@@ -197,10 +214,12 @@ namespace Microsoft.Maui.TestCases.Tests
 				};
 
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped)
+				// app itself and the button color can vary (the buttons change clear briefly when tapped).
+				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
 					TestDevice.Android => 125,
+					TestDevice.iOS => 40,
 					_ => 0,
 				};
 
@@ -222,9 +241,20 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			base.TestSetup();
 			var device = App.GetTestDevice();
-			if(device == TestDevice.Android || device == TestDevice.iOS)
+			if (device == TestDevice.Android || device == TestDevice.iOS)
 			{
-				App.SetOrientationPortrait();
+				try
+				{
+					App.SetOrientationPortrait();
+				}
+				catch
+				{
+					// The app might not be ready
+					// Probably reduce this value if this works
+					Thread.Sleep(1000);
+					App.SetOrientationPortrait();
+				}
+
 			}
 		}
 	}

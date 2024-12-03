@@ -15,6 +15,7 @@ namespace UITest.Appium
 		const string DoubleTapCommand = "doubleTap";
 		const string DoubleTapCoordinatesCommand = "doubleTapCoordinates";
 		const string TouchAndHoldCommand = "touchAndHold";
+		const string TouchAndHoldCoordinatesCommand = "touchAndHoldCoordinates";
 		const string DragAndDropCommand = "dragAndDrop";
 		const string ScrollToCommand = "scrollTo";
 		const string DragCoordinatesCommand = "dragCoordinates";
@@ -28,6 +29,7 @@ namespace UITest.Appium
 			DoubleTapCommand,
 			DoubleTapCoordinatesCommand,
 			TouchAndHoldCommand,
+			TouchAndHoldCoordinatesCommand,
 			DragAndDropCommand,
 			ScrollToCommand,
 			DragCoordinatesCommand
@@ -52,6 +54,7 @@ namespace UITest.Appium
 				DoubleTapCommand => DoubleTap(parameters),
 				DoubleTapCoordinatesCommand => DoubleTapCoordinates(parameters),
 				TouchAndHoldCommand => TouchAndHold(parameters),
+				TouchAndHoldCoordinatesCommand => TouchAndHoldCoordinates(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
 				ScrollToCommand => ScrollTo(parameters),
 				DragCoordinatesCommand => DragCoordinates(parameters),
@@ -129,7 +132,7 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		
+
 		CommandResponse RightClick(string elementId)
 		{
 			// "ActionSequence" and "Actions" is not supported for right click on Windows
@@ -152,8 +155,8 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-        CommandResponse DoubleTap(IDictionary<string, object> parameters)
-        {
+		CommandResponse DoubleTap(IDictionary<string, object> parameters)
+		{
 			var element = GetAppiumElement(parameters["element"]);
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
@@ -192,7 +195,7 @@ namespace UITest.Appium
 
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var longPress = new ActionSequence(touchDevice, 0);
-		
+
 			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(0)));
 			longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(2000)));
@@ -201,7 +204,32 @@ namespace UITest.Appium
 
 			return CommandResponse.SuccessEmptyResponse;
 		}
-		
+
+		CommandResponse TouchAndHoldCoordinates(IDictionary<string, object> parameters)
+		{
+			if (parameters.TryGetValue("x", out var x) &&
+				parameters.TryGetValue("y", out var y))
+			{
+				return TouchAndHoldCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse TouchAndHoldCoordinates(float x, float y)
+		{
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			var touchAndHoldCoordinates = new ActionSequence(touchDevice, 0);
+
+			touchAndHoldCoordinates.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(0)));
+			touchAndHoldCoordinates.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			touchAndHoldCoordinates.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(2000)));
+			touchAndHoldCoordinates.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			_appiumApp.Driver.PerformActions(new List<ActionSequence> { touchAndHoldCoordinates });
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
 		CommandResponse DragAndDrop(IDictionary<string, object> actionParams)
 		{
 			AppiumElement? sourceAppiumElement = GetAppiumElement(actionParams["sourceElement"]);

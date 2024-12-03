@@ -58,6 +58,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			RegisterSupplementaryViews(UICollectionElementKindSection.Footer);
 		}
 
+		private protected override void RegisterSupplementaryViews(UICollectionElementKindSection kind)
+		{
+			base.RegisterSupplementaryViews(kind);
+			if (IsHorizontal)
+			{
+				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
+					kind, HorizontalSupplementalView2ReuseId);
+				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
+					kind, HorizontalDefaultSupplementalView2ReuseId);
+			}
+			else
+			{
+				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
+					kind, VerticalSupplementaryView2ReuseId);
+				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
+					kind, VerticalDefaultSupplementalView2ReuseId);
+			}
+		}
+
 		string DetermineViewReuseId(NSString elementKind)
 		{
 			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
@@ -68,12 +87,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView,
 			NSString elementKind, NSIndexPath indexPath)
 		{
-			var struc = base.GetViewForSupplementaryElement(collectionView, elementKind, indexPath);
-			if(struc != null)
+			// If the IndexPath is less than 2, it's a header or footer for a section not a group
+			if (indexPath.Length < 2 || (ItemsView.GroupFooterTemplate is null && ItemsView.GroupHeaderTemplate is null))
 			{
-				return struc;
+
+				var suplementaryViewFromStructuredView = base.GetViewForSupplementaryElement(collectionView, elementKind, indexPath);
+				if (suplementaryViewFromStructuredView is not null)
+				{
+					return suplementaryViewFromStructuredView;
+				}
 			}
-		
+
 			var reuseId = DetermineViewReuseId(elementKind);
 
 			var view = collectionView.DequeueReusableSupplementaryView(elementKind, reuseId, indexPath) as UICollectionReusableView;
@@ -117,7 +141,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// }
 		}
 
-	
+
 
 		string DetermineViewReuseId(DataTemplate template)
 		{
@@ -127,19 +151,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				orientation = linearItemsLayout.Orientation;
 			else if (this.ItemsView.ItemsLayout is GridItemsLayout gridItemsLayout)
 				orientation = gridItemsLayout.Orientation;
-			
+
 			if (template == null)
 			{
 				// No template, fall back the the default supplemental views
 				return orientation == ItemsLayoutOrientation.Horizontal
-					? HorizontalDefaultSupplementalView2.ReuseId
-					: VerticalDefaultSupplementalView2.ReuseId;
+					? HorizontalDefaultSupplementalView2ReuseId
+					: VerticalDefaultSupplementalView2ReuseId;
 			}
 
 			return orientation == ItemsLayoutOrientation.Horizontal
-				? HorizontalSupplementaryView2.ReuseId
-				: VerticalSupplementaryView2.ReuseId;
+				? HorizontalSupplementalView2ReuseId
+				: VerticalSupplementaryView2ReuseId;
 		}
+
+		static NSString HorizontalDefaultSupplementalView2ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalDefaultSupplementalGroupView2");
+		static NSString VerticalDefaultSupplementalView2ReuseId = new NSString("Microsoft.Maui.Controls.VerticalDefaultSupplementaryGroupView2");
+		static NSString HorizontalSupplementalView2ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalSupplementalGroupView2");
+		static NSString VerticalSupplementaryView2ReuseId = new NSString("Microsoft.Maui.Controls.VerticalSupplementaryGroupView2");
+
 
 		// internal CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		// {

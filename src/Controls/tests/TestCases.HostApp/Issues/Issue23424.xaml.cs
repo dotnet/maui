@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, "23424", "BackButtonBehavior IsVisible=False does not hide the back button", PlatformAffected.All)]
 public partial class Issue23424 : Shell
 {
@@ -9,7 +8,7 @@ public partial class Issue23424 : Shell
 		Items.Add(new ContentPage());
 		Navigation.PushAsync(new DetailPage());
 	}
-	
+
 	public class DetailPage : ContentPage
 	{
 		public DetailPage()
@@ -23,7 +22,7 @@ public partial class Issue23424 : Shell
 			SetBackButtonBehavior(this, backButtonBehavior);
 			Content = new VerticalStackLayout()
 			{
-				new Button() 
+				new Button()
 				{
 					AutomationId = "button",
 					Text = "Click to hide the back button",

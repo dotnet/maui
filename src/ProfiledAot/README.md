@@ -12,8 +12,8 @@ sure to build with `--configuration=Release`.
 Run the `Record` target on each project:
 
 ```bash
-$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui
-$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -p:App=maui-blazor
+$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui
+$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui-blazor
 ```
 
 You can also use `-r android-x64`, if you'd prefer an x86_64 emulator.

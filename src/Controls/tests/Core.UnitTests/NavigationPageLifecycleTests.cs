@@ -126,33 +126,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, pushedPage.DisappearingCount);
 		}
 
-		// [Theory]
-		// [InlineData(false)]
-		// [InlineData(true)]
-		// public async Task RemoveInnerPage(bool useMaui)
-		// {
-		// 	ContentPage initialPage = new ContentPage();
-		// 	ContentPage pushedPage = new ContentPage();
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task RemoveInnerPage(bool useMaui)
+		{
+			ContentPage initialPage = new ContentPage();
+			ContentPage pushedPage = new ContentPage();
 
-		// 	ContentPage initialPageAppearing = null;
-		// 	ContentPage pageDisappeared = null;
+			ContentPage initialPageAppearing = null;
+			ContentPage pageDisappeared = null;
 
-		// 	NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
-		// 	_ = new Window(nav);
-		// 	nav.SendAppearing();
+			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
+			_ = new Window(nav);
+			nav.SendAppearing();
 
-		// 	var pageToRemove = new ContentPage();
-		// 	await nav.PushAsync(pageToRemove);
-		// 	await nav.PushAsync(pushedPage);
+			var pageToRemove = new ContentPage();
+			await nav.PushAsync(pageToRemove);
+			await nav.PushAsync(pushedPage);
 
 
-		// 	initialPage.Appearing += (__, _)
-		// 		=> throw new XunitException("Appearing Fired Incorrectly");
+			initialPage.Appearing += (__, _)
+				=> throw new XunitException("Appearing Fired Incorrectly");
 
-		// 	pushedPage.Disappearing += (__, _)
-		// 		=> throw new XunitException("Appearing Fired Incorrectly");
+			pushedPage.Disappearing += (__, _)
+				=> throw new XunitException("Appearing Fired Incorrectly");
 
-		// 	nav.Navigation.RemovePage(pageToRemove);
-		// }
+			nav.Navigation.RemovePage(pageToRemove);
+		}
 	}
 }

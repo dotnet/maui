@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Platform
 		public static void Unfocus(this FrameworkElement platformView, IView view)
 		{
 			if (platformView is Control control)
+			{
 				UnfocusControl(control);
+			}
 		}
 
 		public static void UpdateVisibility(this FrameworkElement platformView, IView view)
@@ -379,8 +381,10 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UnfocusControl(Control control)
 		{
-			if (control == null || !control.IsEnabled)
+			if (!control.IsEnabled)
+			{
 				return;
+			}
 
 			var isTabStop = control.IsTabStop;
 			control.IsTabStop = false;

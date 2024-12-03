@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public sealed class ActionSheetContent : UserControl
+	public sealed partial class ActionSheetContent : UserControl
 	{
 		readonly ActionSheetArguments _options;
 

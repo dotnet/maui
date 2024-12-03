@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				loggingHelper.LogError("XamlC", $"{code.CodePrefix}{code.CodeCode:0000}", code.HelpLink, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
 				LoggedErrors ??= new();
-				LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineNumber, linePosition), innerException: null));
+				LoggedErrors.Add(new BuildException(code, new XmlLineInfo(lineNumber, linePosition), innerException: null, messageArgs));
 			}
 			else
 			{
@@ -128,6 +128,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool OptimizeIL { get; set; } = true;
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
+		public bool CompileBindingsWithSource { get; set; }
 		public string TargetFramework { get; set; }
 
 		public int WarningLevel { get; set; } = 4; //unused so far
@@ -149,6 +150,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		/// e.g. OptimizeIL unused, Debug symbols not loaded, no assemblies written
 		/// </summary>
 		public bool ValidateOnly { get; set; }
+
+		internal bool GenerateFullILInValidateOnlyMode { get; set; }
 
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
@@ -279,10 +282,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Parsing Xaml");
-							var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
-							if (rootnode == null)
+							ILRootNode rootnode = null;
+							try {
+								rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
+								if (rootnode == null)
+								{
+									LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
+									continue;
+								}
+							} catch (XamlParseException xpe)
 							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
+								xamlFilePath = LoggingHelper.GetXamlFilePath(xamlFilePath);
+								LoggingHelper.LogError("XamlC", null, xpe.HelpLink, xamlFilePath, xpe.XmlInfo.LineNumber, xpe.XmlInfo.LinePosition, 0, 0, xpe.UnformattedMessage);
 								continue;
 							}
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");
@@ -321,7 +333,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 									LoggingHelperExtensions.LoggedErrors = null;
 								}
 							}
-							
+
 							if (initComp.HasCustomAttributes)
 							{
 								var suppressMessageAttribute = initComp.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute");
@@ -414,7 +426,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					XamlFilePath = xamlFilePath,
 					LoggingHelper = loggingHelper,
-					ValidateOnly = ValidateOnly,
+					ValidateOnly = ValidateOnly && !GenerateFullILInValidateOnlyMode,
+					CompileBindingsWithSource = CompileBindingsWithSource,
 				};
 
 

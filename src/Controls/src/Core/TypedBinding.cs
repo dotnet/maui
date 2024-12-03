@@ -288,6 +288,11 @@ namespace Microsoft.Maui.Controls.Internals
 		internal void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
 		{
 			var isTSource = sourceObject is TSource;
+			if (!isTSource && sourceObject is not null)
+			{
+				BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
+			}
+
 			var mode = this.GetRealizedMode(property);
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;

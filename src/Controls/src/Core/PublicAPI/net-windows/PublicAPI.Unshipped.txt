@@ -9,6 +9,8 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
+Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItemsView>.UpdateItemsLayout() -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 *REMOVED*~Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo) -> void
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
@@ -49,7 +51,7 @@ const Microsoft.Maui.Controls.TitleBar.IconHiddenState = "IconCollapsed" -> stri
 const Microsoft.Maui.Controls.TitleBar.IconVisibleState = "IconVisible" -> string!
 const Microsoft.Maui.Controls.TitleBar.LeadingHiddenState = "LeadingContentCollapsed" -> string!
 const Microsoft.Maui.Controls.TitleBar.LeadingVisibleState = "LeadingContentVisible" -> string!
-const Microsoft.Maui.Controls.TitleBar.SubtitleHiddenState = "SubTitleCollapsed" -> string!
+const Microsoft.Maui.Controls.TitleBar.SubtitleHiddenState = "SubtitleCollapsed" -> string!
 const Microsoft.Maui.Controls.TitleBar.SubtitleVisibleState = "SubtitleVisible" -> string!
 const Microsoft.Maui.Controls.TitleBar.TemplateRootName = "PART_Root" -> string!
 const Microsoft.Maui.Controls.TitleBar.TitleBarActiveState = "TitleBarTitleActive" -> string!
@@ -73,8 +75,7 @@ Microsoft.Maui.Controls.HybridWebView.EvaluateJavaScriptAsync(string! script) ->
 Microsoft.Maui.Controls.HybridWebView.HybridRoot.get -> string?
 Microsoft.Maui.Controls.HybridWebView.HybridRoot.set -> void
 Microsoft.Maui.Controls.HybridWebView.HybridWebView() -> void
-Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<string?>!
-Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType?>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
+Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync<TReturnType>(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TReturnType>! returnTypeJsonTypeInfo, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task<TReturnType?>!
 Microsoft.Maui.Controls.HybridWebView.RawMessageReceived -> System.EventHandler<Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs!>?
 Microsoft.Maui.Controls.HybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs

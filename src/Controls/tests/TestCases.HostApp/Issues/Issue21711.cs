@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 21711, "NullReferenceException from FlexLayout.InitItemProperties", PlatformAffected.iOS)]

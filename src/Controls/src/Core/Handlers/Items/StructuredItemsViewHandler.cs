@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		public static PropertyMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewMapper = new(ItemsViewMapper)
-		{			
+		{
 #if TIZEN
 			[StructuredItemsView.HeaderProperty.PropertyName] = MapHeader,
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooter,

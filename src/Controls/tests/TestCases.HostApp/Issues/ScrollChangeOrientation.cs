@@ -1,9 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Devices;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
 	[Issue(IssueTracker.None, 773, "Horizontal ScrollView locks after rotation", PlatformAffected.iOS)]
@@ -35,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 				Padding = new Thickness(30, 0),
 				Orientation = StackOrientation.Horizontal,
 				Spacing = 30,
-				Children = 
+				Children =
 				{
 					button1,
 					button2,

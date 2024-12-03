@@ -17,8 +17,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-    <NoWarn>$(NoWarn);CA1416;CS8305;IL2059</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;CS8305</NoWarn>
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -50,13 +51,8 @@
         <Link>Windows\BootstrapHelper.cs</Link>
     </Compile>
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
-  </ItemGroup>
-
   <PropertyGroup>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
-    <!-- https://github.com/dotnet/msbuild/issues/9785 -->
-    <CompilerResponseFile Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(CompilerResponseFile);WorkaroundXamlPreCompilePreviewFeatures.rsp</CompilerResponseFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference

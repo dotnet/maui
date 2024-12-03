@@ -15,8 +15,16 @@
     <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
 
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>   
+  </PropertyGroup>
+ 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSdk" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

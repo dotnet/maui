@@ -1,12 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 6472, "[Bug][iOS] listview / observable collection throwing native error on load", PlatformAffected.iOS)]
 	public class Issue6472 : TestContentPage
 	{

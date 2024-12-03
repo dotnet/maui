@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Platform-specific properties for list view controls on UWP.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetSelectionMode">
@@ -37,8 +36,6 @@
       <Docs>
         <param name="element">The element whose selection mode to get.</param>
         <summary>Returns the selection mode for the element.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetSelectionMode">
@@ -61,8 +58,6 @@
       <Docs>
         <param name="config">The element whose selection mode to get.</param>
         <summary>Returns the selection mode for the element.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectionModeProperty">
@@ -81,7 +76,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the selection mode attached property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetSelectionMode">
@@ -106,7 +100,6 @@
         <param name="element">The element whose selectio mode to set.</param>
         <param name="value">The new selection mode value.</param>
         <summary>Sets the selection mode for the element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetSelectionMode">
@@ -131,8 +124,6 @@
         <param name="config">The element whose selectio mode to set.</param>
         <param name="value">The new selection mode value.</param>
         <summary>Sets the selection mode for the element.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

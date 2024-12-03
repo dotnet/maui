@@ -165,18 +165,6 @@ namespace Microsoft.Maui
 			_services?.InvokeLifecycleEvents<iOSLifecycle.PerformFetch>(del => del(application, completionHandler));
 		}
 
-		[Export("application:didRegisterForRemoteNotificationsWithDeviceToken:")]
-		public virtual void RegisteredForRemoteNotifications(UIApplication application, NSData deviceToken)
-		{
-			_services?.InvokeLifecycleEvents<iOSLifecycle.RegisteredForRemoteNotifications>(del => del(application, deviceToken));
-		}
-
-		[Export("application:didReceiveRemoteNotification:")]
-		public virtual void ReceivedRemoteNotification(UIApplication application, NSDictionary userInfo)
-		{
-			_services?.InvokeLifecycleEvents<iOSLifecycle.ReceivedRemoteNotification>(del => del(application, userInfo));
-		}
-
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There can only be one MauiUIApplicationDelegate.")]
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 

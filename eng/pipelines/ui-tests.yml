@@ -48,6 +48,11 @@ variables:
     value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
 parameters:
+
+  - name: UseProvisionator
+    type: boolean
+    default: false
+
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
@@ -79,6 +84,12 @@ parameters:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals x64
   
+  - name: windowsBuildPool
+    type: object
+    default:
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
+
   - name: windowsPool
     type: object
     default:
@@ -124,20 +135,26 @@ stages:
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
       windowsPool: ${{ parameters.windowsPool }}
+      windowsBuildPool: ${{ parameters.windowsBuildPool }}
       macosPool: ${{ parameters.macosPool }}
       androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
       iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
+      ${{ else }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '17.2' ]
+        iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
+      ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+        skipProvisioning: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+      ${{ else }}:  
+        skipProvisioning: true
       projects:
         - name: controls
           desc: Controls

@@ -14,10 +14,11 @@ internal static class LayoutFactory2
 			? CreateVerticalList(linearItemsLayout, groupingInfo, headerFooterInfo)
 			: CreateHorizontalList(linearItemsLayout, groupingInfo, headerFooterInfo);
 
-	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout, LayoutGroupingInfo groupingInfo)
+	public static UICollectionViewLayout CreateGrid(GridItemsLayout gridItemsLayout,
+	 LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
 		=> gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical
-			? CreateVerticalGrid(gridItemsLayout, groupingInfo)
-			: CreateHorizontalGrid(gridItemsLayout, groupingInfo);
+			? CreateVerticalGrid(gridItemsLayout, groupingInfo, headerFooterInfo)
+			: CreateHorizontalGrid(gridItemsLayout, groupingInfo, headerFooterInfo);
 
 	static NSCollectionLayoutBoundarySupplementaryItem[] CreateSupplementaryItems(LayoutGroupingInfo? groupingInfo, LayoutHeaderFooterInfo? layoutHeaderFooterInfo,
 		UICollectionViewScrollDirection scrollDirection, NSCollectionLayoutDimension width, NSCollectionLayoutDimension height)
@@ -140,7 +141,7 @@ internal static class LayoutFactory2
 
 
 
-	static UICollectionViewLayout CreateGridLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double verticalItemSpacing, double horizontalItemSpacing, int columns)
+	static UICollectionViewLayout CreateGridLayout(UICollectionViewScrollDirection scrollDirection, LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo, LayoutSnapInfo snapInfo, NSCollectionLayoutDimension itemWidth, NSCollectionLayoutDimension itemHeight, NSCollectionLayoutDimension groupWidth, NSCollectionLayoutDimension groupHeight, double verticalItemSpacing, double horizontalItemSpacing, int columns)
 	{
 		var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration();
 		layoutConfiguration.ScrollDirection = scrollDirection;
@@ -179,7 +180,7 @@ internal static class LayoutFactory2
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
-				null,   // No header/footer in grid
+				headerFooterInfo,
 				scrollDirection,
 				groupWidth,
 				groupHeight);
@@ -222,9 +223,10 @@ internal static class LayoutFactory2
 			null);
 
 	public static UICollectionViewLayout CreateVerticalGrid(GridItemsLayout gridItemsLayout,
-		LayoutGroupingInfo groupingInfo)
+		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
 		=> CreateGridLayout(UICollectionViewScrollDirection.Vertical,
 			groupingInfo,
+			headerFooterInfo,
 			new LayoutSnapInfo { SnapType = gridItemsLayout.SnapPointsType, SnapAligment = gridItemsLayout.SnapPointsAlignment },
 			// Width is the number of columns
 			NSCollectionLayoutDimension.CreateFractionalWidth(1f / gridItemsLayout.Span),
@@ -240,9 +242,10 @@ internal static class LayoutFactory2
 
 
 	public static UICollectionViewLayout CreateHorizontalGrid(GridItemsLayout gridItemsLayout,
-		LayoutGroupingInfo groupingInfo)
+		LayoutGroupingInfo groupingInfo, LayoutHeaderFooterInfo headerFooterInfo)
 		=> CreateGridLayout(UICollectionViewScrollDirection.Horizontal,
 			groupingInfo,
+			headerFooterInfo,
 			new LayoutSnapInfo { SnapType = gridItemsLayout.SnapPointsType, SnapAligment = gridItemsLayout.SnapPointsAlignment },
 			// Item width is estimated
 			NSCollectionLayoutDimension.CreateEstimated(30f),

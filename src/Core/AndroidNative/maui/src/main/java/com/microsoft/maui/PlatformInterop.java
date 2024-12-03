@@ -80,7 +80,7 @@ public class PlatformInterop {
             binding the width of a child control to the ActualWidth of its parent.
             
             If we simply call `requestLayout()` again right now, it will set a flag which will be cleared at the end 
-            of the current layout pass, and the view will not be laid out with the updated values.
+            of the current layout pass, and the view will not be arranged with the updated values.
 
             Instead, we post the layout request to the UI thread's queue, ensuring that it will happen after the current
             layout pass has finished. Layout will happen again with the updated values.
@@ -688,5 +688,4 @@ public class PlatformInterop {
         }
         return null;
     }
-
 }

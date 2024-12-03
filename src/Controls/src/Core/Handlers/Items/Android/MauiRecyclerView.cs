@@ -569,11 +569,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					itemCount++;
 			}
 
-			var showEmptyView = ItemsView?.EmptyView != null && ItemsViewAdapter.ItemCount == itemCount;
+			var showEmptyView = (ItemsView?.EmptyView is not null || ItemsView?.EmptyViewTemplate is not null) && ItemsViewAdapter.ItemCount == itemCount;
 
 			var currentAdapter = GetAdapter();
 			if (showEmptyView && currentAdapter != _emptyViewAdapter)
 			{
+				GetRecycledViewPool().Clear();
 				SwapAdapter(_emptyViewAdapter, true);
 
 				// TODO hartez 2018/10/24 17:34:36 If this works, cache this layout manager as _emptyLayoutManager	
@@ -582,6 +583,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (!showEmptyView && currentAdapter != ItemsViewAdapter)
 			{
+				GetRecycledViewPool().Clear();
 				SwapAdapter(ItemsViewAdapter, true);
 				UpdateLayoutManager();
 			}

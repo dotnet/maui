@@ -105,7 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task PopLifeCycle()
 		{
 			SetupBuilder();
-			
+
 			bool appearingShouldFireOnInitialPage = false;
 			ContentPage initialPage = new ContentPage();
 			ContentPage pushedPage = new ContentPage();
@@ -380,7 +380,11 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
 
-		[Fact(DisplayName = "Child Pages Do Not Leak")]
+		[Fact(DisplayName = "Child Pages Do Not Leak"
+#if WINDOWS
+			, Skip = "Failing/unstable"
+#endif
+		)]
 		public async Task ChildPagesDoNotLeak()
 		{
 

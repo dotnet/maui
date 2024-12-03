@@ -1,28 +1,23 @@
-using System;
 using System.Collections;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 17610, "Cancelling Refresh With Slow Scroll Leaves Refresh Icon Visible", PlatformAffected.Android)]
 	public partial class Issue17610 : ContentPage
 	{
-		public IEnumerable ItemSource {get;set;}
+		public IEnumerable ItemSource { get; set; }
 
 		public Issue17610()
 		{
 			InitializeComponent();
-			ItemSource = 
-				Enumerable.Range(0,17)
-					.Select(x => new { Text = $"Item {x}", AutomationId = $"Item{x}"  })
-					.ToList();		
-					
+			ItemSource =
+				Enumerable.Range(0, 17)
+					.Select(x => new { Text = $"Item {x}", AutomationId = $"Item{x}" })
+					.ToList();
+
 			BindableLayout.SetItemsSource(vsl, ItemSource);
-			
-			#if ANDROID
+
+#if ANDROID
 			refreshView.HandlerChanged += (x,y) =>
 			{
 				if (refreshView.Handler.PlatformView is Microsoft.Maui.Platform.MauiSwipeRefreshLayout refresh)
@@ -30,8 +25,8 @@ namespace Maui.Controls.Sample.Issues
 				// we need to set it to a color that will trigger above the threshold
 					refresh.SetProgressBackgroundColorSchemeResource(Android.Resource.Color.HoloRedDark);
 			};
-			#endif
-			
+#endif
+
 		}
 
 

@@ -23,8 +23,8 @@ namespace Microsoft.Maui.Devices
 		void Click()
 		{
 			UIImpactFeedbackGenerator impact;
-#if IOS17_4_OR_GREATER || MACCATALYST17_4_OR_GREATER
-			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+#if IOS17_5_OR_GREATER || MACCATALYST17_5_OR_GREATER
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 5) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 5))
 			{
 				impact = UIImpactFeedbackGenerator.GetFeedbackGenerator(UIImpactFeedbackStyle.Light, new UIView());
 			}
@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Devices
 		void LongPress()
 		{
 			UIImpactFeedbackGenerator impact;
-#if IOS17_4_OR_GREATER || MACCATALYST17_4_OR_GREATER
-			if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+#if IOS17_5_OR_GREATER || MACCATALYST17_5_OR_GREATER
+			if (OperatingSystem.IsIOSVersionAtLeast(17, 5) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 5))
 			{
 				impact = UIImpactFeedbackGenerator.GetFeedbackGenerator(UIImpactFeedbackStyle.Medium, new UIView());
 			}

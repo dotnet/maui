@@ -3,7 +3,7 @@
 // Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
-var dotnetPath = $"./bin/dotnet/dotnet{ext}";
+var dotnetPath = $"./.dotnet/dotnet{ext}";
 string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
@@ -256,6 +256,7 @@ Task("dotnet-integration-build")
     });
 
 Task("dotnet-integration-test")
+    .IsDependentOn("dotnet-integration-build")
     .Does(() =>
     {
         RunTestWithLocalDotNet(
@@ -344,7 +345,7 @@ Task("dotnet-pack-maui")
 
 Task("dotnet-pack-additional")
     .WithCriteria(RunPackTarget())
-    .Does(() =>
+    .Does(async () =>
     {
         // Download some additional symbols that need to be archived along with the maui symbols:
         //  - _NativeAssets.windows
@@ -352,16 +353,14 @@ Task("dotnet-pack-additional")
         //     - libHarfBuzzSharp.pdb
         var assetsDir = $"./artifacts/additional-assets";
         var nativeAssetsVersion = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
-        NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
-        {
-            Version = nativeAssetsVersion,
-            ExcludeVersion = true,
-            OutputDirectory = assetsDir,
-            Source = new[] { "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json" },
-        });
+        await DownloadNuGetPackageAsync(
+            "_NativeAssets.windows",
+            nativeAssetsVersion,
+            assetsDir,
+            "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json");
+        Zip(assetsDir, $"{assetsDir}.zip");
         foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
             DeleteFile(nupkg);
-        Zip(assetsDir, $"{assetsDir}.zip");
     });
 
 Task("dotnet-pack-library-packs")
@@ -579,7 +578,7 @@ bool RunPackTarget()
 Dictionary<string, string> GetDotNetEnvironmentVariables()
 {
     Dictionary<string, string> envVariables = new Dictionary<string, string>();
-    var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = MakeAbsolute(Directory("./.dotnet/")).ToString();
 
     envVariables.Add("DOTNET_INSTALL_DIR", dotnet);
     envVariables.Add("DOTNET_ROOT", dotnet);
@@ -600,7 +599,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 
 void SetDotNetEnvironmentVariables(string dotnetDir = null)
 {
-    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./bin/dotnet/")).ToString();
+    var dotnet = dotnetDir ?? MakeAbsolute(Directory("./.dotnet/")).ToString();
     
     SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
@@ -780,6 +779,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+    Information("Log Directory: {0}", logDirectory);
 
     if (!string.IsNullOrWhiteSpace(pathDotnet) && localDotnet)
     {

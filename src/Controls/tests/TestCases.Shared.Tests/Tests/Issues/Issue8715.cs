@@ -7,8 +7,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue8715 : _IssuesUITest
 	{
-		const string FlyoutIconAutomationId = "OK";
-
 		public Issue8715(TestDevice testDevice) : base(testDevice)
 		{
 		}

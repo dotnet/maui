@@ -6,8 +6,8 @@
     <RootNamespace>Microsoft.Maui.Essentials</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <WarningsNotAsErrors>BI1234</WarningsNotAsErrors>
-    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard')) and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'">true</IsAotCompatible>
-    <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard')) and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</IsTrimmable>
+    <IsAotCompatible Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsAotCompatible>
+    <AllowUnsafeBlocks Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);NU5104;RS0041;RS0026</NoWarn>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
@@ -38,15 +38,14 @@
   <ItemGroup Condition=" $(TargetFramework.Contains('-windows')) ">
     <Compile Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.uwp.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <Compile Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.android.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <AndroidResource Include="Resources\xml\*.xml" />
-    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.4" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.6" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.2-alpha06" />
-    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" Version="1.14.0.1" />
+    <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" Version="1.15.0.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'ios' Or '$(TargetPlatformIdentifier)' == 'maccatalyst' ">
     <Compile Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />

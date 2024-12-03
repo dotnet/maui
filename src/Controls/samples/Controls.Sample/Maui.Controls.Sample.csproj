@@ -23,6 +23,7 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
 
   <PropertyGroup>

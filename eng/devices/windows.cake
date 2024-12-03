@@ -28,6 +28,8 @@ string CONFIGURATION = Argument("configuration", "Debug");
 
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
+var dotnetToolPath = GetDotnetToolPath();
+
 // other
 string PLATFORM = "windows";
 string DOTNET_PLATFORM = $"win10-x64";
@@ -94,7 +96,7 @@ Task("GenerateMsixCert")
 	{
 		Information("Generating cert");
 		var rsa = RSA.Create();
-		var req = new CertificateRequest("CN=" + certCN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+		var req = new CertificateRequest("CN=" + certCN, rsa, System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
 		req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
 		{
@@ -139,23 +141,19 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+    var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
 	Information("new dotnet root: {0}", localDotnetRoot);
-
 	DOTNET_ROOT = localDotnetRoot.ToString();
-
 	SetDotNetEnvironmentVariables(DOTNET_ROOT);
-
-	var toolPath = $"{localDotnetRoot}/dotnet.exe";
-
-	Information("toolPath: {0}", toolPath);
+	
+    Information("toolPath: {0}", dotnetToolPath);
 
 	Information("Building and publishing device test app");
 
 	// Build the app in publish mode
 	// Using the certificate thumbprint for the cert we just created
 	var s = new DotNetPublishSettings();
-	s.ToolPath = toolPath;
+	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
 	s.MSBuildSettings = new DotNetMSBuildSettings();
@@ -536,7 +534,7 @@ Task("uitest")
 
 	if (localDotnet)
 	{
-		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		var localDotnetRoot = MakeAbsolute(Directory("../../.dotnet/"));
 		Information("new dotnet root: {0}", localDotnetRoot);
 
 		DOTNET_ROOT = localDotnetRoot.ToString();
@@ -553,7 +551,7 @@ Task("uitest")
 	DotNetBuild(PROJECT.FullPath, buildSettings);
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");

@@ -1,10 +1,5 @@
-using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
 namespace Maui.Controls.Sample.Issues;
 
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 19214_2, "iOS Editor Cursor stays above keyboard - Top level Grid", PlatformAffected.iOS)]
 public partial class Issue19214_2 : ContentPage
 {
@@ -26,7 +21,7 @@ public partial class Issue19214_2 : ContentPage
 		}
 	}
 
-	void AddCursorHeightToLabel (Editor editor)
+	void AddCursorHeightToLabel(Editor editor)
 	{
 #if IOS
 		var textInput = editor.Handler.PlatformView as UIKit.UITextView;

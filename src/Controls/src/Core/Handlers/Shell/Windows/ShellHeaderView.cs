@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellHeaderView : UI.Xaml.Controls.ContentControl
+	public partial class ShellHeaderView : UI.Xaml.Controls.ContentControl
 	{
 		Shell _shell;
 

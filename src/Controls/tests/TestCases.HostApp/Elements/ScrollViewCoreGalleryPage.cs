@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Controls.Sample.UITests
+﻿namespace Controls.Sample.UITests
 {
 	public class ScrollViewCoreGalleryPage : ContentPage
 	{

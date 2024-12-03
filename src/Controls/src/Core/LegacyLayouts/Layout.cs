@@ -341,10 +341,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use ArrangeOverride")]
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger, depth));
 		}
 
 		/// <summary>
@@ -356,8 +356,19 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>This method has a default implementation and application developers must call the base implementation.</remarks>
 		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
+			var depth = 0;
+			InvalidationTrigger trigger;
+			if (e is InvalidationEventArgs args)
+			{
+				trigger = args.Trigger;
+				depth = args.CurrentInvalidationDepth;
+			}
+			else
+			{
+				trigger = InvalidationTrigger.Undefined;
+			}
+
+			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
 			OnChildMeasureInvalidated();
 		}
 
@@ -531,7 +542,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			child.Layout(region);
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			IReadOnlyList<Element> children = LogicalChildrenInternal;
 			int count = children.Count;
@@ -557,13 +568,26 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 
-			if (trigger == InvalidationTrigger.RendererReady)
+			InvalidateMeasureLegacy(trigger, depth, int.MaxValue);
+		}
+
+		// This lets us override the rules for invalidation on MAUI controls that unfortunately still inheirt from the legacy layout
+		private protected virtual void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
+		{
+			if (depth <= depthLeveltoInvalidate)
 			{
-				InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
+				if (trigger == InvalidationTrigger.RendererReady)
+				{
+					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.RendererReady, depth));
+				}
+				else
+				{
+					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.MeasureChanged, depth));
+				}
 			}
 			else
 			{
-				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				FireMeasureChanged(trigger, depth);
 			}
 		}
 

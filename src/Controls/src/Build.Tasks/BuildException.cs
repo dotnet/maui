@@ -30,7 +30,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static string FormatMessage(BuildExceptionCode code, IXmlLineInfo xmlinfo, object[] args)
 		{
-			var message = string.Format(ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), args);
+			var message = ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey);
+			if (args is not null)
+			{
+				message = string.Format(message, args);
+			}
+
 			var ecode = code.Code;
 			var position = xmlinfo == null || !xmlinfo.HasLineInfo() ? "" : $"({xmlinfo.LineNumber},{xmlinfo.LinePosition})";
 
@@ -57,7 +62,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode BPMissingGetter = new BuildExceptionCode("XC", 0021, nameof(BPMissingGetter), "");
 		public static BuildExceptionCode BindingWithoutDataType = new BuildExceptionCode("XC", 0022, nameof(BindingWithoutDataType), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
 		public static BuildExceptionCode BindingWithNullDataType = new BuildExceptionCode("XC", 0023, nameof(BindingWithNullDataType), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
-		public static BuildExceptionCode BindingWithXDataTypeFromOuterScope = new BuildExceptionCode("XC", 0024, nameof(BindingWithXDataTypeFromOuterScope), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
+		public static BuildExceptionCode BindingWithXDataTypeFromOuterScope = new BuildExceptionCode("XC", 0024, nameof(BindingWithXDataTypeFromOuterScope), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings");
+		public static BuildExceptionCode BindingWithSourceCompilationSkipped = new BuildExceptionCode("XC", 0025, nameof(BindingWithSourceCompilationSkipped), "https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings"); //warning
 
 		//Bindings, conversions
 		public static BuildExceptionCode Conversion = new BuildExceptionCode("XC", 0040, nameof(Conversion), "");
@@ -92,6 +98,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode ResourceDictDuplicateKey = new BuildExceptionCode("XC", 0125, nameof(ResourceDictDuplicateKey), "");
 		public static BuildExceptionCode ResourceDictMissingKey = new BuildExceptionCode("XC", 0126, nameof(ResourceDictMissingKey), "");
 		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XC", 0127, nameof(XKeyNotLiteral), "");
+		public static BuildExceptionCode StaticResourceSyntax = new BuildExceptionCode("XC", 0128, nameof(StaticResourceSyntax), "");
 
 		//CSC equivalents
 		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning

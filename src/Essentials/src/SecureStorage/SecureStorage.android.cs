@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Storage
 			{
 				return CreateEncryptedSharedPreferences();
 			}
-			catch (System.Exception ex) 
+			catch (System.Exception ex)
 			when (ex is InvalidProtocolBufferException or Android.Security.KeyStoreException or KeyStoreException or BadPaddingException)
 			{
 				// If we encounter any of these exceptions, it's likely due to a corrupt key or bad migration between devices
