@@ -22,10 +22,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.EnterText("DoubleTapEditor", "World");
 
 			var editorText = App.FindElement("DoubleTapEditor").GetText();
-			Assert.That(editorText, Is.EqualTo("World"));
 
 			App.DoubleTap("DoubleTapEntry");
 			App.EnterText("DoubleTapEntry", "World");
+
+			Assert.That(editorText, Is.EqualTo("World"));
 		}
 	}
 }
