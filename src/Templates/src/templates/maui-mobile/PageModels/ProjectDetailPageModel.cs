@@ -35,7 +35,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	private List<Tag> _allTags = [];
 
 	[ObservableProperty]
-	private IconItem _icon = new IconItem { IconName = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" };
+	private IconItem _icon;
 
 	[ObservableProperty]
 	bool _isBusy;
@@ -62,7 +62,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_categoryRepository = categoryRepository;
 		_tagRepository = tagRepository;
 		_errorHandler = errorHandler;
-
+		_icon = _icons.First();
 		Tasks = [];
 	}
 
