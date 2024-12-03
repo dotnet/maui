@@ -16,11 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		public void PerformDoubleTapActionOnEditor()
 		{
-			App.WaitForElement("Editor");
-			App.DoubleTap("Editor");
-			App.EnterText("Editor", "Hello world");
-			var editorText = App.FindElement("Editor").GetText();
-			Assert.That(editorText, Is.EqualTo("Hello world"));
+			App.WaitForElement("DoubleTapEditor");
+			App.DoubleTap("DoubleTapEditor");
+			var editorText = App.FindElement("DoubleTapEditor").GetText();
+			Assert.That(editorText, Is.EqualTo("World"));
 		}
 	}
 }

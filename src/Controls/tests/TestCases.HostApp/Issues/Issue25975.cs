@@ -5,20 +5,23 @@
 	{
 		protected override void Init()
 		{
-			Content =
-				new VerticalStackLayout()
-				{
-					new Editor()
-					{
-						Text = "Hello",
-						AutomationId = "Editor",
-						FontSize = 24,
-						HorizontalTextAlignment = TextAlignment.Center,
-						VerticalOptions= LayoutOptions.Center,
-						HorizontalOptions = LayoutOptions.Fill,
-						AutoSize = EditorAutoSizeOption.TextChanges,
-					},
-				};
+			var editor = new Editor()
+			{
+				Text = "Hello",
+				AutomationId = "DoubleTapEditor",
+				FontSize = 24,
+				HorizontalTextAlignment = TextAlignment.Center,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Fill,
+				AutoSize = EditorAutoSizeOption.TextChanges,
+			};
+
+			var rec = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+			rec.Tapped += (s, e) => { editor.Text = "World"; };
+			editor.GestureRecognizers.Add(rec);
+
+			Content = editor;
+
 		}
 	}
 }
