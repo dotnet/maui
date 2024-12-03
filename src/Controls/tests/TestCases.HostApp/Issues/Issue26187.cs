@@ -2,7 +2,7 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-    [Issue(IssueTracker.Github, 26187, "[MAUI] Select items traces are preserved ", PlatformAffected.iOS)]
+    [Issue(IssueTracker.Github, 26187, "[MAUI] Select items traces are preserved", PlatformAffected.iOS)]
     public class Issue26187 : NavigationPage
     {
         public Issue26187()
@@ -33,7 +33,13 @@ namespace Maui.Controls.Sample.Issues
                 SelectionMode = SelectionMode.Single,
                 ItemTemplate = new DataTemplate(() =>
                 {
-                    var label = new Label();
+                    var label = new Label
+                    {
+                        FontSize = 24,
+                        HorizontalOptions = LayoutOptions.FillAndExpand,
+                        VerticalOptions = LayoutOptions.Center,
+                        AutomationId ="lblItem"
+                    };
                     label.SetBinding(Label.TextProperty, ".");
                   
                     return new HorizontalStackLayout
@@ -41,14 +47,17 @@ namespace Maui.Controls.Sample.Issues
                         Children = { label }
                     };
                 })
+                
             };
-            cv.SelectionChanged += CollectionView_SelectionChanged;
-
+          
             cv.SetBinding(CollectionView.ItemsSourceProperty, new Binding(nameof(Items)));
-            //   cv.SetBinding(CollectionView.SelectedItemProperty, new Binding(nameof(SelectedItem)));
+          //  cv.SetBinding(CollectionView.SelectedItemProperty, new Binding(nameof(SelectedItem)));
             Content = cv;
 
             BindingContext = this;
+          //  cv.SelectedItem = SelectedItem;
+            
+            cv.SelectionChanged += CollectionView_SelectionChanged;
         }
 
         void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -74,7 +83,8 @@ namespace Maui.Controls.Sample.Issues
                 Content = new Button
                 {
                     Text = $"Go Back Selected Item null from {item}",
-                    Command = new Command(() => Navigation.PopAsync())
+                    Command = new Command(() => Navigation.PopAsync()),
+                    AutomationId = "btnGoBack"
                 };
             }
         }
