@@ -1,0 +1,34 @@
+parameters:
+      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+
+stages:
+  - stage: localization_handback
+    displayName: Localization Handback
+    dependsOn: []
+    condition: eq(variables.isLocBranch, true)
+
+    jobs:
+      - job : generate_resx
+        displayName: 'Process incoming translations'
+        pool:  $(HostedWinVS2019)
+
+        variables:
+          - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
+
+        steps:
+          - task: OneLocBuild@2
+            displayName: 'Localization Build'
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            inputs:
+              locProj: 'eng/automation/LocProject.json'
+              outDir: '$(Build.ArtifactStagingDirectory)'
+              packageSourceAuth: patAuth
+              patVariable: ${{ parameters.CeapexPat }}
+              isCreatePrSelected: true
+              isAutoCompletePrSelected: false
+              repoType: gitHub
+              prSourceBranchPrefix: $(LocBranchPrefix)
+              gitHubPatVariable: "${{ parameters.GithubPat }}"
+              gitHubPrMergeMethod: merge

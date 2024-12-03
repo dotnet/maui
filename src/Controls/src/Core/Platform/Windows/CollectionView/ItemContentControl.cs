@@ -210,6 +210,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			itemsView?.AddLogicalChild(_visualElement);
+
+			if (itemsView is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode is not SelectionMode.None)
+			{
+				bool isSelected = false;
+				if (selectableItemsView.SelectionMode == SelectionMode.Single)
+					isSelected = selectableItemsView.SelectedItem == FormsDataContext;
+				else
+					isSelected = selectableItemsView.SelectedItems.Contains(FormsDataContext);
+
+				if (isSelected)
+					UpdateIsSelected(isSelected);
+			}
 		}
 
 		void SetNativeStateConsistent(VisualElement visualElement)
