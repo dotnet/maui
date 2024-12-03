@@ -16,9 +16,9 @@
 				AutoSize = EditorAutoSizeOption.TextChanges,
 			};
 
-			var rec = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
-			rec.Tapped += (s, e) => { editor.Text = "World"; };
-			editor.GestureRecognizers.Add(rec);
+			var tapGestureRecognizer = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+			tapGestureRecognizer.Tapped += (s, e) => { editor.Text = "World"; };
+			editor.GestureRecognizers.Add(tapGestureRecognizer);
 
 			Content = editor;
 
