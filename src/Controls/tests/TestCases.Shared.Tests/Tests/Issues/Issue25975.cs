@@ -19,14 +19,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("DoubleTapEditor");
 			App.DoubleTap("DoubleTapEditor");
 			App.ClearText("DoubleTapEditor");
-			App.EnterText("DoubleTapEditor", "World");
-
-			var editorText = App.FindElement("DoubleTapEditor").GetText();
+			App.EnterText("DoubleTapEditor", "Hello");
 
 			App.DoubleTap("DoubleTapEntry");
+			App.ClearText("DoubleTapEntry");
 			App.EnterText("DoubleTapEntry", "World");
 
-			Assert.That(editorText, Is.EqualTo("World"));
+			var editorText = App.FindElement("DoubleTapEditor").GetText();
+			Assert.That(editorText, Is.EqualTo("Hello"));
 		}
 	}
 }

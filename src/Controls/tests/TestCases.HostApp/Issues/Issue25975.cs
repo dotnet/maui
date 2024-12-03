@@ -7,7 +7,7 @@
 		{
 			var editor = new Editor()
 			{
-				Text = "Hello",
+				Text = "Editor",
 				AutomationId = "DoubleTapEditor",
 				FontSize = 24,
 				MaxLength = 5,
