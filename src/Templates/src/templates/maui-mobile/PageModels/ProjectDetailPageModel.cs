@@ -270,9 +270,3 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		await AppShell.DisplayToastAsync("All cleaned up!");
 	}
 }
-
-public class IconItem
-{
-    public string? IconName { get; set; } = null;
-    public string? Description { get; set; }
-}

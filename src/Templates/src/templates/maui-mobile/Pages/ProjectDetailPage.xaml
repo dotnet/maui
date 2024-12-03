@@ -94,7 +94,7 @@
                     SelectedItem="{Binding Icon}"
                     ItemsSource="{Binding Icons}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="pageModels:IconItem">
+                        <DataTemplate x:DataType="models:IconItem">
                             <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
