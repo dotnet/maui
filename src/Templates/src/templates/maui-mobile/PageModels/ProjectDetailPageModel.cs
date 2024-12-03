@@ -35,7 +35,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	private List<Tag> _allTags = [];
 
 	[ObservableProperty]
-	private string _icon = FluentUI.ribbon_24_regular;
+	private IconItem _icon = new IconItem { IconName = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" };
 
 	[ObservableProperty]
 	bool _isBusy;
@@ -125,7 +125,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			Description = _project.Description;
 			Tasks = _project.Tasks;
 
-			Icon = _project.Icon;
+			Icon.IconName = _project.Icon;
 
 			Categories = await _categoryRepository.ListAsync();
 			Category = Categories?.FirstOrDefault(c => c.ID == _project.CategoryID);
@@ -171,7 +171,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_project.Name = Name;
 		_project.Description = Description;
 		_project.CategoryID = Category?.ID ?? 0;
-		_project.Icon = Icon ?? FluentUI.ribbon_24_regular;
+		_project.Icon = Icon.IconName ?? FluentUI.ribbon_24_regular;
 		await _projectRepository.SaveItemAsync(_project);
 
 		if (_project.IsNullOrNew())
