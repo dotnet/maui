@@ -7,7 +7,7 @@
 		{
 			var editor = new Editor()
 			{
-				Text = "Editor",
+				Text = "MAUI",
 				AutomationId = "DoubleTapEditor",
 				FontSize = 24,
 				MaxLength = 5,
@@ -17,21 +17,11 @@
 				AutoSize = EditorAutoSizeOption.TextChanges,
 			};
 
-			var entry = new Entry()
-			{
-				Text = "Entry",
-				AutomationId = "DoubleTapEntry",
-				FontSize = 24,
-				VerticalOptions = LayoutOptions.Center,
-				HorizontalTextAlignment = TextAlignment.Center,
-				HorizontalOptions = LayoutOptions.Fill,
-			};
-
 			var stackLayout = new StackLayout()
 			{
 				Children =
 				{
-					editor, entry
+					editor
 				}
 			};
 
