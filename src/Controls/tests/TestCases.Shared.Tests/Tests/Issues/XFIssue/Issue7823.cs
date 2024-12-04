@@ -14,7 +14,7 @@ public class Issue7823_XF : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Frame)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue7823TestIsClippedIssue()
 	//{
 	//	App.WaitForElement(RootFrame);

@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>An abstract attribute whose subclasses specify the platform-specific renderers for Microsoft.Maui.Controls abstract controls.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -45,8 +44,6 @@
       <Docs>
         <param name="handler">To be added.</param>
         <param name="target">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -68,8 +65,6 @@
         <param name="handler">To be added.</param>
         <param name="target">To be added.</param>
         <param name="supportedVisuals">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Priority">
@@ -91,9 +86,6 @@
         <ReturnType>System.Int16</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldRegister">
@@ -119,8 +111,6 @@
       <Parameters />
       <Docs>
         <summary>Returns a Boolean value that indicates whether the runtime should automatically register the handler for the target.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

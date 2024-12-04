@@ -17,7 +17,6 @@
   <Interfaces />
   <Docs>
     <summary>Arguments for the event that is raised when a modal window is pushed onto the navigation stack.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -40,7 +39,6 @@
       <Docs>
         <param name="modal">The modal page.</param>
         <summary>Constructs a new <see cref="T:Microsoft.Maui.Controls.ModalPushedEventArgs" /> object for the page that was just popped.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

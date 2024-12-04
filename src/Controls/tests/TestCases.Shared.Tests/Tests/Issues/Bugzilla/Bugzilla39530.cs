@@ -17,8 +17,8 @@ public class Bugzilla39530 : _IssuesUITest
 
 	[Test]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnMac]
-	[FailsOnWindows("Fails finding the frame element. Investigate the cause.")]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Fails finding the frame element. Investigate the cause.")]
 	public void Bugzilla39530PanTest()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -38,7 +38,7 @@ public class Bugzilla39530 : _IssuesUITest
 	/*
 	[Test]
 	[FailsOnIOSWhenRunningOnXamarinUITest]	
-	[FailsOnMac]
+	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void Bugzilla39530PinchTest()
 	{
 		App.PinchToZoomIn("frame");
@@ -47,7 +47,7 @@ public class Bugzilla39530 : _IssuesUITest
 
 	[Test]
 	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnMac]
+	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void Bugzilla39530TapTest()
 	{
 		App.WaitForElement("frame");

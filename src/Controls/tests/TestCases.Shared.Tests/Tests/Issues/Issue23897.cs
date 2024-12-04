@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue23897(TestDevice device) : _IssuesUITest(device)
 	{
-		public override string Issue => "Add a permanent wrapper around ImageButton so it works better with loading and unloading"; 
+		public override string Issue => "Add a permanent wrapper around ImageButton so it works better with loading and unloading";
 
 		[Test]
 		[Category(UITestCategories.ImageButton)]

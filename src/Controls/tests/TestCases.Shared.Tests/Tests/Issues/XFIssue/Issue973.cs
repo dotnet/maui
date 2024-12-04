@@ -14,7 +14,7 @@ public class Issue973 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.TabbedPage)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//[Description("Test tab reset when swapping out detail")]
 	//public void Issue973TestsTabResetAfterDetailSwap()
 	//{

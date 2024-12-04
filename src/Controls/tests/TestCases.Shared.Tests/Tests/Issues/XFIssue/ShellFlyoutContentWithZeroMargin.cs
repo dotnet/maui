@@ -26,7 +26,7 @@ public class ShellFlyoutContentWithZeroMargin : _IssuesUITest
 	//}
 
 	//[FailsOnAndroid]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//[Test]
 	//public void FlyoutHeaderBehaviorCollapseOnScroll()
 	//{
@@ -40,7 +40,7 @@ public class ShellFlyoutContentWithZeroMargin : _IssuesUITest
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void FlyoutHeaderBehaviorScroll()
 	//{
 	//	App.Tap(nameof(FlyoutHeaderBehavior.Scroll));

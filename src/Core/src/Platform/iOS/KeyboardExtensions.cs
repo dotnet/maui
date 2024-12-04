@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 			else if (keyboard == Keyboard.Password)
 			{
 				textInput.SetKeyboardType(UIKeyboardType.Default);
-				textInput.SetSecureTextEntry(true); 
+				textInput.SetSecureTextEntry(true);
 			}
 			else if (keyboard is CustomKeyboard)
 			{

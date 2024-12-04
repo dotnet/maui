@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Media;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListGroupHeaderPresenter instead")]
-	public class ListGroupHeaderPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
+	public partial class ListGroupHeaderPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
 	{
 		void OnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
 		{

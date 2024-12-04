@@ -6,7 +6,7 @@ using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FormsRadioButton : Microsoft.UI.Xaml.Controls.RadioButton
+	public partial class FormsRadioButton : Microsoft.UI.Xaml.Controls.RadioButton
 	{
 		public static readonly DependencyProperty BorderRadiusProperty = DependencyProperty.Register(nameof(BorderRadius), typeof(int), typeof(FormsButton),
 			new PropertyMetadata(default(int), OnBorderRadiusChanged));

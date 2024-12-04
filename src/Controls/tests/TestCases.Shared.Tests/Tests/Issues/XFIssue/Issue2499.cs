@@ -14,7 +14,7 @@ public class Issue2499 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Picker)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	public void Issue2499Test()
 	// 	{
 	// 		App.WaitForElement("picker");

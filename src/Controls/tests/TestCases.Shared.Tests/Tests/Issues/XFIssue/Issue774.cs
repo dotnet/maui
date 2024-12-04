@@ -14,7 +14,7 @@ public class Issue774 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.ActionSheet)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue774TestsDismissActionSheetAfterRotation()
 	//{
 	//	App.Tap(q => q.Button("Show ActionSheet"));

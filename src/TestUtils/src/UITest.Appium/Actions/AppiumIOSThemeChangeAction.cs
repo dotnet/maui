@@ -30,7 +30,7 @@ namespace UITest.Appium
 				_app.Driver.ExecuteScript("mobile: setAppearance", args);
 				return CommandResponse.SuccessEmptyResponse;
 			}
-			else if(commandName == SetDarkTheme)
+			else if (commandName == SetDarkTheme)
 			{
 				var args = new Dictionary<string, string> { { "style", "dark" } };
 				_app.Driver.ExecuteScript("mobile: setAppearance", args);

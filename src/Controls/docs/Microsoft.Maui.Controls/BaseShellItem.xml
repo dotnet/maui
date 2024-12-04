@@ -22,7 +22,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.NavigableElement" /> that is the base class for <see cref="T:Microsoft.Maui.Controls.ShellGroupItem" /> and <see cref="T:Microsoft.Maui.Controls.ShellContent" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,7 +36,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.BaseShellItem" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Appearing">
@@ -54,8 +52,6 @@
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Disappearing">
@@ -72,8 +68,6 @@
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlyoutIcon">
@@ -92,7 +86,6 @@
       <Docs>
         <summary>The icon to use for the item. If this property is unset, it will fallback to using the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.Icon" /> property value.</summary>
         <value>A <see cref="T:Microsoft.Maui.Controls.ImageSource" /> that represents an icon.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlyoutIconProperty">
@@ -110,7 +103,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.FlyoutIcon" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Icon">
@@ -129,7 +121,6 @@
       <Docs>
         <summary>Defines the icon to display in parts of the chrome that are not the flyout.</summary>
         <value>A <see cref="T:Microsoft.Maui.Controls.ImageSource" /> that represents an icon.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IconProperty">
@@ -147,7 +138,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.Icon" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsChecked">
@@ -167,7 +157,6 @@
         <summary>Defines if the item is currently highlighted in the flyout.</summary>
         <value>
           <see langword="true" /> if the item is currently highlighted.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsCheckedProperty">
@@ -185,7 +174,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.IsChecked" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEnabled">
@@ -205,7 +193,6 @@
         <summary>Defines if the item is selectable in the chrome.</summary>
         <value>
           <see langword="true" /> if the item is selectable in the chrome.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEnabledProperty">
@@ -223,7 +210,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.IsEnabled" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsTabStop">
@@ -245,7 +231,6 @@
       <Docs>
         <summary>Indicates whether a FlyoutItem is included in tab navigation.</summary>
         <value>Default value is <see langword="true" />; when <see langword="false" />, the FlyoutItem is ignored by the tab-navigation infrastructure, irrespective if a TabIndex is set.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsTabStopProperty">
@@ -263,7 +248,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.IsTabStopProperty" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsVisible">
@@ -280,9 +264,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsVisibleProperty">
@@ -299,8 +280,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAppearing">
@@ -318,8 +297,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnDisappearing">
@@ -337,8 +314,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPropertyChanged">
@@ -366,7 +341,6 @@
       <Docs>
         <param name="propertyName">The name of the changed property.</param>
         <summary>Called whenever a property changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnTabIndexPropertyChanged">
@@ -390,7 +364,6 @@
         <param name="oldValue">Old TabIndex.</param>
         <param name="newValue">New TabIndex.</param>
         <summary>Called whenever the TabIndex property changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnTabStopPropertyChanged">
@@ -414,7 +387,6 @@
         <param name="oldValue">Old IsTabStop value.</param>
         <param name="newValue">New IsTabStop value.</param>
         <summary>Called whenever the IsTabStop property changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Route">
@@ -433,7 +405,6 @@
       <Docs>
         <summary>The string used to address the item.</summary>
         <value>A unique string that identifies the item.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabIndex">
@@ -455,7 +426,6 @@
       <Docs>
         <summary>Indicates the order in which FlyoutItem objects receive focus when the user navigates through items by pressing the Tab key.</summary>
         <value>Defaults to 0.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabIndexDefaultValueCreator">
@@ -475,7 +445,6 @@
       <Docs>
         <summary>Called to set the default value of the TabIndex property..</summary>
         <returns>Defaults to 0.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabIndexProperty">
@@ -493,7 +462,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.TabIndexProperty" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabStopDefaultValueCreator">
@@ -514,7 +482,6 @@
         <summary>Called to set the default value of the TabStop property.</summary>
         <returns>
           <see langword="true" /> if TabStop.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Title">
@@ -533,7 +500,6 @@
       <Docs>
         <summary>Title to display in the UI.</summary>
         <value>Title to display in the UI.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleProperty">
@@ -551,7 +517,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.BaseShellItem.Title" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

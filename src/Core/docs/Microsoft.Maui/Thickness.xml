@@ -28,7 +28,6 @@
   </Attributes>
   <Docs>
     <summary>Struct defining thickness around the edges of a <see cref="T:Microsoft.Maui.Controls.Shapes.Rectangle" /> using doubles.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -54,7 +53,6 @@
       <Docs>
         <param name="uniformSize">The uniform size of all edges in the new thickness.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Thickness" /> object that represents a uniform thickness of size <paramref name="uniformSize" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -82,7 +80,6 @@
         <param name="horizontalSize">The width of the left and right thicknesses.</param>
         <param name="verticalSize">The height of the top and bottom thicknesses.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Thickness" /> object that has a horizontal thickness of <paramref name="horizontalSize" /> and a vertical thickness of <paramref name="verticalSize" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -114,7 +111,6 @@
         <param name="right">The width of the right thickness.</param>
         <param name="bottom">The height of the bottom thickness.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Thickness" /> object with thicknesses defined by <paramref name="left" />, <paramref name="top" />, <paramref name="right" />, and <paramref name="bottom" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Bottom">
@@ -139,8 +135,6 @@
       </ReturnValue>
       <Docs>
         <summary>The thickness of the bottom of a rectangle.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Deconstruct">
@@ -167,8 +161,6 @@
         <param name="top">To be added.</param>
         <param name="right">To be added.</param>
         <param name="bottom">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -199,7 +191,6 @@
         <summary>Whether the <paramref name="obj" /> is a <see cref="T:Microsoft.Maui.Thickness" /> with equivalent values.</summary>
         <returns>
           <see langword="true" /> if <paramref name="obj" /> is a <see cref="T:Microsoft.Maui.Thickness" /> and has equivalent values.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -225,8 +216,6 @@
       <Parameters />
       <Docs>
         <summary>A has value for this <see cref="T:Microsoft.Maui.Thickness" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalThickness">
@@ -251,8 +240,6 @@
       </ReturnValue>
       <Docs>
         <summary>The sum of <see cref="P:Microsoft.Maui.Thickness.Left" /> and <see cref="P:Microsoft.Maui.Thickness.Right" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEmpty">
@@ -269,9 +256,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Left">
@@ -296,8 +280,6 @@
       </ReturnValue>
       <Docs>
         <summary>The thickness of the left side of a rectangle.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -330,7 +312,6 @@
         <summary>Whether two <see cref="T:Microsoft.Maui.Thickness" />es have identical values.</summary>
         <returns>
           <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> have identical values for <see cref="P:Microsoft.Maui.Thickness.Left" />,<see cref="P:Microsoft.Maui.Thickness.Right" />, <see cref="P:Microsoft.Maui.Thickness.Top" />, and <see cref="P:Microsoft.Maui.Thickness.Bottom" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -391,7 +372,6 @@
       <Docs>
         <param name="size">A <see cref="T:Microsoft.Maui.Graphics.Size" /> to convert to a <see cref="T:Microsoft.Maui.Thickness" /></param>
         <summary>Converts a <see cref="T:Microsoft.Maui.Graphics.Size" /> into a <see cref="T:Microsoft.Maui.Thickness" />.</summary>
-        <returns>To be added.</returns>
         <remarks>
           <para>The <see cref="T:Microsoft.Maui.Thickness" />'s <see cref="P:Microsoft.Maui.Thickness.Left" /> and <see cref="P:Microsoft.Maui.Thickness.Right" /> are both set equal to the <paramref name="size" />'s <see cref="P:Microsoft.Maui.Graphics.Size.Width" /> and the  <see cref="T:Microsoft.Maui.Thickness" />'s <see cref="P:Microsoft.Maui.Thickness.Top" /> and <see cref="P:Microsoft.Maui.Thickness.Bottom" /> are both set equal to the <paramref name="size" />'s <see cref="P:Microsoft.Maui.Graphics.Size.Height" />.</para>
         </remarks>
@@ -427,7 +407,6 @@
         <summary>Whether the values of two <see cref="T:Microsoft.Maui.Thickness" />'s have at least one difference.</summary>
         <returns>
           <see langword="true" /> if any of the <see cref="P:Microsoft.Maui.Thickness.Left" />,<see cref="P:Microsoft.Maui.Thickness.Right" />, <see cref="P:Microsoft.Maui.Thickness.Top" />, and <see cref="P:Microsoft.Maui.Thickness.Bottom" /> values differ between <paramref name="left" /> and <paramref name="right" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Right">
@@ -452,8 +431,6 @@
       </ReturnValue>
       <Docs>
         <summary>The thickness of the right side of a rectangle.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Top">
@@ -478,8 +455,6 @@
       </ReturnValue>
       <Docs>
         <summary>The thickness of the top of a rectangle.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalThickness">
@@ -504,8 +479,6 @@
       </ReturnValue>
       <Docs>
         <summary>The sum of <see cref="P:Microsoft.Maui.Thickness.Top" /> and <see cref="P:Microsoft.Maui.Thickness.Bottom" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

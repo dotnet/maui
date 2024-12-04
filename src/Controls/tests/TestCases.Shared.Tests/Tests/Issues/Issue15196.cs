@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    internal class Issue15196 : _IssuesUITest
+	internal class Issue15196 : _IssuesUITest
 	{
 		public override string Issue => "Nested Entry View In A Frame Causes Crash";
 

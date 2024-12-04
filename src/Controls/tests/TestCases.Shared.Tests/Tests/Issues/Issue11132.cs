@@ -21,8 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CustomHandlers)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue11132CustomRendererLayerAndClip()
 		{
 			App.WaitForElement(InstructionsId);

@@ -42,7 +42,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void ArrayExtensionNotPresentInGeneratedCode([Values(false)] bool useCompiledXaml)
 			{
-				MockCompiler.Compile(typeof(XArray), out var methodDef);
+				MockCompiler.Compile(typeof(XArray), out var methodDef, out var hasLoggedErrors);
+				Assert.That(!hasLoggedErrors);
 				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsArrayExtensionCtor(methodDef, instr)), "This Xaml still generates a new ArrayExtension()");
 			}
 
