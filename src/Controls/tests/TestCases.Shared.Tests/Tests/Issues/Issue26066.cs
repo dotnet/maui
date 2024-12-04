@@ -4,13 +4,9 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue26066 : _IssuesUITest
+public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 {
-    public Issue26066(TestDevice testDevice) : base(testDevice)
-    {
-    }
-
-    public override string Issue => "CollectionViewHandler2 RelativeSource binding to AncestorType not working";
+	public override string Issue => "CollectionViewHandler2 RelativeSource binding to AncestorType not working";
 
     [Test]
     [Category(UITestCategories.CollectionView)]

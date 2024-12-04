@@ -3,7 +3,7 @@
   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
   x:Class="Maui.Controls.Sample.Issues.Issue26066"
-  xmlns:cv2="clr-namespace:Maui.Controls.Sample"
+  xmlns:sample="clr-namespace:Maui.Controls.Sample"
   xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
   x:DataType="local:Issue26066ViewModel">
   <ContentPage.BindingContext>
@@ -27,7 +27,7 @@
       AutomationId="TestLoadButtonCV2"
       Text="Load Items CV2"
       Command="{Binding LoadCommandCV2}"/>
-    <cv2:CollectionView2  Grid.Row="1" BackgroundColor="LightBlue"
+    <sample:CollectionView2  Grid.Row="1" BackgroundColor="LightBlue"
         ItemsSource="{Binding Images2}"
         ItemTemplate="{StaticResource template}"/>
     <Button BackgroundColor="LightGreen "
@@ -35,7 +35,7 @@
       AutomationId="TestLoadButtonCV"
       Text="Load Items CV1"
       Command="{Binding LoadCommand}"/>
-    <CollectionView  Grid.Row="3" BackgroundColor="LightGreen"
+    <sample:CollectionView1  Grid.Row="3" BackgroundColor="LightGreen"
         ItemsSource="{Binding Images}"
         ItemTemplate="{StaticResource template}"/>
   </Grid>

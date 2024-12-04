@@ -109,29 +109,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
 			var virtualView = template.CreateContent(bindingContext, itemsView) as View;
-			BindVirtualView(virtualView, bindingContext, itemsView, true);
+			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
 
 		public void Bind(View virtualView, ItemsView itemsView)
 		{
-			BindVirtualView(virtualView, itemsView.BindingContext, itemsView, false);
+			BindVirtualView(virtualView, itemsView.BindingContext, itemsView, true);
 		}
 
-		private void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
+		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;
 				var nativeView = virtualView.ToPlatform(mauiContext);
 
-				if (!needsContainer)
+				if (needsContainer)
 				{
-					PlatformView = nativeView;
+					PlatformView = new UIContainerView2(virtualView, mauiContext);
 				}
 				else
 				{
-					var mauiWrapperView = new UIContainerView2(virtualView, mauiContext);
-					PlatformView = mauiWrapperView;
+					PlatformView = nativeView;
 				}
 
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
