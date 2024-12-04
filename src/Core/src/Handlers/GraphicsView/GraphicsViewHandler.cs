@@ -12,6 +12,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IGraphicsView, IGraphicsViewHandler> Mapper = new PropertyMapper<IGraphicsView, IGraphicsViewHandler>(ViewHandler.ViewMapper)
 		{
+#if IOS
+			[nameof(IView.Background)] = MapBackground,
+#endif
 			[nameof(IGraphicsView.Drawable)] = MapDrawable,
 			[nameof(IView.FlowDirection)] = MapFlowDirection
 		};
