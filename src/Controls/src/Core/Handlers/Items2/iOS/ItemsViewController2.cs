@@ -410,7 +410,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				uiView?.Dispose();
 				uiView = null;
-
+				formsElement?.Handler?.DisconnectHandler();
 				formsElement = null;
 			}
 			else
