@@ -7,7 +7,7 @@
              x:Class="Maui.Controls.Sample.Issues.Issue26083"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
   <ContentPage.BindingContext>
-    <local:MainViewModel />
+    <local:_26083MainViewModel/>
   </ContentPage.BindingContext>
   <VerticalStackLayout>
     <Grid x:Name="customGrid">
