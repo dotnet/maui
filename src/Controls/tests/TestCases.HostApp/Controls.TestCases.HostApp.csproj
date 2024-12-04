@@ -76,10 +76,4 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
-  <ItemGroup>
-    <MauiXaml Update="Issues\Issue26083.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
-
 </Project>
