@@ -7,7 +7,10 @@ namespace UITest.Appium
 	{
 		const string ToggleAirplaneModeCommand = "toggleAirplaneMode";
 		const string ToggleWifiCommand = "toggleWifi";
+		const string ToggleDataCommand = "toggleData";
 		const string GetPerformanceDataCommand = "getPerformanceData";
+		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
+		const string GetSystemBarsCommand = "getSystemBars";
 
 		readonly AppiumApp _appiumApp;
 
@@ -15,7 +18,10 @@ namespace UITest.Appium
 		{
 			ToggleAirplaneModeCommand,
 			ToggleWifiCommand,
+			ToggleDataCommand,
 			GetPerformanceDataCommand,
+			ToggleSystemAnimationsCommand,
+			GetSystemBarsCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -34,7 +40,10 @@ namespace UITest.Appium
 			{
 				ToggleAirplaneModeCommand => ToggleAirplaneMode(parameters),
 				ToggleWifiCommand => ToggleWifi(parameters),
+				ToggleDataCommand => ToggleData(parameters),
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
+				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
+				GetSystemBarsCommand => GetSystemBars(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -45,6 +54,18 @@ namespace UITest.Appium
 			{
 				// Toggle airplane mode on device.
 				androidDriver.ToggleAirplaneMode();
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse ToggleData(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				androidDriver.ToggleData();
 
 				return CommandResponse.SuccessEmptyResponse;
 			}
@@ -78,6 +99,47 @@ namespace UITest.Appium
 
 				// Returns the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
 				IList<object> result = androidDriver.GetPerformanceData(_appiumApp.GetAppId(), performanceDataType);
+
+				return new CommandResponse(result, CommandResponseResult.Success);
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse ToggleSystemAnimations(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				bool enableSystemAnimations = (bool)parameters["enableSystemAnimations"];
+
+				if (enableSystemAnimations)
+				{
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global window_animation_scale 0");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global transition_animation_scale 0");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global animator_duration_scale 0");
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+				else
+				{
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global window_animation_scale 1");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global transition_animation_scale 1");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global animator_duration_scale 1");
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+    
+		CommandResponse GetSystemBars(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				IDictionary<string, object> result = androidDriver.GetSystemBars();
 
 				return new CommandResponse(result, CommandResponseResult.Success);
 			}

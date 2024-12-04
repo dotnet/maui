@@ -12,11 +12,10 @@ public class Issue1939 : _IssuesUITest
 
 	public override string Issue => "ArgumentOutOfRangeException on clearing a group on a grouped ListView on Android";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void Issue1939Test()
-	// {
-	// 	App.WaitForElement(q => q.Marked("Group #1"));
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Issue1939Test()
+	{
+		App.WaitForElement("Group #1");
+	}
 }
