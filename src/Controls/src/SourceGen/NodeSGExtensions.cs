@@ -11,11 +11,213 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Reflection.Metadata;
+using System.Net.Mime;
+using System.Globalization;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
 static class NodeSGExtensions
 {
+	static Dictionary<ITypeSymbol, Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>>? KnownSGTypeConverters;
+
+    static Dictionary<ITypeSymbol, Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>> GetKnownSGTypeConverters(SourceGenContext context)
+        => KnownSGTypeConverters ??= new (SymbolEqualityComparer.Default)
+	{
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, ConvertRect },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.ColorTypeConverter")!, ConvertColor },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.PointTypeConverter")!, ConvertPoint },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, ConvertThickness },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, ConvertCornerRadius },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, typeof(EasingTypeConverter) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexJustify>) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexDirection>) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignContentTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignContent>) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignItemsTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignItems>) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignSelfTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexWrapTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexWrap>) },
+		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexBasisTypeConverter")!, typeof(FlexBasisTypeConverter) },
+	};
+
+    static string ConvertRect(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
+        var values = value.Split([','], StringSplitOptions.RemoveEmptyEntries)
+                          .Select(v => v.Trim());
+
+        if (!string.IsNullOrEmpty(value))
+        {
+            string[] xywh = value.Split(',');
+            if (xywh.Length == 4
+                && double.TryParse(xywh[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double x)
+                && double.TryParse(xywh[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double y)
+                && double.TryParse(xywh[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double w)
+                && double.TryParse(xywh[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
+            {
+                return $"new global::Microsoft.Maui.Graphics.Rect({x}, {y}, {w}, {h})";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, null, value));
+
+        return "default";
+    }
+
+    static string ConvertColor(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // Q: I don't think we can do any more validation?
+        if (!string.IsNullOrEmpty(value))
+        {
+            return $"global::Microsoft.Maui.Graphics.Color.Parse(\"{value}\")";
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, null, value));
+
+        return "default";
+    }
+
+    static string ConvertPoint(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
+        if (!string.IsNullOrEmpty(value))
+        {
+            string[] xy = value.Split(',');
+            if (xy.Length == 2 && double.TryParse(xy[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var x)
+                && double.TryParse(xy[1], NumberStyles.Number, CultureInfo.InvariantCulture, out var y))
+            {
+                return $"new global::Microsoft.Maui.Graphics.Point({x}, {y})";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, null, value));
+
+        return "default";
+    }
+
+    // Q: Do we want to support CSS notation?
+    static string ConvertThickness(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+
+            if (value.Contains(','))
+            { //Xaml
+                var thickness = value.Split(',');
+                switch (thickness.Length)
+                {
+                    case 2:
+                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double h)
+                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double v))
+                            return $"new global::Microsoft.Maui.Thickness({h}, {v})";
+                        break;
+                    case 4:
+                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l)
+                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
+                            && double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double r)
+                            && double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
+                            return $"new global::Microsoft.Maui.Thickness({l}, {t}, {r}, {b})";
+                        break;
+                }
+            }
+            else if (value.Contains(' '))
+            { //CSS
+                var thickness = value.Split(' ');
+                switch (thickness.Length)
+                {
+                    case 2:
+                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double v)
+                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double h))
+                            return $"new global::Microsoft.Maui.Thickness({h}, {v})";
+                        break;
+                    case 3:
+                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
+                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out h)
+                            && double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
+                            return $"new global::Microsoft.Maui.Thickness({h}, {t}, {h}, {b})";
+                        break;
+                    case 4:
+                        if (double.TryParse(thickness[0], NumberStyles.Number, CultureInfo.InvariantCulture, out t)
+                            && double.TryParse(thickness[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double r)
+                            && double.TryParse(thickness[2], NumberStyles.Number, CultureInfo.InvariantCulture, out b)
+                            && double.TryParse(thickness[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+                            return $"new global::Microsoft.Maui.Thickness({l}, {t}, {r}, {b})";
+                        break;
+                }
+            }
+            else
+            { //single uniform thickness
+                if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+                    return $"new global::Microsoft.Maui.Thickness({l})";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, null, value));
+
+        return "default";
+    }
+
+    // Q: Do we want to support CSS notation?
+    static string ConvertCornerRadius(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
+
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+            if (value.Contains(','))
+            { //Xaml
+                var cornerRadius = value.Split(',');
+                if (cornerRadius.Length == 4
+                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double tl)
+                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
+                    && double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double bl)
+                    && double.TryParse(cornerRadius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double br))
+                    return $"new global::Microsoft.Maui.CornerRadius({tl}, {tr}, {bl}, {br})";
+
+                if (cornerRadius.Length > 1
+                    && cornerRadius.Length < 4
+                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+                    return $"new global::Microsoft.Maui.CornerRadius({l})";
+            }
+            else if (value.Contains(' '))
+            { //CSS
+                var cornerRadius = value.Split(' ');
+                if (cornerRadius.Length == 2
+                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double t)
+                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double b))
+                    return $"new global::Microsoft.Maui.CornerRadius({t}, {b}, {b}, {t})";
+                if (cornerRadius.Length == 3
+                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double tl)
+                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double trbl)
+                    && double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double br))
+                    return $"new global::Microsoft.Maui.CornerRadius({tl}, {trbl}, {trbl}, {br})";
+                if (cornerRadius.Length == 4
+                    && double.TryParse(cornerRadius[0], NumberStyles.Number, CultureInfo.InvariantCulture, out tl)
+                    && double.TryParse(cornerRadius[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double tr)
+                    && double.TryParse(cornerRadius[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double bl)
+                    && double.TryParse(cornerRadius[3], NumberStyles.Number, CultureInfo.InvariantCulture, out br))
+                    return $"new global::Microsoft.Maui.CornerRadius({tl}, {tr}, {bl}, {br})";
+
+            }
+            else
+            { //single uniform CornerRadius
+                if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
+                    return $"new global::Microsoft.Maui.CornerRadius({l})";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, null, value));
+
+        return "default";
+    }
+
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
     {
         name = default(XmlName);
@@ -72,7 +274,11 @@ static class NodeSGExtensions
     public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
-        if (typeConverter != null)
+
+        if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converter))
+            return converter.Invoke(valueString, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
+
+        if (typeConverter is not null)
             return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
         if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
@@ -89,6 +295,14 @@ static class NodeSGExtensions
             _ => $"\"{valueString}\"",
         };
 	}
+
+    static string ConvertValue(ValueNode valueNode)
+    {
+        var valueString = valueNode.Value as string ?? string.Empty;
+        var values = valueString.Split([','], StringSplitOptions.RemoveEmptyEntries)
+                                .Select(v => v.Trim());
+        return $"new global::Microsoft.Maui.Graphics.Rectangle({string.Join(", ", values)})";
+    }
 
     static string DetermineToType(ITypeSymbol toType, string valueString)
     {
@@ -128,7 +342,7 @@ static class NodeSGExtensions
         if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
             return $"((global::System.ComponentModel.TypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\") as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
         else
-            return $"({targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")";
+            return $"({targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")!";
     }
 
     public static bool IsValueProvider(this INode node, SourceGenContext context, 

@@ -10,6 +10,7 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class CompiledTypeConverter : ContentPage
 	{
 		public static readonly BindableProperty RectangleBPProperty =
@@ -68,19 +69,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public CompiledTypeConverter() => InitializeComponent();
 
-		public CompiledTypeConverter(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase(false)]
-			[TestCase(true)]
-			public void CompiledTypeConverterAreInvoked(bool useCompiledXaml)
+			[Test]
+			public void CompiledTypeConverterAreInvoked([Values]XamlInflator xamlInflator)
 			{
-				var p = new CompiledTypeConverter(useCompiledXaml);
+				var p = new CompiledTypeConverter(xamlInflator);
 				Assert.AreEqual(new Rect(0, 1, 2, 4), p.RectangleP);
 				Assert.AreEqual(new Rect(4, 8, 16, 32), p.RectangleBP);
 				Assert.AreEqual(new Point(1, 2), p.PointP);
@@ -117,7 +112,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(typeof(Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter))]
 			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.PointTypeConverter))]
 			[TestCase(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter))]
-			public void ConvertersAreReplaced(Type converterType)
+			public void ConvertersAreReplaced([Values]XamlInflator inflator, Type converterType)
 			{
 				MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out var hasLoggedErrors);
 				Assert.That(!hasLoggedErrors);
