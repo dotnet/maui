@@ -622,6 +622,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (string.IsNullOrEmpty(value))
 				return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (horizAlignment == HorizontalAlignment.Left)
 			{
 				_canvas.DrawText(value, x, y, CurrentState.FontPaint);
@@ -640,6 +641,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				x -= width / 2;
 				_canvas.DrawText(value, x, y, CurrentState.FontPaint);
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public override void DrawString(
@@ -660,7 +662,9 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			var attributes = new StandardTextAttributes()
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				FontSize = CurrentState.FontPaint.TextSize,
+#pragma warning restore CS0618 // Type or member is obsolete
 				Font = CurrentState.Font,
 				HorizontalAlignment = horizAlignment,
 				VerticalAlignment = vertAlignment,
@@ -674,7 +678,9 @@ namespace Microsoft.Maui.Graphics.Skia
 				descent,
 				leading) =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				_canvas.DrawText(text, point.X, point.Y, CurrentState.FontPaint);
+#pragma warning disable CS0618 // Type or member is obsolete
 			};
 
 			using (var textLayout = new SkiaTextLayout(value, rect, attributes, callback, textFlow, CurrentState.FontPaint))
