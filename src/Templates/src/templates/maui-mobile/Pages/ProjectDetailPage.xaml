@@ -94,7 +94,7 @@
                     SelectedItem="{Binding Icon}"
                     ItemsSource="{Binding Icons}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:IconItem">
+                        <DataTemplate x:DataType="models:IconData">
                             <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -115,7 +115,7 @@
                                 </VisualStateManager.VisualStateGroups>
                                 
                                 <Label 
-                                    Text="{Binding IconName}" 
+                                    Text="{Binding Icon}" 
                                     x:Name="IconImage"
                                     FontFamily="{x:Static fonts:FluentUI.FontFamily}" 
                                     FontSize="24" 

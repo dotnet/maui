@@ -2,8 +2,8 @@ using System;
 
 namespace MauiApp._1.Models;
 
-public class IconItem
+public class IconData
 {
-    public string? IconName { get; set; }
+    public string? Icon { get; set; }
     public string? Description { get; set; }
 }

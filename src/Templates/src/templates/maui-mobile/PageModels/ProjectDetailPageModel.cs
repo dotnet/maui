@@ -35,21 +35,21 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	private List<Tag> _allTags = [];
 
 	[ObservableProperty]
-	private IconItem _icon;
+	private IconData _icon;
 
 	[ObservableProperty]
 	bool _isBusy;
 
 	[ObservableProperty]
-	private List<IconItem> _icons =	new List<IconItem>
+	private List<IconData> _icons =	new List<IconData>
 	{
-		new IconItem { IconName = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" },
-		new IconItem { IconName = FluentUI.ribbon_star_24_regular, Description = "Ribbon Star Icon" },
-		new IconItem { IconName = FluentUI.trophy_24_regular, Description = "Trophy Icon" },
-		new IconItem { IconName = FluentUI.badge_24_regular, Description = "Badge Icon" },
-		new IconItem { IconName = FluentUI.book_24_regular, Description = "Book Icon" },
-		new IconItem { IconName = FluentUI.people_24_regular, Description = "People Icon" },
-		new IconItem { IconName = FluentUI.bot_24_regular, Description = "Bot Icon" }
+		new IconData { Icon = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" },
+		new IconData { Icon = FluentUI.ribbon_star_24_regular, Description = "Ribbon Star Icon" },
+		new IconData { Icon = FluentUI.trophy_24_regular, Description = "Trophy Icon" },
+		new IconData { Icon = FluentUI.badge_24_regular, Description = "Badge Icon" },
+		new IconData { Icon = FluentUI.book_24_regular, Description = "Book Icon" },
+		new IconData { Icon = FluentUI.people_24_regular, Description = "People Icon" },
+		new IconData { Icon = FluentUI.bot_24_regular, Description = "Bot Icon" }
 	};
 
 	public bool HasCompletedTasks
@@ -125,7 +125,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 			Description = _project.Description;
 			Tasks = _project.Tasks;
 
-			Icon.IconName = _project.Icon;
+			Icon.Icon = _project.Icon;
 
 			Categories = await _categoryRepository.ListAsync();
 			Category = Categories?.FirstOrDefault(c => c.ID == _project.CategoryID);
@@ -171,7 +171,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_project.Name = Name;
 		_project.Description = Description;
 		_project.CategoryID = Category?.ID ?? 0;
-		_project.Icon = Icon.IconName ?? FluentUI.ribbon_24_regular;
+		_project.Icon = Icon.Icon ?? FluentUI.ribbon_24_regular;
 		await _projectRepository.SaveItemAsync(_project);
 
 		if (_project.IsNullOrNew())
