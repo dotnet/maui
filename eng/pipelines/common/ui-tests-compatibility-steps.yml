@@ -26,10 +26,10 @@ steps:
     parameters:
       ${{ if eq(parameters.platform, 'windows') }}:
         platform: windows
-        skipProvisioning: true
+        skipProvisionator: true
       ${{ if ne(parameters.platform, 'windows') }}:
         platform: macos
-        skipProvisioning: false
+        skipProvisionator: false
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
  
