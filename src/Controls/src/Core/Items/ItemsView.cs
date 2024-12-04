@@ -12,7 +12,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs/*" />
-	public abstract class ItemsView : View
+	public abstract class ItemsView : View, ISafeAreaView
 	{
 
 		/// <summary>Bindable property for <see cref="EmptyView"/>.</summary>
@@ -163,6 +163,9 @@ namespace Microsoft.Maui.Controls
 		{
 			OnScrollToRequested(new ScrollToRequestEventArgs(item, group, position, animate));
 		}
+
+		/// <inheritdoc cref="ISafeAreaView.IgnoreSafeArea"/>
+		public bool IgnoreSafeArea { get; set;}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='SendRemainingItemsThresholdReached']/Docs/*" />
 		public void SendRemainingItemsThresholdReached()
