@@ -213,7 +213,10 @@ static class NodeSGExtensions
         }
 
         // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, null, value));
+
+        return "default";
+    }
 
         return "default";
     }
