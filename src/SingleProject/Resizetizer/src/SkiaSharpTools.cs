@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Resizetizer
 		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
 			=> isVector
 				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, logger) as SkiaSharpTools
-				: new SkiaSharpBitmapTools(filename, baseSize, backgroundColor, tintColor, logger);
+				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, logger);
 
 		public static SkiaSharpTools CreateImaginary(SKColor? backgroundColor, ILogger logger)
 			=> new SkiaSharpImaginaryTools(backgroundColor, logger);
@@ -38,7 +38,10 @@ namespace Microsoft.Maui.Resizetizer
 			BackgroundColor = backgroundColor;
 			Paint = new SKPaint
 			{
-				FilterQuality = SKFilterQuality.High
+				IsAntialias = true,
+#pragma warning disable CS0618 // Type or member is obsolete
+				FilterQuality = SKFilterQuality.High,
+#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			if (tintColor is SKColor tint)
@@ -46,6 +49,8 @@ namespace Microsoft.Maui.Resizetizer
 				Logger?.Log($"Detected a tint color of {tint}");
 				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
+
+			SamplingOptions = new SKSamplingOptions(SKCubicResampler.Mitchell);
 		}
 
 		public string Filename { get; }
@@ -57,6 +62,8 @@ namespace Microsoft.Maui.Resizetizer
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
+
+		public SKSamplingOptions SamplingOptions { get; }
 
 		public void Resize(DpiPath dpi, string destination, double additionalScale = 1.0, bool dpiSizeIsAbsolute = false)
 		{
