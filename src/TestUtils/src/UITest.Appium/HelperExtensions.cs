@@ -1801,7 +1801,7 @@ namespace UITest.Appium
 		{
 			app.Tap(query);
 		}
-
+        
 		/// <summary>
 		/// Gets the default query for the back arrow button based on the app type.
 		/// </summary>
@@ -1849,7 +1849,7 @@ namespace UITest.Appium
 		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
 		public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
 		{
-			if (app is AppiumCatalystApp)
+			if(app is AppiumCatalystApp)
 				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
 
 			app.WaitForElement(elementId, timeout: timeout);
@@ -1864,67 +1864,10 @@ namespace UITest.Appium
 		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
 		public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
 		{
-			if (app is AppiumCatalystApp)
+			if(app is AppiumCatalystApp)
 				app.WaitForElement(query, timeout: timeout);
 
 			app.WaitForElement(query, timeout: timeout);
-		}
-		/// <summary>
-		/// Waits for the flyout icon to appear in the app.
-		/// </summary>
-		/// <param name="app">The IApp instance representing the application.</param>
-		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
-		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
-		public static void WaitForFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
-		{
-			if (app is AppiumAndroidApp)
-			{
-				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
-			}
-			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
-			{
-				if (isShell)
-				{
-					app.WaitForElement("OK");
-				}
-				if (!isShell)
-				{
-					if (app is AppiumWindowsApp)
-					{
-						app.WaitForElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
-					}
-					else
-					{
-						app.WaitForElement(automationId);
-					}
-
-				}
-			}
-		}
-
-		/// <summary>
-		/// Shows the flyout menu in the app.
-		/// </summary>
-		/// <param name="app">The IApp instance representing the application.</param>
-		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
-		/// <param name="usingSwipe">Indicates whether to use swipe gesture to open the flyout (default is false).</param>
-		/// <param name="waitForFlyoutIcon">Indicates whether to wait for the flyout icon before showing the flyout (default is true).</param>
-		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
-		public static void ShowFlyout(this IApp app, string automationId = "", bool usingSwipe = false, bool waitForFlyoutIcon = true, bool isShell = true)
-		{
-			if (waitForFlyoutIcon)
-			{
-				app.WaitForFlyoutIcon(automationId, isShell);
-			}
-
-			if (usingSwipe)
-			{
-				app.DragCoordinates(5, 500, 800, 500);
-			}
-			else
-			{
-				app.TapFlyoutIcon(automationId, isShell, false);
-			}
 		}
 
 		/// <summary>
