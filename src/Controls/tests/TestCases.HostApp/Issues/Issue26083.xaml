@@ -27,6 +27,6 @@
         </CollectionView.ItemsLayout>
       </CollectionView>
     </Grid>
-    <Button WidthRequest="200" AutomationId="Button" HeightRequest="50" Text="Update CollectionView Width" Clicked="Button_Clicked"/>
+    <Button WidthRequest="400" AutomationId="Button" HeightRequest="50" Text="Update CollectionView Width" Clicked="Button_Clicked"/>
   </VerticalStackLayout>
 </ContentPage>
