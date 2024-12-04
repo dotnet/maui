@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Controls.Platform
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
 
 			ChoosingItemContainer += OnChoosingItemContainer;
+
+			SizeChanged += FormsGridView_SizeChanged;
 		}
 
 		public int Span
@@ -108,6 +110,11 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateItemSize();
 		}
 
+		private void FormsGridView_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateItemSize();
+		}
+
 		void UpdateItemSize()
 		{
 			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
@@ -115,11 +122,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_orientation == Orientation.Horizontal)
 			{
-				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
+				_wrapGrid.ItemHeight = Math.Floor(ActualHeight / Span);
 			}
 			else
 			{
-				_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
+				_wrapGrid.ItemWidth = Math.Floor(ActualWidth / Span);
+			}
+
+			if (_wrapGrid.ItemWidth > ActualWidth)
+			{
+				_wrapGrid.ItemWidth = ActualWidth;
+			}
+
+			if (_wrapGrid.ItemHeight > ActualHeight)
+			{
+				_wrapGrid.ItemHeight = ActualHeight;
 			}
 		}
 
