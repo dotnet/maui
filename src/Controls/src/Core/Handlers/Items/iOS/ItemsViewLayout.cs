@@ -133,13 +133,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
-			// If we're at the last section, we don't need to add the right inset
-			// Github issue : https://github.com/dotnet/maui/issues/25433
-			if (section >= (collectionView.NumberOfSections() - 1))
-			{
-				return UIEdgeInsets.Zero;
-			}
-
 			if (_itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
