@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Xaml
 							((IXmlLineInfo)reader).LinePosition);
 					case XmlNodeType.Element:
 						var isEmpty = reader.IsEmptyElement && reader.Name == name;
-						var elementName = reader.Name;
+						var elementName = reader.LocalName;
 						var elementNsUri = reader.NamespaceURI;
 						var elementXmlInfo = (IXmlLineInfo)reader;
 						IList<KeyValuePair<string, string>> xmlns;
