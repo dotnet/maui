@@ -56,7 +56,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				Color = SKColors.Black,
 				IsAntialias = true,
+#pragma warning disable CS0618 // Type or member is obsolete
 				Typeface = SKTypeface.FromFamilyName("Arial")
+#pragma warning restore CS0618 // Type or member is obsolete
 			};
 		}
 
