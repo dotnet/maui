@@ -11,9 +11,10 @@ using System.Text;
 namespace Microsoft.Maui.UnitTests
 {
 	[Category(TestCategory.Core)]
-	public class LocalizationTests : IClassFixture<CultureFixture>
+	public class LocalizationTests : IClassFixture<CultureFixture>, IClassFixture<GlobalLogSetup>
 	{
 		string _mauiRoot = Path.Combine("..", "..", "..", "..", "..");
+		static string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
 
 		/// <summary>
 		/// This test checks that all the .lcl files' <str> elements have a corresponding
@@ -61,6 +62,8 @@ namespace Microsoft.Maui.UnitTests
 					{
 						writer.WriteLine($"File: {file}");
 						writer.WriteLine(sb.ToString());
+						WriteToGlobalLog($"File: {file}");
+						WriteToGlobalLog(sb.ToString());
 					}
 				}
 			}
@@ -148,6 +151,8 @@ namespace Microsoft.Maui.UnitTests
 					{
 						writer.WriteLine($"File: {filePath}");
 						writer.WriteLine(sb.ToString());
+						WriteToGlobalLog($"File: {filePath}");
+						WriteToGlobalLog(sb.ToString());
 					}
 				}
 
@@ -202,6 +207,7 @@ namespace Microsoft.Maui.UnitTests
 					if (!File.Exists(localizedJson))
 					{
 						writer.WriteLine($"*** File does not exist!!: {localizedJson}");
+						WriteToGlobalLog($"*** File does not exist!!: {localizedJson}");
 						return;
 					}
 
@@ -221,7 +227,7 @@ namespace Microsoft.Maui.UnitTests
 						{
 							if (localized.TryGetProperty(property.Name, out JsonElement localizedProperty))
 							{
-								if (localizedProperty.GetRawText() == property.Value.GetRawText())
+								if (localizedProperty.GetRawText() == property.Value.GetRawText() && property.Name != "author")
 								{
 									sb.AppendLine($"    String not translated:");
 									sb.AppendLine($"        Name: {property.Name}");
@@ -238,6 +244,8 @@ namespace Microsoft.Maui.UnitTests
 						{
 							writer.WriteLine($"File: {GetRelativePathFromSrc(localizedJson)}");
 							writer.WriteLine(sb.ToString());
+							WriteToGlobalLog($"File: {GetRelativePathFromSrc(localizedJson)}");
+							WriteToGlobalLog(sb.ToString());
 						}
 					}
 				}
@@ -322,6 +330,7 @@ namespace Microsoft.Maui.UnitTests
 					if (correspondingLclFile == string.Empty)
 					{
 						writer.WriteLine($"*** No corresponding lcl file for: {directory}\n");
+						WriteToGlobalLog($"*** No corresponding lcl file for: {directory}\n");
 						continue;
 					}
 
@@ -355,6 +364,9 @@ namespace Microsoft.Maui.UnitTests
 						writer.WriteLine($"Json File: {GetRelativePathFromSrc(file)}");
 						writer.WriteLine($"Lcl File: {correspondingLclFile}");
 						writer.WriteLine(sb.ToString());
+						WriteToGlobalLog($"Json File: {GetRelativePathFromSrc(file)}");
+						WriteToGlobalLog($"Lcl File: {correspondingLclFile}");
+						WriteToGlobalLog(sb.ToString());
 					}
 				}
 			}
@@ -405,6 +417,21 @@ namespace Microsoft.Maui.UnitTests
 
 			return path;
 		}
+
+		private static void WriteToGlobalLog(string message)
+		{
+			// Ensure the directory exists
+			var directoryPath = Path.GetDirectoryName(_globalFilePath);
+			if (!Directory.Exists(directoryPath))
+			{
+				Directory.CreateDirectory(directoryPath);
+			}
+
+			using (var writer = new StreamWriter(_globalFilePath, append: true))
+			{
+				writer.WriteLine(message);
+			}
+		}
 	}
 
 	public class CultureFixture : IDisposable
@@ -424,6 +451,24 @@ namespace Microsoft.Maui.UnitTests
 			// Restore the original culture and UI culture
 			CultureInfo.CurrentCulture = _originalCulture;
 			CultureInfo.CurrentUICulture = _originalUICulture;
+		}
+	}
+
+	public class GlobalLogSetup : IDisposable
+	{
+		string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
+
+		public GlobalLogSetup()
+		{
+			// Delete the global log file if it exists
+			if (File.Exists(_globalFilePath))
+			{
+				File.Delete(_globalFilePath);
+			}
+		}
+
+		public void Dispose()
+		{
 		}
 	}
 }
