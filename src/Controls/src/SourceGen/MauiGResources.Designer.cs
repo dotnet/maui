@@ -86,5 +86,41 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("ExpressionNotClosed", resourceCulture);
             }
         }
+
+        internal static string RectConversionFailed {
+            get {
+                return ResourceManager.GetString("RectConversionFailed", resourceCulture);
+            }
+        }
+
+        internal static string ConversionFailed {
+            get {
+                return ResourceManager.GetString("ConversionFailed", resourceCulture);
+            }
+        }
+
+        internal static string ColorConversionFailed {
+            get {
+                return ResourceManager.GetString("ColorConversionFailed", resourceCulture);
+            }
+        }
+
+        internal static string PointConversionFailed {
+            get {
+                return ResourceManager.GetString("PointConversionFailed", resourceCulture);
+            }
+        }
+
+        internal static string ThicknessConversionFailed {
+            get {
+                return ResourceManager.GetString("ThicknessConversionFailed", resourceCulture);
+            }
+        }
+
+        internal static string CornerRadiusConversionFailed {
+            get {
+                return ResourceManager.GetString("CornerRadiusConversionFailed", resourceCulture);
+            }
+        }
     }
 }
