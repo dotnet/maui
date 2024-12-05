@@ -124,8 +124,9 @@ internal class WindowViewController : UIViewController
 
 			_titleBar = newTitleBar;
 			_iTitleBarRef = new WeakReference<IView?>(iTitleBar);
-			SetTitleBarVisibility(iTitleBar?.Visibility == Visibility.Visible);
 		}
+		
+		_isTitleBarVisible = (iTitleBar?.Visibility == Visibility.Visible);
 
 		var platformTitleBar = platformWindow.WindowScene?.Titlebar;
 
@@ -179,7 +180,8 @@ internal class WindowViewController : UIViewController
 	{
 		if (_contentWrapperTopConstraint is null || View is null)
 			return;
-			
+
+		_isTitleBarVisible = isVisible;			
 		LayoutTitleBar();
 	}
 }
