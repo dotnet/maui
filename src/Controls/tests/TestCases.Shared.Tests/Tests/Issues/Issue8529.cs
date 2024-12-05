@@ -1,5 +1,4 @@
-﻿/*
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,17 +16,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		
 		[Test]
 		[Category(UITestCategories.Shell)]
-		[Category(UITestCategories.Compatibility)]
 		public void Issue8529ShellBackButtonBehaviorCommandPropertyCanUseICommand()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
 
 			App.WaitForElement(ButtonId, "Timed out waiting for first page.");
 			App.Tap(ButtonId);
 			App.WaitForElement("LabelId", "Timed out waiting for the destination page.");
-			App.Back();
+			App.TapBackArrow("BackButtonImage");			
 			App.WaitForElement(ButtonId, "Timed out waiting to navigate back to the first page.");
 		}
 	}
 }
-*/

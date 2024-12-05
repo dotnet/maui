@@ -2,6 +2,12 @@ parameters:
   - name: condition
     default: true
 
+  - name: conditionMacTemplates
+    default: true
+  
+  - name: skipProvisioning
+    default: true
+
   - name: artifactName
     type: string
     default: nuget
@@ -18,18 +24,25 @@ parameters:
     type: string
     default: $(System.DefaultWorkingDirectory)
 
+  - name: MacBuildPool
+    type: object
+
   - name: BuildPlatforms
     type: object
+
+  - name: BuildCategoriesMac
+    type: object
+    default:
+    - macOSTemplates
+    - AOT
 
   - name: BuildCategories
     type: object
     default:
     - WindowsTemplates
-    - macOSTemplates
     - Build
     - Blazor
     - MultiProject
-    - AOT
 
   - name: RunPlatforms
     type: object
@@ -39,6 +52,30 @@ parameters:
     default: []
 
 jobs:
+- ${{ each category in parameters.BuildCategoriesMac }}:
+  - job: build_maui_templates_${{ category }}
+    workspace:
+      clean: all
+    displayName: 'Build ${{ category }}: macOS' 
+    timeoutInMinutes: 240
+    condition: ${{ parameters.conditionMacTemplates }}
+    pool: ${{ parameters.MacBuildPool }}
+    steps:
+      - template: maui-templates-steps.yml
+        parameters:
+          condition: ${{ parameters.condition }}
+          artifactName: ${{ parameters.artifactName }}
+          artifactItemPattern: ${{ parameters.artifactItemPattern }}
+          checkoutDirectory: ${{ parameters.checkoutDirectory }}
+          prepareSteps: ${{ parameters.prepareSteps }}
+          category: ${{ category }}
+          skipXcode: false
+          ${{ if eq(parameters.skipProvisioning, 'true') }}:
+            skipProvisioning: true
+          ${{ else }}:  
+            skipProvisioning: false
+
+
 - ${{ each category in parameters.BuildCategories }}:
   - job: build_maui_templates_${{ category }}
     workspace:
@@ -59,86 +96,16 @@ jobs:
       vmImage: $(POOL_VIMAGE)
       demands:
         - macOS.Name -equals Sonoma
-        - macOS.Architecture -equals x64
+        - macOS.Architecture -equals arm64
     steps:
-
-    - ${{ each step in parameters.prepareSteps }}:
-      - ${{ each pair in step }}:
-          ${{ pair.key }}: ${{ pair.value }}
-
-    - template: provision.yml
-      parameters:
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
-        skipXcode: false
-        skipProvisioning: true
-
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download Packages'
-      inputs:
-        artifactName: ${{ parameters.artifactName }}
-        itemPattern: ${{ parameters.artifactItemPattern }}
-        downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-
-    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
-      displayName: Move the downloaded artifacts
-
-    - pwsh: |
-        Get-ChildItem artifacts -Filter 'Microsoft.Maui.Controls.*.nupkg' |  Where-Object { $_.Name -match '^Microsoft\.Maui\.Controls\.([\d\.]+.*)\.nupkg$' }
-        $version = $Matches.1
-        if (!$version) {
-            Write-Error "Failed to extract the version from the nupkgs"
-            exit 1
-        }
-        Write-Host "Found .NET MAUI version (MAUI_PACKAGE_VERSION): $version"
-        Write-Host "##vso[task.setvariable variable=MAUI_PACKAGE_VERSION]$version"
-      displayName: Read the .NET MAUI version from the nugets
-
-    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
-      displayName: 'Install .NET (Local Workloads)'
-      retryCountOnTaskFailure: 3
-      workingDirectory: ${{ parameters.checkoutDirectory }}
-      env:
-        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-        PRIVATE_BUILD: $(PrivateBuild)
-
-    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ category }}" --resultsfilename="integration-tests" --verbosity=diagnostic
-      displayName: Run ${{ category }} templates build tests
-      workingDirectory: ${{ parameters.checkoutDirectory }}
-
-    - task: CopyFiles@2
-      displayName: Copy binlogs
-      inputs:
-        SourceFolder: '$(Build.SourcesDirectory)'
-        Contents: |
-          **/*.binlog
-          ../**/*.binlog
-          ../../**/*.binlog
-        TargetFolder: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
-      continueOnError: true
-      condition: succeededOrFailed()
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Artifacts
-      condition: always()
-      continueOnError: true
-      inputs:
-        PathToPublish: '$(Build.StagingDirectory)/IntegrationTestsBuildLogs'
-        ArtifactName: BuildTemplateBuildLogs
-
-    - task: PublishTestResults@2
-      displayName: Publish the ${{ category }} templates build tests
-      condition: always()
-      inputs:
-        testRunner: VSTest
-        testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-        testRunTitle: ${{ category }} templates build tests
-
-    - pwsh: |
-        Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-        if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-            Write-Host "##vso[task.complete result=Failed;]DONE"
-        }
-      displayName: Fail if any issues occurred
+      - template: maui-templates-steps.yml
+        parameters:
+          condition: ${{ parameters.condition }}
+          artifactName: ${{ parameters.artifactName }}
+          artifactItemPattern: ${{ parameters.artifactItemPattern }}
+          checkoutDirectory: ${{ parameters.checkoutDirectory }}
+          prepareSteps: ${{ parameters.prepareSteps }}
+          category: ${{ category }}
 
 - ${{ each RunPlatform in parameters.RunPlatforms }}:
   - job: run_${{ RunPlatform.testName }}
