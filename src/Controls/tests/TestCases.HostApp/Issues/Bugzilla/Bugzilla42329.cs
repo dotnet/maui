@@ -18,6 +18,10 @@ public class Bugzilla42329 : TestFlyoutPage
 	{
 		var rootPage = new RootPage();
 		Flyout = rootPage;
+
+		// Set FlyoutBehavior to Popover to ensure consistent behavior across desktop and mobile platforms.
+		// Windows and Catalyst default (FlyoutLayoutBehavior.Default) uses Split mode, which differs from mobile platforms.
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 		rootPage.ListView.ItemSelected += (sender, e) =>
 		{
 			var item = e.SelectedItem as RootPageItem;
@@ -174,9 +178,7 @@ public class Bugzilla42329 : TestFlyoutPage
 			otherLabel = new Label
 			{
 				HorizontalOptions = LayoutOptions.Center,
-				FontAttributes = FontAttributes.Bold,
-				AutomationId = Success
-
+				FontAttributes = FontAttributes.Bold
 			};
 			Content = new StackLayout
 			{
