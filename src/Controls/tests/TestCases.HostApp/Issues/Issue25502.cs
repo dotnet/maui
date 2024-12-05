@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample.Issues
 						HeightRequest = 200.25,
 						WidthRequest = 248.25,
 						BackgroundColor = Colors.White,
+						Margin = new Thickness(20),
 						Drawable = new GraphicsDrawable()
 					}
 				}
@@ -30,7 +31,7 @@ namespace Maui.Controls.Sample.Issues
 			public void Draw(ICanvas canvas, RectF dirtyRect)
 			{
 				canvas.StrokeColor = Colors.Red;
-				canvas.DrawRectangle(new RectF(dirtyRect.X, dirtyRect.Y, dirtyRect.Width - 40, dirtyRect.Height - 40));
+				canvas.DrawRectangle(new RectF(dirtyRect.X, dirtyRect.Y + 40, dirtyRect.Width - 40, dirtyRect.Height - 40));
 			}
 		}
 	}
