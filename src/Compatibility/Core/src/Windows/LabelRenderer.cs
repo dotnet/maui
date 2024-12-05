@@ -436,12 +436,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 #if NET7_0_OR_GREATER
 			[GeneratedRegex ("<br>", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
-			static partial Regex ContentUrlRegex
+			static partial Regex NewLinesRegex
 			{
 				get;
 			}
 #else
-			static readonly Regex ContentUrlRegex =
+			static readonly Regex NewLinesRegex =
 											new (
 												"<br>",
 												RegexOptions.Compiled,		
