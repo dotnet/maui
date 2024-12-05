@@ -158,9 +158,13 @@ internal class WindowViewController : UIViewController
 			titleBarHeight = (nfloat)measured.Height;
 		}
 		
-		if (titleBarHeight == 0)
+		if (titleBarHeight <= View.SafeAreaInsets.Top && _isTitleBarVisible)
 		{
-			titleBarHeight = 36;
+			titleBarHeight = View.SafeAreaInsets.Top;
+		}
+		else
+		{
+			titleBarHeight = 0;
 		}
 
 		_contentWrapperTopConstraint.Constant = titleBarHeight;
