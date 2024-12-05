@@ -20,9 +20,6 @@ stages:
                 Write-Host "##vso[task.setvariable variable=containsLclFiles;isOutput=true]false"
               }
             displayName: 'Check for .lcl files in the commit'
-        outputs:
-          containsLclFiles: $(check_lcl_files.containsLclFiles)
-
 
       - job : generate_resx
         displayName: 'Process incoming translations'
