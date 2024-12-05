@@ -1,7 +1,7 @@
 parameters:
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
-  lclFileChange: false
+  # lclFileChange: false
 
 stages:
   - stage: localization_handback
@@ -27,7 +27,7 @@ stages:
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
         dependsOn: check_lcl_files
-        condition: ${{ parameters.lclFileChange }}
+        condition: eq(variables['lclFileChange'], 'true')
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
