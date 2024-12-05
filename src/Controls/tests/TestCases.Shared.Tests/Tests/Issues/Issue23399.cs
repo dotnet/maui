@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue23399(TestDevice device) : _IssuesUITest(device)
 	{
-		public override string Issue => "Closing Modal While App is Backgrounded Fails"; 
+		public override string Issue => "Closing Modal While App is Backgrounded Fails";
 
 		[Test]
 		[Category(UITestCategories.Navigation)]

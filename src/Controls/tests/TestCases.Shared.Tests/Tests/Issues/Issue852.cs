@@ -13,14 +13,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Async loading of Content causes UI element to be unclickable"; 
+		public override string Issue => "Async loading of Content causes UI element to be unclickable";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue852TestsEntriesClickable()
 		{
 			App.WaitForElement("WelcomeLabel");

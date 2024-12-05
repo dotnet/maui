@@ -16,31 +16,31 @@ public class Issue10608 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[Bug] [Shell] [iOS] Locked flyout causes application to freezes when quickly switching between tabs"; 
-	
+	public override string Issue => "[Bug] [Shell] [iOS] Locked flyout causes application to freezes when quickly switching between tabs";
+
 	// [Test]
 	// [Category(UITestCategories.Shell)]
 	// public void ShellWithTopTabsFreezesWhenNavigatingFlyoutItems()
 	// {
-	// 	RunningApp.Tap("FlyoutItem6");
-	// 	RunningApp.Tap("FlyoutItem0");
+	// 	App.Tap("FlyoutItem6");
+	// 	App.Tap("FlyoutItem0");
 	// 	for (int i = 0; i < 5; i++)
 	// 	{
-	// 		RunningApp.WaitForElement("Tab1AutomationId");
-	// 		RunningApp.WaitForElement("LearnMoreButton");
-	// 		RunningApp.Tap("FlyoutItem0");
-	// 		RunningApp.Tap("FlyoutItem1");
-	// 		RunningApp.Tap("FlyoutItem0");
-	// 		RunningApp.WaitForElement("LearnMoreButton");
+	// 		App.WaitForElement("Tab1AutomationId");
+	// 		App.WaitForElement("LearnMoreButton");
+	// 		App.Tap("FlyoutItem0");
+	// 		App.Tap("FlyoutItem1");
+	// 		App.Tap("FlyoutItem0");
+	// 		App.WaitForElement("LearnMoreButton");
 	// 	}
 
-	// 	RunningApp.WaitForElement("Tab1AutomationId");
-	// 	RunningApp.WaitForElement("LearnMoreButton");
-	// 	RunningApp.Tap("FlyoutItem1");
-	// 	RunningApp.WaitForElement("Tab2AutomationId");
-	// 	RunningApp.WaitForElement("LearnMoreButton");
-	// 	RunningApp.Tap("FlyoutItem0");
-	// 	RunningApp.WaitForElement("Tab1AutomationId");
-	// 	RunningApp.WaitForElement("LearnMoreButton");
+	// 	App.WaitForElement("Tab1AutomationId");
+	// 	App.WaitForElement("LearnMoreButton");
+	// 	App.Tap("FlyoutItem1");
+	// 	App.WaitForElement("Tab2AutomationId");
+	// 	App.WaitForElement("LearnMoreButton");
+	// 	App.Tap("FlyoutItem0");
+	// 	App.WaitForElement("Tab1AutomationId");
+	// 	App.WaitForElement("LearnMoreButton");
 	// }
 }

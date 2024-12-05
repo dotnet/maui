@@ -5,7 +5,7 @@ using WindowsCheckbox = Microsoft.UI.Xaml.Controls.CheckBox;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FormsCheckBox : WindowsCheckbox
+	public partial class FormsCheckBox : WindowsCheckbox
 	{
 		public static readonly DependencyProperty TintBrushProperty =
 			DependencyProperty.Register(nameof(TintBrush), typeof(WBrush), typeof(FormsCheckBox),

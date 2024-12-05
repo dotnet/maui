@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides control over header icons on the Windows platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DisableHeaderIcons">
@@ -37,7 +36,6 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <summary>Disables header icons.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableHeaderIcons">
@@ -60,7 +58,6 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <summary>Enables header icons.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHeaderIconsEnabled">
@@ -85,7 +82,6 @@
         <summary>Returns a Boolean value that tells whether header icons are enabled.</summary>
         <returns>
           <see langword="true" /> if header icons are enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHeaderIconsEnabled">
@@ -110,7 +106,6 @@
         <summary>Returns a Boolean value that tells whether header icons are enabled.</summary>
         <returns>
           <see langword="true" /> if header icons are enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHeaderIconsSize">
@@ -134,7 +129,6 @@
         <param name="element">The element on which to perform the operation.</param>
         <summary>Returns the size of header icons.</summary>
         <returns>The size of header icons.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHeaderIconsSize">
@@ -158,7 +152,6 @@
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <summary>Returns the size of header icons.</summary>
         <returns>The size of header icons.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeaderIconsEnabledProperty">
@@ -177,7 +170,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that enables and disables header icons.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeaderIconsSizeProperty">
@@ -196,7 +188,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the size of header icons.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsHeaderIconsEnabled">
@@ -221,7 +212,6 @@
         <summary>Returns a Boolean value that tells whether header icons are enabled.</summary>
         <returns>
           <see langword="true" /> if header icons are enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHeaderIconsEnabled">
@@ -247,7 +237,6 @@
         <param name="value">
           <see langword="true" /> to enable header icons. <see langword="false" /> to disable them.</param>
         <summary>Turns header icons on and off.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHeaderIconsEnabled">
@@ -274,7 +263,6 @@
           <see langword="true" /> to enable header icons. <see langword="false" /> to disable them.</param>
         <summary>Turns header icons on and off.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHeaderIconsSize">
@@ -299,7 +287,6 @@
         <param name="element">The element on which to perform the operation.</param>
         <param name="value">The new header icon size.</param>
         <summary>Specifies the size of header icons.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHeaderIconsSize">
@@ -325,7 +312,6 @@
         <param name="value">The new header icon size.</param>
         <summary>Specifies the size of header icons.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

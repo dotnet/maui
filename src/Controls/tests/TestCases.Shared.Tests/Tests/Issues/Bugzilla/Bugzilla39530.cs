@@ -16,9 +16,9 @@ public class Bugzilla39530 : _IssuesUITest
 	public override string Issue => "Frames do not handle pan or pinch gestures under AppCompat";
 
 	[Test]
-	[FailsOnIOS]
-	[FailsOnMac]
-	[FailsOnWindows("Fails finding the frame element. Investigate the cause.")]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest("Fails finding the frame element. Investigate the cause.")]
 	public void Bugzilla39530PanTest()
 	{
 		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -37,8 +37,8 @@ public class Bugzilla39530 : _IssuesUITest
 
 	/*
 	[Test]
-	[FailsOnIOS]	
-	[FailsOnMac]
+	[FailsOnIOSWhenRunningOnXamarinUITest]	
+	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void Bugzilla39530PinchTest()
 	{
 		App.PinchToZoomIn("frame");
@@ -46,8 +46,8 @@ public class Bugzilla39530 : _IssuesUITest
 	}
 
 	[Test]
-	[FailsOnIOS]
-	[FailsOnMac]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void Bugzilla39530TapTest()
 	{
 		App.WaitForElement("frame");

@@ -2,12 +2,14 @@ parameters:
   androidPool: { }
   iosPool: { }
   windowsPool: { }
+  windowsBuildPool: { }
   macosPool: { }
   androidCompatibilityPool: { }
   iosCompatibilityPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  skipProvisioning: true
   agentPoolAccessToken: ''
   runCompatibilityTests: false
   categoryGroupsToTest:
@@ -17,7 +19,7 @@ parameters:
     - 'Border,BoxView,Brush,Button'
     - 'CarouselView,Cells,CheckBox,CollectionView,ContextActions,CustomRenderers'
     - 'DatePicker,Dispatcher,DisplayAlert,DisplayPrompt,DragAndDrop'
-    - 'Editor,Effects,Entry,FlyoutPage,Focus,Frame,Gestures'
+    - 'Editor,Effects,Entry,FlyoutPage,Focus,Frame,Gestures,GraphicsView'
     - 'Image,ImageButton,IndicatorView,InputTransparent,IsEnabled,IsVisible'
     - 'Label,Layout,Lifecycle,ListView'
     - 'ManualReview,Maps,Navigation'
@@ -55,22 +57,25 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "Mono"
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   
-  - stage: build_ui_tests_nativeaot
-    displayName: Build UITests Sample App NativeAOT
-    dependsOn: []
-    jobs:
-      - job: build_ui_tests
-        displayName: Build Sample App
-        pool: ${{ parameters.androidPool }}
-        variables:
-          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-          APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
-        steps:
-          - template: ui-tests-build-sample.yml
-            parameters:
-                runtimeVariant: "NativeAOT"
-                platform: ios
+  - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+    - stage: build_ui_tests_nativeaot
+      displayName: Build UITests Sample App NativeAOT
+      dependsOn: []
+      jobs:
+        - job: build_ui_tests
+          displayName: Build Sample App
+          pool: ${{ parameters.androidPool }}
+          variables:
+            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+          steps:
+            - template: ui-tests-build-sample.yml
+              parameters:
+                  runtimeVariant: "NativeAOT"
+                  platform: ios
+                  skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: build_ui_tests_windows
     displayName: Build UITests Windows Sample App
@@ -78,14 +83,14 @@ stages:
     jobs:
       - job: build_ui_tests
         displayName: Build Sample App (Windows)
-        pool: ${{ parameters.windowsPool }}
+        pool: ${{ parameters.windowsBuildPool }}
         variables:
-          REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
           APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
         steps:
           - template: ui-tests-build-sample.yml
             parameters:
                 platform: windows
+                skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: android_ui_tests
     displayName: Android UITests
@@ -123,6 +128,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -164,22 +170,17 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
-
-  - stage: ios_ui_tests_nativeaot
-    displayName: iOS UITests NativeAOT
-    dependsOn: build_ui_tests_nativeaot
+  - stage: ios_ui_tests_mono_cv2
+    displayName: iOS UITests Mono CollectionView2
+    dependsOn: build_ui_tests
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
-                strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
+              - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -193,7 +194,7 @@ stages:
                     parameters:
                       platform: ios
                       ${{ if eq(version, 'latest') }}:
-                        version: 17.2
+                        version: 16.4
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
                       path: ${{ project.ios }}
@@ -204,8 +205,53 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      runtimeVariant : "NativeAOT"
-                      testFilter: $(CATEGORYGROUP)
+                      runtimeVariant : "Mono"
+                      testFilter: "CollectionView"
+                      testConfigurationArgs: "CollectionView2"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+
+  - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+    - stage: ios_ui_tests_nativeaot
+      displayName: iOS UITests NativeAOT
+      dependsOn: build_ui_tests_nativeaot
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.ios, '') }}:
+            - ${{ each version in parameters.iosVersions }}:
+              - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+                - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
+                  strategy:
+                    matrix:
+                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
+                        ${{ categoryGroup }}:
+                          CATEGORYGROUP: ${{ categoryGroup }}
+                  timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                  pool: ${{ parameters.iosPool }}
+                  variables:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                    APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                  steps:
+                    - template: ui-tests-steps.yml
+                      parameters:
+                        platform: ios
+                        ${{ if eq(version, 'latest') }}:
+                          version: 17.2
+                        ${{ if ne(version, 'latest') }}:
+                          version: ${{ version }}
+                        path: ${{ project.ios }}
+                        app: ${{ project.app }}
+                        ${{ if eq(version, 'latest') }}:
+                          device: ios-simulator-64
+                        ${{ if ne(version, 'latest') }}:
+                          device: ios-simulator-64_${{ version }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        runtimeVariant : "NativeAOT"
+                        testFilter: $(CATEGORYGROUP)
+                        skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
@@ -237,6 +283,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -269,6 +316,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - ${{ if eq(parameters.runCompatibilityTests, true) }}:  
     - stage: android_compatibility_ui_tests
@@ -303,6 +351,7 @@ stages:
                           DEVICE: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        skipProvisioning: ${{ parameters.skipProvisioning }}
 
     - stage: ios_compatibility_ui_tests
       displayName: iOS Compatibility UITests
@@ -339,3 +388,4 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        skipProvisioning: ${{ parameters.skipProvisioning }}

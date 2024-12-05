@@ -19,33 +19,33 @@ public class Issue3008 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void EnsureListViewEmptiesOut()
 	// {
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForElement("Not Grouped Item");
-	// 	RunningApp.WaitForElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForElement("Not Grouped Item");
+	// 	App.WaitForElement("Grouped Item");
 
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForElement("Not Grouped Item");
-	// 	RunningApp.WaitForElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForElement("Not Grouped Item");
+	// 	App.WaitForElement("Grouped Item");
 
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForNoElement("Not Grouped Item");
-	// 	RunningApp.WaitForNoElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForNoElement("Not Grouped Item");
+	// 	App.WaitForNoElement("Grouped Item");
 
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForElement("Not Grouped Item");
-	// 	RunningApp.WaitForElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForElement("Not Grouped Item");
+	// 	App.WaitForElement("Grouped Item");
 
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForNoElement("Not Grouped Item");
-	// 	RunningApp.WaitForNoElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForNoElement("Not Grouped Item");
+	// 	App.WaitForNoElement("Grouped Item");
 
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForElement("Not Grouped Item");
-	// 	RunningApp.WaitForElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForElement("Not Grouped Item");
+	// 	App.WaitForElement("Grouped Item");
 
-	// 	RunningApp.Tap("Click Until Success");
-	// 	RunningApp.WaitForNoElement("Not Grouped Item");
-	// 	RunningApp.WaitForNoElement("Grouped Item");
+	// 	App.Tap("Click Until Success");
+	// 	App.WaitForNoElement("Not Grouped Item");
+	// 	App.WaitForNoElement("Grouped Item");
 	// }
 }
 #endif

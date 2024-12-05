@@ -16,7 +16,7 @@ public class Bugzilla43469 : _IssuesUITest
 	// TODO From Xamarin.UITest Migration: test fails. Maybe we need to wait on the alert?
 	// [Test]
 	// [Category(UITestCategories.DisplayAlert)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public async Task Bugzilla43469Test()
 	// {
 	// 	App.WaitForElement("kButton");

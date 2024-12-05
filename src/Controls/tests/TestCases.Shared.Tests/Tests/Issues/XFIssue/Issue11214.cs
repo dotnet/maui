@@ -18,16 +18,16 @@ public class Issue11214 : _IssuesUITest
 	[FailsOnIOS]
 	public void FlyoutItemChangesPropagateCorrectlyToPlatformForShellElementsNotCurrentlyActive()
 	{
-		RunningApp.WaitForElement("PageLoaded");
+		App.WaitForElement("PageLoaded");
 		TapInFlyout("ExpandMe", makeSureFlyoutStaysOpen: true);
 
 		for (int i = 0; i < 2; i++)
-			RunningApp.WaitForElement($"Some Item: {i}");
+			App.WaitForElement($"Some Item: {i}");
 
 		TapInFlyout("ExpandMe", makeSureFlyoutStaysOpen: true);
 
 		for (int i = 0; i < 2; i++)
-			RunningApp.WaitForNoElement($"Some Item: {i}");
+			App.WaitForNoElement($"Some Item: {i}");
 	}
 	*/
 }

@@ -13,7 +13,7 @@ public class Bugzilla41271 : _IssuesUITest
 	public override string Issue => "[UWP] Memory Leak from ListView in TabbedPage";
 
 	string _cell = string.Empty;
-	
+
 	// [Test]
 	// [Category(UITestCategories.ListView)]
 	// public void MemoryLeakInListViewTabbedPageUWP()

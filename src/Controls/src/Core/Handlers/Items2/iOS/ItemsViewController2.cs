@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				DetachingFromWindow();
 			}
 		}
-		
+
 		internal void DisposeItemsSource()
 		{
 			ItemsSource?.Dispose();
@@ -401,13 +401,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
-			if (view == null)
+			if (view is null && (viewTemplate is null || viewTemplate is DataTemplateSelector))
 			{
 				if (formsElement != null)
 				{
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
-
 
 				uiView?.Dispose();
 				uiView = null;

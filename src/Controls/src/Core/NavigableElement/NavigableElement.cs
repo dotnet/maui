@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Navigation"/>.</summary>
 		public static readonly BindableProperty NavigationProperty = NavigationPropertyKey.BindableProperty;
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="StyleableElement.StyleProperty" />
 		public static readonly new BindableProperty StyleProperty = StyleableElement.StyleProperty;
 
 		internal NavigableElement()

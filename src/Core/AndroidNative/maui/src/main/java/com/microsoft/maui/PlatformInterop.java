@@ -688,5 +688,4 @@ public class PlatformInterop {
         }
         return null;
     }
-
 }
