@@ -15,8 +15,11 @@ stages:
         pool: $(HostedWinVS2019)
         steps:
           - powershell: |
-              if (git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$') {
-                $env:lclFileChange = 'true'
+              $hasLclFiles = git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$'
+              if ($hasLclFiles) {
+                Write-Host "##vso[task.setvariable variable=lclFileChange]true"
+              } else {
+                Write-Host "##vso[task.setvariable variable=lclFileChange]false"
               }
             displayName: 'Check for .lcl files in the commit'
 
