@@ -127,6 +127,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
                 Context.Variables[node] = new LocalVariable(type, variableName);
                 Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters)});");
+                node.RegisterSourceInfo(Context, Writer);
+
                 return;
             }
 
@@ -143,6 +145,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             
             Context.Variables[node] = new LocalVariable(type, variableName);
             Writer.WriteLine($"var {variableName} = {valueString};");
+            node.RegisterSourceInfo(Context, Writer);
             return;
         } 
         else if (ctor != null)
@@ -151,9 +154,9 @@ class CreateValuesVisitor : IXamlNodeVisitor
             
             Context.Variables[node] = new LocalVariable(type, variableName);
             Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
+            node.RegisterSourceInfo(Context, Writer);
             return;
         }
-
 	}
 
     public void Visit(ListNode node, INode parentNode)
@@ -168,6 +171,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
         Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
         Writer.WriteLine($"var {variableName} = this;");
+
+        node.RegisterSourceInfo(Context, Writer);
     }
     		
     static bool IsXaml2009LanguagePrimitive(IElementNode node)

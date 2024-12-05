@@ -18,6 +18,8 @@ class PrePost : IDisposable
     public static PrePost NewLineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
         => new(() => LineInfo(codeWriter, iXmlLineInfo, fileName), () => LineDefault(codeWriter, iXmlLineInfo));
 
+    public static PrePost NewConditional(IndentedTextWriter codeWriter, string condition)
+        => new(() => codeWriter.WriteLineNoTabs($"#if {condition}"), () => codeWriter.WriteLineNoTabs("#endif"));
     readonly Action post;
     PrePost(Action pre, Action post)
     {

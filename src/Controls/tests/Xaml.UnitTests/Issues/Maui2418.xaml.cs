@@ -4,21 +4,17 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 #if DEBUG
+	[XamlProcessing(XamlInflator.Default, true)]
 	public partial class Maui2418 : ContentPage
 	{
 		public Maui2418() => InitializeComponent();
-		public Maui2418(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
 
 		[TestFixture]
 		class Tests
 		{
-			[Test]
-			public void SourceInfoIsRelative([Values(false)] bool useCompiledXaml)
+			[Test] public void SourceInfoIsRelative([Values(XamlInflator.Runtime, XamlInflator.SourceGen)] XamlInflator inflator)
 			{
-				var page = new Maui2418(useCompiledXaml);
+				var page = new Maui2418(inflator);
 				Assert.That(page, Is.Not.Null);
 				var label0 = page.label0;
 				var sourceInfo = VisualDiagnostics.GetSourceInfo(label0);
