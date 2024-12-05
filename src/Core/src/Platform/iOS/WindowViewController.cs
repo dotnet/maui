@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using UIKit;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Platform;
 
@@ -57,6 +58,7 @@ internal class WindowViewController : UIViewController
 				_contentWrapperTopConstraint,
 				_contentWrapperView.BottomAnchor.ConstraintEqualTo(View.BottomAnchor)
 			});
+
 		}
 
 		SetUpTitleBar(window, mauiContext, true);
@@ -67,8 +69,6 @@ internal class WindowViewController : UIViewController
 	public override void ViewWillLayoutSubviews()
 	{
 		LayoutTitleBar();
-
-		UpdateContentWrapperContentFrame();
 
 		base.ViewWillLayoutSubviews();
 	}
@@ -84,7 +84,7 @@ internal class WindowViewController : UIViewController
 	{
 		// At this point the _contentWrapperView bounds haven't been set
 		// so we just use the windows bounds to set this value
-		var frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - (_titleBar?.Bounds.Height ?? 0));
+		var frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - (_contentWrapperTopConstraint?.Constant ?? 0));
 
 		if (_contentWrapperView is not null && _contentWrapperView.Subviews[0].Frame != frame)
 			_contentWrapperView.Subviews[0].Frame = frame;
@@ -146,18 +146,26 @@ internal class WindowViewController : UIViewController
 		if (_contentWrapperTopConstraint is null || View is null)
 			return;
 
+		var current = _contentWrapperTopConstraint.Constant;
 		_iTitleBarRef.TryGetTarget(out var iTitleBar);
 
-		if (_isTitleBarVisible && iTitleBar is not null && View is not null)
+		nfloat titleBarHeight = 0;
+
+		if (_isTitleBarVisible && iTitleBar is not null)
 		{
 			var measured = iTitleBar.Measure(View.Bounds.Width, double.PositiveInfinity);
 			iTitleBar.Arrange(new Graphics.Rect(0, 0, View.Bounds.Width, measured.Height));
-			_contentWrapperTopConstraint.Constant = (nfloat)measured.Height;
+			titleBarHeight = (nfloat)measured.Height;
 		}
-		else
+		
+		if (titleBarHeight == 0)
 		{
-			_contentWrapperTopConstraint.Constant = 0;
+			titleBarHeight = 36;
 		}
+
+		_contentWrapperTopConstraint.Constant = titleBarHeight;
+
+		UpdateContentWrapperContentFrame();
 	}
 
 	public void SetTitleBarVisibility(bool isVisible)
@@ -165,14 +173,7 @@ internal class WindowViewController : UIViewController
 		if (_contentWrapperTopConstraint is null || View is null)
 			return;
 			
-		if (_isTitleBarVisible && _titleBar is not null && View is not null)
-		{
-			_contentWrapperTopConstraint.Constant = (nfloat)_titleBar.Frame.Height;
-		}
-		else
-		{
-			_contentWrapperTopConstraint.Constant = 0;
-		}
+		LayoutTitleBar();
 	}
 }
 #endif // MACCATALYST
