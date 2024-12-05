@@ -12,7 +12,7 @@ public partial class Issue26091 : ContentPage
 		dataSection = new TableSection {
 			new TextCell{ Text = "Cell1" },
 			new TextCell{ Text = "Cell2", ContextActions = { new MenuItem{ Text = "Delete" } } },
-			new TextCell{ Text = "Add new", AutomationId="AddTextCell", Command = new Command (AddNew) }
+			new TextCell{ Text = "Add new"}
 		};
 
 		tableView = new TableView
@@ -24,7 +24,11 @@ public partial class Issue26091 : ContentPage
 			}
 		};
 
-		Content = tableView;
+		StackLayout stackLayout = new StackLayout();
+		Button button = new Button { Text = "Add new", AutomationId = "AddTextCell", Command = new Command(AddNew) };
+		stackLayout.Children.Add(button);
+		stackLayout.Children.Add(tableView);
+		Content = stackLayout;
 	}
 
 	void AddNew(object parameters)
