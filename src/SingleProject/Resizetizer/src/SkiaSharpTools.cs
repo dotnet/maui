@@ -201,6 +201,7 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					using var stream = File.Create(destination);
 					tempBitmap.Encode(stream, SKEncodedImageFormat.Png, 100);
+					return;
 				}
 				catch (Exception ex)
 				{
