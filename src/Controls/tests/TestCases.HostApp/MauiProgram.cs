@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-#if IOS || ANDROID
+#if IOS || ANDROID || MACCATALYST
 			appBuilder.UseMauiMaps();
 #endif
 			appBuilder.UseMauiApp<App>()
