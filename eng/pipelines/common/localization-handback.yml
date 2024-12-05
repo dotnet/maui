@@ -13,13 +13,16 @@ stages:
         displayName: 'Check for .lcl files'
         pool: $(HostedWinVS2019)
         steps:
-          - script: |
-              if git diff --name-only HEAD~1 HEAD | grep '\.lcl$'; then
+          - powershell: |
+              if (git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$') {
                 Write-Host "##vso[task.setvariable variable=containsLclFiles;isOutput=true]true"
-              else
+              } else {
                 Write-Host "##vso[task.setvariable variable=containsLclFiles;isOutput=true]false"
-              fi
+              }
             displayName: 'Check for .lcl files in the commit'
+        outputs:
+          containsLclFiles: $(check_lcl_files.containsLclFiles)
+
 
       - job : generate_resx
         displayName: 'Process incoming translations'
