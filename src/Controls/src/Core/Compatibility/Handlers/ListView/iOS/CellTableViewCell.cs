@@ -81,8 +81,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			cell.TableView = tableView;
 			var handler = cell.ToHandler(cell.FindMauiContext());
 			var renderer = (handler as CellRenderer) ?? (handler.PlatformView as CellRenderer);
+			UITableViewCell platformCell;
 
-			var platformCell = renderer.GetCell(cell, reusableCell, tableView);
+			if (cell is not ViewCell)
+			{
+				platformCell = renderer.GetCell(cell, reusableCell, tableView);
+			}
+			else
+			{
+				platformCell = renderer.PlatformView;
+			}
 
 			var cellWithContent = platformCell;
 
