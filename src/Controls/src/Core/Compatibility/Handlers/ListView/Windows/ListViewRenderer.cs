@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _subscribedToTapped;
 		bool _disposed;
 		CollectionViewSource _collectionViewSource;
-
+		bool _isLoaded;
+		ScrollToRequestedEventArgs _pendingScrollTo;
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 
@@ -92,6 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Control != null)
 				{
 					Control.Loaded -= ControlOnLoaded;
+					Control.Unloaded -= OnControlUnloaded;
 				}
 			}
 
@@ -131,12 +133,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Control != null)
 				{
 					Control.Loaded += ControlOnLoaded;
+					Control.Unloaded += OnControlUnloaded;
 				}
 			}
 		}
 
+		void OnControlUnloaded(object sender, RoutedEventArgs e)
+		{
+			_isLoaded = false;
+		}
+
+
 		void ControlOnLoaded(object sender, RoutedEventArgs e)
 		{
+			_isLoaded = true;
+			if (_pendingScrollTo is not null)
+			{
+				OnElementScrollToRequested(this, _pendingScrollTo);
+				_pendingScrollTo = null;
+			}
+
 			var scrollViewer = GetScrollViewer();
 			scrollViewer?.RegisterPropertyChangedCallback(ScrollViewer.VerticalOffsetProperty, (o, dp) =>
 			{
@@ -679,6 +695,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnElementScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
+			if (!_isLoaded)
+			{
+				_pendingScrollTo = e;
+				return;
+			}
+
 			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
 			ScrollTo(scrollArgs.Group, scrollArgs.Item, e.Position, e.ShouldAnimate);
 		}
