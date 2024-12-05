@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _subscribedToTapped;
 		bool _disposed;
 		CollectionViewSource _collectionViewSource;
+
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 
