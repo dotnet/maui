@@ -439,12 +439,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 #if NET7_0_OR_GREATER
 			// get every quote in the string along with all the backslashes preceding it
 			[GeneratedRegex (brPattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
-			public static partial Regex NewLinesRegex
+			internal static partial Regex NewLinesRegex
 			{
 				get;
 			}
 #else
-			static readonly Regex NewLinesRegex =
+			internal static readonly Regex NewLinesRegex =
 											new (
 												// get every quote in the string along with all the backslashes preceding it
 												brPattern,
