@@ -98,6 +98,15 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
+
+		void ToggleTitleBarOnWindow_Clicked(object sender, EventArgs e)
+		{
+			if (Window.TitleBar  is not null)
+				Window.TitleBar = null;
+			else
+				Window.TitleBar = _customTitleBar;
+		}
+		
 		private void TrailingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)

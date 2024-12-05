@@ -130,11 +130,7 @@ internal class WindowViewController : UIViewController
 
 		if (!_isTitleBarVisible)
 		{
-			titleBarHeight = 36;
-		}
-		else if (titleBarHeight < 36)
-		{
-			titleBarHeight = 36;
+			titleBarHeight = 0;
 		}
 
 		var newFrame = new CGRect(0, titleBarHeight, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);

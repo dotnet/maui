@@ -124,6 +124,13 @@
                     Text="Set Foreground Color"
                     Clicked="ForegroundColorButton_Clicked" />
             </HorizontalStackLayout>
+            
+            <HorizontalStackLayout IgnoreSafeArea="True"
+                Spacing="8">
+                <Button 
+                    Text="Toggle Title Bar On Window"
+                    Clicked="ToggleTitleBarOnWindow_Clicked" />
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>
