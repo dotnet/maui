@@ -1,13 +1,12 @@
 parameters:
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
-  # lclFileChange: false
 
 stages:
   - stage: localization_handback
     displayName: Localization Handback
     dependsOn: []
-    condition: eq(variables.isLocBranch, true)
+    condition: eq(variables.isLocHandoffBranch, true)
 
     jobs:
       - job: generate_resx
@@ -18,7 +17,6 @@ stages:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
 
         steps:
-          # Step 1: Check for .lcl files and set a job-level variable
           - powershell: |
               $hasLclFiles = git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$'
               if ($hasLclFiles) {
@@ -30,7 +28,6 @@ stages:
               }
             displayName: 'Check for .lcl files'
 
-          # Step 2: Conditionally run OneLocBuild@2 based on the variable
           - task: OneLocBuild@2
             displayName: 'Localization Build'
             condition: eq(variables['hasLclFiles'], 'true')
