@@ -75,6 +75,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		internal virtual void Disconnect()
+		{
+			DisposeItemsSource();
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -599,7 +604,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
-			if (view is null && viewTemplate is null)
+			if (view is null && (viewTemplate is null || viewTemplate is DataTemplateSelector))
 			{
 				if (formsElement != null)
 				{

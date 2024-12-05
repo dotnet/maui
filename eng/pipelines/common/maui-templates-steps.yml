@@ -2,6 +2,12 @@ parameters:
   - name: condition
     default: true
 
+  - name: skipXcode
+    default: false
+
+  - name: skipProvisioning
+    default: true
+
   - name: artifactName
     type: string
     default: nuget
@@ -34,8 +40,8 @@ steps:
 - template: provision.yml
   parameters:
     checkoutDirectory: ${{ parameters.checkoutDirectory }}
-    skipXcode: false
-    skipProvisioning: true
+    skipXcode: ${{ parameters.skipXcode }}
+    skipProvisioning: ${{ parameters.skipProvisioning }}
 
 - task: DownloadBuildArtifacts@0
   displayName: 'Download Packages'

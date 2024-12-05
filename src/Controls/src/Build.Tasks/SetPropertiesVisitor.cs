@@ -666,7 +666,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
 					}
 					else
+					{
+						if (previousPartTypeRef.IsArray)
+							previousPartTypeRef = previousPartTypeRef.GetElementType();
+						
 						previousPartTypeRef.ResolveCached(context.Cache);
+					}
 
 				}
 			}
@@ -1005,12 +1010,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					il.Emit(Ldarga_S, (byte)0);
 				else
 					il.Emit(Ldarg_0);
-				var lastGetterTypeRef = properties[i - 1].property.PropertyType;
+				var lastGetterTypeRef = properties[i - 1].property?.PropertyType;
 				var locs = new Dictionary<TypeReference, VariableDefinition>();
 				il.Append(DigProperties(properties.Take(i), locs, null, node as IXmlLineInfo, module));
 				foreach (var loc in locs.Values)
 					partGetter.Body.Variables.Add(loc);
-				if (lastGetterTypeRef.IsValueType)
+				if (lastGetterTypeRef != null && lastGetterTypeRef.IsValueType)
 					il.Emit(Box, module.ImportReference(lastGetterTypeRef));
 
 				il.Emit(Ret);
@@ -1535,7 +1540,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			module.ImportReference(parent.VariableType.ResolveCached(context.Cache));
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
 			propertySetterRef.ImportTypes(module);
-			var propertyType = property.PropertyType.ResolveGenericParameters(declaringTypeReference);
+			var propertyType = module.ImportReference(property.PropertyType.ResolveGenericParameters(declaringTypeReference));
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 
