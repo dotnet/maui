@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+#if WINDOWS
 	public class ShellMenuIBarItemsTest : _IssuesUITest
 	{
 		public ShellMenuIBarItemsTest(TestDevice testDevice) : base(testDevice)
@@ -18,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			Task.Delay(millisecondsDelay: 100).Wait();
 
-			App.Screenshot("VerifyMenuBarItemColorsWork");
+			VerifyScreenshot("VerifyMenuBarItemColorsWork");
 		}
 	}
+#endif
 }
