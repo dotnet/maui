@@ -106,7 +106,21 @@ namespace Maui.Controls.Sample.Pages
 			else
 				Window.TitleBar = _customTitleBar;
 		}
-		
+
+		void ToggleHasNavigationBar_Clicked(object sender, EventArgs eventArgs)
+		{
+			if (Shell.GetNavBarIsVisible(this))
+			{
+				Shell.SetNavBarIsVisible(this, false);
+				NavigationPage.SetHasNavigationBar(this, false);
+			}
+			else
+			{
+				Shell.SetNavBarIsVisible(this, true);
+				NavigationPage.SetHasNavigationBar(this, true);
+			}
+		}
+
 		private void TrailingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)

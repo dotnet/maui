@@ -5,6 +5,7 @@
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="False"
              Shell.NavBarIsVisible="True"
+             NavigationPage.HasNavigationBar="True"
              Title="TitleBarPage">
 
     <Grid IgnoreSafeArea="True"
@@ -42,7 +43,7 @@
                 Text="{Binding Subtitle, Mode=TwoWay}"
                 WidthRequest="120" />
           
-            <HorizontalStackLayout IgnoreSafeArea="True">
+            <HorizontalStackLayout >
                 <CheckBox
                     x:Name="LeadingContentCheckBox"
                     IsChecked="False"
@@ -52,7 +53,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout IgnoreSafeArea="True">
+            <HorizontalStackLayout >
                 <CheckBox 
                     x:Name="ContentCheckBox"
                     IsChecked="False"
@@ -62,7 +63,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout IgnoreSafeArea="True">
+            <HorizontalStackLayout >
                 <CheckBox 
                     x:Name="TrailingContentCheckBox"
                     IsChecked="False"
@@ -72,7 +73,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout IgnoreSafeArea="True">
+            <HorizontalStackLayout >
                 <CheckBox
                     x:Name="TallModeCheckBox"
                     IsChecked="False"
@@ -82,7 +83,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout IgnoreSafeArea="True">
+            <HorizontalStackLayout >
                 <CheckBox
                     IsChecked="{Binding ShowTitleBar, Mode=TwoWay}"/>
                 <Label
@@ -91,7 +92,7 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
   
-        <VerticalStackLayout  IgnoreSafeArea="True"
+        <VerticalStackLayout  
             Spacing="16"
             Margin="16"
             Grid.Column="1">
@@ -99,7 +100,7 @@
                 Text="Color Options"
                 FontSize="24"/>
       
-            <HorizontalStackLayout IgnoreSafeArea="True"
+            <HorizontalStackLayout 
                 Spacing="8">
                 <Entry 
                     x:Name="ColorTextBox"
@@ -112,7 +113,7 @@
                     Clicked="ColorButton_Clicked" />
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout IgnoreSafeArea="True"
+            <HorizontalStackLayout 
                 Spacing="8">
                 <Entry 
                     x:Name="ForegroundColorTextBox"
@@ -124,12 +125,15 @@
                     Text="Set Foreground Color"
                     Clicked="ForegroundColorButton_Clicked" />
             </HorizontalStackLayout>
-            
-            <HorizontalStackLayout IgnoreSafeArea="True"
+
+            <HorizontalStackLayout 
                 Spacing="8">
                 <Button 
                     Text="Toggle Title Bar On Window"
                     Clicked="ToggleTitleBarOnWindow_Clicked" />
+                <Button 
+                    Text="Toggle Has Navigation Bar"
+                    Clicked="ToggleHasNavigationBar_Clicked" />
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>
