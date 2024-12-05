@@ -1,6 +1,7 @@
 parameters:
-      CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
-      GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+  CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
+  GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
+  lclFileChange: false
 
 stages:
   - stage: localization_handback
@@ -15,9 +16,7 @@ stages:
         steps:
           - powershell: |
               if (git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$') {
-                Write-Host "##vso[task.setvariable variable=containsLclFiles;isOutput=true]true"
-              } else {
-                Write-Host "##vso[task.setvariable variable=containsLclFiles;isOutput=true]false"
+                $env:lclFileChange = 'true'
               }
             displayName: 'Check for .lcl files in the commit'
 
@@ -25,7 +24,7 @@ stages:
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
         dependsOn: check_lcl_files
-        condition: eq(dependencies.check_lcl_files.outputs['check_lcl_files.containsLclFiles'], 'true')
+        condition: ${{ parameters.lclFileChange }}
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
