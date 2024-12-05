@@ -387,4 +387,18 @@ static class NodeSGExtensions
 
         return true;
     }
+
+    public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer)
+    {
+        if (!context.Variables.TryGetValue(node, out var variable))
+            return;
+
+        var assembly = context.Compilation.Assembly.Name;
+        var filePath = context.FilePath;
+        var lineInfo = node as IXmlLineInfo;
+        using (PrePost.NewConditional(writer, "_MAUIXAML_SG_SOURCEINFO"))
+        {
+            writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}, new global::System.Uri(\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+        }
+    }
 }
