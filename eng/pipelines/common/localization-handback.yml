@@ -9,9 +9,19 @@ stages:
     condition: eq(variables.isLocBranch, true)
 
     jobs:
+      - job: check_lcl_files
+        displayName: 'Check for .lcl files'
+        pool: $(HostedWinVS2019)
+        steps:
+          - script: |
+              git diff --name-only HEAD~1 HEAD | grep '\.lcl$' && echo "##vso[task.setvariable variable=containsLclFiles]true" || echo "##vso[task.setvariable variable=containsLclFiles]false"
+            displayName: 'Check for .lcl files in the commit'
+
       - job : generate_resx
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
+        dependsOn: check_lcl_files
+        condition: eq(dependencies.check_lcl_files.outputs['containsLclFiles'], 'true')
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
