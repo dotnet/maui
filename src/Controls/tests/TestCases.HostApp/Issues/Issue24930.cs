@@ -6,24 +6,24 @@
 		const string FirstPickerItem = "Baboon";
 		const string PickerId = "picker";
 		public Issue24930()
-		{			
-			Picker picker = new Picker 
-			{ 
+		{
+			Picker picker = new Picker
+			{
 				AutomationId = PickerId,
 				Title = "Select a monkey"
 			};
 
-			
+
 			picker.ItemsSource = new List<string>
 			{
 				FirstPickerItem,
 				"Capuchin Monkey"
 			};
 
-			
+
 			Content = new StackLayout()
-			{ 
-				Children = { picker } 
+			{
+				Children = { picker }
 			};
 		}
 	}
