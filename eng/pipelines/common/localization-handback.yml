@@ -17,9 +17,9 @@ stages:
           - powershell: |
               $hasLclFiles = git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$'
               if ($hasLclFiles) {
-                Write-Host "##vso[task.setvariable variable=lclFileChange]true"
+                Write-Host "##vso[task.setvariable variable=lclFileChange;isOutput=true]true"
               } else {
-                Write-Host "##vso[task.setvariable variable=lclFileChange]false"
+                Write-Host "##vso[task.setvariable variable=lclFileChange;isOutput=true]false"
               }
             displayName: 'Check for .lcl files in the commit'
 
@@ -27,7 +27,7 @@ stages:
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
         dependsOn: check_lcl_files
-        condition: eq(variables['lclFileChange'], 'true')
+        condition: eq(dependencies.check_lcl_files.outputs['lclFileChange'], 'true')
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
