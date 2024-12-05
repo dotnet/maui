@@ -1540,7 +1540,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			module.ImportReference(parent.VariableType.ResolveCached(context.Cache));
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
 			propertySetterRef.ImportTypes(module);
-			var propertyType = property.PropertyType.ResolveGenericParameters(declaringTypeReference);
+			var propertyType = module.ImportReference(property.PropertyType.ResolveGenericParameters(declaringTypeReference));
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 
