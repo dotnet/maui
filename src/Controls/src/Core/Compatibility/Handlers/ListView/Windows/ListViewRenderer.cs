@@ -19,6 +19,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Maui.ApplicationModel;
 using Windows.Foundation;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView;
 using UwpScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
@@ -46,8 +47,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _subscribedToTapped;
 		bool _disposed;
 		CollectionViewSource _collectionViewSource;
-		bool _isLoaded;
-		ScrollToRequestedEventArgs _pendingScrollTo;
 		UwpScrollBarVisibility? _defaultHorizontalScrollVisibility;
 		UwpScrollBarVisibility? _defaultVerticalScrollVisibility;
 
@@ -93,7 +92,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Control != null)
 				{
 					Control.Loaded -= ControlOnLoaded;
-					Control.Unloaded -= OnControlUnloaded;
 				}
 			}
 
@@ -133,26 +131,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Control != null)
 				{
 					Control.Loaded += ControlOnLoaded;
-					Control.Unloaded += OnControlUnloaded;
 				}
 			}
 		}
 
-		void OnControlUnloaded(object sender, RoutedEventArgs e)
-		{
-			_isLoaded = false;
-		}
-
-
 		void ControlOnLoaded(object sender, RoutedEventArgs e)
 		{
-			_isLoaded = true;
-			if (_pendingScrollTo is not null)
-			{
-				OnElementScrollToRequested(this, _pendingScrollTo);
-				_pendingScrollTo = null;
-			}
-
 			var scrollViewer = GetScrollViewer();
 			scrollViewer?.RegisterPropertyChangedCallback(ScrollViewer.VerticalOffsetProperty, (o, dp) =>
 			{
@@ -613,12 +597,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (viewer == null)
 			{
 				RoutedEventHandler loadedHandler = null;
-				loadedHandler = async (o, e) =>
+				loadedHandler = (o, e) =>
 				{
 					List.Loaded -= loadedHandler;
 
 					// Here we try to avoid an exception, see explanation at bottom
-					await Control.Dispatcher.RunIdleAsync(args => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
+					MainThread.BeginInvokeOnMainThread(() => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
 				};
 				List.Loaded += loadedHandler;
 				return;
@@ -695,12 +679,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnElementScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
-			if (!_isLoaded)
-			{
-				_pendingScrollTo = e;
-				return;
-			}
-
 			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
 			ScrollTo(scrollArgs.Group, scrollArgs.Item, e.Position, e.ShouldAnimate);
 		}
