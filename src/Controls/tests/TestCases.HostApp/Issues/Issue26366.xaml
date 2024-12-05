@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue26366">
+        <Grid RowDefinitions="Auto,*">
+                <StackLayout
+                        Grid.Row="0"
+                        Orientation="Vertical"
+                        Spacing="5"
+                        BackgroundColor="Beige">
+                        <Label
+                                x:Name="Label"
+                                AutomationId="Label"
+                                Text="0"
+                                HorizontalTextAlignment="Center"/>
+                        <Button
+                                Text="NewItemsSource"
+                                AutomationId="Button"
+                                Clicked="NewItemsSourceClicked"
+                                HorizontalOptions="Center"/>
+                </StackLayout>
+
+                <CollectionView
+                        Grid.Row="1"
+                        AutomationId="CollectionView"
+                        ItemsSource="{Binding Items}"
+                        Scrolled="CollectionView_OnScrolled">
+                        <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                        <Grid BackgroundColor="#F1F1F1">
+                                                <Label Text="{Binding .}"
+                                                       Margin="10"
+                                                       HorizontalTextAlignment="Center"
+                                                       VerticalTextAlignment="Center"/>
+                                        </Grid>
+                                </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                </CollectionView>
+        </Grid>
+</ContentPage>
