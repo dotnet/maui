@@ -23,11 +23,19 @@ stages:
               }
             displayName: 'Check for .lcl files in the commit'
 
+          - script: |
+              echo "Output value: $(dependencies.check_lcl_files.outputs['check_lcl_files.lclFileChange'])"
+              echo "Output value: $(dependencies.check_lcl_files['check_lcl_files.lclFileChange'])"
+            displayName: 'Debug output variable'
+
+        outputs:
+          lclFileChange: $[ dependencies.check_lcl_files.outputs['lclFileChange'] ]
+
       - job : generate_resx
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
         dependsOn: check_lcl_files
-        condition: eq(dependencies.check_lcl_files.outputs['lclFileChange'], 'true')
+        condition: eq(dependencies.check_lcl_files.outputs['check_lcl_files.lclFileChange'], 'true')
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
