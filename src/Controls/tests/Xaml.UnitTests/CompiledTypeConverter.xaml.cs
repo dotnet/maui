@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				if (inflator == XamlInflator.XamlC)
 				{
-					MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef);
+					MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out bool hasLoggedErrors);
 					Assert.That(!hasLoggedErrors);
 					Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
 				}
