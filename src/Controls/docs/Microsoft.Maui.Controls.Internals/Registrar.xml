@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="ExtraAssemblies">
@@ -39,7 +38,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterAll">
@@ -62,7 +60,6 @@
       <Docs>
         <param name="attrTypes">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterAll">
@@ -85,8 +82,6 @@
       <Docs>
         <param name="attrTypes">To be added.</param>
         <param name="flags">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Registered">
@@ -106,7 +101,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterEffects">
@@ -130,7 +124,6 @@
         <param name="resolutionName">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="effectAttributes">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterRenderers">
@@ -152,7 +145,6 @@
       <Docs>
         <param name="attributes">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterStylesheets">
@@ -173,8 +165,6 @@
       </Parameters>
       <Docs>
         <param name="flags">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

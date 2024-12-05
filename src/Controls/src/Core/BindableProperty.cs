@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		public string PropertyName { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='ReturnType']/Docs/*" />
-		[DynamicallyAccessedMembers(ReturnTypeMembers)] 
+		[DynamicallyAccessedMembers(ReturnTypeMembers)]
 		public Type ReturnType { get; }
 
 		internal BindablePropertyBindingChanging BindingChanging { get; private set; }

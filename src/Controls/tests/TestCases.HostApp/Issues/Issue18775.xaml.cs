@@ -18,11 +18,11 @@ namespace Maui.Controls.Sample.Issues
 
 	}
 
-	public partial class Issue18775NavPage :  ContentPage
+	public partial class Issue18775NavPage : ContentPage
 	{
 		public Issue18775NavPage()
 		{
-			this.Content = new Label() { Text = "Label" ,AutomationId = "MauiLabel" };
+			this.Content = new Label() { Text = "Label", AutomationId = "MauiLabel" };
 		}
 	}
 }

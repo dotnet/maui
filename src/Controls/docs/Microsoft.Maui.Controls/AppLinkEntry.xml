@@ -33,7 +33,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.AppLinkEntry" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AppLinkUri">
@@ -56,7 +55,6 @@
       <Docs>
         <summary>Gets or sets an application-specific URI that uniquely describes content within an app.</summary>
         <value>An application-specific URI that uniquely describes content within an app.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AppLinkUriProperty">
@@ -75,7 +73,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.AppLinkEntry.AppLinkUri" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Description">
@@ -98,7 +95,6 @@
       <Docs>
         <summary>Gets or sets a description that appears with the item in search results.</summary>
         <value>The description that appears with the item in search results.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DescriptionProperty">
@@ -117,7 +113,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.AppLinkEntry.Description" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromUri">
@@ -140,8 +135,6 @@
       <Docs>
         <param name="uri">A URI that can be parsed by the target appliction to recreate a specific state.</param>
         <summary>Creates and returns a new <see cref="T:Microsoft.Maui.Controls.AppLinkEntry" /> for the specified <paramref name="uri" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsLinkActive">
@@ -183,7 +176,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.AppLinkEntry.IsLinkActive" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="KeyValues">
@@ -229,7 +221,6 @@
       <Docs>
         <summary>Gets or sets a small image that appears with the item in search results.</summary>
         <value>A small image that appears with the item in search results</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbnailProperty">
@@ -248,7 +239,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.AppLinkEntry.Thumbnail" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Title">
@@ -271,7 +261,6 @@
       <Docs>
         <summary>Gets or sets the title of the item.</summary>
         <value>The title of the item.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleProperty">
@@ -290,7 +279,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.AppLinkEntry.Title" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -311,7 +299,6 @@
       <Docs>
         <summary>Returns a string representation of this <see cref="T:Microsoft.Maui.Controls.AppLinkEntry" />.</summary>
         <returns>A  string representation of this <see cref="T:Microsoft.Maui.Controls.AppLinkEntry" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

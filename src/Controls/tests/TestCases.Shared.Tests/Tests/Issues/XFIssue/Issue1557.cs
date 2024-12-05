@@ -13,7 +13,7 @@ public class Issue1557 : _IssuesUITest
 	}
 
 	public override string Issue => "Setting source crashes if view was detached from visual tre";
-	
+
 	// Maybe this one just works? Not sure where "Bug Repro's" should come from
 	// [Test]
 	// [Category(UITestCategories.ListView)]

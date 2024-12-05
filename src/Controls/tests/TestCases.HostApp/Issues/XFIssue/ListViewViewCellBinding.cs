@@ -22,6 +22,7 @@ public class ExpenseListViewCell : ViewCell
 		expenseNameLabel.SetBinding(Label.TextProperty, "Name");
 
 		var expenseAmountLabel = new Label();
+		expenseAmountLabel.SetBinding(Label.AutomationIdProperty, new Binding("Amount"));
 		var expenseAmountToStringConverter = new GenericValueConverter(obj => string.Format("{0:C}", ((decimal)obj)));
 		expenseAmountLabel.SetBinding(Label.TextProperty, new Binding("Amount", converter: expenseAmountToStringConverter));
 

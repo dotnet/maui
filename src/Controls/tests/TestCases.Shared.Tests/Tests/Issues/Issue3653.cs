@@ -16,7 +16,7 @@ public class Issue3653 : _IssuesUITest
 	// [Test]
 	// [Category(UITestCategories.ContextActions)]
 	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TestRemovingContextMenuItems()
 	// {
 	// 	for (int i = 1; i <= 3; i++)

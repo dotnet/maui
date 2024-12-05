@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Controls.Design
 				"Numeric",
 				"Telephone",
 				"Text",
-				"Url"
+				"Url",
+				"Password",
+				"Date",
+				"Time"
 			};
 	}
 }

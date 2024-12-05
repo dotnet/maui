@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public async Task Issue3049Test()
 		{
 			App.WaitForElement(Button1Id);

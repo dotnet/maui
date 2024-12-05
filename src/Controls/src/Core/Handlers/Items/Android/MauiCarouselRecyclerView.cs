@@ -571,46 +571,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (Carousel.Loop)
+			// If the height or width are unbounded and the user is set to
+			// Loop then we can't just do an infinite measure.
+			// Looping works by setting item count to 16384 so if the 
+			// CarV has infinite room it'll generate all 16384 items.
+			// This code forces the adapter to just measure the first item
+			// And then that measure is used for the WxH of the CarouselView
+
+			// I found that "AtMost" also causes this behavior so
+			// that's why I'm turning "AtMost" into "Exactly"
+			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost)
 			{
-				// If the height or width are unbounded and the user is set to
-				// Loop then we can't just do an infinite measure.
-				// Looping works by setting item count to 16384 so if the 
-				// CarV has infinite room it'll generate all 16384 items.
-				// This code forces the adapter to just measure the first item
-				// And then that measure is used for the WxH of the CarouselView
-
-				// I found that "AtMost" also causes this behavior so
-				// that's why I'm turning "AtMost" into "Exactly"
-				if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost)
-				{
-					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(widthMeasureSpec.GetSize());
-				}
-
-				if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
-				{
-					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(heightMeasureSpec.GetSize());
-				}
-
-				if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified ||
-					MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
-				{
-					if (ItemsViewAdapter.ItemCount > 0)
-					{
-						// Retrieve the first item of the CarouselView and measure it
-						// This is what we'll use for the CarV WxH if the requested measure
-						// is for an infinite amount of space
-
-						var viewType = ItemsViewAdapter.GetItemViewType(0);
-						var viewHolder = (ViewHolder)ItemsViewAdapter.CreateViewHolder(this, viewType);
-						ItemsViewAdapter.BindViewHolder(viewHolder, 0);
-						viewHolder.ItemView.Measure(widthMeasureSpec, heightMeasureSpec);
-						widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
-						heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
-					}
-				}
+				widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(widthMeasureSpec.GetSize());
 			}
 
+			if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
+			{
+				heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(heightMeasureSpec.GetSize());
+			}
+
+			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.Unspecified ||
+				MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.Unspecified)
+			{
+				if (ItemsViewAdapter.ItemCount > 0)
+				{
+					// Retrieve the first item of the CarouselView and measure it
+					// This is what we'll use for the CarV WxH if the requested measure
+					// is for an infinite amount of space
+
+					var viewType = ItemsViewAdapter.GetItemViewType(0);
+					var viewHolder = (ViewHolder)ItemsViewAdapter.CreateViewHolder(this, viewType);
+					ItemsViewAdapter.BindViewHolder(viewHolder, 0);
+					viewHolder.ItemView.Measure(widthMeasureSpec, heightMeasureSpec);
+					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
+					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
+				}
+			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 

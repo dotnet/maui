@@ -40,7 +40,6 @@
       </ReturnValue>
       <Docs>
         <summary>The string "Android", representing the Android operating system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BeginInvokeOnMainThread">
@@ -123,7 +122,6 @@ Device.BeginInvokeOnMainThread (() => {
       <Docs>
         <summary>Returns the current <see cref="T:System.Threading.SynchronizationContext" /> from the main thread.</summary>
         <returns>The current <see cref="T:System.Threading.SynchronizationContext" /> from the main thread.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNamedSize">
@@ -152,7 +150,6 @@ Device.BeginInvokeOnMainThread (() => {
         <param name="targetElementType">The element type for which to calculate the numeric size.</param>
         <summary>Returns a double that represents the named size for the font that is used on the element on the native platform.</summary>
         <returns>The named size for the font that is used on the element on the native platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNamedSize">
@@ -181,7 +178,6 @@ Device.BeginInvokeOnMainThread (() => {
         <param name="targetElement">The element for which to calculate the numeric size.</param>
         <summary>Returns a double that represents a font size that corresponds to <paramref name="size" /> on <paramref name="targetElement" />.</summary>
         <returns>A double that represents a font size that corresponds to <paramref name="size" /> on <paramref name="targetElement" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNamedSize">
@@ -214,7 +210,6 @@ Device.BeginInvokeOnMainThread (() => {
         <param name="useOldSizes">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GTK">
@@ -233,7 +228,6 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>The string "GTK", representing the Linux operating system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Idiom">
@@ -259,7 +253,6 @@ Device.BeginInvokeOnMainThread (() => {
       <Docs>
         <summary>Gets the kind of device that Microsoft.Maui.Controls is currently working on.</summary>
         <value>A <see cref="T:Microsoft.Maui.Controls.TargetIdiom" /> that represents the device type.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="info">
@@ -283,7 +276,6 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Info">
@@ -307,8 +299,6 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InvokeOnMainThreadAsync">
@@ -330,8 +320,6 @@ Device.BeginInvokeOnMainThread (() => {
       <Docs>
         <param name="action">The Action to invoke</param>
         <summary>Invokes an Action on the device main (UI) thread.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InvokeOnMainThreadAsync">
@@ -353,8 +341,6 @@ Device.BeginInvokeOnMainThread (() => {
       <Docs>
         <param name="funcTask">The Func to invoke.</param>
         <summary>Invokes a Func on the device main (UI) thread.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InvokeOnMainThreadAsync&lt;T&gt;">
@@ -380,8 +366,6 @@ Device.BeginInvokeOnMainThread (() => {
         <typeparam name="T">The return type of the Func.</typeparam>
         <param name="funcTask">The Func to invoke.</param>
         <summary>Invokes a Func on the device main (UI) thread.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InvokeOnMainThreadAsync&lt;T&gt;">
@@ -407,8 +391,6 @@ Device.BeginInvokeOnMainThread (() => {
         <typeparam name="T">The return type of the Func.</typeparam>
         <param name="func">The Func to invoke.</param>
         <summary>Invokes a Func on the device main (UI) thread.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="iOS">
@@ -427,7 +409,6 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>The string "iOS", representing the iOS operating system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsInvokeRequired">
@@ -451,8 +432,6 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="macOS">
@@ -471,7 +450,6 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>The string "macOS", representing the macOS operating system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPlatform">
@@ -644,7 +622,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       <Docs>
         <summary>Gets the <see cref="T:Microsoft.Maui.Controls.TargetPlatform" /> indicating the OS Microsoft.Maui.Controls is working on.</summary>
         <value>A <see cref="T:Microsoft.Maui.Controls.TargetPlatform" /> that indicates the current OS.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PlatformServices">
@@ -668,8 +645,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RuntimePlatform">
@@ -688,8 +663,6 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </ReturnValue>
       <Docs>
         <summary>Gets the kind of device that Microsoft.Maui.Controls is currently working on.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StartTimer">
@@ -755,7 +728,6 @@ Device.StartTimer (new TimeSpan (0, 0, 60), () =>
       </ReturnValue>
       <Docs>
         <summary>The string "Tizen", representing the Tizen operating system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UWP">
@@ -774,7 +746,6 @@ Device.StartTimer (new TimeSpan (0, 0, 60), () =>
       </ReturnValue>
       <Docs>
         <summary>The string "UWP", representing the UWP operating system.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WPF">
@@ -793,7 +764,6 @@ Device.StartTimer (new TimeSpan (0, 0, 60), () =>
       </ReturnValue>
       <Docs>
         <summary>The string "WPF", representing the Windows Presentation Foundation framework.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

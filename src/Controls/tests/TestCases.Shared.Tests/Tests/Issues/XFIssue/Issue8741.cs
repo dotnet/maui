@@ -14,7 +14,7 @@ public class Issue8741 : _IssuesUITest
 
 	//[Test]
 	//[Category(UITestCategories.Shell)]
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void Issue8741Test()
 	//{
 	//	App.WaitForElement("Add");

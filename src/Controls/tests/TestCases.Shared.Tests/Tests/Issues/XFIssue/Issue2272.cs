@@ -14,7 +14,7 @@ public class Issue2272 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.Navigation)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// #if MACCATALYST // Check if this is still try for MAUI?
 	// 	[Ignore("EnterText problems in UITest Desktop")]
 	// #endif

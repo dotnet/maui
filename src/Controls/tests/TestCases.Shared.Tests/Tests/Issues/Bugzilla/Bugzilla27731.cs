@@ -7,9 +7,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla27731 : _IssuesUITest
 {
-    public Bugzilla27731(TestDevice testDevice) : base(testDevice)
-    {
-    }
+	public Bugzilla27731(TestDevice testDevice) : base(testDevice)
+	{
+	}
 
 	public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
 

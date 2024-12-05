@@ -12,7 +12,6 @@
   </Base>
   <Docs>
     <summary>Enumerates valid modal presentation styles.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Automatic">
@@ -30,7 +29,6 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="FormSheet">
@@ -84,7 +82,6 @@
       </ReturnValue>
       <MemberValue>3</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="PageSheet">
@@ -102,7 +99,6 @@
       </ReturnValue>
       <MemberValue>4</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
   </Members>

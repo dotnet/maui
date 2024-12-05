@@ -35,6 +35,7 @@ pr:
       - THIRD-PARTY-NOTICES.TXT
 
 variables:
+  - template: /eng/pipelines/common/variables.yml@self
   - template: /eng/common/templates/variables/pool-providers.yml
 
   - name: _BuildConfig
@@ -46,75 +47,117 @@ variables:
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
 
-  # needed for darc (dependency flow) publishing
-  - name: _PublishArgs
-    value: ''
-  - name: _OfficialBuildIdArgs
-    value: ''
-  # needed for signing
-  - name: _SignType
-    value: test
-  - name: _SignArgs
-    value: ''
-  - name: _Sign
-    value: false
-  - name: HelixApiAccessToken
-    value: ''
-  - name: _InternalBuildArgs
-    value: ''
+ # Produce test-signed build for PR and Public builds
+  - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: ''
+    - name: _OfficialBuildIdArgs
+      value: ''
+    # needed for signing
+    - name: _SignType
+      value: test
+    - name: _SignArgs
+      value: ''
+    - name: _Sign
+      value: false
 
+  # Set up non-PR build from internal project
+  - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: >-
+            /p:DotNetPublishUsingPipelines=true
+    # - name: _OfficialBuildIdArgs
+    #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+    # needed for signing
+    - name: _SignType
+      value: real
+    - name: _SignArgs
+      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
+    - name: _Sign
+      value: true
+
+parameters:
+  - name: pushMauiPackagesToMaestro
+    default: true
+
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           
+
+  - name: VM_IMAGE_HOST
+    type: object
+    default:
+      name: NetCore-Public
+      image: 1es-windows-2022
+      os: windows
+
+  - name: PackPlatform
+    type: object
+    default:
+      name: Windows
+      artifact: nuget
+      binariesArtifact: pack-binaries
+      metadataArtifact: metadata
+      logsArtifact: logs
+      docsArtifact: xml-docs
+      artifactsPath: '$(Build.ArtifactStagingDirectory)'
+
+  - name: Skip1ESComplianceTasks
+    default: true
 
 stages:
 
 # ----------------------------------------------------------------
 # This stage performs build, test, packaging
 # ----------------------------------------------------------------
-- stage: build
-  displayName: Build
+- stage: Pack
+  displayName: Pack .NET MAUI
+  dependsOn: []
   jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      artifacts:
-        publish:
-          artifacts: false
-          logs:
-            name: 'Logs_Build_$(Agent.JobName)_$(_BuildConfig)'
-          manifests: true
-      enableMicrobuild: true
-      enablePublishUsingPipelines: true
-      publishAssetsImmediately: true
-      enablePublishTestResults: true
-      enableSourceBuild: true
-      testResultsFormat: vstest
-      enableSourceIndex: false
-      workspace:
-        clean: all
-
-      jobs:
-
-      - ${{ each testVariant in split(',_helix_tests', ',') }}:
-        - job: Windows${{ testVariant }}
-
-          # timeout accounts for wait times for helix agents up to 30mins
-          timeoutInMinutes: 90
-
-          pool:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals windows.vs2022preview.amd64.open
-
+    - template: /eng/common/templates-official/jobs/jobs.yml@self
+      parameters:
+        enableMicrobuild: true
+        helixRepo: dotnet/maui
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        enablePublishUsingPipelines: true
+        enablePublishBuildAssets: true
+        enableTelemetry: true
+        enableSourceBuild: false
+        enableSourceIndex: false
+        publishAssetsImmediately: true
+        # Publish build logs
+        enablePublishBuildArtifacts: true
+        # Publish test logs
+        enablePublishTestResults: true
+        workspace:
+          clean: all
+        jobs:
+        - job: pack_net_${{ parameters.PackPlatform.name }}
+          displayName: ${{ parameters.PackPlatform.name }}
+            
+          timeoutInMinutes: 240
+           
           variables:
             - name: _buildScript
               value: $(Build.SourcesDirectory)/build.cmd -ci
-
+            - name: _BuildOfficalId
+              value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
+            - name: TreatWarningsAsErrors
+              value: false
+            - name: _OfficialBuildIdArgs
+              value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+            
           preSteps:
             - checkout: self
               fetchDepth: 1
               clean: true
 
           steps:
-            - template: /eng/pipelines/common/build-test-pack.yml
+            - template: /eng/pipelines/common/build-test-pack.yml@self
               parameters:
-                runAsPublic: true
                 dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                 buildScript: $(_buildScript)
                 buildConfig: $(_BuildConfig)
@@ -122,49 +165,5 @@ stages:
                 repoLogPath: $(Build.Arcade.LogsPath)
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
-                runHelixTests: ${{ contains(testVariant, 'helix') }}
-
-# ----------------------------------------------------------------
-# This stage performs quality gates checks
-# ----------------------------------------------------------------
-- stage: codecoverage
-  displayName: CodeCoverage
-  dependsOn:
-    - build
-  condition: succeeded('build')
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enableTelemetry: true
-      runAsPublic: false
-      workspace:
-        clean: all
-
-      # ----------------------------------------------------------------
-      # This stage downloads the code coverage reports from the build jobs,
-      # merges those and validates the combined test coverage.
-      # ----------------------------------------------------------------
-      jobs:
-      - job: CodeCoverageReport
-        timeoutInMinutes: 10
-
-        pool:
-          name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
-
-        preSteps:
-          - checkout: self
-            fetchDepth: 1
-            clean: true
-
-        steps:
-        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
-          displayName: Init toolset
-
-        - template: /eng/pipelines/templates/VerifyCoverageReport.yml
-          parameters:
-            # matches what is used in the conditions for the build/test jobs
-            testVariants: ',_helix_tests'
+                runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+                # runHelixTests: ${{ contains(testVariant, 'helix') }}

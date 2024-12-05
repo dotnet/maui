@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>Extension methods for finding out the flow direction and whether it was explicitly set.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="IsExplicit">
@@ -44,7 +43,6 @@
         <summary>Returns <see langword="true" /> if the developer set the flow direction on the current object. Returns <see langword="false" /> if the flow direction is inherited or was not set by the developer.</summary>
         <returns>
           <see langword="true" /> if the developer set the flow direction on the current object, or <see langword="false" /> if the flow direction is inherited or was not set by the developer.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsImplicit">
@@ -69,7 +67,6 @@
         <summary>Returns <see langword="false" /> if the developer set the flow direction on the current object. Returns <see langword="true" /> if the flow direction is inherited or was not set by the developer.</summary>
         <returns>
           <see langword="false" /> if the developer set the flow direction on the current object, or <see langword="true" /> if the flow direction is inherited or was not set by the developer.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsLeftToRight">
@@ -94,7 +91,6 @@
         <summary>Returns <see langword="true" /> if the flow direction is left-to-right. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if the flow direction is left-to-right. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsRightToLeft">
@@ -119,7 +115,6 @@
         <summary>Returns <see langword="true" /> if the flow direction is right-to-left. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if the flow direction is right-to-left. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

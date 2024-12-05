@@ -6,7 +6,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue1323 : _IssuesUITest
 {
-	const string Success = "Success";
+
+#if ANDROID
+	const string Tab1 = "PAGE 1";
+	const string Tab2 = "PAGE5";
+#else
+	const string Tab1 = "Page 1";
+	const string Tab2 = "Page5";
+#endif
 
 	public Issue1323(TestDevice testDevice) : base(testDevice)
 	{
@@ -14,13 +21,12 @@ public class Issue1323 : _IssuesUITest
 
 	public override string Issue => "tabbed page BarTextColor is not pervasive and can't be applied after instantiation";
 
-	// [Test]
-	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnIOS]
-	// public void Issue1323Test()
-	// {
-	// 	App.WaitForElement(X => X.Marked("Page 1"));
-	// 	App.WaitForElement(X => X.Marked("Page5"));
-	// 	App.Screenshot("All tab bar items text should be white");
-	// }
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	public void Issue1323Test()
+	{
+		App.WaitForElement(Tab1);
+		App.WaitForElement(Tab2);
+		VerifyScreenshot();
+	}
 }

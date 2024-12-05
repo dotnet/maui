@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
 			TypeReference targetTypeRef, IEnumerable<ICustomAttributeProvider> attributeProviders,
-			Func<TypeReference[],IEnumerable<Instruction>> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
+			Func<TypeReference[], IEnumerable<Instruction>> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
 		{
 			TypeReference typeConverter = null;
 			foreach (var attributeProvider in attributeProviders)
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context, FieldReference bpRef,
-			Func<TypeReference[],IEnumerable<Instruction>> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
+			Func<TypeReference[], IEnumerable<Instruction>> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
 			var targetTypeRef = bpRef.GetBindablePropertyType(context.Cache, node, module);
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
-			TypeReference targetTypeRef, TypeReference typeConverter, Func<TypeReference[],IEnumerable<Instruction>> pushServiceProvider,
+			TypeReference targetTypeRef, TypeReference typeConverter, Func<TypeReference[], IEnumerable<Instruction>> pushServiceProvider,
 			bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
@@ -619,7 +619,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls.Xaml", "Microsoft.Maui.Controls.Xaml.Internals", "XamlServiceProvider"), parameterTypes: null));
 
 			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget, IReferenceProvider and IProvideParentValues
-			if (   createAllServices
+			if (createAllServices
 				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IProvideParentValues")), TypeRefComparer.Default)
 				|| requiredServices.Contains(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IReferenceProvider")), TypeRefComparer.Default))
 			{

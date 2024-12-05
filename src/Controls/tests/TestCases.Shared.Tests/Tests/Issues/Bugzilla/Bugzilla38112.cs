@@ -24,7 +24,7 @@ public class Bugzilla38112 : _IssuesUITest
 	}
 
 	[Test]
-	[FailsOnAllPlatforms]
+	[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 	public void Bugzilla38112_SwitchIsStillDisabled()
 	{
 		App.WaitForElement("Click");

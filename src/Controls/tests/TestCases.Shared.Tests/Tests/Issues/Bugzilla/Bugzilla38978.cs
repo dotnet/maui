@@ -12,13 +12,18 @@ public class Bugzilla38978 : _IssuesUITest
 
 	public override string Issue => "Cell.ForceUpdateSize issues with row selection/deselection (ViewCell)";
 
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Category(UITestCategories.ManualReview)]
-	// public void Bugzilla38978Test ()
-	// {
-	// 	App.WaitForElement("2");
-	// 	App.Tap("2");
-	// 	App.Screenshot("If the tapped image is not larger, this test has failed.");
-	// }
+	[Test]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[Category(UITestCategories.ManualReview)]
+	public void Bugzilla38978Test()
+	{
+		App.WaitForElement("2");
+		var beforeRect = App.FindElement("2").GetRect();
+
+		App.Tap("2");
+		var afterRect = App.FindElement("2").GetRect();
+
+		Assert.That(afterRect.Width, Is.GreaterThan(beforeRect.Width));
+		Assert.That(afterRect.Height, Is.GreaterThan(beforeRect.Height));
+	}
 }

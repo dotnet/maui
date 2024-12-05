@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    internal class Issue9796 : _IssuesUITest
+	internal class Issue9796 : _IssuesUITest
 	{
 		public override string Issue => "[Android]Editor controls don't raise Completed event consistently";
 
@@ -20,8 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			// Is a Android issue; see https://github.com/dotnet/maui/issues/9796
 			App.WaitForElement("FocusButton");
-            App.Click("FocusButton");
-            App.Click("UnfocusButton");
+			App.Click("FocusButton");
+			App.Click("UnfocusButton");
 			ClassicAssert.AreEqual("Triggered", App.FindElement("Label").GetText());
 		}
 	}

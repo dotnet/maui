@@ -35,7 +35,7 @@ public class AboutPage : ContentPage
 	public AboutPage()
 	{
 		BackgroundColor = Colors.Bisque;
-		Content = new Button { Text = "Close", Command = new Command(() => Navigation.PopModalAsync()) };
+		Content = new Button { Text = "CloseMe", Command = new Command(() => Navigation.PopModalAsync()) };
 
 	}
 }

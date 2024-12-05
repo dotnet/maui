@@ -10,7 +10,9 @@
 <!--#if (!IncludeSampleContent) -->
     xmlns:local="clr-namespace:MauiApp._1"
 <!--#endif -->
+<!--#if (IncludeSampleContent) -->
     Shell.FlyoutBehavior="Flyout"
+<!--#endif -->
     Title="MauiApp._1">
 
 <!--#if (!IncludeSampleContent) -->

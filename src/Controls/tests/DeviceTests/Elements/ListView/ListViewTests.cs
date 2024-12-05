@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 				"cat",
 			};
 
-			var template1 =  new DataTemplate(() =>
+			var template1 = new DataTemplate(() =>
 			{
 				return new ViewCell()
 				{
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 				};
 			});
 
-			var template2 =  new DataTemplate(() =>
+			var template2 = new DataTemplate(() =>
 			{
 				return new ViewCell()
 				{
@@ -77,12 +77,12 @@ namespace Microsoft.Maui.DeviceTests
 					return item.ToString() == "cat" ? template1 : template2;
 				}),
 				IsGroupingEnabled = true,
-				ItemsSource = new ObservableCollection<ObservableCollection<string>>(){data1}
+				ItemsSource = new ObservableCollection<ObservableCollection<string>>() { data1 }
 			};
 
-			await CreateHandlerAndAddToWindow<LayoutHandler>(new VerticalStackLayout(){ listView }, async (handler) =>
+			await CreateHandlerAndAddToWindow<LayoutHandler>(new VerticalStackLayout() { listView }, async (handler) =>
 			{
-				listView.ItemsSource = new ObservableCollection<ObservableCollection<string>>(){data2};
+				listView.ItemsSource = new ObservableCollection<ObservableCollection<string>>() { data2 };
 				await Task.Delay(5000);
 			});
 		}

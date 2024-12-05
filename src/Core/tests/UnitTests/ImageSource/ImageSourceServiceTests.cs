@@ -45,7 +45,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		{
 			var serviceForFirst = new CombinedImageSourceService();
 			var serviceForSecond = new CombinedImageSourceService();
-			
+
 			var provider = CreateImageSourceServiceProvider(services =>
 			{
 				if (registerInterfaces)
@@ -93,13 +93,13 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			Assert.IsType<UriImageSourceService>(service);
 		}
 
-		class DerivedMultipleInterfacesImageSourceStub : MultipleInterfacesImageSourceStub {}
+		class DerivedMultipleInterfacesImageSourceStub : MultipleInterfacesImageSourceStub { }
 
 #pragma warning disable CS0618 // Type or member is obsolete
 		[Fact]
 		public void GetsImageSourceTypeEvenWhenNoServiceWasRegistered()
 		{
-			var provider = CreateImageSourceServiceProvider(services => {});
+			var provider = CreateImageSourceServiceProvider(services => { });
 
 			var imageSource = provider.GetImageSourceType(typeof(FirstImageSource));
 
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		[Fact]
 		public void GetsImageSourceServiceTypeEvenWhenNoServiceWasRegistered()
 		{
-			var provider = CreateImageSourceServiceProvider(services => {});
+			var provider = CreateImageSourceServiceProvider(services => { });
 
 			var service = provider.GetImageSourceServiceType(typeof(IFirstImageSource));
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		{
 			var defaultInstance = new StreamImageSourceService();
 			var customInstance = new StreamImageSourceService();
-			
+
 			var provider = CreateImageSourceServiceProvider(services =>
 			{
 				services.AddService<IStreamImageSource>(_ => defaultInstance);
@@ -161,47 +161,47 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		}
 
 		[Fact]
-        public void ResolvesImageSourceServiceWhenNonPrimaryInterfaceServiceIsRegistered()
-        {
-            var parentBImageSourceService = new ChildImageSourceService();
+		public void ResolvesImageSourceServiceWhenNonPrimaryInterfaceServiceIsRegistered()
+		{
+			var parentBImageSourceService = new ChildImageSourceService();
 
-            var provider = CreateImageSourceServiceProvider(svcs =>
-            {
-                svcs.AddService<IParentBImageSource>(_ => parentBImageSourceService);
-            });
+			var provider = CreateImageSourceServiceProvider(svcs =>
+			{
+				svcs.AddService<IParentBImageSource>(_ => parentBImageSourceService);
+			});
 
-            var service = provider.GetRequiredImageSourceService(new ChildImageSource());
+			var service = provider.GetRequiredImageSourceService(new ChildImageSource());
 
-            Assert.Same(parentBImageSourceService, service);
-        }
+			Assert.Same(parentBImageSourceService, service);
+		}
 
-        [Fact]
-        public void ThrowsWhenMatchingServicesRelatedThroughInheritance()
-        {
-            var provider = CreateImageSourceServiceProvider(svcs =>
-            {
-                svcs.AddService<IParentAImageSource, ChildImageSourceService>();
-                svcs.AddService<IParentBImageSource, ChildImageSourceService>();
-            });
+		[Fact]
+		public void ThrowsWhenMatchingServicesRelatedThroughInheritance()
+		{
+			var provider = CreateImageSourceServiceProvider(svcs =>
+			{
+				svcs.AddService<IParentAImageSource, ChildImageSourceService>();
+				svcs.AddService<IParentBImageSource, ChildImageSourceService>();
+			});
 
-            Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
-        }
+			Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
+		}
 
-        [Fact]
-        public void ImageSourceServiceRegistrationViaAddSingletonDirectlyIsNotSupported()
-        {
-            var provider = CreateImageSourceServiceProvider(svcs =>
-            {
-                svcs.AddSingleton<IImageSourceService<IParentAImageSource>, ChildImageSourceService>();
-            });
+		[Fact]
+		public void ImageSourceServiceRegistrationViaAddSingletonDirectlyIsNotSupported()
+		{
+			var provider = CreateImageSourceServiceProvider(svcs =>
+			{
+				svcs.AddSingleton<IImageSourceService<IParentAImageSource>, ChildImageSourceService>();
+			});
 
-            Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
-        }
+			Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new ChildImageSource()));
+		}
 
-        private class ChildImageSource : IParentAImageSource, IParentBImageSource { public bool IsEmpty => throw new NotImplementedException(); }
-        private class ChildImageSourceService : IImageSourceService<IParentAImageSource>, IImageSourceService<IParentBImageSource> { }
-        private interface IParentAImageSource : IImageSource { }
-        private interface IParentBImageSource : IImageSource { }
+		private class ChildImageSource : IParentAImageSource, IParentBImageSource { public bool IsEmpty => throw new NotImplementedException(); }
+		private class ChildImageSourceService : IImageSourceService<IParentAImageSource>, IImageSourceService<IParentBImageSource> { }
+		private interface IParentAImageSource : IImageSource { }
+		private interface IParentBImageSource : IImageSource { }
 
 		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
 		{
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		private class FirstImageSourceService : IImageSourceService<IFirstImageSource> { }
 		private class SecondImageSourceService : IImageSourceService<ISecondImageSource> { }
 		private class CombinedImageSourceService : IImageSourceService<IFirstImageSource>, IImageSourceService<ISecondImageSource> { }
-		
-		private class CustomStreamImageSourceStub : StreamImageSourceStub {}
+
+		private class CustomStreamImageSourceStub : StreamImageSourceStub { }
 	}
 }

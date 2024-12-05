@@ -14,7 +14,7 @@ public class Issue1763 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [FailsOnAndroid]
 	// public void TestIssue1763ItemTappedFiring()
 	// {

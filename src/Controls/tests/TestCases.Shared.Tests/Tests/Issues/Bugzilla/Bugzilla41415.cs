@@ -20,8 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Bugzilla41415 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla41415.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla41415Test()
 		{
 			// This test is failing, likely due to product issue

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[FailsOnMac("https://github.com/dotnet/maui/issues/17435")]
+		[FailsOnMacWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/17435")]
 		public void TapTwoPlacesQuickly()
 		{
 			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)

@@ -276,7 +276,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_view = view;
 			_mauiContext = mauiContext;
 			UpdatePlatformView();
-			ClipsToBounds = true;
 		}
 
 		internal void UpdatePlatformView()
@@ -287,6 +286,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (nativeView.Superview == this)
 			{
 				nativeView.RemoveFromSuperview();
+			}
+
+			if (nativeView is WrapperView)
+			{
+				// Disable clipping for WrapperView to allow the shadow to be displayed
+				ClipsToBounds = false;
+			}
+			else
+			{
+				ClipsToBounds = true;
 			}
 
 			AddSubview(nativeView);

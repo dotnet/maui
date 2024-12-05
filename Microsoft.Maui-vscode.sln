@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31410.414
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -186,28 +187,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.TestCases.HostApp", "src\Controls\tests\TestCases.HostApp\Controls.TestCases.HostApp.csproj", "{07C26A25-08C2-4C52-9574-1C33EC8E7919}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{A6976D43-B3A4-47AF-89D9-FA388B56B52B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compatibility", "Compatibility", "{0AF0E771-4E09-4F05-B187-B43A2B9F62B0}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ControlGallery", "ControlGallery", "{DA908446-C6A1-473C-BF5C-83E600F5C69E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9B37E707-EE0B-480E-AEB9-0176784879BE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CBC63DBF-892C-4F03-890E-D48F25509CC6}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.ControlGallery.Issues.Shared", "src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.shproj", "{AE2513CB-4E5E-4E5C-8237-88954D4C9433}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Core", "src\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj", "{7A28BAB3-4396-415F-8473-2700027E57A7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android", "src\Compatibility\ControlGallery\src\Android\Compatibility.ControlGallery.Android.csproj", "{36664529-91C2-49A5-BFDA-7D663FB19BC5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS", "src\Compatibility\ControlGallery\src\iOS\Compatibility.ControlGallery.iOS.csproj", "{137B044D-31C4-4CF2-AB66-97C516AB8393}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Compatibility.UITests.Shared", "src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.Shared.shproj", "{E175485B-3C8C-47D7-8DD5-F7FED627EB25}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android.UITests", "src\Compatibility\ControlGallery\test\Android.UITests\Compatibility.ControlGallery.Android.UITests.csproj", "{2E41CBBF-999A-40F1-BF65-EA68585CA070}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS.UITests", "src\Compatibility\ControlGallery\test\iOS.UITests\Compatibility.ControlGallery.iOS.UITests.csproj", "{306C0B6E-B797-40A0-994C-4F923E91F31B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtils\src\UITest.Core\UITest.Core.csproj", "{401CA2F5-EAD1-4414-AE8F-42444BF458EB}"
 EndProject
@@ -510,30 +489,6 @@ Global
 		{A6976D43-B3A4-47AF-89D9-FA388B56B52B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6976D43-B3A4-47AF-89D9-FA388B56B52B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6976D43-B3A4-47AF-89D9-FA388B56B52B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7A28BAB3-4396-415F-8473-2700027E57A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A28BAB3-4396-415F-8473-2700027E57A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7A28BAB3-4396-415F-8473-2700027E57A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A28BAB3-4396-415F-8473-2700027E57A7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{137B044D-31C4-4CF2-AB66-97C516AB8393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{137B044D-31C4-4CF2-AB66-97C516AB8393}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{137B044D-31C4-4CF2-AB66-97C516AB8393}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{137B044D-31C4-4CF2-AB66-97C516AB8393}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{137B044D-31C4-4CF2-AB66-97C516AB8393}.Release|Any CPU.Build.0 = Release|Any CPU
-		{137B044D-31C4-4CF2-AB66-97C516AB8393}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{2E41CBBF-999A-40F1-BF65-EA68585CA070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2E41CBBF-999A-40F1-BF65-EA68585CA070}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2E41CBBF-999A-40F1-BF65-EA68585CA070}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2E41CBBF-999A-40F1-BF65-EA68585CA070}.Release|Any CPU.Build.0 = Release|Any CPU
-		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -593,7 +548,6 @@ Global
 		{AF64451F-E2BD-41C2-B083-F60C26AE2A9F} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{E1082E26-D700-4127-9329-66D673FD2D55} = {459BF674-83CB-46F6-881F-A2D2117DBF4D}
 		{B8DC1324-977C-46F1-B697-9064ADE6099A} = {E1082E26-D700-4127-9329-66D673FD2D55}
-		{4ADCBA87-30DB-44F5-85E9-94A4F4132FD9} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{75C380E0-CE53-4C01-B89F-CF685331DE18} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{39B47A3C-21CA-4B28-9250-14FD957EB0FC} = {A1D83459-24AC-4124-AE5F-09F0318AF0EB}
 		{9909F93F-C085-4F76-B92A-5D8C516BF47D} = {F3FFE2E4-E89E-46A9-A180-FDA8908BA21D}
@@ -670,16 +624,6 @@ Global
 		{FB39FACE-BAF2-4F97-A249-E45BA63D77FE} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{07C26A25-08C2-4C52-9574-1C33EC8E7919} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{A6976D43-B3A4-47AF-89D9-FA388B56B52B} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
-		{DA908446-C6A1-473C-BF5C-83E600F5C69E} = {0AF0E771-4E09-4F05-B187-B43A2B9F62B0}
-		{9B37E707-EE0B-480E-AEB9-0176784879BE} = {DA908446-C6A1-473C-BF5C-83E600F5C69E}
-		{CBC63DBF-892C-4F03-890E-D48F25509CC6} = {DA908446-C6A1-473C-BF5C-83E600F5C69E}
-		{AE2513CB-4E5E-4E5C-8237-88954D4C9433} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{7A28BAB3-4396-415F-8473-2700027E57A7} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{36664529-91C2-49A5-BFDA-7D663FB19BC5} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{137B044D-31C4-4CF2-AB66-97C516AB8393} = {9B37E707-EE0B-480E-AEB9-0176784879BE}
-		{E175485B-3C8C-47D7-8DD5-F7FED627EB25} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
-		{2E41CBBF-999A-40F1-BF65-EA68585CA070} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
-		{306C0B6E-B797-40A0-994C-4F923E91F31B} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
 		{401CA2F5-EAD1-4414-AE8F-42444BF458EB} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
@@ -691,17 +635,9 @@ Global
 		{F3E4596C-3047-42F8-9724-80BCE74C141C} = {50C758FE-4E10-409A-94F5-A75480960864}
 		{0048EA9A-D751-4576-A2BB-2A37BFB385A5} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{DA001142-4777-4EDE-97D5-B1AC08162F99} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
+		{4ADCBA87-30DB-44F5-85E9-94A4F4132FD9} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{2e41cbbf-999a-40f1-bf65-ea68585ca070}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{2e41cbbf-999a-40f1-bf65-ea68585ca070}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{306c0b6e-b797-40a0-994c-4f923e91f31b}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{306c0b6e-b797-40a0-994c-4f923e91f31b}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{7a28bab3-4396-415f-8473-2700027e57a7}*SharedItemsImports = 5
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

@@ -92,7 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Contains(shellSectionGrid, (shellSection as IVisualTreeElement).GetVisualChildren());
 				Assert.Contains(shellContentGrid, (shellContent as IVisualTreeElement).GetVisualChildren());
 			});
-		}	
+		}
 
 #if !WINDOWS
 		[Theory]

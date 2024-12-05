@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12193 (src\ControlGallery\src\Issues.Shared\Issue12193.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMac("Set Orientation methods not implemented")]
-		[FailsOnWindows("Set Orientation methods not implemented")]
+		[FailsOnMacWhenRunningOnXamarinUITest("Set Orientation methods not implemented")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Set Orientation methods not implemented")]
 		public async Task RotatingCarouselViewHTMLShouldNotDisappear()
 		{
 			int delay = 3000;

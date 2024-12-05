@@ -19,9 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2680Test_ScrollDisabled()
 		{
 			App.WaitForElement(ScrollViewMark);
@@ -33,9 +33,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue2680Test_ScrollEnabled()
 		{
 			App.WaitForElement(ToggleButtonMark);

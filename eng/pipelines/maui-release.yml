@@ -169,10 +169,12 @@ extends:
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                        # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                         skipAndroidImages: true
                         skipAndroidSdks: true
                         installDefaultAndroidApi: true
+                        skipProvisioning: true
+                        skipXcode: true
 
       - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
         - template: /eng/pipelines/common/sign.yml@self                                 

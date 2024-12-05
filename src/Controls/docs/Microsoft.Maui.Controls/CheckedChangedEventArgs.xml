@@ -13,7 +13,6 @@
   <Interfaces />
   <Docs>
     <summary>Event Args for <see cref="T:Microsoft.Maui.Controls.CheckBox" />'s <see cref="E:Microsoft.Maui.Controls.CheckBox.CheckedChanged" /> event.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,7 +31,6 @@
       <Docs>
         <param name="value">Boolean value indicating whether the <see cref="T:Microsoft.Maui.Controls.CheckBox" /> is checked.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.CheckedChangedEventArgs" /> specifying whether the <see cref="T:Microsoft.Maui.Controls.CheckBox" /> is checked.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -52,7 +50,6 @@
         <summary>Boolean value indicating whether the <see cref="T:Microsoft.Maui.Controls.CheckBox" /> is checked.</summary>
         <value>
           <see langword="true" /> if checked.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

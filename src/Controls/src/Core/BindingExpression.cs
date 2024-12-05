@@ -65,6 +65,20 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		internal void Apply(object sourceObject, BindableObject target, BindableProperty property, SetterSpecificity specificity)
 		{
+			if (Binding is Binding { Source: var source, DataType: Type dataType })
+			{
+				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disale
+				bool skipTypeMismatchCheck = source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
+				if (!skipTypeMismatchCheck)
+				{
+					if (sourceObject != null && !dataType.IsAssignableFrom(sourceObject.GetType()))
+					{
+						BindingDiagnostics.SendBindingFailure(Binding, "Binding", $"Mismatch between the specified x:DataType ({dataType}) and the current binding context ({sourceObject.GetType()}).");
+						sourceObject = null;
+					}
+				}
+			}
+
 			_targetProperty = property;
 			_specificity = specificity;
 
@@ -382,7 +396,7 @@ namespace Microsoft.Maui.Controls
 					part.LastGetter = propertyGetMethod;
 				}
 
-				if (property is {CanWrite: true, SetMethod: {IsPublic: true, IsStatic: false} propertySetMethod})
+				if (property is { CanWrite: true, SetMethod: { IsPublic: true, IsStatic: false } propertySetMethod })
 				{
 					part.LastSetter = propertySetMethod;
 					part.SetterType = propertyType;

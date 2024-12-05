@@ -31,7 +31,7 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents
 		base.MovedToWindow();
 		_movedToWindow?.Invoke(this, EventArgs.Empty);
 
-		if(_customDelegate?.TryGetTarget(out var target) == true)
+		if (_customDelegate?.TryGetTarget(out var target) == true)
 		{
 			target.MovedToWindow(this);
 		}

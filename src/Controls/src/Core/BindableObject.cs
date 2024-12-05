@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls
 			//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
 			if (property.CoerceValue != null)
 				property.CoerceValue(this, newValue);
-			
+
 			OnBindablePropertySet(property, original.Value, newValue, changed, changed);
 		}
 
@@ -482,11 +482,12 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
-			if (value is BindingBase binding && !property.ReturnType.IsAssignableFrom(typeof(BindableProperty))) {
+			if (value is BindingBase binding && !property.ReturnType.IsAssignableFrom(typeof(BindableProperty)))
+			{
 				SetBinding(property, binding);
 				return;
 			}
-			
+
 			if (property.IsReadOnly)
 			{
 				Application.Current?.FindMauiContext()?.CreateLogger<BindableObject>()?.LogWarning($"Cannot set the BindableProperty \"{property.PropertyName}\" because it is readonly.");
@@ -658,7 +659,7 @@ namespace Microsoft.Maui.Controls
 					binding.Apply(true);
 					_applying = false;
 				}
-				
+
 				OnBindablePropertySet(property, original, value, !sameValue, true);
 			}
 			else
@@ -669,7 +670,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected virtual void OnBindablePropertySet(BindableProperty property, object original, object value, bool didChange, bool willFirePropertyChanged)
 		{
-			if(willFirePropertyChanged)
+			if (willFirePropertyChanged)
 			{
 				OnPropertyChanged(property.PropertyName);
 				property.PropertyChanged?.Invoke(this, original, value);

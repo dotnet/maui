@@ -54,10 +54,10 @@ public class GitHub1776 : TestContentPage
 
 	protected override void Init()
 	{
-		PressedLabel = new Label();
-		ReleasedLabel = new Label();
-		ClickedLabel = new Label();
-		CommandLabel = new Label();
+		PressedLabel = new Label { AutomationId = "PressedLabel" };
+		ReleasedLabel = new Label { AutomationId = "ReleasedLabel" };
+		ClickedLabel = new Label { AutomationId = "ClickedLabel" };
+		CommandLabel = new Label { AutomationId = "CommandLabel" };
 
 		var button = new Button
 		{
