@@ -25,7 +25,7 @@ stages:
         displayName: 'Process incoming translations'
         pool:  $(HostedWinVS2019)
         dependsOn: check_lcl_files
-        condition: eq(dependencies.check_lcl_files.outputs['containsLclFiles'], 'true')
+        condition: eq(dependencies.check_lcl_files.outputs['check_lcl_files.containsLclFiles'], 'true')
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
