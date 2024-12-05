@@ -6,7 +6,7 @@ stages:
   - stage: localization_handback
     displayName: Localization Handback
     dependsOn: []
-    condition: eq(variables.isLocHandoffBranch, true)
+    condition: eq(variables.isLocBranch, true)
 
     jobs:
       - job: generate_resx
