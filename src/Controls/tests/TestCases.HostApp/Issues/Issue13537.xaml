@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:local="using:Maui.Controls.Sample.Issues"
              xmlns:issues="using:Maui.Controls.Sample.Issues"
+             Shell.FlyoutBehavior="Disabled"
              x:Class="Maui.Controls.Sample.Issues.Issue13537">
 
   <TabBar AutomationId="TabBar13537" x:Name="TabBar13537">

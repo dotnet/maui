@@ -299,6 +299,13 @@ namespace Microsoft.Maui.Controls
 			{
 				shell.UpdateCurrentState(ShellNavigationSource.ShellSectionChanged);
 			}
+			
+			ShellContent currentShellContent = shellItem.CurrentItem?.CurrentItem;
+            var existing = (ShellRouteParameters)currentShellContent?.GetValue(ShellContent.QueryAttributesProperty);
+            if(oldValue is not null && newValue is not null && existing is null)
+            {
+                currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
+            }
 
 			shellItem.SendStructureChanged();
 

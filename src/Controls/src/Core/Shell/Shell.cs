@@ -935,18 +935,6 @@ namespace Microsoft.Maui.Controls
 			var modalStack = shellSection?.Navigation?.ModalStack;
 			var result = ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 
-			if(shellContent is not null)
-			{
-				var existing = (ShellRouteParameters)shellContent.GetValue(ShellContent.QueryAttributesProperty);
-				if (existing is null && source is not (ShellNavigationSource.Push or
-					ShellNavigationSource.Pop or
-					ShellNavigationSource.PopToRoot or
-					ShellNavigationSource.Unknown))
-				{
-					ShellNavigationManager.ApplyQueryAttributes(shellContent, new ShellRouteParameters(), false, false);
-				}
-			}
-
 			if (result?.Location != oldState?.Location)
 			{
 				SetValueFromRenderer(CurrentStatePropertyKey, result);
@@ -1674,6 +1662,14 @@ namespace Microsoft.Maui.Controls
 
 			shell.ShellController.AppearanceChanged(shell, false);
 			shell.ShellController.UpdateCurrentState(ShellNavigationSource.ShellItemChanged);
+
+			// If the new ShellItem is a FlyoutItem or a ShellGroupItem, we need to update the QueryAttributes
+			var existing = (ShellRouteParameters)shell.CurrentContent?.GetValue(ShellContent.QueryAttributesProperty);
+            if(oldValue is not null && newValue is not null && (shell.CurrentItem is FlyoutItem || shell.CurrentItem is ShellGroupItem) && existing is null)
+            {
+                ShellContent currentShellContent = shell.CurrentItem.CurrentItem?.CurrentItem;
+                currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
+            }
 
 			if (shell.CurrentItem?.CurrentItem != null)
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);

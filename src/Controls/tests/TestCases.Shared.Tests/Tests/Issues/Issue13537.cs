@@ -45,6 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforTab()
 		{
+			App.WaitForElement("Favorite");
 			App.Tap("Favorite");
 			App.WaitForElement("FavouritePageTestLabel");
 			App.Tap("GoToAsyncButton");
