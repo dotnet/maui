@@ -6,12 +6,9 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui17222Style : ResourceDictionary
 {
 	public Maui17222Style() => InitializeComponent();
 
-	public Maui17222Style(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
 }
