@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               x:Class="Maui.Controls.Sample.Issues.Issue23608"
+             Title="Issue23608">
+
+ <VerticalStackLayout>
+        <Label  Text="Enable IsEnabled" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="Label" />
+        <Switch AutomationId="Switch1" HorizontalOptions="Center" IsToggled="{Binding IsEnabled}" />
+        <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="Enable IsChecked" />
+        <Switch HorizontalOptions="Center" IsToggled="{Binding IsChecked}"  AutomationId="Switch2" />
+        <CheckBox HorizontalOptions="Center" IsChecked="{Binding IsChecked}" IsEnabled="{Binding IsEnabled}">
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Color" Value="violet" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Color" Value="Gray" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="IsChecked">
+                            <VisualState.Setters>
+                                <Setter Property="Color" Value="Green" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </VisualStateManager.VisualStateGroups>
+        </CheckBox>
+</VerticalStackLayout>
+</ContentPage>
