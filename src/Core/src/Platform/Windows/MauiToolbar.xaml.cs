@@ -214,7 +214,17 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				dictionary["ButtonForeground"] = menuForegroundBrush;
+				if (_menuBar.Items is not null)
+				{
+					foreach (var item in _menuBar.Items)
+					{
+						if (item is MenuBarItem menuBarItem)
+						{
+							menuBarItem.Foreground = _menuBarForeground;
+						}
+					}
+				}
+
 				dictionary["ButtonForegroundPointerOver"] = menuForegroundBrush;
 				dictionary["ButtonForegroundPressed"] = menuForegroundBrush;
 				dictionary["ButtonForegroundDisabled"] = menuForegroundBrush;
