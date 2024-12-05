@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var propertyRef = parentType.GetProperty(context.Cache, pd => pd.Name == localName, out var declaringTypeReference);
 			if (propertyRef != null)
 			{
-				var propertyType = propertyRef.PropertyType.ResolveGenericParameters(declaringTypeReference);
+				var propertyType = module.ImportReference(propertyRef.PropertyType.ResolveGenericParameters(declaringTypeReference));
 
 				foreach (var instruction in stringResourceNode.PushConvertedValue(
 						context,
