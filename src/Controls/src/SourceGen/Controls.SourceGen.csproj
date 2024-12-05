@@ -20,6 +20,7 @@
     <Compile Include="..\Core\XmlnsDefinitionAttribute.cs" Link="XmlnsDefinitionAttribute.cs" />
     <Compile Include="..\Xaml\IDictionaryExtensions.cs" Link="IDictionaryExtensions.cs" />
     <Compile Include="..\Xaml\IExpressionParser.cs" Link="IExpressionParser.cs" />
+    <Compile Include="..\Xaml\IXmlLineInfoExtensions.cs" Link="IXmlLineInfoExtensions.cs" />
     <Compile Include="..\Xaml\MarkupExpressionParser.cs" Link="MarkupExpressionParser.cs" />
     <Compile Include="..\Xaml\PruneIgnoredNodesVisitor.cs" Link="PruneIgnoredNodesVisitor.cs" />
     <Compile Include="..\Xaml\RemoveDuplicateDesignNodes.cs" Link="RemoveDuplicateDesignNodes.cs" />
