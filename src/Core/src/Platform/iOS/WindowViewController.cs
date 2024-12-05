@@ -11,16 +11,19 @@ internal class WindowViewController : UIViewController
 	WeakReference<IView?> _iTitleBarRef;
 	bool _isTitleBarVisible = true;
 
-	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
+   	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
 	UIView? _titleBar;
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
 	UIView? _contentWrapperView;
 
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
+	NSLayoutConstraint? _contentWrapperTopConstraint;
+
 	/// <summary>
 	/// Instantiate a new <see cref="WindowViewController"/> object.
 	/// </summary>
-	/// <param name="windowContentViewController">An instance of the <see cref="UIViewController"/> that is the RootViewController.</param>
+	/// <param name="contentViewController">An instance of the <see cref="UIViewController"/> that is the RootViewController.</param>
 	/// <param name="window">An instance of the <see cref="IWindow"/>.</param>
 	/// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
 	/// <remarks>
@@ -28,7 +31,7 @@ internal class WindowViewController : UIViewController
 	/// The top of the TitleBar will also drag the window inside of elements like buttons.
 	/// Gestures such as swiping and controls like swipeview will not work inside the TitleBar.
 	/// </remarks>
-	public WindowViewController(UIViewController windowContentViewController, IWindow window, IMauiContext mauiContext)
+	public WindowViewController(UIViewController contentViewController, IWindow window, IMauiContext mauiContext)
 	{
 		_iTitleBarRef = new WeakReference<IView?>(null);
 
@@ -37,32 +40,63 @@ internal class WindowViewController : UIViewController
 		// 2. Arrange the Subview's frame
 		// 3. AddChildViewController
 		// 4. Call DidMoveToParentViewController
-
-		if (View is not null && windowContentViewController.View is not null)
+		if (View is not null && contentViewController.View is not null)
 		{
-			_contentWrapperView = new();
+			_contentWrapperView = new UIView
+			{
+				TranslatesAutoresizingMaskIntoConstraints = false
+			};
 			View.AddSubview(_contentWrapperView);
-			_contentWrapperView.AddSubview(windowContentViewController.View);
+			_contentWrapperView.AddSubview(contentViewController.View);
+			_contentWrapperTopConstraint = _contentWrapperView.TopAnchor.ConstraintEqualTo(View.TopAnchor, 0);
+
+			NSLayoutConstraint.ActivateConstraints(new[]
+			{
+				_contentWrapperView.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor),
+				_contentWrapperView.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor),
+				_contentWrapperTopConstraint,
+				_contentWrapperView.BottomAnchor.ConstraintEqualTo(View.BottomAnchor)
+			});
 		}
 
 		SetUpTitleBar(window, mauiContext, true);
-		AddChildViewController(windowContentViewController);
-		windowContentViewController.DidMoveToParentViewController(this);
+		AddChildViewController(contentViewController);
+		contentViewController.DidMoveToParentViewController(this);
 	}
 
 	public override void ViewWillLayoutSubviews()
 	{
-		base.ViewWillLayoutSubviews();
 		LayoutTitleBar();
+
+		UpdateContentWrapperContentFrame();
+
+		base.ViewWillLayoutSubviews();
 	}
 
+	public override void ViewDidLayoutSubviews()
+	{
+		UpdateContentWrapperContentFrame();
+
+		base.ViewDidLayoutSubviews();
+	}
+
+	void UpdateContentWrapperContentFrame()
+	{
+		// At this point the _contentWrapperView bounds haven't been set
+		// so we just use the windows bounds to set this value
+		var frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - (_titleBar?.Bounds.Height ?? 0));
+
+		if (_contentWrapperView is not null && _contentWrapperView.Subviews[0].Frame != frame)
+			_contentWrapperView.Subviews[0].Frame = frame;
+	}
+	
 	/// <summary>
 	/// Sets up the TitleBar in the ViewController.
 	/// </summary>
 	/// <param name="window">An instance of the <see cref="IWindow"/>.</param>
 	/// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
-	/// <param name="isInitalizing"></param>
-	public void SetUpTitleBar(IWindow window, IMauiContext mauiContext, bool isInitalizing)
+	/// <param name="isInitializing"></param>
+	public void SetUpTitleBar(IWindow window, IMauiContext mauiContext, bool isInitializing)
 	{
 		var platformWindow = window.Handler?.PlatformView as UIWindow;
 
@@ -85,12 +119,12 @@ internal class WindowViewController : UIViewController
 			if (newTitleBar is not null)
 			{
 				iTitleBar = window.TitleBar;
-				SetTitleBarVisibility(iTitleBar?.Visibility == Visibility.Visible);
 				View.AddSubview(newTitleBar);
 			}
 
 			_titleBar = newTitleBar;
 			_iTitleBarRef = new WeakReference<IView?>(iTitleBar);
+			SetTitleBarVisibility(iTitleBar?.Visibility == Visibility.Visible);
 		}
 
 		var platformTitleBar = platformWindow.WindowScene?.Titlebar;
@@ -101,16 +135,7 @@ internal class WindowViewController : UIViewController
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
 		}
 
-		// When we are initializing, calling LayoutIfNeeded will cause the layout events to not fire properly.
-		// However we need this when the titlebar is added or removed or the titlebar may not be fully laid out.
-		if (!isInitalizing)
-		{
-			View?.SetNeedsLayout();
-		}
-		else
-		{
-			LayoutTitleBar();
-		}
+		LayoutTitleBar();
 	}
 
 	/// <summary>
@@ -118,31 +143,36 @@ internal class WindowViewController : UIViewController
 	/// </summary>
 	public void LayoutTitleBar()
 	{
+		if (_contentWrapperTopConstraint is null || View is null)
+			return;
+
 		_iTitleBarRef.TryGetTarget(out var iTitleBar);
 
 		if (_isTitleBarVisible && iTitleBar is not null && View is not null)
 		{
 			var measured = iTitleBar.Measure(View.Bounds.Width, double.PositiveInfinity);
 			iTitleBar.Arrange(new Graphics.Rect(0, 0, View.Bounds.Width, measured.Height));
+			_contentWrapperTopConstraint.Constant = (nfloat)measured.Height;
 		}
-
-		var titleBarHeight = iTitleBar?.Frame.Height ?? 0;
-
-		if (!_isTitleBarVisible)
+		else
 		{
-			titleBarHeight = 0;
-		}
-
-		var newFrame = new CGRect(0, titleBarHeight, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
-
-		if (_contentWrapperView is not null && newFrame != _contentWrapperView.Frame && _contentWrapperView.Subviews.Length > 0)
-		{
-			_contentWrapperView.Frame = newFrame;
-			_contentWrapperView.Subviews[0].Frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
+			_contentWrapperTopConstraint.Constant = 0;
 		}
 	}
 
-	public void SetTitleBarVisibility(bool isVisible) =>
-			_isTitleBarVisible = isVisible;
+	public void SetTitleBarVisibility(bool isVisible)
+	{
+		if (_contentWrapperTopConstraint is null || View is null)
+			return;
+			
+		if (_isTitleBarVisible && _titleBar is not null && View is not null)
+		{
+			_contentWrapperTopConstraint.Constant = (nfloat)_titleBar.Frame.Height;
+		}
+		else
+		{
+			_contentWrapperTopConstraint.Constant = 0;
+		}
+	}
 }
 #endif // MACCATALYST

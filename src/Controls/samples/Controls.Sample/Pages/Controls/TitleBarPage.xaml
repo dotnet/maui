@@ -134,6 +134,9 @@
                 <Button 
                     Text="Toggle Has Navigation Bar"
                     Clicked="ToggleHasNavigationBar_Clicked" />
+                <Button 
+                    Text="Push New TitleBar Page"
+                    Clicked="PushNewTitleBarPage_Clicked" />
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>

@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Pages
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
-			Window.TitleBar = _customTitleBar;
+			Application.Current!.Windows[0].TitleBar = _customTitleBar;
 		}
 
 		private void SetIconCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
@@ -98,6 +98,11 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
+
+		async void PushNewTitleBarPage_Clicked(object sender, EventArgs e)
+		{
+			await Navigation.PushAsync(new TitleBarPage());
+		}
 
 		void ToggleTitleBarOnWindow_Clicked(object sender, EventArgs e)
 		{
