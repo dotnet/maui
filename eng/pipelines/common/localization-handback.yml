@@ -10,39 +10,30 @@ stages:
     condition: eq(variables.isLocBranch, true)
 
     jobs:
-      - job: check_lcl_files
-        displayName: 'Check for .lcl files'
-        pool: $(HostedWinVS2019)
-        steps:
-          - powershell: |
-              $hasLclFiles = git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$'
-              if ($hasLclFiles) {
-                Write-Host "##vso[task.setvariable variable=lclFileChange;isOutput=true]true"
-              } else {
-                Write-Host "##vso[task.setvariable variable=lclFileChange;isOutput=true]false"
-              }
-            displayName: 'Check for .lcl files in the commit'
-
-          - script: |
-              echo "Output value: $(dependencies.check_lcl_files.outputs['check_lcl_files.lclFileChange'])"
-              echo "Output value: $(dependencies.check_lcl_files['check_lcl_files.lclFileChange'])"
-            displayName: 'Debug output variable'
-
-        outputs:
-          lclFileChange: $[ dependencies.check_lcl_files.outputs['lclFileChange'] ]
-
-      - job : generate_resx
+      - job: generate_resx
         displayName: 'Process incoming translations'
-        pool:  $(HostedWinVS2019)
-        dependsOn: check_lcl_files
-        condition: eq(dependencies.check_lcl_files.outputs['check_lcl_files.lclFileChange'], 'true')
+        pool: $(HostedWinVS2019)
 
         variables:
           - group: OneLocBuildVariables # Contains the CeapexPat and GithubPat
 
         steps:
+          # Step 1: Check for .lcl files and set a job-level variable
+          - powershell: |
+              $hasLclFiles = git diff --name-only HEAD~1 HEAD | Select-String '\.lcl$'
+              if ($hasLclFiles) {
+                Write-Host "##vso[task.setvariable variable=hasLclFiles]true"
+                Write-Host "Result: Found .lcl files (true)"
+              } else {
+                Write-Host "##vso[task.setvariable variable=hasLclFiles]false"
+                Write-Host "Result: No .lcl files found (false)"
+              }
+            displayName: 'Check for .lcl files'
+
+          # Step 2: Conditionally run OneLocBuild@2 based on the variable
           - task: OneLocBuild@2
             displayName: 'Localization Build'
+            condition: eq(variables['hasLclFiles'], 'true')
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
