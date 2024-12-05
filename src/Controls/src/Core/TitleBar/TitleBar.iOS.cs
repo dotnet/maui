@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 				&& platWindow.RootViewController is WindowViewController windowViewController)
 			{
 				windowViewController.SetTitleBarVisibility(newValue);
-				windowViewController.LayoutTitleBar();
+				windowViewController.View?.SetNeedsLayout();
 			}
 #endif
 		}

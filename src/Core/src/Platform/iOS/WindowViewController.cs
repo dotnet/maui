@@ -79,11 +79,13 @@ internal class WindowViewController : UIViewController
 		if (newTitleBar != iTitleBar)
 		{
 			_titleBar?.RemoveFromSuperview();
+			iTitleBar?.DisconnectHandlers();
 			iTitleBar = null;
 
 			if (newTitleBar is not null)
 			{
 				iTitleBar = window.TitleBar;
+				SetTitleBarVisibility(iTitleBar?.Visibility == Visibility.Visible);
 				View.AddSubview(newTitleBar);
 			}
 
@@ -99,13 +101,15 @@ internal class WindowViewController : UIViewController
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
 		}
 
-		LayoutTitleBar();
-
 		// When we are initializing, calling LayoutIfNeeded will cause the layout events to not fire properly.
 		// However we need this when the titlebar is added or removed or the titlebar may not be fully laid out.
 		if (!isInitalizing)
 		{
-			View.LayoutIfNeeded();
+			View?.SetNeedsLayout();
+		}
+		else
+		{
+			LayoutTitleBar();
 		}
 	}
 
@@ -126,7 +130,11 @@ internal class WindowViewController : UIViewController
 
 		if (!_isTitleBarVisible)
 		{
-			titleBarHeight = 0;
+			titleBarHeight = 36;
+		}
+		else if (titleBarHeight < 36)
+		{
+			titleBarHeight = 36;
 		}
 
 		var newFrame = new CGRect(0, titleBarHeight, View!.Bounds.Width, View!.Bounds.Height - titleBarHeight);
