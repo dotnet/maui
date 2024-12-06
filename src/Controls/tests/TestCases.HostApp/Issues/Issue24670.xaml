@@ -9,10 +9,11 @@
             <Shell.SearchHandler>
                 <SearchHandler
                     x:Name="searchHandler"
+                    AutomationId="searchHandler"
+                    Placeholder="searchHandler"
                     SearchBoxVisibility="Expanded"
                     Focused="SearchHandler_Focused"
-                    Unfocused="SearchHandler_Unfocused"
-                    Placeholder="Click to focus.."/>
+                    Unfocused="SearchHandler_Unfocused"/>
             </Shell.SearchHandler>
 
             <StackLayout>

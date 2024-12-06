@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.SearchBar)]
 		public void SearchHandlerFocusAndUnfocusEventsShouldWork()
 		{
-			// Click the edit text of the search handler at the top to focus it
-			App.DoubleTapCoordinates(250, 150);
+			App.WaitForElement("searchHandler");
+			App.Click("searchHandler");
 
 			// Click the entry below to trigger the unfocused event
 			App.Click("entry");
