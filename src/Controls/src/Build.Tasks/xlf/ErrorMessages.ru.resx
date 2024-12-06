@@ -135,6 +135,18 @@
     <value>Привязка: неподдерживаемый тип индекса индексатора: "{0}".</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Привязка может быть скомпилирована для повышения производительности среды выполнения, если задан атрибут x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>Привязка может быть скомпилирована для повышения производительности среды выполнения, если для x:DataType не задано значение NULL явным образом. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Привязка может быть скомпилирована неправильно, поскольку аннотация x:DataType взята из внешней области. Убедитесь, что для всех элементов XAML DataTemplate используется правильная аннотация x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>Привязка не была скомпилирована, поскольку для нее явным образом задано свойство Source, а компиляция привязок со свойством Source не включена. Попробуйте включить эту оптимизацию путем установки значения &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; в файле проекта. Убедитесь, что для этой привязки указан правильный атрибут x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Привязка: свойство "{0}" не найдено в "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Элемент с именем "{0}" уже существует в этой области видимости имен.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Свойство, метод задания свойства или BindableProperty "{0}" упразднены.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Отсутствует обязательное свойство "{0}" для "{1}".</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>Свойство Source не является строковым литералом.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>Таблица стилей (StyleSheet) не может одновременно содержать источник (Source) и содержимое.</value>
+    <value>У таблицы стилей не может быть свойство Source и содержимое.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>Свойство Style или содержимое (Content) не является строковым литералом.</value>
@@ -232,7 +247,11 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType ожидает строковый литерал, разметку {{x:Type}} или {{x:Null}}.</value>
+    <value>Для x:DataType ожидается строковый литерал, разметка {{x:Type}} или {{x:Null}}.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Попробуйте присвоить расширению разметки "{0}" аннотацию [RequireService] или [AcceptEmptyServiceProvider], если оно не требует никаких аннотаций.</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Необъявленный префикс xmlns "{0}".</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key ожидает строковый литерал.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>Необходимо указать ключ в {StaticResource}.</value>
   </data>
 </root>
