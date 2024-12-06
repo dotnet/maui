@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					// if the image is bigger than the default available size, resize it
 					if (originalImageSize.Height - defaultIconHeight > buffer || originalImageSize.Width - defaultIconWidth > buffer)
 					{
-						icon = result?.Value?.ResizeImageSource(defaultIconHeight, defaultIconWidth, originalImageSize);
+						icon = result?.Value?.ResizeImageSource(defaultIconWidth, defaultIconHeight, originalImageSize);
 					}
 					else
 					{
@@ -478,6 +478,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateBackButtonTitle();
 		}
+
 
 		void UpdateBackButtonTitle()
 		{
