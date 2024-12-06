@@ -135,6 +135,18 @@
     <value>바인딩: 지원되지 않는 인덱서 인덱스 형식: "{0}"</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>x:DataType이 지정된 경우 런타임 성능을 개선하기 위해 바인딩을 컴파일할 수 있습니다. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>x:DataType이 명시적으로 null이 아닌 경우 런타임 성능을 개선하기 위해 바인딩을 컴파일할 수 있습니다. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>x:DataType 주석이 외부 범위에서 제공되었으므로 바인딩이 잘못 컴파일되었을 수 있습니다. 올바른 x:DataType으로 모든 DataTemplate XAML 요소에 주석을 추가해야 합니다. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>바인딩에 명시적으로 설정된 소스 속성이 있고 소스를 사용하는 바인딩의 컴파일을 사용할 수 없으므로 바인딩이 컴파일되지 않았습니다. 프로젝트 파일에서 &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt;을(를) 설정하여 이 최적화를 사용하도록 설정하는 것을 고려하고 이 바인딩에 올바른 x:DataType이 지정되어 있는지 확인하세요. 자세한 내용은 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings를 참조하세요.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>바인딩: "{1}"에서 "{0}" 속성을 찾을 수 없습니다.</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>이름이 "{0}"인 요소가 이 NameScope에 이미 있습니다.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Property, Property setter 또는 BindableProperty "{0}"이(가) 사용되지 않습니다.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>"{1}"에 필수 속성 "{0}"이(가) 없습니다.</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>원본 속성이 문자열 리터럴이 아닙니다.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>스타일 시트는 소스와 콘텐츠 중 하나만 포함할 수 있습니다.</value>
+    <value>스타일 시트는 소스와 콘텐츠를 둘 다 포함할 수 있습니다.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>스타일 속성 또는 콘텐츠가 문자열 리터럴이 아닙니다.</value>
@@ -233,6 +248,10 @@
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType에는 {{x:Type}} 태그 또는 {{x:Null}} 문자열 리터럴이 필요합니다.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>필요 없는 경우 [RequireService] 또는 [AcceptEmptyServiceProvider]로 태그 확장 "{0}"에 특성을 지정하는 것을 고려하세요.</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>선언되지 않은 xmlns 접두사 "{0}"입니다.</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key는 문자열 리터럴을 기대합니다.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>{StaticResource}에서 키가 필요합니다.</value>
   </data>
 </root>
