@@ -16,56 +16,56 @@ public class ShellFlyoutContentWithZeroMargin : _IssuesUITest
 	//[Test]
 	//public void FlyoutHeaderBehaviorFixed()
 	//{
-	//	RunningApp.Tap(nameof(FlyoutHeaderBehavior.Fixed));
+	//	App.Tap(nameof(FlyoutHeaderBehavior.Fixed));
 	//	this.ShowFlyout();
 	//	float startingHeight = GetFlyoutHeight();
-	//	RunningApp.ScrollDown("Item 4", ScrollStrategy.Gesture);
+	//	App.ScrollDown("Item 4", ScrollStrategy.Gesture);
 	//	float endHeight = GetFlyoutHeight();
 
 	//	Assert.AreEqual(startingHeight, endHeight);
 	//}
 
 	//[FailsOnAndroid]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//[Test]
 	//public void FlyoutHeaderBehaviorCollapseOnScroll()
 	//{
-	//	RunningApp.Tap(nameof(FlyoutHeaderBehavior.CollapseOnScroll));
+	//	App.Tap(nameof(FlyoutHeaderBehavior.CollapseOnScroll));
 	//	this.ShowFlyout();
 	//	float startingHeight = GetFlyoutHeight();
-	//	RunningApp.ScrollDown("Item 4", ScrollStrategy.Gesture);
+	//	App.ScrollDown("Item 4", ScrollStrategy.Gesture);
 	//	float endHeight = GetFlyoutHeight();
 
 	//	Assert.Greater(startingHeight, endHeight);
 	//}
 
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void FlyoutHeaderBehaviorScroll()
 	//{
-	//	RunningApp.Tap(nameof(FlyoutHeaderBehavior.Scroll));
+	//	App.Tap(nameof(FlyoutHeaderBehavior.Scroll));
 	//	this.ShowFlyout();
 
 	//	var startingY = GetFlyoutY();
-	//	RunningApp.ScrollDown("Item 5", ScrollStrategy.Gesture);
+	//	App.ScrollDown("Item 5", ScrollStrategy.Gesture);
 	//	var nextY = GetFlyoutY();
 
 	//	while (nextY != null)
 	//	{
 	//		Assert.Greater(startingY.Value, nextY.Value);
 	//		startingY = nextY;
-	//		RunningApp.ScrollDown("Item 5", ScrollStrategy.Gesture);
+	//		App.ScrollDown("Item 5", ScrollStrategy.Gesture);
 	//		nextY = GetFlyoutY();
 	//	}
 	//}
 
 	//float GetFlyoutHeight() =>
-	//	RunningApp.WaitForElement("FlyoutHeaderId")[0].Rect.Height;
+	//	App.WaitForElement("FlyoutHeaderId")[0].Rect.Height;
 
 	//float? GetFlyoutY()
 	//{
 	//	var flyoutHeader =
-	//		RunningApp.Query("FlyoutHeaderId");
+	//		App.Query("FlyoutHeaderId");
 
 	//	if (flyoutHeader.Length == 0)
 	//		return null;

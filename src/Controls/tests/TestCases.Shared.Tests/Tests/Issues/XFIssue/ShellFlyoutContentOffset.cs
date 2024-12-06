@@ -15,10 +15,10 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	//[Test]
 	//[Category(UITestCategories.Shell)]
 	//[FailsOnAndroid]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void FlyoutContentOffsetsCorrectly()
 	//{
-	//	RunningApp.WaitForElement("PageLoaded");
+	//	App.WaitForElement("PageLoaded");
 	//	var flyoutLoc = GetLocationAndRotateToNextContent("Item 1");
 	//	var labelLoc = GetLocationAndRotateToNextContent("LabelContent");
 	//	var scrollViewLoc = GetLocationAndRotateToNextContent("ScrollViewContent");
@@ -31,7 +31,7 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void FlyoutContentOffsetsCorrectlyWithHeader()
 	//{
-	//	RunningApp.Tap("ToggleHeader");
+	//	App.Tap("ToggleHeader");
 	//	GetLocationAndRotateToNextContent("Item 1");
 	//	var labelLoc = GetLocationAndRotateToNextContent("LabelContent");
 	//	var scrollViewLoc = GetLocationAndRotateToNextContent("ScrollViewContent");
@@ -42,9 +42,9 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	//float GetLocationAndRotateToNextContent(string automationId)
 	//{
 	//	ShowFlyout();
-	//	var y = RunningApp.WaitForElement(automationId)[0].Rect.Y;
-	//	RunningApp.Tap("CloseFlyout");
-	//	RunningApp.Tap("ToggleFlyoutContent");
+	//	var y = App.WaitForElement(automationId)[0].Rect.Y;
+	//	App.Tap("CloseFlyout");
+	//	App.Tap("ToggleFlyoutContent");
 
 	//	return y;
 	//}

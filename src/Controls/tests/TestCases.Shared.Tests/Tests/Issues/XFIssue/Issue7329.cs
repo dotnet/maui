@@ -24,22 +24,22 @@ public class Issue7329 : _IssuesUITest
 	//		return;
 	//	}
 
-	//	RunningApp.WaitForElement("1");
+	//	App.WaitForElement("1");
 
-	//	RunningApp.QueryUntilPresent(() =>
+	//	App.QueryUntilPresent(() =>
 	//	{
 	//		try
 	//		{
-	//			RunningApp.ScrollDownTo("30", strategy: ScrollStrategy.Gesture, swipeSpeed: 100);
+	//			App.ScrollDownTo("30", strategy: ScrollStrategy.Gesture, swipeSpeed: 100);
 	//		}
 	//		catch
 	//		{
 	//			// just ignore if it fails so it can keep trying to scroll
 	//		}
 
-	//		return RunningApp.Query("30");
+	//		return App.Query("30");
 	//	});
 
-	//	RunningApp.Query("30");
+	//	App.Query("30");
 	//}
 }

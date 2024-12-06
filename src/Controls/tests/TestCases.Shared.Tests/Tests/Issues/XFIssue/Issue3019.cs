@@ -17,11 +17,11 @@ public class Issue3019 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void MakeSureListGroupShowsUpAndItemsAreClickable()
 	// {
-	// 	RunningApp.WaitForElement("Group 1");
+	// 	App.WaitForElement("Group 1");
 
-	// 	RunningApp.Tap(x => x.Marked("Grouped Item: 0"));
-	// 	RunningApp.Tap(x => x.Marked("Grouped Item: 1"));
-	// 	RunningApp.Tap(x => x.Marked("Grouped Item: 1 Clicked"));
+	// 	App.Tap(x => x.Marked("Grouped Item: 0"));
+	// 	App.Tap(x => x.Marked("Grouped Item: 1"));
+	// 	App.Tap(x => x.Marked("Grouped Item: 1 Clicked"));
 
 	// }
 }

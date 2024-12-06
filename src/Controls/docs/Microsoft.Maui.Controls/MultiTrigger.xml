@@ -91,7 +91,6 @@
       <Docs>
         <param name="targetType">The type of the trigger target.</param>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.MultiTrigger" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Conditions">
@@ -113,8 +112,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the list of conditions that must be satisfied in ordeer for the setters in the <see cref="P:Microsoft.Maui.Controls.MultiTrigger.Setters" /> list to be invoked.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Setters">
@@ -136,8 +133,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.Setter" /> objects that will be applied when the list of conditions in the <see cref="P:Microsoft.Maui.Controls.MultiTrigger.Conditions" /> property are all met.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

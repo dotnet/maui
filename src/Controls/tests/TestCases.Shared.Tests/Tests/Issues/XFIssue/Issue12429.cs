@@ -16,29 +16,29 @@ public class Issue12429 : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void FlyoutItemSizesToExplicitHeight()
 	//{
-	//	RunningApp.WaitForElement("PageLoaded");
+	//	App.WaitForElement("PageLoaded");
 	//	this.ShowFlyout();
-	//	var height = RunningApp.WaitForElement("SmallFlyoutItem")[0].Rect.Height;
+	//	var height = App.WaitForElement("SmallFlyoutItem")[0].Rect.Height;
 	//	Assert.That(height, Is.EqualTo(SmallFlyoutItem).Within(1));
 	//}
 
 	//[Test]
 	//public void FlyoutItemHeightAndWidthIncreaseAndDecreaseCorrectly()
 	//{
-	//	RunningApp.WaitForElement("PageLoaded");
+	//	App.WaitForElement("PageLoaded");
 	//	this.ShowFlyout();
-	//	var initialHeight = RunningApp.WaitForElement("ResizeMe")[0].Rect.Height;
+	//	var initialHeight = App.WaitForElement("ResizeMe")[0].Rect.Height;
 
 	//	TapInFlyout("ResizeFlyoutItem", makeSureFlyoutStaysOpen: true);
-	//	var newHeight = RunningApp.WaitForElement("ResizeMe")[0].Rect.Height;
+	//	var newHeight = App.WaitForElement("ResizeMe")[0].Rect.Height;
 	//	Assert.That(newHeight - initialHeight, Is.EqualTo(SizeToModifyBy).Within(1));
 
 	//	TapInFlyout("ResizeFlyoutItemDown", makeSureFlyoutStaysOpen: true);
-	//	newHeight = RunningApp.WaitForElement("ResizeMe")[0].Rect.Height;
+	//	newHeight = App.WaitForElement("ResizeMe")[0].Rect.Height;
 	//	Assert.That(initialHeight, Is.EqualTo(newHeight).Within(1));
 
 	//	TapInFlyout("ResizeFlyoutItemDown", makeSureFlyoutStaysOpen: true);
-	//	newHeight = RunningApp.WaitForElement("ResizeMe")[0].Rect.Height;
+	//	newHeight = App.WaitForElement("ResizeMe")[0].Rect.Height;
 	//	Assert.That(initialHeight - newHeight, Is.EqualTo(SizeToModifyBy).Within(1));
 
 	//}

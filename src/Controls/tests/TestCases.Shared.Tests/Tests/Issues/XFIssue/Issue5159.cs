@@ -16,45 +16,45 @@ public class Issue5159 : _IssuesUITest
 	//[Test]
 	//public void InvisibleDatepickerShowsDialogOnFocus()
 	//{
-	//	RunningApp.WaitForElement(DatePickerButton);
-	//	RunningApp.Screenshot("Issue 5159 page is showing in all it's glory");
-	//	RunningApp.Tap(DatePickerButton);
+	//	App.WaitForElement(DatePickerButton);
+	//	App.Screenshot("Issue 5159 page is showing in all it's glory");
+	//	App.Tap(DatePickerButton);
 
-	//	RunningApp.WaitForElement(x => x.Class("DatePicker"));
+	//	App.WaitForElement(x => x.Class("DatePicker"));
 
-	//	RunningApp.Screenshot("DatePicker is shown");
-	//	RunningApp.TapCoordinates(5, 100);
+	//	App.Screenshot("DatePicker is shown");
+	//	App.TapCoordinates(5, 100);
 	//}
 
 	//[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnAndroid]
 	//[Test]
 	//public void InvisibleTimepickerShowsDialogOnFocus()
 	//{
-	//	RunningApp.WaitForElement(TimePickerButton);
-	//	RunningApp.Screenshot("Issue 5159 page is showing in all it's glory");
-	//	RunningApp.Tap(TimePickerButton);
+	//	App.WaitForElement(TimePickerButton);
+	//	App.Screenshot("Issue 5159 page is showing in all it's glory");
+	//	App.Tap(TimePickerButton);
 
-	//	RunningApp.WaitForElement(x => x.Class("timePicker"));
+	//	App.WaitForElement(x => x.Class("timePicker"));
 
-	//	RunningApp.Screenshot("TimePicker is shown");
-	//	RunningApp.TapCoordinates(5, 100);
+	//	App.Screenshot("TimePicker is shown");
+	//	App.TapCoordinates(5, 100);
 	//}
 
-	//[FailsOnAndroid]
+	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//[Test]
 	//public void InvisiblePickerShowsDialogOnFocus()
 	//{
-	//	RunningApp.WaitForElement(PickerButton);
-	//	RunningApp.Screenshot("Issue 5159 page is showing in all it's glory");
-	//	RunningApp.Tap(PickerButton);
+	//	App.WaitForElement(PickerButton);
+	//	App.Screenshot("Issue 5159 page is showing in all it's glory");
+	//	App.Tap(PickerButton);
 
-	//	RunningApp.WaitForElement("Foo");
+	//	App.WaitForElement("Foo");
 
-	//	RunningApp.Screenshot("Picker is shown");
+	//	App.Screenshot("Picker is shown");
 
-	//	RunningApp.Tap("Foo");
+	//	App.Tap("Foo");
 
-	//	RunningApp.WaitForNoElement("Foo");
+	//	App.WaitForNoElement("Foo");
 
 	//}
 }

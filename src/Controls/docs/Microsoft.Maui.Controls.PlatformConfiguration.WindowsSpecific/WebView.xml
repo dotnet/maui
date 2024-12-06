@@ -78,7 +78,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the web view allows JavaScript alerts.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsJavaScriptAlertEnabled">

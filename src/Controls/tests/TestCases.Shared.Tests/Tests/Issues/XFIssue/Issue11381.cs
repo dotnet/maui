@@ -17,16 +17,16 @@ public class Issue11381 : _IssuesUITest
 	//[FailsOnMauiIOS]
 	//public void Issue11381RemoveListViewGroups()
 	//{
-	//	RunningApp.WaitForElement("ListViewId", "Timed out waiting for the ListView.");
+	//	App.WaitForElement("ListViewId", "Timed out waiting for the ListView.");
 
-	//	RunningApp.Tap(x => x.Marked("G1I1"));
-	//	RunningApp.Tap(x => x.Marked("G1I2"));
-	//	RunningApp.Tap(x => x.Marked("G1I3"));
-	//	RunningApp.Tap(x => x.Marked("G1I4"));
-	//	RunningApp.Tap(x => x.Marked("G2I1"));
-	//	RunningApp.Tap(x => x.Marked("G2I2"));
+	//	App.Tap(x => x.Marked("G1I1"));
+	//	App.Tap(x => x.Marked("G1I2"));
+	//	App.Tap(x => x.Marked("G1I3"));
+	//	App.Tap(x => x.Marked("G1I4"));
+	//	App.Tap(x => x.Marked("G2I1"));
+	//	App.Tap(x => x.Marked("G2I2"));
 
-	//	RunningApp.WaitForElement("ResultId");
-	//	Assert.AreEqual("0 groups", RunningApp.WaitForElement("ResultId")[0].ReadText());
+	//	App.WaitForElement("ResultId");
+	//	Assert.AreEqual("0 groups", App.WaitForElement("ResultId")[0].ReadText());
 	//}
 }

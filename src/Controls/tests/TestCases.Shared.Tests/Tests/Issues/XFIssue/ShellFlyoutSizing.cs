@@ -17,30 +17,30 @@ public class ShellFlyoutSizing : _IssuesUITest
 	//[Category(UITestCategories.Shell)]
 	//public void FlyoutHeightAndWidthResetsBackToOriginalSize()
 	//{
-	//	RunningApp.WaitForElement("PageLoaded");
+	//	App.WaitForElement("PageLoaded");
 	//	this.ShowFlyout();
-	//	var initialWidth = RunningApp.WaitForElement("FlyoutHeader")[0].Rect.Width;
-	//	var initialHeight = RunningApp.WaitForElement("FlyoutFooter")[0].Rect.Y;
+	//	var initialWidth = App.WaitForElement("FlyoutHeader")[0].Rect.Width;
+	//	var initialHeight = App.WaitForElement("FlyoutFooter")[0].Rect.Y;
 	//	TapInFlyout("ChangeFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	Assert.AreNotEqual(initialWidth, RunningApp.WaitForElement("FlyoutHeader")[0].Rect.Width);
-	//	Assert.AreNotEqual(initialHeight, RunningApp.WaitForElement("FlyoutFooter")[0].Rect.Y);
+	//	Assert.AreNotEqual(initialWidth, App.WaitForElement("FlyoutHeader")[0].Rect.Width);
+	//	Assert.AreNotEqual(initialHeight, App.WaitForElement("FlyoutFooter")[0].Rect.Y);
 	//	TapInFlyout("ResetFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	Assert.AreEqual(initialWidth, RunningApp.WaitForElement("FlyoutHeader")[0].Rect.Width);
-	//	Assert.AreEqual(initialHeight, RunningApp.WaitForElement("FlyoutFooter")[0].Rect.Y);
+	//	Assert.AreEqual(initialWidth, App.WaitForElement("FlyoutHeader")[0].Rect.Width);
+	//	Assert.AreEqual(initialHeight, App.WaitForElement("FlyoutFooter")[0].Rect.Y);
 	//}
 
 	//[Test]
 	//[Category(UITestCategories.Shell)]
 	//public void FlyoutHeightAndWidthIncreaseAndDecreaseCorrectly()
 	//{
-	//	RunningApp.WaitForElement("PageLoaded");
+	//	App.WaitForElement("PageLoaded");
 	//	this.ShowFlyout();
 	//	TapInFlyout("ChangeFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	var initialWidth = RunningApp.WaitForElement("FlyoutHeader")[0].Rect.Width;
-	//	var initialHeight = RunningApp.WaitForElement("FlyoutFooter")[0].Rect.Y;
+	//	var initialWidth = App.WaitForElement("FlyoutHeader")[0].Rect.Width;
+	//	var initialHeight = App.WaitForElement("FlyoutFooter")[0].Rect.Y;
 	//	TapInFlyout("DecreaseFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	var newWidth = RunningApp.WaitForElement("FlyoutHeader")[0].Rect.Width;
-	//	var newHeight = RunningApp.WaitForElement("FlyoutFooter")[0].Rect.Y;
+	//	var newWidth = App.WaitForElement("FlyoutHeader")[0].Rect.Width;
+	//	var newHeight = App.WaitForElement("FlyoutFooter")[0].Rect.Y;
 
 	//	Assert.That(initialWidth - newWidth, Is.EqualTo(10).Within(1));
 	//	Assert.That(initialHeight - newHeight, Is.EqualTo(10).Within(1));

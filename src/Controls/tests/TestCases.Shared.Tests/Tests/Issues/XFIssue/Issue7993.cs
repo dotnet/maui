@@ -16,24 +16,24 @@ public class Issue7993 : _IssuesUITest
 	//[Category(UITestCategories.CollectionView)]
 	//public void CollectionViewVerticalOffset()
 	//{
-	//	var colView = RunningApp.WaitForElement("CollectionView7993")[0];
+	//	var colView = App.WaitForElement("CollectionView7993")[0];
 
-	//	RunningApp.WaitForElement(x => x.Marked("VerticalOffset: 0"));
+	//	App.WaitForElement(x => x.Marked("VerticalOffset: 0"));
 
 	//	AppResult[] lastCellResults = null;
 
-	//	RunningApp.QueryUntilPresent(() =>
+	//	App.QueryUntilPresent(() =>
 	//	{
-	//		RunningApp.DragCoordinates(colView.Rect.CenterX, colView.Rect.Y + colView.Rect.Height - 50, colView.Rect.CenterX, colView.Rect.Y + 5);
+	//		App.DragCoordinates(colView.Rect.CenterX, colView.Rect.Y + colView.Rect.Height - 50, colView.Rect.CenterX, colView.Rect.Y + 5);
 
-	//		lastCellResults = RunningApp.Query("19");
+	//		lastCellResults = App.Query("19");
 
 	//		return lastCellResults;
 	//	}, 20, 1);
 
 	//	Assert.IsTrue(lastCellResults?.Any() ?? false);
 
-	//	RunningApp.Tap(x => x.Marked("NewItemsSource"));
-	//	RunningApp.WaitForElement(x => x.Marked("VerticalOffset: 0"));
+	//	App.Tap(x => x.Marked("NewItemsSource"));
+	//	App.WaitForElement(x => x.Marked("VerticalOffset: 0"));
 	//}
 }

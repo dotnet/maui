@@ -22,13 +22,13 @@ public class Issue9711 : _IssuesUITest
 	//	// crashes, one of the RunningApp queries will throw, failing the test.
 	//	Assert.DoesNotThrowAsync(async () =>
 	//	{
-	//		RunningApp.Tap(x => x.Marked("Group2"));
+	//		App.Tap(x => x.Marked("Group2"));
 	//		await Task.Delay(3000);
-	//		RunningApp.Tap(x => x.Marked("Group1"));
+	//		App.Tap(x => x.Marked("Group1"));
 	//		await Task.Delay(3000);
-	//		RunningApp.Tap(x => x.Marked("Group0"));
+	//		App.Tap(x => x.Marked("Group0"));
 	//		await Task.Delay(3000);
-	//		RunningApp.Query(x => x.Marked("9711TestListView"));
+	//		App.Query(x => x.Marked("9711TestListView"));
 	//	});
 	//}
 }

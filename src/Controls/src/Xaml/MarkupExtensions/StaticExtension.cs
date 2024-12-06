@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	[ContentProperty(nameof(Member))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticExtension")]
 	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+	[RequireService([typeof(IXamlTypeResolver)])]
 	public class StaticExtension : IMarkupExtension
 	{
 		public string Member { get; set; }

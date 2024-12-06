@@ -16,11 +16,11 @@ public class Issue6127 : _IssuesUITest
 	//[Category(UITestCategories.ToolbarItem)]
 	//public void Issue6127Test() 
 	//{
-	//	RunningApp.WaitForElement(PrimaryToolbarIcon);
+	//	App.WaitForElement(PrimaryToolbarIcon);
 
-	//	RunningApp.Tap("More options");
-	//	RunningApp.WaitForElement(SecondaryToolbarIcon);
+	//	App.Tap("More options");
+	//	App.WaitForElement(SecondaryToolbarIcon);
 
-	//	RunningApp.Screenshot("There is a secondary toolbar menu and item");
+	//	App.Screenshot("There is a secondary toolbar menu and item");
 	//}
 }

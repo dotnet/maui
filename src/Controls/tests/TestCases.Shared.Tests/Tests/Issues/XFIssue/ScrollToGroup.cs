@@ -15,58 +15,58 @@ public class ScrollToGroup : _IssuesUITest
 
 	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
 	//[Test]
-	//[FailsOnIOS]
+	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void CanScrollToGroupAndItemIndex()
 	//{
-	//	RunningApp.WaitForElement("GroupIndexEntry");
-	//	RunningApp.Tap("GroupIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("5");
+	//	App.WaitForElement("GroupIndexEntry");
+	//	App.Tap("GroupIndexEntry");
+	//	App.ClearText();
+	//	App.EnterText("5");
 
-	//	RunningApp.Tap("ItemIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("1");
+	//	App.Tap("ItemIndexEntry");
+	//	App.ClearText();
+	//	App.EnterText("1");
 
-	//	RunningApp.Tap("GoButton");
+	//	App.Tap("GoButton");
 
 	//	// Should scroll enough to display this item
-	//	RunningApp.WaitForElement("Squirrel Girl");
+	//	App.WaitForElement("Squirrel Girl");
 	//}
 
 	//[Test]
 	//public void InvalidScrollToIndexShouldNotCrash()
 	//{
-	//	RunningApp.WaitForElement("GroupIndexEntry");
-	//	RunningApp.Tap("GroupIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("55");
+	//	App.WaitForElement("GroupIndexEntry");
+	//	App.Tap("GroupIndexEntry");
+	//	App.ClearText();
+	//	App.EnterText("55");
 
-	//	RunningApp.Tap("ItemIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("1");
+	//	App.Tap("ItemIndexEntry");
+	//	App.ClearText();
+	//	App.EnterText("1");
 
-	//	RunningApp.Tap("GoButton");
+	//	App.Tap("GoButton");
 
 	//	// Should scroll enough to display this item
-	//	RunningApp.WaitForElement("Avengers");
+	//	App.WaitForElement("Avengers");
 	//}
 
 	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
+	//[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void CanScrollToGroupAndItem()
 	//{
-	//	RunningApp.WaitForElement("GroupNameEntry");
-	//	RunningApp.Tap("GroupNameEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("Heroes for Hire");
+	//	App.WaitForElement("GroupNameEntry");
+	//	App.Tap("GroupNameEntry");
+	//	App.ClearText();
+	//	App.EnterText("Heroes for Hire");
 
-	//	RunningApp.Tap("ItemNameEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("Misty Knight");
+	//	App.Tap("ItemNameEntry");
+	//	App.ClearText();
+	//	App.EnterText("Misty Knight");
 
-	//	RunningApp.Tap("GoItemButton");
+	//	App.Tap("GoItemButton");
 
 	//	// Should scroll enough to display this item
-	//	RunningApp.WaitForElement("Luke Cage");
+	//	App.WaitForElement("Luke Cage");
 	//}
 }

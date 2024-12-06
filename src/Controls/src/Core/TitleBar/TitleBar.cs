@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls
 #endif
 				}
 			};
-			
+
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
 				static (TitleBar tb) => tb.BackgroundColor,
@@ -421,17 +421,17 @@ namespace Microsoft.Maui.Controls
 				FontSize = 12,
 				IsVisible = false
 			};
-			
+
 			contentGrid.Add(titleLabel);
 			contentGrid.SetColumn(titleLabel, 2);
 
 			titleLabel.SetBinding(
-				Label.TextProperty, 
+				Label.TextProperty,
 				static (TitleBar tb) => tb.Title,
 				source: RelativeBindingSource.TemplatedParent);
 
 			titleLabel.SetBinding(
-				Label.TextColorProperty, 
+				Label.TextColorProperty,
 				static (TitleBar tb) => tb.ForegroundColor,
 				source: RelativeBindingSource.TemplatedParent);
 

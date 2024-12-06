@@ -18,6 +18,7 @@
 
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, new Binding("."));
+				label.SetBinding(Label.AutomationIdProperty, new Binding("."));
 
 				layout.Children.Add(label);
 

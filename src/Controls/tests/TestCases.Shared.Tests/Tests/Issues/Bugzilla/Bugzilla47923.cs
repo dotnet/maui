@@ -3,7 +3,6 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-
 public class Bugzilla47923 : _IssuesUITest
 {
 	public Bugzilla47923(TestDevice testDevice) : base(testDevice)
@@ -19,9 +18,9 @@ public class Bugzilla47923 : _IssuesUITest
 	// {
 	// 	foreach (var testString in new[] { "AspectFit", "AspectFill", "Fill", "Test cell views" })
 	// 	{
-	// 		RunningApp.WaitForElement(q => q.Marked(testString));
-	// 		RunningApp.Tap(q => q.Marked(testString));
-	// 		RunningApp.Back();
+	// 		App.WaitForElement(q => q.Marked(testString));
+	// 		App.Tap(q => q.Marked(testString));
+	// 		App.Back();
 	// 	}
 	// }
 }
