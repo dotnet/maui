@@ -120,5 +120,33 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 		#endregion
+
+		#region RippleColor
+		
+		/// <summary>Bindable property for attached property <c>RippleColor</c>.</summary>
+		internal static readonly BindableProperty RippleColorProperty = BindableProperty.Create("RippleColor", typeof(Color), typeof(ImageButton), default);
+
+		public static Color GetRippleColor(BindableObject element)
+		{
+			return (Color)element.GetValue(RippleColorProperty);
+		}
+
+		internal static void SetRippleColor(BindableObject element, Color value)
+		{
+			element.SetValue(RippleColorProperty, value);
+		}
+
+		internal static Color GetRippleColor(this IPlatformElementConfiguration<Android, FormsImageButton> config)
+		{
+			return GetRippleColor(config.Element);
+		}
+
+		internal static IPlatformElementConfiguration<Android, FormsImageButton> SetRippleColor(this IPlatformElementConfiguration<Android, FormsImageButton> config, Color value)
+		{
+			SetRippleColor(config.Element, value);
+			return config;
+		}
+		
+		#endregion
 	}
 }
