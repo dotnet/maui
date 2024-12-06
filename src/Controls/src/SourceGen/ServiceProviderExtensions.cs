@@ -61,7 +61,6 @@ static class ServiceProviderExtensions
             writer.WriteLine($"null,");
             writer.WriteLine($"false);");
             writer.Indent--;
-            writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideParentValues), {simpleValueTargetProvider});");
             writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), {simpleValueTargetProvider});");
             writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IProvideValueTarget), {simpleValueTargetProvider});");
         }
