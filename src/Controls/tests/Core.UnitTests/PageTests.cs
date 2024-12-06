@@ -553,7 +553,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void MeasureInvalidatedPropagatesUpTree()
 		{
-			var label = new Label(){
+			var label = new Label()
+			{
 				IsPlatformEnabled = true
 			};
 
@@ -612,7 +613,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public ScrollViewInvalidationMeasureCheck()
 			{
-				
+
 			}
 
 			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
@@ -628,7 +629,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public InvalidatePageInvalidateMeasureCheck()
 			{
-				
+
 			}
 
 			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)

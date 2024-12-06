@@ -18,7 +18,7 @@ public class GitHub1331 : _IssuesUITest
 	// public void SingleTapOnCellDoesNotActivateContext()
 	// {
 	// 	App.WaitForElement(Action);
-		
+
 	// 	App.Tap(Action);
 	// 	App.WaitForElement(ActionItemTapped);
 

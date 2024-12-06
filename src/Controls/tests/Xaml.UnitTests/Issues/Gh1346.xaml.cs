@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => throw new NotSupportedException();
 
 			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-				=> destinationType == typeof(Gh1346FontIconOptions);		
+				=> destinationType == typeof(Gh1346FontIconOptions);
 			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType)
 				=> value switch
 				{

@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium.Windows;
+﻿using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -71,6 +72,15 @@ namespace UITest.Appium
 				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
 				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
 			}
+			else if (_app.Driver is IOSDriver iOSDriver)
+			{
+				var args = _app.Config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+				iOSDriver.ExecuteScript("mobile: launchApp", new Dictionary<string, object>
+				{
+					{ "bundleId", _app.GetAppId() },
+					{ "environment", args },
+				});
+			}
 			else
 			{
 				_app.Driver.ActivateApp(_app.GetAppId());
@@ -132,7 +142,7 @@ namespace UITest.Appium
 			catch (Exception)
 			{
 				// TODO: Pass in logger so we can log these exceptions
-				
+
 				// Occasionally the app seems to get so locked up it can't 
 				// even report back the appstate. In that case, we'll just
 				// try to trigger a reset.

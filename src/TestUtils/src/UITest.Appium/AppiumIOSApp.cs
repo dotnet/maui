@@ -70,6 +70,12 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
 			}
 
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			options.AddAdditionalAppiumOption(IOSMobileCapabilityType.ProcessArguments, new Dictionary<string, object>
+			{
+				{ "env", args! }
+			});
+
 			return options;
 		}
 	}

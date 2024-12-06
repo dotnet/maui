@@ -18,7 +18,7 @@ public class Bugzilla37462 : _IssuesUITest
 	public void CanRemoveIntermediatePagesAndPopToFirstPage()
 	{
 		// Start at page 1
-		App.WaitForElement("Go To 2");	
+		App.WaitForElement("Go To 2");
 		App.WaitForElement("This is a label on page 1");
 		App.Tap("Go To 2");
 
