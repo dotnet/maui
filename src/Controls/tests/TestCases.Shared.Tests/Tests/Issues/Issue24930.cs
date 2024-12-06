@@ -20,8 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Picker)]
 		public void PickerShouldNotAllowUserInputThroughKeyboard()
 		{
-			App.WaitForElement("picker");
-			App.Tap("Entry");
+			App.WaitForElement("picker");			
 			App.Tap("picker");
 			App.TapCoordinates(5,100);
 			foreach (var keyCode in keyCodes)

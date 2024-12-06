@@ -25,7 +25,7 @@
 			
 			Content = new StackLayout()
 			{ 
-				Children = { new Entry { AutomationId = "Entry" },picker } 
+				Children = { picker } 
 			};
 		}
 	}
