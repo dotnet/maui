@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -16,21 +17,20 @@ static class NamingHelpers
         return CreateUniqueVariableName((object)context, typeName);
     }
     
-    static string CreateUniqueVariableName(object context, string typeName)
+    static string CreateUniqueVariableName(object context, string baseName)
     {
-        typeName = CamelCase(typeName);
+        baseName = CamelCase(baseName);
         if (!_lastId.TryGetValue(context, out var lastIdForContext))
         {
             lastIdForContext = new Dictionary<string, int>();
             _lastId[context] = lastIdForContext;
         }
-        if (!lastIdForContext.TryGetValue(typeName, out var lastId))
+        if (!lastIdForContext.TryGetValue(baseName, out var lastId))
         {
             lastId = 0;
         }
-        var name = $"{typeName}{lastId}";
-        lastIdForContext[typeName] = lastId + 1;
-        return name;
+        lastIdForContext[baseName] = lastId + 1;
+        return lastId == 0 && SyntaxFacts.GetKeywordKind(baseName) == SyntaxKind.None ? baseName : $"{baseName}{lastId}";
     }
 
     static string CamelCase(string name)
