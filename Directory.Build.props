@@ -138,7 +138,7 @@
 
   <!-- Windows specific settings -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
-    <WindowsSdkPackageVersion>10.0.19041.44</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.19041.56</WindowsSdkPackageVersion>
   </PropertyGroup>
 
   <!-- version number information -->
