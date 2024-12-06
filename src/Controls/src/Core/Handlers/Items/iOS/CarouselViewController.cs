@@ -509,7 +509,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			//If _gotoPosition is != -1 we are scrolling to that possition
-			if (_gotoPosition == -1 && carousel.Position != position)
+			if (carousel.Position != position)
 			{
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
 			}
