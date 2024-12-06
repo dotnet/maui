@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //App was crashing while open on windows, getting Object Null Reference exception on ListViewRenderer, issue: https://github.com/dotnet/maui/issues/26345
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,4 +22,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
