@@ -9,7 +9,14 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
     <IsRoslynComponent>true</IsRoslynComponent>
-    <DefineConstants>$(DefineConstants);__SOURCEGEN__;_MAUIXAML_SG_LINEINFO</DefineConstants>
+    <!-- 
+      _SOURCEGEN_* constants:
+      They should be all turned on, disabling them makes it easier to read the generated code while debugging the generator.
+      - _SOURCEGEN_LINEINFO_ENABLE: Augment the code with #line directives.
+      - _SOURCEGEN_SOURCEINFO_ENABLE: write calls to RegisterSourceInfo (between conditions) for Instrumentatin purposes
+    -->
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__;_SOURCEGEN_LINEINFO_ENABLE;_SOURCEGEN_SOURCEINFO_ENABLE</DefineConstants>
+    <!-- <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants> -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -56,15 +56,21 @@ public partial class TestPage
 {
 	private partial void InitializeComponentSourceGen()
 	{
-		var button0 = new global::Microsoft.Maui.Controls.Button();
+		var button = new global::Microsoft.Maui.Controls.Button();
+#if _MAUIXAML_SG_SOURCEINFO
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
+#endif
 		var __root = this;
-		var nameScope0 = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope0);
-		nameScope0.RegisterName("MyButton", button0);
-		button0.StyleId ??= "MyButton";
-		this.MyButton = button0;
-		button0.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
-		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, button0);
+#if _MAUIXAML_SG_SOURCEINFO
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
+#endif
+		var nameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope);
+		nameScope.RegisterName("MyButton", button);
+		button.StyleId ??= "MyButton";
+		this.MyButton = button;
+		button.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");
+		__root.SetValue(global::Microsoft.Maui.Controls.ContentPage.ContentProperty, button);
 	}
 }
 
