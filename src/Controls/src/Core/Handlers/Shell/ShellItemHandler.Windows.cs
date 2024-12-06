@@ -432,7 +432,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_mainLevelTabs == null)
 				return;
 
-			var currentItem = VirtualView.CurrentItem.CurrentItem;
+			var currentItem = VirtualView.CurrentItem?.CurrentItem;
 			NavigationViewItemViewModel? navigationViewItemViewModel = null;
 
 			foreach (var item in _mainLevelTabs)
