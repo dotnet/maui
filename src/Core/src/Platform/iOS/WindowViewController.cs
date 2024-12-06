@@ -78,6 +78,8 @@ internal class WindowViewController : UIViewController
 		UpdateContentWrapperContentFrame();
 
 		base.ViewDidLayoutSubviews();
+
+		ApplyNavBarHack();
 	}
 
 	void UpdateContentWrapperContentFrame()
@@ -158,22 +160,49 @@ internal class WindowViewController : UIViewController
 			iTitleBar.Arrange(new Graphics.Rect(0, 0, View.Bounds.Width, measured.Height));
 			titleBarHeight = (nfloat)measured.Height;
 		}
-		
-		if(iTitleBar is not null)
-		{
-			if (titleBarHeight <= View.SafeAreaInsets.Top)
-			{
-				titleBarHeight = View.SafeAreaInsets.Top;
-			}
-		}
-		else
-		{
-			titleBarHeight = 0;
-		}
 
 		_contentWrapperTopConstraint.Constant = titleBarHeight;
 
+		if (titleBarHeight <= View.SafeAreaInsets.Top && current > 0 && titleBarHeight != current)
+		{
+			// We only care about doing this when we are transitioning from a titlebar with height to one without height
+			ApplyNavBarHack();
+			
+		}
+
 		UpdateContentWrapperContentFrame();
+	}
+
+	void ApplyNavBarHack()
+	{
+		if (View is null) return;
+
+		FindAndStopAtNavigationController(this);
+		void FindAndStopAtNavigationController(UIViewController viewController)
+		{
+			foreach (var child in viewController.ChildViewControllers)
+			{
+				if (child is UINavigationController { NavigationBar: UINavigationBar nb })
+				{
+					if (_contentWrapperTopConstraint is null || View is null)
+						return;
+
+					var frame = nb.Frame;
+					if (nb.SafeAreaInsets.Top > 0 && nb.Frame.Y == 0 && _contentWrapperTopConstraint.Constant == 0)
+					{
+						nb.Frame = new CGRect(frame.X, 36, frame.Width, frame.Height);
+					}
+					else if(nb.Frame.Y > 0 && _contentWrapperTopConstraint.Constant > 0)
+					{
+						nb.Frame = new CGRect(frame.X, 0, frame.Width, frame.Height);
+					}
+				}
+				else
+				{
+					FindAndStopAtNavigationController(child);
+				}
+			}
+		}
 	}
 
 	public void SetTitleBarVisibility(bool isVisible)
