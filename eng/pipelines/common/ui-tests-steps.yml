@@ -11,6 +11,7 @@ parameters:
   runtimeVariant : "Mono"
   testFilter: ''
   testConfigurationArgs: ''
+  skipProvisioning: true
 
 steps:
   - task: DownloadPipelineArtifact@2
@@ -46,11 +47,15 @@ steps:
           
   - template: provision.yml
     parameters:
-      skipProvisioning:  true
       skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      
+      ${{ if parameters.skipProvisioning }}:
+        skipProvisionator: true
+      ${{ else }}:  
+        skipProvisionator: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')
     inputs:
@@ -154,7 +159,8 @@ steps:
           continueOnError: true
           timeoutInMinutes: 60
 
-  # This must always be placed as the last step in the job
-  - template: agent-rebooter/mac.v1.yml@yaml-templates
-    parameters:
-      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines'), eq(variables['System.TeamProject'], 'devdiv') ) }}:
+      # This must always be placed as the last step in the job
+      - template: agent-rebooter/mac.v1.yml@yaml-templates
+        parameters:
+          AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

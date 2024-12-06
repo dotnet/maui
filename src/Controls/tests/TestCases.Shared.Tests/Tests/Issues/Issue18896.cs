@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811")]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/18811")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
-		public async Task Issue18896Test()
+		public void Issue18896Test()
 		{
 			App.WaitForElement("WaitForStubControl");
 
@@ -28,10 +28,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollUp(ListView);
 
 			// Load images and hide scrollbar.
-			await Task.Delay(2000);
+			Thread.Sleep(2000);
 
 			// The test passes if you are able to see the image, name, and location of each monkey.
-			VerifyScreenshot();
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }

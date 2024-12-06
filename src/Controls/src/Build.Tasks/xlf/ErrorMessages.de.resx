@@ -135,6 +135,18 @@
     <value>Binding: nicht unterstützter Indexer-Indextyp: "{0}".</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Die Bindung kann kompiliert werden, um die Laufzeitleistung zu verbessern, wenn x:DataType angegeben wird. Weitere Informationen finden Sie unter https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>Die Bindung kann kompiliert werden, um die Laufzeitleistung zu verbessern, wenn x:DataType nicht explizit NULL ist. Weitere Informationen finden Sie unter https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Die Bindung kann falsch kompiliert werden, da die x:DataType-Anmerkung aus einem äußeren Bereich stammt. Stellen Sie sicher, dass Sie alle DataTemplate-XAML-Elementen mit dem richtigen x:DataType kommentieren. Weitere Informationen finden Sie unter https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>Die Bindung wurde nicht kompiliert, weil sie über eine explizit festgelegte Source-Eigenschaft verfügt und die Kompilierung von Bindungen mit Source-Eigenschaft nicht aktiviert ist. Ziehen Sie in Betracht, diese Optimierung zu aktivieren, indem Sie in Ihrer Projektdatei &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; festlegen und sicherstellen, dass der richtige x:DataType für diese Bindung angegeben ist. Weitere Informationen finden Sie unter https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Bindung: Die Eigenschaft "{0}" wurde in "{1}" nicht gefunden.</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Ein Element mit dem Namen "{0}" ist in diesem NameScope bereits vorhanden.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Eigenschaft, Eigenschaftensetter oder BindableProperty „{0}“ ist veraltet.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Die erforderliche Eigenschaft "{0}" für "{1}" fehlt.</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -234,6 +249,10 @@
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType erwartet ein Zeichenfolgenliteral, ein {{x:Type}}-Markup oder {{x:Null}}.</value>
   </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Erwägen Sie, die Markuperweiterung „{0}“ mit dem Attribut [RequireService] oder [AcceptEmptyServiceProvider] zu versehen, wenn sie keinen Dienst benötigt.</value>
+    <comment>0 is type name</comment>
+  </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Nicht deklariertes xmlns-Präfix "{0}".</value>
     <comment>0 is the xmlns prefix</comment>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>Für "x:Key" wird ein Zeichenfolgenliteral erwartet.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>In {StaticResource} ist ein Schlüssel erforderlich.</value>
   </data>
 </root>

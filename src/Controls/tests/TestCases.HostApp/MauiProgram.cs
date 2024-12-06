@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-#if IOS || ANDROID
+#if IOS || ANDROID || MACCATALYST
 			appBuilder.UseMauiMaps();
 #endif
 			appBuilder.UseMauiApp<App>()
@@ -26,7 +26,8 @@ namespace Maui.Controls.Sample
 				.Issue18720AddMappers()
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
-				.Issue18720TimePickerAddMappers();
+				.Issue18720TimePickerAddMappers()
+				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
 

@@ -103,8 +103,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null)
+		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
 		{
+			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
 			try
 			{
@@ -112,7 +113,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			catch
 			{
-				Thread.Sleep(500);
+				Thread.Sleep(retryDelay.Value);
 				Verify(name);
 			}
 
