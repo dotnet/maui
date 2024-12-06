@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Exception occurs when giving null values in picker itemsource collection"; 
-		
+		public override string Issue => "Exception occurs when giving null values in picker itemsource collection";
+
 		[Test]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]

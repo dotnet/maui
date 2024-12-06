@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Call unfocus entry crashes app";
-		
+
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]

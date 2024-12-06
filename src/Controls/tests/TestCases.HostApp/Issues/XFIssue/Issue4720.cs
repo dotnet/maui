@@ -23,7 +23,7 @@ public class Issue4720 : TestNavigationPage
 
 			var label = new Microsoft.Maui.Controls.Label { Text = "Test case for GitHub issue #4720." };
 
-			var button = new Button { Text = "Close Page", AutomationId="ClosePage" };
+			var button = new Button { Text = "Close Page", AutomationId = "ClosePage" };
 			button.Clicked += ClosePageClicked;
 
 

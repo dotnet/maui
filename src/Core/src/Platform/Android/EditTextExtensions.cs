@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Platform
 		{
 			editText.SetInputType(entry);
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
-			
+
 			// Restart the input on the current focused EditText
 			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
 			imm?.RestartInput(editText);
@@ -407,8 +407,8 @@ namespace Microsoft.Maui.Platform
 			// This assumes the button is vertically centered within the padded area of the EditText
 
 			var buttonHeight = buttonRect.Height();
-			var editAreaTop = platformView.Top + platformView.PaddingTop;
-			var editAreaHeight = (platformView.Bottom - platformView.PaddingBottom) - (editAreaTop);
+			var editAreaTop = platformView.PaddingTop;
+			var editAreaHeight = platformView.Bottom - platformView.Top - platformView.PaddingTop - platformView.PaddingBottom;
 			var editAreaVerticalCenter = editAreaTop + (editAreaHeight / 2);
 
 			var topEdge = editAreaVerticalCenter - (buttonHeight / 2);
