@@ -151,10 +151,13 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!entry.IsReadOnly)
 			{
-				UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
-				UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					UITextPosition start = GetSelectionStart(textField, entry, out int startOffset);
+					UITextPosition end = GetSelectionEnd(textField, entry, start, startOffset);
 
-				textField.SelectedTextRange = textField.GetTextRange(start, end);
+					textField.SelectedTextRange = textField.GetTextRange(start, end);
+				});
 			}
 		}
 
