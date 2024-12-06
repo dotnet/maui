@@ -1,17 +1,38 @@
 ﻿using System;
-using ObjCRuntime;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
+		readonly WindowProxy _proxy = new();
+
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
 
-			UpdateVirtualViewFrame(platformView);
+			// For newer iOS versions, we want to wait until we get effective window dimensions from the platform.
+			if (!OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				UpdateVirtualViewFrame(platformView);
+			} 
+			else 
+			{
+				_proxy.Connect(VirtualView, platformView);
+			}
 		}
+
+		protected override void DisconnectHandler(UIWindow platformView)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(16)) 
+			{
+				_proxy.Disconnect();
+			}
+
+			base.DisconnectHandler(platformView);
+		}
+
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
 			handler.PlatformView.UpdateTitle(window);
 
@@ -23,8 +44,7 @@ namespace Microsoft.Maui.Handlers
 
 			handler.PlatformView.RootViewController = nativeContent;
 
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -82,12 +102,48 @@ namespace Microsoft.Maui.Handlers
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args)
 		{
 			if (args is DisplayDensityRequest request)
+			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
 		}
 
 		void UpdateVirtualViewFrame(UIWindow window)
 		{
 			VirtualView.FrameChanged(window.Bounds.ToRectangle());
+		}
+
+		class WindowProxy
+		{
+			WeakReference<IWindow>? _virtualView;
+
+			IWindow? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+			IDisposable? _effectiveGeometryObserver;
+
+			public void Connect(IWindow virtualView, UIWindow platformView)
+			{
+				_virtualView = new(virtualView);
+				_effectiveGeometryObserver = platformView.WindowScene?.AddObserver("effectiveGeometry", NSKeyValueObservingOptions.OldNew, HandleEffectiveGeometryObserved);
+			}
+
+			public void Disconnect()
+			{
+				_effectiveGeometryObserver?.Dispose();
+			}
+
+			void HandleEffectiveGeometryObserved(NSObservedChange obj)
+			{
+				if (obj is not null && VirtualView is IWindow virtualView && obj.NewValue is UIWindowSceneGeometry newGeometry)
+				{
+					var newRectangle = newGeometry.SystemFrame.ToRectangle();
+
+					if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height)) 
+					{
+						return;
+					}
+
+					virtualView.FrameChanged(newRectangle);
+				}
+			}
 		}
 	}
 }

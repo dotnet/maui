@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Maui.Devices;
 using UIKit;
 
@@ -15,23 +16,46 @@ namespace Microsoft.Maui.Platform
 			// If you set it to an empty string the title reverts back to the 
 			// default app title.
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && platformWindow.WindowScene is not null)
+			{
 				platformWindow.WindowScene.Title = window.Title ?? String.Empty;
+			}
 		}
 
 		internal static void UpdateX(this UIWindow platformWindow, IWindow window) =>
-			platformWindow.UpdateUnsupportedCoordinate(window);
+			platformWindow.UpdateCoordinates(window);
 
 		internal static void UpdateY(this UIWindow platformWindow, IWindow window) =>
-			platformWindow.UpdateUnsupportedCoordinate(window);
+			platformWindow.UpdateCoordinates(window);
 
 		internal static void UpdateWidth(this UIWindow platformWindow, IWindow window) =>
-			platformWindow.UpdateUnsupportedCoordinate(window);
+			platformWindow.UpdateCoordinates(window);
 
 		internal static void UpdateHeight(this UIWindow platformWindow, IWindow window) =>
-			platformWindow.UpdateUnsupportedCoordinate(window);
+			platformWindow.UpdateCoordinates(window);
 
-		internal static void UpdateUnsupportedCoordinate(this UIWindow platformWindow, IWindow window) =>
-			window.FrameChanged(platformWindow.Bounds.ToRectangle());
+		internal static void UpdateCoordinates(this UIWindow platformWindow, IWindow window)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene)
+			{
+				if (double.IsNaN(window.X) || double.IsNaN(window.Y) || double.IsNaN(window.Width) || double.IsNaN(window.Height)) 
+				{
+					return;
+				}
+
+				var preferences = new UIWindowSceneGeometryPreferencesMac()
+				{
+					SystemFrame = new CGRect(window.X, window.Y, window.Width, window.Height)
+				};
+
+				// TODO: Log errors.
+				windowScene.RequestGeometryUpdate(preferences, (error) => { });
+			}
+			else
+			{
+				var rectangle = platformWindow.Bounds.ToRectangle();
+				window.FrameChanged(rectangle);
+			}
+		}
 
 		public static void UpdateMaximumWidth(this UIWindow platformWindow, IWindow window) =>
 			platformWindow.UpdateMaximumSize(window.MaximumWidth, window.MaximumHeight);
@@ -45,7 +69,9 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateMaximumSize(this UIWindow platformWindow, double width, double height)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
@@ -71,7 +97,9 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateMinimumSize(this UIWindow platformWindow, double width, double height)
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			var restrictions = platformWindow.WindowScene?.SizeRestrictions;
 			if (restrictions is null)
