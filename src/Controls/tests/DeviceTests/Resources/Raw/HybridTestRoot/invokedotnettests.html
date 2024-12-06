@@ -15,12 +15,6 @@
 
                 // Invoke the method requested by the test and pass a certain set of parameters
                 switch (methodToInvoke) {
-                    case 'Invoke_NoParam_NoReturn':
-                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
-                        break;
-                    case 'Invoke_NoParam_ReturnNull':
-                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
-                        break;
                     case 'Invoke_OneParam_ReturnValueType':
                         result = await window.HybridWebView.InvokeDotNet(methodToInvoke, { "first": 111, "second": 222 });
                         break;
@@ -41,9 +35,9 @@
                                 [111, 222]
                             ]);
                         break;
-
                     default:
-                        return;
+                        result = await window.HybridWebView.InvokeDotNet(methodToInvoke);
+                        break;
                 }
 
                 // Store the return value from the method so that it can be checked in the test
