@@ -25,6 +25,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SkiaSharp" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android')) or $(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-macos')) or $(TargetFramework.Contains('-maccatalyst')) or $(TargetFramework.Contains('-tizen'))">

@@ -28,6 +28,13 @@
     <Compile Include="**\*.shared.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Include="**\*.shared.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
+  </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
     <PackageReference Include="System.Numerics.Vectors" />
   </ItemGroup>
