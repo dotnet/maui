@@ -5,8 +5,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Microsoft.Maui.Controls.SourceGen</AssemblyName>
     <RootNamespace>Microsoft.Maui.Controls.SourceGen</RootNamespace>
-    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
-    <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
     <IsRoslynComponent>true</IsRoslynComponent>
     <!-- 
@@ -17,6 +15,13 @@
     -->
     <DefineConstants>$(DefineConstants);__SOURCEGEN__;_SOURCEGEN_LINEINFO_ENABLE;_SOURCEGEN_SOURCEINFO_ENABLE</DefineConstants>
     <!-- <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants> -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Controls.SourceGen</PackageId>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains the supporting functionality for XAML source generation.</Description>
   </PropertyGroup>
 
   <ItemGroup>
