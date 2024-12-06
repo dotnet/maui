@@ -57,14 +57,14 @@ namespace Maui.Controls.Sample.Issues
             BindingContext = this;
           //  cv.SelectedItem = SelectedItem;
             
-            cv.SelectionChanged += CollectionView_SelectionChanged;
+           cv.SelectionChanged += CollectionView_SelectionChanged;
         }
 
-        void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        async void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.CurrentSelection.FirstOrDefault() is string issue)
             {
-                Navigation.PushAsync(new NewPage(issue));
+                await Navigation.PushAsync(new NewPage(issue));
             }
 
             // Clear Selection
