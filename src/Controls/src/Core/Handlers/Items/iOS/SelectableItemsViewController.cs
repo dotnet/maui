@@ -53,13 +53,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
-			foreach (var index in selectedItemIndexes)
+			CollectionView.PerformBatchUpdates(null, _ =>
 			{
-				CollectionView.PerformBatchUpdates(null, _ =>
+				foreach (var index in selectedItemIndexes)
 				{
 					CollectionView.DeselectItem(index, true);
-				});
-			}
+				}
+			});
 		}
 
 		void FormsSelectItem(NSIndexPath indexPath)
