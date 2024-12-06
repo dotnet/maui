@@ -116,6 +116,16 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					Assert.That(!hasLoggedErrors);
 					Assert.That(!methodDef.Body.Instructions.Any(instr => HasConstructorForType(methodDef, instr, converterType)), $"This Xaml still generates a new {converterType}()");
 				}
+
+				if (inflator == XamlInflator.SourceGen)
+				{
+					var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(CompiledTypeConverter));
+					Assert.IsFalse(result.Diagnostics.Any());
+					var boilerplate = result.GeneratedCodeBehind();
+					var initComp = result.GeneratedInitializeComponent();
+					if (converterType == typeof(Graphics.Converters.RectTypeConverter))
+						Assert.True(result.GeneratedInitializeComponent().Contains("new global::Microsoft.Maui.Graphics.Rect(0, 1, 2, 4)", StringComparison.InvariantCulture));
+				}
 			}
 
 			bool HasConstructorForType(MethodDefinition methodDef, Instruction instruction, Type converterType)
