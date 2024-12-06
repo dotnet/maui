@@ -19,9 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Button");
 			App.ScrollDown("CollectionView");
+			Assert.That(App.FindElement("Label").GetText(), Is.Not.EqualTo("0"));
 			App.Click("Button");
-			var text = App.FindElement("Label").GetText();
-			Assert.That(text, Is.EqualTo("0"));
+			Assert.That(App.FindElement("Label").GetText(), Is.EqualTo("0"));
 		}
 	}
 }
