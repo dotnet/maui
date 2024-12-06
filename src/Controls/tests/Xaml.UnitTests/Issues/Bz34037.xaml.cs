@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	[AcceptEmptyServiceProvider]
-	public class Bz34037Converter0 : IValueConverter, IMarkupExtension
+	public class Bz34037Converter0 : IValueConverter
 	{
 		public static int Invoked { get; set; }
 		public static object Parameter { get; set; }
@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			return new Bz34037Converter0();
 		}
 	}
+	
 	[AcceptEmptyServiceProvider]
 	public class Bz34037Converter1 : IValueConverter, IMarkupExtension
 	{

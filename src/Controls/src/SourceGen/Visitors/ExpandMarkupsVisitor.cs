@@ -187,7 +187,7 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 
 			var xmltype = new XmlType(namespaceuri, name + "Extension", typeArguments);
 
-			if (xmltype.TryResolveTypeSymbol(null, contextProvider!.Context.Compilation, contextProvider!.Context.XmlnsCache, out _))
+			if (!xmltype.TryResolveTypeSymbol(null, contextProvider!.Context.Compilation, contextProvider!.Context.XmlnsCache, out _))
 				xmltype = new XmlType(namespaceuri, name, typeArguments);
 
 			if (xmltype == null)
