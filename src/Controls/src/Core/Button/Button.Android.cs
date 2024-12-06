@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
 namespace Microsoft.Maui.Controls
 {
@@ -19,6 +20,15 @@ namespace Microsoft.Maui.Controls
 		public static void MapLineBreakMode(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateLineBreakMode(button);
+		}
+
+		internal static void MapRippleColor(IButtonHandler handler, Button button)
+		{
+			if(button.IsSet(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty))
+			{
+				var color = button.OnThisPlatform().GetRippleColor();
+				handler.PlatformView?.UpdateRippleColor(color);
+			}
 		}
 	}
 }

@@ -151,3 +151,5 @@ virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Contro
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.GetRippleColor(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Graphics.Color
