@@ -4,33 +4,45 @@
                x:Class="Maui.Controls.Sample.Issues.Issue23608"
              Title="Issue23608">
 
- <VerticalStackLayout>
-        <Label  Text="Enable IsEnabled" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="Label" />
-        <Switch AutomationId="Switch1" HorizontalOptions="Center" IsToggled="{Binding IsEnabled}" />
-        <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="Enable IsChecked" />
-        <Switch HorizontalOptions="Center" IsToggled="{Binding IsChecked}"  AutomationId="Switch2" />
-        <CheckBox HorizontalOptions="Center" IsChecked="{Binding IsChecked}" IsEnabled="{Binding IsEnabled}">
-            <VisualStateManager.VisualStateGroups>
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                                <Setter Property="Color" Value="violet" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="Color" Value="Gray" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="IsChecked">
-                            <VisualState.Setters>
-                                <Setter Property="Color" Value="Green" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </VisualStateManager.VisualStateGroups>
-        </CheckBox>
-</VerticalStackLayout>
+<VerticalStackLayout>
+   <VerticalStackLayout.Resources>
+     <Style TargetType="CheckBox">
+       <Setter Property="Color" Value="Blue" />
+       <Setter Property="VisualStateManager.VisualStateGroups">
+         <VisualStateGroupList>
+           <VisualStateGroup x:Name="CommonStates">
+             <VisualState x:Name="Normal" >
+               <VisualState.Setters>
+                 <Setter Property="Color" Value="Violet" />
+               </VisualState.Setters>
+             </VisualState>
+             <VisualState x:Name="Disabled">
+               <VisualState.Setters>
+                 <Setter Property="Color" Value="Gray" />
+               </VisualState.Setters>
+             </VisualState>
+             <VisualState x:Name="IsChecked" >
+               <VisualState.Setters>
+                 <Setter Property="Color" Value="green" />
+               </VisualState.Setters>
+             </VisualState>
+           </VisualStateGroup>
+         </VisualStateGroupList>
+       </Setter>
+     </Style>
+   </VerticalStackLayout.Resources>
+   <Label  Text="Enable IsEnabled" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" AutomationId="Label" />
+   <Switch AutomationId="Switch1" HorizontalOptions="Center" IsToggled="{Binding IsEnabled}" />
+   <CheckBox HorizontalOptions="Center" IsEnabled="{Binding IsEnabled}" />
+
+   <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="Enable IsChecked" />
+   <CheckBox HorizontalOptions="Center" AutomationId="CheckBox" IsEnabled="{Binding IsEnabled}" x:Name="checkbox" />
+  
+   <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="Disabled" />
+   <Switch HorizontalOptions="Center" IsToggled="{Binding Disabled}"  AutomationId="Switch2" />
+   <CheckBox HorizontalOptions="Center" IsEnabled="{Binding Disabled}" />
+   
+   <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="IsChecked and Disabled" />
+   <CheckBox HorizontalOptions="Center" IsChecked="{Binding Source={x:Reference checkbox}, Path=IsChecked}" IsEnabled="{Binding Disabled}"/>
+ </VerticalStackLayout>
 </ContentPage>

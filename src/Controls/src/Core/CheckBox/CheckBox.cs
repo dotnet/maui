@@ -47,20 +47,25 @@ namespace Microsoft.Maui.Controls
 		{
 			if (IsEnabled && IsChecked)
 			{
-				var visualStates = VisualStateManager.GetVisualStateGroups(this);
 				bool isCheckedStateAvailable = false;
+				var visualStates = VisualStateManager.GetVisualStateGroups(this);
 				foreach (var group in visualStates)
 				{
-					if (group.Name == "CommonStates")
+					if (group.Name is not "CommonStates")
 					{
-						foreach (var state in group.States)
+						continue;
+					}
+
+					foreach (var state in group.States)
+					{
+						if (state.Name is IsCheckedVisualState)
 						{
-							if (state.Name == IsCheckedVisualState)
-							{
-								isCheckedStateAvailable = true;
-							}
+							isCheckedStateAvailable = true;
+							break;
 						}
 					}
+
+					break;
 				}
 
 				if (isCheckedStateAvailable)
