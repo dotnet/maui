@@ -200,7 +200,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			set
 			{
 				_fontSize = value;
+#pragma warning disable CS0618 // Type or member is obsolete
 				FontPaint.TextSize = _fontSize * _scaleX;
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 
@@ -228,13 +230,17 @@ namespace Microsoft.Maui.Graphics.Skia
 					{
 						Color = SKColors.Black,
 						IsAntialias = true,
+#pragma warning disable CS0618 // Type or member is obsolete
 						Typeface = SKTypeface.Default,
+#pragma warning restore CS0618 // Type or member is obsolete
 					};
 				}
 
 				if (_typefaceInvalid)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					_fontPaint.Typeface = _font?.ToSKTypeface() ?? SKTypeface.Default;
+#pragma warning restore CS0618 // Type or member is obsolete
 					_typefaceInvalid = false;
 				}
 
@@ -423,7 +429,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			_scaleY = _scaleY * sy;
 
 			StrokePaint.StrokeWidth = StrokeSize * _scaleX;
+#pragma warning disable CS0618 // Type or member is obsolete
 			FontPaint.TextSize = _fontSize * _scaleX;
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public void Reset(SKPaint fontPaint, SKPaint fillPaint, SKPaint strokePaint)
