@@ -13,24 +13,9 @@ public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Test"
-	x:Class="Test.TestPage">
-	<local:Bz36422Control x:Name="control">
-		<local:Bz36422Control.Views>
-			<x:Array Type="{x:Type ContentView}">
-				<ContentView>
-					<Label Text="Page 1"/>
-				</ContentView>
-				<ContentView>
-					<Label Text="Page 2"/>
-				</ContentView>
-				<ContentView>
-					<Label Text="Page 3"/>
-				</ContentView>
-			</x:Array>
-		</local:Bz36422Control.Views>
-	</local:Bz36422Control>
-</ContentPage>
+	xmlns:local="clr-namespace:Test"
+	x:Class="Test.TestPage" 
+    Title="{Binding Title, Converter={local:TestConverter}}"/>
 """;
 
 		var code =
@@ -42,9 +27,23 @@ using System.Collections.Generic;
 
 namespace Test;
 
-public class Bz36422Control : ContentView
+[AcceptEmptyServiceProvider]
+public class TestConverter : IValueConverter
 {
-	public IList<ContentView> Views { get; set; }
+	public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+
+	public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
+
+	public object ProvideValue(IServiceProvider serviceProvider)
+	{
+		throw new NotImplementedException();
+	}
 }
 
 [XamlProcessing(XamlInflator.SourceGen)]
