@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<controls:TestContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                          x:Class="Maui.Controls.Sample.Issues.Issue25893">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Label AutomationId="WaitForStubControl" x:Name="InfoLabel" />
+    <ContentView x:Name="ViewWithMenu" AutomationId="ViewWithMenu" Grid.Row="1" BackgroundColor="LightGray">
+      <FlyoutBase.ContextFlyout>
+        <MenuFlyout x:Name="ContextMenu">
+          <MenuFlyoutItem IconImageSource="dotnet_bot.png" Text="Item1" />
+          <MenuFlyoutSubItem IconImageSource="dotnet_bot.png" Text="SubItem1" />
+          <MenuFlyoutSubItem IconImageSource="dotnet_bot.png" Text="SubItem2" />
+          <MenuFlyoutSubItem IconImageSource="dotnet_bot.png" Text="SubItem3" />
+        </MenuFlyout>
+      </FlyoutBase.ContextFlyout>
+    </ContentView>
+    <HorizontalStackLayout Grid.Row="2">
+      <Button AutomationId="AddMenuItem" Text="Add MenuItem" Clicked="AddButtonClicked" />
+      <Button AutomationId="RemoveMenuItem" Text="Remove MenuItem" Clicked="RemoveButtonClicked" />
+    </HorizontalStackLayout>
+  </Grid>
+</controls:TestContentPage>
