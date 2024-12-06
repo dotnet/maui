@@ -293,7 +293,7 @@ static class NodeSGExtensions
             SpecialType.System_DateTime => $"new global::System.DateTime({DateTime.Parse(valueString).Ticks})",
             SpecialType.System_Decimal => $"new global::System.Decimal({decimal.Parse(valueString)})",
             SpecialType.None => DetermineToType(toType, valueString),
-            _ => $"\"{valueString}\"",
+            _ => $"\"\"\"{valueString}\"\"\"",
         };
 	}
 
