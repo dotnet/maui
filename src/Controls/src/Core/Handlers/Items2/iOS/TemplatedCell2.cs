@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -9,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
-	public class TemplatedCell2 : ItemsViewCell2
+	public class TemplatedCell2 : ItemsViewCell2, IMauiPlatformView
 	{
 		internal const string ReuseId = "Microsoft.Maui.Controls.TemplatedCell2";
 
@@ -39,11 +38,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			private set => _currentTemplate = value is null ? null : new(value);
 		}
 
-		// Keep track of the cell size so we can verify whether a measure invalidation 
-		// actually changed the size of the cell
-		//Size _size;
+		bool _bound;
+		bool _measureInvalidated;
+		bool _connected;
+		Size _measuredSize;
+		Size _cachedConstraints;
 
-		//internal CGSize CurrentSize => _size.ToCGSize();
+		internal bool MeasureInvalidated => _measureInvalidated;
 
 		[Export("initWithFrame:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
@@ -58,11 +59,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal UIView PlatformView { get; set; }
 
+		internal void Connect(EventHandler<EventArgs> contentSizeChangedHandler)
+		{
+			if (_connected)
+			{
+				return;
+			}
+
+			_connected = true;
+			ContentSizeChanged += contentSizeChangedHandler;
+		}
+
 		internal void Unbind()
 		{
+			_bound = false;
+
 			if (PlatformHandler?.VirtualView is View view)
 			{
-				//view.MeasureInvalidated -= MeasureInvalidated;
 				view.BindingContext = null;
 			}
 		}
@@ -74,24 +87,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (PlatformHandler?.VirtualView is not null)
 			{
-				if (ScrollDirection == UICollectionViewScrollDirection.Vertical)
-				{
-					var measure =
-						PlatformHandler.VirtualView.Measure(preferredAttributes.Size.Width, double.PositiveInfinity);
+				var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
+					: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
 
-					preferredAttributes.Frame =
-						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
-							preferredAttributes.Frame.Width, measure.Height);
-				}
-				else
+				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure =
-						PlatformHandler.VirtualView.Measure(double.PositiveInfinity, preferredAttributes.Size.Height);
-
-					preferredAttributes.Frame =
-						new CGRect(preferredAttributes.Frame.X, preferredAttributes.Frame.Y,
-							measure.Width, preferredAttributes.Frame.Height);
+					var measure = PlatformHandler.VirtualView.Measure(constraints.Width, constraints.Height);
+					_cachedConstraints = constraints;
+					_measuredSize = measure;
 				}
+
+				var size = ScrollDirection == UICollectionViewScrollDirection.Vertical
+					? new Size(preferredAttributes.Size.Width, _measuredSize.Height).ToCGSize()
+					: new Size(_measuredSize.Width, preferredAttributes.Size.Height).ToCGSize();
+
+				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
+				_measureInvalidated = false;
 
 				preferredAttributes.ZIndex = 2;
 			}
@@ -101,7 +113,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void PrepareForReuse()
 		{
-			//Unbind();
+			// Unbind();
 			base.PrepareForReuse();
 		}
 
@@ -115,18 +127,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var nativeView = virtualView!.ToPlatform(mauiContext);
 
 				PlatformView = nativeView;
-
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
 
 				InitializeContentConstraints(nativeView);
 
 				virtualView.BindingContext = bindingContext;
+				MarkAsBound();
 			}
-
-			if (PlatformHandler?.VirtualView is View view)
+			else if (PlatformHandler.VirtualView is View view && !ReferenceEquals(view.BindingContext, bindingContext))
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
+				MarkAsBound();
 			}
+		}
+
+		void MarkAsBound()
+		{
+			_bound = true;
+			((IMauiPlatformView)this).InvalidateMeasure();
 		}
 
 		public void Bind(View virtualView, ItemsView itemsView)
@@ -134,7 +152,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;
-				var nativeView = virtualView!.ToPlatform(mauiContext);
+				virtualView!.ToPlatform(mauiContext);
 
 				var mauiWrapperView = new UIContainerView2(virtualView, mauiContext);
 
@@ -151,6 +169,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, itemsView.BindingContext);
 			}
+
+			_bound = true;
+			((IMauiPlatformView)this).InvalidateMeasure();
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)
@@ -198,24 +219,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		//protected abstract (bool, Size) NeedsContentSizeUpdate(Size currentSize);
-
-		// void MeasureInvalidated(object sender, EventArgs args)
-		// {
-		// 	var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
-		//
-		// 	if (!needsUpdate)
-		// 	{
-		// 		return;
-		// 	}
-		//
-		// 	// Cache the size for next time
-		// 	_size = toSize;
-		//
-		// 	// Let the controller know that things need to be laid out again
-		// 	OnContentSizeChanged();
-		// }
-
 		protected void OnContentSizeChanged()
 		{
 			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(ContentSizeChanged));
@@ -225,8 +228,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_weakEventManager.HandleEvent(this, new LayoutAttributesChangedEventArgs2(newAttributes), nameof(LayoutAttributesChanged));
 		}
-
-		//protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
 
 		void UpdateVisualStates()
 		{
@@ -262,6 +263,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ColorExtensions.AreEqual(SelectedBackgroundView.BackgroundColor, ColorExtensions.Gray) && IsUsingVSMForSelectionColor(view))
 			{
 				SelectedBackgroundView.BackgroundColor = UIColor.Clear;
+			}
+		}
+
+		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			// This is a no-op
+		}
+
+		void IMauiPlatformView.InvalidateMeasure(bool isPropagating)
+		{
+			// If the cell is not bound (or getting unbounded), we don't want to measure it
+			// and cause a useless and harming InvalidateLayout on the collection view layout
+			if (!_measureInvalidated && _bound)
+			{
+				_measureInvalidated = true;
+				OnContentSizeChanged();
 			}
 		}
 	}
