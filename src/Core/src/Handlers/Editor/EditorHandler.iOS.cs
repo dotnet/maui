@@ -57,11 +57,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
-				// The layout of the Editor behaves differently on iOS 17.5 and earlier versions when the size or scale changes at runtime.
+				// The layout of the Editor behaves differently on iOS 16 and earlier versions when the size or scale changes at runtime.
 				// https://github.com/dotnet/maui/issues/25581 - The content height gradually increases when scaling down the Editor, indicating improper handling of sizing.
-				// It appears that iOS 18.0 manages this correctly.
-				// To ensure consistent behavior that matches iOS 18.0, we wrap the Editor in a container on iOS 17.5 and earlier versions.
-				if (!OperatingSystem.IsIOSVersionAtLeast(18) && !OperatingSystem.IsMacCatalyst())
+				// It appears that iOS 17.0 manages this correctly.
+				// To ensure consistent behavior that matches iOS 17.0, we wrap the Editor in a container on iOS 16 and earlier versions.
+				if (!OperatingSystem.IsIOSVersionAtLeast(17) && !OperatingSystem.IsMacCatalyst())
 				{
 					return true;
 				}
