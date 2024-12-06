@@ -53,13 +53,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
-			CollectionView.PerformBatchUpdates(null, _ =>
+			if(selectedItemIndexes is not null && selectedItemIndexes.Any())
 			{
-				foreach (var index in selectedItemIndexes)
+				CollectionView.PerformBatchUpdates(null, _ =>
 				{
-					CollectionView.DeselectItem(index, true);
-				}
-			});
+					foreach (var index in selectedItemIndexes)
+					{
+						CollectionView.DeselectItem(index, true);
+					}
+				});
+			}
 		}
 
 		void FormsSelectItem(NSIndexPath indexPath)
@@ -162,8 +165,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (!selectedItems.Contains(itemAtPath))
 				{
 					CollectionView.PerformBatchUpdates(null, _ =>
-					{
-						CollectionView.DeselectItem(path, true);
+				{
+					CollectionView.DeselectItem(path, true);
 					});
 				}
 				else
