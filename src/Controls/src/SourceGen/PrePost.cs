@@ -52,11 +52,11 @@ class PrePost : IDisposable
                     codeWriter.WriteLine(end);
             });    
  
-    [Conditional("_MAUIXAML_SG_LINEINFO")]
+    [Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
     static void LineInfo(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo, string? fileName)
         => codeWriter.WriteLineNoTabs($"#line {(iXmlLineInfo.LineNumber != -1 ? iXmlLineInfo.LineNumber : 1)} \"{fileName}\"");
 
-    [Conditional("_MAUIXAML_SG_LINEINFO")]
+    [Conditional("_SOURCEGEN_LINEINFO_ENABLE")]
     static void LineDefault(IndentedTextWriter codeWriter, IXmlLineInfo iXmlLineInfo)
         => codeWriter.WriteLineNoTabs("#line default");
 

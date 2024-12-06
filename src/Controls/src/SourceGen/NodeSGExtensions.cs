@@ -14,6 +14,7 @@ using System.Collections.Immutable;
 using System.Reflection.Metadata;
 using System.Net.Mime;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -388,6 +389,7 @@ static class NodeSGExtensions
         return true;
     }
 
+    [Conditional("_SOURCEGEN_SOURCEINFO_ENABLE")]
     public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer)
     {
         if (!context.Variables.TryGetValue(node, out var variable))
