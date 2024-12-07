@@ -86,17 +86,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			var measuredSize = (_view as IView).Measure(size.Width, size.Height);
-
-			if (Height != null && MatchHeight)
-			{
-				MeasuredHeight = Height.Value;
-			}
-			else
-			{
-				MeasuredHeight = measuredSize.Height;
-			}
-
-			return new CGSize(size.Width, MeasuredHeight);
+			var height = Height != null && MatchHeight ? Height.Value : measuredSize.Height;
+			return new CGSize(size.Width, height);
 		}
 
 		public override void WillRemoveSubview(UIView uiview)
@@ -131,6 +122,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			(_view as IView).Arrange(platformFrame);
+		}
+
+		internal void UpdateSize(CGSize size)
+		{
+			var newSize = SizeThatFits(size);
+			MeasuredHeight = newSize.Height;
+			SetNeedsLayout();
 		}
 
 		internal void Disconnect()
