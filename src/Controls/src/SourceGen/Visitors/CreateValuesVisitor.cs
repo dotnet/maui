@@ -91,7 +91,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
             Context.Variables[node] = new LocalVariable(type, variableName);
 
-            Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = {ValueForLanguagePrimitive(type, node)};");
+            Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
             return;
         }
 
@@ -206,50 +206,15 @@ class CreateValuesVisitor : IXamlNodeVisitor
     }
 
     // TODO duplicate code with NodeSGExtensions.cs, should we share somehow?
-    static string ValueForLanguagePrimitive(ITypeSymbol type, ElementNode node)
+    static string ValueForLanguagePrimitive(ITypeSymbol type, ElementNode node, SourceGenContext context)
     {
         var hasValue = node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode &&
                 ((ValueNode)node.CollectionItems[0]).Value is string;
         if (!hasValue)
             return "default";
         var valueString = (string)((ValueNode)node.CollectionItems[0]).Value;
-        switch (type.SpecialType)
-        {
-            case SpecialType.System_SByte:
-            case SpecialType.System_Int16:
-            case SpecialType.System_Int32:
-            case SpecialType.System_Int64:
-            case SpecialType.System_Byte:
-            case SpecialType.System_UInt16:
-            case SpecialType.System_UInt32:
-            case SpecialType.System_UInt64:
-            case SpecialType.System_Single:
-            case SpecialType.System_Double:
-            case SpecialType.System_Decimal: return valueString;
-            case SpecialType.System_Boolean: return valueString.ToLowerInvariant();
-            case SpecialType.System_String: return $"\"{valueString}\"";
-            case SpecialType.System_Object: return "new()";
-            case SpecialType.System_Char: return $"'{valueString}'";
-            case SpecialType.None: return DetermineToType(type, valueString);
-            default: return "default";
-        }
-    }
 
-    static string DetermineToType(ITypeSymbol toType, string valueString)
-    {
-        if (toType.TypeKind == TypeKind.Enum)
-        {
-            var enumValues = valueString.Split([','], StringSplitOptions.RemoveEmptyEntries)
-                                        .Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}");
-            return string.Join(" | ", enumValues);
-        }
-
-        return toType.ToString() switch
-        {
-            "System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
-            "System.Uri" => $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)",
-            _ => "default"
-        };
+        return NodeSGExtensions.ValueForLanguagePrimitive(valueString, toType: type, context);
     }
 }
 
