@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// and set the view as its BindingContext
 				element.BindingContext = view;
 
-				return ((UIView)renderer.PlatformView, element);
+				return ((UIView)renderer.ToPlatform(), element);
 			}
 
 			if (view is View formsView)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var renderer = GetHandler(formsView, itemsView.FindMauiContext());
 				var element = renderer.VirtualView as VisualElement;
 
-				return ((UIView)renderer.PlatformView, element);
+				return ((UIView)renderer.ToPlatform(), element);
 			}
 
 			return (new UILabel { TextAlignment = UITextAlignment.Center, Text = $"{view}" }, null);
