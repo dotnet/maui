@@ -15,6 +15,7 @@ using System.Reflection.Metadata;
 using System.Net.Mime;
 using System.Globalization;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -283,18 +284,47 @@ static class NodeSGExtensions
             return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
         if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
-        return toType.SpecialType switch
-        {
-            SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_Int32 or SpecialType.System_Int64 or 
-            SpecialType.System_Byte or SpecialType.System_UInt16 or SpecialType.System_UInt32 or SpecialType.System_UInt64 or 
-            SpecialType.System_Single or SpecialType.System_Double => valueString,
-            SpecialType.System_Boolean => valueString.ToLowerInvariant(),
-            SpecialType.System_Char => $"'{valueString}'",
-            SpecialType.System_DateTime => $"new global::System.DateTime({DateTime.Parse(valueString).Ticks})",
-            SpecialType.System_Decimal => $"new global::System.Decimal({decimal.Parse(valueString)})",
-            SpecialType.None => DetermineToType(toType, valueString),
-            _ => $"\"\"\"{valueString}\"\"\"",
-        };
+
+        if (toType.SpecialType == SpecialType.System_SByte && sbyte.TryParse(valueString, out var sbyteValue))
+            return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Byte && byte.TryParse(valueString, out var byteValue))
+            return SymbolDisplay.FormatPrimitive(byteValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Int16 && short.TryParse(valueString, out var shortValue))
+            return SymbolDisplay.FormatPrimitive(shortValue, true, false);
+        if (toType.SpecialType == SpecialType.System_UInt16 && ushort.TryParse(valueString, out var ushortValue))
+            return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Int32 && int.TryParse(valueString, out var intValue))
+            return SymbolDisplay.FormatPrimitive(intValue, true, false);
+        if (toType.SpecialType == SpecialType.System_UInt32 && uint.TryParse(valueString, out var uintValue))
+            return SymbolDisplay.FormatPrimitive(uintValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Int64 && long.TryParse(valueString, out var longValue))
+            return SymbolDisplay.FormatPrimitive(longValue, true, false);
+        if (toType.SpecialType == SpecialType.System_UInt64 && ulong.TryParse(valueString, out var ulongValue))
+            return SymbolDisplay.FormatPrimitive(ulongValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Single && float.TryParse(valueString, out var floatValue))
+            return SymbolDisplay.FormatPrimitive(floatValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Double && double.TryParse(valueString, out var doubleValue))
+            return SymbolDisplay.FormatPrimitive(doubleValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Boolean && bool.TryParse(valueString, out var boolValue))
+            return SymbolDisplay.FormatPrimitive(boolValue, true, false);
+        if (toType.SpecialType == SpecialType.System_Char && char.TryParse(valueString, out var charValue))
+            return SymbolDisplay.FormatPrimitive(charValue, true, false);
+        if (toType.SpecialType == SpecialType.System_String)
+            return SymbolDisplay.FormatLiteral(valueString, true);    
+        if (toType.SpecialType == SpecialType.System_DateTime && DateTime.TryParse(valueString, out var dateTimeValue))
+            return $"new global::System.DateTime({dateTimeValue.Ticks})";
+        if (toType.SpecialType == SpecialType.System_Decimal && decimal.TryParse(valueString, out var decimalValue))
+            return $"new global::System.Decimal({decimalValue})";
+        if (toType.TypeKind == TypeKind.Enum)
+            return string.Join(" | ", valueString.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}"));
+        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default) && TimeSpan.TryParse(valueString, out var timeSpanValue))
+            return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
+        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
+            return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
+
+        //default
+        return SymbolDisplay.FormatLiteral(valueString, true);    
+
 	}
 
     static string ConvertValue(ValueNode valueNode)
@@ -304,25 +334,6 @@ static class NodeSGExtensions
                                 .Select(v => v.Trim());
         return $"new global::Microsoft.Maui.Graphics.Rectangle({string.Join(", ", values)})";
     }
-
-    static string DetermineToType(ITypeSymbol toType, string valueString)
-    {
-        if (toType.TypeKind == TypeKind.Enum)
-        {
-            var enumValues = valueString.Split([','], StringSplitOptions.RemoveEmptyEntries)
-                                        .Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}");
-                                        
-            return string.Join(" | ", enumValues);
-        }
-
-        return toType.ToString() switch
-        {
-            "System.TimeSpan" => $"new global::System.TimeSpan({TimeSpan.Parse(valueString).Ticks})",
-            "System.Uri" => $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)",
-            _ => $"\"{valueString}\"",
-        };
-    }
-
     public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var valueString = valueNode.Value as string ?? string.Empty;

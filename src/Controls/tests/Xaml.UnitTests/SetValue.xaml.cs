@@ -385,6 +385,14 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				var page = new SetValue(inflator);
 				Assert.AreEqual("Foo", page.implicit3.Foo.Value);
 			}
+
+			[Test]
+			public void StringValueWithUnicode([Values]XamlInflator inflator)
+			{
+				var page = new SetValue(inflator);
+				Assert.AreEqual("Welcome to \n .NET Multi-platform App UI", page.label16.Text);
+			}
+
 		}
 	}
 }
