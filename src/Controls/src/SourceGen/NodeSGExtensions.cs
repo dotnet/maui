@@ -282,28 +282,34 @@ static class NodeSGExtensions
 
         if (typeConverter is not null)
             return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
+
+        return ValueForLanguagePrimitive(valueString, toType, context);
+    }
+
+    public static string ValueForLanguagePrimitive(string valueString, ITypeSymbol toType, SourceGenContext context)
+    {
         if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 
-        if (toType.SpecialType == SpecialType.System_SByte && sbyte.TryParse(valueString, out var sbyteValue))
+        if (toType.SpecialType == SpecialType.System_SByte && sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
             return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Byte && byte.TryParse(valueString, out var byteValue))
+        if (toType.SpecialType == SpecialType.System_Byte && byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
             return SymbolDisplay.FormatPrimitive(byteValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Int16 && short.TryParse(valueString, out var shortValue))
+        if (toType.SpecialType == SpecialType.System_Int16 && short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
             return SymbolDisplay.FormatPrimitive(shortValue, true, false);
-        if (toType.SpecialType == SpecialType.System_UInt16 && ushort.TryParse(valueString, out var ushortValue))
+        if (toType.SpecialType == SpecialType.System_UInt16 && ushort.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
             return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Int32 && int.TryParse(valueString, out var intValue))
+        if (toType.SpecialType == SpecialType.System_Int32 && int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var intValue))
             return SymbolDisplay.FormatPrimitive(intValue, true, false);
-        if (toType.SpecialType == SpecialType.System_UInt32 && uint.TryParse(valueString, out var uintValue))
+        if (toType.SpecialType == SpecialType.System_UInt32 && uint.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var uintValue))
             return SymbolDisplay.FormatPrimitive(uintValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Int64 && long.TryParse(valueString, out var longValue))
+        if (toType.SpecialType == SpecialType.System_Int64 && long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var longValue))
             return SymbolDisplay.FormatPrimitive(longValue, true, false);
-        if (toType.SpecialType == SpecialType.System_UInt64 && ulong.TryParse(valueString, out var ulongValue))
+        if (toType.SpecialType == SpecialType.System_UInt64 && ulong.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ulongValue))
             return SymbolDisplay.FormatPrimitive(ulongValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Single && float.TryParse(valueString, out var floatValue))
+        if (toType.SpecialType == SpecialType.System_Single && float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
             return SymbolDisplay.FormatPrimitive(floatValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Double && double.TryParse(valueString, out var doubleValue))
+        if (toType.SpecialType == SpecialType.System_Double && double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
             return SymbolDisplay.FormatPrimitive(doubleValue, true, false);
         if (toType.SpecialType == SpecialType.System_Boolean && bool.TryParse(valueString, out var boolValue))
             return SymbolDisplay.FormatPrimitive(boolValue, true, false);
@@ -311,20 +317,19 @@ static class NodeSGExtensions
             return SymbolDisplay.FormatPrimitive(charValue, true, false);
         if (toType.SpecialType == SpecialType.System_String)
             return SymbolDisplay.FormatLiteral(valueString, true);    
-        if (toType.SpecialType == SpecialType.System_DateTime && DateTime.TryParse(valueString, out var dateTimeValue))
+        if (toType.SpecialType == SpecialType.System_DateTime && DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeValue))
             return $"new global::System.DateTime({dateTimeValue.Ticks})";
-        if (toType.SpecialType == SpecialType.System_Decimal && decimal.TryParse(valueString, out var decimalValue))
+        if (toType.SpecialType == SpecialType.System_Decimal && decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
             return $"new global::System.Decimal({decimalValue})";
         if (toType.TypeKind == TypeKind.Enum)
             return string.Join(" | ", valueString.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}"));
-        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default) && TimeSpan.TryParse(valueString, out var timeSpanValue))
+        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default) && TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out var timeSpanValue))
             return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
         if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
             return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
 
         //default
         return SymbolDisplay.FormatLiteral(valueString, true);    
-
 	}
 
     static string ConvertValue(ValueNode valueNode)
