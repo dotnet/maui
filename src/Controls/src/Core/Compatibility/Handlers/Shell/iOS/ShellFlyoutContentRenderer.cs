@@ -91,13 +91,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int previousIndex = GetPreviousIndex(_headerView);
 			if (_headerView is not null)
 			{
+				_headerView.View.MeasureInvalidated -= OnHeaderMeasureInvalidated;
 				_tableViewController.HeaderView = null;
 				_headerView.RemoveFromSuperview();
 				_headerView.Dispose();
 			}
 
 			if (header is not null)
+			{
 				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
+				header.MeasureInvalidated += OnHeaderMeasureInvalidated;
+			}
 			else
 				_headerView = null;
 
@@ -121,6 +125,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
+				_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
 				_tableViewController.FooterView = null;
 				_footerView?.Disconnect();
 				_footerView = null;
@@ -184,6 +189,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			View.AddSubview(newView);
+		}
+
+		void OnHeaderMeasureInvalidated(object sender, System.EventArgs e)
+		{
+			var size = _headerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
+			if (size is not null)
+				_footerView.Frame = new CGRect(_footerView.Frame.Left, _footerView.Frame.Top, size.Value.Width, size.Value.Height);
 		}
 
 		void OnFooterMeasureInvalidated(object sender, System.EventArgs e)
