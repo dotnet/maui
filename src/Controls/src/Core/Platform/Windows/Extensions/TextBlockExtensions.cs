@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateText(this TextBlock platformControl, Label label)
 		{
+			bool isFirstAssignment = (label.Handler as ElementHandler)?._isInitializing ?? false;
+
 			switch (label.TextType)
 			{
 				case TextType.Html:
@@ -32,13 +34,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 				default:
 					if (label.FormattedText != null)
+					{
 						platformControl.UpdateInlines(label);
+					}
 					else
 					{
-						if (platformControl.TextHighlighters.Count > 0)
+						if (!isFirstAssignment && platformControl.TextHighlighters.Count > 0)
 						{
 							platformControl.TextHighlighters.Clear();
 						}
+
 						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
 					}
 					break;
@@ -67,7 +72,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
 		{
 			if (label.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
 				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
+			}
 		}
 
 		internal static void SetLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode, int? maxLines = null)
