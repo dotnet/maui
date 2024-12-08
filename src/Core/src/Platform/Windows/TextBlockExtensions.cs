@@ -45,7 +45,21 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateCharacterSpacing(this TextBlock platformControl, ITextStyle label)
 		{
-			platformControl.CharacterSpacing = label.CharacterSpacing.ToEm();
+			var characterSpacing = label.CharacterSpacing.ToEm();
+
+			if (label is ILabel realLabel)
+			{
+				bool skipInitialization = (realLabel.Handler as ElementHandler)?._isInitializing ?? false && characterSpacing == 0;
+
+				if (!skipInitialization)
+				{
+					platformControl.CharacterSpacing = characterSpacing;
+				}
+			}
+			else
+			{
+				platformControl.CharacterSpacing = characterSpacing;
+			}
 		}
 
 		public static void UpdateTextDecorations(this TextBlock platformControl, ILabel label)
