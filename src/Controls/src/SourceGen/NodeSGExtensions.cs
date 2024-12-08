@@ -315,6 +315,8 @@ static class NodeSGExtensions
             return SymbolDisplay.FormatPrimitive(boolValue, true, false);
         if (toType.SpecialType == SpecialType.System_Char && char.TryParse(valueString, out var charValue))
             return SymbolDisplay.FormatPrimitive(charValue, true, false);
+        if (toType.SpecialType == SpecialType.System_String && valueString.StartsWith("{}", StringComparison.Ordinal))
+            return SymbolDisplay.FormatLiteral(valueString.Substring(2), true);
         if (toType.SpecialType == SpecialType.System_String)
             return SymbolDisplay.FormatLiteral(valueString, true);    
         if (toType.SpecialType == SpecialType.System_DateTime && DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeValue))
