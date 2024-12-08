@@ -326,6 +326,18 @@ namespace Microsoft.Maui.Platform
 				await panel.UpdateBackgroundImageSourceAsync(imageSource, provider);
 		}
 
+		internal static void UpdateToolTip(this FrameworkElement platformView, IToolTipElement toolTipElement)
+		{
+			var content = toolTipElement.ToolTip?.Content;
+			var skipInitialization = (toolTipElement is IView view) && ((view.Handler as ElementHandler)?._isInitializing ?? false
+				|| content is not null);
+
+			if (!skipInitialization)
+			{
+				ToolTipService.SetToolTip(platformView, content);
+			}
+		}
+
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
 			ToolTipService.SetToolTip(platformView, tooltip?.Content);

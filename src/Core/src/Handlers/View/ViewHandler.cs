@@ -530,7 +530,10 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapToolTip(IViewHandler handler, IView view)
 		{
-#if PLATFORM
+#if WINDOWS
+			if (view is IToolTipElement tooltipContainer)
+				handler.ToPlatform().UpdateToolTip(tooltipContainer);
+#elif PLATFORM
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
