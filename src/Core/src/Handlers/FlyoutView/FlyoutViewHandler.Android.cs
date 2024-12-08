@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Android.App.Roles;
+using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.DrawerLayout.Widget;
-using AndroidX.Fragment.App;
-using AndroidX.Lifecycle;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, View>
 	{
-		View? _flyoutView;
+		FlyoutContainer? _flyoutView;
 		const uint DefaultScrimColor = 0x99000000;
 		View? _navigationRoot;
 		LinearLayoutCompat? _sideBySideView;
@@ -118,18 +115,15 @@ namespace Microsoft.Maui.Handlers
 		void UpdateFlyout()
 		{
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
-			_ = VirtualView.Flyout.ToPlatform(MauiContext);
 
-			var newFlyoutView = VirtualView.Flyout.ToPlatform();
-			if (_flyoutView == newFlyoutView)
-				return;
-
-			if (_flyoutView != null)
-				_flyoutView.RemoveFromParent();
-
-			_flyoutView = newFlyoutView;
-			if (_flyoutView == null)
-				return;
+			if (_flyoutView is null)
+			{
+				_flyoutView = new FlyoutContainer(Context, VirtualView.Flyout, MauiContext);
+			}
+			else
+			{
+				_flyoutView.UpdatePlatformView(VirtualView.Flyout, MauiContext);
+			}
 
 			if (VirtualView.Flyout.Background == null && Context?.Theme != null)
 			{
@@ -371,6 +365,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is FlyoutViewHandler platformHandler)
 				platformHandler.UpdateFlyoutBehavior();
+		}
+
+		internal class FlyoutContainer : GeneralWrapperView
+		{
+			public FlyoutContainer(Context context, IView childView, IMauiContext mauiContext) : base(context, childView, mauiContext) { }
+
+			public override bool OnTouchEvent(MotionEvent? e)
+			{
+				// Disable click-through on items behind the drawer
+				return true;
+			}
 		}
 	}
 }
