@@ -138,6 +138,10 @@ namespace Microsoft.Maui.Handlers
 				_flyoutView.RemoveFromParent();
 
 			_flyoutView = newFlyoutView;
+
+			// Disable click-through on items behind the drawer
+			_flyoutView.Clickable = true;
+
 			if (_flyoutView == null)
 				return;
 
