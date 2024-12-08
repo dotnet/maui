@@ -8,6 +8,17 @@ namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiPanel : Panel, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
+		UIElementCollection? _cachedChildren;
+
+		protected internal UIElementCollection CachedChildren
+		{
+			get
+			{
+				_cachedChildren ??= Children;
+				return _cachedChildren;
+			}
+		}
+
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get; set;

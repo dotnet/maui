@@ -47,6 +47,7 @@ Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.RunAfterInitialize(System.Action! action) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
+Microsoft.Maui.Platform.MauiPanel.CachedChildren.get -> Microsoft.UI.Xaml.Controls.UIElementCollection!
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.CoreWebView2ProcessFailedEventArgs.get -> Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs!

@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_backgroundLayer = new Canvas { IsHitTestVisible = false };
-			Children.Insert(0, _backgroundLayer);
+			CachedChildren.Insert(0, _backgroundLayer);
 		}
 
 		void RemoveBackgroundLayer()
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			Children.Remove(_backgroundLayer);
+			CachedChildren.Remove(_backgroundLayer);
 			_backgroundLayer = null;
 		}
 	}
