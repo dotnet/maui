@@ -20,10 +20,15 @@ public class Issue7329 : _IssuesUITest
 		App.WaitForElement("1");
 
 		App.ScrollDown("NestedListView");
-		
+
+#if IOS 
+		// In iOS, WaitForNoElement throws a timeout exception eventhough the text is not visible on the screen. So using the ListView Items to ensure scroll.		
+		App.WaitForElement("80");
+#else
 		// App.QueryUntilPresent isn't functioning correctly; it throws a timeout exception immediately after the first try.
 		// Verifying that instructions label is not visible also confirms that the ListView has scrolled.
 		App.WaitForNoElement("If the List View can scroll the test has passed");
+#endif
 	}
 }
 #endif
