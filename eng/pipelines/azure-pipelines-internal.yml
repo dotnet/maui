@@ -154,7 +154,7 @@ extends:
           enableSourceBuild: false
           enableSourceIndex: ${{ parameters.enableSourceIndex }}
           sourceIndexParams:
-            - sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
+            - sourceIndexBuildCommand: build.cmd -restore -build -binarylog -ci /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
           publishAssetsImmediately: true
           # Publish build logs
           enablePublishBuildArtifacts: true
