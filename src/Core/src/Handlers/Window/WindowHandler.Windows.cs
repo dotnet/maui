@@ -57,13 +57,15 @@ namespace Microsoft.Maui.Handlers
 
 			if (platformView.Content is WindowRootViewContainer container)
 			{
-				container.Children.Clear();
+				container.CachedChildren.Clear();
 				platformView.Content = null;
 			}
 
 			var appWindow = platformView.GetAppWindow();
 			if (appWindow is not null)
+			{
 				appWindow.Changed -= OnWindowChanged;
+			}
 
 			base.DisconnectHandler(platformView);
 		}
@@ -89,8 +91,7 @@ namespace Microsoft.Maui.Handlers
 				container.AddPage(windowManager.RootView);
 			}
 
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
