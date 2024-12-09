@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Platform
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
 
 			ChoosingItemContainer += OnChoosingItemContainer;
-
-			SizeChanged += FormsGridView_SizeChanged;
 		}
 
 		public int Span
@@ -109,13 +107,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			UpdateItemSize();
 		}
-
-		private void FormsGridView_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateItemSize();
-		}
-
-		void UpdateItemSize()
+		
+		internal void UpdateItemSize()
 		{
 			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
 			_wrapGrid.MaximumRowsOrColumns = Span;
