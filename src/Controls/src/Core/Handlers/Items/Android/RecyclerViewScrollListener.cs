@@ -89,13 +89,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager, _getCenteredItemOnXAndY);
 			}
 
-			var hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
-			var hasFooter = ItemsViewAdapter.ItemsSource.HasFooter;
-			var itemsCount = ItemsViewAdapter.ItemCount;
+			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
+			bool hasFooter = ItemsViewAdapter.ItemsSource.HasFooter;
+			int itemsCount = ItemsViewAdapter.ItemCount;
+
+			if (!hasHeader && !hasFooter)
+			{
+				return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+			}
 
 			if (firstVisibleItemIndex == 0 && lastVisibleItemIndex == itemsCount - 1)
 			{
-				lastVisibleItemIndex -= 2;
+				if (hasHeader && hasFooter)
+				{
+					lastVisibleItemIndex -= itemsCount > 2 ? 2 : 1;
+				}
+				else if (hasHeader || hasFooter)
+				{
+					lastVisibleItemIndex -= itemsCount > 1 ? 1 : lastVisibleItemIndex;
+				}
 			}
 			else
 			{
