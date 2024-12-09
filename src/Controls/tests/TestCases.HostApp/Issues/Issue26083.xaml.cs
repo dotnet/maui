@@ -22,9 +22,7 @@
 				{
 					gridItemsLayout.Span = 2;
 				}
-
 			}
-
 		}
 
 		private void Button_Clicked(object sender, EventArgs e)
