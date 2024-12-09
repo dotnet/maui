@@ -241,6 +241,7 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
+			paddingShim.SetClipChildren(false);
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
