@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		private void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+		void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			labelFirstLastVisible.Text = $"Scrolled: {e.FirstVisibleItemIndex} to {e.LastVisibleItemIndex}";
 		}
