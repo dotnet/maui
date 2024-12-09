@@ -282,10 +282,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Parsing Xaml");
-							var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
-							if (rootnode == null)
+							ILRootNode rootnode = null;
+							try {
+								rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
+								if (rootnode == null)
+								{
+									LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
+									continue;
+								}
+							} catch (XamlParseException xpe)
 							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
+								xamlFilePath = LoggingHelper.GetXamlFilePath(xamlFilePath);
+								LoggingHelper.LogError("XamlC", null, xpe.HelpLink, xamlFilePath, xpe.XmlInfo.LineNumber, xpe.XmlInfo.LinePosition, 0, 0, xpe.UnformattedMessage);
 								continue;
 							}
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}done.");

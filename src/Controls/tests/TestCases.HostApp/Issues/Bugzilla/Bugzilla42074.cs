@@ -10,7 +10,8 @@ public class Bugzilla42074 : TestContentPage
 	{
 		var timePicker = new TimePicker
 		{
-			AutomationId = TimePicker
+			AutomationId = TimePicker,
+			HorizontalOptions = LayoutOptions.Center
 		};
 		var timePickerFocusButton = new Button
 		{

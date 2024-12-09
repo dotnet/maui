@@ -1342,8 +1342,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
 				return false;
 
-
-
 			var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
 			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
 			// Worst case scenario ? InvalidCastException at runtime
@@ -1540,7 +1538,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			module.ImportReference(parent.VariableType.ResolveCached(context.Cache));
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
 			propertySetterRef.ImportTypes(module);
-			var propertyType = property.PropertyType.ResolveGenericParameters(declaringTypeReference);
+			var propertyType = module.ImportReference(property.PropertyType.ResolveGenericParameters(declaringTypeReference));
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 
