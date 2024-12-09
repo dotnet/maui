@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -87,6 +88,52 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				lastVisibleItemIndex = linearLayoutManager.FindLastVisibleItemPosition();
 				centerItemIndex = recyclerView.CalculateCenterItemIndex(firstVisibleItemIndex, linearLayoutManager, _getCenteredItemOnXAndY);
 			}
+
+			var hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
+			var hasFooter = ItemsViewAdapter.ItemsSource.HasFooter;
+			var itemsCount = ItemsViewAdapter.ItemCount;
+
+			if (firstVisibleItemIndex == 0 && lastVisibleItemIndex == itemsCount - 1)
+			{
+				lastVisibleItemIndex -= 2;
+			}
+			else
+			{
+				if (hasHeader && !hasFooter)
+				{
+					lastVisibleItemIndex -= 1;
+					if (firstVisibleItemIndex != 0)
+					{
+						firstVisibleItemIndex -= 1;
+					}
+				}
+				else if (!hasHeader && hasFooter)
+				{
+					if (lastVisibleItemIndex == itemsCount - 1)
+					{
+						lastVisibleItemIndex -= 1;
+						firstVisibleItemIndex -= 1;
+					}
+				}
+				else if (hasHeader && hasFooter)
+				{
+					if (firstVisibleItemIndex == 0)
+					{
+						lastVisibleItemIndex -= 1;
+					}
+					else if (firstVisibleItemIndex != 0 && lastVisibleItemIndex != itemsCount - 1)
+					{
+						firstVisibleItemIndex -= 1;
+						lastVisibleItemIndex -= 1;
+					}
+					else
+					{
+						firstVisibleItemIndex -= 1;
+						lastVisibleItemIndex -= 2;
+					}
+				}
+			}
+
 			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
 		}
 
