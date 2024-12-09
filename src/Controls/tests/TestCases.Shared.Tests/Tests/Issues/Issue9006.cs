@@ -31,6 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(ClickMe);
 			App.WaitForElement(FinalLabel);
 			App.TapBackArrow(Back);
+			App.WaitForElement("This is the intermediate page");
 			App.TapBackArrow(Tab1);
 			App.WaitForElement(ClickMe);
 			App.Tap(ClickMe);
