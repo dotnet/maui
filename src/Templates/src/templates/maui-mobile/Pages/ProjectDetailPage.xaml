@@ -94,7 +94,7 @@
                     SelectedItem="{Binding Icon}"
                     ItemsSource="{Binding Icons}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
+                        <DataTemplate x:DataType="models:IconData">
                             <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -115,12 +115,14 @@
                                 </VisualStateManager.VisualStateGroups>
                                 
                                 <Label 
-                                    Text="{Binding .}" 
+                                    Text="{Binding Icon}" 
                                     x:Name="IconImage"
                                     FontFamily="{x:Static fonts:FluentUI.FontFamily}" 
                                     FontSize="24" 
                                     VerticalOptions="Center"
                                     HorizontalOptions="Center"
+                                    SemanticProperties.Description="{Binding Description}"
+                                    SemanticProperties.Hint="Icon representing the type of task . Tap to select"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator" Color="{StaticResource Primary}" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
                             </Grid>                            

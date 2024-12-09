@@ -2021,6 +2021,7 @@ namespace UITest.Appium
 			app.TapInFlyout(flyoutItem, false);
 		}
 
+		/// <summary>
 		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
 		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
 		/// </summary>

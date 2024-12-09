@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
-
+		internal IBorderStroke? BorderStroke => _borderStroke;
 		internal FrameworkElement? Content
 		{
 			get => _content;

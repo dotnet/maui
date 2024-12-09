@@ -143,10 +143,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
+					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing));
 				}
 
-				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
+				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing), 0);
 			}
 			else if (_itemsLayout is LinearItemsLayout listViewLayout)
 			{

@@ -135,6 +135,18 @@
     <value>繫結: 不支援的索引子索引類型: "{0}"。</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>如果指定 x:DataType，則可編譯繫結以改善執行階段效能。如需詳細資訊，請參閱 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings。</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>如果 x:DataType 不是明確為 Null，則可編譯繫結以改善執行階段效能。如需詳細資訊，請參閱 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings。</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>因為 x:DataType 批注來自外部範圍，所以可能未正確編譯繫結。請確定您以正確的 x:DataType 標註所有 DataTemplate XAML 元素。如需詳細資訊，請參閱 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings。</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>未編譯繫結，因為它具有明確設定的 Source 屬性，而且未啟用具有 Source 之繫結的編譯。請考慮在專案檔案中設定 &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt;，並確定已為此繫結指定正確的 x:DataType，以啟用此最佳化。如需詳細資訊，請參閱 https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings。</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>繫結: 在 "{1}" 上找不到屬性 "{0}"。</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>名稱為 "{0}" 的元素已存在於此 NameScope 中。</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>屬性、屬性 setter 或 BindableProperty "{0}" 已過時。</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>在 "{1}" 上缺少強制屬性 "{0}"。</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>來源屬性不是字串常值。</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>樣式表不能同時有來源和內容。</value>
+    <value>StyleSheet 不能同時有來源和內容。</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>樣式屬性或內容不是字串常值。</value>
@@ -233,6 +248,10 @@
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType 需要字串常值、{{x:Type}} 標記或 {{x:Null}}。</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>如果不需要任何標記延伸，請考慮將標記延伸 "{0}" 歸屬為 [RequireService] 或 [AcceptEmptyServiceProvider]。</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>未宣告的 xmlns 前置詞 "{0}"。</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:金鑰需要字串常值。</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>{StaticResource} 中需要金鑰。</value>
   </data>
 </root>
