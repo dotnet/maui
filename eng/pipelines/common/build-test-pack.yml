@@ -131,7 +131,7 @@ steps:
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration $(_BuildConfig)
-              /bl:${{ parameters.repoLogPath }}/pack.binlog
+              /bl:${{ parameters.repoLogPath }}pack.binlog
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
     
