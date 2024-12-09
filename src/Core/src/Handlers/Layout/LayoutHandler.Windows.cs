@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.CrossPlatformLayout = VirtualView;
 
-			var children = PlatformView.Children;
+			var children = PlatformView.CachedChildren;
 			children.Clear();
 
 			foreach (var child in VirtualView.OrderByZIndex())
