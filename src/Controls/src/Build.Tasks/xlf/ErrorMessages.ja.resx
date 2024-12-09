@@ -135,6 +135,18 @@
     <value>バインド: サポートされていない種類のインデクサーのインデックスです: "{0}"。</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>x:DataType が指定されている場合は、バインドをコンパイルして実行時のパフォーマンスを向上させることができます。詳細については、https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings を参照してください。</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>x:DataType が明示的に null でない場合、ランタイム パフォーマンスを向上させるためにバインドをコンパイルできます。詳細については、https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings を参照してください。</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>x:DataType 注釈が外部スコープから取得されているため、バインドが正しくコンパイルされない可能性があります。すべての DataTemplate XAML 要素に正しい x:DataType で注釈を付けます。詳細については、https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings を参照してください。</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>明示的に設定されたソース プロパティがあり、ソースを使用したバインドのコンパイルが有効になっていないため、バインドはコンパイルされませんでした。プロジェクト ファイルで &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; を設定して、このバインドに正しい x:DataType が指定されていることを確認して、この最適化を有効にすることを検討してください。詳細については、https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings を参照してください。</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>バインド: プロパティ "{0}" が "{1}" に見つかりません。</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>この NameScope には、"{0}" という名前の要素が既に存在します。</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>プロパティ、プロパティ セッター、または BindableProperty "{0}" は非推奨です。</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>"{1}" の必須プロパティ "{0}" がありません。</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -234,6 +249,10 @@
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType には、文字列リテラル、{{x:Type}} マークアップ、または {{x:Null}} を指定する必要があります。</value>
   </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>マークアップ拡張 "{0}" に [RequireService] または [AcceptEmptyServiceProvider] が必要ない場合は、その拡張子に起因することを検討してください。</value>
+    <comment>0 is type name</comment>
+  </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>宣言されていない xmlns プレフィックス "{0}" です。</value>
     <comment>0 is the xmlns prefix</comment>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key には文字列リテラルが期待されています。</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>{StaticResource} にはキーが必要です。</value>
   </data>
 </root>

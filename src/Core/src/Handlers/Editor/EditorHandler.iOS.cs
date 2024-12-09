@@ -61,16 +61,16 @@ namespace Microsoft.Maui.Handlers
 				// get an exception; it doesn't know what do to with it. So instead we'll size
 				// it to fit its current contents and use those values to replace infinite constraints
 
-				PlatformView.SizeToFit();
+				var sizeThatFits = PlatformView.SizeThatFits(new CGSize(widthConstraint, heightConstraint));
 
 				if (double.IsInfinity(widthConstraint))
 				{
-					widthConstraint = PlatformView.Frame.Size.Width;
+					widthConstraint = sizeThatFits.Width;
 				}
 
 				if (double.IsInfinity(heightConstraint))
 				{
-					heightConstraint = PlatformView.Frame.Size.Height;
+					heightConstraint = sizeThatFits.Height;
 				}
 			}
 
