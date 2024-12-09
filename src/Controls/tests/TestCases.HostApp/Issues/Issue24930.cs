@@ -3,24 +3,22 @@
 	[Issue(IssueTracker.Github, 24930, "The picker allows you to write text if the keyboard is visible", PlatformAffected.Android)]
 	public partial class Issue24930 : ContentPage
 	{
+		const string FirstPickerItem = "Baboon";
+		const string PickerId = "picker";
 		public Issue24930()
 		{			
 			Picker picker = new Picker 
 			{ 
-				AutomationId = "picker",
+				AutomationId = PickerId,
 				Title = "Select a monkey"
 			};
 
 			
 			picker.ItemsSource = new List<string>
 			{
-				"Baboon",
+				FirstPickerItem,
 				"Capuchin Monkey"
 			};
-
-			
-			StackLayout stackLayout = new StackLayout();
-			stackLayout.Children.Add(picker);
 
 			
 			Content = new StackLayout()
