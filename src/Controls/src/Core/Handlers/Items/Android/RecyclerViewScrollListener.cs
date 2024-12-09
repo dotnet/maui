@@ -112,7 +112,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					if (lastVisibleItemIndex == itemsCount - 1)
 					{
 						lastVisibleItemIndex -= 1;
-						firstVisibleItemIndex -= 1;
 					}
 				}
 				else if (hasHeader && hasFooter)
