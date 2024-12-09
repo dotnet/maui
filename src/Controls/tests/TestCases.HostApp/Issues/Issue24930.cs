@@ -20,7 +20,6 @@
 				"Capuchin Monkey"
 			};
 
-
 			Content = new StackLayout()
 			{
 				Children = { picker }
