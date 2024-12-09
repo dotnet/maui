@@ -24,7 +24,7 @@ public class Issue9686 : _IssuesUITest
 		App.Tap(Run);
 		App.WaitForElement("Item 1");
 		App.Tap(Run);
-		App.WaitForElement(Success);
+		App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(1));
 	}
 }
 #endif
