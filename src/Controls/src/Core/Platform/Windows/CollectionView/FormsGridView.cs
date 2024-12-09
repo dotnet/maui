@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			UpdateItemSize();
 		}
-		
+
 		internal void UpdateItemSize()
 		{
 			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
@@ -120,16 +120,6 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				_wrapGrid.ItemWidth = Math.Floor(ActualWidth / Span);
-			}
-
-			if (_wrapGrid.ItemWidth > ActualWidth)
-			{
-				_wrapGrid.ItemWidth = ActualWidth;
-			}
-
-			if (_wrapGrid.ItemHeight > ActualHeight)
-			{
-				_wrapGrid.ItemHeight = ActualHeight;
 			}
 		}
 
