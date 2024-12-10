@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19366">
+    <VerticalStackLayout>
+        <Button Text="Disable the ListView"
+                Clicked="Button_Clicked"
+                AutomationId="disableListButton"/>
+
+        <ListView x:Name="listView">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="{Binding Text}"
+                                   AutomationId="{Binding Index, StringFormat='label{0}'}"/>
+
+                            <Button Grid.Column="1"
+                                    Text="button"
+                                    Command="{Binding ClickedCommand}"
+                                    AutomationId="{Binding Index, StringFormat='button{0}'}"/>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </VerticalStackLayout>
+</ContentPage>
