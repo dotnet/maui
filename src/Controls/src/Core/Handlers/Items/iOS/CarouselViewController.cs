@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdating(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (ItemsSource.ItemCount == 0 || ItemsView is not CarouselView carousel)
+			if (ItemsView is not CarouselView carousel)
 			{
 				return;
 			}
@@ -488,7 +488,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (goToPosition != carouselPosition || forceScroll)
+			if (_gotoPosition == -1 && (goToPosition != carouselPosition || forceScroll))
 			{
 				_gotoPosition = goToPosition;
 				carousel.ScrollTo(goToPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: animate);
@@ -509,7 +509,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			//If _gotoPosition is != -1 we are scrolling to that possition
-			if (carousel.Position != position)
+			if (_gotoPosition == -1 && carousel.Position != position)
 			{
 				carousel.SetValueFromRenderer(CarouselView.PositionProperty, position);
 			}
