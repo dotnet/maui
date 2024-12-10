@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		public async Task SwitchColorTest()
+		public async Task ButtonReleasedTest()
 		{
 			App.WaitForElement(ButtonId);
 			App.ClickPress(ButtonId);
