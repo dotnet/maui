@@ -1,6 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.companyname.mauiapp" android:versionCode="1" android:versionName="1.0">
-	<application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:label="@string/app_name" android:supportsRtl="true"></application>
+	<application
+		android:allowBackup="true"
+		android:dataExtractionRules="@xml/microsoft_maui_essentials_dataextractionrules_defaults"
+		android:fullBackupContent="@xml/microsoft_maui_essentials_fullbackupcontent_defaults"
+		android:icon="@mipmap/appicon"
+		android:roundIcon="@mipmap/appicon_round"
+		android:label="@string/app_name"
+		android:supportsRtl="true">
+	</application>
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.INTERNET" />
 </manifest>
