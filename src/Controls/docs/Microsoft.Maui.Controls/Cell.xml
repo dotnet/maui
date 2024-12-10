@@ -186,7 +186,7 @@ Content = new TableView
       <Docs>
         <summary>Gets a list of menu items to display when the user performs the device-specific context gesture on the Cell.</summary>
         <value>The list of menu items that will be displayed when the user performs the device-specific context gesture on the Cell.</value>
-        <remarks>The context gesture on the iOS platform is a left swipe. For Android and Windows Phone operating systems, the context gesture is a press and hold.</remarks>
+        <remarks>The context gesture on the iOS platform is a left swipe. For Android, the context gesture is a press and hold.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DefaultCellHeight">
