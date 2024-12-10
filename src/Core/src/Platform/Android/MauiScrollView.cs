@@ -60,6 +60,11 @@ namespace Microsoft.Maui.Platform
 			{
 				scrollBarVisibility = _defaultHorizontalScrollVisibility;
 			}
+			else
+			{
+				// Only disable fading when we explicitly set visibility to Always.
+				_hScrollView.ScrollbarFadingEnabled = scrollBarVisibility != ScrollBarVisibility.Always;
+			}
 
 			_hScrollView.HorizontalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
 		}
@@ -70,7 +75,14 @@ namespace Microsoft.Maui.Platform
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
 
 			if (scrollBarVisibility == ScrollBarVisibility.Default)
+			{
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
+			}
+			else
+			{
+				// Only disable fading when we explicitly set visibility to Always.
+				ScrollbarFadingEnabled = scrollBarVisibility != ScrollBarVisibility.Always;
+			}
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
 
