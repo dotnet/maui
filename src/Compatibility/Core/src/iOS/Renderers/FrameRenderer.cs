@@ -136,6 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (_previousSize != Bounds.Size)
 			{
 				SetNeedsDisplay();
+				this.UpdateBackgroundLayer();
 			}
 
 			base.LayoutSubviews();

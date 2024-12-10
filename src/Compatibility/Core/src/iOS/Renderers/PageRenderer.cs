@@ -135,6 +135,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (_safeAreasSet || !Forms.IsiOS11OrNewer)
 				UpdateUseSafeArea();
+
+			if (Element.Background != null && !Element.Background.IsEmpty)
+				NativeView?.UpdateBackgroundLayer();
 		}
 
 		[SupportedOSPlatform("ios11.0")]
