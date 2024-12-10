@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // On Windows, the Shell Flyout Content Template does not update dynamically. Issue: https://github.com/dotnet/maui/issues/26435. 
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,17 +13,19 @@ public class ShellFlyoutContent : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Content";
 
-	//[Test]
-	//[Category(UITestCategories.Shell)]
-	//public void FlyoutContentTests()
-	//{
-	//	App.WaitForElement("PageLoaded");
-	//	TapInFlyout("Flyout Item");
-	//	App.Tap("ToggleContent");
-	//	TapInFlyout("ContentView");
-	//	TapInFlyout("Flyout Item");
-	//	App.Tap("ToggleFlyoutContentTemplate");
-	//	TapInFlyout("ContentView");
-	//	TapInFlyout("Flyout Item");
-	//}
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutContentTests()
+	{
+		App.WaitForElement("PageLoaded");
+		App.TapInShellFlyout("FlyoutItem");
+		App.Tap("ToggleContent");
+		App.TapInShellFlyout("ContentView");
+		App.Tap("FlyoutItem");
+		App.Tap("ToggleFlyoutContentTemplate");
+		App.TapInShellFlyout("Reset");
+		App.Tap("FlyoutItem");
+	}
 }
+#endif
+
