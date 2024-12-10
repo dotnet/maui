@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -86,6 +87,51 @@ namespace Microsoft.Maui.Authentication
 
 			return await tcsResponse.Task;
 		}
+
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
+		{
+			currentOptions = webAuthenticatorOptions;
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+			var packageName = Application.Context.PackageName;
+
+			// Create an intent to see if the app developer wired up the callback activity correctly
+			var intent = new Intent(Intent.ActionView);
+			intent.AddCategory(Intent.CategoryBrowsable);
+			intent.AddCategory(Intent.CategoryDefault);
+			intent.SetPackage(packageName);
+			intent.SetData(global::Android.Net.Uri.Parse(callbackUrl.OriginalString));
+
+			// Try to find the activity for the callback intent
+			if (!PlatformUtils.IsIntentSupported(intent, packageName))
+				throw new InvalidOperationException($"You must subclass the `{nameof(WebAuthenticatorCallbackActivity)}` and create an IntentFilter for it which matches your `{nameof(callbackUrl)}`.");
+
+			// Cancel any previous task that's still pending
+			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+				tcsResponse.TrySetCanceled();
+
+			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
+			currentRedirectUri = callbackUrl;
+
+			// Use the CancellationToken to cancel the authentication if requested
+			using (cancellationToken.Register(() => tcsResponse.TrySetCanceled()))
+			{
+				// Try to start with custom tabs if the system supports it and we resolve it
+				AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
+
+				// Fall back to using the system browser if necessary
+				if (!AuthenticatingWithCustomTabs)
+				{
+					// Fall back to opening the system-registered browser if necessary
+					var urlOriginalString = url.OriginalString;
+					var browserIntent = new Intent(Intent.ActionView, global::Android.Net.Uri.Parse(urlOriginalString));
+					Platform.CurrentActivity.StartActivity(browserIntent);
+				}
+
+				return await tcsResponse.Task;
+			}
+		}
+
 
 		static async Task<bool> StartCustomTabsActivity(Uri url)
 		{
