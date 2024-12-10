@@ -532,7 +532,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if PLATFORM
 			if (view is IToolTipElement tooltipContainer)
-				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
+				handler.ToPlatform().UpdateToolTip(tooltipContainer);
 #endif
 		}
 	}
