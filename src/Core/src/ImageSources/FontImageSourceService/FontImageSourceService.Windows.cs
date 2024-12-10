@@ -136,7 +136,8 @@ namespace Microsoft.Maui
 				}
 
 				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
-				if (FileSystemUtils.TryGetAppPackageFileUri(fontUri.LocalPath, out var uri))
+				var path = fontUri.LocalPath.TrimStart('/');
+				if (FileSystemUtils.TryGetAppPackageFileUri(pathk, out var uri))
 				{
 					fontSource = uri + fragment;
 				}
