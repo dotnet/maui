@@ -19,6 +19,14 @@
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- NuGet package information -->
     <IsPackable>True</IsPackable>

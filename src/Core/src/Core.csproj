@@ -36,6 +36,11 @@
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
     <PackageReference Include="System.Numerics.Vectors" Condition="$(TargetFramework.StartsWith('netstandard'))" />
     <PackageReference Include="System.Text.Json" Condition="$(TargetFramework.StartsWith('netstandard'))" />
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
     <PackageReference Include="Microsoft.WindowsAppSDK" />
