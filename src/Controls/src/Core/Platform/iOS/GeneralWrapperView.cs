@@ -5,24 +5,40 @@ namespace Microsoft.Maui.Controls.Platform;
 
 class GeneralWrapperView : MauiView, ICrossPlatformLayout
 {
-    //Make this a weakreference
-    public WeakReference<IView> ChildView { get; private set; }
+    public WeakReference<IView>? ChildView { get; private set; }
 
-    public GeneralWrapperView(IView childView, IMauiContext context)
+    public GeneralWrapperView(IView childView, IMauiContext mauiContext)
     {
         CrossPlatformLayout = this;
-        ChildView = new(childView);
-        UpdatePlatformView(childView, context);
+        UpdatePlatformView(childView, mauiContext);
     }
 
-    internal void UpdatePlatformView(IView childView, IMauiContext context)
+    public void Disconnect()
     {
-        var nativeView = childView.ToPlatform(context);
-
-        if (nativeView.Superview == this)
+        if (ChildView is null || !ChildView.TryGetTarget(out var childView))
         {
-            nativeView.RemoveFromSuperview();
+            return;
         }
+
+        childView.DisconnectHandlers();
+    }
+
+    public void UpdatePlatformView(IView? newChildView, IMauiContext mauiContext)
+    {
+        if (Subviews.Length > 0)
+        {
+            Subviews[0].RemoveFromSuperview();
+        }
+
+        if (newChildView is null)
+        {
+            ChildView = null;
+            return;
+        }
+
+        ChildView = new(newChildView);
+
+        var nativeView = newChildView.ToPlatform(mauiContext);
 
         if (nativeView is WrapperView)
         {
@@ -39,20 +55,16 @@ class GeneralWrapperView : MauiView, ICrossPlatformLayout
 
     public Size CrossPlatformArrange(Rect bounds)
     {
-        if (ChildView is null || !ChildView.TryGetTarget(out var childView))
-        {
+        if (ChildView == null || !ChildView.TryGetTarget(out var childView))
             return Size.Zero;
-        }
 
         return childView.Arrange(bounds);
     }
 
     public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
     {
-        if (ChildView is null || !ChildView.TryGetTarget(out var childView))
-        {
+        if (ChildView == null || !ChildView.TryGetTarget(out var childView))
             return Size.Zero;
-        }
 
         return childView.Measure(widthConstraint, heightConstraint);
     }

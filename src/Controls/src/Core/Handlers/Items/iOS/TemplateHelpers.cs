@@ -48,16 +48,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return ((UIView)renderer.PlatformView, element);
 			}
 
-			if (view is View formsView)
+			if (view is View mauiView)
 			{
 				// Make sure the Visual property is available when the renderer is created
-				PropertyPropagationExtensions.PropagatePropertyChanged(null, formsView, itemsView);
+				PropertyPropagationExtensions.PropagatePropertyChanged(null, mauiView, itemsView);
 
-				// No template, and the EmptyView is a Forms view; use that
+				// No template, and the EmptyView is a Maui view; use that
 				// But we need to wrap it in a GeneralWrapperView so it can be measured and arranged
-				var wrapperView = new GeneralWrapperView(formsView, itemsView.FindMauiContext());
+				var wrapperView = new GeneralWrapperView(mauiView, itemsView.FindMauiContext());
 
-				return (wrapperView, formsView);
+				return (wrapperView, mauiView);
 			}
 
 			return (new UILabel { TextAlignment = UITextAlignment.Center, Text = $"{view}" }, null);
