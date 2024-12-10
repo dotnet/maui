@@ -1,13 +1,13 @@
 #nullable disable
 using System;
 using System.Collections;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Threading;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>
+	internal class ObservableItemTemplateCollection : ObservableList<ItemTemplateContext>
 	{
 		readonly IList _itemsSource;
 		readonly DataTemplate _itemTemplate;
@@ -45,13 +45,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (itemSpacing.HasValue)
 				_itemSpacing = itemSpacing.Value;
 
-			for (int n = 0; n < itemsSource.Count; n++)
-			{
-				// We're using this as a source for a ListViewBase, and we need INCC to work. So ListViewBase is going
-				// to iterate over the entire source list right off the bat, no matter what we do. Creating one
-				// ItemTemplateContext per item in the collection is unavoidable. Luckily, ITC is pretty cheap.
-				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
-			}
+			// We're using this as a source for a ListViewBase, and we need INCC to work. So ListViewBase is going
+			// to iterate over the entire source list right off the bat, no matter what we do. Creating one
+			// ItemTemplateContext per item in the collection is unavoidable. Luckily, ITC is pretty cheap.
+			AddItemTemplateContexts(itemsSource);
 
 			_collectionChanged = InnerCollectionChanged;
 			_proxy.Subscribe(notifyCollectionChanged, _collectionChanged);
@@ -162,12 +159,33 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var index = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 
-			var count = args.NewItems.Count;
+			AddItemTemplateContexts(args.NewItems, startIndex);
+		}
+
+		private void AddItemTemplateContexts(IList newItems, int startIndex = 0)
+		{
+			var count = newItems.Count;
+
+			if (count == 1)
+			{
+				Add(new ItemTemplateContext(_itemTemplate, newItems[0], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				return;
+			}
+
+			List<ItemTemplateContext> itemsToAdd = new(capacity: count);
 
 			for (int n = 0; n < count; n++)
 			{
-				Insert(index, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
-				index++;
+				itemsToAdd.Add(new ItemTemplateContext(_itemTemplate, newItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+			}
+
+			if (startIndex == Items.Count)
+			{
+				AddRange(itemsToAdd);
+			}
+			else
+			{
+				InsertRange(startIndex, itemsToAdd);
 			}
 		}
 
@@ -205,10 +223,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var count = args.OldItems.Count;
 
+			if (count == 1)
+			{
+				Remove(Items[startIndex]);
+				return;
+			}
+
+			List<ItemTemplateContext> itemsToRemove = new(capacity: count);
+
 			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
-				RemoveAt(n);
+				var itemToRemve = Items[n];
+				itemsToRemove.Add(itemToRemve);
 			}
+
+			RemoveRange(itemsToRemove);
 		}
 
 		void Replace(NotifyCollectionChangedEventArgs args)
@@ -217,15 +246,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (newItemCount == args.OldItems.Count)
 			{
+				var items = Items.ToList();
+
 				for (int n = 0; n < newItemCount; n++)
 				{
 					var index = args.OldStartingIndex + n;
-					var oldItem = this[index];
 					var newItem = new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext);
-					Items[index] = newItem;
-					var update = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItem, oldItem, index);
-					OnCollectionChanged(update);
+					items[index] = newItem;
 				}
+
+				ReplaceRange(args.OldStartingIndex, items);
 			}
 			else
 			{
