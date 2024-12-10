@@ -131,7 +131,7 @@ namespace Microsoft.Maui
 			}
 			catch (Exception ex)
 			{
-				_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable copy font {Font} to local file system.", fontName);
+				_serviceProvider?.CreateLogger<FontManager>()?.LogWarning(ex, "Unable to copy font {Font} to the local file system.", fontName);
 			}
 
 			// something went wrong!
