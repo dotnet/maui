@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue20870"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             Title="Issue20870">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <FlexLayout Grid.Row="0" JustifyContent="SpaceEvenly">
+            <Button x:Name="ButtonSingleTap" AutomationId="ButtonSingleTap" Text="SingleTap" FontSize="20" TextColor="Red">
+                <Button.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTap"/>
+                </Button.GestureRecognizers>
+            </Button>
+            <Button x:Name="ButtonDoubleTap" AutomationId="ButtonDoubleTap" Text="DoubleTap" FontSize="20" TextColor="Green">
+                <Button.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
+                </Button.GestureRecognizers>
+            </Button>
+            <Button x:Name="ButtonSingleAndDoubleTap" AutomationId="ButtonSingleAndDoubleTap" Text="SingleAndDoubleTap" FontSize="20" TextColor="Blue">
+                <Button.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTap"/>
+                    <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
+                </Button.GestureRecognizers>
+            </Button>
+            <Button x:Name="ButtonDoubleAndSingleTap" AutomationId="ButtonDoubleAndSingleTap" Text="DoubleAndSingleTap" FontSize="20" TextColor="Purple">
+                <Button.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDoubleTap" NumberOfTapsRequired="2"/>
+                    <TapGestureRecognizer Tapped="OnTap"/>
+                </Button.GestureRecognizers>
+            </Button>
+            <Button x:Name="Clear" AutomationId="Clear" Text="Clear" FontSize="20" Clicked="Clear_Clicked"/>
+
+        </FlexLayout>
+
+        <ScrollView Grid.Row="1">
+            <Editor x:Name="Results" AutomationId="Results" Margin="20"/>
+        </ScrollView>
+    </Grid>
+</ContentPage>
