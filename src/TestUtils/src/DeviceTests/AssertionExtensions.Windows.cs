@@ -237,7 +237,7 @@ namespace Microsoft.Maui.DeviceTests
 				// wait for element to be loaded
 				await loadedTcs.Task;
 				view.Unloaded += OnViewUnloaded;
-
+				
 				try
 				{
 					return await Run(() => action(window));
