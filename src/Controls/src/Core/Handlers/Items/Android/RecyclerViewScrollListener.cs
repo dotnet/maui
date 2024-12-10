@@ -100,24 +100,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (firstVisibleItemIndex == 0 && lastVisibleItemIndex == itemsCount - 1)
 			{
-				if (hasHeader && hasFooter)
-				{
-					lastVisibleItemIndex -= itemsCount > 2 ? 2 : 1;
-				}
-				else if (hasHeader || hasFooter)
-				{
-					lastVisibleItemIndex -= itemsCount > 1 ? 1 : lastVisibleItemIndex;
-				}
+				lastVisibleItemIndex -= hasHeader && hasFooter ? 2 : 1;
 			}
 			else
 			{
 				if (hasHeader && !hasFooter)
 				{
 					lastVisibleItemIndex -= 1;
-					if (firstVisibleItemIndex != 0)
-					{
-						firstVisibleItemIndex -= 1;
-					}
+					firstVisibleItemIndex -= 1;
 				}
 				else if (!hasHeader && hasFooter)
 				{
@@ -132,7 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						lastVisibleItemIndex -= 1;
 					}
-					else if (firstVisibleItemIndex != 0 && lastVisibleItemIndex != itemsCount - 1)
+					else if (lastVisibleItemIndex != itemsCount - 1)
 					{
 						firstVisibleItemIndex -= 1;
 						lastVisibleItemIndex -= 1;
@@ -143,6 +133,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						lastVisibleItemIndex -= 2;
 					}
 				}
+			}
+
+			if (firstVisibleItemIndex < 0)
+			{
+				firstVisibleItemIndex = 0;
+			}
+
+			if (lastVisibleItemIndex < 0)
+			{
+				lastVisibleItemIndex = 0;
 			}
 
 			return (firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
