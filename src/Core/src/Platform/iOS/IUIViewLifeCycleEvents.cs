@@ -8,5 +8,7 @@ namespace Microsoft.Maui.Platform
 			"This event isn't meant to cleanup by itself. The subscriber needs to unsubscribe when it knows it no longer cares about this event.";
 
 		event EventHandler MovedToWindow;
+
+		event EventHandler MovedToSuperview;
 	}
 }
