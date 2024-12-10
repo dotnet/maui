@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// No template, and the EmptyView is a Maui view; use that
 				// But we need to wrap it in a GeneralWrapperView so it can be measured and arranged
 				var wrapperView = new GeneralWrapperView(mauiView, itemsView.FindMauiContext());
-
+				wrapperView.Frame = mauiView.Bounds.ToCGRect();
 				return (wrapperView, mauiView);
 			}
 
