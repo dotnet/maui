@@ -76,18 +76,18 @@ namespace Microsoft.Maui
 			// then, return null
 			return null;
 
-			static string CleanseFilePath(string filePath)
-			{
-				var fontName = Path.GetFileName(filePath);
+		static string CleanseFilePath(string filePath)
+		{
+			var fontName = Path.GetFileName(filePath);
 
-				filePath = Path.Combine("local", FontCacheFolderName, fontName);
+			filePath = Path.Combine("local", FontCacheFolderName, fontName);
 
-				var baseUri = new Uri("ms-appdata://");
-				var uri = new Uri(baseUri, filePath);
-				var relativePath = uri.ToString().TrimEnd('/');
+			var baseUri = new Uri("ms-appdata://");
+			var uri = new Uri(baseUri, filePath);
+			var relativePath = uri.ToString().TrimEnd('/');
 
-				return relativePath;
-			}
+			return relativePath;
+		}
 		}
 
 		private string? LoadFontUnpackaged(string fontName, Stream resourceStream)
