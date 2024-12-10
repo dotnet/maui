@@ -162,15 +162,16 @@ namespace Microsoft.Maui.Platform
 
 		void ShouldCenterVertically()
 		{
-			var contentHeight = ContentSize.Height;
+			var contentHeight = ContentSize.Height - TextContainerInset.Top - TextContainerInset.Bottom;
 			var availableSpace = Bounds.Height - contentHeight * ZoomScale;
 			if (availableSpace <= 0)
 				return;
-			ContentOffset = VerticalTextAlignment switch
+
+			TextContainerInset = VerticalTextAlignment switch
 			{
-				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),
-				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
-				_ => ContentOffset,
+				Maui.TextAlignment.Center => new UIEdgeInsets((nfloat)Math.Max(1, availableSpace / 2), TextContainerInset.Left, TextContainerInset.Bottom, TextContainerInset.Right),
+				Maui.TextAlignment.End => new UIEdgeInsets((nfloat)Math.Max(1, availableSpace), TextContainerInset.Left, TextContainerInset.Bottom, TextContainerInset.Right),
+				_ => TextContainerInset,
 			};
 		}
 
