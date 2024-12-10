@@ -77,6 +77,30 @@ namespace Microsoft.Maui
 			return null;
 		}
 
+		static string CleansePackagedFilePath(string filePath)
+		{
+			var fontName = Path.GetFileName(filePath);
+
+			filePath = Path.Combine("local", FontCacheFolderName, fontName);
+
+			var baseUri = new Uri("ms-appdata://");
+			var uri = new Uri(baseUri, filePath);
+			var relativePath = uri.ToString().TrimEnd('/');
+
+			return relativePath;
+		}
+
+		static string CleanseUnpackagedFilePath(string filePath)
+		{
+			// yes, ms-appx, yes, it is the way... sometimes #acceptance
+
+			var baseUri = new Uri("ms-appx://");
+			var uri = new Uri(baseUri, "ms-appx://" + filePath);
+			var relativePath = uri.ToString().TrimEnd('/');
+
+			return relativePath;
+		}
+
 		private string? LoadFontUnpackaged(string fontName, Stream resourceStream)
 		{
 			var tmpdir = Path.Combine(FileSystem.AppDataDirectory, "..", FontCacheFolderName);
@@ -122,30 +146,6 @@ namespace Microsoft.Maui
 
 			// then, return null
 			return null;
-		}
-
-		static string CleansePackagedFilePath(string filePath)
-		{
-			var fontName = Path.GetFileName(filePath);
-
-			filePath = Path.Combine("local", FontCacheFolderName, fontName);
-
-			var baseUri = new Uri("ms-appdata://");
-			var uri = new Uri(baseUri, filePath);
-			var relativePath = uri.ToString().TrimEnd('/');
-
-			return relativePath;
-		}
-
-		static string CleanseUnpackagedFilePath(string filePath)
-		{
-			// yes, ms-appx, yes, it is the way... sometimes #acceptance
-
-			var baseUri = new Uri("ms-appx://");
-			var uri = new Uri(baseUri, "ms-appx://" + filePath);
-			var relativePath = uri.ToString().TrimEnd('/');
-
-			return relativePath;
 		}
 	}
 }
