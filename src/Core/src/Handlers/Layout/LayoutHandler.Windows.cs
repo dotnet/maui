@@ -1,19 +1,25 @@
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutPanel>
 	{
+		/// <summary>Children of the platform view.</summary>
+		/// <remarks>Stored for performance reasons.</remarks>
+		UIElementCollection? _platformViewChildren;
+
 		public void Add(IView child)
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			_platformViewChildren.Insert(targetIndex, child.ToPlatform(MauiContext));
 		}
 
 		public override void SetVirtualView(IView view)
@@ -23,15 +29,15 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
 
 			PlatformView.CrossPlatformLayout = VirtualView;
 
-			var children = PlatformView.Children;
-			children.Clear();
+			_platformViewChildren.Clear();
 
 			foreach (var child in VirtualView.OrderByZIndex())
 			{
-				children.Add(child.ToPlatform(MauiContext));
+				_platformViewChildren.Add(child.ToPlatform(MauiContext));
 			}
 		}
 
@@ -39,16 +45,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
 
 			if (child?.ToPlatform() is UIElement view)
 			{
-				PlatformView.Children.Remove(view);
+				_platformViewChildren?.Remove(view);
 			}
 		}
 
 		public void Clear()
 		{
-			PlatformView?.Children.Clear();
+			_platformViewChildren?.Clear();
 		}
 
 		public void Insert(int index, IView child)
@@ -56,9 +63,10 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
+			_platformViewChildren.Insert(targetIndex, child.ToPlatform(MauiContext));
 		}
 
 		public void Update(int index, IView child)
@@ -66,8 +74,9 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
 
-			PlatformView.Children[index] = child.ToPlatform(MauiContext);
+			_platformViewChildren[index] = child.ToPlatform(MauiContext);
 			EnsureZIndexOrder(child);
 		}
 
@@ -95,22 +104,33 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
+		protected override void ConnectHandler(LayoutPanel platformView)
+		{
+			base.ConnectHandler(platformView);
+			_platformViewChildren = platformView.Children;
+		}
+
 		protected override void DisconnectHandler(LayoutPanel platformView)
 		{
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
+
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
-			platformView.Children.Clear();
+			_platformViewChildren.Clear();
+			_platformViewChildren = null;
+
 			base.DisconnectHandler(platformView);
 		}
 
 		void EnsureZIndexOrder(IView child)
 		{
-			if (PlatformView.Children.Count == 0)
+			_ = _platformViewChildren ?? throw new InvalidOperationException($"{nameof(_platformViewChildren)} should have been set when setting {nameof(PlatformView)}.");
+
+			if (_platformViewChildren.Count == 0)
 			{
 				return;
 			}
 
-			var children = PlatformView.Children;
-			var currentIndex = children.IndexOf(child.ToPlatform(MauiContext!));
+			var currentIndex = _platformViewChildren.IndexOf(child.ToPlatform(MauiContext!));
 
 			if (currentIndex == -1)
 			{
@@ -121,7 +141,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentIndex != targetIndex)
 			{
-				children.Move((uint)currentIndex, (uint)targetIndex);
+				_platformViewChildren.Move((uint)currentIndex, (uint)targetIndex);
 			}
 		}
 
