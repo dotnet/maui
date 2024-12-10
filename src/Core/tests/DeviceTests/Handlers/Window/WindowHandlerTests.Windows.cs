@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 				var navigation = GetRootNavigationView(handler);
 				var page = Assert.IsType<ContentPanel>(navigation.Content);
 
-				var btn = Assert.IsAssignableFrom<UI.Xaml.Controls.TextBlock>(page.Children[0]);
+				var btn = Assert.IsAssignableFrom<UI.Xaml.Controls.TextBlock>(page.CachedChildren[0]);
 
 				Assert.Equal("Yay!", btn.Text);
 			});
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 				var page = Assert.IsType<ContentPanel>(navigation.Content);
 
 				Assert.Null(page.Content);
-				Assert.Empty(page.Children);
+				Assert.Empty(page.CachedChildren);
 			});
 		}
 
@@ -179,9 +179,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var container = Assert.IsType<WindowRootViewContainer>(rootContainer);
 
-			Assert.NotEmpty(container.Children);
+			Assert.NotEmpty(container.CachedChildren);
 
-			var root = Assert.IsType<WindowRootView>(container.Children[0]);
+			var root = Assert.IsType<WindowRootView>(container.CachedChildren[0]);
 			var navigation = Assert.IsType<RootNavigationView>(root.Content);
 
 			return navigation;

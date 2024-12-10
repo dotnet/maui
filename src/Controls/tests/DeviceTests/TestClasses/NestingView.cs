@@ -52,6 +52,21 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	{
 
+#if WINDOWS
+		UI.Xaml.Controls.UIElementCollection _cachedChildren;
+
+		internal UI.Xaml.Controls.UIElementCollection CachedChildren
+		{
+			get
+			{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
+				_cachedChildren ??= Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+				return _cachedChildren;
+			}
+		}
+#endif
+
 #if ANDROID
 		public NestingViewPlatformView(Context context) : base(context)
 		{
@@ -90,11 +105,11 @@ namespace Microsoft.Maui.DeviceTests
 		public PlatformView AddChild(PlatformView platformView)
 		{
 #if WINDOWS
-			this.Children.Add(platformView);
+			CachedChildren.Add(platformView);
 #elif ANDROID
-			this.AddView(platformView);
+			AddView(platformView);
 #else
-			this.AddSubview(platformView);
+			AddSubview(platformView);
 #endif
 
 			return platformView;

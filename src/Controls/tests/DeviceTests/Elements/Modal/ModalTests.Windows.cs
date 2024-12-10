@@ -27,13 +27,22 @@ namespace Microsoft.Maui.DeviceTests
 				async (handler) =>
 				{
 					var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. In tests, we don't mind.
+					var windowRootViewContainerChildren = windowRootViewContainer.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 					ContentPage backgroundColorContentPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
 
 
 					if (useColor)
+					{
 						backgroundColorContentPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
+					}
 					else
+					{
 						backgroundColorContentPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
+					}
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
 					await OnLoadedAsync(backgroundColorContentPage);
@@ -43,14 +52,14 @@ namespace Microsoft.Maui.DeviceTests
 					var rootPageRootView =
 						navPage.FindMauiContext().GetNavigationRootManager().RootView;
 
-					Assert.Equal(1, windowRootViewContainer.Children.IndexOf(modalRootView));
-					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
+					Assert.Equal(1, windowRootViewContainerChildren.IndexOf(modalRootView));
+					Assert.Equal(0, windowRootViewContainerChildren.IndexOf(rootPageRootView));
 
 					await navPage.CurrentPage.Navigation.PopModalAsync();
 					await OnUnloadedAsync(backgroundColorContentPage);
 
-					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
-					Assert.DoesNotContain(modalRootView, windowRootViewContainer.Children);
+					Assert.Equal(0, windowRootViewContainerChildren.IndexOf(rootPageRootView));
+					Assert.DoesNotContain(modalRootView, windowRootViewContainerChildren);
 				});
 		}
 
