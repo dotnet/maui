@@ -19,7 +19,7 @@ internal class WindowViewController : UIViewController
 	UIView? _contentWrapperView;
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
-	NSLayoutConstraint? _contentWrapperTopConstraint;
+	internal NSLayoutConstraint? _contentWrapperTopConstraint;
 
 	/// <summary>
 	/// Instantiate a new <see cref="WindowViewController"/> object.
@@ -68,18 +68,24 @@ internal class WindowViewController : UIViewController
 
 	public override void ViewWillLayoutSubviews()
 	{
+		// Console.WriteLine("WVC ViewWillLayoutSubviews start");
+
 		LayoutTitleBar();
 
 		base.ViewWillLayoutSubviews();
+
+		// Console.WriteLine("WVC ViewWillLayoutSubviews end");
 	}
 
 	public override void ViewDidLayoutSubviews()
 	{
+		// Console.WriteLine("WVC ViewDidLayoutSubviews start");
 		UpdateContentWrapperContentFrame();
 
 		base.ViewDidLayoutSubviews();
 
-		ApplyNavBarHack();
+		// ApplyNavBarHack();
+		// Console.WriteLine("WVC ViewDidLayoutSubviews end");
 	}
 
 	void UpdateContentWrapperContentFrame()
@@ -89,7 +95,10 @@ internal class WindowViewController : UIViewController
 		var frame = new CGRect(0, 0, View!.Bounds.Width, View!.Bounds.Height - (_contentWrapperTopConstraint?.Constant ?? 0));
 
 		if (_contentWrapperView is not null && _contentWrapperView.Subviews[0].Frame != frame)
+		{
 			_contentWrapperView.Subviews[0].Frame = frame;
+			Console.WriteLine($"ContentWrapperContentFrame: {frame}");
+		}
 	}
 	
 	/// <summary>
@@ -162,13 +171,14 @@ internal class WindowViewController : UIViewController
 		}
 
 		_contentWrapperTopConstraint.Constant = titleBarHeight;
+		Console.WriteLine($"New Top Constant: {_contentWrapperTopConstraint.Constant}");
 
-		if (titleBarHeight <= View.SafeAreaInsets.Top && current > 0 && titleBarHeight != current)
-		{
-			// We only care about doing this when we are transitioning from a titlebar with height to one without height
-			ApplyNavBarHack();
-			
-		}
+		// if (titleBarHeight <= View.SafeAreaInsets.Top && current > 0 && titleBarHeight != current)
+		// {
+		// 	// We only care about doing this when we are transitioning from a titlebar with height to one without height
+		// 	ApplyNavBarHack();
+
+		// }
 
 		UpdateContentWrapperContentFrame();
 	}

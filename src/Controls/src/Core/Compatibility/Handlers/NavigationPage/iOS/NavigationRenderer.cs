@@ -179,6 +179,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewWillLayoutSubviews()
 		{
+			Console.WriteLine("NR ViewWillLayoutSubviews start");
+			AdjustForTitleBar();
+
 			base.ViewWillLayoutSubviews();
 
 			if (Current is not Page current)
@@ -200,6 +203,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// This is required in order to set the "Frame" property on NavigationPage
 			// It'd be good to see if we can optimize this a bit better.
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
+
+			Console.WriteLine("NR ViewWillLayoutSubviews end");
+		}
+
+#pragma warning disable RS0016 // Mark members as static
+		public override void ViewDidLayoutSubviews()
+		{
+
+			base.ViewDidLayoutSubviews();
 		}
 
 		public override void ViewDidLoad()
@@ -712,6 +724,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// because we skip the normal pop process we need to dispose ourselves
 				controller?.Dispose();
 			}, TaskScheduler.FromCurrentSynchronizationContext());
+		}
+
+		int count = 0;
+
+		void AdjustForTitleBar()
+		{
+			var titleBar = Current.Window.TitleBar;
+			var platformTitleBar = titleBar?.ToPlatform(MauiContext);
+
+			var controller = (Current.Window.Handler?.PlatformView as UIWindow)?.RootViewController as WindowViewController;
+
+			// if (platformTitleBar is not null && controller is not null)
+			if (controller is not null)
+			{
+				var frame = NavigationBar.Frame;
+				var safeAreaTop = NavigationBar.SafeAreaInsets.Top;
+				// var titleBarHeight = platformTitleBar.Frame.Height;
+				var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
+				// var titleBarHeight = 36;
+				Console.WriteLine($"Count: {count++}");
+				Console.WriteLine($"Before Frame: {frame}");
+				Console.WriteLine($"Before SafeAreaInsets: {NavigationBar.SafeAreaInsets}");
+				Console.WriteLine($"Before TitleBar Height: {titleBarHeight}");
+				if (safeAreaTop > 0 && frame.Y < 36 && titleBarHeight == 0)
+				{
+					NavigationBar.Frame = new CGRect(frame.X, 36, frame.Width, frame.Height);
+					// TODO - when the titleBar Height is below 36, the navigation bar does not adjust correctly until the next layout pass
+				}
+				else if(frame.Y > 0 && titleBarHeight > 0)
+				{
+					NavigationBar.Frame = new CGRect(frame.X, 0, frame.Width, frame.Height);
+				}
+
+				Console.WriteLine($"After Frame: {frame}");
+				Console.WriteLine($"After SafeAreaInsets: {NavigationBar.SafeAreaInsets}");
+				Console.WriteLine($"After TitleBar Height: {titleBarHeight}\n \n");
+			}
 		}
 
 		void UpdateBackgroundColor()
@@ -1866,6 +1915,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void LayoutSubviews()
 			{
+				// Console.WriteLine("LayoutSubviews - NavigationRenderer");
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 				{
 					for (int i = 0; i < this.Subviews.Length; i++)

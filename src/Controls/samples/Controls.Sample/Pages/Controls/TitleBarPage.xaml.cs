@@ -158,7 +158,8 @@ namespace Maui.Controls.Sample.Pages
 			if (e.Value)
 			{
 #if MACCATALYST
-				_customTitleBar.HeightRequest = 60;
+				// _customTitleBar.HeightRequest = 60;
+				_customTitleBar.HeightRequest = 36;
 #else
 				_customTitleBar.HeightRequest = 48;
 #endif
@@ -166,7 +167,8 @@ namespace Maui.Controls.Sample.Pages
 			else
 			{
 #if MACCATALYST
-				_customTitleBar.HeightRequest = 36;
+				// _customTitleBar.HeightRequest = 36;
+				_customTitleBar.HeightRequest = 35;
 #else
 				_customTitleBar.HeightRequest = 32;
 #endif			
