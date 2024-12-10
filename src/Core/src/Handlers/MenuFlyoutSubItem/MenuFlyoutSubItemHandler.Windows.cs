@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
@@ -62,16 +63,19 @@ namespace Microsoft.Maui.Handlers
 				view.Source?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 		}
 
-		public override void SetVirtualView(IElement view)
-		{
-			base.SetVirtualView(view);
-			PlatformView.Items.Clear();
+        public override void SetVirtualView(IElement view)
+        {
+            base.SetVirtualView(view);
+            PlatformView.Items.Clear();
 
-			foreach (var item in ((IMenuFlyoutSubItem)view))
-			{
-				PlatformView.Items.Add((MenuFlyoutItemBase)item.ToPlatform(MauiContext!));
-			}
-		}
+            if (view is IMenuFlyoutSubItem menuFlyoutSubItem)
+            {
+                foreach (var item in menuFlyoutSubItem.OfType<IMenuElement>())
+                {
+                    PlatformView.Items.Add((MenuFlyoutItemBase)item.ToPlatform(MauiContext!));
+                }
+            }
+        }
 
 		// workaround WinUI bug https://github.com/microsoft/microsoft-ui-xaml/issues/7797
 		void Reset()
