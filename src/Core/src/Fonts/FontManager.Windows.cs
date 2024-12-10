@@ -169,8 +169,7 @@ namespace Microsoft.Maui
 				// unpackaged apps can't load files using packaged schemes
 				if (!AppInfoUtils.IsPackagedApp)
 				{
-					var path = fontUri.AbsolutePath.TrimStart('/');
-					if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
+					if (FileSystemUtils.TryGetAppPackageFileUri(fontUri.LocalPath, out var uri))
 						fontUri = new Uri(uri, UriKind.RelativeOrAbsolute);
 				}
 
