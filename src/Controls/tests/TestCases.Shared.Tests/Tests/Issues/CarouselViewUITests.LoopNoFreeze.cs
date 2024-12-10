@@ -56,7 +56,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForElement("0 item");
-	
+
 			App.Click(_btnRemoveAllAutomationId);
 
 			// If we haven't crashed, then the other button should be here

@@ -56,6 +56,7 @@ public class Issue1777 : TestContentPage
 		Button button = new Button();
 		button.Clicked += button_Clicked;
 		button.Text = _btnText;
+		button.AutomationId = _btnText;
 		stackLayout.Children.Add(button);
 
 		//button_Clicked(button, EventArgs.Empty);

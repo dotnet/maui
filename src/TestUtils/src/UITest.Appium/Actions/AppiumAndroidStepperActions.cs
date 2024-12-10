@@ -44,13 +44,13 @@ public class AppiumAndroidStepperActions : ICommandExecutionGroup
 
 		var element = _appiumApp.FindElement(elementId);
 		var stepper = GetAppiumElement(element);
-		
+
 		if (stepper is null)
 			return CommandResponse.FailedEmptyResponse;
 
 		var buttons = AppiumQuery.ByClass("android.widget.Button").FindElements(stepper, _appiumApp);
 
-		if(buttons is not null && buttons.Count > 1)
+		if (buttons is not null && buttons.Count > 1)
 		{
 			var increaseButton = buttons.LastOrDefault();
 			increaseButton?.Tap();

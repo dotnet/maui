@@ -11,7 +11,7 @@ public class Issue1583 : _IssuesUITest
 	}
 
 	public override string Issue => "NavigationPage.TitleIcon broken";
-	
+
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.Compatibility)]

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
 using UITest.Core;
 
@@ -344,7 +345,7 @@ namespace UITest.Appium
 		public static void DoubleTap(this IApp app, string element)
 		{
 			var elementToDoubleTap = app.FindElement(element);
-		
+
 			app.DoubleTap(elementToDoubleTap);
 		}
 
@@ -408,7 +409,7 @@ namespace UITest.Appium
 		public static void TouchAndHold(this IApp app, string element)
 		{
 			var elementToTouchAndHold = app.FindElement(element);
-		
+
 			app.TouchAndHold(elementToTouchAndHold);
 		}
 
@@ -1119,7 +1120,7 @@ namespace UITest.Appium
 		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			if (element is not null)
-			{ 
+			{
 				app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
 				{
 					{ "element", element },
@@ -1185,6 +1186,65 @@ namespace UITest.Appium
 		public static void SetOrientationPortrait(this IApp app)
 		{
 			app.CommandExecutor.Execute("setOrientationPortrait", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Get the current device orientation.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>The current device orientation</returns>
+		public static OpenQA.Selenium.ScreenOrientation GetOrientation(this IApp app)
+		{
+			var response = app.CommandExecutor.Execute("getOrientation", new Dictionary<string, object>());
+
+			if (response?.Value != null)
+			{
+				return (OpenQA.Selenium.ScreenOrientation)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the current orientation");
+		}
+
+		/// <summary>
+		/// Get the text of the system clipboard.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>Clipboard content as string or an empty string if the clipboard is empty.</returns>
+		public static string GetClipboardText(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"GetClipboard is not supported");
+			}
+
+			var response = app.CommandExecutor.Execute("getClipboardText", new Dictionary<string, object>());
+			
+			if (response?.Value != null)
+			{
+				return (string)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get clipboard text");
+		}
+
+		/// <summary>
+		/// Set the content of the system clipboard.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="content">The actual clipboard content.</param>
+		/// <param name="label">Clipboard data label for Android.</param>
+		public static void SetClipboardText(this IApp app, string content, string? label = null)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"SetClipboard is not supported");
+			}
+
+			app.CommandExecutor.Execute("setClipboardText", new Dictionary<string, object>
+			{
+				{ "content", content },
+				{ "label", label! }
+			});
 		}
 
 		/// <summary>
@@ -1451,7 +1511,7 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void SetLightTheme(this IApp app)
 		{
-			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			if (app is AppiumCatalystApp)
 			{
 				throw new InvalidOperationException($"SetLightTheme is not supported");
 			}
@@ -1465,7 +1525,7 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void SetDarkTheme(this IApp app)
 		{
-			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
+			if (app is AppiumCatalystApp)
 			{
 				throw new InvalidOperationException($"SetDarkTheme is not supported");
 			}
@@ -1615,7 +1675,7 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Switch the state of the wifi service.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android. 
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
@@ -1627,6 +1687,45 @@ namespace UITest.Appium
 			}
 
 			app.CommandExecutor.Execute("toggleWifi", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Switch the System animations state.
+		/// Optimize and accelerate tests, eliminating animations entirely when Appium is executing tests, as they serve no practical purpose in this context.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleSystemAnimations is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleSystemAnimations", new Dictionary<string, object>()
+			{
+				{ "enableSystemAnimations", enableSystemAnimations },
+			});
+		}
+    
+    /// <summary>
+		/// Switch the state of data service.
+		/// Functionality that's only available on Android.
+		/// This API does not work for Android API level 21+ because it requires system or carrier privileged permission, 
+		/// and Android <= 21 does not support granting permissions.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <exception cref="InvalidOperationException">ToggleData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleData(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleData is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleData", ImmutableDictionary<string, object>.Empty);
 		}
 
 		/// <summary>
@@ -1655,6 +1754,288 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		/// <summary>
+		/// Retrieve visibility and bounds information of the status and navigation bars
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>Information about visibility and bounds of status and navigation bar.</returns>
+		public static IDictionary<string, object> GetSystemBars(this IApp app)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"GetSystemBars is only supported on AppiumAndroidApp");
+			}
+
+			var response = app.CommandExecutor.Execute("getSystemBars", new Dictionary<string, object>());
+
+			if (response?.Value != null)
+			{
+				return (IDictionary<string, object>)response.Value;
+			}
+
+			throw new InvalidOperationException($"Could not get the Android System Bars");
+	 }
+    
+		/// <summary>
+		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button or using a custom identifier.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
+		/// <param name="customBackButtonIdentifier">Optional custom identifier string for the back button. If not provided, the default back arrow query will be used.</param>
+		public static void TapBackArrow(this IApp app, string customBackButtonIdentifier = "")
+		{
+			var query = string.IsNullOrEmpty(customBackButtonIdentifier)
+				? GetDefaultBackArrowQuery(app)
+				: GetCustomBackArrowQuery(app, customBackButtonIdentifier);
+
+			TapBackArrow(app, query);
+		}
+
+		/// <summary>
+		/// Navigates back in the application using a custom IQuery.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
+		/// <param name="query">The custom IQuery for the back button.</param>
+		public static void TapBackArrow(this IApp app, IQuery query)
+		{
+			app.Tap(query);
+		}
+        
+		/// <summary>
+		/// Gets the default query for the back arrow button based on the app type.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>An IQuery for the default back arrow button.</returns>
+		/// <exception cref="ArgumentException">Thrown when an unsupported app type is provided.</exception>
+		static IQuery GetDefaultBackArrowQuery(IApp app)
+		{
+			return app switch
+			{
+				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
+				_ => throw new ArgumentException("Unsupported app type", nameof(app))
+			};
+		}
+
+		/// <summary>
+		/// Gets a custom query for the back arrow button based on the app type and a custom identifier.
+		/// Note that for Windows apps, the back button is not customizable, so the default identifier is used.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="customBackButtonIdentifier">The custom identifier for the back button.</param>
+		/// <returns>An IQuery for the custom back arrow button.</returns>
+		/// <exception cref="ArgumentException">Thrown when an unsupported app type is provided.</exception>
+		static IQuery GetCustomBackArrowQuery(IApp app, string customBackButtonIdentifier)
+		{
+			return app switch
+			{
+				AppiumAndroidApp _ => AppiumQuery.ByXPath($"//android.widget.ImageButton[@content-desc='{customBackButtonIdentifier}']"),
+				AppiumIOSApp _ => AppiumQuery.ByXPath($"//XCUIElementTypeButton[@name='{customBackButtonIdentifier}']"),
+				AppiumCatalystApp _ => AppiumQuery.ByName(customBackButtonIdentifier),
+				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
+				_ => throw new ArgumentException("Unsupported app type", nameof(app))
+			};
+		}
+
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="elementId">The id of the element to wait for.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+		{
+			if(app is AppiumCatalystApp)
+				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
+
+			app.WaitForElement(elementId, timeout: timeout);
+		}
+
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="query">The query to use for finding the element.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
+		{
+			if(app is AppiumCatalystApp)
+				app.WaitForElement(query, timeout: timeout);
+
+			app.WaitForElement(query, timeout: timeout);
+		}
+
+		/// <summary>
+		/// Waits for the flyout icon to appear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if(app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if(isShell){
+					app.WaitForElement("OK");
+				}
+				if (!isShell){		
+					if(app is AppiumWindowsApp)
+					{
+						app.WaitForElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.WaitForElement(automationId);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Shows the flyout menu in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="usingSwipe">Indicates whether to use swipe gesture to open the flyout (default is false).</param>
+		/// <param name="waitForFlyoutIcon">Indicates whether to wait for the flyout icon before showing the flyout (default is true).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void ShowFlyout(this IApp app, string automationId = "", bool usingSwipe = false, bool waitForFlyoutIcon = true, bool isShell = true)
+		{
+			if (waitForFlyoutIcon)
+			{
+				app.WaitForFlyoutIcon(automationId, isShell);
+			}
+
+			if (usingSwipe)
+			{
+				app.DragCoordinates(5, 500, 800, 500);
+			}
+			else
+			{
+				app.TapFlyoutIcon(automationId, isShell, false);
+			}
+		}
+
+		/// <summary>
+		/// Taps the Flyout icon for Shell or FlyoutPage.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="title">Optional title for FlyoutPage (default is empty string).</param>
+		/// <param name="isShell">Indicates whether the Flyout is for Shell (true) or FlyoutPage (false).</param>
+		private static void TapFlyoutIcon(this IApp app, string title = "", bool isShell = true, bool waitForFlyoutIcon = true)
+		{
+			if (waitForFlyoutIcon)
+			{
+				app.WaitForFlyoutIcon(title, isShell);
+			}
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.Tap(AppiumQuery.ByAccessibilityId("OK"));
+				}
+				else
+				{
+					if(app is AppiumWindowsApp)
+					{
+						app.Tap(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.Tap(title);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Taps the Flyout icon for Shell pages.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapShellFlyoutIcon(this IApp app)
+		{
+			app.TapFlyoutIcon();
+		}
+
+		/// <summary>
+		/// Taps the Flyout icon for FlyoutPage.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="title">Optional title for FlyoutPage (default is empty string).</param>
+		public static void TapFlyoutPageIcon(this IApp app, string title = "")
+		{
+			app.TapFlyoutIcon(title, false);
+		}
+
+		/// <summary>
+		/// Taps an item in the specified flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutItem">The text or accessibility identifier of the flyout item to tap.</param>
+		/// <param name="isShellFlyout">True if it's a Shell flyout, false for FlyoutPage flyout.</param>
+		private static void TapInFlyout(this IApp app, string flyoutItem, bool isShellFlyout)
+		{
+			if (isShellFlyout)
+			{
+				app.TapShellFlyoutIcon();
+			}
+			else
+			{
+				app.TapFlyoutPageIcon();
+			}
+
+			app.WaitForElement(flyoutItem);
+			app.Tap(flyoutItem);
+		}
+
+		/// <summary>
+		/// Taps an item in the Shell flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutItem">The text or accessibility identifier of the flyout item to tap.</param>
+		public static void TapInShellFlyout(this IApp app, string flyoutItem)
+		{
+			app.TapInFlyout(flyoutItem, true);
+		}
+
+		/// <summary>
+		/// Taps an item in the FlyoutPage flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutItem">The text or accessibility identifier of the flyout item to tap.</param>
+		public static void TapInFlyoutPageFlyout(this IApp app, string flyoutItem)
+		{
+			app.TapInFlyout(flyoutItem, false);
+		}
+
+		/// <summary>
+		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
@@ -1722,6 +2103,14 @@ namespace UITest.Appium
 				result = app.FindElementsByText(element);
 
 			return result;
+		}
+
+
+		public static void SetTestConfigurationArg(this IConfig config, string key, string value)
+		{
+			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
+			startupArg.Add(key, value);
+			config.SetProperty("TestConfigurationArgs", startupArg);
 		}
 	}
 }

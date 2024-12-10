@@ -65,11 +65,13 @@ public class TestCell : ViewCell
 	{
 		var menuItem = new MenuItem();
 		menuItem.SetBinding(MenuItem.TextProperty, "ItemText");
+		menuItem.SetBinding(MenuItem.AutomationIdProperty, "ItemText");
 		ContextActions.Add(menuItem);
 
 
 		var textLabel = new Label();
 		textLabel.SetBinding(Label.TextProperty, "Text");
+		textLabel.SetBinding(Label.AutomationIdProperty, "Text");
 		View = textLabel;
 	}
 }

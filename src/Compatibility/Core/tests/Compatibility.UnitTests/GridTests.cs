@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.UnitTests;
 using NSubstitute;
 using Xunit;
-using Microsoft.Maui.UnitTests;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
