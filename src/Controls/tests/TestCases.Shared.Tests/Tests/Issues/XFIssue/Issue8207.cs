@@ -10,13 +10,13 @@ public class Issue8207 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Shell System.ObjectDisposedException: 'Cannot access a disposed object. Object name: 'Android.Support.Design.Widget.BottomSheetDialog'.'";
+	public override string Issue => "[Bug] Shell Flyout Items on UWP aren't showing the Title";
 
-	//[Test]
-	//[Category(UITestCategories.Shell)]
-	//public void FlyoutItemShouldShowTitle()
-	//{
-	//	TapInFlyout("Dashboard");
-	//	Assert.Inconclusive("Flyout title should be visible");
-	//}
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutItemShouldShowTitle()
+	{
+		App.TapInShellFlyout("Dashboard");
+		App.WaitForElement("Control");
+	}
 }
