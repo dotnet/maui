@@ -13,7 +13,6 @@ public class Issue14471 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Image)]
-	[FailsOnAndroidWhenRunningOnXamarinUITest("Suddenly failing. https://github.com/dotnet/maui/issues/24243")]
 	public void ImageDoesntDisappearWhenNavigatingBack()
 	{
 		App.WaitForElement("image");
