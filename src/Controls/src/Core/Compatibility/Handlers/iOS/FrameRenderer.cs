@@ -171,7 +171,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_previousSize != Bounds.Size)
 			{
 				SetNeedsDisplay();
-				this.UpdateBackgroundLayer();
 			}
 
 			base.LayoutSubviews();
