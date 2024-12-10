@@ -1,8 +1,7 @@
 #nullable disable
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
-using ObjCRuntime;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -55,10 +54,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				PropertyPropagationExtensions.PropagatePropertyChanged(null, formsView, itemsView);
 
 				// No template, and the EmptyView is a Forms view; use that
-				var renderer = GetHandler(formsView, itemsView.FindMauiContext());
-				var element = renderer.VirtualView as VisualElement;
+				// But we need to wrap it in a GeneralWrapperView so it can be measured and arranged
+				var wrapperView = new GeneralWrapperView(formsView, itemsView.FindMauiContext());
 
-				return ((UIView)renderer.PlatformView, element);
+				return (wrapperView, formsView);
 			}
 
 			return (new UILabel { TextAlignment = UITextAlignment.Center, Text = $"{view}" }, null);

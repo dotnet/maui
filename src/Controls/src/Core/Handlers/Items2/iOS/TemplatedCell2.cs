@@ -4,6 +4,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -126,7 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (needsContainer)
 				{
-					PlatformView = new UIContainerView2(virtualView, mauiContext);
+					PlatformView = new GeneralWrapperView(virtualView, mauiContext);
 				}
 				else
 				{
@@ -256,53 +257,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				SelectedBackgroundView.BackgroundColor = UIColor.Clear;
 			}
-		}
-	}
-
-	class UIContainerView2 : UIView
-	{
-		readonly IView _view;
-		readonly IMauiContext _mauiContext;
-
-		public UIContainerView2(IView view, IMauiContext mauiContext)
-		{
-			_view = view;
-			_mauiContext = mauiContext;
-			UpdatePlatformView();
-		}
-
-		internal void UpdatePlatformView()
-		{
-			var handler = _view.ToHandler(_mauiContext);
-			var nativeView = _view.ToPlatform();
-
-			if (nativeView.Superview == this)
-			{
-				nativeView.RemoveFromSuperview();
-			}
-
-			if (nativeView is WrapperView)
-			{
-				// Disable clipping for WrapperView to allow the shadow to be displayed
-				ClipsToBounds = false;
-			}
-			else
-			{
-				ClipsToBounds = true;
-			}
-
-			AddSubview(nativeView);
-		}
-
-		public override void LayoutSubviews()
-		{
-			_view?.Arrange(new Rect(0, 0, Frame.Width, Frame.Height));
-			base.LayoutSubviews();
-		}
-
-		public override CGSize SizeThatFits(CGSize size)
-		{
-			return _view.Measure(size.Width, size.Height).ToCGSize();
 		}
 	}
 }
