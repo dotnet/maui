@@ -162,7 +162,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_currentFlyoutBehavior = (int)flyoutBehavior;
-			switch (flyoutBehavior)
+
+			switch ((FlyoutBehavior)_currentFlyoutBehavior)
 			{
 				case FlyoutBehavior.Flyout:
 					IsPaneToggleButtonVisible = true;
