@@ -93,6 +93,11 @@ namespace Microsoft.Maui
 		static string CleanseUnpackagedFilePath(string filePath)
 		{
 			// yes, ms-appx, yes, it is the way... sometimes #acceptance
+			//
+			// The ms-appx prefix is used for fonts, regardless of the location,
+			// whether in the package or in the local file system.
+			// The times it is not used is when it is in another, special
+			// location, such as in the app data.
 
 			var baseUri = new Uri("ms-appx://");
 			var uri = new Uri(baseUri, "ms-appx://" + filePath);
