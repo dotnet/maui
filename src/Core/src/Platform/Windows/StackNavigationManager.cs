@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -14,7 +17,6 @@ namespace Microsoft.Maui.Platform
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
 		Action? _pendingNavigationFinished;
-		ContentPresenter? _previousContent;
 		bool _connected;
 
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
@@ -56,12 +58,6 @@ namespace Microsoft.Maui.Platform
 			FirePendingNavigationFinished();
 			_navigationFrame = null;
 			NavigationView = null;
-
-			if (_previousContent is not null)
-			{
-				_previousContent.Content = null;
-				_previousContent = null;
-			}
 		}
 
 		public virtual void NavigateTo(NavigationRequest args)
@@ -170,14 +166,6 @@ namespace Microsoft.Maui.Platform
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
 				};
 
-				// There's some bug in our code, or the lifecycle of ContentControl, that is causing the content to
-				// never be removed from the parent...
-				if (_previousContent is not null)
-				{
-					_previousContent.Content = null;
-					_previousContent = null;
-				}
-
 				page.Content = presenter;
 			}
 			else
@@ -186,15 +174,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// At this point if the Content isn't a ContentPresenter the user has replaced
-			// the content so we just let them take control
+			// the conent so we just let them take control
 			if (presenter == null || _currentPage == null)
 				return;
 
-			var platformPage = _currentPage.ToPlatform(MauiContext);
-
 			try
 			{
-				presenter.Content = platformPage;
+				presenter.Content = _currentPage.ToPlatform(MauiContext);
 			}
 			catch (Exception)
 			{
@@ -204,8 +190,6 @@ namespace Microsoft.Maui.Platform
 
 			_pendingNavigationFinished = () =>
 			{
-				_previousContent = presenter;
-
 				if (presenter?.Content is not FrameworkElement pc)
 				{
 					FireNavigationFinished();
