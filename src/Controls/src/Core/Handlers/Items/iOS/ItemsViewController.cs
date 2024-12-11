@@ -584,7 +584,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
 
-
 				uiView?.Dispose();
 				uiView = null;
 				formsElement?.Handler?.DisconnectHandler();
