@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Controls.TestCases.HostApp.Issues
 {
-	[Issue(IssueTracker.Github, 20443, "CollectionView item gets wrong size after refresh", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 20443, "CollectionView item sizing wrong after refresh", PlatformAffected.iOS)]
 
 	public partial class Issue20443 : ContentPage
 	{
