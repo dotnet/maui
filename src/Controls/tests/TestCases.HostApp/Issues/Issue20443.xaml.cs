@@ -39,7 +39,7 @@ namespace Controls.TestCases.HostApp.Issues
 			RefreshCommand = new Command(
 				async () =>
 				{
-					await Task.Delay(2000);
+					await Task.Delay(1000);
 					IsRefreshing = false;
 				});
 

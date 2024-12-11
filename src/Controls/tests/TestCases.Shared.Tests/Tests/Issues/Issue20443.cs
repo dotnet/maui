@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS
+
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,11 +21,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			_ = App.WaitForElement("lblSmall");
 			_ = App.WaitForElement("lblBig");
 
+			// Try pull to refresh on iOS
 			App.DragCoordinates(100, 100, 100, 500);
 
-			Task.Delay(5000).Wait();
+			// wait for the fake fresh and the layout to be updated
+			Task.Delay(3000).Wait();
+
+			// Verify the size of the items
 			VerifyScreenshot();
 
 		}
 	}
 }
+
+#endif
