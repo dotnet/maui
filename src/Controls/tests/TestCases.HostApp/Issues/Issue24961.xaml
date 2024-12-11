@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue24961"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             Title="Issue24961">
+             <Grid>
+             <RefreshView x:Name="refreshview" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
+                 <CollectionView ItemSizingStrategy="MeasureAllItems" AutomationId="CollectionView" ItemsSource="{Binding Items}">
+                 <CollectionView.Header>
+                    <VerticalStackLayout BackgroundColor="#88FFFFE0" Padding="10">
+                        <Label Text="Header" />
+                    </VerticalStackLayout>
+                </CollectionView.Header>
+                <CollectionView.Footer>
+                    <VerticalStackLayout  Padding="10">
+                        <Label Text="Footer" />
+                    </VerticalStackLayout>
+                </CollectionView.Footer>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                         <ContentView Padding="10">
+                            <ContentView>
+                                <ContentView Padding="5">
+                                    <VerticalStackLayout Spacing="6">
+                                    <Label Text="Default line" />
+                                    <Label IsVisible="{Binding ShowTextLine1}" Text="{Binding TextLine1}" />
+                                    <Label IsVisible="{Binding ShowTextLine2}" Text="{Binding TextLine2}" />
+                                    <Label IsVisible="{Binding ShowTextLine3}" Text="{Binding TextLine3}" />
+                                    </VerticalStackLayout>
+                                </ContentView>
+                            </ContentView>
+                        </ContentView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            </RefreshView>
+            </Grid>
+</ContentPage>
