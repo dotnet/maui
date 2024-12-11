@@ -14,7 +14,8 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-			labelFirstLastVisible.Text = $"Scrolled: {e.FirstVisibleItemIndex} to {e.LastVisibleItemIndex}";
+			firstVisibleItemIndex.Text = e.FirstVisibleItemIndex.ToString();
+			lastVisibleItemIndex.Text = e.LastVisibleItemIndex.ToString();
 		}
 	}
 
@@ -57,27 +58,6 @@ namespace Maui.Controls.Sample.Issues
 				new _25649Person() { Name = "Person 28" },
 				new _25649Person() { Name = "Person 29" },
 				new _25649Person() { Name = "Person 30" },
-				new _25649Person() { Name = "Person 31" },
-				new _25649Person() { Name = "Person 32" },
-				new _25649Person() { Name = "Person 33" },
-				new _25649Person() { Name = "Person 34" },
-				new _25649Person() { Name = "Person 35" },
-				new _25649Person() { Name = "Person 36" },
-				new _25649Person() { Name = "Person 37" },
-				new _25649Person() { Name = "Person 38" },
-				new _25649Person() { Name = "Person 39" },
-				new _25649Person() { Name = "Person 40" },
-				new _25649Person() { Name = "Person 41" },
-				new _25649Person() { Name = "Person 42" },
-				new _25649Person() { Name = "Person 43" },
-				new _25649Person() { Name = "Person 44" },
-				new _25649Person() { Name = "Person 45" },
-				new _25649Person() { Name = "Person 46" },
-				new _25649Person() { Name = "Person 47" },
-				new _25649Person() { Name = "Person 48" },
-				new _25649Person() { Name = "Person 49" },
-				new _25649Person() { Name = "Person 50" },
-
 			};
 		}
 	}
