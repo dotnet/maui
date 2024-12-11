@@ -180,7 +180,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewWillLayoutSubviews()
 		{
 			Console.WriteLine("NR ViewWillLayoutSubviews start");
-			AdjustForTitleBar();
+			// AdjustForTitleBar();
+			// View.SetNeedsLayout();
 
 			base.ViewWillLayoutSubviews();
 
@@ -213,6 +214,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			base.ViewDidLayoutSubviews();
 		}
+
+		public override void ViewSafeAreaInsetsDidChange()
+			{
+				base.ViewSafeAreaInsetsDidChange();
+				// AdjustForTitleBar();
+			}
 
 		public override void ViewDidLoad()
 		{
@@ -1915,6 +1922,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void LayoutSubviews()
 			{
+
 				// Console.WriteLine("LayoutSubviews - NavigationRenderer");
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 				{
@@ -1942,8 +1950,62 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 
+
 				base.LayoutSubviews();
+				// AdjustForTitleBar();
 			}
+
+			public override void SafeAreaInsetsDidChange()
+			{
+				base.SafeAreaInsetsDidChange();
+				AdjustForTitleBar();
+			}
+
+			int count = 0;
+
+			void AdjustForTitleBar()
+			{
+				// var navController = this.GetNavigationController() as NavigationRenderer;
+				var navController = this.FindResponder<NavigationRenderer>();
+
+				if (navController is null)
+				{
+					return;
+				}
+
+				var titleBar = navController.Current.Window.TitleBar;
+				var platformTitleBar = titleBar?.ToPlatform(navController.MauiContext);
+
+				var controller = (navController.Current.Window.Handler?.PlatformView as UIWindow)?.RootViewController as WindowViewController;
+
+				// if (platformTitleBar is not null && controller is not null)
+				if (controller is not null)
+				{
+					var frame = navController.NavigationBar.Frame;
+					var safeAreaTop = navController.NavigationBar.SafeAreaInsets.Top;
+					// var titleBarHeight = platformTitleBar.Frame.Height;
+					var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
+					// var titleBarHeight = 36;
+					Console.WriteLine($"Count: {count++}");
+					Console.WriteLine($"Before Frame: {frame}");
+					Console.WriteLine($"Before SafeAreaInsets: {navController.NavigationBar.SafeAreaInsets}");
+					Console.WriteLine($"Before TitleBar Height: {titleBarHeight}");
+					if (safeAreaTop > 0 && frame.Y < 36 && titleBarHeight == 0)
+					{
+						navController.NavigationBar.Frame = new CGRect(frame.X, 36, frame.Width, frame.Height);
+						// TODO - when the titleBar Height is below 36, the navigation bar does not adjust correctly until the next layout pass
+					}
+					// else if(frame.Y > 0 && titleBarHeight > 0)
+					// {
+					// 	navController.NavigationBar.Frame = new CGRect(frame.X, 0, frame.Width, frame.Height);
+					// }
+
+					Console.WriteLine($"After Frame: {frame}");
+					Console.WriteLine($"After SafeAreaInsets: {navController.NavigationBar.SafeAreaInsets}");
+					Console.WriteLine($"After TitleBar Height: {titleBarHeight}\n \n");
+				}
+			}
+
 		}
 
 		class Container : UIView
