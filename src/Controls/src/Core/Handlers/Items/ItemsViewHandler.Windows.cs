@@ -163,9 +163,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (CollectionViewSource is not null)
 			{
-				if (CollectionViewSource.Source is ObservableItemTemplateCollection observableItemTemplateCollection)
+				if (CollectionViewSource.Source is IDisposable disposableItemTemplateCollection)
 				{
-					observableItemTemplateCollection.CleanUp();
+					disposableItemTemplateCollection.Dispose();
 				}
 
 				if (CollectionViewSource.Source is INotifyCollectionChanged incc)
