@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override PlatformTouchGraphicsView CreatePlatformView() => new(Context);
 
-		public static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			if (graphicsView.Background is not null)
             {

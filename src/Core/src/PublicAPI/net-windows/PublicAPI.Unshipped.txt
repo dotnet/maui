@@ -74,4 +74,3 @@ static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IVie
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
