@@ -6,32 +6,52 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue25502()
 		{
-			StackLayout stackLayout = new StackLayout
+			GraphicsView graphicsView = new GraphicsView
 			{
+				AutomationId = "GraphicsView",
+				HeightRequest = 200.25,
+				WidthRequest = 248.25,
+				BackgroundColor = Colors.White,
+				Margin = new Thickness(20),
+			};
+			graphicsView.Drawable = new GraphicsDrawable(graphicsView);
+
+			Button changeColorButton = new Button
+			{
+				Text = "Click to change Color",
+				AutomationId = "ChangeColorButton"
+			};
+
+			changeColorButton.Clicked += ChangeColorButton_Clicked;
+
+			Content = new StackLayout
+			{
+				Spacing = 10,
 				Children =
 				{
-					new GraphicsView
-					{
-						AutomationId = "GraphicsView",
-						HeightRequest = 200.25,
-						WidthRequest = 248.25,
-						BackgroundColor = Colors.White,
-						Margin = new Thickness(20),
-						Drawable = new GraphicsDrawable()
-					}
+					graphicsView,
+					changeColorButton
 				}
 			};
 
-			Content = stackLayout;
+			void ChangeColorButton_Clicked(object sender, EventArgs e)
+			{
+				graphicsView.BackgroundColor = Colors.Yellow;
+			}
 		}
-
 
 		public class GraphicsDrawable : IDrawable
 		{
+			GraphicsView _graphicsView;
+			public GraphicsDrawable(GraphicsView graphicsView)
+			{
+				_graphicsView = graphicsView;
+			}
+
 			public void Draw(ICanvas canvas, RectF dirtyRect)
 			{
-				canvas.StrokeColor = Colors.Red;
-				canvas.DrawRectangle(new RectF(dirtyRect.X, dirtyRect.Y + 40, dirtyRect.Width - 40, dirtyRect.Height - 40));
+				canvas.FillColor = _graphicsView.BackgroundColor;
+				canvas.FillRectangle(new RectF(dirtyRect.X, dirtyRect.Y + 40, dirtyRect.Width - 40, dirtyRect.Height - 40));
 			}
 		}
 	}

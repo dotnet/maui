@@ -16,7 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.GraphicsView)]
 		public void VerifyGraphicsViewWithoutGrayLine()
 		{
-			App.WaitForElement("GraphicsView");
+			App.WaitForElement("ChangeColorButton");
+			App.Click("ChangeColorButton");
 			VerifyScreenshot();
 		}
 	}
