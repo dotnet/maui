@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //App was crashing while open on windows, getting Object Null Reference exception on ListViewRenderer, issue: https://github.com/dotnet/maui/issues/26345
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,20 +13,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
-
-		// Crash after navigating
-		/*
+		public override string Issue => "ListView with DataTemplateSelector can have only 17 Templates, even with CachingStrategy=RetainElement";
+		
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla42956Test()
 		{
 			App.WaitForElement(Success);
 		}
-		*/
 	}
 }
+#endif

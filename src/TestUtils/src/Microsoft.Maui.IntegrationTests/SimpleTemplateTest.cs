@@ -63,6 +63,24 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
+	[TestCase("maui", DotNetPrevious, "Debug")]
+	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"$(MauiVersion)",
+			MauiPackageVersion);
+
+		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
+	}
+
+	[Test]
 	// with spaces
 	[TestCase("maui", "Project Space", "projectspace")]
 	[TestCase("maui-blazor", "Project Space", "projectspace")]
