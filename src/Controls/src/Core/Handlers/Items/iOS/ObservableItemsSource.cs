@@ -61,7 +61,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public int ItemCountInGroup(nint group)
 		{
-			return Count;
+			//Return the updated item count to ensure item indices are validated against the current item source count.
+			return ItemsCount();
 		}
 
 		public object Group(NSIndexPath indexPath)

@@ -125,6 +125,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			CheckForEmptySource();
 
+			// Use the static ItemCount property to match the item count expected by UICollectionView during batch updates.
+			if(ItemsSource is ObservableItemsSource)
+			{
+				return ItemsSource.ItemCount;
+			}
+
 			return ItemsSource.ItemCountInGroup(section);
 		}
 
