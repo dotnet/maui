@@ -63,6 +63,8 @@
                                 WidthRequest="44"
                                 IsVisible="{Binding HasCompletedTasks}"
                                 Command="{Binding CleanTasksCommand}"
+                                SemanticProperties.Description="Clear Task Button" 
+                                SemanticProperties.Hint="Click to clear the selected tasks"
                                 />
                         </Grid>
                         <VerticalStackLayout Spacing="15"
