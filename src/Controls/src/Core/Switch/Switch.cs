@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
 			((Switch)bindable).ChangeVisualState();
 			((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
-
+			((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.ThumbColor));
 		}, defaultBindingMode: BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
@@ -30,7 +30,11 @@ namespace Microsoft.Maui.Controls
 			});
 
 		/// <summary>Bindable property for <see cref="ThumbColor"/>.</summary>
-		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);
+		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null, 
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.ThumbColor));
+			});
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='OnColor']/Docs/*" />
 		public Color OnColor
