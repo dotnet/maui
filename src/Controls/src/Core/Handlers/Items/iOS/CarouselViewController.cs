@@ -342,14 +342,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_gotoPosition = -1;
 
-			//We need to update the position while the updating the collection , here ScrollOffset and KeepLastItemInView are considered.
-			if(ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			//We need to update the position while modifying the collection.
+			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
 				targetPosition = 0;
 			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				targetPosition = ItemsSource.ItemCount - 1;
+			}
 			else
 			{
-					targetPosition = _positionAfterUpdate;
+				targetPosition = _positionAfterUpdate;
 			}
 			_positionAfterUpdate = -1;
 
