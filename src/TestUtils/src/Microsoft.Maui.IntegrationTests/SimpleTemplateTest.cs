@@ -329,4 +329,21 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
+
+	[Test]
+	[TestCase("maui", DotNetCurrent, "")]
+	[TestCase("maui", DotNetCurrent, "--sample-content")]
+	public void Build(string id, string framework, string additionalDotNetNewParams)
+	{
+		var projectDir = TestDirectory;
+		var programFile = Path.Combine(projectDir, "MauiProgram.cs");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		var programContents = File.ReadAllText(programFile);
+		AssertContains("#if IOS || MACCATALYST", programContents);
+		AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		AssertContains("#endif", programContents);
+	}
 }
