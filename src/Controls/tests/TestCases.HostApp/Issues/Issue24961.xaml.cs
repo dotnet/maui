@@ -13,11 +13,18 @@ public partial class Issue24961 : ContentPage
 		InitializeComponent();
 		this.BindingContext = _pageModel = new MainPageModel();
 	}
+
+	private void Button_Clicked(object sender, EventArgs e)
+	{
+        _pageModel.IsRefreshed = false;
+	}
 }
 
 public class MainPageModel : INotifyPropertyChanged
 {
     private bool _isRefreshing;
+
+    private bool _isRefreshed;
     public ObservableCollection<ItemViewModel> Items { get; } = new ObservableCollection<ItemViewModel>();
 
     // INotifyPropertyChanged implementation
@@ -40,17 +47,32 @@ public class MainPageModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsRefreshed
+    {
+        get => _isRefreshed;
+        set
+        {
+            if (_isRefreshed != value)
+            {
+                _isRefreshed = value;
+                OnPropertyChanged(nameof(IsRefreshed));
+            }
+        }
+    }
+
     // Command method for Refresh
     public async Task RefreshAsync()
     {
         try
         {
             IsRefreshing = true;
+            IsRefreshed =false;
             await InitItems();
         }
         finally
         {
             IsRefreshing = false;
+            IsRefreshed = true;
         }
     }
 
