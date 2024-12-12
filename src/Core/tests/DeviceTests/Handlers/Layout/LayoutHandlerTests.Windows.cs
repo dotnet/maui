@@ -17,21 +17,21 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 
 		double GetNativeChildCount(LayoutHandler layoutHandler)
 		{
-			return layoutHandler.PlatformView.Children.Count;
+			return layoutHandler.PlatformView.CachedChildren.Count;
 		}
 
 		double GetNativeChildCount(object platformView)
 		{
-			return (platformView as LayoutPanel).Children.Count;
+			return (platformView as LayoutPanel).CachedChildren.Count;
 		}
 
 		IReadOnlyList<UIElement> GetNativeChildren(LayoutHandler layoutHandler)
 		{
 			var views = new List<UIElement>();
 
-			for (int i = 0; i < layoutHandler.PlatformView.Children.Count; i++)
+			for (int i = 0; i < layoutHandler.PlatformView.CachedChildren.Count; i++)
 			{
-				views.Add(layoutHandler.PlatformView.Children[i]);
+				views.Add(layoutHandler.PlatformView.CachedChildren[i]);
 			}
 
 			return views;

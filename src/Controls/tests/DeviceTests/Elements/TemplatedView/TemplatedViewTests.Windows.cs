@@ -7,9 +7,9 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class TemplatedViewTests
 	{
 		static int GetChildCount(ContentViewHandler contentViewHandler) =>
-			contentViewHandler.PlatformView.Children.Count;
+			contentViewHandler.PlatformView.CachedChildren.Count;
 
 		static UIElement GetChild(ContentViewHandler contentViewHandler, int index = 0) =>
-			contentViewHandler.PlatformView.Children[index];
+			contentViewHandler.PlatformView.CachedChildren[index];
 	}
 }
