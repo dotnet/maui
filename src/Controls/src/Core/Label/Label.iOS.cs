@@ -38,13 +38,6 @@ namespace Microsoft.Maui.Controls
 
 		static void MapFormatting(ILabelHandler handler, Label label)
 		{
-			// we need to re-apply color and font for HTML labels
-			if (!label.HasFormattedTextSpans && label.TextType == TextType.Html)
-			{
-				handler.UpdateValue(nameof(ILabel.TextColor));
-				handler.UpdateValue(nameof(ILabel.Font));
-			}
-
 			if (!IsPlainText(label))
 				return;
 
