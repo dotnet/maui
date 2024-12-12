@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 4138, "", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 4138, "[iOS] NavigationPage.TitleIcon no longer centered", PlatformAffected.iOS)]
 public class Issue4138 : TestNavigationPage
 {
 	protected override void Init()
