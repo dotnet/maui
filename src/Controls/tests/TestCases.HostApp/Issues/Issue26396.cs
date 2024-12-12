@@ -166,10 +166,10 @@ namespace Maui.Controls.Sample.Issues
 				WidthRequest = 36,
 				Source = new FontImageSource
 				{
-					FontFamily = "FAS",
-					Glyph = "\uf013",
+					FontFamily = "FontAwesome",
+					Glyph = "\xf0f3",
+					Color = Colors.Black,
 					Size = 18,
-					Color = Colors.White
 				}
 			};
 
