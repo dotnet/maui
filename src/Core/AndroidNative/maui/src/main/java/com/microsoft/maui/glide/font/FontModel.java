@@ -8,6 +8,8 @@ import java.util.Objects;
 
 import com.bumptech.glide.signature.ObjectKey;
 
+import com.microsoft.maui.PlatformUtils;
+
 public class FontModel {
     private final int color;
     private final String glyph;
@@ -36,6 +38,16 @@ public class FontModel {
     @Override
     public int hashCode() {
         return Objects.hash(color, glyph, textSize, typeface);
+    }
+
+    @Override
+    public String toString() {
+        return "FontModel{" +
+            "color=" + String.format("#%08X", (0xFFFFFFFF & color)) +
+            ", glyph='" + PlatformUtils.getGlyphHex(glyph) + '\'' +
+            ", textSize=" + textSize +
+            ", typeface=" + typeface +
+            '}';
     }
 
     public int getColor() {
