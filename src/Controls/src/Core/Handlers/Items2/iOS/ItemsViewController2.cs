@@ -244,6 +244,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsSource = CreateItemsViewSource();
 
 			CollectionView.ReloadData();
+			if ((ItemsSource?.ItemCount ?? 0) > 0)
+			{
+				var firstIndexPath = NSIndexPath.FromItemSection(0, 0);
+				CollectionView.ScrollToItem(firstIndexPath, UICollectionViewScrollPosition.Top, false);
+
+				// Ensure layout is updated so visible items are correctly calculated
+				CollectionView.LayoutIfNeeded();
+				Delegator.Scrolled(CollectionView);
+			}
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
 			(ItemsView as IView)?.InvalidateMeasure();
