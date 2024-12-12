@@ -43,7 +43,7 @@ public partial class FontManagerTests : TestBase
 
 #if UNPACKAGED
 			var expectedSuffix = "Fonts\\dokdo_regular.ttf#Dokdo";
-			var root = Path.GetFullPath(Path.Combine(FileSystem.AppDataDirectory, ".."));
+			var root = Path.GetFullPath(Path.Combine(FileSystem.LocalCacheFolder, ".."));
 			var expected = Path.Combine(root, expectedSuffix);
 			expected = Path.GetFullPath(expected);
 
