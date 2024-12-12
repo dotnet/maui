@@ -81,12 +81,12 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
+    type: boolean
     default: true
 
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+  - name: enableSourceIndex
+    type: boolean
+    default: true
 
   - name: VM_IMAGE_HOST
     type: object
@@ -107,6 +107,7 @@ parameters:
       artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
   - name: Skip1ESComplianceTasks
+    type: boolean
     default: false
 
 resources:
@@ -151,9 +152,12 @@ extends:
           enablePublishBuildAssets: true
           enableTelemetry: true
           enableSourceBuild: false
-          enableSourceIndex: false
+          enableSourceIndex: ${{ parameters.enableSourceIndex }}
+          sourceIndexParams:
+            sourceIndexBuildCommand: build.cmd -restore -build -ci -warnAsError 0 /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+            binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
           publishAssetsImmediately: true
-           # Publish build logs
+          # Publish build logs
           enablePublishBuildArtifacts: true
           # Publish test logs
           enablePublishTestResults: true
