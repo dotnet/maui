@@ -254,9 +254,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
-
 			int targetPosition;
-
 			if (_positionAfterUpdate == -1)
 			{
 				return;
