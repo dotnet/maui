@@ -24,9 +24,7 @@ namespace Maui.Controls.Sample.Pages
 					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 					Title="{Binding Title}"
 					Subtitle="{Binding Subtitle}"
-					IsVisible="{Binding ShowTitleBar}"
-					HeightRequest="10"
-					/>
+					IsVisible="{Binding ShowTitleBar}"/>
 				""";
 
 			_customTitleBar = new TitleBar().LoadFromXaml(titleBarXaml);
@@ -161,7 +159,6 @@ namespace Maui.Controls.Sample.Pages
 			{
 #if MACCATALYST
 				_customTitleBar.HeightRequest = 60;
-				// _customTitleBar.HeightRequest = 36;
 #else
 				_customTitleBar.HeightRequest = 48;
 #endif
@@ -169,8 +166,7 @@ namespace Maui.Controls.Sample.Pages
 			else
 			{
 #if MACCATALYST
-				// _customTitleBar.HeightRequest = 36;
-				_customTitleBar.HeightRequest = 25;
+				_customTitleBar.HeightRequest = 36;
 #else
 				_customTitleBar.HeightRequest = 32;
 #endif			

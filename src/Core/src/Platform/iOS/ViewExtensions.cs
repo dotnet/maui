@@ -796,26 +796,6 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static List<UINavigationBar> FindNavigationBars(this UIViewController controller)
-		{
-			var navBars = new List<UINavigationBar>();
-
-			if (controller is null)
-			{
-				return navBars;
-			}
-
-			foreach (var child in controller.ChildViewControllers)
-			{
-				if (child is UINavigationController { NavigationBar: UINavigationBar nb })
-				{
-					navBars.Add(nb);
-				}
-			}
-
-			return navBars;
-		}
-
 		internal static T? FindTopController<T>(this UIView view) where T : UIViewController
 		{
 			var bestController = view.FindResponder<T>();
