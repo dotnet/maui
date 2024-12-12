@@ -619,6 +619,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void ClearCellSizeCache()
 		{
 			_cellSizeCache.Clear();
+
+			EstimatedItemSize = CGSize.Empty;
 		}
 
 		CGSize TryFindEstimatedSize(CGSize existingMeasurement)
