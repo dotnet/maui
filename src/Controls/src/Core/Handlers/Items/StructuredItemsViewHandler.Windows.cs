@@ -48,6 +48,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_layoutPropertyChangedProxy.Unsubscribe();
 				_layoutPropertyChangedProxy = null;
 			}
+
+			if (ListViewBase is FormsGridView formsGridView)
+			{
+				formsGridView.SizeChanged -= OnGridViewSizeChanged;
+			}
 		}
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -205,6 +210,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemContainerStyle = GetItemContainerStyle(gridItemsLayout)
 			};
 
+			gridView.SizeChanged += OnGridViewSizeChanged;
+
 			if (gridView.Orientation == Orientation.Horizontal)
 			{
 				ScrollViewer.SetVerticalScrollMode(gridView, WScrollMode.Disabled);
@@ -212,6 +219,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return gridView;
+		}
+
+		static void OnGridViewSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (sender is FormsGridView gridView)
+			{
+				gridView.UpdateItemSize();
+			}
 		}
 
 		static ListViewBase CreateVerticalListView(LinearItemsLayout listItemsLayout)
