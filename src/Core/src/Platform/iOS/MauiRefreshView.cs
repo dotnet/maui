@@ -73,9 +73,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view is UICollectionView collectionView)
             {
-                // Since the header view is positioned with a negative y-value in CV1, we need to scroll to that same position.
+               	// Since the header view is positioned with a negative y-value in CV1, we need to scroll to that same position.
                 if (refreshing)
-                    collectionView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY - _refreshControlHeight), true);
+                    collectionView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY - _refreshControlHeight), false);
                 else
                     collectionView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY), false);
                 return true;

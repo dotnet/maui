@@ -4,7 +4,11 @@
              x:Class="Maui.Controls.Sample.Issues.Issue24961"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue24961">
-             <Grid>
+             <StackLayout>
+                <HorizontalStackLayout>
+              <Label Text="Refreshed" AutomationId="IsRefreshed" IsVisible="{Binding IsRefreshed}"></Label>
+              <Button Text="Start Refreshing" AutomationId="StartRefresh" Clicked="Button_Clicked"></Button>
+                </HorizontalStackLayout>
              <RefreshView x:Name="refreshview" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
                  <CollectionView ItemSizingStrategy="MeasureAllItems" AutomationId="CollectionView" ItemsSource="{Binding Items}">
                  <CollectionView.Header>
@@ -19,7 +23,7 @@
                 </CollectionView.Footer>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                         <ContentView Padding="10">
+                         <ContentView Padding="10" AutomationId="ContentView">
                             <ContentView>
                                 <ContentView Padding="5">
                                     <VerticalStackLayout Spacing="6">
@@ -35,5 +39,5 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
             </RefreshView>
-            </Grid>
+            </StackLayout>
 </ContentPage>
