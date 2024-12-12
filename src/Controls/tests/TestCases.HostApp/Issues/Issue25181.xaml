@@ -3,13 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue25181"
              xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
-  <CollectionView x:Name="collectionview" 
-                  AutomationId="collectionview" 
-                  ItemsLayout="HorizontalGrid, 2">
-    <CollectionView.ItemTemplate>
-      <DataTemplate>
-        <Label Text="{Binding Name}" BackgroundColor="Red"/>
-      </DataTemplate>
-    </CollectionView.ItemTemplate>
-  </CollectionView>
+  <StackLayout>
+    <CollectionView x:Name="collectionview"
+                    AutomationId="collectionview"
+                    ItemsLayout="HorizontalGrid, 2">
+      <CollectionView.ItemTemplate>
+        <DataTemplate>
+          <Label Text="{Binding Name}"
+                 x:DataType="ns:Issue25181TestItem"
+                 BackgroundColor="Red"/>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+    </CollectionView>
+  </StackLayout>
 </ContentPage>
