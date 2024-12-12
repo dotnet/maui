@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			: base(device)
 		{ }
 
-		public override string Issue => "CarouselView reverts to displaying 1st item in collection when collection modified";
+		public override string Issue => "CarouselView reverts to displaying first item in collection when collection modified";
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
