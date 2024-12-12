@@ -213,27 +213,39 @@ namespace Microsoft.Maui.Controls
 				var sharedSpacing = spacing / 2;
 
 				// These are just used to shift the image and title to center
-				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidth / 2;
-				imageInsets.Right -= titleWidth / 2;
-				titleInsets.Left -= imageWidth / 2;
-				titleInsets.Right += imageWidth / 2;
+				// Which makes the later math easier to follow				
+				if(layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					imageInsets.Left += titleWidth / 2;
+					imageInsets.Right -= titleWidth / 2;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
+				}
+				
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
 					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom += (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(size.Width - imageWidth) / 2;
+					imageInsets.Right += (float)(size.Width - imageWidth)  / 2;
 
 					titleInsets.Top += (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(size.Width - imageWidth) / 2;
+					imageInsets.Right += (float)(size.Width - imageWidth)  / 2;
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += (imageHeight / 2) + sharedSpacing;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
