@@ -384,10 +384,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (!context.Variables.TryGetValue(en, out var localVariable))
             return false;
 
-        //TODO check if there's an implicit operator to/from BindingBase
+        var bindingBaseSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 
-        if(localVariable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!))
+        if(localVariable.Type.InheritsFrom(bindingBaseSymbol))
             return true;
+
+        if (context.Compilation.HasImplicitConversion(localVariable.Type, bindingBaseSymbol))
+            return true;    
+        
         return false;
     }
 
