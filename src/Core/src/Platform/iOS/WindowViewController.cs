@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using UIKit;
 using System.Threading.Tasks;
+// using AppKit;
+
 
 namespace Microsoft.Maui.Platform;
 
@@ -11,6 +13,9 @@ internal class WindowViewController : UIViewController
 {
 	WeakReference<IView?> _iTitleBarRef;
 	bool _isTitleBarVisible = true;
+
+	internal bool IsFirstLayout { get; set; }
+
 
    	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
 	UIView? _titleBar;
@@ -20,6 +25,13 @@ internal class WindowViewController : UIViewController
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
 	internal NSLayoutConstraint? _contentWrapperTopConstraint;
+
+	// [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
+	// IWindow _window;
+
+	// [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
+	// NSToolbar? _toolbar;
+
 
 	/// <summary>
 	/// Instantiate a new <see cref="WindowViewController"/> object.
@@ -62,6 +74,8 @@ internal class WindowViewController : UIViewController
 		}
 
 		SetUpTitleBar(window, mauiContext, true);
+
+		// _window = window;
 		AddChildViewController(contentViewController);
 		contentViewController.DidMoveToParentViewController(this);
 	}
@@ -97,7 +111,10 @@ internal class WindowViewController : UIViewController
 		if (_contentWrapperView is not null && _contentWrapperView.Subviews[0].Frame != frame)
 		{
 			_contentWrapperView.Subviews[0].Frame = frame;
-			Console.WriteLine($"ContentWrapperContentFrame: {frame}");
+			// Console.WriteLine($"ContentWrapperContentFrame: {frame}");
+			// View.LayoutIfNeeded();
+			// Console.WriteLine($"ContentWrapperContentFrame: {frame}");
+
 		}
 	}
 	
@@ -143,10 +160,15 @@ internal class WindowViewController : UIViewController
 
 		if (newTitleBar is not null && platformTitleBar is not null)
 		{
+			// if (_toolbar is null)
+			// {
+			// 	_toolbar = platformTitleBar.Toolbar;
+			// }
 			platformTitleBar.Toolbar = null;
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
 		}
 
+		IsFirstLayout = true;
 		LayoutTitleBar();
 	}
 
@@ -170,8 +192,30 @@ internal class WindowViewController : UIViewController
 			titleBarHeight = (nfloat)measured.Height;
 		}
 
+
 		_contentWrapperTopConstraint.Constant = titleBarHeight;
-		Console.WriteLine($"New Top Constant: {_contentWrapperTopConstraint.Constant}");
+
+		// var platformWindow = _window?.Handler?.PlatformView as UIWindow;
+		// var platformTitleBar = platformWindow?.WindowScene?.Titlebar;
+		// if (platformTitleBar is not null)
+		// {
+		// 	if (titleBarHeight == 0)
+		// 	{
+		// 		platformTitleBar.Toolbar = _toolbar;
+		// 		platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
+		// 		// titleBarHeight = 36;
+		// 	}
+
+		// 	else
+		// 	{
+		// 		platformTitleBar.Toolbar = null;
+		// 		platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
+		// 	}
+		// }
+
+		_contentWrapperTopConstraint.Constant = titleBarHeight;
+
+		// Console.WriteLine($"New Top Constant: {_contentWrapperTopConstraint.Constant}");
 
 		// if (titleBarHeight <= View.SafeAreaInsets.Top && current > 0 && titleBarHeight != current)
 		// {

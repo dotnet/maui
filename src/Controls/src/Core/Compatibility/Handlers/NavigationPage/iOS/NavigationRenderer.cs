@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -179,7 +180,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewWillLayoutSubviews()
 		{
-			Console.WriteLine("NR ViewWillLayoutSubviews start");
+			// Console.WriteLine("NR ViewWillLayoutSubviews start");
 			// AdjustForTitleBar();
 			// View.SetNeedsLayout();
 
@@ -205,7 +206,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// It'd be good to see if we can optimize this a bit better.
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 
-			Console.WriteLine("NR ViewWillLayoutSubviews end");
+			// Console.WriteLine("NR ViewWillLayoutSubviews end");
 		}
 
 #pragma warning disable RS0016 // Mark members as static
@@ -733,7 +734,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
-		int count = 0;
+		// int count = 0;
 
 		void AdjustForTitleBar()
 		{
@@ -750,10 +751,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// var titleBarHeight = platformTitleBar.Frame.Height;
 				var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
 				// var titleBarHeight = 36;
-				Console.WriteLine($"Count: {count++}");
-				Console.WriteLine($"Before Frame: {frame}");
-				Console.WriteLine($"Before SafeAreaInsets: {NavigationBar.SafeAreaInsets}");
-				Console.WriteLine($"Before TitleBar Height: {titleBarHeight}");
+				// Console.WriteLine($"Count: {count++}");
+				// Console.WriteLine($"Before Frame: {frame}");
+				// Console.WriteLine($"Before SafeAreaInsets: {NavigationBar.SafeAreaInsets}");
+				// Console.WriteLine($"Before TitleBar Height: {titleBarHeight}");
 				if (safeAreaTop > 0 && frame.Y < 36 && titleBarHeight == 0)
 				{
 					NavigationBar.Frame = new CGRect(frame.X, 36, frame.Width, frame.Height);
@@ -764,9 +765,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationBar.Frame = new CGRect(frame.X, 0, frame.Width, frame.Height);
 				}
 
-				Console.WriteLine($"After Frame: {frame}");
-				Console.WriteLine($"After SafeAreaInsets: {NavigationBar.SafeAreaInsets}");
-				Console.WriteLine($"After TitleBar Height: {titleBarHeight}\n \n");
+				// Console.WriteLine($"After Frame: {frame}");
+				// Console.WriteLine($"After SafeAreaInsets: {NavigationBar.SafeAreaInsets}");
+				// Console.WriteLine($"After TitleBar Height: {titleBarHeight}\n \n");
 			}
 		}
 
@@ -1191,6 +1192,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
+					if (r.NavigationBar is MauiControlsNavigationBar navBar && navBar.TitleBarNeedsRefresh)
+					{
+						Console.WriteLine("SetNeedsLayout");
+						r.NavigationBar?.Superview?.SetNeedsLayout();
+						navBar.TitleBarNeedsRefresh = false;
+					}
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
@@ -1919,11 +1926,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public RectangleF BackButtonFrameSize { get; private set; }
 			public UILabel NavBarLabel { get; private set; }
+			internal bool TitleBarNeedsRefresh { get; set; }
 
 			public override void LayoutSubviews()
 			{
-
 				// Console.WriteLine("LayoutSubviews - NavigationRenderer");
+				var navController = this.FindResponder<NavigationRenderer>();
+				var frame = navController.NavigationBar.Frame;
+				// Console.WriteLine($"Frame in LayoutSubviews: {frame}");
+				// Console.WriteLine($"SafeAreaTop in LayoutSubviews: {navController.NavigationBar.SafeAreaInsets.Top}");
+
 				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)))
 				{
 					for (int i = 0; i < this.Subviews.Length; i++)
@@ -1952,16 +1964,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 				base.LayoutSubviews();
-				// AdjustForTitleBar();
-			}
-
-			public override void SafeAreaInsetsDidChange()
-			{
-				base.SafeAreaInsetsDidChange();
 				AdjustForTitleBar();
 			}
 
-			int count = 0;
+
+			public override void SafeAreaInsetsDidChange()
+			{
+				var navController = this.FindResponder<NavigationRenderer>();
+				var frame = navController.NavigationBar.Frame;
+				// Console.WriteLine($"Frame in SafeAreaInsetsDidChange: {frame}");
+
+				base.SafeAreaInsetsDidChange();
+				// AdjustForTitleBar();
+			}
+
+			// int count = 0;
 
 			void AdjustForTitleBar()
 			{
@@ -1986,26 +2003,58 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					// var titleBarHeight = platformTitleBar.Frame.Height;
 					var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
 					// var titleBarHeight = 36;
-					Console.WriteLine($"Count: {count++}");
-					Console.WriteLine($"Before Frame: {frame}");
-					Console.WriteLine($"Before SafeAreaInsets: {navController.NavigationBar.SafeAreaInsets}");
-					Console.WriteLine($"Before TitleBar Height: {titleBarHeight}");
+					// Console.WriteLine($"Count: {count++}");
+					// Console.WriteLine($"Before Frame: {frame}");
+					// Console.WriteLine($"Before SafeAreaInsets: {navController.NavigationBar.SafeAreaInsets}");
+					// Console.WriteLine($"Before TitleBar Height: {titleBarHeight}");
 					if (safeAreaTop > 0 && frame.Y < 36 && titleBarHeight == 0)
 					{
+						controller.IsFirstLayout = false;
+						// navController.NavigationBar.Frame = new CGRect(frame.X, 36, frame.Width, frame.Height);
 						navController.NavigationBar.Frame = new CGRect(frame.X, 36, frame.Width, frame.Height);
-						// TODO - when the titleBar Height is below 36, the navigation bar does not adjust correctly until the next layout pass
+						// TODO - this is an issue to set it for 36 in all cases. Let's say the new titleBar replacing the old one has a height of 70, then this will be an issue.
+						// Console.WriteLine("Frame changed to 36 in AdjustForTitleBar");
+						TitleBarNeedsRefresh = true;
+
+						// Task.Run(async () =>
+						// {
+						// 	await Task.Delay(750); // Small delay to allow animations and transitions to settle
+						// 	MainThread.BeginInvokeOnMainThread(() =>
+						// 	{
+						// 		navController.NavigationBar.Superview.SetNeedsLayout();
+						// 	});
+						// });
 					}
-					// else if(frame.Y > 0 && titleBarHeight > 0)
+					else if (controller.IsFirstLayout)
+					{
+						controller.IsFirstLayout = false;
+						navController.NavigationBar.Frame = new CGRect(frame.X, Math.Max(36 - titleBarHeight, 0), frame.Width, frame.Height);
+						TitleBarNeedsRefresh = true;
+					}
+					// TitleBarNeedsRefresh = true;
+
+					// two scenarios need to be dealt with:
+					// 1. When a new titlebar is added and has a set height - titleHeight==30 (set height) and frame.Y==36
+					//	  * we want the navbar frame to be set to 0
+					// 2. When a titlebar is edited and the height is less 36, we don't want the bottom of the navigationbar to shift upwards - titleHeight==16 and frame.Y==36
+					//    * we don't want the navbar frame to move so we wouldn't want to touch the frame
+
+
+					// else if(frame.Y > 0 && titleBarHeight >= 36)
 					// {
 					// 	navController.NavigationBar.Frame = new CGRect(frame.X, 0, frame.Width, frame.Height);
 					// }
 
-					Console.WriteLine($"After Frame: {frame}");
-					Console.WriteLine($"After SafeAreaInsets: {navController.NavigationBar.SafeAreaInsets}");
-					Console.WriteLine($"After TitleBar Height: {titleBarHeight}\n \n");
+					// if(frame.Y == 0 && titleBarHeight == 0)
+					// {
+					// 	navController.NavigationBar.Frame = new CGRect(frame.X, 60, frame.Width, frame.Height);
+					// }
+
+					// Console.WriteLine($"After Frame: {frame}");
+					// Console.WriteLine($"After SafeAreaInsets: {navController.NavigationBar.SafeAreaInsets}");
+					// Console.WriteLine($"After TitleBar Height: {titleBarHeight}\n \n");
 				}
 			}
-
 		}
 
 		class Container : UIView
