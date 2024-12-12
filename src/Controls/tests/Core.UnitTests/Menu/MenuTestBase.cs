@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -16,6 +17,40 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 		protected abstract TIChildType GetItem(THandlerUpdate handlerUpdate);
 
 		protected abstract int GetIndex(THandlerUpdate handlerUpdate);
+
+		[Fact]
+		public void IconImageSourceAddsCorrectlyToEachSetOfLogicalChildren()
+		{
+			var menuBar = new TTestType();
+
+			var child0 = new TChildType();
+			var child1 = new TChildType();
+			
+			menuBar.Add(child0);
+			menuBar.Add(child1);
+
+			if (menuBar is MenuItem mi0)
+				mi0.IconImageSource = new FileImageSource { File = "coffee.png" };
+
+			if (child0 is MenuItem mi1)
+				mi1.IconImageSource = new FileImageSource { File = "coffee.png" };
+
+			if (child1 is MenuItem mi2)
+				mi2.IconImageSource = new FileImageSource { File = "coffee.png" };
+
+			foreach(var item in menuBar)
+			{
+				Assert.NotNull(item);
+				if (item is IList list)
+				{
+					foreach(var child in list)
+					{
+						Assert.NotNull(child);
+					}
+				}
+			}
+		}
+
 
 		[Fact]
 		public void UsingIndexUpdatesParent()
