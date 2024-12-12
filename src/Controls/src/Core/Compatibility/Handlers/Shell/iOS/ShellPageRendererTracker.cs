@@ -448,29 +448,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return img;
 
 			var rect = new CGRect(0, 0, 23f, 23f);
+			using var renderer = new UIGraphicsImageRenderer(rect.Size);
+			var renderedImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+				var context = ctx.CGContext;
+				context.SaveState();
+				context.SetStrokeColor(UIColor.Blue.CGColor);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 0);
-			var ctx = UIGraphics.GetCurrentContext();
-			ctx.SaveState();
-			ctx.SetStrokeColor(UIColor.Blue.CGColor);
+				float size = 3f;
+				float start = 4f;
+				context.SetLineWidth(size);
+				for (int i = 0; i < 3; i++)
+				{
+					context.MoveTo(1f, start + i * (size * 2));
+					context.AddLineToPoint(22f, start + i * (size * 2));
+					context.StrokePath();
+				}
 
-			float size = 3f;
-			float start = 4f;
-			ctx.SetLineWidth(size);
-
-			for (int i = 0; i < 3; i++)
-			{
-				ctx.MoveTo(1f, start + i * (size * 2));
-				ctx.AddLineToPoint(22f, start + i * (size * 2));
-				ctx.StrokePath();
-			}
-
-			ctx.RestoreState();
-			img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
-			return img;
+				context.RestoreState();
+			});
+			return renderedImage;
 		}
 
 		void OnToolbarItemsChanged(object sender, NotifyCollectionChangedEventArgs e)

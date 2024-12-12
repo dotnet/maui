@@ -35,20 +35,17 @@ namespace Microsoft.Maui
 				return null;
 			}
 
-			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
-			var ctx = new NSStringDrawingContext();
-
-			var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
-			attString.DrawString(new CGRect(
-				imagesize.Width / 2 - boundingRect.Size.Width / 2,
-				imagesize.Height / 2 - boundingRect.Size.Height / 2,
-				imagesize.Width,
-				imagesize.Height));
-
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			return image.ImageWithRenderingMode(UIImageRenderingMode.Automatic);
+			var renderer = new UIGraphicsImageRenderer(imagesize);
+			var rendererImage = renderer.CreateImage((UIGraphicsImageRendererContext renderContext) => {
+				var ctx = new NSStringDrawingContext();
+				var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
+				attString.DrawString(new CGRect(
+					imagesize.Width / 2 - boundingRect.Size.Width / 2,
+					imagesize.Height / 2 - boundingRect.Size.Height / 2,
+					imagesize.Width,
+					imagesize.Height));
+			});
+			return rendererImage;
 		}
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
