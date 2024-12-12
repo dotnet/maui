@@ -10,6 +10,13 @@ namespace Microsoft.Maui.Handlers
 			return new PlatformTouchGraphicsView();
 		}
 
+		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		{
+			if (graphicsView.Background is not null)
+            {
+                handler.PlatformView?.InvalidateDrawable();
+            }
+		}
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			handler.PlatformView?.UpdateDrawable(graphicsView);
