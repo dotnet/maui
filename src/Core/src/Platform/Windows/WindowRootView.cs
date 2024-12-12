@@ -444,6 +444,10 @@ namespace Microsoft.Maui.Platform
 
 			if (_titleBar is null || mauiContext is null)
 			{
+				if (AppTitleBarContentControl is not null)
+				{
+					AppTitleBarContentControl.Content = null;
+				}
 				return;
 			}
 
