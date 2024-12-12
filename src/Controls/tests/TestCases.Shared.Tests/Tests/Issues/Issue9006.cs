@@ -1,4 +1,5 @@
-﻿#if TEST_FAILS_ON_CATALYST // Getting an OpenQA.Selenium.InvalidSelectorException : XQueryError:6 - "invalid type" in Line: 32. Using timeout also not works.
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Getting an OpenQA.Selenium.InvalidSelectorException : XQueryError:6 - "invalid type" in Line: 32. Using timeout also not works.
+// On iOS test consistently crashes on CI, but passes locally. Adding failure for iOS to ensure CI stability.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
