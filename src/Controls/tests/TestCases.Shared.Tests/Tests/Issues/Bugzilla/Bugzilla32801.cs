@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,30 +6,33 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla32801 : _IssuesUITest
 {
-	public Bugzilla32801(TestDevice testDevice) : base(testDevice)
-	{
-	}
+        #if ANDROID
+        const string Tab1 = "TAB 1";    
+        #else
+        const string Tab1 = "Tab 1";
+        #endif
+        const string AddButton = "btnAdd";
+        const string StackButton = "btnStack";
 
-	public override string Issue => "Memory Leak in TabbedPage + NavigationPage";
+        public Bugzilla32801(TestDevice testDevice) : base(testDevice)
+        {
+        }
 
-	// [Test]
-	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void Bugzilla32801Test()
-	// {
-	// 	App.Tap("btnAdd");
-	// 	App.Tap("btnAdd");
-	// 	App.Tap("btnStack");
-	// 	App.WaitForElement("Stack 3");
-	// 	App.Tap("Tab");
-	// 	App.Tap("btnStack");
-	// 	App.WaitForElement("Stack 1");
-	// }
+        public override string Issue => "Memory Leak in TabbedPage + NavigationPage";
 
-	// [TearDown]
-	// public void TearDown()
-	// {
-	// 	App.SetOrientationPortrait();
-	// }
+        [Test]
+        [Category(UITestCategories.TabbedPage)]
+        public void Bugzilla32801Test()
+        {
+                App.WaitForElement(AddButton);
+                App.Tap(AddButton);
+                App.WaitForElementTillPageNavigationSettled(AddButton);
+                App.Tap(AddButton);
+                App.WaitForElementTillPageNavigationSettled(StackButton);
+                App.Tap(StackButton);
+                App.WaitForElement("Stack 3");
+                App.Tap(Tab1);
+                App.Tap(StackButton);
+                App.WaitForElement("Stack 1");
+        }
 }
-#endif
