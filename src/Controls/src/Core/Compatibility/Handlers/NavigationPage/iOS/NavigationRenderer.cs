@@ -1953,7 +1953,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					else if (controller.IsFirstLayout)
 					{
 						controller.IsFirstLayout = false;
-						navController.NavigationBar.Frame = new CGRect(frame.X, Math.Max(_originalSafeAreaConstant - titleBarHeight, 0), frame.Width, frame.Height);
+						navController.NavigationBar.Frame = new CGRect(frame.X, Math.Max(originalSafeAreaConstant - titleBarHeight, 0), frame.Width, frame.Height);
 						TitleBarNeedsRefresh = true;
 					}
 				}
