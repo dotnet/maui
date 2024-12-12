@@ -648,7 +648,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					OnLoadedCheck(null);
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated OnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures OnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 				}
 			}
 			else
@@ -728,7 +730,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					UnLoadedCheck();
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated UnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures UnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
 
