@@ -26,6 +26,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
   </ItemGroup>
 
   <ItemGroup>
