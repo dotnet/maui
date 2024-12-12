@@ -254,6 +254,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
+
+			int targetPosition;
+			
 			if (_positionAfterUpdate == -1)
 			{
 				return;
@@ -261,7 +264,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			//_gotoPosition = -1;
 
-			var targetPosition = _positionAfterUpdate;
+			//We need to update the position while the updating the collection , here ScrollOffset and KeepLastItemInView are considered.
+			if(ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				targetPosition = 0;
+			}
+			else
+			{
+				targetPosition = _positionAfterUpdate;
+			}
 			_positionAfterUpdate = -1;
 
 			SetPosition(targetPosition);
