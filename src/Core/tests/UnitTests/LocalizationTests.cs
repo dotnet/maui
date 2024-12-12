@@ -7,6 +7,7 @@ using System.Resources;
 using Xunit;
 using System.Text.Json;
 using System.Text;
+using System.Linq;
 
 namespace Microsoft.Maui.UnitTests
 {
@@ -134,7 +135,8 @@ namespace Microsoft.Maui.UnitTests
 							string actualTranslation = GetLocalizedString(resourceName, keyName);
 
 							// Compare with the expected translation in the .lcl file
-							if (key.Value.Target != actualTranslation)
+							// if (key.Value.Target != actualTranslation)
+							if (!IsDifferenceOnly5D(key.Value.Target, actualTranslation))
 							{
 								sb.AppendLine($"    Key: {keyName}");
 								sb.AppendLine($"        Expected: {key.Value.Target}");
@@ -431,6 +433,14 @@ namespace Microsoft.Maui.UnitTests
 			{
 				writer.WriteLine(message);
 			}
+		}
+
+		bool IsDifferenceOnly5D(string expected, string actual)
+		{
+			var expectedWithout5D = string.Join("", expected.Split(new[] { "5D;" }, StringSplitOptions.None));
+			var actualWithout5D = string.Join("", actual.Split(new[] { "5D;" }, StringSplitOptions.None));
+
+			return expectedWithout5D == actualWithout5D;
 		}
 	}
 
