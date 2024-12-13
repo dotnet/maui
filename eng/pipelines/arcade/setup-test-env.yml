@@ -11,15 +11,15 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Install dotnet preview
   inputs:
-    projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.sln
-    arguments: '--no-restore -t:InstallDotNet -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
+    projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+    arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
 
 - template: /eng/pipelines/common/run-dotnet-preview.yml
   parameters:
     displayName: Build MSBuild Tasks
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.sln
-    arguments: '-t:BuildMSBuildTasks -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/build-msbuildtasks.binlog'
+    projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
+    arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/Microsoft.Maui.BuildTasks.binlog'
 
 - pwsh: |
     if ($env:JAVA_HOME_17_X64) {
