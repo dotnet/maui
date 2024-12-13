@@ -15,8 +15,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
-		const int HeaderTag = 111;
-		const int FooterTag = 222;
 		readonly WeakReference<TItemsView> _itemsView;
 
 		public IItemsViewSource ItemsSource { get; protected set; }
@@ -279,37 +277,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return _emptyUIView.Frame.Size.ToSize();
 			}
 
-			CGSize contentSize = CollectionView.CollectionViewLayout.CollectionViewContentSize;
-			CGSize headerSize = GetHeaderSize();
-			CGSize footerSize = GetFooterSize();
-
-			nfloat totalWidth = contentSize.Width;
-			nfloat totalHeight = contentSize.Height;
-			
-			// Ensure calculating the total width or height, consider the boundary conditions to ensure it does not exceed the boundaries of the view. 
-			// If it exceeds, the content becomes non-scrollable and is constrained to the view's screen size.
-			if (IsHorizontal)
-			{
-				totalWidth += headerSize.Width + footerSize.Width;
-				totalWidth = (nfloat)Math.Min(totalWidth, CollectionView.Bounds.Width);
-			}
-			else
-			{
-				totalHeight += headerSize.Height + footerSize.Height;
-				totalHeight = (nfloat)Math.Min(totalHeight, CollectionView.Bounds.Height);
-			}
-
-			return new Size(totalWidth, totalHeight);
-		}
-
-		CGSize GetHeaderSize()
-		{
-			return CollectionView.ViewWithTag(HeaderTag)?.Frame.Size ?? CGSize.Empty;
-		}
-
-		CGSize GetFooterSize()
-		{
-			return CollectionView.ViewWithTag(FooterTag)?.Frame.Size ?? CGSize.Empty;
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
 		void ConstrainItemsToBounds()
