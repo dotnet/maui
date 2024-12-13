@@ -26,4 +26,4 @@ jobs:
 
   # TODO: Add remaining unit test projects
 
-  - template: /eng/pipelines/common/fail-on-issue.yaml
+  - template: /eng/pipelines/common/fail-on-issue.yml
