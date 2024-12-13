@@ -61,8 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public int ItemCountInGroup(nint group)
 		{
-			//Return the updated item count to ensure item indices are validated against the current item source count.
-			return ItemsCount();
+			return Count;
 		}
 
 		public object Group(NSIndexPath indexPath)
@@ -280,7 +279,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal object ElementAt(int index)
 		{
 			if (_itemsSource is IList list)
-				return list[index];
+				return (index >= 0 && index < list.Count) ? list[index] : -1;
 
 			int count = 0;
 			foreach (var item in _itemsSource)
