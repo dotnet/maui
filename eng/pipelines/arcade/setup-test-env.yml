@@ -24,7 +24,7 @@ steps:
   parameters:
     displayName: Build MSBuild Tasks
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
+    project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
     arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/Microsoft.Maui.BuildTasks.binlog'
 
 - pwsh: |
