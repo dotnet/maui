@@ -23,11 +23,9 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		}
 
 		protected MSBuildTaskTestFixture(ITestOutputHelper? output)
+			: base(output)
 		{
-			Output = output;
 		}
-
-		public ITestOutputHelper? Output { get; }
 
 		// IBuildEngine
 
