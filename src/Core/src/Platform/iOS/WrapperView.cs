@@ -213,7 +213,7 @@ namespace Microsoft.Maui.Platform
 
 				if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 				{
-					if(CrossPlatformLayout is not null)
+					if (CrossPlatformLayout is not null)
 					{
 						returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					}

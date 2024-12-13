@@ -40,7 +40,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether the entry control automatically adjusts the font size.</summary>
         <returns>A Boolean value that tells whether the entry control automatically adjusts the font size.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AdjustsFontSizeToFitWidthProperty">
@@ -59,7 +58,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the entry control automatically adjusts the font size.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CursorColorProperty">
@@ -78,7 +76,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the color of the cursor.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisableAdjustsFontSizeToFitWidth">
@@ -102,7 +99,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Disables automatic font size adjustment on the platform-specific element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableAdjustsFontSizeToFitWidth">
@@ -126,7 +122,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Enables automatic font size adjustment on the platform-specific element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAdjustsFontSizeToFitWidth">
@@ -150,7 +145,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether the entry control automatically adjusts the font size of text that the user enters.</summary>
         <returns>A Boolean value that tells whether the entry control automatically adjusts the font size of text that the user enters.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetCursorColor">
@@ -174,7 +168,6 @@
         <param name="element">The element whose cursor color to get.</param>
         <summary>Gets the color of the cursor.</summary>
         <returns>The color of the cursor.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetCursorColor">
@@ -198,7 +191,6 @@
         <param name="config">The platform configuration for the element whose cursor color to get.</param>
         <summary>Gets the color of the cursor.</summary>
         <returns>The color of the cursor.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAdjustsFontSizeToFitWidth">
@@ -223,7 +215,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that tells whether the entry control automatically adjusts the font size of text that the user enters.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAdjustsFontSizeToFitWidth">
@@ -249,7 +240,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that tells whether automatic font size adjusmtent is enabled on the element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetCursorColor">
@@ -274,7 +264,6 @@
         <param name="element">The element whose cursor color to Set.</param>
         <param name="value">The new cursor color.</param>
         <summary>Sets the color of the cursor.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetCursorColor">
@@ -300,7 +289,6 @@
         <param name="value">The new cursor color.</param>
         <summary>Sets the color of the cursor and returns a fluent object.</summary>
         <returns>A fluent object on which the developer can make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

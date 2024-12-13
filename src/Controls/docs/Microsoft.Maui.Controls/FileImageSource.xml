@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>An <see cref="T:Microsoft.Maui.Controls.ImageSource" /> that reads an image from a file.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -47,7 +46,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.FileImageSource" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Cancel">
@@ -99,8 +97,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the file from which this <see cref="T:Microsoft.Maui.Controls.FileImageSource" /> will load an image.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FileProperty">
@@ -125,7 +121,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="T:Microsoft.Maui.Controls.FileImageSource.File" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEmpty">
@@ -145,7 +140,6 @@
         <summary>Indicates whether the <see cref="P:Microsoft.Maui.Controls.FileImageSource.File" /> property is null or empty.</summary>
         <value>
           <see langword="true" /> if null or empty.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPropertyChanged">
@@ -174,7 +168,6 @@
       <Docs>
         <param name="propertyName">To be added.</param>
         <summary>Method that is called when the property that is specified by <paramref name="propertyName" /> is changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -201,8 +194,6 @@
       <Docs>
         <param name="file">To be added.</param>
         <summary>Allows implicit casting from a string.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -229,8 +220,6 @@
       <Docs>
         <param name="file">To be added.</param>
         <summary>Allows implicit casting to a string.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -250,8 +239,6 @@
       <Parameters />
       <Docs>
         <summary>Returns the path to the file for the image, prefixed with the string, "File: ".</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

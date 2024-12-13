@@ -235,6 +235,7 @@
       <MauiQueryPropertyAttributeSupport Condition="'$(MauiQueryPropertyAttributeSupport)' == ''">false</MauiQueryPropertyAttributeSupport>
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
+      <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
@@ -253,14 +254,18 @@
                                       Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' != ''"
                                       Value="$(MauiImplicitCastOperatorsUsageViaReflectionSupport)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported"
                                       Condition="'$(_MauiBindingInterceptorsSupport)' != ''"
                                       Value="$(_MauiBindingInterceptorsSupport)"
                                       Trim="true" />
-      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled"
                                       Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' != ''"
                                       Value="$(MauiEnableXamlCBindingWithSourceCompilation)"
                                       Trim="false" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported"
+                                      Condition="'$(MauiHybridWebViewSupported)' != ''"
+                                      Value="$(MauiHybridWebViewSupported)"
+                                      Trim="true" />
     </ItemGroup>
   </Target>
 

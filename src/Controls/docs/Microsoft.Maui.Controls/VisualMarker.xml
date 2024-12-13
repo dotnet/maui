@@ -13,7 +13,6 @@
   <Interfaces />
   <Docs>
     <summary>Contains the <see cref="T:Microsoft.Maui.Controls.IVisual" /> types implemented by the Xamarin Forms team and the default <see cref="T:Microsoft.Maui.Controls.IVisual" /> types used by the Visual system.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">
@@ -31,8 +30,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates for a <see cref="T:Microsoft.Maui.Controls.View" /> render using the default renderer.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MatchParent">
@@ -55,8 +52,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates for a <see cref="T:Microsoft.Maui.Controls.View" /> to use the same <see cref="T:Microsoft.Maui.Controls.IVisual" /> as its direct parent.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Material">
@@ -74,7 +69,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates for a <see cref="T:Microsoft.Maui.Controls.View" /> to render using a material renderer.</summary>
-        <value>To be added.</value>
         <remarks>In order to use the Material visuals you must install <format type="text/html"><a href="https://www.nuget.org/packages/Microsoft.Maui.Controls.Visual.Material">Microsoft.Maui.Controls.Visual.Material</a></format>.</remarks>
       </Docs>
     </Member>

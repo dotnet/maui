@@ -1,10 +1,10 @@
-#nullable enable
 using System.ComponentModel;
-using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="Type[@FullName='Microsoft.Maui.Keyboard']/Docs/*" />
+	/// <summary>
+	/// Default keyboard and base class for specialized keyboards, such as those for telephone numbers, email, and URLs.
+	/// </summary>
 	[TypeConverter(typeof(Converters.KeyboardTypeConverter))]
 	public class Keyboard
 	{
@@ -35,38 +35,67 @@ namespace Microsoft.Maui
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Plain']/Docs/*" />
+		/// <summary>
+		/// Returns a new <see cref="CustomKeyboard"/> with <see cref="KeyboardFlags.None"/>.
+		/// </summary>
 		public static Keyboard Plain => s_plain ??= new CustomKeyboard(KeyboardFlags.None);
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Chat']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="ChatKeyboard"/>.
+		/// </summary>
 		public static Keyboard Chat => s_chat ??= new ChatKeyboard();
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="Keyboard"/>.
+		/// </summary>
 		public static Keyboard Default => s_def ??= new Keyboard();
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Email']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="EmailKeyboard"/>.
+		/// </summary>
 		public static Keyboard Email => s_email ??= new EmailKeyboard();
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Numeric']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="NumericKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Numeric => s_numeric ??= new NumericKeyboard();
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Telephone']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="TelephoneKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Telephone => s_telephone ??= new TelephoneKeyboard();
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Text']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="TextKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Text => s_text ??= new TextKeyboard();
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Url']/Docs/*" />
+		/// <summary>
+		/// Gets an instance of type <see cref="UrlKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Url => s_url ??= new UrlKeyboard();
 
+		/// <summary>
+		/// Gets an instance of type <see cref="DateKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Date => s_date ??= new DateKeyboard();
 
+		/// <summary>
+		/// Gets an instance of type <see cref="PasswordKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Password => s_password ??= new PasswordKeyboard();
 
+		/// <summary>
+		/// Gets an instance of type <see cref="TimeKeyboard"/>. 
+		/// </summary>
 		public static Keyboard Time => s_time ??= new TimeKeyboard();
 
 
-		/// <include file="../../docs/Microsoft.Maui/Keyboard.xml" path="//Member[@MemberName='Create']/Docs/*" />
+		/// <summary>
+		/// Returns a new keyboard with the specified <see cref="KeyboardFlags" />.
+		/// </summary>
+		/// <param name="flags">The flags that control the keyboard's appearance and behavior.</param>
+		/// <returns>A new <see cref="CustomKeyboard"/> instance with the specified <see cref="KeyboardFlags" />.</returns>
 		public static Keyboard Create(KeyboardFlags flags)
 		{
 			return new CustomKeyboard(flags);

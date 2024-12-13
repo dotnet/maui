@@ -25,6 +25,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
+
+		internal override void Disconnect()
+		{
+			base.Disconnect();
+
+			if (_headerViewFormsElement is not null)
+			{
+				_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+			}
+
+			if (_footerViewFormsElement is not null)
+			{
+				_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+			}
+
+			if (_headerUIView is MauiView hv)
+			{
+				hv.LayoutChanged -= HeaderViewLayoutChanged;
+			}
+
+			if (_footerUIView is MauiView fv)
+			{
+				fv.LayoutChanged -= FooterViewLayoutChanged;
+			}
+
+			_headerUIView = null;
+			_headerViewFormsElement = null;
+			_footerUIView = null;
+			_footerViewFormsElement = null;
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -36,20 +67,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (disposing)
 			{
-				if (_headerViewFormsElement != null)
-				{
-					_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
-				}
-
-				if (_footerViewFormsElement != null)
-				{
-					_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
-				}
-
-				_headerUIView = null;
-				_headerViewFormsElement = null;
-				_footerUIView = null;
-				_footerViewFormsElement = null;
+				Disconnect();
 			}
 
 			base.Dispose(disposing);
@@ -62,14 +80,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			nfloat headerHeight = 0;
 			var headerView = CollectionView.ViewWithTag(HeaderTag);
 
-			if (headerView != null)
+			if (headerView is not null)
 				headerHeight = headerView.Frame.Height;
 
 			nfloat footerHeight = 0;
 			var footerView = CollectionView.ViewWithTag(FooterTag);
 
-			if (footerView != null)
+			if (footerView is not null)
 				footerHeight = footerView.Frame.Height;
+
+			var emptyView = CollectionView.ViewWithTag(EmptyTag);
+
+			if (emptyView is not null)
+				return base.DetermineEmptyViewFrame();
 
 			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width,
 				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
@@ -102,17 +125,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFooterView()
 		{
+			if (_footerUIView is MauiView mvPrevious)
+			{
+				mvPrevious.LayoutChanged -= FooterViewLayoutChanged;
+			}
+
 			UpdateSubview(ItemsView?.Footer, ItemsView?.FooterTemplate, FooterTag,
 				ref _footerUIView, ref _footerViewFormsElement);
 			UpdateHeaderFooterPosition();
+
+			if (_footerUIView is MauiView mv)
+			{
+				mv.LayoutChanged += FooterViewLayoutChanged;
+			}
 		}
 
 		internal void UpdateHeaderView()
 		{
+			if (_headerUIView is MauiView mvPrevious)
+			{
+				mvPrevious.LayoutChanged -= HeaderViewLayoutChanged;
+			}
+
 			UpdateSubview(ItemsView?.Header, ItemsView?.HeaderTemplate, HeaderTag,
 				ref _headerUIView, ref _headerViewFormsElement);
 			UpdateHeaderFooterPosition();
+
+			if (_headerUIView is MauiView mv)
+			{
+				mv.LayoutChanged += HeaderViewLayoutChanged;
+			}
 		}
+
 
 		internal void UpdateSubview(object view, DataTemplate viewTemplate, nint viewTag, ref UIView uiView, ref VisualElement formsElement)
 		{
@@ -238,6 +282,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_footerViewFormsElement != null)
 				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
+		}
+
+		void HeaderViewLayoutChanged(object sender, EventArgs e)
+		{
+			HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
+		}
+
+		void FooterViewLayoutChanged(object sender, EventArgs e)
+		{
+			HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 	///     An intermediate class for injecting bindings for things the default
 	///     textbox doesn't allow us to bind/modify
 	/// </summary>
-	public class FormsTextBox : TextBox
+	public partial class FormsTextBox : TextBox
 	{
 		const char ObfuscationCharacter = '●';
 

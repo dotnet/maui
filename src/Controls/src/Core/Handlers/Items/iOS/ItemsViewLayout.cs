@@ -133,17 +133,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
+			// If we're at the last section, we don't need to add the right inset
+			if (section >= (collectionView.NumberOfSections() - 1))
+			{
+				return UIEdgeInsets.Zero;
+			}
+
 			if (_itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
+					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing));
 				}
 
-				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
+				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing), 0);
 			}
+			else if (_itemsLayout is LinearItemsLayout listViewLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return new UIEdgeInsets(0, 0, 0, new nfloat(listViewLayout.ItemSpacing));
+				}
 
-			return UIEdgeInsets.Zero;
+				return new UIEdgeInsets(0, 0, new nfloat(listViewLayout.ItemSpacing), 0);
+			}
+			else
+			{
+				return UIEdgeInsets.Zero;
+			}
 		}
 
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
@@ -624,10 +641,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var group = 0;
 			var collectionViewWidth = CollectionView.Bounds.Width;
 			var numberOfItemsInGroup = CollectionView.NumberOfItemsInSection(group);
-			
+
 			// Calculate the number of cells that can fit in the viewport
 			var numberOfCellsToCheck = Math.Min((int)(collectionViewWidth / existingMeasurement.Width) + 1, numberOfItemsInGroup);
-			
+
 			// Iterate through the cells and find the one with a wider width
 			for (int i = 1; i < numberOfCellsToCheck; i++)
 			{
@@ -636,13 +653,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					cellAtIndex.ConstrainTo(ConstrainedDimension);
 					var measureCellAtIndex = cellAtIndex.Measure();
-					
+
 					// Check if the cell has a wider width
 					if (measureCellAtIndex.Width > existingMeasurement.Width)
 					{
 						existingMeasurement = measureCellAtIndex;
 					}
-					
+
 					// TODO: Cache this cell size
 				}
 			}

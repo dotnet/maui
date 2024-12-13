@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // FlyoutItems added dynamically during navigation are not displayed on Windows. More information: https://github.com/dotnet/maui/issues/26391.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,22 +13,21 @@ public class Issue11214 : _IssuesUITest
 
 	public override string Issue => "When adding FlyoutItems during Navigating only first one is shown";
 
-	/*
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[FailsOnIOS]
+
 	public void FlyoutItemChangesPropagateCorrectlyToPlatformForShellElementsNotCurrentlyActive()
 	{
-		RunningApp.WaitForElement("PageLoaded");
-		TapInFlyout("ExpandMe", makeSureFlyoutStaysOpen: true);
-
+		App.WaitForElement("PageLoaded");
+		App.TapInShellFlyout("ExpandMe");
+		App.ShowFlyout();
 		for (int i = 0; i < 2; i++)
-			RunningApp.WaitForElement($"Some Item: {i}");
-
-		TapInFlyout("ExpandMe", makeSureFlyoutStaysOpen: true);
-
+			App.WaitForElement($"Some Item: {i}");
+		App.Tap("ExpandMe");
+		App.ShowFlyout();
 		for (int i = 0; i < 2; i++)
-			RunningApp.WaitForNoElement($"Some Item: {i}");
+			App.WaitForNoElement($"Some Item: {i}");
 	}
-	*/
+
 }
+#endif 

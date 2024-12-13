@@ -630,7 +630,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public CarouselViewLoopManager()
 		{
-			
+
 		}
 		protected virtual void Dispose(bool disposing)
 		{
