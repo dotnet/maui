@@ -104,14 +104,14 @@ stages:
   displayName: Run Unit Tests
   dependsOn: []
   jobs:
-  - template: eng/pipelines/arcade/job-unit-tests.yml@self
+  - template: /eng/pipelines/arcade/job-unit-tests.yml@self
     parameters:
       testOS: Windows
       jobName: win_msbuild_tests
       jobDisplayName: Windows Unit Tests
       pool: ${{ parameters.VM_IMAGE_HOST }}
 
-  - template: eng/pipelines/arcade/job-unit-tests.yml@self
+  - template: /eng/pipelines/arcade/job-unit-tests.yml@self
     parameters:
       testOS: macOS
       jobName: mac_unit_tests
