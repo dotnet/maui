@@ -118,5 +118,5 @@ stages:
       jobDisplayName: macOS Unit Tests
       pool:
         name: Azure Pipelines
-        image: $(HostedMacImage)
+        vmImage: $(HostedMacImage)
         os: macOS
