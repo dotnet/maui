@@ -2,30 +2,37 @@ namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Bugzilla, 38731, "iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject", PlatformAffected.iOS)]
-public class Bugzilla38731 : TestContentPage
+public class Bugzilla38731 : TestNavigationPage
 {
 	protected override void Init()
 	{
-		var label = new Label();
-		label.Text = "Page one...";
-		label.HorizontalTextAlignment = TextAlignment.Center;
-
-		var button = new Button();
-		button.AutomationId = "btn1";
-		button.Text = "Navigate to page two";
-		button.Clicked += Button_Clicked;
-
-		var content = new StackLayout();
-		content.Children.Add(label);
-		content.Children.Add(button);
-
-		Title = "Page one";
-		Content = content;
+		Navigation.PushAsync(new PageOne());
 	}
 
-	void Button_Clicked(object sender, EventArgs e)
+	public class PageOne : ContentPage
 	{
-		Navigation.PushAsync(new PageTwo());
+		public PageOne()
+		{
+			var label = new Label();
+			label.Text = "Page one...";
+			label.HorizontalTextAlignment = TextAlignment.Center;
+
+			var button = new Button();
+			button.AutomationId = "btn1";
+			button.Text = "Navigate to page two";
+			button.Clicked += Button_Clicked;
+
+			var content = new StackLayout();
+			content.Children.Add(label);
+			content.Children.Add(button);
+
+			Title = "Page one";
+			Content = content;
+		}
+		void Button_Clicked(object sender, EventArgs e)
+		{
+			Navigation.PushAsync(new PageTwo());
+		}
 	}
 
 	public class PageTwo : ContentPage
@@ -88,6 +95,7 @@ public class Bugzilla38731 : TestContentPage
 		{
 			var label = new Label();
 			label.Text = "Last page... Tap back very quick";
+			label.AutomationId = "FinalPage";
 			label.HorizontalTextAlignment = TextAlignment.Center;
 
 			var content = new StackLayout();
