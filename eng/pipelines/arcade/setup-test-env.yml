@@ -8,6 +8,12 @@ steps:
   fetchDepth: 1
   clean: true
 
+- task: UseDotNet@2
+  displayName: Install .NET 9.x
+  inputs:
+    version: 9.x
+    includePreviewVersions: true
+
 - task: DotNetCoreCLI@2
   displayName: Install dotnet preview
   inputs:
