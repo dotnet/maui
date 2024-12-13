@@ -59,8 +59,15 @@ static class InitializeComponentCodeWriter
                 if (rootType == null)
                     goto exit;
 
-        		(var generateInflatorSwitch, var xamlInflators) = rootType.GetXamlInflator();
-                if (!generateInflatorSwitch && (xamlInflators & XamlInflator.SourceGen)!= XamlInflator.SourceGen)
+        		(var genSwitch, var xamlInflators, var set) = rootType.GetXamlProcessing();
+
+                //this test must go as soon as 'set' goes away
+                if (!set)
+                    goto exit;
+
+                if (   (xamlInflators & XamlInflator.SourceGen)!= XamlInflator.SourceGen
+                    && xamlInflators != XamlInflator.Default
+                    && xamlItem.ProjectItem.ForceSourceGen == false)
                     goto exit;
 
                 codeWriter.WriteLine($"namespace {rootClrNamespace};");

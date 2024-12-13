@@ -20,7 +20,7 @@ static partial class ITypeSymbolExtensions
         //if the property assignment is attahced one, like Grid.Row, update the localname and the bpParentType
         attached = GetNameAndTypeRef(ref bpParentType, ns, ref localName, context, iXmlLineInfo);
         var name = $"{localName}Property";
-        return bpParentType.GetAllMembers().FirstOrDefault(f => f.Name == name) as IFieldSymbol;        
+        return bpParentType.GetAllMembers().FirstOrDefault(f => f.Name == name) as IFieldSymbol;
     }
 
 	static bool GetNameAndTypeRef(ref ITypeSymbol elementType, string namespaceURI, ref string localname,

@@ -165,4 +165,8 @@
     <value>Multiple Types found for "{0}"</value>
     <comment>/</comment>
   </data>
+  <data name="MemberResolution" xml:space="preserve">
+    <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
+    <comment>{0} is a property name</comment>
+  </data>
 </root>

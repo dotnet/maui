@@ -163,6 +163,7 @@ public static class MockSourceGenerator
 					"build_metadata.additionalfiles.ManifestResourceName" => _additionalFile.ManifestResourceName,
 					"build_metadata.additionalfiles.RelativePath" => _additionalFile.RelativePath,
 					"build_property.targetframework" => _additionalFile.TargetFramework,
+					"build_property._MauiForceXamlSourcegen" => true.ToString(),
 					_ => null
 				};
 
