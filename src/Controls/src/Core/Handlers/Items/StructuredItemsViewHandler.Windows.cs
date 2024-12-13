@@ -210,6 +210,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemContainerStyle = GetItemContainerStyle(gridItemsLayout)
 			};
 
+			//Hooked SizeChanged event for FormsGridView here, to unhook this event properly on DisconnectHandler.
 			gridView.SizeChanged += OnGridViewSizeChanged;
 
 			if (gridView.Orientation == Orientation.Horizontal)
