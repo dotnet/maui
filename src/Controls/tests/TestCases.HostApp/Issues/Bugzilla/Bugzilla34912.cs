@@ -23,8 +23,7 @@ public class Bugzilla34912 : TestContentPage
 			},
 
 			GroupDisplayBinding = new Binding("LongTitle"),
-			// While using this GroupShortNameBinding property it throws an exception on Windows for more information:https://github.com/dotnet/maui/issues/26534. For this test case we don't need this property.
-			// GroupShortNameBinding = new Binding("Title"),
+			GroupShortNameBinding = new Binding("Title"),
 			Header = "HEADER",
 			Footer = "FOOTER",
 			IsGroupingEnabled = true,
