@@ -22,7 +22,7 @@ public class Issue11523 : _IssuesUITest
 	{
 		App.WaitForElement("PageLoaded");
 		App.TapBackArrow();
-		App.WaitForFlyoutIcon(FlyoutIconAutomationId, isShell: false);
+		App.WaitForFlyoutIcon(FlyoutIconAutomationId);
 	}
 }
 #endif

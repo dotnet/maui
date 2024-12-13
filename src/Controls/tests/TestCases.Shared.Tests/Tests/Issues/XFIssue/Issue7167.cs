@@ -21,7 +21,7 @@ public class Issue7167 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void Issue7167Test()
 	{
-		// add items to the list and scroll down till item "25"
+		// add items to the list and scroll down till item "23"
 		App.WaitForElement(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
@@ -30,14 +30,14 @@ public class Issue7167 : _IssuesUITest
 		// App.Print.Tree();
 		
 		App.ScrollDown(ListViewId, ScrollStrategy.Auto, 0.65, 200);
-		App.WaitForElement("25");
+		App.WaitForElement("23");
 	
 		// when adding additional items via a addrange and a CollectionChangedEventArgs.Action.Reset is sent
 		// then the listview shouldnt reset or it should not scroll to the top
 		App.Tap(AddRangeCommandId);
 
-		// Verify that item "25" is still visible
-		App.WaitForElement("25");
+		// Verify that item "23" is still visible
+		App.WaitForElement("23");
 	}
 }
 #endif
