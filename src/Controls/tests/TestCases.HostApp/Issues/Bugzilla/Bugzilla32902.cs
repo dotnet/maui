@@ -75,7 +75,7 @@ public class Bugzilla32902 : TestNavigationPage
 		//FLYOUTPAGE PAGE
 		HomePage = new FlyoutPage()
 		{
-			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover,// To ensure uniform behavior across platforms, set the FlyoutBehavior to Locked.
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover,// To ensure uniform behavior across platforms, set the FlyoutBehavior to Popover.
 			Flyout = NewRootPage,
 			Detail = DetailPage
 		};
