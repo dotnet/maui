@@ -17,7 +17,7 @@ static partial class ITypeSymbolExtensions
 	public static IFieldSymbol? GetBindableProperty(this ITypeSymbol type, string ns, ref string localName, out System.Boolean attached, SourceGenContext context, IXmlLineInfo? iXmlLineInfo)
     {
         var bpParentType = type;
-        //if the property assignment is attahced one, like Grid.Row, update the localname and the bpParentType
+        //if the property assignment is attached one, like Grid.Row, update the localname and the bpParentType
         attached = GetNameAndTypeRef(ref bpParentType, ns, ref localName, context, iXmlLineInfo);
         var name = $"{localName}Property";
         return bpParentType.GetAllMembers().FirstOrDefault(f => f.Name == name) as IFieldSymbol;

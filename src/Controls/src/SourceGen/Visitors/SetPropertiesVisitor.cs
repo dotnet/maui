@@ -159,7 +159,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             }
             else if (parentVar.Type.CanAdd())
             {
-                Writer.WriteLine($"// CanAdd {node} parent {parentNode}");
+                Writer.WriteLine($"{parentVar.Name}.Add({Context.Variables[node].Name});");
             }
             
             //     Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
@@ -310,19 +310,23 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (context.Compilation.HasImplicitConversion(localVar.Type, bpTypeAndConverter?.type))
             return true;
         
+        if (HasDoubleImplicitConversion(localVar.Type, bpTypeAndConverter?.type, context, out _))
+            return true;
+        
         return localVar.Type.InheritsFrom(bpTypeAndConverter?.type!) 
             || bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!);
     }
 
     static void SetValue(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
+        var pType = bpFieldSymbol.GetBPTypeAndConverter()?.type;
         if (node is ValueNode valueNode)
         {
             var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
             writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {valueString});");
         }
         else if (node is ElementNode elementNode)
-            writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {context.Variables[node].Name});");
+            writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {(HasDoubleImplicitConversion(context.Variables[elementNode].Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)+ ")" : string.Empty)}{context.Variables[node].Name});");
 	}
 
     static string GetOrGetValue(LocalVariable parentVar, IFieldSymbol? bpFieldSymbol, IPropertySymbol? property, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
@@ -362,9 +366,41 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (context.Compilation.HasImplicitConversion(localVar.Type, property.Type))
             return true;
 
+        if (HasDoubleImplicitConversion(localVar.Type, property.Type, context, out _))
+            return true;
+
         //TODO could we replace this by a runimt check (generating a if/else) ?            
         if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
             return true;
+
+        return false;
+    }
+
+    static bool HasDoubleImplicitConversion(ITypeSymbol? fromType, ITypeSymbol? toType, SourceGenContext context, out IMethodSymbol? op)
+    {
+        op = null;
+        if (fromType == null || toType == null)
+            return false;
+
+        //return false, no need to multiple cast here    
+        if (context.Compilation.HasImplicitConversion(fromType, toType))
+            return false;
+
+        IMethodSymbol[] implicitOps = 
+            [
+                .. fromType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion),
+                .. toType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Conversion)
+            ];
+        
+        foreach (var implicitOp in implicitOps)
+        {
+            if (   context.Compilation.HasImplicitConversion(fromType, implicitOp.Parameters[0].Type)   
+                && context.Compilation.HasImplicitConversion(implicitOp.ReturnType, toType))                
+            {
+                op = implicitOp;
+                return true;
+            }
+        }
 
         return false;
     }
@@ -381,11 +417,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         }
         else if (node is ElementNode elementNode)
             using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
-                writer.WriteLine($"{parentVar.Name}.{localName} = ({property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){context.Variables[elementNode].Name};");
+                writer.WriteLine($"{parentVar.Name}.{localName} = ({property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)+ ")" : string.Empty)}{context.Variables[elementNode].Name};");
     }
 
     static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
     {
+        
         if (bpFieldSymbol == null)
             return false;
         if (node is not ElementNode en)
