@@ -32,62 +32,11 @@ schedules:
 variables:
   - template: /eng/pipelines/common/variables.yml@self
   - template: /eng/common/templates-official/variables/pool-providers.yml@self
-
+  - template: /eng/pipelines/arcade/variables.yml@self
   - group: DotNetBuilds storage account read tokens
   - group: AzureDevOps-Artifact-Feeds-Pats
-           
-  # needed for darc (dependency flow) publishing
-  - name: _BuildConfig
-    value: Release
-  - name: Build.Arcade.ArtifactsPath
-    value: $(Build.SourcesDirectory)/artifacts/
-  - name: Build.Arcade.LogsPath
-    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
-  - name: Build.Arcade.TestResultsPath
-    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
- 
-  # Produce test-signed build for PR and Public builds
-  - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    # needed for darc (dependency flow) publishing
-    - name: _PublishArgs
-      value: ''
-    - name: _OfficialBuildIdArgs
-      value: ''
-    # needed for signing
-    - name: _SignType
-      value: test
-    - name: _SignArgs
-      value: ''
-    - name: _Sign
-      value: false
-
-  # Set up non-PR build from internal project
-  - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-    # needed for darc (dependency flow) publishing
-    - name: _PublishArgs
-      value: >-
-            /p:DotNetPublishUsingPipelines=true
-    # - name: _OfficialBuildIdArgs
-    #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-    # needed for signing
-    - name: _SignType
-      value: real
-    - name: _SignArgs
-      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
-    - name: _Sign
-      value: true
-    
-
 
 parameters:
-  - name: pushMauiPackagesToMaestro
-    default: true
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -106,9 +55,6 @@ parameters:
       docsArtifact: xml-docs
       artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
-  - name: Skip1ESComplianceTasks
-    default: false
-
 resources:
   repositories:
     - repository: 1ESPipelineTemplates
@@ -117,12 +63,13 @@ resources:
       ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
     pool: ${{ parameters.VM_IMAGE_HOST }}
     sdl:
-      ${{ if eq('${{ parameters.Skip1ESComplianceTasks }}', 'true') }}:
-        enableAllTools: false
       binskim:
         scanOutputDirectoryOnly: true
       codeql:
@@ -162,7 +109,6 @@ extends:
           jobs:
           - job: pack_net_${{ parameters.PackPlatform.name }}
             displayName: ${{ parameters.PackPlatform.name }}
-            
             timeoutInMinutes: 240
            
             # templateContext:
@@ -193,22 +139,12 @@ extends:
             #       targetPath: '${{ parameters.PackPlatform.artifactsPath }}/logs'
         
             variables:
-              - name: _buildScript
-                value: $(Build.SourcesDirectory)/build.cmd -ci
-              - name: _BuildOfficalId
-                value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
-              - name: TreatWarningsAsErrors
-                value: false
-              - name: _OfficialBuildIdArgs
-                value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
-            
             preSteps:
               - checkout: self
                 fetchDepth: 1
                 clean: true
-
             steps:
-              - template: /eng/pipelines/common/build-test-pack.yml@self
+              - template: /eng/pipelines/arcade/pack.yml@self
                 parameters:
                   dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                   buildScript: $(_buildScript)
@@ -218,7 +154,6 @@ extends:
                   repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                   isWindows: true
                   runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
-               #   runHelixTests: ${{ contains(testVariant, 'helix') }}
 
       # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
@@ -235,3 +170,24 @@ extends:
         # This is to enable SDL runs part of Post-Build Validation Stage
         SDLValidationParameters:
           enable: false
+
+    - stage: UnitTests
+      displayName: Run Unit Tests
+      dependsOn: []
+      jobs:
+      - template: eng/pipelines/arcade/job-unit-tests.yml@self
+        parameters:
+          testOS: Windows
+          jobName: win_msbuild_tests
+          jobDisplayName: Windows Unit Tests
+          pool: ${{ parameters.VM_IMAGE_HOST }}
+
+      - template: eng/pipelines/arcade/job-unit-tests.yml@self
+        parameters:
+          testOS: macOS
+          jobName: mac_unit_tests
+          jobDisplayName: macOS Unit Tests
+          pool:
+            name: Azure Pipelines
+            image: $(HostedMacImage)
+            os: macOS

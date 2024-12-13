@@ -37,56 +37,9 @@ pr:
 variables:
   - template: /eng/pipelines/common/variables.yml@self
   - template: /eng/common/templates/variables/pool-providers.yml
-
-  - name: _BuildConfig
-    value: Release
-  - name: Build.Arcade.ArtifactsPath
-    value: $(Build.SourcesDirectory)/artifacts/
-  - name: Build.Arcade.LogsPath
-    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
-  - name: Build.Arcade.TestResultsPath
-    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-
- # Produce test-signed build for PR and Public builds
-  - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    # needed for darc (dependency flow) publishing
-    - name: _PublishArgs
-      value: ''
-    - name: _OfficialBuildIdArgs
-      value: ''
-    # needed for signing
-    - name: _SignType
-      value: test
-    - name: _SignArgs
-      value: ''
-    - name: _Sign
-      value: false
-
-  # Set up non-PR build from internal project
-  - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-    # needed for darc (dependency flow) publishing
-    - name: _PublishArgs
-      value: >-
-            /p:DotNetPublishUsingPipelines=true
-    # - name: _OfficialBuildIdArgs
-    #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-    # needed for signing
-    - name: _SignType
-      value: real
-    - name: _SignArgs
-      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
-    - name: _Sign
-      value: true
+  - template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
-  - name: pushMauiPackagesToMaestro
-    default: true
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -105,14 +58,7 @@ parameters:
       docsArtifact: xml-docs
       artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
-  - name: Skip1ESComplianceTasks
-    default: true
-
 stages:
-
-# ----------------------------------------------------------------
-# This stage performs build, test, packaging
-# ----------------------------------------------------------------
 - stage: Pack
   displayName: Pack .NET MAUI
   dependsOn: []
@@ -136,27 +82,14 @@ stages:
           clean: all
         jobs:
         - job: pack_net_${{ parameters.PackPlatform.name }}
-          displayName: ${{ parameters.PackPlatform.name }}
-            
+          displayName: ${{ parameters.PackPlatform.name }} 
           timeoutInMinutes: 240
-           
-          variables:
-            - name: _buildScript
-              value: $(Build.SourcesDirectory)/build.cmd -ci
-            - name: _BuildOfficalId
-              value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
-            - name: TreatWarningsAsErrors
-              value: false
-            - name: _OfficialBuildIdArgs
-              value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
-            
           preSteps:
             - checkout: self
               fetchDepth: 1
               clean: true
-
           steps:
-            - template: /eng/pipelines/common/build-test-pack.yml@self
+            - template: /eng/pipelines/arcade/pack.yml@self
               parameters:
                 dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
                 buildScript: $(_buildScript)
@@ -166,4 +99,24 @@ stages:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
                 runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
-                # runHelixTests: ${{ contains(testVariant, 'helix') }}
+
+- stage: UnitTests
+  displayName: Run Unit Tests
+  dependsOn: []
+  jobs:
+  - template: eng/pipelines/arcade/job-unit-tests.yml@self
+    parameters:
+      testOS: Windows
+      jobName: win_msbuild_tests
+      jobDisplayName: Windows Unit Tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+
+  - template: eng/pipelines/arcade/job-unit-tests.yml@self
+    parameters:
+      testOS: macOS
+      jobName: mac_unit_tests
+      jobDisplayName: macOS Unit Tests
+      pool:
+        name: Azure Pipelines
+        image: $(HostedMacImage)
+        os: macOS

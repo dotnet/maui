@@ -1,0 +1,39 @@
+parameters:
+  mauiSourcePath: $(Build.SourcesDirectory)
+  configuration: Debug
+  logPath: $(Build.ArtifactStagingDirectory)
+
+steps:
+- checkout: self
+  fetchDepth: 1
+  clean: true
+
+- task: DotNetCoreCLI@2
+  displayName: Install dotnet preview
+  inputs:
+    projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.sln
+    arguments: '--no-restore -t:InstallDotNet -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
+
+- task: /eng/pipelines/common/run-dotnet-preview.yml
+  displayName: Build MSBuild Tasks
+  inputs:
+    mauiSourcePath: $(Build.SourcesDirectory)
+    projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.sln
+    arguments: '-t:BuildMSBuildTasks -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/build-msbuildtasks.binlog'
+
+- pwsh: |
+    if ($env:JAVA_HOME_17_X64) {
+      $env:JAVA_HOME = $env:JAVA_HOME_17_X64
+    } else {
+      $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-17.*\bin\java.exe) | Select-Object -First 1
+      if ($path -and (Test-Path $path)) {
+        $env:JAVA_HOME = $path.Directory.Parent.FullName
+      }
+    }
+    if ($env:JAVA_HOME) {
+      echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+      echo "JAVA_HOME set to '$env:JAVA_HOME'"
+    } else {
+      echo "Unable to set JAVA_HOME"
+    }
+  displayName: Set JAVA_HOME to JDK 17

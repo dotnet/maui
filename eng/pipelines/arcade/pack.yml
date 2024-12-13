@@ -18,19 +18,12 @@ parameters:
     type: string
   - name: isWindows
     type: string
-    default: false    
+    default: false
   - name: dotnetScript
     type: string
-  - name: runHelixTests
-    type: boolean
-    default: false
+
 
 steps:
-
-  # - task: UseDotNet@2
-  #   inputs: 
-  #     useGlobalJson: true
-
   - pwsh: |
       if ($env:JAVA_HOME_17_X64) {
         $env:JAVA_HOME = $env:JAVA_HOME_17_X64
@@ -47,7 +40,6 @@ steps:
         echo "Unable to set JAVA_HOME"
       }
     displayName: Set JAVA_HOME
-
 
   - ${{ if ne(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
@@ -69,6 +61,7 @@ steps:
               $(_OfficialBuildIdArgs)
       displayName: 🛠️ Build
 
+  # TODO: Move to helix test stage template
   # - ${{ if or(ne(parameters.runAsPublic, 'true'), ne(parameters.runHelixTests, 'true')) }}:
   #   - ${{ if ne(parameters.isWindows, 'true') }}:
   #     - script: mkdir ${{ parameters.repoArtifactsPath }}/devcert-scripts &&

@@ -92,9 +92,4 @@ steps:
     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
     testRunTitle: ${{ parameters.category }} templates build tests
 
-- pwsh: |
-    Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-    if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-        Write-Host "##vso[task.complete result=Failed;]DONE"
-    }
-  displayName: Fail if any issues occurred
+- template: /eng/pipelines/common/fail-on-issue.yaml

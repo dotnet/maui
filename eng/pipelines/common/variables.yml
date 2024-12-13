@@ -35,6 +35,8 @@ variables:
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]
 # Common Agent Pools in use
+- name: HostedMacImage
+  value: macOS-10.14
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
