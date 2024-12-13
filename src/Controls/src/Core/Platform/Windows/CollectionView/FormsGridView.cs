@@ -92,20 +92,12 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_wrapGrid.SizeChanged -= WrapGridSizeChanged;
-			_wrapGrid.SizeChanged += WrapGridSizeChanged;
-
 			UpdateItemSize();
 		}
 
 		void OnChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
 		{
 			FindItemsWrapGrid();
-		}
-
-		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateItemSize();
 		}
 
 		internal void UpdateItemSize()
