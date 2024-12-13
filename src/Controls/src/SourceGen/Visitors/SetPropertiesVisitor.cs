@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using System.CodeDom.Compiler;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -235,6 +236,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         //TODO I believe ContentProperty should be resolved here
         var localName = propertyName.LocalName;
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, iXmlLineInfo);
+        if (bpFieldSymbol != null && !context.Compilation.IsSymbolAccessibleWithin(bpFieldSymbol, context.RootType))
+        {
+            //not a diagnostic, as it might have a visible symbol mathcing for CanSet()
+            bpFieldSymbol = null;
+        }
 
         // event
         if (CanConnectEvent(parentVar, localName, valueNode, attached, context))
@@ -268,7 +274,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             Add(writer, parentVar, propertyName, valueNode, context, iXmlLineInfo);
             return;
         }
-        writer.WriteLine($"// SetPropertyValue UNHANDLED");
+		
+        var location = Location.Create(context.FilePath!, new TextSpan(iXmlLineInfo.LinePosition, localName.Length), new LinePositionSpan(new LinePosition(iXmlLineInfo.LineNumber-1, iXmlLineInfo.LinePosition), new LinePosition(iXmlLineInfo.LineNumber-1, iXmlLineInfo.LinePosition + localName.Length)));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
+
     }
 
     static bool CanConnectEvent(LocalVariable parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)

@@ -30,7 +30,11 @@ static class GeneratorHelpers
 		fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
 		fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
 		fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
-		return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework);
+		fileOptions.TryGetValue("build_property._MauiForceXamlSourcegen", out var forceSourceGen);
+		return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework)
+		{
+			ForceSourceGen = forceSourceGen == true.ToString()
+		};
 	}
 
 	public static XamlProjectItemForIC? ComputeXamlProjectItemForIC(ProjectItem? projectItem, CancellationToken cancellationToken)

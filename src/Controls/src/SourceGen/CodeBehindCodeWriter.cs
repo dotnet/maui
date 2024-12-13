@@ -77,7 +77,7 @@ static class CodeBehindCodeWriter
 
 		var rootSymbol = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootType}");
 
-		(var generateInflatorSwitch, var xamlInflators) = rootSymbol?.GetXamlInflator() ?? (false, XamlInflator.Default);
+		(var generateInflatorSwitch, var xamlInflators, _) = rootSymbol?.GetXamlProcessing() ?? (false, XamlInflator.Default, false);
 
 		sb.AppendLine($"namespace {rootClrNamespace}");
 		sb.AppendLine("{");
@@ -126,7 +126,7 @@ static class CodeBehindCodeWriter
 		sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
 		// add MemberNotNull attributes
-		if (namedFields != null)
+		if (namedFields != null && namedFields.Any())
 		{
 			sb.AppendLine($"#if NET5_0_OR_GREATER");
 			foreach ((var fname, _, _) in namedFields)
@@ -160,7 +160,7 @@ static class CodeBehindCodeWriter
 			sb.AppendLine();
 
 			// add MemberNotNull attributes
-			if (namedFields != null)
+			if (namedFields != null && namedFields.Any())
 			{
 				sb.AppendLine($"#if NET5_0_OR_GREATER");
 				foreach ((var fname, _, _) in namedFields)

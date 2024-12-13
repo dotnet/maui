@@ -140,5 +140,11 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("DuplicateTypeError", resourceCulture);
             }
         }
+        
+        internal static string MemberResolution {
+            get {
+                return ResourceManager.GetString("MemberResolution", resourceCulture);
+            }
+        }
     }
 }

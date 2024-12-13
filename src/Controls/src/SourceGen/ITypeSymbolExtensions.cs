@@ -128,14 +128,15 @@ static partial class ITypeSymbolExtensions
         return false;
     }
 
-    public static (bool generateInflatorSwitch, XamlInflator inflators) GetXamlInflator(this ITypeSymbol type)
+    //FIXME: we won't need the set value in the future, but this allows to not generate for files without the attribute and avoid too many errors
+    public static (bool generateInflatorSwitch, XamlInflator inflators, bool set) GetXamlProcessing(this ITypeSymbol type)
     {
         var attr = type.GetAttributes("Microsoft.Maui.Controls.Xaml.XamlProcessingAttribute").FirstOrDefault(ad => ad.ConstructorArguments.Length >= 1);
         if (attr != null)
         {    
             var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
             var generateInflatorSwitch = attr.ConstructorArguments.Length == 2 && (bool)attr.ConstructorArguments[1].Value!;
-            return (generateInflatorSwitch, inflator);
+            return (generateInflatorSwitch, inflator, true);
         }
 
         var module = type.ContainingModule;
@@ -144,7 +145,7 @@ static partial class ITypeSymbolExtensions
         {
             var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
             var generateInflatorSwitch = attr.ConstructorArguments.Length == 2 && (bool)attr.ConstructorArguments[1].Value!;
-            return (generateInflatorSwitch, inflator);
+            return (generateInflatorSwitch, inflator, true);
         }
 
         var assembly = type.ContainingAssembly;
@@ -153,10 +154,10 @@ static partial class ITypeSymbolExtensions
         {
             var inflator = (XamlInflator)attr.ConstructorArguments[0].Value!;
             var generateInflatorSwitch = attr.ConstructorArguments.Length == 2 && (bool)attr.ConstructorArguments[1].Value!;
-            return (generateInflatorSwitch, inflator);
+            return (generateInflatorSwitch, inflator, true);
         }
 
-        return (false, XamlInflator.Default);
+        return (false, XamlInflator.Default, false);
     }
 
     public static bool IsPublic(this ISymbol symbol)

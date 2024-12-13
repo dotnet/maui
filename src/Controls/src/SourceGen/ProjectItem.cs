@@ -20,4 +20,7 @@ class ProjectItem
 	public string? ManifestResourceName { get; }
 	public string Kind { get; }
 	public string? TargetFramework { get; }
+	
+	//bypass attribute check. used for testing
+	public bool ForceSourceGen { get; internal set; }
 }

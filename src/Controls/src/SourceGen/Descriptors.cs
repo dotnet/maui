@@ -70,10 +70,19 @@ namespace Microsoft.Maui.Controls.SourceGen
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
+		
 		public static DiagnosticDescriptor DuplicateTypeError = new DiagnosticDescriptor(
 			id: "MAUIX2001",
 			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.DuplicateTypeError), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor MemberResolution = new DiagnosticDescriptor(
+			id: "MAUIX2002",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MemberResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlInflation",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
