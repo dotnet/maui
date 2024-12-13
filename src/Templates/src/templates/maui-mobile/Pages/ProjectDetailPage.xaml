@@ -46,7 +46,7 @@
             </Border>
         </DataTemplate>
 
-        <pages:ChipDataTemplateSelector 
+        <controls:ChipDataTemplateSelector 
             x:Key="ChipDataTemplateSelector"
             NormalTagTemplate="{StaticResource NormalTagTemplate}"
             SelectedTagTemplate="{StaticResource SelectedTagTemplate}"/>
