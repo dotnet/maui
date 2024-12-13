@@ -212,12 +212,16 @@ namespace Microsoft.Maui.Storage
 				{
 					if (defaultValue is DateTime dt)
 					{
-						long tempValue = (long)Convert.ChangeType(value, typeof(long), CultureInfo.InvariantCulture);
-						return (T)(object)DateTime.FromBinary(tempValue);
+						// long for the .NET 9+ format
+						if (long.TryParse(value, CultureInfo.InvariantCulture, out var longValue))
+							return (T)(object)DateTime.FromBinary(longValue);
+						// DateTime string for the .NET 8 format
+						if (DateTime.TryParse(value, CultureInfo.InvariantCulture, out var datetimeValue))
+							return (T)(object)datetimeValue;
 					}
 					else if (defaultValue is DateTimeOffset dto)
 					{
-						if (DateTimeOffset.TryParse((string)value, out var dateTimeOffset))
+						if (DateTimeOffset.TryParse((string)value, CultureInfo.InvariantCulture, out var dateTimeOffset))
 						{
 							return (T)(object)dateTimeOffset;
 						}

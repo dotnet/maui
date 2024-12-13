@@ -259,6 +259,61 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
 	}
 
+	[Fact("CollectionView Header/Footer Doesn't Leak")]
+	public async Task CollectionViewHeaderFooterDoesntLeak()
+	{
+		SetupBuilder();
+
+		WeakReference viewReference = null;
+		WeakReference handlerReference = null;
+		WeakReference controllerReference = null;
+
+		var observable = new ObservableCollection<int> { 1 };
+		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
+		{
+			var cv = new CollectionView
+			{
+				Footer = new VerticalStackLayout(),
+				Header = new VerticalStackLayout(),
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var view = new Label
+					{
+					};
+					view.SetBinding(Label.TextProperty, ".");
+					return view;
+				}),
+				ItemsSource = observable
+			};
+
+			viewReference = new WeakReference(cv);
+			handlerReference = new WeakReference(cv.Handler);
+
+
+			await navPage.Navigation.PushAsync(new ContentPage
+			{
+				Content = cv
+			});
+
+
+#if IOS
+			var controller = (cv.Handler as CollectionViewHandler).Controller;
+			controllerReference = new WeakReference(controller);
+			controller = null;
+#else
+			controllerReference = new WeakReference(new object());
+#endif
+
+			cv = null;
+
+			await navPage.Navigation.PopAsync();
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, handlerReference, controllerReference);
+	}
+
 	[Theory("Gesture Does Not Leak")]
 	[InlineData(typeof(DragGestureRecognizer))]
 	[InlineData(typeof(DropGestureRecognizer))]
@@ -503,5 +558,73 @@ public class MemoryTests : ControlsHandlerTestBase
 		await AssertionExtensions.WaitForGC(viewReference, recognizerReference);
 	}
 #endif
+
+	[Fact]
+	public async Task TweenersWillNotLeakDuringInfiniteAnimation()
+	{
+		SetupBuilder();
+		WeakReference animationReference = null;
+		WeakReference weak = null;
+
+		var page = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+
+		await CreateHandlerAndAddToWindow(new Window(page), async () =>
+		{
+			var page2 = new AnimationPage(shouldCreateClosureAnimation: false);
+			animationReference = new WeakReference(page2);
+			await OnLoadedAsync(page);
+			await page.Navigation.PushAsync(page2);
+			await OnLoadedAsync(page2);
+			weak = page2.Animation;
+			await Task.Delay(2_000);
+			await page2.Navigation.PopToRootAsync();
+			await OnUnloadedAsync(page2);
+			page2 = null;
+		});
+
+		Assert.True(AnimationExtensions.TweenersCounter <= 2);
+	}
+}
+
+sealed class AnimationPage : ContentPage
+{
+	Button CounterBtn { get; } = new();
+
+	public WeakReference Animation { get; private set; }
+
+	bool _shouldCreateClosureAnimation;
+
+	public AnimationPage(bool shouldCreateClosureAnimation) => _shouldCreateClosureAnimation = shouldCreateClosureAnimation;
+
+	void CreateClosureAnimation()
+	{
+		var animation = new Animation(v =>
+		{
+			int r = new Random().Next();
+			CounterBtn.Text = (r).ToString();
+		}, 0, 0);
+		Animation = new WeakReference(animation);
+		animation.Commit(this, "animation", 16, 250, null, null, () => true);
+	}
+
+	void CreateNonClosureAnimatino()
+	{
+		var animation = new Animation(static v =>
+		{
+			int r = new Random().Next();
+		}, 0, 0);
+		Animation = new WeakReference(animation);
+		animation.Commit(this, "animation", 16, 250, null, null, () => true);
+	}
+
+	protected override void OnAppearing()
+	{
+		if (_shouldCreateClosureAnimation)
+			CreateClosureAnimation();
+		else
+			CreateNonClosureAnimatino();
+
+	}
 }
 

@@ -18,6 +18,7 @@ public class Issue3019 : TestContentPage
 			Height = 25;
 			var label = new Label { VerticalOptions = LayoutOptions.Center };
 			label.SetBinding(Label.TextProperty, nameof(GroupedItem.Name));
+			label.SetBinding(Label.AutomationIdProperty, nameof(GroupedItem.Name));
 			View = new StackLayout()
 			{
 				Children =
@@ -80,6 +81,7 @@ public class Issue3019 : TestContentPage
 			{
 				Label nameLabel = new Label();
 				nameLabel.SetBinding(Label.TextProperty, "Text");
+				nameLabel.SetBinding(Label.AutomationIdProperty, "Text");
 				var cell = new ViewCell
 				{
 					View = nameLabel,
@@ -100,7 +102,7 @@ public class Issue3019 : TestContentPage
 
 	protected override void Init()
 	{
-		Label label = new Label() { Text = "If you see two group headers and can click on each row without crashing test has passed" };
+		Label label = new Label() { Text = "If you see two group headers and can click on each row without crashing test has passed", AutomationId = "MessageLabel" };
 
 		Content = new StackLayout
 		{

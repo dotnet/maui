@@ -114,13 +114,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var layoutAttributesForRectElements = base.LayoutAttributesForElementsInRect(rect);
 
-			if (NeedsSingleItemHorizontalAlignmentAdjustment(layoutAttributesForRectElements))
+			if (ScrollDirection == UICollectionViewScrollDirection.Vertical && NeedsSingleItemHorizontalAlignmentAdjustment(layoutAttributesForRectElements))
 			{
 				// If there's exactly one item in a vertically scrolling grid, for some reason UICollectionViewFlowLayout
 				// tries to center it. This corrects that issue.
 				var currentFrame = layoutAttributesForRectElements[0].Frame;
 				var newFrame = new CGRect(CollectionView.Frame.Left + CollectionView.ContentInset.Right,
 				currentFrame.Top, currentFrame.Width, currentFrame.Height);
+				layoutAttributesForRectElements[0].Frame = newFrame;
+			}
+			else if (ScrollDirection == UICollectionViewScrollDirection.Horizontal && layoutAttributesForRectElements.Length == 1)
+			{
+				// Adjusts alignment for a single item in a horizontally scrolling grid to prevent centering the item
+				var currentFrame = layoutAttributesForRectElements[0].Frame;
+				var newFrame = new CGRect(currentFrame.Left, CollectionView.Frame.Top + CollectionView.ContentInset.Top,
+				currentFrame.Width, currentFrame.Height);
 				layoutAttributesForRectElements[0].Frame = newFrame;
 			}
 
@@ -233,11 +241,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool NeedsSingleItemHorizontalAlignmentAdjustment(UICollectionViewLayoutAttributes[] layoutAttributesForRectElements)
 		{
-			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
-			{
-				return false;
-			}
-
 			if (layoutAttributesForRectElements.Length != 1)
 			{
 				return false;
