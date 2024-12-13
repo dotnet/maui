@@ -267,10 +267,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			//While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
+			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
 			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				carouselPosition = count-1;
+				carouselPosition = count - 1;
 			}
 			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
