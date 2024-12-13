@@ -14,10 +14,10 @@ steps:
     projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.sln
     arguments: '--no-restore -t:InstallDotNet -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
 
-- task: /eng/pipelines/common/run-dotnet-preview.yml
-  displayName: Build MSBuild Tasks
-  inputs:
-    mauiSourcePath: $(Build.SourcesDirectory)
+- template: /eng/pipelines/common/run-dotnet-preview.yml
+  parameters:
+    displayName: Build MSBuild Tasks
+    mauiSourcePath: ${{ parameters.mauiSourcePath }}
     projects: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.sln
     arguments: '-t:BuildMSBuildTasks -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/build-msbuildtasks.binlog'
 
