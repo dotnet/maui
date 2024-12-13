@@ -1,32 +1,27 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Xaml;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public class Bz53318ListView : ListView
 {
-	public class Bz53318ListView : ListView
+}
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+[XamlProcessing(XamlInflator.Runtime|XamlInflator.SourceGen, true)]
+public partial class Bz53318 : ContentPage
+{
+	public Bz53318()
 	{
+		InitializeComponent();
 	}
 
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Bz53318 : ContentPage
+	[TestFixture]
+	public class Tests
 	{
-		public Bz53318()
+		[Test]
+		public void DoesCompilesArgsInsideDataTemplate()
 		{
-			InitializeComponent();
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[Test]
-			public void DoesCompilesArgsInsideDataTemplate()
-			{
-				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
-			}
+			Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
 		}
 	}
 }

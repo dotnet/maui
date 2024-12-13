@@ -48,6 +48,7 @@ static class ServiceProviderExtensions
         var objectAndParents = node.ObjectAndParents(context).ToArray();
         if (   (   createAllServices
                 || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideParentValues")!, SymbolEqualityComparer.Default)
+                || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!, SymbolEqualityComparer.Default)
                 || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IReferenceProvider")!, SymbolEqualityComparer.Default))
             && objectAndParents.Length > 0)
         {
