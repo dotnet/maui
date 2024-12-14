@@ -114,22 +114,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                 out ITypeSymbol? valueProviderFace,
                 out bool acceptEmptyServiceProvider,
                 out ImmutableArray<ITypeSymbol>? requiredServices))
-        {
-            var valueProviderVariable = Context.Variables[node];
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, returnType!.Name!.Split('.').Last());
-
-            //if it require a serviceprovider, create one
-            if (!acceptEmptyServiceProvider)
-            {
-                var serviceProviderVar = node.GetOrCreateServiceProvider(Writer, context, requiredServices);                
-                Context.Variables[node] = new LocalVariable(returnType, variableName);
-                Writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
-            }
-            else {
-                Context.Variables[node] = new LocalVariable(returnType, variableName);
-                Writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
-            }
-        }
+            node.ProvideValue(Writer, Context, returnType, valueProviderFace, acceptEmptyServiceProvider, requiredServices);
 
         if (propertyName != XmlName.Empty)
         {
