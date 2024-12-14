@@ -96,7 +96,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	LocalVariable GetOrCreateNameScope(ElementNode node)
 	{
  		var namescope = NamingHelpers.CreateUniqueVariableName(Context, "NameScope");
-		Writer.Write($"var {namescope} = ");
+		Writer.Write($"global::Microsoft.Maui.Controls.Internals.INameScope {namescope} = ");
 		if (Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
 			Writer.Write($"global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope({Context.Variables[node].Name}) ?? ");
 		Writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.NameScope();");
