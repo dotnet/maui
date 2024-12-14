@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
+using System.Collections.Immutable;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -65,6 +66,21 @@ class CreateValuesVisitor : IXamlNodeVisitor
                 ?? throw new Exception($"Type {vTypeNode.Value} not found");
 
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, arrayType.Name!.Split('.').Last()+"Array");
+
+            //Provide value for Providers
+            foreach (var cn in node.CollectionItems)
+            {
+                if (cn is not ElementNode en)
+                    continue;
+
+                if (en.IsValueProvider(Context, 
+                        out ITypeSymbol? returnType,
+                        out ITypeSymbol? valueProviderFace,
+                        out bool acceptEmptyServiceProvider,
+                        out ImmutableArray<ITypeSymbol>? requiredServices))
+                    en.ProvideValue(Writer, Context, returnType, valueProviderFace, acceptEmptyServiceProvider, requiredServices);
+            }
+
             Context.Variables[node] = new LocalVariable(Context.Compilation.CreateArrayTypeSymbol(arrayType), variableName);
             Writer.WriteLine($"var {variableName} = new {arrayType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}[]");
             using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
@@ -73,8 +89,9 @@ class CreateValuesVisitor : IXamlNodeVisitor
                 {
                     if (cn is not ElementNode en)
                         continue;
+
                     var enVariable = Context.Variables[en];
-                    Writer.WriteLine($"{enVariable.Name},");
+                    Writer.WriteLine($"({arrayType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){enVariable.Name},");
                 }
             }
 
@@ -182,12 +199,11 @@ class CreateValuesVisitor : IXamlNodeVisitor
     		
     static bool IsXaml2009LanguagePrimitive(IElementNode node)
     {
-        if (node.NamespaceURI == XamlParser.X2009Uri)
-        {
-            
-            return node.XmlType.Name != "Array";
-        }
-        if (node.NamespaceURI != "clr-namespace:System;assembly=mscorlib")
+        // if (node.NamespaceURI == XamlParser.X2009Uri)
+        // {
+        //     return node.XmlType.Name != "Array";
+        // }
+        if (node.NamespaceURI != "clr-namespace:System;assembly=mscorlib" && node.NamespaceURI != XamlParser.X2009Uri)
             return false;
         var name = node.XmlType.Name;
         if (name == "SByte" ||

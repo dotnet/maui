@@ -407,6 +407,24 @@ static class NodeSGExtensions
         return true;
     }
 
+    public static void ProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, ITypeSymbol? returnType, ITypeSymbol? valueProviderFace, bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices)
+    {
+        var valueProviderVariable = context.Variables[node];
+        var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType!.Name!.Split('.').Last());
+
+        //if it require a serviceprovider, create one
+        if (!acceptEmptyServiceProvider)
+        {
+            var serviceProviderVar = node.GetOrCreateServiceProvider(writer, context, requiredServices);                
+            context.Variables[node] = new LocalVariable(returnType, variableName);
+            writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
+        }
+        else {
+            context.Variables[node] = new LocalVariable(returnType, variableName);
+            writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
+        }
+    }
+
     [Conditional("_SOURCEGEN_SOURCEINFO_ENABLE")]
     public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer)
     {
