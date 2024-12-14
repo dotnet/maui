@@ -19,9 +19,9 @@
             Grid.Row="1"
             AutomationId="ResultId"
             x:Name="ItemsCount"/>
-      
-    <!-- Getting exception while running the sample with GroupShortNameBinding on windows, Issue: https://github.com/dotnet/maui/issues/26534.-->
-    <ListView
+        
+        <!-- Getting exception while running the sample with GroupShortNameBinding on windows, Issue: https://github.com/dotnet/maui/issues/26534.-->
+        <ListView
             Grid.Row="2"
             AutomationId="ListViewId" 
             x:Name="Issue11381ListView"
