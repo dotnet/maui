@@ -1,20 +1,30 @@
 package com.microsoft.maui.glide.font;
 
 import android.graphics.Typeface;
-
 import androidx.annotation.ColorInt;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import com.bumptech.glide.signature.ObjectKey;
-
-import com.microsoft.maui.PlatformUtils;
 
 public class FontModel {
     private final int color;
     private final String glyph;
     private final float textSize;
     private final Typeface typeface;
+
+    public static String getGlyphHex(String glyph) {
+        if (glyph == null) {
+            return null;
+        }
+
+        byte[] ba = glyph.getBytes(StandardCharsets.UTF_16BE);
+        StringBuilder str = new StringBuilder();
+        for(int i = 0; i < ba.length; i++)
+            str.append(String.format("%02x", ba[i]));
+        return str.toString();
+    }
 
     public FontModel(@ColorInt int color, String glyph, float textSize, Typeface typeface)
     {
@@ -44,7 +54,7 @@ public class FontModel {
     public String toString() {
         return "FontModel{" +
             "color=" + String.format("#%08X", (0xFFFFFFFF & color)) +
-            ", glyph='" + PlatformUtils.getGlyphHex(glyph) + '\'' +
+            ", glyph='" + FontModel.getGlyphHex(glyph) + '\'' +
             ", textSize=" + textSize +
             ", typeface=" + typeface +
             '}';

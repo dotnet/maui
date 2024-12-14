@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(null, null)]
 		public void GetGlyphHexSerializesCorrectly(string expected, string input)
 		{
-			Assert.Equal(expected, PlatformUtils.GetGlyphHex(input));
+			Assert.Equal(expected, PlatformInterop.GetGlyphHex(input));
 		}
 
 		[Fact]

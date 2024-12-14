@@ -18,7 +18,7 @@ import com.bumptech.glide.load.resource.bitmap.BitmapResource;
 import com.microsoft.maui.PlatformLogger;
 
 public class FontModelResourceDecoder implements ResourceDecoder<FontModel, Bitmap> {
-    private static final PlatformLogger logger = new PlatformLogger("FontModelResourceDecoder");
+    private static final PlatformLogger logger = new PlatformLogger("FontModelResDecoder");
 
     private final BitmapPool bitmapPool;
 

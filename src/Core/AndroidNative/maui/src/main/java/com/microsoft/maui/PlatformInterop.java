@@ -313,6 +313,10 @@ public class PlatformInterop {
         target.load(builder);
     }
 
+    public static String getGlyphHex(String glyph) {
+        return FontModel.getGlyphHex(glyph);
+    }
+
     private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, model);
         prepare(builder, target, cachingEnabled, callback);
