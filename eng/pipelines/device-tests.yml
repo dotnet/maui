@@ -173,7 +173,7 @@ stages:
           desc: Controls
           androidApiLevelsExclude: [27, 25] # Ignore for now API25 since the runs's are not stable
           androidConfiguration: 'Debug'
-          iOSConfiguration: 'Release'
+          iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
           windowsPackageId: 'com.microsoft.maui.controls.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
