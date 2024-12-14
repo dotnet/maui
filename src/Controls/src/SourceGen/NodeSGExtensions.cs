@@ -21,16 +21,16 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class NodeSGExtensions
 {
-	static Dictionary<ITypeSymbol, Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>>? KnownSGTypeConverters;
+	static Dictionary<ITypeSymbol, (Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)>? KnownSGTypeConverters;
 
-    static Dictionary<ITypeSymbol, Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>> GetKnownSGTypeConverters(SourceGenContext context)
+    static Dictionary<ITypeSymbol, (Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)> GetKnownSGTypeConverters(SourceGenContext context)
         => KnownSGTypeConverters ??= new (SymbolEqualityComparer.Default)
 	{
-        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, ConvertRect },
-        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.ColorTypeConverter")!, ConvertColor },
-        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.PointTypeConverter")!, ConvertPoint },
-        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, ConvertThickness },
-		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, ConvertCornerRadius },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, (ConvertRect, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!) },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.ColorTypeConverter")!, (ConvertColor, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Color")!) },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.PointTypeConverter")!, (ConvertPoint, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Point")!) },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, (ConvertThickness, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, (ConvertCornerRadius, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!) },
 		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, typeof(EasingTypeConverter) },
 		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexJustify>) },
 		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexDirection>) },
@@ -277,8 +277,15 @@ static class NodeSGExtensions
     {
         var valueString = valueNode.Value as string ?? string.Empty;
 
-        if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converter))
-            return converter.Invoke(valueString, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
+        if (typeConverter is not null && GetKnownSGTypeConverters(context).TryGetValue(typeConverter, out var converterAndReturnType))
+        {
+            var returntype = converterAndReturnType.Item2;
+            if (!context.Compilation.HasImplicitConversion(returntype, toType))
+                //this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
+                //FIXME: better error message
+                context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, null, $"Cannot convert {returntype} to {toType}"));
+            return converterAndReturnType.Item1.Invoke(valueString, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
+        }
 
         if (typeConverter is not null)
             return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
