@@ -602,7 +602,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await AssertionExtensions.WaitForGC(reference);
 	}
-	
+
 	[Fact]
 	public async Task TweenersWillNotLeakDuringInfiniteAnimation()
 	{
@@ -629,6 +629,14 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		Assert.True(AnimationExtensions.TweenersCounter <= 2);
 	}
+}
+
+class MyCommand : ICommand
+{
+	public event EventHandler CanExecuteChanged;
+	public bool CanExecute(object parameter) => true;
+	public void Execute(object parameter) { }
+	public void FireCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
 sealed class AnimationPage : ContentPage
