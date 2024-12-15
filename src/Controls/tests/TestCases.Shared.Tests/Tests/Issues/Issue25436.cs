@@ -19,11 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("BackButton");
 			App.WaitForElement("Login");
 			App.Tap("Login");
-#if ANDROID
-			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Open navigation drawer']"));
-#else
-			App.Tap(FlyoutIconAutomationId);
-#endif
+			App.TapShellFlyoutIcon();
 			VerifyScreenshot();
 		}
 			
