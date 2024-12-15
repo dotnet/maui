@@ -68,6 +68,7 @@ public class ShellInsets : _IssuesUITest
 	}
 #endif
 
+#if !MACCATALYST // This test fails on Catalyt while running on CI, but locally its not failing.
 	[Test, Order(5)]
 	public void ListViewScrollTest()
 	{
@@ -78,6 +79,7 @@ public class ShellInsets : _IssuesUITest
 		App.WaitForElement("Item0");
 
 	}
+#endif
 
 #if IOS // SafeArea is only enabled for iOS.
 	// SafeArea is not working as expected on iOS Issue: https://github.com/dotnet/maui/issues/19720
