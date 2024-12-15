@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    x:Class="Maui.Controls.Sample.Issues.Issue26633">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <x:String x:Key="TestText">ああああLabel that the Column Span is 3</x:String>
+            <x:Double x:Key="TestWidthRequest">301</x:Double>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <VerticalStackLayout Padding="10,10" HorizontalOptions="Fill" Spacing="5">
+        <Label
+            HorizontalOptions="Start">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="The TestText of Label is: &#10;" />
+                    <Span Text="{StaticResource TestText}" FontAttributes="Bold"/>
+                    <Span Text="&#10;&#10;The Correct Height should be: &#10;"/>
+                    <Span Text="{Binding Source={x:Reference LabelInVerticalStackLayout}, Path=Height, x:DataType=Label}" FontAttributes="Bold"/>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+        <Label
+            HorizontalOptions="Start" Margin="0, 15, 0, -5">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Label`s Height in Border is: &#10;" />
+                    <Span Text="{Binding Source={x:Reference LabelInBorder}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        <Border HorizontalOptions="Center" WidthRequest="{StaticResource TestWidthRequest}" Padding="0" Margin="0" StrokeThickness="0">
+            <Label
+                x:Name="LabelInBorder"
+                BackgroundColor="Pink"
+                Text="{StaticResource TestText}" FontSize="16"
+                HorizontalOptions="Fill" VerticalOptions="Center"
+                VerticalTextAlignment="Center" />
+        </Border>
+
+        <Label
+            HorizontalOptions="Start" Margin="0, 15, 0, -15">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Label`s Height in VerticalStackLayout is: &#10;" />
+                    <Span Text="{Binding Source={x:Reference LabelInVerticalStackLayout}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        <VerticalStackLayout HorizontalOptions="Center" WidthRequest="{StaticResource TestWidthRequest}" Padding="0">
+            <Label
+                x:Name="LabelInVerticalStackLayout"
+                BackgroundColor="Pink"
+                Text="{StaticResource TestText}" FontSize="16"
+                HorizontalOptions="Fill" VerticalOptions="Center"
+                VerticalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <Label
+            HorizontalOptions="Start" Margin="0, 15, 0, -5">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Label`s Height in HorizontalStackLayout is: &#10;" />
+                    <Span Text="{Binding Source={x:Reference LabelInHorizontalStackLayout}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        <HorizontalStackLayout HorizontalOptions="Center" WidthRequest="{StaticResource TestWidthRequest}" Padding="0">
+            <Label
+                x:Name="LabelInHorizontalStackLayout"
+                BackgroundColor="Pink"
+                Text="{StaticResource TestText}" FontSize="16"
+                HorizontalOptions="Fill" VerticalOptions="Center"
+                VerticalTextAlignment="Center" />
+        </HorizontalStackLayout>
+
+        <Label
+            HorizontalOptions="Start" Margin="0, 15, 0, -5">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="The Label`s Height in Grid with ColumnSpacing is: &#10;" TextColor="Red"/>
+                    <Span Text="{Binding Source={x:Reference LabelInGridWithColumnSpacing}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        <Grid 
+            ColumnDefinitions="auto,*,auto" ColumnSpacing="6"
+            RowDefinitions="10,*,10"
+            BackgroundColor="Gray"
+            HorizontalOptions="Fill"
+            WidthRequest="{StaticResource TestWidthRequest}">
+            <BoxView
+                Grid.Row="0" Grid.RowSpan="3" Grid.Column="0"
+                WidthRequest="20" BackgroundColor="Yellow"/>
+            <BoxView
+                Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" WidthRequest="20"
+                BackgroundColor="Yellow"/>
+            <Label 
+                x:Name="LabelInGridWithColumnSpacing"
+                AutomationId="WaitForTargetLabel"
+                Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                BackgroundColor="Pink"
+                Text="{StaticResource TestText}" FontSize="16"
+                HorizontalOptions="Fill" VerticalOptions="Center"
+                VerticalTextAlignment="Center" />
+        </Grid>
+        
+        <Label
+            HorizontalOptions="Start" Margin="0, 15, 0, -5">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="The Label`s Height in Grid without ColumnSpacing is: &#10;" />
+                    <Span Text="{Binding Source={x:Reference LabelInGridWithoutColumnSpacing}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        <Grid
+            ColumnDefinitions="*" ColumnSpacing="6"
+            RowDefinitions="10,*,10"
+            BackgroundColor="Gray"
+            HorizontalOptions="Fill"
+            WidthRequest="{StaticResource TestWidthRequest}">
+            <Label
+                x:Name="LabelInGridWithoutColumnSpacing"
+                AutomationId="WaitForTargetLabel2"
+                Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                BackgroundColor="Pink"
+                Text="{StaticResource TestText}" FontSize="16"
+                HorizontalOptions="Fill" VerticalOptions="Center"
+                VerticalTextAlignment="Center" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentPage>
