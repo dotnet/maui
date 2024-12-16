@@ -1,4 +1,4 @@
-﻿#if !MACCATALYST
+﻿#if TEST_FAILS_ON_CATALYST // Scroll actions do not work on MacCatalyst, so this test is ignored on MacCatalyst.
 
 using NUnit.Framework;
 using UITest.Appium;
