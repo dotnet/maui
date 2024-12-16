@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics.Skia;
 using Xunit;
@@ -39,7 +40,7 @@ public class SkiaSharpScenarioTests
 		}
 
 		// file existed, compare
-		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory());
+		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0);
 	}
 
 	private static string ProjectRoot =>
@@ -48,7 +49,12 @@ public class SkiaSharpScenarioTests
 	private static string GetExpectedImageaPath(AbstractScenario scenario)
 	{
 		var fileName = GetSafeFilename(scenario.ToString()) + ".png";
-		var filePath = Path.Combine("TestImages", fileName);
+		var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+			? "Windows"
+			: RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+				? "Mac"
+				: "Linux";
+		var filePath = Path.Combine("TestImages", os, fileName);
 
 		return filePath;
 	}

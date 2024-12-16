@@ -9,24 +9,24 @@ public static class ImageAssert
 {
 	private const double ImageErrorThreshold = 0.0027;
 
-	public static void Equivalent(Stream actualData, string expectedFilename, string diffDirectory)
+	public static void Equivalent(Stream actualData, string expectedFilename, string diffDirectory, double threshold = ImageErrorThreshold)
 	{
 		using var actual = SKImage.FromEncodedData(actualData);
-		Equivalent(actual, expectedFilename, diffDirectory);
+		Equivalent(actual, expectedFilename, diffDirectory, threshold);
 	}
 
-	public static void Equivalent(string actualFilename, string expectedFilename, string diffDirectory)
+	public static void Equivalent(string actualFilename, string expectedFilename, string diffDirectory, double threshold = ImageErrorThreshold)
 	{
 		using var actual = SKImage.FromEncodedData(actualFilename);
-		Equivalent(actual, expectedFilename, diffDirectory);
+		Equivalent(actual, expectedFilename, diffDirectory, threshold);
 	}
 
-	public static void Equivalent(SKImage actual, string expectedFilename, string diffDirectory)
+	public static void Equivalent(SKImage actual, string expectedFilename, string diffDirectory, double threshold = ImageErrorThreshold)
 	{
 		var expected = SKImage.FromEncodedData(expectedFilename);
 		var similarity = SKPixelComparer.Compare(actual, expected);
 
-		var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
+		var isSimilar = similarity.ErrorPixelPercentage <= threshold;
 
 		if (isSimilar)
 		{
