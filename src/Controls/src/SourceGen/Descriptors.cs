@@ -70,6 +70,22 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor EnumTypeConverterConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1009",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.EnumTypeConverterConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor FlexBasisConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1009",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.FlexBasisConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		//Symbol resolution
 		public static DiagnosticDescriptor TypeResolution = new DiagnosticDescriptor(
 			id: "MAUIX2000",

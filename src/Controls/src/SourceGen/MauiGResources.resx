@@ -173,4 +173,12 @@
     <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
     <comment/>
   </data>
+  <data name="EnumTypeConverterConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into expected enum type "{1}".</value>
+    <comment/>
+  </data>
+  <data name="FlexBasisConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
+    <comment/>
+  </data>
 </root>
