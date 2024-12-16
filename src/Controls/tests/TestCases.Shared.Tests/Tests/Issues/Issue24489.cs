@@ -16,17 +16,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Window)]
-        public void TitleBarIsImplemented1()
-        {
-            App.WaitForElement("ToggleButton");
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
-            App.WaitForElement("ToggleButton").Tap();
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Removed");
-            App.WaitForElement("ToggleButton").Tap();
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
-            App.WaitForElement("ToggleButton2").Tap();
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_TextAndSizeChanged");
-        }
-    }
+		public void TitleBarIsImplemented1()
+		{
+			App.WaitForElement("ToggleButton");
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			App.WaitForElement("ToggleButton").Tap();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Removed");
+			App.WaitForElement("ToggleButton").Tap();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			App.WaitForElement("ToggleButton2").Tap();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_TextAndSizeChanged");
+		}
+	}
 }
 #endif

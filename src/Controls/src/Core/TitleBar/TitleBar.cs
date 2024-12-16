@@ -355,6 +355,7 @@ namespace Microsoft.Maui.Controls
 				},
 				IgnoreSafeArea = true,
 			};
+
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
 				static (TitleBar tb) => tb.BackgroundColor,

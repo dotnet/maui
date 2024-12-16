@@ -202,19 +202,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
-#pragma warning disable RS0016 // Mark members as static
-		public override void ViewDidLayoutSubviews()
-		{
-
-			base.ViewDidLayoutSubviews();
-		}
-
-		public override void ViewSafeAreaInsetsDidChange()
-			{
-				base.ViewSafeAreaInsetsDidChange();
-				// AdjustForTitleBar();
-			}
-
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
