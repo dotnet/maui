@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST // VerifyScreenshot() method is not implemented in macOS
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_CATALYST // VerifyScreenshot() method is not implemented in macOS. Pulling action is not supported in windows platform. 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
