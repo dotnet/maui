@@ -213,7 +213,6 @@ namespace Microsoft.Maui.Handlers
 			};
 			
 			paddingShim.SetClipChildren(false);
-
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
