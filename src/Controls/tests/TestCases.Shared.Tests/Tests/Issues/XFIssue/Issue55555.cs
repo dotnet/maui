@@ -12,11 +12,10 @@ public class Issue55555 : _IssuesUITest
 
 	public override string Issue => "Header problem";
 
-	//[Test]
-	//[Category(UITestCategories.ListView)]
-	//[FailsOnIOS]
-	//public void TGroupDisplayBindingPresentRecycleElementTest()
-	//{
-	//	App.WaitForElement(q => q.Marked("vegetables"));
-	//}
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void TGroupDisplayBindingPresentRecycleElementTest()
+	{
+		App.WaitForElement("vegetables");
+	}
 }
