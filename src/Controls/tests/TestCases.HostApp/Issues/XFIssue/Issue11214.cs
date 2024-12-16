@@ -5,6 +5,10 @@ namespace Maui.Controls.Sample.Issues;
 public class Issue11214 : TestShell
 {
 	FlyoutItem _itemexpanderItems;
+#if WINDOWS
+	// Modifying SelectedItem in Navigation view causes the OnNavigated method to be called again. 
+	int count = 0;
+#endif
 	protected override void Init()
 	{
 		_itemexpanderItems = new FlyoutItem()
@@ -47,8 +51,14 @@ public class Issue11214 : TestShell
 
 		args.Cancel();
 
+#if WINDOWS
+		count++;
+		if (count % 2 == 0)
+			return;
+#endif
+
 		if (_itemexpanderItems.Items.Count == 0 ||
-			_itemexpanderItems.Items[0].Items.Count == 0)
+				_itemexpanderItems.Items[0].Items.Count == 0)
 		{
 			for (int i = 0; i < 2; i++)
 			{
