@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void GradientAndShadowShouldWOrk()
+		public void GradientAndShadowShouldWork()
 		{
 			App.WaitForElement("HeaderLabel");
 			VerifyScreenshot();
