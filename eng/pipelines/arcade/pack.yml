@@ -117,8 +117,7 @@ steps:
   #       artifactName: '$(Agent.JobName)_CodeCoverageResults'
 
   # Run on windows, for internal pipeline
-  - ${{ if and(eq(parameters.isWindows, 'true'), ne(parameters.runAsPublic, 'true') ) }}:
-
+  - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
               -pack 
               -sign $(_SignArgs)

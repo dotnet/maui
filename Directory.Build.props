@@ -253,11 +253,4 @@
     <!-- Disables the transitive restore of packages like Microsoft.AspNetCore.App.Ref, Microsoft.WindowsDesktop.App.Ref -->
     <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
-
-  <!-- Cake replacements -->
-  <PropertyGroup>
-    <BuildLogRoot Condition=" Exists('$(BUILD_ARTIFACTSTAGINGDIRECTORY)') ">$(BUILD_ARTIFACTSTAGINGDIRECTORY)/logs/</BuildLogRoot>
-    <BuildLogRoot Condition=" '$(BuildLogRoot)' == '' ">$(PackageOutputPath)/logs/</BuildLogRoot>
-    <BuildLogPrefix>$(BuildLogRoot)/$([System.DateTime]::Now.ToString ("yyyyMMddTHHmmss"))</BuildLogPrefix>
-  </PropertyGroup>
 </Project>

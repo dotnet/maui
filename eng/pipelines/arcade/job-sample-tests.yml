@@ -1,0 +1,36 @@
+parameters:
+  jobName: ''             # Name of the job
+  jobDisplayName: ''      # Display name of the job
+  testOS: ''              # 'macOS' or 'Windows'
+  pool: []
+  mauiSourcePath: $(Build.SourcesDirectory)
+  configuration: Debug
+  logPath: $(Build.ArtifactStagingDirectory)
+
+
+jobs:
+- job: ${{ parameters.jobName }}
+  displayName: ${{ parameters.jobDisplayName }}
+  pool: ${{ parameters.pool }}
+  timeoutInMinutes: 120
+  steps:
+  - template: /eng/pipelines/arcade/setup-test-env.yml
+    parameters:
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: Run Sample Integration Tests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --filter "Category=Samples" --logger trx --results-directory $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Microsoft.Maui.IntegrationTests/*.trx
+      testRunTitle: Sample Integration Tests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/fail-on-issue.yml

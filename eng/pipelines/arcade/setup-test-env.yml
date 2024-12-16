@@ -1,30 +1,21 @@
 parameters:
   mauiSourcePath: $(Build.SourcesDirectory)
+  configuration: Debug
   logPath: $(Build.ArtifactStagingDirectory)
+  installPackageArtifacts: true
 
 steps:
 - checkout: self
   fetchDepth: 1
   clean: true
 
-- task: UseDotNet@2
-  displayName: Install .NET 9.x
-  inputs:
-    version: 9.x
-    includePreviewVersions: true
-
-- task: DotNetCoreCLI@2
-  displayName: Install dotnet preview
-  inputs:
-    projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
-    arguments: '-bl:${{ parameters.logPath }}/install-dotnet.binlog'
-
-- template: /eng/pipelines/common/run-dotnet-preview.yml
-  parameters:
-    displayName: Build MSBuild Tasks
-    mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
-    arguments: '-bl:${{ parameters.logPath }}/Microsoft.Maui.BuildTasks.binlog'
+# Setup JDK Paths (gradle needs it)
+- bash: |
+    echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_17_X64)"
+    echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_17_X64)"
+  #  brew install --cask microsoft-openjdk@17
+  displayName: 'Setup JDK Paths'
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
 - pwsh: |
     if ($env:JAVA_HOME_17_X64) {
@@ -41,4 +32,47 @@ steps:
     } else {
       echo "Unable to set JAVA_HOME"
     }
-  displayName: Set JAVA_HOME to JDK 17
+  displayName: 'Setup JDK Paths'
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+- task: UseDotNet@2
+  displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+  inputs:
+    packageType: sdk
+    version: $(DOTNET_VERSION)
+    includePreviewVersions: true
+
+
+- ${{ if eq(parameters.installPackageArtifacts, true) }}:
+  - task: DownloadPipelineArtifact@2
+    displayName: Download PackageArtifacts
+    inputs:
+      artifactName: PackageArtifacts
+      itemPattern: '**/*.nupkg'
+      targetPath: ${{ parameters.mauiSourcePath }}/artifacts
+
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview without workloads
+    inputs:
+      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
+
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview workloads from PackageArtifacts
+    inputs:
+      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-t:Install -c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
+
+- ${{ else }}:
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview
+    inputs:
+      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: Build MSBuild Tasks
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
+      arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/Microsoft.Maui.BuildTasks.binlog'
