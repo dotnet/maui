@@ -213,8 +213,8 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom += (titleHeight / 2) + sharedSpacing;
-					imageInsets.Left += (float)(size.Width - imageWidth) / 2;
-					imageInsets.Right += (float)(size.Width - imageWidth) / 2;
+					imageInsets.Left += (float)(((size.Width - imageWidth) / 2) - borderWidth);
+					imageInsets.Right += (float)(((size.Width - imageWidth) / 2) - borderWidth);
 
 					titleInsets.Top += (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
@@ -225,8 +225,8 @@ namespace Microsoft.Maui.Controls
 				{
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
-					imageInsets.Left += (float)(size.Width - imageWidth) / 2;
-					imageInsets.Right += (float)(size.Width - imageWidth) / 2;
+					imageInsets.Left += (float)(((size.Width - imageWidth) / 2) - borderWidth);
+					imageInsets.Right += (float)(((size.Width - imageWidth) / 2) - borderWidth);
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += (imageHeight / 2) + sharedSpacing;
