@@ -174,20 +174,34 @@ static class NodeSGExtensions
         "YellowGreen"
     };
 
-        // #rgb, #rrggbb, #aarrggbb are all valid 
-        const string RxColorHexPattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
-        static readonly Lazy<Regex> RxColorHex = new(() => new Regex(RxColorHexPattern, RegexOptions.Compiled | RegexOptions.Singleline));
+    // #rgb, #rrggbb, #aarrggbb are all valid 
+    const string RxColorHexPattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
+    static readonly Lazy<Regex> RxColorHex = new(() => new Regex(RxColorHexPattern, RegexOptions.Compiled | RegexOptions.Singleline));
 
-        // RGB		rgb(255,0,0), rgb(100%,0%,0%)					values in range 0-255 or 0%-100%
-        // RGBA		rgba(255, 0, 0, 0.8), rgba(100%, 0%, 0%, 0.8)	opacity is 0.0-1.0
-        // HSL		hsl(120, 100%, 50%)								h is 0-360, s and l are 0%-100%
-        // HSLA		hsla(120, 100%, 50%, .8)						opacity is 0.0-1.0
-        // HSV		hsv(120, 100%, 50%)								h is 0-360, s and v are 0%-100%
-        // HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
-        const string RxFuncPattern = "^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$";
-        static readonly Lazy<Regex> RxFuncExpr = new(() => new Regex(RxFuncPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline));
+    // RGB		rgb(255,0,0), rgb(100%,0%,0%)					values in range 0-255 or 0%-100%
+    // RGBA		rgba(255, 0, 0, 0.8), rgba(100%, 0%, 0%, 0.8)	opacity is 0.0-1.0
+    // HSL		hsl(120, 100%, 50%)								h is 0-360, s and l are 0%-100%
+    // HSLA		hsla(120, 100%, 50%, .8)						opacity is 0.0-1.0
+    // HSV		hsv(120, 100%, 50%)								h is 0-360, s and v are 0%-100%
+    // HSVA		hsva(120, 100%, 50%, .8)						opacity is 0.0-1.0
+    const string RxFuncPattern = "^(?<func>rgba|argb|rgb|hsla|hsl|hsva|hsv)\\(((?<v>\\d%?),){2}((?<v>\\d%?)|(?<v>\\d%?),(?<v>\\d%?))\\);?$";
+    static readonly Lazy<Regex> RxFuncExpr = new(() => new Regex(RxFuncPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline));
+
+    static readonly HashSet<string> KnownEasingNames = new (StringComparer.OrdinalIgnoreCase)
+    {
+        "Linear",
+        "SinOut",
+        "SinIn",
+        "SinInOut",
+        "CubicIn",
+        "CubicOut",
+        "CubicInOut",
+        "BounceOut",
+        "BounceIn",
+        "SpringIn",
+        "SpringOut"
+    };
     
-
 	static Dictionary<ITypeSymbol, (Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)>? KnownSGTypeConverters;
 
     static Dictionary<ITypeSymbol, (Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)> GetKnownSGTypeConverters(SourceGenContext context)
@@ -198,7 +212,7 @@ static class NodeSGExtensions
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.PointTypeConverter")!, (ConvertPoint, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Point")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, (ConvertThickness, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, (ConvertCornerRadius, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, typeof(EasingTypeConverter) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, (ConvertEasing, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!) },
 		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexJustify>) },
 		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexDirection>) },
 		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignContentTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignContent>) },
@@ -290,7 +304,6 @@ static class NodeSGExtensions
         return "default";
     }
 
-    // Q: Do we want to support CSS notation?
     static string ConvertThickness(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
@@ -355,7 +368,6 @@ static class NodeSGExtensions
         return "default";
     }
 
-    // Q: Do we want to support CSS notation?
     static string ConvertCornerRadius(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
@@ -402,6 +414,30 @@ static class NodeSGExtensions
             { //single uniform CornerRadius
                 if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double l))
                     return $"new global::Microsoft.Maui.CornerRadius({l})";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, null, value));
+
+        return "default";
+    }
+
+    static string ConvertEasing(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        var easingName = value;
+
+        if (!string.IsNullOrWhiteSpace(easingName))
+        {
+            var parts = easingName.Split('.');
+			if (parts.Length == 2 && parts[0].Equals("Easing", StringComparison.OrdinalIgnoreCase))
+            {
+				easingName = parts[1];
+            }
+
+            if (KnownEasingNames.Contains(easingName))
+            {
+                return $"global::Microsoft.Maui.Easing.{easingName}";
             }
         }
 
