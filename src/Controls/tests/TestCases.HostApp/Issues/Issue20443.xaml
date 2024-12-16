@@ -22,7 +22,7 @@
                                 <Grid
                                     HeightRequest="20"
                                     BackgroundColor="Aqua">
-                                    <Label Text="20"/>
+                                    <Label Text="20" AutomationId="lblSmall"/>
                                 </Grid>
                             </DataTemplate>
                         </local:Issue20443TemplateSelector.ItemATemplate>
@@ -31,7 +31,7 @@
                                 <Grid
                                     HeightRequest="100"
                                     BackgroundColor="Pink">
-                                    <Label Text="100"/>
+                                    <Label Text="100" AutomationId="lblBig"/>
                                 </Grid>
                             </DataTemplate>
                         </local:Issue20443TemplateSelector.ItemBTemplate>
