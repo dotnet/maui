@@ -62,6 +62,7 @@ static partial class ITypeSymbolExtensions
 
     public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol) => symbol.GetAllMembers().OfType<IFieldSymbol>();
     public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name) => symbol.GetAllMembers(name).OfType<IFieldSymbol>();
+    public static IEnumerable<IFieldSymbol> GetFields(this ITypeSymbol symbol) => symbol.GetFields();
     
     public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol)
     {
