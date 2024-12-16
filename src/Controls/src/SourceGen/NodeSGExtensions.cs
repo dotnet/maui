@@ -202,9 +202,9 @@ static class NodeSGExtensions
         "SpringOut"
     };
     
-	static Dictionary<ITypeSymbol, (Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)>? KnownSGTypeConverters;
+	static Dictionary<ITypeSymbol, (Func<string, ITypeSymbol, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)>? KnownSGTypeConverters;
 
-    static Dictionary<ITypeSymbol, (Func<string, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)> GetKnownSGTypeConverters(SourceGenContext context)
+    static Dictionary<ITypeSymbol, (Func<string, ITypeSymbol, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)> GetKnownSGTypeConverters(SourceGenContext context)
         => KnownSGTypeConverters ??= new (SymbolEqualityComparer.Default)
 	{
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, (ConvertRect, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!) },
@@ -213,16 +213,16 @@ static class NodeSGExtensions
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.ThicknessTypeConverter")!, (ConvertThickness, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Thickness")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.CornerRadiusTypeConverter")!, (ConvertCornerRadius, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.CornerRadius")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.EasingTypeConverter")!, (ConvertEasing, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Easing")!) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexJustify>) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexDirection>) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignContentTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignContent>) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignItemsTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignItems>) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignSelfTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexAlignSelf>) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexWrapTypeConverter")!, typeof(EnumTypeConverter<Layouts.FlexWrap>) },
-		// { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexBasisTypeConverter")!, typeof(FlexBasisTypeConverter) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexJustifyTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexJustify")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexDirectionTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexDirection")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignContentTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignContent")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignItemsTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignItems")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexAlignSelfTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexAlignSelf")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexWrapTypeConverter")!, (ConvertEnum, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexWrap")!) },
+		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexBasisTypeConverter")!, (ConvertFlexBasis, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!) },
 	};
 
-    static string ConvertRect(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    static string ConvertRect(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
         var values = value.Split([','], StringSplitOptions.RemoveEmptyEntries)
@@ -247,7 +247,7 @@ static class NodeSGExtensions
         return "default";
     }
 
-    static string ConvertColor(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    static string ConvertColor(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -285,7 +285,7 @@ static class NodeSGExtensions
         return "default";
     }
 
-    static string ConvertPoint(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    static string ConvertPoint(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
@@ -304,7 +304,7 @@ static class NodeSGExtensions
         return "default";
     }
 
-    static string ConvertThickness(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    static string ConvertThickness(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
@@ -368,7 +368,7 @@ static class NodeSGExtensions
         return "default";
     }
 
-    static string ConvertCornerRadius(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    static string ConvertCornerRadius(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
 
@@ -423,7 +423,7 @@ static class NodeSGExtensions
         return "default";
     }
 
-    static string ConvertEasing(string value, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    static string ConvertEasing(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         var easingName = value;
 
@@ -443,6 +443,53 @@ static class NodeSGExtensions
 
         // TODO use correct position
         reportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, null, value));
+
+        return "default";
+    }
+
+    static string ConvertEnum(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
+        {
+            var detectedEnumValue = toType.GetFields().FirstOrDefault(
+                f => string.Equals(f.Name, value, StringComparison.OrdinalIgnoreCase));
+
+            if (detectedEnumValue is not null)
+            {
+                return $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{detectedEnumValue}";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, null, value, value, toType?.ToDisplayString()));
+
+        return "default";
+    }
+
+    static string ConvertFlexBasis(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+            if (value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"global::Microsoft.Maui.Layouts.FlexBasis.Auto";
+            }
+
+            if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase)
+                && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
+            {
+                return $"new global::Microsoft.Maui.Layouts.FlexBasis({relflex / 100}, true)";
+            }
+
+            if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
+            {
+                return $"new global::Microsoft.Maui.Layouts.FlexBasis({flex}, false)";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, null, value));
 
         return "default";
     }
@@ -511,7 +558,7 @@ static class NodeSGExtensions
                 //this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
                 //FIXME: better error message
                 context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, null, $"Cannot convert {returntype} to {toType}"));
-            return converterAndReturnType.Item1.Invoke(valueString, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
+            return converterAndReturnType.Item1.Invoke(valueString, toType, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
         }
 
         if (typeConverter is not null)

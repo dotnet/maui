@@ -129,6 +129,18 @@ namespace Microsoft.Maui.Controls.SourceGen {
             }
         }
 
+        internal static string EnumTypeConverterConversionFailed {
+            get {
+                return ResourceManager.GetString("EnumTypeConverterConversionFailed", resourceCulture);
+            }
+        }
+        
+        internal static string FlexBasisConversionFailed {
+            get {
+                return ResourceManager.GetString("FlexBasisConversionFailed", resourceCulture);
+            }
+        }
+
         internal static string SymbolResolution {
             get {
                 return ResourceManager.GetString("SymbolResolution", resourceCulture);
