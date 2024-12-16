@@ -14,7 +14,7 @@ public class StackLayoutIssue : TestContentPage
 			WidthRequest = 20,
 			HeightRequest = 20,
 			VerticalOptions = LayoutOptions.FillAndExpand,
-			AutomationId="Image"
+			AutomationId="FirstImage"
 		};
 #pragma warning restore CS0618 // Type or member is obsolete
 
@@ -123,7 +123,7 @@ public class StackLayoutIssue : TestContentPage
 			Source = "cover1.jpg",
 			WidthRequest = 100,
 			HeightRequest = 100,
-			AutomationId="Image"
+			AutomationId="SecondImage"
 		};
 
 		var result = new StackLayout

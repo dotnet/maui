@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // FindsElements method not works
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,21 +16,16 @@ public class StackLayoutIssue : _IssuesUITest
 	[Category(UITestCategories.Layout)]
 	public void StackLayoutIssueTestsAllElementsPresent()
 	{
-		// TODO: Fix ME
-		var images = App.FindElements("Image").Count;
-		Assert.That (images, Is.EqualTo(2));
+		App.WaitForElement("FirstImage");
+		App.FindElement("SecondImage");
+		App.WaitForElement("Prize");
+		App.WaitForElement("FullName");
+		App.WaitForElement("Email");
+		App.WaitForElement("Company");
+		App.WaitForElement("Challenge");
 
-		App.WaitForElement ("Prize");
-		App.WaitForElement ("FullName");
-		App.WaitForElement ("Email");
-		App.WaitForElement ("Company");
-		App.WaitForElement ("Challenge");
+		App.WaitForElement("Switch");
 
-		var switches = App.FindElements("Switch").Count;
-		Assert.That (switches, Is.EqualTo(1));
-
-		App.WaitForElement ("Spin");
-		//Assert.Inconclusive("Fix Test");
+		App.WaitForElement("Spin");
 	}
 }
-#endif
