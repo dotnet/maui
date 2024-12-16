@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Multi-Project App",
-  "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst and WinUI with multiple, separate app projects.",
+  "name": "Víceprojektová aplikace .NET MAUI",
+  "description": "Projekt pro vytvoření .NET MAUI aplikace pro iOS, Android, Mac Catalyst a WinUI s několika samostatnými projekty aplikací",
   "postActions/openInEditor/description": "Otevře soubor MainPage.xaml v editoru.",
   "symbols/applicationId/description": "Přepíše v projektu $(ApplicationId).",
   "symbols/Framework/description": "Cílová architektura pro projekt",

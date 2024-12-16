@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Platform;
+namespace Microsoft.Maui.Platform;
 
 class GeneralWrapperView : MauiView, ICrossPlatformLayout
 {
