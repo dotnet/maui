@@ -26,14 +26,8 @@ public class MainPageModel : INotifyPropertyChanged
 
     private bool _isRefreshed;
     public ObservableCollection<ItemViewModel> Items { get; } = new ObservableCollection<ItemViewModel>();
-
-    // INotifyPropertyChanged implementation
     public event PropertyChangedEventHandler PropertyChanged;
-
-	// Define the command property
     public ICommand RefreshCommand { get; set;}
-
-    // Property for IsRefreshing
     public bool IsRefreshing
     {
         get => _isRefreshing;
@@ -59,8 +53,6 @@ public class MainPageModel : INotifyPropertyChanged
             }
         }
     }
-
-    // Command method for Refresh
     public async Task RefreshAsync()
     {
         try
@@ -86,13 +78,9 @@ public class MainPageModel : INotifyPropertyChanged
 	{
 		RefreshCommand = new Command(async () => await RefreshAsync());
 	}
-
-    // Initialize Items collection
     public async Task InitItems()
     {
         await Task.Delay(2000);
-
-        // Updating UI on the UI thread if necessary
         
         Application.Current?.Dispatcher.Dispatch(() =>
         {
@@ -103,8 +91,6 @@ public class MainPageModel : INotifyPropertyChanged
             }
         });
     }
-
-    // Generate a list of items (for demonstration purposes)
     private List<ItemViewModel> GetItems()
     {
         return new List<ItemViewModel>
@@ -123,8 +109,6 @@ public class MainPageModel : INotifyPropertyChanged
             new ItemViewModel { TextLine1 = "1" }
         };
     }
-
-    // Raise PropertyChanged event
     protected void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -136,11 +120,7 @@ public class ItemViewModel : INotifyPropertyChanged
     private string _textLine1;
     private string _textLine2;
     private string _textLine3;
-
-    // Implement INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
-
-    // Property for TextLine1
     public string TextLine1
     {
         get => _textLine1;
@@ -150,12 +130,10 @@ public class ItemViewModel : INotifyPropertyChanged
             {
                 _textLine1 = value;
                 OnPropertyChanged(nameof(TextLine1));
-                OnPropertyChanged(nameof(ShowTextLine1)); // Notify that ShowTextLine1 has changed
+                OnPropertyChanged(nameof(ShowTextLine1)); 
             }
         }
     }
-
-    // Property for TextLine2
     public string TextLine2
     {
         get => _textLine2;
@@ -165,12 +143,10 @@ public class ItemViewModel : INotifyPropertyChanged
             {
                 _textLine2 = value;
                 OnPropertyChanged(nameof(TextLine2));
-                OnPropertyChanged(nameof(ShowTextLine2)); // Notify that ShowTextLine2 has changed
+                OnPropertyChanged(nameof(ShowTextLine2)); 
             }
         }
     }
-
-    // Property for TextLine3
     public string TextLine3
     {
         get => _textLine3;
@@ -180,21 +156,13 @@ public class ItemViewModel : INotifyPropertyChanged
             {
                 _textLine3 = value;
                 OnPropertyChanged(nameof(TextLine3));
-                OnPropertyChanged(nameof(ShowTextLine3)); // Notify that ShowTextLine3 has changed
+                OnPropertyChanged(nameof(ShowTextLine3));
             }
         }
     }
-
-    // Computed property to show if TextLine1 has a value
     public bool ShowTextLine1 => !string.IsNullOrWhiteSpace(TextLine1);
-
-    // Computed property to show if TextLine2 has a value
     public bool ShowTextLine2 => !string.IsNullOrWhiteSpace(TextLine2);
-
-    // Computed property to show if TextLine3 has a value
     public bool ShowTextLine3 => !string.IsNullOrWhiteSpace(TextLine3);
-
-    // Raise PropertyChanged event
     protected void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
