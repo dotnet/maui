@@ -15,15 +15,141 @@ jobs:
     parameters:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
 
-  - task: DotNetCoreCLI@2
-    inputs:
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Controls.Core.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
-      projects: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj
-      publishTestResults: true
-      testRunTitle: Controls.Core.UnitTests - ${{ parameters.testOS }}
-    displayName: run Controls.Core.UnitTests - ${{ parameters.testOS }}
-    continueOnError: true
+      project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Core.UnitTests'
+      useExitCodeForErrors: true
 
-  # TODO: Add remaining unit test projects
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Controls.Core.UnitTests/*.trx
+      testRunTitle: Controls.Core.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Controls.Xaml.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Controls.Xaml.UnitTests/*.trx
+      testRunTitle: Controls.Xaml.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run SourceGen.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/SourceGen.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/SourceGen.UnitTests/*.trx
+      testRunTitle: SourceGen.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Controls.BindingSourceGen.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests/*.trx
+      testRunTitle: Controls.BindingSourceGen.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Core.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Core/tests/UnitTests/Core.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Core.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Core.UnitTests/*.trx
+      testRunTitle: Core.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Essentials.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Essentials/test/UnitTests/Essentials.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Essentials.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Essentials.UnitTests/*.trx
+      testRunTitle: Essentials.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Resizetizer.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Resizetizer.UnitTests/*.trx
+      testRunTitle: Resizetizer.UnitTests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Graphics.Tests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Graphics.Tests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Graphics.Tests/*.trx
+      testRunTitle: Graphics.Tests - ${{ parameters.testOS }}
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: run Compatibility.Core.UnitTests - ${{ parameters.testOS }}
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      command: test
+      project: ${{ parameters.mauiSourcePath }}/src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj
+      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Compatibility.Core.UnitTests'
+      useExitCodeForErrors: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: $(Agent.TempDirectory)/Compatibility.Core.UnitTests/*.trx
+      testRunTitle: Compatibility.Core.UnitTests - ${{ parameters.testOS }}
+
+  # TODO: Controls.Core.Design.UnitTests.csproj
 
   - template: /eng/pipelines/common/fail-on-issue.yml
