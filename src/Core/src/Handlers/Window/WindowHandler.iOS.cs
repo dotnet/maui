@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.PlatformView.RootViewController is WindowViewController controller && handler?.MauiContext is IMauiContext mauiContext)
 			{
-				controller.SetUpTitleBar(window, mauiContext, false);
+				controller.SetUpTitleBar(window, mauiContext);
 			}
 		}
 #endif

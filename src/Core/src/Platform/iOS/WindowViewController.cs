@@ -62,7 +62,7 @@ internal class WindowViewController : UIViewController
 
 		}
 
-		SetUpTitleBar(window, mauiContext, true);
+		SetUpTitleBar(window, mauiContext);
 
 		AddChildViewController(contentViewController);
 		contentViewController.DidMoveToParentViewController(this);
@@ -97,8 +97,7 @@ internal class WindowViewController : UIViewController
 	/// </summary>
 	/// <param name="window">An instance of the <see cref="IWindow"/>.</param>
 	/// <param name="mauiContext">An instance of the <see cref="IMauiContext"/>.</param>
-	/// <param name="isInitializing"></param>
-	public void SetUpTitleBar(IWindow window, IMauiContext mauiContext, bool isInitializing)
+	public void SetUpTitleBar(IWindow window, IMauiContext mauiContext)
 	{
 		var platformWindow = window.Handler?.PlatformView as UIWindow;
 
@@ -134,8 +133,12 @@ internal class WindowViewController : UIViewController
 
 		if (newTitleBar is not null && platformTitleBar is not null)
 		{
-			platformTitleBar.Toolbar = null;
 			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Hidden;
+		}
+
+		else if (newTitleBar is null && platformTitleBar is not null)
+		{
+			platformTitleBar.TitleVisibility = UITitlebarTitleVisibility.Visible;
 		}
 
 		IsFirstLayout = true;

@@ -11,6 +11,16 @@ public partial class Issue24489 : ContentPage
 	public Issue24489()
 	{
 		InitializeComponent();
+		SetTitleBar();
+	}
+
+	public Issue24489(int heightRequest) : this()
+	{
+		_customTitleBar.HeightRequest = heightRequest;
+	}
+
+	void SetTitleBar()
+	{
 		var grid = CreateGrid(true);
 
 		_customTitleBar = new TitleBar()

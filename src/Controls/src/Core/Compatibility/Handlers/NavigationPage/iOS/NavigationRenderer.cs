@@ -1912,7 +1912,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 
-
 				base.LayoutSubviews();
 			}
 
@@ -1939,7 +1938,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				var controller = (navController.Current.Window.Handler?.PlatformView as UIWindow)?.RootViewController as WindowViewController;
+				var controller = (navController.Current?.Window?.Handler?.PlatformView as UIWindow)?.RootViewController as WindowViewController;
 
 				if (controller is not null && _originalSafeAreaConstant is nfloat originalSafeAreaConstant)
 				{
