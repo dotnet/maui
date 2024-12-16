@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 {
 	public partial class ShellChromeGallery
 	{
-		AppShell? AppShell => this.Window!.Page as AppShell;
+		AppShell? AppShell => Application.Current?.Windows?.FirstOrDefault()?.Page as AppShell;
 
 		public ShellChromeGallery()
 		{
