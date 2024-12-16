@@ -58,114 +58,85 @@ parameters:
       docsArtifact: xml-docs
       artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
-resources:
-  repositories:
-    - repository: 1ESPipelineTemplates
-      type: git
-      name: 1ESPipelineTemplates/1ESPipelineTemplates
-      ref: refs/tags/release
+stages:
+- stage: Pack
+  displayName: Pack .NET MAUI
+  dependsOn: []
+  jobs:
+    - template: /eng/common/templates-official/jobs/jobs.yml@self
+      parameters:
+        enableMicrobuild: true
+        helixRepo: dotnet/maui
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        enablePublishUsingPipelines: true
+        enablePublishBuildAssets: true
+        enableTelemetry: true
+        enableSourceBuild: false
+        enableSourceIndex: false
+        publishAssetsImmediately: true
+        # Publish build logs
+        enablePublishBuildArtifacts: true
+        # Publish test logs
+        enablePublishTestResults: true
+        workspace:
+          clean: all
+        jobs:
+        - job: pack_net_${{ parameters.PackPlatform.name }}
+          displayName: ${{ parameters.PackPlatform.name }}
+          timeoutInMinutes: 240
+          preSteps:
+            - checkout: self
+              fetchDepth: 1
+              clean: true
+          steps:
+            - template: /eng/pipelines/arcade/pack.yml@self
+              parameters:
+                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
+                buildScript: $(_buildScript)
+                buildConfig: $(_BuildConfig)
+                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                isWindows: true
+                runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
 
-extends:
-  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
-  ${{ else }}:
-    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
-  parameters:
-    pool: ${{ parameters.VM_IMAGE_HOST }}
-    sdl:
-      binskim:
-        scanOutputDirectoryOnly: true
-      codeql:
-        runSourceLanguagesInSourceAnalysis: true
-      policheck:
-        enabled: true
-      spotBugs:
-        enabled: false
-        justification: 'Failing with "Could not successfully find the java tool launcher"'
-      sourceRepositoriesToScan:
-        exclude:
-        - repository: yaml-templates
-      suppression:
-        suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
-    stages:
-    - stage: Pack
-      displayName: Pack .NET MAUI
-      dependsOn: []
-      jobs:
-        - template: /eng/common/templates-official/jobs/jobs.yml@self
-          parameters:
-            enableMicrobuild: true
-            helixRepo: dotnet/maui
-            pool: ${{ parameters.VM_IMAGE_HOST }}
-            enablePublishUsingPipelines: true
-            enablePublishBuildAssets: true
-            enableTelemetry: true
-            enableSourceBuild: false
-            enableSourceIndex: false
-            publishAssetsImmediately: true
-            # Publish build logs
-            enablePublishBuildArtifacts: true
-            # Publish test logs
-            enablePublishTestResults: true
-            workspace:
-              clean: all
-            jobs:
-            - job: pack_net_${{ parameters.PackPlatform.name }}
-              displayName: ${{ parameters.PackPlatform.name }}
-              timeoutInMinutes: 240
-              preSteps:
-                - checkout: self
-                  fetchDepth: 1
-                  clean: true
-              steps:
-                - template: /eng/pipelines/arcade/pack.yml@self
-                  parameters:
-                    dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
-                    buildScript: $(_buildScript)
-                    buildConfig: $(_BuildConfig)
-                    repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
-                    repoLogPath: $(Build.Arcade.LogsPath)
-                    repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-                    isWindows: true
-                    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+- stage: UnitTests
+  displayName: Run Unit Tests
+  dependsOn: []
+  jobs:
+  - template: /eng/pipelines/arcade/job-unit-tests.yml@self
+    parameters:
+      testOS: Windows
+      jobName: win_unit_tests
+      jobDisplayName: Windows Unit Tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+  - template: /eng/pipelines/arcade/job-unit-tests.yml@self
+    parameters:
+      testOS: macOS
+      jobName: mac_unit_tests
+      jobDisplayName: macOS Unit Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
 
-    - stage: UnitTests
-      displayName: Run Unit Tests
-      dependsOn: []
-      jobs:
-      - template: /eng/pipelines/arcade/job-unit-tests.yml@self
-        parameters:
-          testOS: Windows
-          jobName: win_unit_tests
-          jobDisplayName: Windows Unit Tests
-          pool: ${{ parameters.VM_IMAGE_HOST }}
-      - template: /eng/pipelines/arcade/job-unit-tests.yml@self
-        parameters:
-          testOS: macOS
-          jobName: mac_unit_tests
-          jobDisplayName: macOS Unit Tests
-          pool:
-            name: Azure Pipelines
-            vmImage: $(HostedMacImage)
-            os: macOS
-
-    - stage: SampleTests
-      displayName: Run Sample Tests
-      dependsOn: [ 'Pack' ]
-      jobs:
-      - template: /eng/pipelines/arcade/job-sample-tests.yml@self
-        parameters:
-          testOS: Windows
-          jobName: win_sample_tests
-          jobDisplayName: Windows Sample Tests
-          pool: ${{ parameters.VM_IMAGE_HOST }}
-      - template: /eng/pipelines/arcade/job-sample-tests.yml@self
-        parameters:
-          testOS: macOS
-          jobName: mac_sample_tests
-          jobDisplayName: macOS Sample Tests
-          pool:
-            name: Azure Pipelines
-            vmImage: $(HostedMacImage)
-            os: macOS
+- stage: SampleTests
+  displayName: Run Sample Tests
+  dependsOn: [ 'Pack' ]
+  jobs:
+  - template: /eng/pipelines/arcade/job-sample-tests.yml@self
+    parameters:
+      testOS: Windows
+      jobName: win_sample_tests
+      jobDisplayName: Windows Sample Tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+  - template: /eng/pipelines/arcade/job-sample-tests.yml@self
+    parameters:
+      testOS: macOS
+      jobName: mac_sample_tests
+      jobDisplayName: macOS Sample Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
 
