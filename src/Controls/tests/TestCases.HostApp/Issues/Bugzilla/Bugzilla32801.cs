@@ -6,8 +6,8 @@ public class Bugzilla32801 : TestTabbedPage
 {
 	protected override void Init()
 	{
-		Children.Add(new NavigationPage(new TestDemoPage(1, "TabAddButton", "TabStackButton")) { Title = "Tab", IconImageSource = "bank.png" });
-		Children.Add(new NavigationPage(new TestDemoPage(1, "Tab1AddButton", "Tab1StackButton")) { Title = "Tab 1", IconImageSource = "bank.png" });
+		Children.Add(new NavigationPage(new TestDemoPage(1, "FirstTabAddButton", "FirstTabStackButton")) { Title = "Tab", IconImageSource = "bank.png" });
+		Children.Add(new NavigationPage(new TestDemoPage(1, "SecondTabAddButton", "SecondTabStackButton")) { Title = "Tab 1", IconImageSource = "bank.png" });
 	}
 
 	public class TestDemoPage : ContentPage
