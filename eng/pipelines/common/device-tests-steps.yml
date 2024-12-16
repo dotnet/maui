@@ -98,7 +98,6 @@ steps:
   # Everything should be release but doing android for now to work around an xharness issue
   - ${{ if eq(parameters.platform, 'android')}}:
     - pwsh: |
-        Get-Content $PSCommandPath
         ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.androidConfiguration }}
       displayName: $(Agent.JobName)
       workingDirectory: ${{ parameters.checkoutDirectory }}
@@ -106,9 +105,8 @@ steps:
       retryCountOnTaskFailure: 1
 
   - ${{ if eq(parameters.platform, 'android')}}:
-    # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
     - bash: |
-        cat ${BASH_SOURCE[0]}
+        # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
         pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.androidConfiguration }}
       displayName: $(Agent.JobName)
       workingDirectory: ${{ parameters.checkoutDirectory }}
