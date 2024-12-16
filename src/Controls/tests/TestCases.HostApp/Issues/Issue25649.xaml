@@ -54,23 +54,13 @@
             </CollectionView.Footer>
         </CollectionView>
 
-        <StackLayout Grid.Row="1">
-            <Label
-                x:Name="firstVisibleItemIndex"
-                AutomationId="FirstVisibleItemIndex"
-                Text="First Visible Item Index"
-                HorizontalOptions="Start"
-                VerticalOptions="Center"/>
-
-            <Label
-                x:Name="lastVisibleItemIndex"
-                AutomationId="LastVisibleItemIndex"
-                Text="Last Visible Item Index"
-                HorizontalOptions="Start"
-                VerticalOptions="Center"/>
-
-        </StackLayout>
-
+        <Label
+            x:Name="lastVisibleItemIndex"
+            Grid.Row="1"
+            AutomationId="LastVisibleItemIndex"
+            Text="Last Visible Item Index"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"/>
 
     </Grid>
 </ContentPage>

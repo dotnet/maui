@@ -14,7 +14,6 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnCollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
-			firstVisibleItemIndex.Text = e.FirstVisibleItemIndex.ToString();
 			lastVisibleItemIndex.Text = e.LastVisibleItemIndex.ToString();
 		}
 	}

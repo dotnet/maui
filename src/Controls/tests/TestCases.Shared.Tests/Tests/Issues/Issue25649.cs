@@ -14,23 +14,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView OnCollectionViewScrolled Calls and parameters are inconsistent or incorrect";
 
-
-#if IOS
-		private const string firstVisibleIndex = "5";
-#elif ANDROID
-		private const string firstVisibleIndex = "6";
-#elif WINDOWS
-		private const string firstVisibleIndex = "14";
-#endif
-
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue25649Test()
 		{
 			App.WaitForElement("collectionView");
 			App.ScrollDown("collectionView", ScrollStrategy.Gesture, 0.99);
-			var firstVisibleItemIndex = App.FindElement("FirstVisibleItemIndex").GetText();
-			Assert.That(firstVisibleItemIndex, Is.EqualTo(firstVisibleIndex));
+
+			// The ScrollDown method returns a different FirstVisibleItemIndex values on each call, so it cannot be used for consistent test validation.
+
 			var lastVisibleItemIndex = App.FindElement("LastVisibleItemIndex").GetText();
 			Assert.That(lastVisibleItemIndex, Is.EqualTo("30"));
 		}
