@@ -120,8 +120,14 @@ namespace Microsoft.Maui.Controls.SourceGen {
         internal static string CornerRadiusConversionFailed {
             get {
                 return ResourceManager.GetString("CornerRadiusConversionFailed", resourceCulture);
-	    }
-	}
+            }
+        }
+
+        internal static string EasingConversionFailed {
+            get {
+                return ResourceManager.GetString("EasingConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string SymbolResolution {
             get {

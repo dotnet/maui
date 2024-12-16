@@ -138,19 +138,19 @@
     <comment/>
   </data>
   <data name="ColorConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Color</value>
+    <value>Cannot convert "{0}" into Color.</value>
     <comment/>
   </data>
   <data name="PointConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Point, expected format is "x, y"</value>
+    <value>Cannot convert "{0}" into Point, expected format is "x, y".</value>
     <comment/>
   </data>
   <data name="ThicknessConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l"</value>
+    <value>Cannot convert "{0}" into Thickness, expected format is "h, v" or "l, t, r, b" or "l".</value>
     <comment/>
   </data>
   <data name="CornerRadiusConversionFailed" xml:space="preserve">
-    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l"</value>
+    <value>Cannot convert "{0}" into CornerRadius, expected format is "tl, tr, bl, br" or "l".</value>
     <comment/>
   </data>
   <data name="SymbolResolution" xml:space="preserve">
@@ -162,11 +162,15 @@
     <comment>{0} is a xmlnamespace and typename</comment>
   </data>
   <data name="DuplicateTypeError" xml:space="preserve">
-    <value>Multiple Types found for "{0}"</value>
-    <comment>/</comment>
+    <value>Multiple Types found for "{0}".</value>
+    <comment/>
   </data>
   <data name="MemberResolution" xml:space="preserve">
     <value>No accessible property, BindableProperty, or event found for "{0}", or mismatching type between value and property.</value>
     <comment>{0} is a property name</comment>
+  </data>
+  <data name="EasingConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Easing, expect value is "Linear", "SinOut", "SinIn", "SinInOut", "CubicIn", "CubicOut", "CubicInOut", "BounceOut", "BounceIn", "SpringIn" or "SpringOut".</value>
+    <comment/>
   </data>
 </root>
