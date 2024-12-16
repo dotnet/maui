@@ -21,7 +21,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Core.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Controls.Core.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -36,7 +36,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -51,7 +51,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/SourceGen.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/SourceGen.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -66,7 +66,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -81,7 +81,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Core/tests/UnitTests/Core.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Core.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Core.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -96,7 +96,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Essentials/test/UnitTests/Essentials.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Essentials.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Essentials.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -111,7 +111,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -126,7 +126,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Graphics.Tests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Graphics.Tests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2
@@ -141,7 +141,7 @@ jobs:
       mauiSourcePath: ${{ parameters.mauiSourcePath }}
       command: test
       project: ${{ parameters.mauiSourcePath }}/src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj
-      arguments: '-c ${{ parameters.configuration }} --logger trx --results-directory $(Agent.TempDirectory)/Compatibility.Core.UnitTests'
+      arguments: '--logger trx --results-directory $(Agent.TempDirectory)/Compatibility.Core.UnitTests'
       useExitCodeForErrors: true
 
   - task: PublishTestResults@2

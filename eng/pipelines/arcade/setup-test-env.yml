@@ -1,6 +1,5 @@
 parameters:
   mauiSourcePath: $(Build.SourcesDirectory)
-  configuration: Debug
   logPath: $(Build.ArtifactStagingDirectory)
 
 steps:
@@ -18,14 +17,14 @@ steps:
   displayName: Install dotnet preview
   inputs:
     projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
-    arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/install-dotnet.binlog'
+    arguments: '-bl:${{ parameters.logPath }}/install-dotnet.binlog'
 
 - template: /eng/pipelines/common/run-dotnet-preview.yml
   parameters:
     displayName: Build MSBuild Tasks
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
     project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
-    arguments: '-c ${{ parameters.configuration }} -bl:${{ parameters.logPath }}/Microsoft.Maui.BuildTasks.binlog'
+    arguments: '-bl:${{ parameters.logPath }}/Microsoft.Maui.BuildTasks.binlog'
 
 - pwsh: |
     if ($env:JAVA_HOME_17_X64) {
