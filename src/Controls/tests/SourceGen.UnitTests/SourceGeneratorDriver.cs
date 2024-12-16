@@ -97,6 +97,7 @@ public static class SourceGeneratorDriver
 				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
 				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
 				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
+				MetadataReference.CreateFromFile(typeof(Thickness).Assembly.Location),					//Core
 			};
 		}
 		return MauiReferences;

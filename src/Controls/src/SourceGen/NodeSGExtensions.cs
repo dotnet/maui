@@ -521,7 +521,7 @@ static class NodeSGExtensions
 
 	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-        var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter();
+        var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
         if (typeandconverter == null)
             return string.Empty;
         return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, iXmlLineInfo);

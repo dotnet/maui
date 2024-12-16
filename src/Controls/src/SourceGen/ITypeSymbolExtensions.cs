@@ -9,22 +9,37 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static partial class ITypeSymbolExtensions
 {
-    public static string? GetContentPropertyName(this ITypeSymbol type)
-        => type.GetAllAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToString() == "Microsoft.Maui.Controls.ContentPropertyAttribute")?.ConstructorArguments[0].Value as string;           
+   
 
-    public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol symbol)
+    //Allow resolving base type for root elements
+    static ITypeSymbol? GetBaseType(this ITypeSymbol type, SourceGenContext? context)
+    {        
+        var baseType = type.BaseType;
+        if (context == null)
+            return baseType;
+        if (baseType != null && !baseType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
+            return baseType;
+        
+        if (context.RootType != null && type.Equals(context.RootType, SymbolEqualityComparer.Default))
+            return context.BaseType;
+
+        return baseType;
+    }
+
+    public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol symbol, SourceGenContext? context)
     {
         foreach (var member in symbol.GetMembers()) {
             yield return member;
         }
 
-        var baseType = symbol.BaseType;
+        var baseType = symbol.GetBaseType(context);
+
         while (baseType != null) {
             foreach (var member in baseType.GetMembers()) {
                 yield return member;
             }
 
-            baseType = baseType.BaseType;
+            baseType = baseType.GetBaseType(context);
         }
         foreach (var iface in symbol.AllInterfaces) {
             foreach (var member in iface.GetMembers()) {
@@ -33,19 +48,19 @@ static partial class ITypeSymbolExtensions
         }
     }
 
-    public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol symbol, string name)
+    public static IEnumerable<ISymbol> GetAllMembers(this ITypeSymbol symbol, string name, SourceGenContext? context)
     {
         foreach (var member in symbol.GetMembers(name)) {
             yield return member;
         }
 
-        var baseType = symbol.BaseType;
+        var baseType = symbol.GetBaseType(context);
         while (baseType != null) {
             foreach (var member in baseType.GetMembers(name)) {
                 yield return member;
             }
 
-            baseType = baseType.BaseType;
+            baseType = baseType.GetBaseType(context);
         }
         foreach (var iface in symbol.AllInterfaces) {
             foreach (var member in iface.GetMembers(name)) {
@@ -54,23 +69,24 @@ static partial class ITypeSymbolExtensions
         }
     }
 
-    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol) => symbol.GetAllMembers().OfType<IPropertySymbol>();
-    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, string name) => symbol.GetAllMembers(name).OfType<IPropertySymbol>();
+    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IPropertySymbol>();
+    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IPropertySymbol>();
     
-    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol) => symbol.GetAllMembers().OfType<IMethodSymbol>();
-    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, string name) => symbol.GetAllMembers(name).OfType<IMethodSymbol>();
+    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IMethodSymbol>();
+    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IMethodSymbol>();
 
-    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol) => symbol.GetAllMembers().OfType<IFieldSymbol>();
-    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name) => symbol.GetAllMembers(name).OfType<IFieldSymbol>();
     public static IEnumerable<IFieldSymbol> GetFields(this ITypeSymbol symbol) => symbol.GetFields();
+
+    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IFieldSymbol>();
+    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IFieldSymbol>();
     
-    public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol)
+    public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, SourceGenContext? context)
     {
         foreach (var attribute in symbol.GetAttributes()) {
             yield return attribute;
         }
 
-        var baseType = symbol.BaseType;
+        var baseType = symbol.GetBaseType(context);
         while (baseType != null) {
             foreach (var attribute in baseType.GetAttributes()) {
                 if (attribute.IsInherited()) {
@@ -78,12 +94,12 @@ static partial class ITypeSymbolExtensions
                 }
             }
 
-            baseType = baseType.BaseType;
+            baseType = baseType.GetBaseType(context);
         }
     }
 
-	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name)
-        => symbol.GetAllAttributes().Where(ad => ad.AttributeClass?.ToString() == name);
+	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name, SourceGenContext? context)
+        => symbol.GetAllAttributes(context).Where(ad => ad.AttributeClass?.ToString() == name);
 
     public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol symbol, ITypeSymbol attributeType)
         => symbol.GetAttributes().Where(ad => SymbolEqualityComparer.Default.Equals(ad.AttributeClass, attributeType));
@@ -176,7 +192,7 @@ static partial class ITypeSymbolExtensions
 		return false;
 	}
 
-	public static bool CanAdd(this ITypeSymbol type) 
+	public static bool CanAdd(this ITypeSymbol type, SourceGenContext? context) 
 		=> type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable")
-		&& type.GetAllMethods("Add").Any(m => m.Parameters.Length == 1);
+		&& type.GetAllMethods("Add", context).Any(m => m.Parameters.Length == 1);
 }

@@ -76,7 +76,8 @@ static class InitializeComponentCodeWriter
                 codeWriter.WriteLine($"{accessModifier} partial class {rootTypeName}");
                 using (newblock()) {
                     codeWriter.WriteLine($"private partial void InitializeComponentSourceGen()");
-                    var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!) {FilePath = xamlItem.ProjectItem.RelativePath};
+                    xamlItem.Root!.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, out var baseType);
+                    var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType) {FilePath = xamlItem.ProjectItem.RelativePath};
                     using(newblock()) {
                         Visit(root, sgcontext);
                     }

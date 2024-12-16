@@ -27,7 +27,7 @@ static class ServiceProviderExtensions
             if (context.Variables.TryGetValue(node.Parent, out var parentVar))
             {
                 bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, null);
-                propertySymbol = parentVar.Type.GetAllProperties(localName).FirstOrDefault();
+                propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
             }
         }
 
