@@ -50,7 +50,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             if (!Context.Variables.ContainsKey((IElementNode)parentNode))
                 return;
             var parentVar = Context.Variables[(IElementNode)parentNode];
-            if ((contentProperty = parentVar.Type.GetContentPropertyName()) != null)
+            if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
                 propertyName = new XmlName(((IElementNode)parentNode).NamespaceURI, contentProperty);
             else
                 return;
@@ -95,7 +95,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             Writer.WriteLine($"{variable.Name}.LoadTemplate = () =>");
             using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
             {
-                var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!) {FilePath = context.FilePath, ParentContext = context};
+                var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null) {FilePath = context.FilePath, ParentContext = context};
 
                 //inflate the template
 			    node.Accept(new CreateValuesVisitor(templateContext), null);
@@ -133,7 +133,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             {
                 AddToResourceDictionary(Writer, parentVar, node, node as IXmlLineInfo, Context);
             }
-            else if ((contentProperty = parentVar.Type.GetContentPropertyName()) != null)
+            else if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
             {
                 var name = new XmlName(node.NamespaceURI, contentProperty);
                 if (skips.Contains(name))
@@ -142,7 +142,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                     return;
                 SetPropertyValue(Writer, parentVar, name, node, Context, node);
             }
-            else if (parentVar.Type.CanAdd())
+            else if (parentVar.Type.CanAdd(context))
             {
                 Writer.WriteLine($"{parentVar.Name}.Add({Context.Variables[node].Name});");
             }
@@ -179,8 +179,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             var elementType = parentVar.Type;
             var localName = parentList.XmlName.LocalName;
             var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);        
-            var propertySymbol = parentVar.Type.GetAllProperties(localName).FirstOrDefault();
-            var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter();
+            var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
+            var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
             var propertyType =  typeandconverter?.type ?? propertySymbol?.Type;
             if (propertyType == null)
@@ -291,7 +291,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
             return true;
 
-        var bpTypeAndConverter = bpFieldSymbol.GetBPTypeAndConverter();
+        var bpTypeAndConverter = bpFieldSymbol.GetBPTypeAndConverter(context);
         if (context.Compilation.HasImplicitConversion(localVar.Type, bpTypeAndConverter?.type))
             return true;
         
@@ -304,7 +304,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
     static void SetValue(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol bpFieldSymbol, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-        var pType = bpFieldSymbol.GetBPTypeAndConverter()?.type;
+        var pType = bpFieldSymbol.GetBPTypeAndConverter(context)?.type;
         if (node is ValueNode valueNode)
         {
             var valueString = valueNode.ConvertTo(bpFieldSymbol, context, iXmlLineInfo);
@@ -319,7 +319,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         if (bpFieldSymbol != null)
         {
-            var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter();
+            var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
             return $"({typeandconverter?.type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){parentVar.Name}.GetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))})";
         }
         else if (property != null)
@@ -330,7 +330,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
     static bool CanSet(LocalVariable parentVar, string localName, INode node, SourceGenContext context)
     {
-        if (parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == localName) is not IPropertySymbol property)
+        if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
             return false;
         if (property.SetMethod is not IMethodSymbol propertySetter  || !propertySetter.IsPublic() || propertySetter.IsStatic)
             return false;
@@ -392,7 +392,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
     static void Set(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-        var property = parentVar.Type.GetAllProperties().First(p => p.Name == localName);
+        var property = parentVar.Type.GetAllProperties(localName, context).First();
         
         if (node is ValueNode valueNode)
         {
@@ -448,10 +448,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return false;
         
         //FIXME use the propertytype from CanGetValue or CanGet
-        var prop = parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == propertyName.LocalName);
+        var prop = parentVar.Type.GetAllProperties(propertyName.LocalName, context).FirstOrDefault();
+        
+        //FIXME prop.Type can be null here report MemberResolution
         var propertyType = prop.Type;
                 
-        if(propertyType.CanAdd())
+        if(propertyType.CanAdd(context))
             return true;
 
         return CanAddToResourceDictionary(parentVar, propertyType, en, valueNode as IXmlLineInfo, context);
@@ -467,7 +469,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return true;
         //is there an Add() overload that takes the type of the element ?
         var nodeType = context.Variables[node].Type;
-        if (collectionType.GetAllMethods("Add").FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
+        if (collectionType.GetAllMethods("Add", context).FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
             return true;
         //TODO FAIL ?
         return false;     
@@ -486,7 +488,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         
         //FIXME use the propertytype from CanGetValue or CanGet
-        var prop = parentVar.Type.GetAllProperties().FirstOrDefault(p => p.Name == propertyName.LocalName);
+        var prop = parentVar.Type.GetAllProperties(propertyName.LocalName, context).FirstOrDefault();
         var propertyType = prop.Type;
         
         ITypeSymbol itemType;

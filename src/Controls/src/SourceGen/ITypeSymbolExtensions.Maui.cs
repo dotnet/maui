@@ -14,13 +14,16 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static partial class ITypeSymbolExtensions
 {
+    public static string? GetContentPropertyName(this ITypeSymbol type, SourceGenContext? context)
+        => type.GetAllAttributes(context).FirstOrDefault(ad => ad.AttributeClass?.ToString() == "Microsoft.Maui.Controls.ContentPropertyAttribute")?.ConstructorArguments[0].Value as string;           
+
 	public static IFieldSymbol? GetBindableProperty(this ITypeSymbol type, string ns, ref string localName, out System.Boolean attached, SourceGenContext context, IXmlLineInfo? iXmlLineInfo)
     {
         var bpParentType = type;
         //if the property assignment is attached one, like Grid.Row, update the localname and the bpParentType
         attached = GetNameAndTypeRef(ref bpParentType, ns, ref localName, context, iXmlLineInfo);
         var name = $"{localName}Property";
-        return bpParentType.GetAllMembers().FirstOrDefault(f => f.Name == name) as IFieldSymbol;
+        return bpParentType.GetAllFields(name, context).FirstOrDefault();
     }
 
 	static bool GetNameAndTypeRef(ref ITypeSymbol elementType, string namespaceURI, ref string localname,
@@ -36,7 +39,7 @@ static partial class ITypeSymbolExtensions
         }
         return false;
     }
-    public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol)
+    public static (ITypeSymbol type, ITypeSymbol? converter)? GetBPTypeAndConverter(this IFieldSymbol fieldSymbol, SourceGenContext context)
     {
         //TODO shouldn't we be able to get the SyntaxTree from the BP Create call and get the targetType, and use this as a fallback ?
         if (!fieldSymbol.Name.EndsWith("Property", StringComparison.InvariantCulture))
@@ -45,9 +48,9 @@ static partial class ITypeSymbolExtensions
         var bpName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
         var owner = fieldSymbol.ContainingType;
         var propertyName = fieldSymbol.Name.Substring(0, fieldSymbol.Name.Length - 8);
-        var property = owner.GetAllMembers(propertyName).OfType<IPropertySymbol>().FirstOrDefault();
+        var property = owner.GetAllProperties(propertyName, context).OfType<IPropertySymbol>().FirstOrDefault();
         var getter = property?.GetMethod
-                  ?? owner.GetAllMembers($"Get{propertyName}").OfType<IMethodSymbol>().FirstOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
+                  ?? owner.GetAllMethods($"Get{propertyName}", context).FirstOrDefault(m => m.IsStatic && m.IsPublic() && m.Parameters.Length == 1);
         if (getter == null)
             return null;
             // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
