@@ -24,9 +24,11 @@ public class Issue3053 : TestContentPage
 			{
 				Label nameLabel = new Label();
 				nameLabel.SetBinding(Label.TextProperty, new Binding("Name"));
+				nameLabel.SetBinding(Label.AutomationIdProperty, new Binding("Name"));
 				var cell = new ViewCell
 				{
-					View = new Frame()
+					//Frame is obsolete in net9.0, so here changed to border
+					View = new Border()
 					{
 						Content = nameLabel
 					},
@@ -41,6 +43,7 @@ public class Issue3053 : TestContentPage
 				new Button()
 				{
 					Text = _instructions,
+					AutomationId = "InstructionButton",
 					Command = new Command(() =>
 					{
 						var collection = listView.ItemsSource as ObservableCollection<Item>;

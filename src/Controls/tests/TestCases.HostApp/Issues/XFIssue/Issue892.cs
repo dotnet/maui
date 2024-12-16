@@ -15,6 +15,9 @@ public class Issue892 : TestFlyoutPage
 {
 	protected override void Init()
 	{
+		// Set FlyoutBehavior to Popover to ensure consistent behavior across desktop and mobile platforms.
+		// Windows and Catalyst default (FlyoutLayoutBehavior.Default) uses Split mode, which differs from mobile platforms.
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 		var cells = new[] {
 			new NavPageNameObject ("Close Flyout"),
 			new NavPageNameObject ("Page 1"),

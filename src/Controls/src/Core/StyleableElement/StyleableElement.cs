@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets or sets the unique <see cref="Style"/> for this element.</summary>
-		public Style Style
+		public Style? Style
 		{
-			get { return (Style)GetValue(StyleProperty); }
+			get { return (Style?)GetValue(StyleProperty); }
 			set { SetValue(StyleProperty, value); }
 		}
 

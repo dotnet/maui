@@ -12,12 +12,11 @@ public class Issue416 : _IssuesUITest
 
 	public override string Issue => "NavigationPage in PushModal does not show NavigationBar";
 
-	//[Test]
-	//[Category(UITestCategories.Navigation)]
-	//public void Issue416TestsNavBarPresent()
-	//{
-	//	App.WaitForElement(q => q.Marked("Test Page"));
-	//	App.WaitForElement(q => q.Marked("I should have a nav bar"));
-	//	App.Screenshot("All element present");
-	//}
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void Issue416TestsNavBarPresent()
+	{
+		App.WaitForElement("Test Page");
+		App.WaitForElement("I should have a nav bar");
+	}
 }
