@@ -193,4 +193,8 @@
     <value>Cannot convert "{0}" into ImageSource.</value>
     <comment/>
   </data>
+  <data name="ListStringConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
+    <comment/>
+  </data>
 </root>

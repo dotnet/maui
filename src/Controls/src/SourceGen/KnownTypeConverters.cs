@@ -553,7 +553,7 @@ static class KnownTypeConverters
         }
 
         // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, null, value));
 
         return "default";
     }
