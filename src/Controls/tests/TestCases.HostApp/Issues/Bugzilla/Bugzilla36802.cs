@@ -36,7 +36,9 @@ namespace Maui.Controls.Sample.Issues
 				ItemTemplate = new DataTemplate(typeof(AccessoryViewCell)),
 				ItemsSource = grouped,
 				GroupDisplayBinding = new Binding("LongName"),
-				GroupShortNameBinding = new Binding("ShortName")
+				// While using this GroupShortNameBinding property it throws an exception on Windows
+				// for more information:https://github.com/dotnet/maui/issues/26534. For this test case we don't need this property.
+				//GroupShortNameBinding = new Binding("ShortName")
 			};
 
 			var grp1 = new GroupedItem() { LongName = "Group 1", ShortName = "1" };

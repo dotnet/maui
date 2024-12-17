@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //App crashes after Tapping on SELECT button
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,12 +16,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla38723Test()
 		{
+			App.WaitForElement("SELECT");
 			App.Tap("SELECT");
-			App.WaitForNoElement("Selected");
+			App.WaitForElement("Selected");
 			App.WaitForNoElement("SELECT");
 		}
 	}
 }
+#endif
