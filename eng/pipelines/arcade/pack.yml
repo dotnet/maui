@@ -124,9 +124,17 @@ steps:
   #     inputs:
   #       targetPath: '${{ parameters.repoArtifactsPath }}/CodeCoverage'
   #       artifactName: '$(Agent.JobName)_CodeCoverageResults'
+ - ${{ if and(eq(parameters.isWindows, 'true'), eq(parameters.runAsPublic, 'true') ) }}:
+    - script: ${{ parameters.buildScript }}
+              -restore -pack 
+              -publish $(_PublishArgs)
+              -configuration $(_BuildConfig)
+              /bl:${{ parameters.repoLogPath }}pack.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: Pack & Publish
 
   # Run on windows, for internal pipeline
-  - ${{ if eq(parameters.isWindows, 'true') }}:
+  - ${{ if and(eq(parameters.isWindows, 'true'), ne(parameters.runAsPublic, 'true') ) }}:
     - script: ${{ parameters.buildScript }}
               -restore -pack 
               -sign $(_SignArgs)
