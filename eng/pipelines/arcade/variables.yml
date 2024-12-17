@@ -27,9 +27,7 @@ variables:
   - name: _SignType
     value: test
   - name: _SignArgs
-    value: ''
-  - name: _Sign
-    value: false
+    value: '/p:DotNetSignType=$(_SignType)'
 # Set up non-PR build from internal project
 - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
   # needed for darc (dependency flow) publishing
@@ -42,6 +40,4 @@ variables:
   - name: _SignType
     value: real
   - name: _SignArgs
-    value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
-  - name: _Sign
-    value: true
+    value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=true /p:DotNetPublishUsingPipelines=true
