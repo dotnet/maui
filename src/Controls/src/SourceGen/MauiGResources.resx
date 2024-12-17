@@ -181,4 +181,8 @@
     <value>Cannot convert "{0}" into FlexBasis, expected values are "Auto" or "n%", "n" where n is a numeric value.</value>
     <comment/>
   </data>
+  <data name="FlowDirectionConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
+    <comment/>
+  </data>
 </root>

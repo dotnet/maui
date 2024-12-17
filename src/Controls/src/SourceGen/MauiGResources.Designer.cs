@@ -140,6 +140,12 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("FlexBasisConversionFailed", resourceCulture);
             }
         }
+        
+        internal static string FlowDirectionConversionFailed {
+            get {
+                return ResourceManager.GetString("FlowDirectionConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string SymbolResolution {
             get {
