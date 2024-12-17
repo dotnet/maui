@@ -499,7 +499,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	static void Add(IndentedTextWriter writer, LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-        //FIXME should handle BP
         var localName = propertyName.LocalName;
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
         IPropertySymbol? propertySymbol = null;
@@ -521,12 +520,18 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         else
             itemType = context.Compilation.ObjectType;
 
+        var adder = propertyType!.GetAllMethods("Add", context).First(m => m.Parameters.Length == 1);
+        var receiverType = adder.ReceiverType;
+        
         var parentObj = $"{parentVar.Name}.{localName}";
         if (bpFieldSymbol != null)
         {
             var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
             parentObj = $"(({typeandconverter?.type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){parentVar.Name}.GetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}))";
         }
+
+        if (receiverType is not null && !propertyType!.Equals(receiverType, SymbolEqualityComparer.Default))
+            parentObj = $"(({receiverType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){parentObj})";
 
         using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
             writer.WriteLine($"{parentObj}.Add(({itemType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){context.Variables[valueNode].Name});");
