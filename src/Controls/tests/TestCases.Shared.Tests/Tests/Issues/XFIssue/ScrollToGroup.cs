@@ -29,6 +29,7 @@ public class ScrollToGroup : _IssuesUITest
 		App.WaitForElement("Squirrel Girl");
 	}
 
+#if !WINDOWS // App crashes on Windows, issue: https://github.com/dotnet/maui/issues/26669 
 	[Test, Order(1)]
 	public void InvalidScrollToIndexShouldNotCrash()
 	{
@@ -44,6 +45,7 @@ public class ScrollToGroup : _IssuesUITest
 		// Should scroll enough to display this item
 		App.WaitForElement("Avengers");
 	}
+#endif
 
 	[Test, Order(3)]
 	public void CanScrollToGroupAndItem()
