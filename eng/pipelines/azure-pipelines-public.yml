@@ -99,6 +99,7 @@ stages:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
                 runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+                publishTaskPrefix: ''
 
 - stage: UnitTests
   displayName: Run Unit Tests

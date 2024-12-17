@@ -21,6 +21,9 @@ parameters:
     default: false
   - name: dotnetScript
     type: string
+  - name: publishTaskPrefix
+    type: string
+    default: '1ES.'
 
 
 steps:
@@ -40,6 +43,12 @@ steps:
         echo "Unable to set JAVA_HOME"
       }
     displayName: Set JAVA_HOME
+
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview without workloads
+    inputs:
+      projects: src/DotNet/DotNet.csproj
+      arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
   - ${{ if ne(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
@@ -127,29 +136,28 @@ steps:
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
     
-    - ${{ if and(eq(parameters.isWindows, 'true'), eq(parameters.runAsInternal, 'true') ) }}:
-      # only for workloads
-      - script: ${{ parameters.buildScript }}
-          -restore -build
-          -sign $(_SignArgs)
-          -publish $(_PublishArgs)
-          -configuration $(_BuildConfig)
-          /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
-          -projects src/Workload/workloads.csproj
-          $(_OfficialBuildIdArgs)
-        displayName: Build Workloads
+  - ${{ if and(eq(parameters.isWindows, 'true'), eq(parameters.runAsInternal, 'true') ) }}:
+    # only for workloads
+    - script: ${{ parameters.buildScript }}
+        -restore -build
+        -sign $(_SignArgs)
+        -publish $(_PublishArgs)
+        -configuration $(_BuildConfig)
+        /bl:${{ parameters.repoLogPath }}/build-workloads.binlog
+        -projects src/Workload/workloads.csproj
+        $(_OfficialBuildIdArgs)
+      displayName: Build Workloads
 
-      - ${{ if eq(parameters.runAsPublic, 'true') }}:
-        - task: PublishPipelineArtifact@1
-          displayName: Publish VSDrop MSIs
-          inputs:
-            targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-            artifactName: VSDropInsertion
-            publishLocation: 'pipeline'
+    - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: Publish VSDrop MSIs
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+        artifactName: VSDropInsertion
 
-      - ${{ if ne(parameters.runAsPublic, 'true') }}:
-        - task: 1ES.PublishPipelineArtifact@1
-          displayName: Publish VSDrop MSIs
-          inputs:
-            targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-            artifactName: VSDropInsertion
+  - task: ${{ parameters.publishTaskPrefix }}PublishBuildArtifacts@1
+    displayName: Publish Logs
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)
+      artifact: Pack .NET MAUI - Logs
+    continueOnError: true
+    condition: always()
