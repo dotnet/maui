@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using static LocationHelpers;
+
 static class KnownTypeConverters
 {
     static readonly HashSet<string> KnownNamedColors = new(StringComparer.OrdinalIgnoreCase)
@@ -553,7 +555,7 @@ static class KnownTypeConverters
         }
 
         // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(filePath, xmlLineInfo, value) , value));
 
         return "default";
     }

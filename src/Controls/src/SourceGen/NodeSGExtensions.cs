@@ -15,6 +15,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using static LocationHelpers;
 static class NodeSGExtensions
 {
 	static Dictionary<ITypeSymbol, (Func<string, ITypeSymbol, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)>? KnownSGTypeConverters;
@@ -38,7 +39,7 @@ static class NodeSGExtensions
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FlowDirectionConverter")!, (KnownTypeConverters.ConvertFlowDirection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.GridLengthTypeConverter")!, (KnownTypeConverters.ConvertGridLength, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSourceConverter")!, (KnownTypeConverters.ConvertImageSource, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSource")!) },
-        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ListStringTypeConverter")!, (KnownTypeConverters.ConvertListString, context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IList<string>")!) },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ListStringTypeConverter")!, (KnownTypeConverters.ConvertListString, context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1")!.Construct(context.Compilation.GetSpecialType(SpecialType.System_String))!) },
 	};
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -104,7 +105,7 @@ static class NodeSGExtensions
             if (!context.Compilation.HasImplicitConversion(returntype, toType))
                 //this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
                 //FIXME: better error message
-                context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, null, $"Cannot convert {returntype} to {toType}"));
+                context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.FilePath!, iXmlLineInfo, valueString), $"Cannot convert {returntype} to {toType}"));
             return converterAndReturnType.Item1.Invoke(valueString, toType, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
         }
 

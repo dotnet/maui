@@ -14,6 +14,8 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using static LocationHelpers;
+
 class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false) : IXamlNodeVisitor
 {
     SourceGenContext Context => context;
@@ -260,7 +262,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return;
         }
 		
-        var location = Location.Create(context.FilePath!, new TextSpan(iXmlLineInfo.LinePosition, localName.Length), new LinePositionSpan(new LinePosition(iXmlLineInfo.LineNumber-1, iXmlLineInfo.LinePosition), new LinePosition(iXmlLineInfo.LineNumber-1, iXmlLineInfo.LinePosition + localName.Length)));
+        var location = LocationCreate(context.FilePath!, iXmlLineInfo, localName);
         context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
 
     }
