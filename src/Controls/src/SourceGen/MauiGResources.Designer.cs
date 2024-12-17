@@ -104,6 +104,12 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("ColorConversionFailed", resourceCulture);
             }
         }
+        
+        internal static string ListStringConversionFailed {
+            get {
+                return ResourceManager.GetString("ListStringConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string PointConversionFailed {
             get {
