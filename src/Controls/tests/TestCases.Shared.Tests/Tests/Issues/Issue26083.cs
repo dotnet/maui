@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS || MACCATALYST //Window resizing behavior is only present on Mac Catalyst and Windows platforms.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +23,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
