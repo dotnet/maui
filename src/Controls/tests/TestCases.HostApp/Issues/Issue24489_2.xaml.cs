@@ -18,6 +18,11 @@ public partial class Issue24489_2 : ContentPage
 		await Navigation.PushAsync(new Issue24489(500));
 	}
 
+	async void OpenPageThatOpensEmptyTitleBar(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new Issue24489(true));
+	}
+
 	void SetTitleBarToNull(object sender, EventArgs e)
 	{
 		Window.TitleBar = null;

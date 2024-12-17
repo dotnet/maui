@@ -19,6 +19,16 @@ public partial class Issue24489 : ContentPage
 		_customTitleBar.HeightRequest = heightRequest;
 	}
 
+	public Issue24489(bool isEmptyTitleBar)
+	{
+		InitializeComponent();
+
+		if (isEmptyTitleBar)
+		{
+			_customTitleBar = new TitleBar();
+		}
+	}
+
 	void SetTitleBar()
 	{
 		var grid = CreateGrid(true);

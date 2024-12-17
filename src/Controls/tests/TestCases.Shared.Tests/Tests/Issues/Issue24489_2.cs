@@ -70,6 +70,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// 	App.WaitForElement("ToggleButton");
 		// 	VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 		// }
+
+		// [Test]
+		// [Category(UITestCategories.Window)]
+		// public void NavBarResetsColorAfterSmallTitleBar()
+		// {
+		// 	App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
+		// 	App.Back();
+
+		// 	App.WaitForElement("OpenPageThatOpensEmptyTitleBar").Tap();
+		// 	VerifyScreenshot();
+		// }
+
+		// [Test]
+		// [Category(UITestCategories.Window)]
+		// public void NavBarResetsColorAfterLargeTitleBar()
+		// {
+		// 	App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
+		// 	App.Back();
+
+		// 	App.WaitForElement("OpenPageThatOpensEmptyTitleBar").Tap();
+		// 	VerifyScreenshot();
+		// }
 	}
 }
 #endif
