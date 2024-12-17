@@ -124,7 +124,9 @@ steps:
   #     inputs:
   #       targetPath: '${{ parameters.repoArtifactsPath }}/CodeCoverage'
   #       artifactName: '$(Agent.JobName)_CodeCoverageResults'
- - ${{ if and(eq(parameters.isWindows, 'true'), eq(parameters.runAsPublic, 'true') ) }}:
+
+  # Run on windows, for public pipeline
+  - ${{ if and(eq(parameters.isWindows, 'true'), eq(parameters.runAsPublic, 'true') ) }}:
     - script: ${{ parameters.buildScript }}
               -restore -pack 
               -publish $(_PublishArgs)
