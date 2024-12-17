@@ -10,129 +10,158 @@ public class ShellBackButtonBehavior : _IssuesUITest
 	public ShellBackButtonBehavior(TestDevice testDevice) : base(testDevice)
 	{
 	}
+	const string EntryCommandParameter = "EntryCommandParameter";
+	const string ToggleBehaviorId = "ToggleBehaviorId";
+	const string ToggleCommandId = "ToggleCommandId";
+	const string ToggleCommandCanExecuteId = "ToggleCommandCanExecuteId";
+	const string ToggleIconId = "ToggleIconId";
+	const string ToggleIsEnabledId = "ToggleIsEnabledId";
+	const string ToggleTextId = "ToggleTextId";
+	const string CommandResultId = "CommandResult";
+	const string PushPageId = "PushPageId";
+	const string FlyoutOpen = "Flyout Open";
 
 	public override string Issue => "Shell Back Button Behavior Test";
 
-	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
-	//[Test]
-	//	[FailsOnAndroid]
-	//	public void CommandTest()
-	//	{
-	//		App.Tap(ToggleCommandId);
-	//		App.EnterText(EntryCommandParameter, "parameter");
-	//		ShowFlyout();
+#if !ANDROID && !MACCATALYST && !IOS && !WINDOWS // It returns null value
+    [Test]
+    public void CommandTest()
+    {
+        App.WaitForElement(ToggleCommandId);
+        App.Tap(ToggleCommandId);
+        App.EnterText(EntryCommandParameter, "parameter");
+        var commandResult = App.QueryUntilPresent(() =>
+        {
+             
+            var element = App.WaitForElement(CommandResultId);
+            if (element != null && element.ReadText() == "parameter")
+                return element;
+ 
+            return null;
+        });
+ 
+        Assert.That(commandResult?.ReadText(), Is.EqualTo("parameter"));
+        App.EnterText(EntryCommandParameter, "canexecutetest");
+        App.Tap(ToggleCommandCanExecuteId);
+ 
+        commandResult = App.QueryUntilPresent(() =>
+        {
+            var element = App.WaitForElement(CommandResultId);
+            if (element != null && element.ReadText() == "parameter")
+                return element;
+ 
+            return null;
+        });
+ 
+        Assert.That(commandResult?.ReadText(), Is.EqualTo("parameter"));
+    }
+#endif
 
-	//		// API 19 workaround
-	//		var commandResult = App.QueryUntilPresent(() =>
-	//		{
-	//			ShowFlyout();
-	//			if (App.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
-	//				return App.WaitForElement(CommandResultId);
+	[Test]
+	public void CommandWorksWhenItsTheOnlyThingSet()
+	{
+		App.WaitForElement(PushPageId);
+		App.Tap(PushPageId);
+		App.WaitForElement(ToggleCommandId);
+		App.Tap(ToggleCommandId);
+		App.EnterText(EntryCommandParameter, "parameter");
+		var commandResult = App.QueryUntilPresent(() =>
+		{
+			TapBackArrow();
+			var element = App.WaitForElement(CommandResultId);
+			if (element != null && element.ReadText() == "parameter")
+				return element;
 
-	//			return null;
-	//		})?.FirstOrDefault()?.ReadText();
+			return null;
+		});
 
-	//		Assert.AreEqual("parameter", commandResult);
-	//		App.EnterText(EntryCommandParameter, "canexecutetest");
-	//		App.Tap(ToggleCommandCanExecuteId);
+		Assert.That(commandResult?.ReadText(), Is.EqualTo("parameter"));
+	}
 
-	//		commandResult = App.QueryUntilPresent(() =>
-	//		{
-	//			if (App.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
-	//				return App.WaitForElement(CommandResultId);
+#if IOS || MACCATALYST // Test fails on Android and  Windows(text not updated in windows ) More Information:https://github.com/dotnet/maui/issues/1625
+	[Test]
+	public void BackButtonSetToTextStillNavigatesBack()
+	{
+		App.WaitForElement(PushPageId);
+		App.Tap(PushPageId);
+		App.WaitForElement(ToggleTextId);
+		App.Tap(ToggleTextId);
+		App.WaitForElement("T3xt");
+		App.Tap("T3xt");
+		App.WaitForNoElement(FlyoutOpen);
+		App.WaitForElement("Page 0");
+	}
+#endif
 
-	//			return null;
-	//		})?.FirstOrDefault()?.ReadText();
 
-	//		Assert.AreEqual("parameter", commandResult);
-	//	}
+#if !ANDROID && !IOS && !MACCATALYST && !WINDOWS // Text not upated in mac, windows and ios .In Android it show waitforelement for "T3xt"
+    [Test]
+    public void BackButtonSetToTextStillOpensFlyout()
+    {
+        App.WaitForElement(ToggleTextId);
+        App.Tap(ToggleTextId);
+        App.WaitForElement("T3xt");
+        App.Tap("T3xt");
+        App.WaitForElement(FlyoutOpen);
+    }
+    [Test]  //this test case only for Android but waitForElement for "T3xt"
+    public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
+    {
+        App.WaitForElement("ToggleFlyoutBehavior");
+        App.Tap("ToggleFlyoutBehavior");
+        App.Tap("ToggleFlyoutBehavior");
+        App.WaitForElement("Flyout Behavior: Disabled");
+        App.Tap(ToggleTextId);
+        App.WaitForElement("T3xt");
+        App.Tap("T3xt");
+        App.WaitForNoElement(FlyoutOpen);
+    }
+    [Test] // Text not updated in MacCatalyst, IOS , Windows
+     
+    public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
+    {
+        App.WaitForElement("ToggleFlyoutBehavior");
+        App.Tap(ToggleTextId);
+        App.WaitForElement("T3xt");
+        App.Tap("ToggleFlyoutBehavior");
+        App.WaitForElement("T3xt");
+        App.Tap("ToggleFlyoutBehavior");
+        App.WaitForElement("Flyout Behavior: Disabled");
+        App.Tap("T3xt");
+        App.WaitForNoElement(FlyoutOpen);
+        App.WaitForElement("ToggleFlyoutBehaviour");
+        App.Tap("ToggleFlyoutBehaviour");
+    }
+#endif
 
-	//	[Test]
-	//	public void CommandWorksWhenItsTheOnlyThingSet()
-	//	{
-	//		App.Tap(PushPageId);
-	//		App.Tap(ToggleCommandId);
-	//		App.EnterText(EntryCommandParameter, "parameter");
-
-	//		// API 19 workaround
-	//		var commandResult = App.QueryUntilPresent(() =>
-	//		{
-
-	//#if __ANDROID__
-	//			TapBackArrow();
-	//#else
-	//			App.Tap("Page 0");
-	//#endif
-
-	//			if (App.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
-	//				return App.WaitForElement(CommandResultId);
-
-	//			return null;
-	//		})?.FirstOrDefault()?.ReadText();
-
-	//		Assert.AreEqual(commandResult, "parameter");
-	//	}
-
-	//	[Test]
-	//	[FailsOnIOSWhenRunningOnXamarinUITest]
-	//	public void BackButtonSetToTextStillNavigatesBack()
-	//	{
-	//		App.Tap(PushPageId);
-	//		App.Tap(ToggleTextId);
-	//		App.Tap("T3xt");
-	//		App.WaitForNoElement(FlyoutOpen);
-	//		App.WaitForElement("Page 0");
-	//	}
-
-	//	[Test]
-	//	[FailsOnIOSWhenRunningOnXamarinUITest]
-	//	public void BackButtonSetToTextStillOpensFlyout()
-	//	{
-	//		App.Tap(ToggleTextId);
-
-	//		App.Tap("T3xt");
-	//		App.WaitForElement(FlyoutOpen);
-	//	}
-
-	//#if __ANDROID__
-	//	[Test]
-	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
-	//	{
-	//		App.WaitForElement("ToggleFlyoutBehavior");
-	//		App.Tap("ToggleFlyoutBehavior");
-	//		App.Tap("ToggleFlyoutBehavior");
-	//		App.WaitForElement("Flyout Behavior: Disabled");
-	//		App.Tap(ToggleTextId);
-	//		App.Tap("T3xt");
-	//		App.WaitForNoElement(FlyoutOpen);
-	//	}
-	//#else
-	//	[Test]
-	//	[FailsOnIOSWhenRunningOnXamarinUITest]
-	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
-	//	{
-	//		App.WaitForElement("ToggleFlyoutBehavior");
-	//		App.Tap(ToggleTextId);
-	//		App.WaitForElement("T3xt");
-	//		App.Tap("ToggleFlyoutBehavior");
-	//		App.WaitForElement("T3xt");
-	//		App.Tap("ToggleFlyoutBehavior");
-	//		App.WaitForElement("Flyout Behavior: Disabled");
-	//		App.Tap("T3xt");
-	//		App.WaitForNoElement(FlyoutOpen);
-	//	}
-	//#endif
-	//	[Test]
-	//	public void AutomationIdOnIconOverride()
-	//	{
-	//		App.WaitForElement("ToggleFlyoutBehavior");
-	//		App.Tap(ToggleIconId);
-	//		App.WaitForElement("CoffeeAutomation");
-	//		App.Tap("ToggleFlyoutBehavior");
-	//		App.WaitForElement("CoffeeAutomation");
-	//		App.Tap("ToggleFlyoutBehavior");
-	//		App.WaitForElement("Flyout Behavior: Disabled");
-	//		App.Tap("CoffeeAutomation");
-	//		App.WaitForNoElement(FlyoutOpen);
-	//	}
+#if IOS || MACCATALYST  //   Icon not updated in Windows
+	[Test]
+	public void AutomationIdOnIconOverride()
+	{
+		App.WaitForElement("ToggleFlyoutBehavior");
+		App.Tap(ToggleIconId);
+		App.WaitForElement("CoffeeAutomation");
+		App.Tap("ToggleFlyoutBehavior");
+		App.WaitForElement("CoffeeAutomation");
+		App.Tap("ToggleFlyoutBehavior");
+		App.WaitForElement("Flyout Behavior: Disabled");
+		App.Tap("CoffeeAutomation");
+		App.WaitForNoElement(FlyoutOpen);
+	}
+#endif
+	void TapBackArrow()
+	{
+#if WINDOWS || ANDROID
+        App.TapBackArrow();
+#else
+		App.TapBackArrow("Page 0");
+#endif
+	}
+    
 }
+
+ 
+ 
+ 
+ 
+ 

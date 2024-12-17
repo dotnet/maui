@@ -20,12 +20,14 @@ public class Unreported1 : TestFlyoutPage
 	{
 		MDP = this;
 
-		Flyout = new Page { Title = "Flyout" };
+		Flyout = new ContentPage { Title = "Flyout", Content = new Label { Text = "Flyout Content" } };
 		Detail = new SplashPage();
 	}
 
 	public static void SwitchDetail()
 	{
-		MDP.Detail = new ContentPage { Content = new Label { Text = "If this did not crash, this test has passed." }, Padding = 20 };
+		MDP.Detail = new ContentPage { Content = new Label { Text = "If this did not crash, this test has passed.", AutomationId = "Label" }, Padding = 20 };
 	}
 }
+ 
+
