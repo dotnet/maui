@@ -32,7 +32,7 @@ namespace Microsoft.Maui
 
 		private string? LoadFontPackaged(string fontName, Stream resourceStream)
 		{
-			var tmpdir = ApplicationData.Current.LocalCacheFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists).AsTask().Result;
+			var tmpdir = ApplicationData.Current.TemporaryFolder.CreateFolderAsync(FontCacheFolderName, CreationCollisionOption.OpenIfExists).AsTask().Result;
 
 			// return an existing file from the cache
 			var existingFile = tmpdir.TryGetItemAsync(fontName).AsTask().Result;
@@ -81,7 +81,7 @@ namespace Microsoft.Maui
 		{
 			var fontName = Path.GetFileName(filePath);
 
-			filePath = Path.Combine("local", FontCacheFolderName, fontName);
+			filePath = Path.Combine("temp", FontCacheFolderName, fontName);
 
 			var baseUri = new Uri("ms-appdata://");
 			var uri = new Uri(baseUri, filePath);

@@ -50,7 +50,7 @@ public partial class FontManagerTests : TestBase
 			var filename = expected[..expected.IndexOf("#", StringComparison.OrdinalIgnoreCase)];
 			Assert.True(File.Exists(filename), $"File not found: {filename}");
 #else
-			var expected = "ms-appdata:///local/Fonts/dokdo_regular.ttf#Dokdo";
+			var expected = "ms-appdata:///temp/Fonts/dokdo_regular.ttf#Dokdo";
 #endif
 
 			Assert.Equal(expected, actual.Source);
