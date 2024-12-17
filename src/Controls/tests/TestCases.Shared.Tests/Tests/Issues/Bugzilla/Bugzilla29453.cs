@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Page1");
 			App.Tap("btnGotoPage2");
+			App.WaitForElement("entryText");
 			App.Tap("entryText");
 			App.EnterText("entryText", "XF");
 			App.PressEnter();

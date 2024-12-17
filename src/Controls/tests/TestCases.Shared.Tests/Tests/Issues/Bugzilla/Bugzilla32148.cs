@@ -18,6 +18,6 @@ public class Bugzilla32148 : _IssuesUITest
 	{
 		App.WaitForElement("Contact0 LastName");
 		App.Tap("Search");
-		App.WaitForElement("Contact0 LastName");
+		App.WaitForElementTillPageNavigationSettled("Contact0 LastName");
 	}
 }

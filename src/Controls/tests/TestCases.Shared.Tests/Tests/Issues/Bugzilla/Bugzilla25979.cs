@@ -18,15 +18,9 @@ public class Bugzilla25979 : _IssuesUITest
 	{
 		App.WaitForElement("PageOneButtonId");
 		App.Tap("PageOneButtonId");
-#if MACCATALYST
- 		System.Threading.Thread.Sleep(2000);
-#endif
-		App.WaitForElement("PageTwoButtonId");
+		App.WaitForElementTillPageNavigationSettled("PageTwoButtonId");
 		App.Tap("PageTwoButtonId");
-#if MACCATALYST
- 		System.Threading.Thread.Sleep(2000);
-#endif
-		App.WaitForElement("PopButton");
+		App.WaitForElementTillPageNavigationSettled("PopButton");
 		App.Tap("PopButton");
 		App.WaitForElement("PopAttempted");
 	}
