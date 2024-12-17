@@ -112,8 +112,8 @@ namespace Microsoft.Maui.LifecycleEvents
 			iOS = iOS
 				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
 				{
-					// iOS 16+ supports effectiveGeometry property on window scenes.
-					if (!OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsIOSVersionAtLeast(16))
+					// Mac Catalyst version 16+ supports effectiveGeometry property on window scenes.
+					if (!OperatingSystem.IsIOSVersionAtLeast(13) || (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16)))
 					{
 						return;
 					}

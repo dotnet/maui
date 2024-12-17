@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateCoordinates(this UIWindow platformWindow, IWindow window)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene)
+			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene)
 			{
 				if (double.IsNaN(window.X) || double.IsNaN(window.Y) || double.IsNaN(window.Width) || double.IsNaN(window.Height)) 
 				{
@@ -52,8 +52,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				var rectangle = platformWindow.Bounds.ToRectangle();
-				window.FrameChanged(rectangle);
+				window.FrameChanged(platformWindow.Bounds.ToRectangle());
 			}
 		}
 

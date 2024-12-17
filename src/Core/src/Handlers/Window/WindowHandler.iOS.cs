@@ -12,20 +12,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			// For newer iOS versions, we want to wait until we get effective window dimensions from the platform.
-			if (!OperatingSystem.IsIOSVersionAtLeast(16))
+			// For newer Mac Catalyst versions, we want to wait until we get effective window dimensions from the platform.
+			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16))
 			{
-				UpdateVirtualViewFrame(platformView);
+				_proxy.Connect(VirtualView, platformView);
 			} 
 			else 
 			{
-				_proxy.Connect(VirtualView, platformView);
+				UpdateVirtualViewFrame(platformView);
 			}
 		}
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(16)) 
+			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16)) 
 			{
 				_proxy.Disconnect();
 			}
