@@ -75,6 +75,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void CompiledTypeConverterAreInvoked([Values]XamlInflator xamlInflator)
 			{
+				// Get generated initialize component method and search for convertFrom call
+				if (inflator == XamlInflator.XamlC)
+				{
+					MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out bool hasLoggedErrors);
+					Assert.That(!hasLoggedErrors);
+				}
 				var p = new CompiledTypeConverter(xamlInflator);
 				Assert.AreEqual(new Rect(0, 1, 2, 4), p.RectangleP);
 				Assert.AreEqual(new Rect(4, 8, 16, 32), p.RectangleBP);
@@ -125,6 +131,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					var initComp = result.GeneratedInitializeComponent();
 					if (converterType == typeof(Graphics.Converters.RectTypeConverter))
 						Assert.True(result.GeneratedInitializeComponent().Contains("new global::Microsoft.Maui.Graphics.Rect(0, 1, 2, 4)", StringComparison.InvariantCulture));
+						
+						// TODO check all other converters here
+						// TODO check that there are no ConvertFrom calls
 				}
 			}
 

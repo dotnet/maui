@@ -152,6 +152,12 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("GridLengthConversionFailed", resourceCulture);
             }
         }
+        
+        internal static string ImageSourceConversionFailed {
+            get {
+                return ResourceManager.GetString("ImageSourceConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string SymbolResolution {
             get {

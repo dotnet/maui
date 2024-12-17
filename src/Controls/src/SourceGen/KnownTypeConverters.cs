@@ -525,4 +525,21 @@ static class KnownTypeConverters
 
         return "default";
     }
+
+    internal static string ConvertImageSource(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+            
+			return Uri.TryCreate(value, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ?
+                $"global::Microsoft.Maui.Controls.ImageSource.FromUri(\"{uri}\")" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, null, value));
+
+        return "default";
+    }
 }
