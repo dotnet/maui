@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // This test is only applicable for iOS as here tested the native property behavior.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -36,3 +37,4 @@ public class Issue5503 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
