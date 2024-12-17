@@ -35,8 +35,8 @@ pr:
       - THIRD-PARTY-NOTICES.TXT
 
 variables:
+  - template: /eng/common/templates/variables/pool-providers.yml@self 
   - template: /eng/pipelines/common/variables.yml@self
-  - template: /eng/common/templates/variables/pool-providers.yml
   - template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
@@ -99,6 +99,7 @@ stages:
                 repoTestResultsPath: $(Build.Arcade.TestResultsPath)
                 isWindows: true
                 runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+                runAsInternal: ${{ eq(variables['_RunAsInternal'], 'true') }}
                 publishTaskPrefix: ''
 
 - stage: UnitTests
