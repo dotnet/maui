@@ -615,13 +615,6 @@ static class NodeSGExtensions
         return SymbolDisplay.FormatLiteral(valueString, true);    
 	}
 
-    static string ConvertValue(ValueNode valueNode)
-    {
-        var valueString = valueNode.Value as string ?? string.Empty;
-        var values = valueString.Split([','], StringSplitOptions.RemoveEmptyEntries)
-                                .Select(v => v.Trim());
-        return $"new global::Microsoft.Maui.Graphics.Rectangle({string.Join(", ", values)})";
-    }
     public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
@@ -667,6 +660,10 @@ static class NodeSGExtensions
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
             if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!))
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!;
+            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!))
+                returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!;
+            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!))
+                returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!;
         }
         else if (variable.Type.ImplementsGeneric(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))
         {
