@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor FlexBasisConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1009",
+			id: "MAUIG1010",
 			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.FlexBasisConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
