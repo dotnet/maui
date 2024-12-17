@@ -314,15 +314,16 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {(HasDoubleImplicitConversion(context.Variables[elementNode].Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)+ ")" : string.Empty)}{context.Variables[node].Name});");
 	}
 
-    static bool CanGet(LocalVariable parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType)
+    static bool CanGet(LocalVariable parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
     {
         propertyType = null;
-        if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
+        propertySymbol = null;
+        if ((propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault()) == null)
             return false;
-        if (property.GetMethod is not IMethodSymbol propertyGetter || !propertyGetter.IsPublic() || propertyGetter.IsStatic)
+        if (propertySymbol!.GetMethod is not IMethodSymbol propertyGetter || !propertyGetter.IsPublic() || propertyGetter.IsStatic)
             return false;
 
-        propertyType = property.Type;
+        propertyType = propertySymbol.Type;
         return true;
     }
 
@@ -340,7 +341,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     }
     static string GetOrGetValue(LocalVariable parentVar, IFieldSymbol? bpFieldSymbol, IPropertySymbol? property, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
-
         if (bpFieldSymbol != null)
         {
             var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
@@ -466,16 +466,20 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         
 
         if (!CanGetValue(parentVar, bpFieldSymbol, attached, context, out ITypeSymbol? propertyType)
-            && !CanGet(parentVar, localName, context, out propertyType))
+            && !CanGet(parentVar, localName, context, out propertyType, out _))
 				return false;
 
         if (!context.Variables.TryGetValue(en, out var childVar))
             return false;
-                
+
+        if (CanAddToResourceDictionary(parentVar, propertyType!, en, valueNode as IXmlLineInfo, context))
+            return true;
+
+        //FIXME should be better and test for value type
         if(propertyType!.CanAdd(context))
             return true;
 
-        return CanAddToResourceDictionary(parentVar, propertyType!, en, valueNode as IXmlLineInfo, context);
+        return false;
 
     }
 
@@ -490,7 +494,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var nodeType = context.Variables[node].Type;
         if (collectionType.GetAllMethods("Add", context).FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
             return true;
-        //TODO FAIL ?
         return false;     
 	}
 
@@ -499,10 +502,19 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         //FIXME should handle BP
         var localName = propertyName.LocalName;
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
+        IPropertySymbol? propertySymbol = null;
 
-        //one of those will return trus, but we need the propertyType
-        _ = CanGetValue(parentVar, bpFieldSymbol, attached, context, out var propertyType) || CanGet(parentVar, localName, context, out propertyType);
-        
+        //one of those will return true, but we need the propertyType
+        _ = CanGetValue(parentVar, bpFieldSymbol, attached, context, out var propertyType) || CanGet(parentVar, localName, context, out propertyType, out propertySymbol);
+
+        if (CanAddToResourceDictionary(parentVar, propertyType!, (IElementNode)valueNode, iXmlLineInfo, context))
+        {
+            var rdVar = new LocalVariable(propertyType!, NamingHelpers.CreateUniqueVariableName(context, propertyType!.Name!.Split('.').Last()));
+            writer.WriteLine($"var {rdVar.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, valueNode, context, iXmlLineInfo)};");
+            AddToResourceDictionary(writer, rdVar, (IElementNode)valueNode, iXmlLineInfo, context);
+            return;
+        }
+
         ITypeSymbol itemType;
         if (propertyType!.ImplementsGeneric(context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!, out var typeArguments))
             itemType = typeArguments[0];
