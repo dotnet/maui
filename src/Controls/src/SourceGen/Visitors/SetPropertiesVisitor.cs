@@ -178,7 +178,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					return;
             var elementType = parentVar.Type;
             var localName = parentList.XmlName.LocalName;
-            var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);        
+            var bpFieldSymbol = parentVar.Type.GetBindableProperty(parentList.XmlName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);        
             var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
             var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
@@ -314,6 +314,30 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             writer.WriteLine($"{parentVar.Name}.SetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {(HasDoubleImplicitConversion(context.Variables[elementNode].Type, pType, context, out var conv) ? "(" + conv!.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)+ ")" : string.Empty)}{context.Variables[node].Name});");
 	}
 
+    static bool CanGet(LocalVariable parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType)
+    {
+        propertyType = null;
+        if (parentVar.Type.GetAllProperties(localName, context).FirstOrDefault() is not IPropertySymbol property)
+            return false;
+        if (property.GetMethod is not IMethodSymbol propertyGetter || !propertyGetter.IsPublic() || propertyGetter.IsStatic)
+            return false;
+
+        propertyType = property.Type;
+        return true;
+    }
+
+    static bool CanGetValue(LocalVariable parentVar, IFieldSymbol? bpFieldSymbol, bool attached, SourceGenContext context, out ITypeSymbol? propertyType)
+    {
+        propertyType = null;
+        if (bpFieldSymbol == null)
+            return false;
+
+        if (!parentVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+            return false;
+
+        propertyType = bpFieldSymbol.GetBPTypeAndConverter(context)?.type;
+        return true;
+    }
     static string GetOrGetValue(LocalVariable parentVar, IFieldSymbol? bpFieldSymbol, IPropertySymbol? property, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
 
@@ -440,23 +464,18 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (valueNode is not ElementNode en)
             return false;
         
-        // if (!CanGetValue(parentVar, bpFieldSymbol, en, context)
-        //     && !CanGet(parentVar, localName, en, context))
-        //     return false;
+
+        if (!CanGetValue(parentVar, bpFieldSymbol, attached, context, out ITypeSymbol? propertyType)
+            && !CanGet(parentVar, localName, context, out propertyType))
+				return false;
 
         if (!context.Variables.TryGetValue(en, out var childVar))
             return false;
-        
-        //FIXME use the propertytype from CanGetValue or CanGet
-        var prop = parentVar.Type.GetAllProperties(propertyName.LocalName, context).FirstOrDefault();
-        
-        //FIXME prop.Type can be null here report MemberResolution
-        var propertyType = prop.Type;
                 
-        if(propertyType.CanAdd(context))
+        if(propertyType!.CanAdd(context))
             return true;
 
-        return CanAddToResourceDictionary(parentVar, propertyType, en, valueNode as IXmlLineInfo, context);
+        return CanAddToResourceDictionary(parentVar, propertyType!, en, valueNode as IXmlLineInfo, context);
 
     }
 
@@ -481,24 +500,24 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var localName = propertyName.LocalName;
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, valueNode as IXmlLineInfo);
 
-        
-        // if (!CanGetValue(parentVar, bpFieldSymbol, en, context)
-        //     && !CanGet(parentVar, localName, en, context))
-        //     return false;
-
-        
-        //FIXME use the propertytype from CanGetValue or CanGet
-        var prop = parentVar.Type.GetAllProperties(propertyName.LocalName, context).FirstOrDefault();
-        var propertyType = prop.Type;
+        //one of those will return trus, but we need the propertyType
+        _ = CanGetValue(parentVar, bpFieldSymbol, attached, context, out var propertyType) || CanGet(parentVar, localName, context, out propertyType);
         
         ITypeSymbol itemType;
-        if (propertyType.ImplementsGeneric(context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!, out var typeArguments))
+        if (propertyType!.ImplementsGeneric(context.Compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1")!, out var typeArguments))
             itemType = typeArguments[0];
         else
             itemType = context.Compilation.ObjectType;
 
+        var parentObj = $"{parentVar.Name}.{localName}";
+        if (bpFieldSymbol != null)
+        {
+            var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
+            parentObj = $"(({typeandconverter?.type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){parentVar.Name}.GetValue({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}))";
+        }
+
         using (PrePost.NewLineInfo(writer, iXmlLineInfo, context.FilePath))
-            writer.WriteLine($"{parentVar.Name}.{propertyName.LocalName}.Add(({itemType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){context.Variables[valueNode].Name});");
+            writer.WriteLine($"{parentObj}.Add(({itemType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){context.Variables[valueNode].Name});");
     }
 
     static void AddToResourceDictionary(IndentedTextWriter writer, LocalVariable parentVar, IElementNode node, IXmlLineInfo? lineInfo, SourceGenContext context)

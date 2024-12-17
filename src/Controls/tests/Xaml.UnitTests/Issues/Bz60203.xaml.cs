@@ -6,16 +6,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 [XamlProcessing(XamlInflator.Default, true)]
 public partial class Bz60203 : ContentPage
 {
-	public Bz60203()
-	{
-		InitializeComponent();
-	}
-
+	public Bz60203() => InitializeComponent();
 
 	[TestFixture]
 	class Tests
 	{
-
 		[Test]
 		public void CanCompileMultiTriggersWithDifferentConditions([Values]XamlInflator inflator)
 		{
@@ -25,6 +20,5 @@ public partial class Bz60203 : ContentPage
 			layout.label.TextColor = Colors.Blue;
 			Assert.That(layout.label.BackgroundColor, Is.EqualTo(Colors.Pink));
 		}
-
 	}
 }
