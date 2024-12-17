@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 		{
 			if (args.SelectedItem is NavigationViewItemViewModel itemViewModel &&
-				itemViewModel.Data is Page page)
+				itemViewModel.Data is Page page && page != CurrentPage)
 			{
 				NavigateToPage(page);
 			}
