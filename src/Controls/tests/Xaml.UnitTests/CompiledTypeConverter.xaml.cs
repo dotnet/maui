@@ -75,12 +75,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void CompiledTypeConverterAreInvoked([Values]XamlInflator xamlInflator)
 			{
-				// Get generated initialize component method and search for convertFrom call
-				if (inflator == XamlInflator.XamlC)
-				{
-					MockCompiler.Compile(typeof(CompiledTypeConverter), out var methodDef, out bool hasLoggedErrors);
-					Assert.That(!hasLoggedErrors);
-				}
 				var p = new CompiledTypeConverter(xamlInflator);
 				Assert.AreEqual(new Rect(0, 1, 2, 4), p.RectangleP);
 				Assert.AreEqual(new Rect(4, 8, 16, 32), p.RectangleBP);

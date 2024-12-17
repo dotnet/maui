@@ -534,11 +534,26 @@ static class KnownTypeConverters
             value = value.Trim();
             
 			return Uri.TryCreate(value, UriKind.Absolute, out Uri uri) && uri.Scheme != "file" ?
-                $"global::Microsoft.Maui.Controls.ImageSource.FromUri(\"{uri}\")" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
+                $"global::Microsoft.Maui.Controls.ImageSource.FromUri(new global::System.Uri(\"{uri}\"))" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
         }
 
         // TODO use correct position
         reportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, null, value));
+
+        return "default";
+    }
+    
+    internal static string ConvertListString(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+            
+            return $"new global::System.Collections.Generic.List<string>(new[] {{ {string.Join(", ", value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }})";
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, null, value));
 
         return "default";
     }
