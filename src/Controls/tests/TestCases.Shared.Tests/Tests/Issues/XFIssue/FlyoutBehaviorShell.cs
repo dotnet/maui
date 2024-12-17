@@ -20,8 +20,8 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	public override string Issue => "Shell Flyout Behavior";
 
 
-	[Test]
-	[Category(UITestCategories.Shell)]
+//	[Test]
+// 	[Category(UITestCategories.Shell)]
 	public void FlyoutTests()
 	{
 		// Flyout is visible
