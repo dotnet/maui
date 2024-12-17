@@ -461,4 +461,32 @@ static class KnownTypeConverters
 
         return "default";
     }
+
+    internal static string ConvertFlowDirection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            if (value.Equals("ltr", StringComparison.OrdinalIgnoreCase))
+            {
+                return "global::Microsoft.Maui.FlowDirection.LeftToRight";
+            }
+
+            if (value.Equals("rtl", StringComparison.OrdinalIgnoreCase))
+            {
+                return "global::Microsoft.Maui.FlowDirection.RightToLeft";
+            }
+
+            if (value.Equals("inherit", StringComparison.OrdinalIgnoreCase))
+            {
+                return "global::Microsoft.Maui.FlowDirection.MatchParent";
+            }
+
+            return ConvertEnum(value, toType, reportDiagnostic, xmlLineInfo, filePath);
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, null, value));
+
+        return "default";
+    }
 }
