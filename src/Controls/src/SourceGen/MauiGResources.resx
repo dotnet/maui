@@ -185,4 +185,8 @@
     <value>Cannot convert "{0}" into FlowDirection, expected values are "rtl", "ltr", "inherit", "MatchParent", "LeftToRight" or "RightToLeft".</value>
     <comment/>
   </data>
+  <data name="GridLengthConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into GridLength, expected. values are "*", "n*", "Auto" or "n" where n is a numeric value.</value>
+    <comment/>
+  </data>
 </root>

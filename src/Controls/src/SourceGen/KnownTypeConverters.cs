@@ -439,6 +439,7 @@ static class KnownTypeConverters
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
+
             if (value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
             {
                 return $"global::Microsoft.Maui.Layouts.FlexBasis.Auto";
@@ -466,6 +467,8 @@ static class KnownTypeConverters
     {
         if (!string.IsNullOrWhiteSpace(value))
         {
+            value = value.Trim();
+
             if (value.Equals("ltr", StringComparison.OrdinalIgnoreCase))
             {
                 return "global::Microsoft.Maui.FlowDirection.LeftToRight";
@@ -486,6 +489,39 @@ static class KnownTypeConverters
 
         // TODO use correct position
         reportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, null, value));
+
+        return "default";
+    }
+
+    internal static string ConvertGridLength(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+
+            if(value.Equals("*", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"global::Microsoft.Maui.GridLength.Star";
+            }
+            else if (value.EndsWith("*", StringComparison.OrdinalIgnoreCase))
+            {
+                if (double.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out double val))
+                {
+                    return $"new global::Microsoft.Maui.GridLength({val}, global::Microsoft.Maui.GridUnitType.Star)";
+                }
+            }
+            else if (value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"global::Microsoft.Maui.GridLength.Auto";
+            }
+            else if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double val))
+            {
+                return $"new global::Microsoft.Maui.GridLength({val}, global::Microsoft.Maui.GridUnitType.Absolute)";
+            }
+        }
+
+        // TODO use correct position
+        reportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, null, value));
 
         return "default";
     }
