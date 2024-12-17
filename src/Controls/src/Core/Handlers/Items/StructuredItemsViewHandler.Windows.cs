@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_layoutPropertyChangedProxy = null;
 			}
 
-			if (ListViewBase is FormsGridView formsGridView)
+			if (platformView is FormsGridView formsGridView)
 			{
 				formsGridView.SizeChanged -= OnGridViewSizeChanged;
 			}
