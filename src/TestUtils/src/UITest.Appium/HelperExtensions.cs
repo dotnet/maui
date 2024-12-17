@@ -652,6 +652,24 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Wait function that will repeatly query the app until any matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Collection of target Elements.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static IUIElement WaitForAnyElement(this IApp app, string[] marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => FindAnyElement(app, marked);
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
+		/// <summary>
 		/// Wait function that will repeatly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
@@ -2093,6 +2111,17 @@ namespace UITest.Appium
 				result = app.FindElementByText(element);
 
 			return result;
+		}
+
+		static IUIElement FindAnyElement(IApp app, string[] elements)
+		{
+			foreach (var element in elements)
+			{
+				if (FindElement(app, element) is IUIElement result)
+					return result;
+			}
+
+			throw new InvalidOperationException($"Did not find any elements in the list: {string.Join(", ", elements)}");
 		}
 
 		static IReadOnlyCollection<IUIElement> FindElements(IApp app, string element)
