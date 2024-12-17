@@ -119,11 +119,11 @@ steps:
   # Run on windows, for internal pipeline
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
-              -pack 
+              -restore -pack 
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
               -configuration $(_BuildConfig)
-              /bl:${{ parameters.repoLogPath }}/pack.binlog
+              /bl:${{ parameters.repoLogPath }}pack.binlog
               $(_OfficialBuildIdArgs)
       displayName: Pack, Sign & Publish
     
