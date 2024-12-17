@@ -184,7 +184,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (HeaderView is null || ContentView?.Superview is null)
 				return;
 
-			HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
+			HeaderView.UpdateSize(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
 			UpdateHeaderSize();
 		}
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// If the HeaderView hasn't been measured we need to measure it
 			if (double.IsNaN(MeasuredHeaderViewHeightWithMargin))
 			{
-				HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
+				HeaderView.UpdateSize(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
 			}
 
 			SetHeaderContentInset();

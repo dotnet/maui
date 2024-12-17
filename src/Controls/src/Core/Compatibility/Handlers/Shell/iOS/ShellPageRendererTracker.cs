@@ -258,7 +258,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var view = NavigationItem.TitleView;
 				NavigationItem.TitleView = null;
-				view?.Dispose();
+				if(view is TitleViewContainer titleViewContainer)
+				{
+					titleViewContainer.Disconnect();
+				}
 			}
 			else
 			{
@@ -899,7 +902,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_context.Shell.Toolbar != null)
 					_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 
-				if (NavigationItem?.TitleView is TitleViewContainer tvc)
+				if (IsRootPage && NavigationItem?.TitleView is TitleViewContainer tvc)
 					tvc.Disconnect();
 			}
 
