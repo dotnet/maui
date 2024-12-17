@@ -89,13 +89,9 @@ static class ServiceProviderExtensions
             var n = node.Parent;
             while (n is not null)
             {
-                if (n is IElementNode en )
-                {
-                    if (currentCtx.Variables.TryGetValue(en, out var parentVariable))
+                if (n is IElementNode en && currentCtx.Variables.TryGetValue(en, out var parentVariable))
                         yield return parentVariable;
                     n = n.Parent;        
-                } else
-                    break;
             }
             currentCtx = currentCtx.ParentContext;
         }
@@ -109,5 +105,4 @@ static class ServiceProviderExtensions
         var requiredServices = typeConverter.GetAttributes(requireServiceAttribute).FirstOrDefault()?.ConstructorArguments[0].Values.Where(ca => ca.Value is ITypeSymbol).Select(ca => (ca.Value as ITypeSymbol)!).ToImmutableArray() ?? null;
         return (acceptEmptyServiceProvider, requiredServices);
     }
-
 }
