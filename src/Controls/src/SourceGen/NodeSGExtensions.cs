@@ -37,6 +37,7 @@ static class NodeSGExtensions
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Converters.FlexBasisTypeConverter")!, (KnownTypeConverters.ConvertFlexBasis, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Layouts.FlexBasis")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.FlowDirectionConverter")!, (KnownTypeConverters.ConvertFlowDirection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.FlowDirection")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.GridLengthTypeConverter")!, (KnownTypeConverters.ConvertGridLength, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.GridLength")!) },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSourceConverter")!, (KnownTypeConverters.ConvertImageSource, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ImageSource")!) },
 	};
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
