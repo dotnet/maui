@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,17 +13,26 @@ public class Bugzilla36955 : _IssuesUITest
 
 	public override string Issue => "[iOS] ViewCellRenderer.UpdateIsEnabled referencing null object";
 
-	// TODO from Xamarin.UITest Migration, seems to be ignored already
-	// Also uses some specific XamUITest APIs that we need to find counterparts for
-	// [Ignore("Test failing due to unrelated issue, disable for moment")]
-	// [Category(UITestCategories.TableView)]
-	// [Test]
-	// public void Bugzilla36955Test()
-	// {
-	// 	AppResult[] buttonFalse = App.Query(q => q.Button().Text("False"));
-	// 	Assert.AreEqual(buttonFalse.Length == 1, true);
-	// 	App.Tap(q => q.Class("Switch"));
-	// 	AppResult[] buttonTrue = App.Query(q => q.Button().Text("True"));
-	// 	Assert.AreEqual(buttonTrue.Length == 1, true);
-	// }
+	[Category(UITestCategories.TableView)]
+	[Test]
+	public void Bugzilla36955Test()
+	{
+		App.WaitForElement("Button");
+		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("False"));
+		TapCoordinates();
+		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("True"));
+	}
+	void TapCoordinates()
+	{
+#if WINDOWS
+        App.TapCoordinates(1340,160);
+#elif ANDROID
+		App.TapCoordinates(1000, 100);
+#elif IOS
+        App.TapCoordinates(1002,100)
+#endif
+	}
 }
+#endif
+
+
