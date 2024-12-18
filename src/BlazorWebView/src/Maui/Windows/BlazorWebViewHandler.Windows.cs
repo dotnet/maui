@@ -29,6 +29,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void DisconnectHandler(WebView2Control platformView)
 		{
+			if (!AppContext.TryGetSwitch("Windows.BlazorWebViewHandler.DisableWebViewCloseOnDisconnect", out var disableCloseOnDisconnect)
+				|| !disableCloseOnDisconnect)
+			{
+				// Close the webview2 instance otherwise the process stays around in efficiency mode for later reuse
+				// Wait until the control is unloaded to close, or we might have issues if the view is in the middle of navigation
+				platformView.Unloaded += PlatformView_Unloaded;
+			}
+
 			if (_webviewManager != null)
 			{
 				// Start the disposal...
@@ -51,6 +59,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				_webviewManager = null;
+			}
+		}
+
+		private void PlatformView_Unloaded(object sender, UI.Xaml.RoutedEventArgs e)
+		{
+			if (sender is WebView2Control webview2)
+			{
+				webview2.Unloaded -= PlatformView_Unloaded;
+				webview2.Close();
 			}
 		}
 
