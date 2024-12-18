@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (FlyoutOverlapsDetailsInPopoverMode)
 			{
-				if (FlyoutPageController.ShouldShowSplitMode)
+				if (FlyoutPageController.ShouldShowSplitMode || Presented)
 					UpdatePresented(true);
 				else
 					UpdatePresented(false);
@@ -403,6 +403,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					else
 						detailsFrame.X += flyoutFrame.Width;
 				}
+				else if (((FlyoutPage)Element).FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default)
+                {
+                    detailsFrame.X += flyoutFrame.Width;
+                }
 
 				if (FlyoutOverlapsDetailsInPopoverMode && FlyoutPageController.ShouldShowSplitMode)
 				{
