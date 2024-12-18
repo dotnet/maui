@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+// While using this GroupShortNameBinding property it throws an exception on Windows
+// for more information:https://github.com/dotnet/maui/issues/26534. 
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +25,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

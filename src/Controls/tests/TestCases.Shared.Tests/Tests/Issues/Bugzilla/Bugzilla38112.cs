@@ -1,4 +1,6 @@
-﻿#if TEST_FAILS_ON_WINDOWS //App crashes
+﻿#if TEST_FAILS_ON_WINDOWS 
+//After Button Click removes all Items in TableView 
+//For more information: https://github.com/dotnet/maui/issues/26699
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
