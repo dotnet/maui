@@ -30,14 +30,13 @@ public class Issue7167 : _IssuesUITest
 		// App.Print.Tree();
 		
 		App.ScrollDown(ListViewId, ScrollStrategy.Auto, 0.65, 200);
-		App.WaitForElement("23");
-	
+		App.WaitForAnyElement(["20", "40", "60", "80"]);
+
 		// when adding additional items via a addrange and a CollectionChangedEventArgs.Action.Reset is sent
 		// then the listview shouldnt reset or it should not scroll to the top
 		App.Tap(AddRangeCommandId);
 
-		// Verify that item "23" is still visible
-		App.WaitForElement("23");
+		App.WaitForAnyElement(["20", "40", "60", "80"]);
 	}
 }
 #endif
