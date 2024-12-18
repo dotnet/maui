@@ -1,11 +1,5 @@
 # Template for build + pack on dnceng
 parameters:
-- name: runAsPublic
-  type: boolean
-  default: false
-- name: runAsInternal
-  type: boolean
-  default: true
 - name: pool
   type: object
 - name: enableSourceBuild
@@ -63,7 +57,7 @@ stages:
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        - ${{ if eq(parameters.runAsPublic, 'true') }}:
+        - ${{ eq(variables['_RunAsPublic'], 'true') }}:
           - script: $(_buildScript)
                     -restore -pack
                     -publish $(_PublishArgs)
@@ -73,7 +67,7 @@ stages:
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if eq(parameters.runAsInternal, 'true') }}:
+        -  ${{ eq(variables['_RunAsInternal'], 'true') }}:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)

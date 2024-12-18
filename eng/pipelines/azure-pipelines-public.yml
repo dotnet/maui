@@ -50,8 +50,6 @@ parameters:
 stages:
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
-    runAsInternal: ${{ eq(variables['_RunAsInternal'], 'true') }}
     pool: ${{ parameters.VM_IMAGE_HOST }}
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
