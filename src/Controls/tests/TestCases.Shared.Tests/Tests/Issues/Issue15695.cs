@@ -14,40 +14,40 @@ public class Issue15695 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifySwitchOffColorAfterToggling()
+	public async Task VerifySwitchOffColorAfterToggling()
 	{
 		App.WaitForElement("Switch");
 		App.Tap("ResetStateButton");
 		App.Tap("ToggleSwitch");
 		// Wait for the switch to animate
-		Task.Delay(500);
+		await Task.Delay(500);
 		VerifyScreenshot();
 	}
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifySwitchOffColorAfterTogglingDarkTheme()
+	public async Task VerifySwitchOffColorAfterTogglingDarkTheme()
 	{
 		App.WaitForElement("Switch");
 		App.Tap("ResetStateButton");
 		App.Tap("ChangeThemeButton");
 		App.Tap("ToggleSwitch");
 		// Wait for the switch to animate
-		Task.Delay(500);
+		await Task.Delay(500);
 		VerifyScreenshot();
 	}
 
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public void VerifySwitchNullColor()
+	public async Task VerifySwitchNullColor()
 	{
 		App.WaitForElement("Switch");
 		App.Tap("ResetStateButton");
 		App.Tap("NullOffColorButton");
 		App.Tap("ToggleSwitch");
 		// Wait for the switch to animate
-		Task.Delay(500);
+		await Task.Delay(500);
 		VerifyScreenshot();
 	}
 }
