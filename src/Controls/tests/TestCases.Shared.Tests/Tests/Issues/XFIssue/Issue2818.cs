@@ -19,6 +19,7 @@ public class Issue2818 : _IssuesUITest
 	{
 		var idiom = App.WaitForElement("Idiom");
 		App.Tap("OpenRootView");
+		App.WaitForElement("CloseRootView");
 		App.Tap("CloseRootView");
 		App.SetOrientationLandscape();
 		App.Tap("OpenRootView");
