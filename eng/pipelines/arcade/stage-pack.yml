@@ -67,7 +67,7 @@ stages:
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ eq(parameters.runAsInternal, 'true') }}:
+        - ${{ eq(variables['_RunAsInternal'], 'true') }}:
           - script: $(_buildScript)
                     -restore -pack 
                     -sign $(_SignArgs)
