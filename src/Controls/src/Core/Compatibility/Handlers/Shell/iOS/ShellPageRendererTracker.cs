@@ -292,17 +292,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					NavigationItem.RightBarButtonItems[i].Dispose();
 			}
 
+			var shellToolbarItems = _context?.Shell?.ToolbarItems;
 			List<UIBarButtonItem> primaries = null;
-			if (Page.ToolbarItems.Count > 0)
+			if (Page.ToolbarItems.Count > 0) // Display toolbar items defined on the current page
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Priority))
 				{
 					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
 				}
-
-				if (primaries != null)
-					primaries.Reverse();
 			}
+			else if (shellToolbarItems != null && shellToolbarItems.Count > 0) // If the page has no toolbar items use the ones defined for the shell
+			{
+				foreach (var item in System.Linq.Enumerable.OrderBy(shellToolbarItems, x => x.Priority))
+				{
+					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
+				}
+			}
+
+			if (primaries != null)
+				primaries.Reverse();
 
 			NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
