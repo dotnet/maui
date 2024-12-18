@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_gotoPosition = -1;
 
 			// We need to update the position while modifying the collection.
-			targetPosition = DetermineTargetPosition();
+			targetPosition = GetTargetPosition();
 
 			_positionAfterUpdate = -1;
 
@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return currentItemPosition != -1 ? currentItemPosition : carouselPosition;
 		}
 
-		private int DetermineTargetPosition()
+		private int GetTargetPosition()
 		{
 			return ItemsView.ItemsUpdatingScrollMode switch
 			{
