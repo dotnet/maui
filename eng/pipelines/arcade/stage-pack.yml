@@ -57,41 +57,41 @@ stages:
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        - ${{ eq(variables['_RunAsPublic'], 'true') }}:
-          - script: $(_buildScript)
-                    -restore -pack 
-                    -publish $(_PublishArgs)
-                    -configuration $(_BuildConfig)
-                    /bl:$(Build.Arcade.LogsPath)pack.binlog
-                    $(_OfficialBuildIdArgs)
-            displayName: Pack & Publish
+        # - ${{ eq(variables['_RunAsPublic'], 'true') }}:
+        - script: $(_buildScript)
+                  -restore -pack 
+                  -publish $(_PublishArgs)
+                  -configuration $(_BuildConfig)
+                  /bl:$(Build.Arcade.LogsPath)pack.binlog
+                  $(_OfficialBuildIdArgs)
+          displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ eq(variables['_RunAsInternal'], 'true') }}:
-          - script: $(_buildScript)
-                    -restore -pack 
-                    -sign $(_SignArgs)
-                    -publish $(_PublishArgs)
-                    -configuration $(_BuildConfig)
-                    /bl:$(Build.Arcade.LogsPath)pack.binlog
-                    $(_OfficialBuildIdArgs)
-            displayName: Pack, Sign & Publish
+        # - ${{ eq(variables['_RunAsInternal'], 'true') }}:
+        #   - script: $(_buildScript)
+        #             -restore -pack 
+        #             -sign $(_SignArgs)
+        #             -publish $(_PublishArgs)
+        #             -configuration $(_BuildConfig)
+        #             /bl:$(Build.Arcade.LogsPath)pack.binlog
+        #             $(_OfficialBuildIdArgs)
+        #     displayName: Pack, Sign & Publish
           
-          # only for workloads
-          - script: $(_buildScript)
-              -restore -build
-              -sign $(_SignArgs)
-              -publish $(_PublishArgs)
-              -configuration $(_BuildConfig)
-              /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog
-              -projects src/Workload/workloads.csproj
-              $(_OfficialBuildIdArgs)
-            displayName: Build Workloads
+        #   # only for workloads
+        #   - script: $(_buildScript)
+        #       -restore -build
+        #       -sign $(_SignArgs)
+        #       -publish $(_PublishArgs)
+        #       -configuration $(_BuildConfig)
+        #       /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog
+        #       -projects src/Workload/workloads.csproj
+        #       $(_OfficialBuildIdArgs)
+        #     displayName: Build Workloads
 
-          - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
-            displayName: Publish VSDrop MSIs
-            inputs:
-              targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+        #   - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+        #     displayName: Publish VSDrop MSIs
+        #     inputs:
+        #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
               artifactName: VSDropInsertion
 
         - task: ${{ parameters.publishTaskPrefix }}PublishBuildArtifacts@1
