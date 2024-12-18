@@ -581,6 +581,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (TemplatedItemsView.TemplatedItems.Count == 0)
 						InvalidateCellCache();
 
+					if (ListView?.SelectedItem is not null && !ListView.TemplatedItems.Contains(ListView.SelectedItem))
+					{
+						ListView.SelectedItem = null;
+					}
+
 					break;
 
 				case NotifyCollectionChangedAction.Move:
@@ -608,6 +613,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				case NotifyCollectionChangedAction.Reset:
 					InvalidateCellCache();
 					ReloadData();
+
+					if (ListView?.SelectedItem is not null)
+					{
+						ListView.SelectedItem = null;
+					}
 					return;
 			}
 		}
