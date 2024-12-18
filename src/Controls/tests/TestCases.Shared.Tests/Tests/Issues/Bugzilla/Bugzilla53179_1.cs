@@ -20,6 +20,6 @@ public class Bugzilla53179_1 : _IssuesUITest
 	{
 		App.WaitForElement(StartTest);
 		App.Tap(StartTest);
-		App.WaitForElement(RootLabel);
+		App.WaitForElementTillPageNavigationSettled(RootLabel);
 	}
 }

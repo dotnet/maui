@@ -19,11 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				App.WaitForElement("Button");
+				App.WaitForElementTillPageNavigationSettled("Button");
 
 				App.Tap("Button");
 
-				App.WaitForElement("VisualElement");
+				App.WaitForElementTillPageNavigationSettled("VisualElement");
 
 				App.TapBackArrow();
 			}

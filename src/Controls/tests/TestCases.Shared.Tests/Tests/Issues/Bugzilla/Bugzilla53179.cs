@@ -19,16 +19,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Next Page");
 			App.Tap("Next Page");
 
-			App.WaitForElement("Next Page");
+			App.WaitForElementTillPageNavigationSettled("Next Page");
 			App.Tap("Next Page");
 
-			App.WaitForElement("Next Page");
+			App.WaitForElementTillPageNavigationSettled("Next Page");
 			App.Tap("Next Page");
 
-			App.WaitForElement("Remove previous pages");
+			App.WaitForElementTillPageNavigationSettled("Remove previous pages");
 			App.Tap("Remove previous pages");
 
-			App.WaitForElement("Back");
+			App.WaitForElementTillPageNavigationSettled("Back");
 			App.Tap("Back");
 		}
 	}

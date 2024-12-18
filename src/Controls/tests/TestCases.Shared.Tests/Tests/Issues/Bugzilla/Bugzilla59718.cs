@@ -25,16 +25,16 @@ public class Bugzilla59718 : _IssuesUITest
 		App.WaitForElement(Target1);
 		App.Tap(Target1);
 
-		App.WaitForElement(Target1b);
+		App.WaitForElementTillPageNavigationSettled(Target1b);
 
-		App.WaitForElement(Target2);
+		App.WaitForElementTillPageNavigationSettled(Target2);
 		App.Tap(Target2);
 
-		App.WaitForElement(Target3);
+		App.WaitForElementTillPageNavigationSettled(Target3);
 
-		App.WaitForElement(GoBackButtonId);
+		App.WaitForElementTillPageNavigationSettled(GoBackButtonId);
 		App.Tap(GoBackButtonId);
 
-		App.WaitForElement(Target1);
+		App.WaitForElementTillPageNavigationSettled(Target1);
 	}
 }
