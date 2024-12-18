@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls
 
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
+			FlyoutPage isFlyoutPage = _currentPage.FindParentOfType<FlyoutPage>();
 
 			foreach (var navPage in _navigationPagesStack)
 			{
@@ -99,6 +100,13 @@ namespace Microsoft.Maui.Controls
 			_navigationPagesStack.Clear();
 			if (_currentNavigationPage == null)
 			{
+				// In a FlyoutPage, The Detail page manages navigation and overrides the toolbar visibility.
+				// Therefore,return early without modifying the toolbar visibility.
+				if(isFlyoutPage?.Flyout == _currentPage)
+				{
+					return;
+				}
+
 				IsVisible = false;
 				return;
 			}
