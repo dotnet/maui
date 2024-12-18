@@ -80,12 +80,8 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
-    default: true
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           
+    type: boolean
+    default: true     
 
   - name: VM_IMAGE_HOST
     type: object
@@ -106,6 +102,7 @@ parameters:
       artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
   - name: Skip1ESComplianceTasks
+    type: boolean
     default: true
 
 stages:
