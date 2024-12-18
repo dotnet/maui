@@ -25,7 +25,6 @@ parameters:
     type: string
     default: '1ES.'
 
-
 steps:
   - pwsh: |
       if ($env:JAVA_HOME_17_X64) {
@@ -43,12 +42,6 @@ steps:
         echo "Unable to set JAVA_HOME"
       }
     displayName: Set JAVA_HOME
-
-  # - task: DotNetCoreCLI@2
-  #   displayName: Install dotnet preview without workloads
-  #   inputs:
-  #     projects: src/DotNet/DotNet.csproj
-  #     arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
   - ${{ if ne(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
@@ -169,5 +162,4 @@ steps:
     inputs:
       targetPath: $(Build.ArtifactStagingDirectory)
       artifact: Pack .NET MAUI - Logs
-    continueOnError: true
     condition: always()
