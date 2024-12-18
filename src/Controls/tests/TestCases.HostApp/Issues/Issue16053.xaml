@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
 
     <VerticalStackLayout>
-        <ListView x:Name="ListView1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" Margin="10" BackgroundColor="LightGray">
+        <ListView x:Name="ListView1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Margin="10" BackgroundColor="LightGray">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextCell Text="{Binding}" />
