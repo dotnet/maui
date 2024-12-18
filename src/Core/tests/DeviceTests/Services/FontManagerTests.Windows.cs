@@ -44,11 +44,13 @@ public partial class FontManagerTests : TestBase
 #if UNPACKAGED
 			var expectedSuffix = "Fonts\\dokdo_regular.ttf#Dokdo";
 			var root = Path.GetFullPath(Path.Combine(FileSystem.CacheDirectory, ".."));
-			var expected = Path.Combine(root, expectedSuffix);
-			expected = Path.GetFullPath(expected);
+			var fullFontName = Path.Combine(root, expectedSuffix);
+			fullFontName = Path.GetFullPath(fullFontName);
 
-			var filename = expected[..expected.IndexOf("#", StringComparison.OrdinalIgnoreCase)];
+			var filename = fullFontName[..fullFontName.IndexOf("#", StringComparison.OrdinalIgnoreCase)];
 			Assert.True(File.Exists(filename), $"File not found: {filename}");
+			
+			var expected = "ms-appx:///" + fullFontName.Replace("\\", "/", StringComparison.OrdinalIgnoreCase);
 #else
 			var expected = "ms-appdata:///temp/Fonts/dokdo_regular.ttf#Dokdo";
 #endif
