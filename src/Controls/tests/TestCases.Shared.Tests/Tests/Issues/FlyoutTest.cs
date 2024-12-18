@@ -27,11 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Tab1Page");
 			App.Tap("ChangeFlyoutBackground");
-#if ANDROID
-			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Open navigation drawer']"));
-#else
-			App.Tap(FlyoutIconAutomationId);
-#endif
+            App.TapShellFlyoutIcon();
 			VerifyScreenshot();
 		}
 	}
