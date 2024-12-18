@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("boxView");
 			App.Tap("boxView");
+			App.WaitForElement("previous page ");
 		}
 	}
 }

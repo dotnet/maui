@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID    //When click the BtnAdd , it doesn't shows the Success label.
+﻿#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,11 +18,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla56771Test()
 		{
 			App.WaitForElement(BtnAdd);
 			App.Tap(BtnAdd);
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }

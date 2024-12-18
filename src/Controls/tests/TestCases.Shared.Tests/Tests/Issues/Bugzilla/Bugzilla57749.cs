@@ -16,7 +16,7 @@ public class Bugzilla57749 : _IssuesUITest
 	[Category(UITestCategories.Button)]
 	public void Bugzilla57749Test()
 	{
-		//await Task.Delay(500);
+		App.WaitForElement("btnClick");
 		App.Tap("btnClick");
 		App.WaitForElement("Button was clicked");
 		App.Tap("Ok");

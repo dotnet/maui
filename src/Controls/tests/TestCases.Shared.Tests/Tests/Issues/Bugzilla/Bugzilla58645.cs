@@ -16,11 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla58645Test()
 		{
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
+			App.WaitForElement(ButtonId);
 		}
 	}
 }
