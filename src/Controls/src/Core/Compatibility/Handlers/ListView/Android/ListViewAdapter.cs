@@ -627,13 +627,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Reset:
-					if (_listView?.SelectedItem is not null)
-					{
-						_listView.SelectedItem = null;
-					}
-					break;
 				case NotifyCollectionChangedAction.Remove:
-					if (_listView?.SelectedItem is not null && !_listView.TemplatedItems.Contains(_listView.SelectedItem))
+					if (_listView?.SelectedItem is not null &&
+						(e.Action == NotifyCollectionChangedAction.Reset ||
+						 !_listView.TemplatedItems.Contains(_listView.SelectedItem)))
 					{
 						_listView.SelectedItem = null;
 					}
