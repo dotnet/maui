@@ -59,7 +59,7 @@ stages:
         # Run on public pipeline
         # - ${{ eq(variables['_RunAsPublic'], 'true') }}:
         - script: $(_buildScript)
-                  -restore -pack 
+                  -restore -pack
                   -publish $(_PublishArgs)
                   -configuration $(_BuildConfig)
                   /bl:$(Build.Arcade.LogsPath)pack.binlog
@@ -69,7 +69,7 @@ stages:
         # Run on internal pipeline
         # - ${{ eq(variables['_RunAsInternal'], 'true') }}:
         #   - script: $(_buildScript)
-        #             -restore -pack 
+        #             -restore -pack
         #             -sign $(_SignArgs)
         #             -publish $(_PublishArgs)
         #             -configuration $(_BuildConfig)
@@ -92,7 +92,7 @@ stages:
         #     displayName: Publish VSDrop MSIs
         #     inputs:
         #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-              artifactName: VSDropInsertion
+        #     artifactName: VSDropInsertion
 
         - task: ${{ parameters.publishTaskPrefix }}PublishBuildArtifacts@1
           displayName: Publish Logs
