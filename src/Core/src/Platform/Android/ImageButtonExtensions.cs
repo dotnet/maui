@@ -23,6 +23,9 @@ namespace Microsoft.Maui.Platform
 		public static async void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			var padding = platformButton.Context!.ToPixels(imageButton.Padding);
+			var (strokeWidth, _, _) = imageButton.GetStrokeProperties(platformButton.Context!, true);
+			int additionalPadding = strokeWidth;
+			padding = new Thickness(padding.Left + additionalPadding, padding.Top + additionalPadding, padding.Right + additionalPadding, padding.Bottom + additionalPadding);
 
 			// The simple operation we are trying to do.
 			platformButton.SetContentPadding((int)padding.Left, (int)padding.Top, (int)padding.Right, (int)padding.Bottom);

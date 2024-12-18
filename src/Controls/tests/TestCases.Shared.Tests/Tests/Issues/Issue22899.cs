@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("button");
 			_ = App.WaitForElement("label");
 
-	        // The test passes if the text in the navigation bar has changed
+			// The test passes if the text in the navigation bar has changed
 			VerifyScreenshot();
 		}
 	}

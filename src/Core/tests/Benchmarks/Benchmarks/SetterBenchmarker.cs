@@ -27,13 +27,13 @@ namespace Microsoft.Maui.Benchmarks
 
 		static readonly Style _labelStyle = new Style(typeof(Label))
 		{
-			Setters = 
+			Setters =
 			{
 				new Setter { Property = Label.TextProperty, Value = "Style" },
 				new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = _vsg }
 			}
 		};
-		
+
 		// Avoids the warning:
 		// The minimum observed iteration time is 10.1000 us which is very small. It's recommended to increase it to at least 100.0000 ms using more operations.
 		const int Iterations = 100;
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Benchmarks
 			{
 				Style = _labelStyle
 			};
-			
+
 			for (int i = 0; i < Iterations; i++)
 			{
 				label.Text = "Direct";

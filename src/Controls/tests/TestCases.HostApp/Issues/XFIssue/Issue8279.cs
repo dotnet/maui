@@ -13,7 +13,7 @@ public class Issue8279 : TestContentPage
 	const string ScrollWithItemWithGroup = "ScrollWithItemWithGroup";
 	const string ScrollWithNoItemNoGroup = "ScrollWithNoItemNoGroup";
 	const string ScrollWithNoItemEmptyGroup = "ScrollWithNoItemEmptyGroup";
-	const string Reset = "Reset";
+	const string ResetButton = "Reset";
 
 	protected override void Init()
 	{
@@ -24,9 +24,9 @@ public class Issue8279 : TestContentPage
 	{
 
 		Data = new List<MyGroup>();
-            Data.Add(new MyGroup(){Headertitle = "Header 1"});
-            Data.First().Add(new MyData(){Title = "title 1"});
-            Data.First().Add(new MyData() { Title = "title 2" });
+		Data.Add(new MyGroup() { Headertitle = "Header 1" });
+		Data.First().Add(new MyData() { Title = "title 1" });
+		Data.First().Add(new MyData() { Title = "title 2" });
 		Data.First().Add(new MyData() { Title = "title 3" });
 		Data.First().Add(new MyData() { Title = "title 4" });
 		Data.First().Add(new MyData() { Title = "title 5" });
@@ -42,16 +42,16 @@ public class Issue8279 : TestContentPage
 
 		List = new ListView();
 #pragma warning disable CS0618 // Type or member is obsolete
-            List.HorizontalOptions = LayoutOptions.FillAndExpand;
+		List.HorizontalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
-            List.VerticalOptions = LayoutOptions.FillAndExpand;
+		List.VerticalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
-            List.BackgroundColor = Colors.Yellow;
-            List.ItemTemplate = new DataTemplate(typeof (VCTest));
-            List.GroupHeaderTemplate = new DataTemplate(typeof(VCHeader));
-            List.IsGroupingEnabled = true;
-            List.ItemsSource = Data;
+		List.BackgroundColor = Colors.Yellow;
+		List.ItemTemplate = new DataTemplate(typeof(VCTest));
+		List.GroupHeaderTemplate = new DataTemplate(typeof(VCHeader));
+		List.IsGroupingEnabled = true;
+		List.ItemsSource = Data;
 
 		var lastGroup = Data.Last();
 		var lastItem = lastGroup.First();
@@ -63,7 +63,7 @@ public class Issue8279 : TestContentPage
 		{
 			Text = "Scroll with no item but group",
 			AutomationId = ScrollWithNoItemButGroup,
-			Command = new Command(()=> List.ScrollTo(null, lastGroup, ScrollToPosition.MakeVisible, true))
+			Command = new Command(() => List.ScrollTo(null, lastGroup, ScrollToPosition.MakeVisible, true))
 		};
 
 		var button2 = new Button()
@@ -97,7 +97,7 @@ public class Issue8279 : TestContentPage
 		var resetButton = new Button()
 		{
 			Text = "Reset",
-			AutomationId = Reset,
+			AutomationId = ResetButton,
 			Command = new Command(() => List.ScrollTo(null, firstGroup, ScrollToPosition.Center, true))
 		};
 
@@ -111,13 +111,13 @@ public class Issue8279 : TestContentPage
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
 
-		stackLayout.AddLogicalChild(resetButton);
-		stackLayout.AddLogicalChild(button1);
-		stackLayout.AddLogicalChild(button2);
-		stackLayout.AddLogicalChild(button3);
-		stackLayout.AddLogicalChild(button4);
-		stackLayout.AddLogicalChild(button5);
-		stackLayout.AddLogicalChild(List);
+		stackLayout.Children.Add(resetButton);
+		stackLayout.Children.Add(button1);
+		stackLayout.Children.Add(button2);
+		stackLayout.Children.Add(button3);
+		stackLayout.Children.Add(button4);
+		stackLayout.Children.Add(button5);
+		stackLayout.Children.Add(List);
 
 		Content = stackLayout;
 	}

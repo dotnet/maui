@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected abstract UICollectionViewLayout SelectLayout();
 
 		protected abstract ItemsViewController2<TItemsView> CreateController(TItemsView newElement, UICollectionViewLayout layout);
-	
+
 		protected override UIView CreatePlatformView() => Controller?.View;
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
@@ -178,10 +178,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		// {
 		// 	var size = base.GetDesiredSize(widthConstraint, heightConstraint);
-		
+
 		// 	var potentialContentSize = Controller.GetSize();
 
-			
+
 		// 	System.Diagnostics.Debug.WriteLine($"potentialContentSize: {potentialContentSize}");
 		// 	// If contentSize comes back null, it means none of the content has been realized yet;
 		// 	// we need to return the expansive size the collection view wants by default to get
@@ -190,19 +190,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		// 	{
 		// 		return size;
 		// 	}
-		
+
 		// 	var contentSize = potentialContentSize.Value;
-		
+
 		// 	// If contentSize does have a value, our target size is the smaller of it and the constraints
-		
+
 		// 	size.Width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
 		// 	size.Height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
-		
+
 		// 	var virtualView = this.VirtualView as IView;
-		
+
 		// 	size.Width = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
 		// 	size.Height = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
-		
+
 		// 	return size;
 		// }
 	}

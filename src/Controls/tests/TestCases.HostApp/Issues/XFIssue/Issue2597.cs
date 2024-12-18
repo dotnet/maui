@@ -22,7 +22,8 @@ public class Issue2597 : TestContentPage
 			Increment = 0.1,
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.CenterAndExpand,
-			IsEnabled = false
+			IsEnabled = false,
+			AutomationId = "Stepper"
 		};
 #pragma warning restore CS0618 // Type or member is obsolete
 		stepper.ValueChanged += OnStepperValueChanged;
@@ -33,6 +34,7 @@ public class Issue2597 : TestContentPage
 #pragma warning disable CS0612 // Type or member is obsolete
 		_label = new Label
 		{
+			AutomationId = "StepperValue",
 			Text = "Stepper value is 0",
 			FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 			HorizontalOptions = LayoutOptions.Center,

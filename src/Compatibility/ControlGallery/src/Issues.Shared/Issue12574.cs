@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			};
 			_btn2.SetBinding(Button.CommandProperty, "RemoveAllItemsCommand");
 
+			// https://github.com/dotnet/maui/pull/25692
 			_carouselView = new CarouselView
 			{
 				AutomationId = carouselAutomationId,

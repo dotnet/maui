@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    internal class Issue17283 : _IssuesUITest
+	internal class Issue17283 : _IssuesUITest
 	{
 		public override string Issue => "[Android] CarouselView doesn't scroll to the right Position after changing the ItemSource with Loop enabled";
 
