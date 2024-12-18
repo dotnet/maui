@@ -10,14 +10,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 			BindingContext = new _16053ViewModel();
-
-			Loaded += (s, e) =>
-			{
-				if (BindingContext is _16053ViewModel viewModel)
-				{
-					viewModel.SelectedItem = viewModel.Items[2];
-				}
-			};
 		}
 
 		private void Button_Click(object sender, EventArgs e)
