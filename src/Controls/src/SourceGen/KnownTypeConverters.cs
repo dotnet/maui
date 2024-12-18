@@ -192,6 +192,15 @@ static class KnownTypeConverters
         "SpringOut"
     };
 
+    const string Ellipse = nameof(Ellipse);
+    const string Line = nameof(Line);
+    const string Path = nameof(Path);
+    const string Polygon = nameof(Polygon);
+    const string Polyline = nameof(Polyline);
+    const string Rectangle = nameof(Rectangle);
+    const string RoundRectangle = nameof(RoundRectangle);
+    internal static readonly char[] Delimiter = [' '];
+
     internal static string ConvertRect(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -337,10 +346,10 @@ static class KnownTypeConverters
     internal static string ConvertCornerRadius(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
-
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
+
             if (value.Contains(','))
             { //Xaml
                 var cornerRadius = value.Split(',');
@@ -544,6 +553,187 @@ static class KnownTypeConverters
         }
 
         reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
+
+    internal static string ConvertPointCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            string[] points = value.Split([' ', ',']);
+			var pointCollection = new List<string>();
+			double x = 0;
+			bool hasX = false;
+
+			foreach (string point in points)
+			{
+				if (string.IsNullOrWhiteSpace(point)) continue;
+
+				if (double.TryParse(point, NumberStyles.Number, CultureInfo.InvariantCulture, out double number))
+				{
+					if (!hasX)
+					{
+						x = number;
+						hasX = true;
+					}
+					else
+					{
+						pointCollection.Add(ConvertPoint($"{x},{number}", toType, reportDiagnostic, xmlLineInfo, filePath));
+						hasX = false;
+					}
+				}
+				else
+                {
+					reportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+                    return "default";
+                }
+			}
+
+			if (hasX)
+            {
+				reportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+                return "default";
+            }
+
+			return $"new global::Microsoft.Maui.Controls.PointCollection(new[] {{ {string.Join(", ", pointCollection)} }})";
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
+
+    internal static string ConvertPathGeometry(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+
+            // TODO
+            return "new global::Microsoft.Maui.Controls.Shapes.PathGeometry()";
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.PathGeometryConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
+
+    internal static string ConvertStrokeShape(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+
+            if (value.StartsWith(Ellipse, StringComparison.OrdinalIgnoreCase))
+            {
+                return "new global::Microsoft.Maui.Controls.Shapes.Ellipse()";
+            }
+
+            if (value.StartsWith(Line, StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = value.Split(Delimiter, 2);
+                if (parts.Length != 2)
+                {
+                    return "new global::Microsoft.Maui.Controls.Shapes.Line()";
+                }
+
+                var coordinates = parts[1].Split(',');
+                if (coordinates.Length == 2 && double.TryParse(coordinates[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double x1)
+                    && double.TryParse(coordinates[1], NumberStyles.Number, CultureInfo.InvariantCulture, out double y1))
+                {
+                    return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {x1}, Y1 = {y1} }}";
+                }
+                else if (coordinates.Length == 4 && double.TryParse(coordinates[0], NumberStyles.Number, CultureInfo.InvariantCulture, out x1)
+                    && double.TryParse(coordinates[1], NumberStyles.Number, CultureInfo.InvariantCulture, out y1)
+                    && double.TryParse(coordinates[2], NumberStyles.Number, CultureInfo.InvariantCulture, out double x2)
+                    && double.TryParse(coordinates[3], NumberStyles.Number, CultureInfo.InvariantCulture, out double y2))
+                {
+                    return $"new global::Microsoft.Maui.Controls.Shapes.Line {{ X1 = {x1}, Y1 = {y1}, X2 = {x2}, Y2 = {y2} }}";
+                }
+            }
+
+            if (value.StartsWith(Path, StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = value.Split(Delimiter, 2);
+                if (parts.Length != 2)
+                {
+                    return "new global::Microsoft.Maui.Controls.Shapes.Path()";
+                }
+
+                // TODO
+                // PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
+                // Geometry pathGeometry = pathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
+
+                // if (pathGeometry == null)
+                // {
+                //     return "new global::Microsoft.Maui.Controls.Shapes.Path()";
+                // }
+
+                //return new Path { Data = pathGeometry };
+            }
+
+            if (value.StartsWith(Polygon, StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = value.Split(Delimiter, 2);
+                if (parts.Length != 2)
+                {
+                    return "new global::Microsoft.Maui.Controls.Shapes.Polygon()";
+                }
+
+                var pointCollection = ConvertPointCollection(parts[1], toType, reportDiagnostic, xmlLineInfo, filePath);
+
+                // If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
+                if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "new global::Microsoft.Maui.Controls.Shapes.Polyline()";
+                }
+
+                return $"new global::Microsoft.Maui.Controls.Shapes.Polygon {{ Points = {pointCollection} }}";
+            }
+
+            if (value.StartsWith(Polyline, StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = value.Split(Delimiter, 2);
+                if (parts.Length != 2)
+                {
+                    return "new global::Microsoft.Maui.Controls.Shapes.Polyline()";
+                }
+
+                var pointCollection = ConvertPointCollection(parts[1], toType, reportDiagnostic, xmlLineInfo, filePath);
+
+                // If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
+                if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "new global::Microsoft.Maui.Controls.Shapes.Polyline()";
+                }
+
+                return $"new global::Microsoft.Maui.Controls.Shapes.Polyline {{ Points = {pointCollection} }}";
+            }
+
+            if (value.StartsWith(Rectangle, StringComparison.OrdinalIgnoreCase))
+            {
+                return "new global::Microsoft.Maui.Controls.Shapes.Rectangle()";
+            }
+
+            if (value.StartsWith(RoundRectangle, StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = value.Split(Delimiter, 2);
+
+                var cornerRadius = "new global::Microsoft.Maui.CornerRadius()";
+
+                if (parts.Length > 1)
+                {
+                    cornerRadius = ConvertCornerRadius(parts[1], toType, reportDiagnostic, xmlLineInfo, filePath);
+                }
+
+                return $"new global::Microsoft.Maui.Controls.Shapes.RoundRectangle {{ CornerRadius = {cornerRadius} }}";
+            }
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.StrokeShapeConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }

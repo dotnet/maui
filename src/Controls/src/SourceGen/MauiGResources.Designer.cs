@@ -164,6 +164,24 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("ImageSourceConversionFailed", resourceCulture);
             }
         }
+        
+        internal static string PointCollectionConversionFailed {
+            get {
+                return ResourceManager.GetString("PointCollectionConversionFailed", resourceCulture);
+            }
+        }
+
+        internal static string PathGeometryConversionFailed {
+            get {
+                return ResourceManager.GetString("PathGeometryConversionFailed", resourceCulture);
+            }
+        }
+        
+        internal static string StrokeShapeConversionFailed {
+            get {
+                return ResourceManager.GetString("StrokeShapeConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string SymbolResolution {
             get {
