@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ListViewSelectedItemUpdated()
 		{
 			App.WaitForElement("ClearButton");
+			App.Tap("Orange Juice");
 			App.Tap("DisplayItem");
 			App.Tap("ClearButton");
 			App.Tap("DisplayItem");
