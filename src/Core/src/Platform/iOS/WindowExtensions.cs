@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using CoreGraphics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Devices;
 using UIKit;
 
@@ -47,8 +48,9 @@ namespace Microsoft.Maui.Platform
 					SystemFrame = new CGRect(window.X, window.Y, window.Width, window.Height)
 				};
 
-				// TODO: Log errors.
-				windowScene.RequestGeometryUpdate(preferences, (error) => { });
+				windowScene.RequestGeometryUpdate(preferences, (error) => {
+					window.Handler?.MauiContext?.CreateLogger<UIWindow>()?.LogError("Requesting geometry update failed with error '{error}'.", error);
+				});
 			}
 			else
 			{

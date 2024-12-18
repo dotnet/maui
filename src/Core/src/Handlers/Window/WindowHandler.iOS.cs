@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 
 			// For newer Mac Catalyst versions, we want to wait until we get effective window dimensions from the platform.
-			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
 				_proxy.Connect(VirtualView, platformView);
 			} 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16)) 
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16)) 
 			{
 				_proxy.Disconnect();
 			}
@@ -122,6 +122,11 @@ namespace Microsoft.Maui.Handlers
 			public void Connect(IWindow virtualView, UIWindow platformView)
 			{
 				_virtualView = new(virtualView);
+
+				// https://developer.apple.com/documentation/uikit/uiwindowscene/effectivegeometry?language=objc#Discussion mentions:
+				// > This property is key-value observing (KVO) compliant. Observing effectiveGeometry is the recommended way
+				// > to receive notifications of changes to the window scene’s geometry. These changes can occur because of
+				// > user interaction or as a result of the system resolving a geometry request.
 				_effectiveGeometryObserver = platformView.WindowScene?.AddObserver("effectiveGeometry", NSKeyValueObservingOptions.OldNew, HandleEffectiveGeometryObserved);
 			}
 
