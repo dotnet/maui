@@ -19,7 +19,7 @@ public class Unreported1 : TestFlyoutPage
 	protected override void Init()
 	{
 		MDP = this;
-
+        // When assgining a page getting an invalid cast exception in all platforms, so using content page here. //Issue: https://github.com/dotnet/maui/issues/21205
 		Flyout = new ContentPage { Title = "Flyout", Content = new Label { Text = "Flyout Content" } };
 		Detail = new SplashPage();
 	}
