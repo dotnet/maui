@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,9 +26,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Tab1Page");
 			App.Tap("ChangeFlyoutBackground");
-            App.TapShellFlyoutIcon();
+			App.TapShellFlyoutIcon();
 			VerifyScreenshot();
 		}
 	}
 }
-#endif
