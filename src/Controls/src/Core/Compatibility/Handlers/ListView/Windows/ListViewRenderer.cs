@@ -219,6 +219,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					case NotifyCollectionChangedAction.Remove:
 						for (int i = e.OldItems.Count - 1; i >= 0; i--)
 							_collection.RemoveAt(e.OldStartingIndex);
+
+						if (Element?.SelectedItem is not null && !Element.TemplatedItems.Contains(Element.SelectedItem))
+						{
+							Element.SelectedItem = null;
+						}
 						break;
 					case NotifyCollectionChangedAction.Move:
 						{
@@ -253,26 +258,33 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					default:
 						ClearSizeEstimate();
 						ReloadData();
+						if (Element?.SelectedItem is not null)
+						{
+							Element.SelectedItem = null;
+						}
 						break;
 				}
 			}
-			switch (e.Action)
+			else
 			{
-				case NotifyCollectionChangedAction.Reset:
-					ClearSizeEstimate();
-					ReloadData();
+				switch (e.Action)
+				{
+					case NotifyCollectionChangedAction.Reset:
+						ClearSizeEstimate();
+						ReloadData();
 
-					if (Element?.SelectedItem is not null)
-					{
-						Element.SelectedItem = null;
-					}
-					break;
-				case NotifyCollectionChangedAction.Remove:
-					if (Element?.SelectedItem is not null && !Element.TemplatedItems.Contains(Element.SelectedItem))
-					{
-						Element.SelectedItem = null;
-					}
-					break;
+						if (Element?.SelectedItem is not null)
+						{
+							Element.SelectedItem = null;
+						}
+						break;
+					case NotifyCollectionChangedAction.Remove:
+						if (Element?.SelectedItem is not null && !Element.TemplatedItems.Contains(Element.SelectedItem))
+						{
+							Element.SelectedItem = null;
+						}
+						break;
+				}
 			}
 		}
 
