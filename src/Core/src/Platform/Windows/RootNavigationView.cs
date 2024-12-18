@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 	[Microsoft.UI.Xaml.Data.Bindable]
 	public partial class RootNavigationView : MauiNavigationView
 	{
+		const double MaxTitlebarButtonSize = 64;
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
@@ -253,13 +254,13 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateNavigationAndPaneButtonHolderGridStyles()
 		{
-			var buttonHeight = Math.Max(_appBarTitleHeight, DefaultNavigationBackButtonHeight);
+			var buttonHeight = Math.Min(MaxTitlebarButtonSize, Math.Max(_appBarTitleHeight, DefaultNavigationBackButtonHeight));
 			var buttonRatio = buttonHeight / DefaultNavigationBackButtonHeight;
 
 			NavigationBackButtonHeight = buttonHeight;
 			NavigationBackButtonWidth = DefaultNavigationBackButtonWidth * buttonRatio;
 
-			var paneToggleHeight = Math.Max(_appBarTitleHeight, DefaultPaneToggleButtonHeight);
+			var paneToggleHeight = Math.Min(MaxTitlebarButtonSize, Math.Max(_appBarTitleHeight, DefaultPaneToggleButtonHeight));
 			var paneToggleRatio = paneToggleHeight / DefaultPaneToggleButtonHeight;
 
 			PaneToggleButtonHeight = paneToggleHeight;
