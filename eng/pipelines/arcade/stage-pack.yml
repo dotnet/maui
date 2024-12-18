@@ -10,6 +10,7 @@ parameters:
   default: false
 - name: sourceIndexParams
   type: object
+  default: []
 - name: publishTaskPrefix
   type: string
   default: ''
