@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +20,6 @@ public class Bugzilla59718 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla59718Test()
 	{
 		App.WaitForElement(Target1);
@@ -40,4 +38,3 @@ public class Bugzilla59718 : _IssuesUITest
 		App.WaitForElement(Target1);
 	}
 }
-#endif

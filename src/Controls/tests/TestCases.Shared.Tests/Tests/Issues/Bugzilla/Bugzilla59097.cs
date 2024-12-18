@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_WINDOWS     //BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla59097Test()
 		{
 			App.WaitForElement("boxView");

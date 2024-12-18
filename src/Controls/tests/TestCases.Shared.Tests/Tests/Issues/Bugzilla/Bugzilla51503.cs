@@ -15,9 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue51503Test()
 		{
 			for (int i = 0; i < 3; i++)
@@ -28,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 				App.WaitForElement("VisualElement");
 
-				App.Back();
+				App.TapBackArrow();
 			}
 		}
 	}
