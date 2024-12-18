@@ -343,18 +343,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_gotoPosition = -1;
 
 			// We need to update the position while modifying the collection.
-			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
-			{
-				targetPosition = 0;
-			}
-			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-			{
-				targetPosition = ItemsSource.ItemCount - 1;
-			}
-			else
-			{
-				targetPosition = _positionAfterUpdate;
-			}
+			targetPosition = DetermineTargetPosition();
 
 			_positionAfterUpdate = -1;
 
@@ -366,6 +355,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			//If we are adding a new item make sure to maintain the CurrentItemPosition
 			return currentItemPosition != -1 ? currentItemPosition : carouselPosition;
+		}
+
+		private int DetermineTargetPosition()
+		{
+			return ItemsView.ItemsUpdatingScrollMode switch
+			{
+				ItemsUpdatingScrollMode.KeepItemsInView => 0,
+				ItemsUpdatingScrollMode.KeepLastItemInView => ItemsSource.ItemCount - 1,
+				_ => _positionAfterUpdate
+			};
 		}
 
 		int GetPositionWhenResetItems()
