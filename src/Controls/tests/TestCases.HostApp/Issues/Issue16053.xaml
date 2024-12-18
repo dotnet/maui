@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue16053"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+
+    <VerticalStackLayout>
+        <ListView x:Name="ListView1" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}" Margin="10" BackgroundColor="LightGray">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Button Text="Click to display Selected Item" Clicked="Button_Click" AutomationId="DisplayItem"/>
+        <Label x:Name="lbl" Margin="10,10,10,0" AutomationId="SelectedItemLabel"/>
+        <Button Text="Clear" Clicked="Button_Click_1" AutomationId="ClearButton"/>
+    </VerticalStackLayout>
+</ContentPage>
