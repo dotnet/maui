@@ -57,7 +57,7 @@ stages:
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        - ${{ eq(variables['_RunAsPublic'], 'true') }}:
+        - ${{ if eq(variables['_RunAsPublic'], 'true') }}:
           - script: $(_buildScript)
                     -restore -pack
                     -publish $(_PublishArgs)
@@ -67,7 +67,7 @@ stages:
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        -  ${{ eq(variables['_RunAsInternal'], 'true') }}:
+        - ${{ if eq(variables['_RunAsInternal'], 'true') }}:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)
