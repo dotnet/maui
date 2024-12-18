@@ -1773,7 +1773,35 @@ namespace UITest.Appium
 
 			throw new InvalidOperationException($"Could not get the performance data");
 		}
+		
+		/// <summary>
+		/// Maximize the active App window.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void EnterFullScreen(this IApp app)
+		{   	
+			if (app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"EnterFullScreen is only supported on AppiumCatalystApp");
+			}
 
+			app.CommandExecutor.Execute("enterFullScreen", new Dictionary<string, object>());
+		}
+
+		/// <summary>
+		/// Leave the App full screen mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ExitFullScreen(this IApp app)
+		{   
+			if (app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"ExitFullScreen is only supported on AppiumCatalystApp");
+			}
+
+			app.CommandExecutor.Execute("exitFullScreen", new Dictionary<string, object>());
+		}
+		
 		/// <summary>
 		/// Retrieve visibility and bounds information of the status and navigation bars
 		/// </summary>
