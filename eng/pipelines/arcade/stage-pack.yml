@@ -1,5 +1,11 @@
 # Template for build + pack on dnceng
 parameters:
+- name: runAsPublic
+  type: boolean
+  default: false
+- name: runAsInternal
+  type: boolean
+  default: true
 - name: pool
   type: object
 - name: enableSourceBuild
@@ -57,42 +63,42 @@ stages:
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        # - ${{ eq(variables['_RunAsPublic'], 'true') }}:
-        - script: $(_buildScript)
-                  -restore -pack
-                  -publish $(_PublishArgs)
-                  -configuration $(_BuildConfig)
-                  /bl:$(Build.Arcade.LogsPath)pack.binlog
-                  $(_OfficialBuildIdArgs)
-          displayName: Pack & Publish
+        - ${{ if eq(parameters.runAsPublic, 'true') }}:
+          - script: $(_buildScript)
+                    -restore -pack
+                    -publish $(_PublishArgs)
+                    -configuration $(_BuildConfig)
+                    /bl:$(Build.Arcade.LogsPath)pack.binlog
+                    $(_OfficialBuildIdArgs)
+            displayName: Pack & Publish
 
         # Run on internal pipeline
-        # - ${{ eq(variables['_RunAsInternal'], 'true') }}:
-        #   - script: $(_buildScript)
-        #             -restore -pack
-        #             -sign $(_SignArgs)
-        #             -publish $(_PublishArgs)
-        #             -configuration $(_BuildConfig)
-        #             /bl:$(Build.Arcade.LogsPath)pack.binlog
-        #             $(_OfficialBuildIdArgs)
-        #     displayName: Pack, Sign & Publish
+        - ${{ if eq(parameters.runAsInternal, 'true') }}:
+          - script: $(_buildScript)
+                    -restore -pack
+                    -sign $(_SignArgs)
+                    -publish $(_PublishArgs)
+                    -configuration $(_BuildConfig)
+                    /bl:$(Build.Arcade.LogsPath)pack.binlog
+                    $(_OfficialBuildIdArgs)
+            displayName: Pack, Sign & Publish
           
-        #   # only for workloads
-        #   - script: $(_buildScript)
-        #       -restore -build
-        #       -sign $(_SignArgs)
-        #       -publish $(_PublishArgs)
-        #       -configuration $(_BuildConfig)
-        #       /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog
-        #       -projects src/Workload/workloads.csproj
-        #       $(_OfficialBuildIdArgs)
-        #     displayName: Build Workloads
+          # only for workloads
+          - script: $(_buildScript)
+              -restore -build
+              -sign $(_SignArgs)
+              -publish $(_PublishArgs)
+              -configuration $(_BuildConfig)
+              /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog
+              -projects src/Workload/workloads.csproj
+              $(_OfficialBuildIdArgs)
+            displayName: Build Workloads
 
-        #   - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
-        #     displayName: Publish VSDrop MSIs
-        #     inputs:
-        #       targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-        #     artifactName: VSDropInsertion
+          - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+            displayName: Publish VSDrop MSIs
+            inputs:
+              targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+              artifactName: VSDropInsertion
 
         - task: ${{ parameters.publishTaskPrefix }}PublishBuildArtifacts@1
           displayName: Publish Logs
