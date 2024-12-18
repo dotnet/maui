@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
+		bool _popRequested;
+
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
 		// iOS will return the previous array until the new array has been processed
@@ -107,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[Export("navigationBar:didPopItem:")]
 		[Internals.Preserve(Conditional = true)]
 		bool DidPopItem(UINavigationBar _, UINavigationItem __)
-			=> true;
+			=> _popRequested || SendPop();
 
 		internal bool SendPop()
 		{
@@ -392,6 +394,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -432,6 +435,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -593,6 +597,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
+			_popRequested = false;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
@@ -600,7 +605,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				base.PushViewController(viewController, animated);
-			}
+			}			
 		}
 
 		public override UIViewController PopViewController(bool animated)
