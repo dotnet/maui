@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Bugzilla36802Test()
 		{
 			App.WaitForElement("TestReady");
-			App.Screenshot("AccessoryView partially hidden test");
+			VerifyScreenshot();
 		}
 	}
 }

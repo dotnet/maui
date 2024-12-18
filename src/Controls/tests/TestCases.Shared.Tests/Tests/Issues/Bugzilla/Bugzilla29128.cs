@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Bugzilla29128Test()
 		{
 			App.WaitForElement("SliderId");
+			VerifyScreenshot();
 		}
 	}
 }
