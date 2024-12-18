@@ -403,11 +403,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					else
 						detailsFrame.X += flyoutFrame.Width;
 				}
-				else if (((FlyoutPage)Element).FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default)
-                {
-                    detailsFrame.X += flyoutFrame.Width;
-                }
-
+				
 				if (FlyoutOverlapsDetailsInPopoverMode && FlyoutPageController.ShouldShowSplitMode)
 				{
 					detailsFrame.Width -= flyoutFrame.Width;
