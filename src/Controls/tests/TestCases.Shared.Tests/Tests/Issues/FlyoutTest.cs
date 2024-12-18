@@ -5,16 +5,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class HamburgerIconTest : _IssuesUITest
+	public class FlyoutTest : _IssuesUITest
 	{
 		public override string Issue => "FlyoutTest";
 
-		public HamburgerIconTest(TestDevice device)
+		public FlyoutTest(TestDevice device)
 		: base(device)
 		{ }
 
 		[Test]
-		[Category(UITestCategories.ActivityIndicator), Order(1)]
+		[Category(UITestCategories.Shell), Order(1)]
 		public void VerifyHamburgerIcon()
 		{
 			App.WaitForElement("Tab1Page");
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.ActivityIndicator), Order(2)]
+		[Category(UITestCategories.Shell), Order(2)]
 		public void VerifyFlyoutBackgroundColor()
 		{
 			App.WaitForElement("Tab1Page");
