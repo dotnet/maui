@@ -101,8 +101,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		[Export("navigationBar:shouldPopItem:")]
 		[Internals.Preserve(Conditional = true)]
-		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __) =>
-			SendPop();
+		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
+			=> SendPop();
+
+		[Export("navigationBar:didPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		bool DidPopItem(UINavigationBar _, UINavigationItem __)
+			=> true;
 
 		internal bool SendPop()
 		{
