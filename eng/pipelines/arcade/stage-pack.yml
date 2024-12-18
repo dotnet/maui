@@ -13,7 +13,7 @@ parameters:
   default: []
 - name: publishTaskPrefix
   type: string
-  default: ''
+  default: '1ES.'
 
 stages:
 - stage: Pack
@@ -93,10 +93,3 @@ stages:
             inputs:
               targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
               artifactName: VSDropInsertion
-
-        - task: ${{ parameters.publishTaskPrefix }}PublishBuildArtifacts@1
-          displayName: Publish Logs
-          inputs:
-            targetPath: $(Build.ArtifactStagingDirectory)
-            artifact: Pack .NET MAUI - Logs
-          condition: always()

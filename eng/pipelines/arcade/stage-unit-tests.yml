@@ -2,7 +2,8 @@ parameters:
   jobMatrix: []  # Should define jobMatrix.name, jobMatrix.displayName, jobMatrix.pool, jobMatrix.timeout, jobMatrix.testOS
   mauiSourcePath: $(Build.SourcesDirectory)
   buildConfig: Debug
-  publishTaskPrefix: ''
+  repoLogPath: $(Build.Arcade.LogsPath)
+  publishTaskPrefix: '1ES.'
 
 stages:
 - stage: UnitTests
@@ -18,6 +19,8 @@ stages:
       - template: /eng/pipelines/arcade/setup-test-env.yml
         parameters:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
+          buildConfig: ${{ parameters.buildConfig }}
+          repoLogPath: ${{ parameters.repoLogPath }}
           installPackageArtifacts: false
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
@@ -157,11 +160,11 @@ stages:
 
       # TODO: Controls.Core.Design.UnitTests.csproj
 
-      - task: ${{ parameters.publishTaskPrefix }}PublishBuildArtifacts@1
+      - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: Publish Logs
         inputs:
-          targetPath: $(Build.ArtifactStagingDirectory)
-          artifact: Pack .NET MAUI - Logs
+          targetPath: ${{ parameters.repoLogPath }}
+          artifact: Run Unit Tests - ${{ job.testOS }} Logs
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml

@@ -7,12 +7,12 @@ steps:
 - bash: |
     echo "##vso[task.setvariable variable=JI_JAVA_HOME]${{ parameters.jdkFolder }}"
     echo "##vso[task.setvariable variable=JAVA_HOME]${{ parameters.jdkFolder }}"
-  displayName: Setup JDK {{ parameters.jdkMajorVersion }} Paths
+  displayName: Setup JDK ${{ parameters.jdkMajorVersion }} Paths
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
 - pwsh: |
-    if ($env:${{ parameters.jdkFolder }}) {
-      $env:JAVA_HOME = $env:${{ parameters.jdkFolder }}
+    if ('${{ parameters.jdkFolder }}') {
+      $env:JAVA_HOME = '${{ parameters.jdkFolder }}'
     } else {
       $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-${{ parameters.jdkMajorVersion }}.*\bin\java.exe) | Select-Object -First 1
       if ($path -and (Test-Path $path)) {
@@ -25,5 +25,5 @@ steps:
     } else {
       echo "Unable to set JAVA_HOME"
     }
-  displayName: Setup JDK {{ parameters.jdkMajorVersion }} Paths
+  displayName: Setup JDK ${{ parameters.jdkMajorVersion }} Paths
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
