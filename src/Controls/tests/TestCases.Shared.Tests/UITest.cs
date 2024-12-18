@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
 
 			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
-				visualComparer: new MagickNetVisualComparer(),
+				visualComparer: new MagickNetVisualComparer(differenceThreshold: 0.0025),
 				visualDiffGenerator: new MagickNetVisualDiffGenerator(),
 				ciArtifactsDirectory: ciArtifactsDirectory);
 
