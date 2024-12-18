@@ -211,8 +211,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -249,8 +248,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -268,8 +266,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -332,8 +329,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -387,8 +383,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -411,8 +406,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -430,8 +424,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, null, value, value, toType?.ToDisplayString()));
+        reportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
 
         return "default";
     }
@@ -459,8 +452,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -489,8 +481,7 @@ static class KnownTypeConverters
             return ConvertEnum(value, toType, reportDiagnostic, xmlLineInfo, filePath);
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -522,8 +513,7 @@ static class KnownTypeConverters
             }
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -539,8 +529,7 @@ static class KnownTypeConverters
                 $"global::Microsoft.Maui.Controls.ImageSource.FromUri(new global::System.Uri(\"{uri}\"))" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, null, value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
@@ -554,8 +543,7 @@ static class KnownTypeConverters
             return $"new global::System.Collections.Generic.List<string>(new[] {{ {string.Join(", ", value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }})";
         }
 
-        // TODO use correct position
-        reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(filePath, xmlLineInfo, value) , value));
+        reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
 
         return "default";
     }
