@@ -1,4 +1,4 @@
-﻿#if IOS || ANDROID
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // Using ActivateContextMenu internally does a right click and is not working correctly.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
