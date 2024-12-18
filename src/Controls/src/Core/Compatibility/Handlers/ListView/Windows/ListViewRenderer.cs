@@ -256,10 +256,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						break;
 				}
 			}
-			else if (e.Action == NotifyCollectionChangedAction.Reset)
+			switch (e.Action)
 			{
-				ClearSizeEstimate();
-				ReloadData();
+				case NotifyCollectionChangedAction.Reset:
+					ClearSizeEstimate();
+					ReloadData();
+
+					if (Element?.SelectedItem is not null)
+					{
+						Element.SelectedItem = null;
+					}
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					if (Element?.SelectedItem is not null && !Element.TemplatedItems.Contains(Element.SelectedItem))
+					{
+						Element.SelectedItem = null;
+					}
+					break;
 			}
 		}
 

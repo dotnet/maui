@@ -623,6 +623,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnDataChanged();
+
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Reset:
+					if (_listView?.SelectedItem is not null)
+					{
+						_listView.SelectedItem = null;
+					}
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					if (_listView?.SelectedItem is not null && !_listView.TemplatedItems.Contains(_listView.SelectedItem))
+					{
+						_listView.SelectedItem = null;
+					}
+					break;
+			}
 		}
 
 		void OnDataChanged()
