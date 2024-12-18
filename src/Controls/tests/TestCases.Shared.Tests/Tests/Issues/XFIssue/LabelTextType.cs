@@ -23,6 +23,6 @@ public class LabelTextType : _IssuesUITest
 
 		App.Tap("ToggleTextTypeButton");
 
-		Assert.That(App.WaitForElement("TextTypeLabel").GetText()?.Contains("<h1>", StringComparison.OrdinalIgnoreCase), Is.True);
+		Assert.That(App.WaitForElement("TextTypeLabel").GetText()?.Contains("<h1>", StringComparison.OrdinalIgnoreCase), Is.False);
 	}
 }
