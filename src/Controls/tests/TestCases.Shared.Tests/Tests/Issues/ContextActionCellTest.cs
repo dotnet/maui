@@ -14,7 +14,7 @@ public class ContextActionCellTest : _IssuesUITest
 	public override string Issue => "Table View ContextActionCell Test";
 
 	[Test]
-	[Category(UITestCategories.ActivityIndicator)]
+	[Category(UITestCategories.TableView)]
 	public void VerifyContextActionCell()
 	{
 		App.WaitForElement("Text Cell");
