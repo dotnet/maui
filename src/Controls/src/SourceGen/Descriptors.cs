@@ -118,6 +118,30 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor PointCollectionConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1015",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.PointCollectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+			
+		public static DiagnosticDescriptor PathGeometryConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1016",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.PathGeometryConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor StrokeShapeConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1017",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.StrokeShapeConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		//Symbol resolution
 		public static DiagnosticDescriptor TypeResolution = new DiagnosticDescriptor(
 			id: "MAUIX2000",

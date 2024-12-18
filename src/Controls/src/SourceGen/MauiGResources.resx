@@ -197,4 +197,16 @@
     <value>Cannot convert "{0}" into List&lt;string&gt;, expected format is "x, y, z".</value>
     <comment/>
   </data>
+  <data name="PointCollectionConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into PointCollection.</value>
+    <comment/>
+  </data>
+  <data name="StrokeShapeConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Shape (or descendant).</value>
+    <comment/>
+  </data>
+  <data name="PathGeometryConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Geometry.</value>
+    <comment/>
+  </data>
 </root>
