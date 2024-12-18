@@ -1,28 +1,32 @@
+using System.Linq;
+using NuGet.Frameworks;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
-{
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class DuplicateXArgumentsElements : BindableObject
-	{
-		public DuplicateXArgumentsElements(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-		[TestFixture]
-		public static class Tests
+[XamlCompilation(XamlCompilationOptions.Skip)]
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class DuplicateXArgumentsElements : BindableObject
+{
+	public DuplicateXArgumentsElements() => InitializeComponent();
+
+	[TestFixture]
+	public static class Tests
+	{
+		[Test]
+		public static void ThrowXamlParseException([Values]XamlInflator inflator)
 		{
-			[Test]
-			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
 			{
-				if (useCompiledXaml)
-				{
-					MockCompiler.Compile(typeof(DuplicateXArgumentsElements), out var md, out var hasLoggedErrors);
-					Assert.That(hasLoggedErrors);
-				}
-				else
-					Assert.Throws<XamlParseException>(() => new DuplicateXArgumentsElements(useCompiledXaml));
+				MockCompiler.Compile(typeof(DuplicateXArgumentsElements), out var md, out var hasLoggedErrors);
+				Assert.That(hasLoggedErrors);
+			}
+			else if (inflator == XamlInflator.Runtime)
+				Assert.Throws<XamlParseException>(() => new DuplicateXArgumentsElements(inflator));
+			else if (inflator == XamlInflator.SourceGen)
+			{
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(DuplicateXArgumentsElements));
+				Assert.That(result.Diagnostics.Any());
 			}
 		}
 	}

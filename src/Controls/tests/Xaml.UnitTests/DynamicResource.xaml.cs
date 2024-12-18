@@ -1,39 +1,36 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Core.UnitTests;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlProcessing(XamlInflator.Default, true)]
+public partial class DynamicResource : ContentPage
 {
-	public partial class DynamicResource : ContentPage
+	public DynamicResource()
 	{
-		public DynamicResource()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		public DynamicResource(bool useCompiledXaml)
+	[TestFixture]
+	public class Tests
+	{
+		[Test]
+		public void TestDynamicResources([Values]XamlInflator inflator)
 		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		public class Tests
-		{
-			[TestCase(false), TestCase(true)]
-			public void TestDynamicResources(bool useCompiledXaml)
+			if (inflator == XamlInflator.SourceGen)
 			{
-				var layout = new DynamicResource(useCompiledXaml);
-				var label = layout.label0;
-
-				Assert.Null(label.Text);
-
-				layout.Resources = new ResourceDictionary {
-					{"FooBar", "FOOBAR"},
-				};
-				Assert.AreEqual("FOOBAR", label.Text);
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(DynamicResource));
+				Assert.That(result.Diagnostics.IsEmpty);
 			}
+			
+			var layout = new DynamicResource(inflator);
+			var label = layout.label0;
+
+			Assert.Null(label.Text);
+
+			layout.Resources = new ResourceDictionary {
+				{"FooBar", "FOOBAR"},
+			};
+			Assert.AreEqual("FOOBAR", label.Text);
 		}
 	}
 }

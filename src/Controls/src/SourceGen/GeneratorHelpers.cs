@@ -10,7 +10,7 @@ using System.Xml;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -82,35 +82,18 @@ static class GeneratorHelpers
 	{
 		var text = projectItem?.AdditionalText.GetText(cancellationToken);
 		if (text == null)
-		{
 			return null;
-		}
 
-		var xmlDoc = new XmlDocument();
-		try
-		{
-			xmlDoc.LoadXml(text.ToString());
-		}
-		catch (XmlException xe)
-		{
+		XmlNode? root;
+		XmlNamespaceManager nsmgr;
+		try {
+			(root, nsmgr) = LoadXmlDocument(text, cancellationToken);
+		} catch (Exception xe) {
 			return new XamlProjectItemForCB(projectItem!, xe);
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-		if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
-			return new XamlProjectItemForCB(projectItem!, new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead"));
-#pragma warning restore CS0618 // Type or member is obsolete
-
-		cancellationToken.ThrowIfCancellationRequested();
-
-		var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
-
-		var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 		if (root == null)
-		{
 			return null;
-		}
 
 		ApplyTransforms(root, projectItem!.TargetFramework, nsmgr);
 
@@ -119,14 +102,10 @@ static class GeneratorHelpers
 			cancellationToken.ThrowIfCancellationRequested();
 
 			if (attr.Name == "xmlns")
-			{
 				nsmgr.AddNamespace("", attr.Value); //Add default xmlns
-			}
 
 			if (attr.Prefix != "xmlns")
-			{
 				continue;
-			}
 
 			nsmgr.AddNamespace(attr.LocalName, attr.Value);
 		}
@@ -134,6 +113,25 @@ static class GeneratorHelpers
 		return new XamlProjectItemForCB(projectItem, root, nsmgr);
 	}
 
+	public static (XmlNode?, XmlNamespaceManager) LoadXmlDocument(SourceText text, CancellationToken cancellationToken)
+	{
+		var xmlDoc = new XmlDocument();
+		xmlDoc.LoadXml(text.ToString());
+
+
+#pragma warning disable CS0618 // Type or member is obsolete
+		if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
+			throw new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
+#pragma warning restore CS0618 // Type or member is obsolete
+
+		cancellationToken.ThrowIfCancellationRequested();
+
+		var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+
+		var root = xmlDoc.SelectSingleNode("/*", nsmgr);
+		return (root, nsmgr);
+	}
 	public static AssemblyCaches GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
 	{
 		// [assembly: XmlnsDefinition]

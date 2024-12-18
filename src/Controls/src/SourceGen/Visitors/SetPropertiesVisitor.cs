@@ -236,7 +236,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return;
         }
 
-        //TODO dynamicresource
+        //DynamicResource
+        if (CanSetDynamicResource(bpFieldSymbol, valueNode, context))
+        {
+            SetDynamicResource(writer, parentVar, bpFieldSymbol!, valueNode, context, iXmlLineInfo);
+            return;
+        }
 
         //If it's a BP and the value is BindingBase, SetBinding
         if (CanSetBinding(bpFieldSymbol, valueNode, context))
@@ -264,10 +269,30 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		
         var location = LocationCreate(context.FilePath!, iXmlLineInfo, localName);
         context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, location, localName));
-
     }
 
-    static bool CanConnectEvent(LocalVariable parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
+	private static bool CanSetDynamicResource(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
+	{
+        if (bpFieldSymbol == null)
+            return false;
+        if (node is not IElementNode en)
+            return false;
+
+        //TODO we could get the type directly from the XmlType of the node, so no need to instantiate de extension at all
+        if (!context.Variables.TryGetValue(en, out var localVar))
+            return false;
+        
+        return localVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!);
+	}
+
+
+	private static void SetDynamicResource(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+	{
+        var localVariable = context.Variables[(IElementNode)valueNode];
+        writer.WriteLine($"{parentVar.Name}.SetDynamicResource({fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {localVariable.Name}.Key);");
+	}
+
+	static bool CanConnectEvent(LocalVariable parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
 	{
 		return !attached && valueNode is ValueNode && parentVar.Type.GetMembers().OfType<IEventSymbol>().Any(e => e.Name == localName);
 	}
@@ -283,7 +308,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return false;
         if (node is ValueNode vn) //TODO check if a conversion exists
             return true;
-        if(!(node is ElementNode en))
+        if(node is not ElementNode en)
             return false;
         
         var localVar = context.Variables[en];
@@ -341,6 +366,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         propertyType = bpFieldSymbol.GetBPTypeAndConverter(context)?.type;
         return true;
     }
+
     static string GetOrGetValue(LocalVariable parentVar, IFieldSymbol? bpFieldSymbol, IPropertySymbol? property, INode node, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
     {
         if (bpFieldSymbol != null)

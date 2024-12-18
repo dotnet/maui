@@ -8,6 +8,9 @@ namespace Microsoft.Maui.Controls.SourceGen;
 public static class LocationHelpers
 {
     public static Location LocationCreate(string filePath, IXmlLineInfo lineInfo, string text)
-        => Location.Create(filePath!, new TextSpan(lineInfo.LinePosition, text.Length), new LinePositionSpan(new LinePosition(lineInfo.LineNumber-1, lineInfo.LinePosition), new LinePosition(lineInfo.LineNumber-1, lineInfo.LinePosition + text.Length)));
-
+    {
+        var lineNumber = lineInfo.LineNumber <= 0 ? 1 : lineInfo.LineNumber;
+        var linePosition = lineInfo.LinePosition <= 0 ? 1 : lineInfo.LinePosition;
+        return Location.Create(filePath!, new TextSpan(linePosition, text.Length), new LinePositionSpan(new LinePosition(lineNumber-1, linePosition), new LinePosition(lineNumber-1, linePosition + text.Length)));
+    }
 }

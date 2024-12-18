@@ -12,9 +12,10 @@ using Microsoft.CodeAnalysis.Text;
 
 using Microsoft.Maui.Controls.Xaml;
 
-using static Microsoft.Maui.Controls.SourceGen.GeneratorHelpers;
-
 namespace Microsoft.Maui.Controls.SourceGen;
+
+using static GeneratorHelpers;
+using static LocationHelpers;
 
 [Generator(LanguageNames.CSharp)]
 public class CodeBehindGenerator : IIncrementalGenerator
@@ -89,11 +90,27 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		initContext.RegisterImplementationSourceOutput(xamlSourceProviderForIC, static (sourceProductionContext, provider) =>
 		{
 			var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
-			if (!CanSourceGenXaml(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache))
-				return;
-			
 			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.xsg.cs".Replace(Path.DirectorySeparatorChar, '_');
+			
+			if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, compilation))
+				return;
+
+			if (!CanSourceGenXaml(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache))
+			{
+				if (xamlItem!= null && xamlItem.Exception != null)
+				{
+					var lineInfo = xamlItem.Exception is XamlParseException xpe ? xpe.XmlInfo : new XmlLineInfo();
+					var location = LocationCreate(fileName, lineInfo, string.Empty);
+					sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
+				}
+				return; 
+			}
+				
+			
 			try {
+				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, compilation))
+					return;
+
 				var code = InitializeComponentCodeWriter.GenerateInitializeComponent(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
 				sourceProductionContext.AddSource(fileName, code);
 			} catch (Exception e) {
@@ -113,6 +130,51 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		});
 	}
 
+	static bool ShouldGenerateSourceGenInitializeComponent(XamlProjectItemForIC xamlItem, Compilation compilation)
+	{	
+		var text = xamlItem.ProjectItem.AdditionalText.GetText();
+		if (text == null)
+			return false;
+
+		XmlNode? root;
+		XmlNamespaceManager nsmgr;
+		try {
+			(root, nsmgr) = LoadXmlDocument(text, CancellationToken.None);
+		} catch (Exception) {
+			return false;
+		}
+
+		if (root == null)
+			return false;
+
+		var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
+					 ?? root.Attributes["Class", XamlParser.X2009Uri];
+		
+		if (rootClass == null)
+			return false;
+
+		XmlnsHelper.ParseXmlns(rootClass.Value, out var rootTypeName, out var rootClrNamespace, out _, out _);
+
+		var rootType = compilation.GetTypeByMetadataName($"{rootClrNamespace}.{rootTypeName}");
+
+		if (rootType == null)
+			return false;
+
+		(_, var xamlInflators, var set) = rootType.GetXamlProcessing();
+
+		//this test must go as soon as 'set' goes away
+		if (!set)
+			return false;
+
+		if (   (xamlInflators & XamlInflator.SourceGen)!= XamlInflator.SourceGen
+			&& xamlInflators != XamlInflator.Default
+			&& xamlItem.ProjectItem.ForceSourceGen == false)
+			return false;
+		
+		return true;
+
+
+	}
 	static bool CanSourceGenXaml(XamlProjectItemForIC? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		ProjectItem? projItem;
