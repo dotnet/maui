@@ -1,8 +1,7 @@
-﻿
-namespace Maui.Controls.Sample.Issues;
+﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.None, 26593, "FlyoutTest", PlatformAffected.iOS)]
-public partial class HamburgerIconTest : TestShell
+public partial class FlyoutTest : TestShell
 {
 
 	Tab tabOne = new Tab { Title = "TabOne" };

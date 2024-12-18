@@ -1,6 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
 
-
 [Issue(IssueTracker.None, 26593, "Table View ContextActionCell Test")]
 public class ContextActionCellTest : TestContentPage
 {
