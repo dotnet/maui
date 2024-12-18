@@ -37,27 +37,12 @@ variables:
   - group: AzureDevOps-Artifact-Feeds-Pats
 
 parameters:
-  - name: enableSourceIndex
-    type: boolean
-    default: true
-
   - name: VM_IMAGE_HOST
     type: object
     default:
       name: NetCore1ESPool-Internal
       image: 1es-windows-2022
       os: windows
-
-  - name: PackPlatform
-    type: object
-    default:
-      name: Windows
-      artifact: nuget
-      binariesArtifact: pack-binaries
-      metadataArtifact: metadata
-      logsArtifact: logs
-      docsArtifact: xml-docs
-      artifactsPath: '$(Build.ArtifactStagingDirectory)'
 
 resources:
   repositories:
@@ -89,6 +74,16 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
+    - template: /eng/pipelines/arcade/stage-pack.yml@self
+      parameters:
+        windowsPool: ${{ parameters.VM_IMAGE_HOST }}
+        enableSourceIndex: true
+        sourceIndexParams:
+          sourceIndexBuildCommand: build.cmd -restore -build -ci -warnAsError 0 /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+          binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
+        publishTaskPrefix: '1ES.'
+
+
     - stage: Pack
       displayName: Pack .NET MAUI
       dependsOn: []

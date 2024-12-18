@@ -58,8 +58,6 @@
     />
     <PropertyGroup>
       <_InstallTempDirectory>$(DotNetTempDirectory)install/</_InstallTempDirectory>
-      <_DotNetTool>$(DotNetToolPath)</_DotNetTool>
-      <_DotNetTool Condition=" '$(InstallDotNet)' != 'true' ">&quot;$(MSBuildExtensionsPath)../../dotnet&quot;</_DotNetTool>
     </PropertyGroup>
 
     <!-- Setup Microsoft.NET.Sdk.Maui/WorkloadManifest.* -->
@@ -85,8 +83,8 @@
       <_WorkloadSource Include="$(NugetArtifactsPath)" />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
-    <Exec Command="$(_DotNetTool) nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="$(_DotNetTool) workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
