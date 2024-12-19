@@ -137,6 +137,8 @@
     <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>9.0.0-beta.24572.2</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>9.0.0-beta.24572.2</MicrosoftDotNetHelixSdkPackageVersion>
     <MicroBuildPluginsSwixBuildDotnetPackageVersion>1.1.87-gba258badda</MicroBuildPluginsSwixBuildDotnetPackageVersion>
+    <!-- Security SBOM targets-->
+    <MicrosoftSbomTargetsPackageVersion>3.0.0</MicrosoftSbomTargetsPackageVersion>
     <MicrosoftDotNetRemoteExecutorPackageVersion>9.0.0-beta.24572.2</MicrosoftDotNetRemoteExecutorPackageVersion>
     <MicrosoftDotNetXUnitExtensionsPackageVersion>9.0.0-beta.24572.2</MicrosoftDotNetXUnitExtensionsPackageVersion>
   </PropertyGroup>
