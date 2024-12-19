@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
 	[ContentProperty(nameof(Children))]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ICompressedLayout
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -80,6 +80,8 @@ namespace Microsoft.Maui.Controls
 				OnUpdate(index, value, old);
 			}
 		}
+		
+		bool ICompressedLayout.IsHeadless => CompressedLayout.GetIsHeadless(this);
 
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
