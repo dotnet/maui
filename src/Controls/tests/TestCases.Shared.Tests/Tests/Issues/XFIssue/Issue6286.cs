@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,4 +19,3 @@ internal class Issue6286 : _IssuesUITest
 		App.QueryUntilPresent(() => App.WaitForElement("success"));
 	}
 }
-#endif
