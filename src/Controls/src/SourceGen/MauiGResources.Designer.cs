@@ -182,6 +182,18 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("StrokeShapeConversionFailed", resourceCulture);
             }
         }
+        
+        internal static string ColumnDefinitionCollectionConversionFailed {
+            get {
+                return ResourceManager.GetString("ColumnDefinitionCollectionConversionFailed", resourceCulture);
+            }
+        }
+        
+        internal static string RowDefinitionCollectionConversionFailed {
+            get {
+                return ResourceManager.GetString("RowDefinitionCollectionConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string SymbolResolution {
             get {

@@ -527,6 +527,46 @@ static class KnownTypeConverters
         return "default";
     }
 
+    internal static string ConvertColumnDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            var lengths = value.Split(',');
+
+            var columnDefinitions = new List<string>();
+            foreach (var length in lengths)
+            {
+                columnDefinitions.Add($"new ColumnDefinition({ConvertGridLength(length, toType, reportDiagnostic, xmlLineInfo, filePath)})");
+            }
+
+            return $"new global::Microsoft.Maui.Controls.ColumnDefinitionCollection([{string.Join(", ", columnDefinitions)}])";
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.ColumnDefinitionCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
+
+    internal static string ConvertRowDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            var lengths = value.Split(',');
+
+            var rowDefinitions = new List<string>();
+            foreach (var length in lengths)
+            {
+                rowDefinitions.Add($"new RowDefinition({ConvertGridLength(length, toType, reportDiagnostic, xmlLineInfo, filePath)})");
+            }
+
+            return $"new global::Microsoft.Maui.Controls.RowDefinitionCollection([{string.Join(", ", rowDefinitions)}])";
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.RowDefinitionCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
+
     internal static string ConvertImageSource(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
