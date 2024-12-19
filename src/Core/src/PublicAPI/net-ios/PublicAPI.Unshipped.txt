@@ -53,6 +53,8 @@ Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(WebKit.WKWebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(WebKit.WKWebView! platformView) -> void
+override Microsoft.Maui.Platform.MauiTextView.AccessibilityAttributedValue.get -> Foundation.NSAttributedString?
+override Microsoft.Maui.Platform.MauiTextView.AccessibilityAttributedValue.set -> void
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T?
