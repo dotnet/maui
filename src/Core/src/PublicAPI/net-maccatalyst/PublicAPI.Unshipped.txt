@@ -80,3 +80,4 @@ override Microsoft.Maui.Platform.MauiCALayer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.MauiCALayer.RemoveFromSuperLayer() -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
