@@ -1,4 +1,6 @@
-﻿#if IOS
+﻿#if TEST_FAILS_ON_WINDOWS
+// While using this GroupShortNameBinding property it throws an exception on Windows
+// for more information:https://github.com/dotnet/maui/issues/26534. 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,12 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla36802Test()
 		{
 			App.WaitForElement("TestReady");
-			App.Screenshot("AccessoryView partially hidden test");
+			VerifyScreenshot();
 		}
 	}
 }
