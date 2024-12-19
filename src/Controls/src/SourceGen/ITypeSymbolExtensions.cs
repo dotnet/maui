@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static partial class ITypeSymbolExtensions
 {
-   
-
     //Allow resolving base type for root elements
     static ITypeSymbol? GetBaseType(this ITypeSymbol type, SourceGenContext? context)
     {        
@@ -80,6 +78,7 @@ static partial class ITypeSymbolExtensions
     public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IFieldSymbol>();
     public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IFieldSymbol>();
     
+    public static IEnumerable<IMethodSymbol> GetConstructors(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic == false && m.MethodKind == MethodKind.Constructor);
     public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, SourceGenContext? context)
     {
         foreach (var attribute in symbol.GetAttributes()) {

@@ -11,6 +11,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Xml;
 using System.Collections.Immutable;
+using System.Collections;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -112,21 +113,25 @@ class CreateValuesVisitor : IXamlNodeVisitor
             return;
         }
 
-        //TODO xome markup extensions can be vcompiled here
-
-		//TODO suports factorymethod, ctor args, etc
+        //TODO xome markup extensions can be compiled here
 
         IMethodSymbol? ctor = null;
-        INamedTypeSymbol? namedType = type as INamedTypeSymbol;
-        var ctors = namedType?.InstanceConstructors;
+        IList<(INode node, ITypeSymbol type, ITypeSymbol? converter)>? parameters = null;
+		if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
+        {
+            ctor = type.InstanceConstructors.FirstOrDefault(c 
+                => c.MatchXArguments(node, Context, out parameters)); 
+        }
+
+
         
         //does it has a default parameterless ctor ?
-        ctor = ctors?.FirstOrDefault(c => c.Parameters.Length == 0);
+        ctor ??= type.InstanceConstructors.FirstOrDefault(c => c.Parameters.Length == 0);
 
         if (ctor is null /* && factoryMethod is null*/)
         {
             //TODO we need an extension method for that and cache the result. it happens eveytime we have a Style
-            ctor = ctors?.FirstOrDefault(c 
+            ctor = type.InstanceConstructors.FirstOrDefault(c 
                 => c.Parameters.Length >=0
                 && c.Parameters.All(p => p.GetAttributes().Any(a => a?.AttributeClass?.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default)?? false))
                 );
@@ -141,14 +146,14 @@ class CreateValuesVisitor : IXamlNodeVisitor
                                     ))
                     .Select(p => (p.Type, new XmlName("", p.Item2), node.Properties[new XmlName("", p.Item2)], p.Item3)).ToList();
                 
-                var parameters = paramsTuple.Select(p => p.Item3 is ValueNode vn ? vn.ConvertTo(p.Type, p.Item4, Context, vn as IXmlLineInfo) : p.Item3 is ElementNode en ? Context.Variables[en].Name : "null").ToList();
-
+                parameters = [.. paramsTuple.Select(p => (p.Item3, p.Type, p.Item4))];
+                 
                 foreach (var n in paramsTuple.Select(p => p.Item2))
                     if (!node.SkipProperties.Contains(n))
                         node.SkipProperties.Add(n);
 
+                Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters.ToMethodParameters(Context))});");
                 Context.Variables[node] = new LocalVariable(type, variableName);
-                Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters)});");
                 node.RegisterSourceInfo(Context, Writer);
 
                 return;
@@ -165,8 +170,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
             var valueString = valueNode.ConvertTo(type, Context, valueNode as IXmlLineInfo);
             
-            Context.Variables[node] = new LocalVariable(type, variableName);
             Writer.WriteLine($"var {variableName} = {valueString};");
+            Context.Variables[node] = new LocalVariable(type, variableName);
             node.RegisterSourceInfo(Context, Writer);
             return;
         } 
@@ -174,8 +179,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
             
+            Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
             Context.Variables[node] = new LocalVariable(type, variableName);
-            Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}();");
             node.RegisterSourceInfo(Context, Writer);
             return;
         }
@@ -191,8 +196,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
     {
         var variableName = "__root";
 
-        Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
         Writer.WriteLine($"var {variableName} = this;");
+        Context.Variables[node] = new LocalVariable(Context.RootType, variableName);
 
         node.RegisterSourceInfo(Context, Writer);
     }

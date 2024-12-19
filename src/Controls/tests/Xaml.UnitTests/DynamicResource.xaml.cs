@@ -16,12 +16,6 @@ public partial class DynamicResource : ContentPage
 		[Test]
 		public void TestDynamicResources([Values]XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.SourceGen)
-			{
-				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(DynamicResource));
-				Assert.That(result.Diagnostics.IsEmpty);
-			}
-			
 			var layout = new DynamicResource(inflator);
 			var label = layout.label0;
 

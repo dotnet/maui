@@ -90,13 +90,13 @@ static class ServiceProviderExtensions
             while (n is not null)
             {
                 if (n is IElementNode en && currentCtx.Variables.TryGetValue(en, out var parentVariable))
-                        yield return parentVariable;
-                    n = n.Parent;        
+                    yield return parentVariable;
+                n = n.Parent;        
             }
             currentCtx = currentCtx.ParentContext;
         }
-
     }
+    
     public static (bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices) GetServiceProviderAttributes(this ITypeSymbol typeConverter, SourceGenContext context)
     {
         var acceptEmptyServiceProviderAttribute = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.AcceptEmptyServiceProviderAttribute")!;
