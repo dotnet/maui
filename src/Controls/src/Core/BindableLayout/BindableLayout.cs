@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
@@ -496,6 +497,17 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
+			if ((layout as BindableObject)?.Dispatcher is { IsDispatchRequired: true } dispatcher)
+			{
+				dispatcher.Dispatch(() => UpdateCollection(layout, e));
+				return;
+			}
+
+			UpdateCollection(layout, e);
+		}
+
+		void UpdateCollection(IBindableLayout layout, NotifyCollectionChangedEventArgs e)
+		{
 			if (e.Action == NotifyCollectionChangedAction.Replace)
 			{
 				var index = e.OldStartingIndex;
