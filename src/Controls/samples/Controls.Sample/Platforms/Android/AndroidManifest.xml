@@ -1,6 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
-  <application android:allowBackup="true" android:icon="@mipmap/appicon" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true">
+  <application
+    android:allowBackup="true"
+    android:dataExtractionRules="@xml/microsoft_maui_essentials_dataextractionrules_defaults"
+    android:fullBackupContent="@xml/microsoft_maui_essentials_fullbackupcontent_defaults"
+    android:icon="@mipmap/appicon"
+    android:roundIcon="@mipmap/appicon_round"
+    android:supportsRtl="true">
     <meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="YOUR_API_KEY" />
 
     <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
