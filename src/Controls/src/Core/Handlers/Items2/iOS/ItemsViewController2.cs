@@ -211,6 +211,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionView.ReloadData();
 		}
 
+		internal Size? GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		}
+
 		void EnsureLayoutInitialized()
 		{
 			if (_initialized)
