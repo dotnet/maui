@@ -13,11 +13,11 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView
 {
-	internal static class StaticContentHotReloadManager
+	internal static partial class StaticContentHotReloadManager
 	{
 		private delegate void ContentUpdatedHandler(string assemblyName, string relativePath);
 
-		private readonly static Regex ContentUrlRegex = new Regex("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)");
+		private readonly static Regex ContentUrlRegex = RegexHelper.ContentUrlRegex;
 		private static event ContentUpdatedHandler? OnContentUpdated;
 
 		// If the current platform can't tell us the application entry assembly name, we can use a placeholder name
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 		// we can use the existing IJSRuntime. In turn we can get an instance of this
 		// that's always attached to the currently-loaded page (if it's a Blazor page)
 		// by injecting this headless root component.
-		private sealed class StaticContentChangeNotifier : IComponent, IDisposable
+		private sealed partial class StaticContentChangeNotifier : IComponent, IDisposable
 		{
 			private ILogger _logger = default!;
 
@@ -154,6 +154,24 @@ namespace Microsoft.AspNetCore.Components.WebView
 
 			public Task SetParametersAsync(ParameterView parameters)
 				=> Task.CompletedTask;
+		
 		}
+	}
+	internal static partial class RegexHelper
+	{
+#if NET7_0_OR_GREATER
+		[GeneratedRegex ("^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex ContentUrlRegex
+		{
+			get;
+		}
+#else
+		internal static readonly Regex ContentUrlRegex =
+										new (
+											"^_content/(?<AssemblyName>[^/]+)/(?<RelativePath>.*)",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+#endif
 	}
 }
