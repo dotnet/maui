@@ -581,11 +581,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (TemplatedItemsView.TemplatedItems.Count == 0)
 						InvalidateCellCache();
 
-					if (ListView?.SelectedItem is not null && !ListView.TemplatedItems.Contains(ListView.SelectedItem))
-					{
-						ListView.SelectedItem = null;
-					}
-
+					ResetSelectedItem();
 					break;
 
 				case NotifyCollectionChangedAction.Move:
@@ -608,6 +604,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (e.OldStartingIndex == 0)
 						InvalidateCellCache();
 
+					ResetSelectedItem();
 					break;
 
 				case NotifyCollectionChangedAction.Reset:
@@ -619,6 +616,26 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						ListView.SelectedItem = null;
 					}
 					return;
+			}
+		}
+
+		void ResetSelectedItem()
+		{
+			if (ListView.TemplatedItems.ItemsSource is not null)
+			{
+				bool isSelectedItemInList = false;
+				foreach (var item in ListView.TemplatedItems.ItemsSource)
+				{
+					if (item.Equals(ListView.SelectedItem))
+					{
+						isSelectedItemInList = true;
+						break;
+					}
+				}
+				if (!isSelectedItemInList)
+				{
+					ListView.SelectedItem = null;
+				}
 			}
 		}
 
