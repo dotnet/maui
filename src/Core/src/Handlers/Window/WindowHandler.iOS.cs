@@ -15,16 +15,32 @@ namespace Microsoft.Maui.Handlers
 		public static void MapTitle(IWindowHandler handler, IWindow window) =>
 			handler.PlatformView.UpdateTitle(window);
 
+#if MACCATALYST
+		internal static void MapTitleBar(IWindowHandler handler, IWindow window)
+		{
+			if (handler.PlatformView.RootViewController is WindowViewController controller && handler?.MauiContext is IMauiContext mauiContext)
+			{
+				controller.SetUpTitleBar(window, mauiContext);
+			}
+		}
+#endif
+
 		public static void MapContent(IWindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var nativeContent = window.Content.ToUIViewController(handler.MauiContext);
 
-			handler.PlatformView.RootViewController = nativeContent;
+			var rootViewController = handler.PlatformView.RootViewController;
 
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+#if MACCATALYST
+			// If we are in Catalyst, use the WindowViewController so we can handle the TitleBar
+			handler.PlatformView.RootViewController = new WindowViewController(nativeContent, window, handler.MauiContext);
+#else
+			handler.PlatformView.RootViewController = nativeContent;
+#endif
+
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
