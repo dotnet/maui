@@ -134,7 +134,11 @@ namespace Microsoft.Maui.Handlers
 				}
 				else
 				{
-					uiElement.ClearValue(UIElement.ContextFlyoutProperty);
+					bool? skipInitialization = (handler as ElementHandler)?._isInitializing ?? false;
+					if (skipInitialization != true)
+					{
+						uiElement.ClearValue(UIElement.ContextFlyoutProperty);
+					}
 				}
 			}
 		}
