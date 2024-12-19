@@ -10,9 +10,11 @@ namespace Microsoft.Maui.DeviceTests
 			int childCount = 0;
 			if (handler.PlatformView is ContentPanel view)
 			{
-				childCount = view.Children.Count;
+				childCount = view.CachedChildren.Count;
 				if (childCount == 1)
-					return view.Children[0];
+				{
+					return view.CachedChildren[0];
+				}
 			}
 
 			Assert.Equal(1, childCount);
