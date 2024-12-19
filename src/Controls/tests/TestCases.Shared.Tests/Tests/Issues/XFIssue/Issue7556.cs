@@ -48,8 +48,11 @@ public class Issue7556 : _IssuesUITest
 		App.Tap("Close Flyout");
 
 		App.SetOrientationLandscape();
+		App.WaitForElement("Close Flyout");
 		App.SetOrientationPortrait();
+		App.WaitForElement("Close Flyout");
 		App.SetOrientationLandscape();
+		App.WaitForElement("Close Flyout");
 		App.SetOrientationPortrait();
 
 		if (App.FindElements("Flyout Visible").Count > 0)
