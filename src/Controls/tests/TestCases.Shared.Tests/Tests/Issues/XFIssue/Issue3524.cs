@@ -17,12 +17,14 @@ public class Issue3524 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void SpanGestureCommand()
 	{
 		App.WaitForElement(kText);
 		App.Tap(kText);
+#if IOS
+		Assert.That(App.WaitForElement(kText).GetText(), Is.EqualTo("Click Me To Increment: 1"));
+#else
 		App.WaitForElement($"{kText}: 1");
+#endif
 	}
 }
