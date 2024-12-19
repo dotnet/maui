@@ -2,4 +2,7 @@
 # We could potentially try to find an existing installation that has all the required workloads,
 # but it's unlikely one will be available.
 
-$script:useInstalledDotNetCli = $false
+useInstalledDotNetCli="false"
+
+# Working around issue https://github.com/dotnet/arcade/issues/7327
+# DisableNativeToolsetInstalls=true
