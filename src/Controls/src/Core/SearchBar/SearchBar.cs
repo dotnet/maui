@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create(nameof(CancelButtonColor), typeof(Color), typeof(SearchBar), default(Color));
 
+		/// <summary>Bindable property for <see cref="SearchButtonColor"/>.</summary>
+		public static readonly BindableProperty SearchButtonColorProperty = BindableProperty.Create(nameof(SearchButtonColor), typeof(Color), typeof(SearchBar), default(Color));
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
 
@@ -74,6 +77,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }
 			set { SetValue(CancelButtonColorProperty, value); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchButtonColor']/Docs/*" />
+		public Color SearchButtonColor
+		{
+			get { return (Color)GetValue(SearchButtonColorProperty); }
+			set { SetValue(SearchButtonColorProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />

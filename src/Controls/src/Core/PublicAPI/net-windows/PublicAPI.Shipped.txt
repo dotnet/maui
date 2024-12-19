@@ -1290,6 +1290,8 @@
 ~Microsoft.Maui.Controls.ScrollView.ScrollToAsync(Microsoft.Maui.Controls.Element element, Microsoft.Maui.Controls.ScrollToPosition position, bool animated) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.SearchBar.CancelButtonColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchBar.CancelButtonColor.set -> void
+~Microsoft.Maui.Controls.SearchBar.SearchButtonColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SearchBar.SearchButtonColor.set -> void
 ~Microsoft.Maui.Controls.SearchBar.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.SearchBar>
 ~Microsoft.Maui.Controls.SearchBar.SearchCommand.get -> System.Windows.Input.ICommand
 ~Microsoft.Maui.Controls.SearchBar.SearchCommand.set -> void
@@ -1301,6 +1303,8 @@
 ~Microsoft.Maui.Controls.SearchHandler.BackgroundColor.set -> void
 ~Microsoft.Maui.Controls.SearchHandler.CancelButtonColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchHandler.CancelButtonColor.set -> void
+~Microsoft.Maui.Controls.SearchHandler.SearchButtonColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SearchHandler.SearchButtonColor.set -> void
 ~Microsoft.Maui.Controls.SearchHandler.ClearIcon.get -> Microsoft.Maui.Controls.ImageSource
 ~Microsoft.Maui.Controls.SearchHandler.ClearIcon.set -> void
 ~Microsoft.Maui.Controls.SearchHandler.ClearIconHelpText.get -> string
@@ -3709,6 +3713,7 @@
 ~static readonly Microsoft.Maui.Controls.ScrollView.ScrollYProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.ScrollView.VerticalScrollBarVisibilityProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.CancelButtonColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SearchBar.SearchButtonColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.CharacterSpacingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchBar.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -3728,6 +3733,7 @@
 ~static readonly Microsoft.Maui.Controls.SearchHandler.AutomationIdProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchHandler.BackgroundColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchHandler.CancelButtonColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.SearchHandler.SearchButtonColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchHandler.CharacterSpacingProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchHandler.ClearIconHelpTextProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.SearchHandler.ClearIconNameProperty -> Microsoft.Maui.Controls.BindableProperty

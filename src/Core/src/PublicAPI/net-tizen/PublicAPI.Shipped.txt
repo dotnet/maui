@@ -1100,6 +1100,7 @@ Microsoft.Maui.IScrollView.VerticalOffset.set -> void
 Microsoft.Maui.IScrollView.VerticalScrollBarVisibility.get -> Microsoft.Maui.ScrollBarVisibility
 Microsoft.Maui.ISearchBar
 Microsoft.Maui.ISearchBar.CancelButtonColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.ISearchBar.SearchButtonColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.ISearchBar.SearchButtonPressed() -> void
 Microsoft.Maui.IShadow
 Microsoft.Maui.IShadow.Offset.get -> Microsoft.Maui.Graphics.Point
@@ -2464,6 +2465,7 @@ static Microsoft.Maui.Handlers.ScrollViewHandler.MapRequestScrollTo(Microsoft.Ma
 static Microsoft.Maui.Handlers.ScrollViewHandler.MapVerticalScrollBarVisibility(Microsoft.Maui.Handlers.IScrollViewHandler! handler, Microsoft.Maui.IScrollView! scrollView) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.ISearchBar!, Microsoft.Maui.Handlers.ISearchBarHandler!>!
 static Microsoft.Maui.Handlers.SearchBarHandler.MapCancelButtonColor(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapSearchButtonColor(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapCharacterSpacing(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapFont(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapHorizontalTextAlignment(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void

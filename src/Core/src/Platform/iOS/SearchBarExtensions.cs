@@ -144,6 +144,29 @@ namespace Microsoft.Maui.Platform
 				if (cancelButton.TraitCollection.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
 					cancelButton.TintColor = searchBar.CancelButtonColor.ToPlatform();
 			}
+			
+		}
+
+		public static void UpdateSearchButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			// Get the search text field
+			var textField = UIDevice.CurrentDevice.CheckSystemVersion(13, 0) 
+				? uiSearchBar.SearchTextField 
+				: uiSearchBar.FindDescendantView<UITextField>();
+
+			// Return if no text field or left view is not an image view or image is null
+			if (textField?.LeftView is not UIImageView iconView || iconView.Image is null)
+				return;
+
+			if (searchBar.SearchButtonColor is not null)
+			{
+				iconView.Image = iconView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				iconView.TintColor = searchBar.SearchButtonColor.ToPlatform();
+			}
+			else
+			{
+				iconView.TintColor = null;
+			}
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField = null)

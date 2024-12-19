@@ -187,5 +187,24 @@ namespace Microsoft.Maui.Platform
 
 			cancelButton.UpdateTextColor(searchBar.CancelButtonColor, CancelButtonColorKeys);
 		}
+
+		internal static void UpdateSearchButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var brush = searchButtonColor?.ToPlatform();
+
+			if (platformControl.QueryIcon is SymbolIcon queryIcon)
+			{
+				if (brush is null)
+				{
+					queryIcon.ClearValue(SymbolIcon.ForegroundProperty);
+				}
+				else
+				{
+					queryIcon.Foreground = brush;
+				}
+			}
+
+			platformControl.RefreshThemeResources();
+		}
 	}
 }

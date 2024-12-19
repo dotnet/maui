@@ -143,6 +143,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create(nameof(CancelButtonColor), typeof(Color), typeof(SearchHandler), default(Color));
+		
+		/// <summary>Bindable property for <see cref="SearchButtonColor"/>.</summary>
+		public static readonly BindableProperty SearchButtonColorProperty = BindableProperty.Create(nameof(SearchButtonColor), typeof(Color), typeof(SearchHandler), default(Color));
 
 		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
@@ -186,7 +189,13 @@ namespace Microsoft.Maui.Controls
 			get { return (Color)GetValue(CancelButtonColorProperty); }
 			set { SetValue(CancelButtonColorProperty, value); }
 		}
-
+		
+		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='SearchButtonColor']/Docs/*" />
+		public Color SearchButtonColor
+		{
+			get { return (Color)GetValue(SearchButtonColorProperty); }
+			set { SetValue(SearchButtonColorProperty, value); }
+		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
 		public FontAttributes FontAttributes
