@@ -136,11 +136,25 @@ Task("android-aar")
         if (IsRunningOnWindows())
             gradlew += ".bat";
 
+        var javaHomeProcess = StartAndReturnProcess("dotnet", new ProcessSettings {
+            RedirectStandardOutput = true,
+            Arguments = "android jdk find",
+        });
+
+        javaHomeProcess.WaitForExit();
+        var javaHome = javaHomeProcess.GetStandardOutput()?.FirstOrDefault()?.Trim() ?? string.Empty;
+
+        Information("Java Home: " + javaHome);
+
         var exitCode = StartProcess(
             MakeAbsolute((FilePath)gradlew),
             new ProcessSettings
             {
                 Arguments = $"createAar --rerun-tasks",
+                EnvironmentVariables = new Dictionary<string, string>
+                {
+                    { "JAVA_HOME", javaHome }
+                },
                 WorkingDirectory = root
             });
 
