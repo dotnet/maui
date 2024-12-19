@@ -9,7 +9,7 @@ public class Issue5161 : Shell
     {
         var mainPageTab = new Tab
         {
-            Title = "First Page",
+            Title = "FirstPage",
             IsEnabled = true,
         };
         mainPageTab.Items.Add(new ShellContent
@@ -19,7 +19,7 @@ public class Issue5161 : Shell
 
         var secondPageTab = new Tab
         {
-            Title = "Second Page",
+            Title = "SecondPage",
             IsEnabled = false,
             AutomationId = "SecondPage"
         };
@@ -29,7 +29,7 @@ public class Issue5161 : Shell
         });
         var thirdTab = new Tab
         {
-            Title = "Third Page",
+            Title = "ThirdPage",
             IsEnabled = true,
             AutomationId = "ThirdPage"
         };
