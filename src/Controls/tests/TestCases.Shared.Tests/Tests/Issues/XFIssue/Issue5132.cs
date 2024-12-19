@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // AutomationId not working on Android and Icon not override on Windows More Information: https://github.com/dotnet/maui/issues/1625
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,17 +10,18 @@ public class Issue5132 : _IssuesUITest
 	public Issue5132(TestDevice testDevice) : base(testDevice)
 	{
 	}
-
+	const string _idIconElement = "shellIcon";
 	public override string Issue => "Unable to specify automation properties on the hamburger/flyout icon";
 
-	//#if !(ANDROID || IOS)
-	//	[Ignore("Shell test is only supported on Android and iOS")]
-	//#endif
-	//	[Test]
-	//	[Category(UITestCategories.Shell)]
-	//	public void ShellFlyoutAndHamburgerAutomationProperties()
-	//	{
-	//		App.WaitForElement(q => q.Marked(_idIconElement));
-	//		TapInFlyout(_titleElement, _idIconElement);
-	//	}
+	
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void ShellFlyoutAndHamburgerAutomationProperties()
+	{
+		App.WaitForElement(_idIconElement);
+		App.Tap(_idIconElement);
+		App.WaitForElement("Connect");
+		 
+	}
 }
+#endif
