@@ -1,3 +1,4 @@
+using Microsoft.Maui.Layouts;
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -30,15 +31,19 @@ public class Bugzilla40092 : TestContentPage
 			Color = Colors.Black,
 			AutomationId = Black
 		};
+	
+		mainLayout.Children.Add(view);
+		AbsoluteLayout.SetLayoutBounds(view, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
 
-		mainLayout.Add(view);
 		Content = thePage;
 
 	}
 
-	protected override async void OnAppearing()
+	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-		await DisplayAlert("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
+		// As we going to use verifyscreenshot , so here just remove the displayalert.
+		//await DisplayAlert("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
 	}
 }

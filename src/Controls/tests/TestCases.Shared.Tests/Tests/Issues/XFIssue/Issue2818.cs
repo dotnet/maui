@@ -33,8 +33,9 @@ public class Issue2818 : _IssuesUITest
 		Assert.That(positionStart, Is.Not.EqualTo(secondPosition));
 	}
 
-
-	//[Test]  It is only enabled for IOS ,  While in landscape orientation and with the flow direction set to RightToLeft in IOS, the Flyout items are not displayed."
+    // Equivalent method for SendAppToBackground is not found in appium.
+	// In iOS While in landscape orientation and with the flow direction set to RightToLeft in IOS, the Flyout items are not displayed."
+	//[Test]  
 	public void RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");
@@ -51,8 +52,12 @@ public class Issue2818 : _IssuesUITest
 		var newWindowSize = App.WaitForElement("RootLayout");
 		Assert.That(newWindowSize.GetRect().Width, Is.EqualTo(windowSize.GetRect().Width));
 		Assert.That(newWindowSize.GetRect().Height, Is.EqualTo(windowSize.GetRect().Height));
+	}
 
-
+	[TearDown]
+	public void TearDown()
+	{
+		App.SetOrientationPortrait();
 	}
  
 }

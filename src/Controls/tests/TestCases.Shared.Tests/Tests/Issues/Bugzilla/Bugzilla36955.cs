@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,20 +18,21 @@ public class Bugzilla36955 : _IssuesUITest
 	{
 		App.WaitForElement("Button");
 		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("False"));
-		TapCoordinates();
+		
+		ToggleSwitch();
 		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("True"));
 	}
-	void TapCoordinates()
+	void ToggleSwitch()
 	{
+		//Unable to access the switch element directly when it placed inside the TableView, so using TapCoordinates to tap on the switch
 #if WINDOWS
         App.TapCoordinates(1340,160);
 #elif ANDROID
 		App.TapCoordinates(1000, 100);
 #elif IOS
-        App.TapCoordinates(1002,100)
+        App.Tap(AppiumQuery.ByXPath("//XCUIElementTypeSwitch[@name='Toggle switch; nothing should crash']"));
+#elif MACCATALYST
+		App.ClickCoordinates(774,140);
 #endif
 	}
 }
-#endif
-
-

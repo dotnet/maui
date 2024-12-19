@@ -82,7 +82,34 @@
 				_x = 100;
 			};
 
-			Content = new StackLayout { Children = { button, labelx, labely, labelz, labela, scrollView } };
+			Grid.SetRow(button, 0);
+			Grid.SetRow(labelx, 1);
+			Grid.SetRow(labely, 2);
+			Grid.SetRow(labelz, 3);
+			Grid.SetRow(labela, 4);
+			Grid.SetRow(scrollView, 5);
+
+			Content = new Grid
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Star },
+				},
+				Children =
+				{
+					button,
+					labelx,
+					labely,
+					labelz,
+					labela,
+					scrollView,
+				}
+			};
 		}
 	}
 }
