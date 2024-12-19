@@ -23,12 +23,6 @@ namespace Microsoft.Maui.Graphics.Skia
 				StrokeJoin = paint.StrokeJoin,
 				StrokeMiter = paint.StrokeMiter,
 				StrokeWidth = paint.StrokeWidth,
-				TextAlign = paint.TextAlign,
-				TextEncoding = paint.TextEncoding,
-				TextScaleX = paint.TextScaleX,
-				TextSize = paint.TextSize,
-				TextSkewX = paint.TextSkewX,
-				Typeface = paint.Typeface,
 			};
 
 			return copy;
