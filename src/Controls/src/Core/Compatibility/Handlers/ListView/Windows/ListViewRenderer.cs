@@ -220,10 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						for (int i = e.OldItems.Count - 1; i >= 0; i--)
 							_collection.RemoveAt(e.OldStartingIndex);
 
-						if (Element?.SelectedItem is not null && !Element.TemplatedItems.Contains(Element.SelectedItem))
-						{
-							Element.SelectedItem = null;
-						}
+						ResetSelectedItem();
 						break;
 					case NotifyCollectionChangedAction.Move:
 						{
@@ -252,6 +249,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								newi += i;
 								collection[newi] = (e.NewItems[i] as BindableObject).BindingContext;
 							}
+							ResetSelectedItem();
 						}
 						break;
 					case NotifyCollectionChangedAction.Reset:
@@ -279,11 +277,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						}
 						break;
 					case NotifyCollectionChangedAction.Remove:
-						if (Element?.SelectedItem is not null && !Element.TemplatedItems.Contains(Element.SelectedItem))
-						{
-							Element.SelectedItem = null;
-						}
+					case NotifyCollectionChangedAction.Replace:
+						ResetSelectedItem();
 						break;
+				}
+			}
+		}
+
+		void ResetSelectedItem()
+		{
+			if (Element.TemplatedItems.ItemsSource is not null)
+			{
+				bool isSelectedItemInList = false;
+				foreach (var item in Element.TemplatedItems.ItemsSource)
+				{
+					if (item.Equals(Element.SelectedItem))
+					{
+						isSelectedItemInList = true;
+						break;
+					}
+				}
+				if (!isSelectedItemInList)
+				{
+					Element.SelectedItem = null;
 				}
 			}
 		}

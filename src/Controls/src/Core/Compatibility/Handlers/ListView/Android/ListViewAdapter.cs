@@ -633,9 +633,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_listView.SelectedItem = null;
 					break;
 				case NotifyCollectionChangedAction.Remove:
-					if (!_listView.TemplatedItems.Contains(_listView.SelectedItem))
+				case NotifyCollectionChangedAction.Replace:
+					if (_listView.TemplatedItems.ItemsSource is not null)
 					{
-						_listView.SelectedItem = null;
+						bool isSelectedItemInList = false;
+						foreach (var item in _listView.TemplatedItems.ItemsSource)
+						{
+							if (item.Equals(_listView.SelectedItem))
+							{
+								isSelectedItemInList = true;
+								break;
+							}
+						}
+						if (!isSelectedItemInList)
+						{
+							_listView.SelectedItem = null;
+						}
 					}
 					break;
 			}
