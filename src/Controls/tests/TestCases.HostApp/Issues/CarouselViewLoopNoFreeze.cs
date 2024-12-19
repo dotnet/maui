@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
 
 		readonly ViewModelIssue12574 _viewModel;
-		readonly CarouselView2 _carouselView;
+		readonly CarouselView1 _carouselView;
 		readonly Button _btn;
 		readonly Button _btn2;
 
@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			_btn2.SetBinding(Button.CommandProperty, "RemoveAllItemsCommand");
 
-			_carouselView = new CarouselView2
+			_carouselView = new CarouselView1
 			{
 				AutomationId = _carouselAutomationId,
 				Margin = new Thickness(30),
