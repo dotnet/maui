@@ -1,4 +1,5 @@
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -71,6 +72,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.False(Brush.IsNullOrEmpty(linearGradientBrush));
+		}
+
+		[Fact]
+		public void TestNullOrEmptyLinearGradientPaintWithEmptyGradientStop()
+		{
+			LinearGradientBrush linearGradientBrush = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop(),
+					new GradientStop()
+				}
+			};
+
+			Paint linearGradientPaint = linearGradientBrush;
+
+			Assert.True(linearGradientPaint.IsNullOrEmpty());
+		}
+
+		[Fact]
+		public void TestNullOrEmptyLinearGradientPaintWithNullGradientStop()
+		{
+			LinearGradientBrush linearGradientBrush = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					null,
+					null
+				}
+			};
+
+			Paint linearGradientPaint = linearGradientBrush;
+
+			Assert.True(linearGradientPaint.IsNullOrEmpty());
+		}
+
+		[Fact]
+		public void TestNullGradientStopLinearGradientPaint()
+		{
+			LinearGradientBrush linearGradientBrush = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Red, Offset = 0.1f },
+					null,
+					new GradientStop { Color = Colors.Blue, Offset = 1.0f }
+				}
+			};
+
+			Paint linearGradientPaint = linearGradientBrush;
+
+			Assert.False(linearGradientPaint.IsNullOrEmpty());
 		}
 
 		[Fact]
