@@ -251,12 +251,12 @@ static class NodeSGExtensions
         if (!acceptEmptyServiceProvider)
         {
             var serviceProviderVar = node.GetOrCreateServiceProvider(writer, context, requiredServices);                
-            context.Variables[node] = new LocalVariable(returnType, variableName);
             writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
+            context.Variables[node] = new LocalVariable(returnType, variableName);
         }
         else {
-            context.Variables[node] = new LocalVariable(returnType, variableName);
             writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
+            context.Variables[node] = new LocalVariable(returnType, variableName);
         }
     }
 
