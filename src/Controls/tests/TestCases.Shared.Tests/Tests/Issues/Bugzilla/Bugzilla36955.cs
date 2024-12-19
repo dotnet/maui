@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST
+﻿#if TEST_FAILS_ON_CATALYST // Tap Coordinates not working on Catalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -29,7 +29,7 @@ public class Bugzilla36955 : _IssuesUITest
 #elif ANDROID
 		App.TapCoordinates(1000, 100);
 #elif IOS
-        App.TapCoordinates(1002,100)
+        App.TapCoordinates(1002,100);
 #endif
 	}
 }

@@ -12,8 +12,7 @@ public class Bugzilla36955 : TestContentPage
 
 		var sc = new SwitchCell
 		{
-			Text = "Toggle switch; nothing should crash",
-			AutomationId = "Switch"
+			Text = "Toggle switch; nothing should crash"
 		};
 
 		var button = new Button
