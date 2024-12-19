@@ -33,19 +33,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var rect = new RectangleF(0, 0, 1, 1);
 			var size = rect.Size;
-
-			UIGraphics.BeginImageContext(size);
-			var context = UIGraphics.GetCurrentContext();
-			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
-			context.FillRect(rect);
-			DestructiveBackground = UIGraphics.GetImageFromCurrentImageContext();
-
-			context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
-			context.FillRect(rect);
-
-			NormalBackground = UIGraphics.GetImageFromCurrentImageContext();
-
-			context.Dispose();
+			using var renderer = new UIGraphicsImageRenderer(size);
+			DestructiveBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+				var context = ctx.CGContext;
+				context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
+				context.FillRect(rect);
+			});
+			NormalBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) => {
+				var context = ctx.CGContext;
+				context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
+				context.FillRect(rect);
+			});
 		}
 
 		public ContextActionsCell() : base(UITableViewCellStyle.Default, Key)

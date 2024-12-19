@@ -49,18 +49,9 @@ namespace Microsoft.Maui.LifecycleEvents
 							app.GetWindow()?.Stopped();
 					});
 
-
-			// Pre iOS 13 doesn't support scenes
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				return;
-
-
 			iOS
 				.SceneWillEnterForeground(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
 					if (scene.Delegate is IUIWindowSceneDelegate windowScene &&
 						scene.ActivationState != UISceneActivationState.Unattached)
 					{
@@ -69,33 +60,21 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.SceneOnActivated(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
 						sd.GetWindow().GetWindow()?.Activated();
 				})
 				.SceneOnResignActivation(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
 						sd.GetWindow().GetWindow()?.Deactivated();
 				})
 				.SceneDidEnterBackground(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
 						sd.GetWindow().GetWindow()?.Stopped();
 				})
 				.SceneDidDisconnect(scene =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
 					if (scene.Delegate is IUIWindowSceneDelegate sd)
 						sd.GetWindow().GetWindow()?.Destroying();
 				});
@@ -103,16 +82,9 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		static void OnConfigureWindow(IiOSLifecycleBuilder iOS)
 		{
-			// Pre iOS 13 doesn't support scenes
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
-				return;
-
 			iOS = iOS
 				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
-						return;
-
 					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
 						wsd.GetWindow() is not UIWindow platformWindow)
 						return;
