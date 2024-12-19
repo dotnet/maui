@@ -217,34 +217,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		bool _pendingSuperViewSetNeedsLayout;
-
-		public override void SetNeedsLayout()
-		{
-			base.SetNeedsLayout();
-
-			if (Window is not null)
-			{
-				_pendingSuperViewSetNeedsLayout = false;
-				this.Superview?.SetNeedsLayout();
-			}
-			else
-			{
-				_pendingSuperViewSetNeedsLayout = true;
-			}
-		}
-
-		public override void MovedToWindow()
-		{
-			base.MovedToWindow();
-			if (_pendingSuperViewSetNeedsLayout)
-			{
-				this.Superview?.SetNeedsLayout();
-			}
-
-			_pendingSuperViewSetNeedsLayout = false;
-		}
-
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		class FrameView : Microsoft.Maui.Platform.ContentView
 		{

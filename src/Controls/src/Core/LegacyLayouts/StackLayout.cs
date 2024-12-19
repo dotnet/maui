@@ -76,6 +76,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
 
+		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		{
+			_layoutInformation = new LayoutInformation();
+			base.OnChildMeasureInvalidated(child, trigger);
+		}
+
 #pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 #pragma warning restore CS0672 // Member overrides obsolete member
@@ -97,7 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			ComputeConstraintForView(view, false);
 		}
 
-		internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_layoutInformation = new LayoutInformation();
 			base.InvalidateMeasureInternal(trigger);

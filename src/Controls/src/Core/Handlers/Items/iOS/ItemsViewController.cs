@@ -199,11 +199,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillLayoutSubviews()
 		{
 			ConstrainItemsToBounds();
+			InvalidateLayoutIfItemsMeasureChanged();
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
 		}
 
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			var visibleCells = CollectionView.VisibleCells;
+
+			var changed = false;
+			for (int n = 0; n < visibleCells.Length; n++)
+			{
+				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true } cell && cell.VerifyAndUpdateSize())
+				{
+					changed = true;
+				}
+			}
+
+			if (changed)
+			{
+				ItemsViewLayout.InvalidateLayout();
+			}
+		}
 
 
 		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -407,27 +426,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsSource[index];
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
 		void CellContentSizeChanged(object sender, EventArgs e)
 		{
 			if (_disposed)
-				return;
-
-			if (!(sender is TemplatedCell cell))
 			{
 				return;
 			}
 
-			var visibleCells = CollectionView.VisibleCells;
-
-			for (int n = 0; n < visibleCells.Length; n++)
-			{
-				if (cell == visibleCells[n])
-				{
-					ItemsViewLayout?.InvalidateLayout();
-					return;
-				}
-			}
+			CollectionView.SetNeedsLayout();
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
