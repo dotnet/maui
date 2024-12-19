@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //WaitForNoElemnet fails in ListView
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,10 +27,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(BtnScrollToExistentItem);
 
 			App.Tap(BtnScrollToNonExistentItem);
-			App.WaitForNoElement(FirstListItem);
+			App.WaitForElement(FirstListItem);
+			App.WaitForNoElement(MiddleListItem);
 
 			App.Tap(BtnScrollToExistentItem);
-			App.WaitForNoElement(MiddleListItem);
+			App.WaitForNoElement(FirstListItem);
+			App.WaitForElement(MiddleListItem);
 		}
 	}
 }
