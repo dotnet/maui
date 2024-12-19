@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue99999"
+             Title="Issue99999">
+
+  <Grid Padding="24" RowDefinitions="Auto,Auto" ColumnDefinitions="*,*,*,*,*" RowSpacing="16" ColumnSpacing="8">
+    <Entry x:Name="IndexEntry" Keyboard="Numeric" Placeholder="Index" />
+    <Button Text="Ins out" Clicked="OnInsOut" Grid.Row="0" Grid.Column="1" />
+    <Button Text="Rm out" Clicked="OnRmOut" Grid.Row="0" Grid.Column="2" />
+    <Button Text="Ins in" Clicked="OnInsIn" Grid.Row="0" Grid.Column="3" />
+    <Button Text="Rm in" Clicked="OnRmIn" Grid.Row="0" Grid.Column="4" />
+
+    <VerticalStackLayout x:Name="OuterLayout" Spacing="16" Grid.Row="1" Grid.ColumnSpan="5">
+      <Label Text="Text0" BackgroundColor="LightBlue" HeightRequest="20" />
+      <Label Text="Text1" BackgroundColor="LightBlue" HeightRequest="20" />
+      <VerticalStackLayout x:Name="InnerLayout" Padding="12" Spacing="8" CompressedLayout.IsHeadless="True">
+        <Label Text="Text2" BackgroundColor="LightGreen" HeightRequest="20" />
+        <Label Text="Text3" BackgroundColor="LightGreen" HeightRequest="20" />
+        <Label Text="Text4" BackgroundColor="LightGreen" HeightRequest="20" />
+      </VerticalStackLayout>
+      <Label Text="Text5" BackgroundColor="LightBlue" HeightRequest="20" />
+      <Label Text="Text6" BackgroundColor="LightBlue" HeightRequest="20" />
+    </VerticalStackLayout>
+  </Grid>
+</ContentPage>
