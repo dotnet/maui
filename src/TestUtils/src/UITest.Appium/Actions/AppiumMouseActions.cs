@@ -16,6 +16,7 @@ namespace UITest.Appium
 		const string DoubleClickCommand = "doubleClick";
 		const string DoubleClickCoordinatesCommand = "doubleClickCoordinates";
 		const string LongPressCommand = "longPress";
+		const string ClickPressCommand = "clickPress";
 
 		readonly AppiumApp _appiumApp;
 
@@ -26,6 +27,7 @@ namespace UITest.Appium
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
 			LongPressCommand,
+			ClickPressCommand
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
@@ -47,6 +49,7 @@ namespace UITest.Appium
 				DoubleClickCommand => DoubleClick(parameters),
 				DoubleClickCoordinatesCommand => DoubleClickCoordinates(parameters),
 				LongPressCommand => LongPress(parameters),
+				ClickPressCommand => ClickPress(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -164,6 +167,21 @@ namespace UITest.Appium
 			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse ClickPress(IDictionary<string, object> parameters)
+		{
+			var element = GetAppiumElement(parameters["element"]);
+
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+			var sequence = new ActionSequence(touchDevice, 0);
+			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
+
+			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250)));
 			_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
 
 			return CommandResponse.SuccessEmptyResponse;
