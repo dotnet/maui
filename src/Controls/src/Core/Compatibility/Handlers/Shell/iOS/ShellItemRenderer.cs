@@ -319,7 +319,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// Make sure we are at the right item
 			GoTo(ShellItem.CurrentItem);
+			UpdateCellsEnabled();
 			UpdateMoreCellsEnabled();
+		}
+
+		private void UpdateCellsEnabled()
+		{
+			for (int i = 1; i < TabBar.Items.Length; i++)
+			{
+				var tab = TabBar.Items[i];
+				var itemRenderer = RendererForViewController(ViewControllers[i]);
+				tab.Enabled = itemRenderer.ShellSection.IsEnabled;
+			}
 		}
 
 		void UpdateMoreCellsEnabled()
