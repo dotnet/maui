@@ -53,9 +53,9 @@ resources:
 
 extends:
   ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   ${{ else }}:
-    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool: ${{ parameters.VM_IMAGE_HOST }}
     sdl:
