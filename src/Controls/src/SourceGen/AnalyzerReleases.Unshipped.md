@@ -24,6 +24,7 @@ MAUIG1016 | XamlParsing | Error | Descriptors
 MAUIG1017 | XamlParsing | Error | Descriptors
 MAUIG1018 | XamlParsing | Error | Descriptors
 MAUIG1019 | XamlParsing | Error | Descriptors
+MAUIG1020 | XamlParsing | Error | Descriptors
 MAUIX2000 | XamlInflation | Error | TypeResolutionFailed
 MAUIX2001 | XamlInflation | Error | Descriptors
 MAUIX2002 | XamlInflation | Error | Descriptors

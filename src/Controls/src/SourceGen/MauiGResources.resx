@@ -217,4 +217,8 @@
     <value>Cannot convert "{0}" into RowDefinitionCollection, expected values are "*", "n*", "Auto", or "n" (or a combination of these seperated by commas) where n is a numeric value.</value>
     <comment/>
   </data>
+  <data name="LayoutOptionsConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
+    <comment/>
+  </data>
 </root>
