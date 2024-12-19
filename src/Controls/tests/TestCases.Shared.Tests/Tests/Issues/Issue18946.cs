@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void ToolbarItemsShouldBeVisible()
+		public void ToolbarItemsShouldWork()
 		{
 			_ = App.WaitForElement("label");
 
