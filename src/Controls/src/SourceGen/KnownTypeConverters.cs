@@ -817,4 +817,22 @@ static class KnownTypeConverters
 
         return "default";
     }
+
+    internal static string ConvertConstraint(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        // IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+            
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var size))
+            {
+                return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({size})";
+            }
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.ConstraintConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
 }

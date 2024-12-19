@@ -200,6 +200,12 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("LayoutOptionsConversionFailed", resourceCulture);
             }
         }
+        
+        internal static string ConstraintConversionFailed {
+            get {
+                return ResourceManager.GetString("ConstraintConversionFailed", resourceCulture);
+            }
+        }
 
         internal static string SymbolResolution {
             get {
