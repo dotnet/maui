@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS//position value not updating
+﻿#if ANDROID
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -18,13 +18,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ScrollToPosition.Center works differently on Android and iOS";
 
 		// Bugzilla44461 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla44461.cs)
-		[Test]	
+		[Test]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla44461Test()
 		{
 			var positions = TapButton(0);
-			Assert.That(positions.initialPosition.X, Is.EqualTo(positions.finalPosition.X));
-			Assert.That(positions.finalPosition.X, Is.LessThanOrEqualTo(1));
-
+			ClassicAssert.AreEqual(positions.initialPosition.X, positions.finalPosition.X);
+			ClassicAssert.LessOrEqual(positions.finalPosition.X, 1);
 			App.Screenshot("Button0 is aligned with the left side of the screen");
 		}
 
