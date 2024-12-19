@@ -100,7 +100,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			if (_shellItem is IShellItemController shellItemController)
+			{
 				shellItemController.ItemsCollectionChanged -= OnItemsChanged;
+				foreach (var item in shellItemController.GetItems())
+				{
+					item.PropertyChanged -= OnShellItemPropertyChanged;
+				}
+			}
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -158,6 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			foreach (var item in shellItemController.GetItems())
 			{
+				item.PropertyChanged += OnShellItemPropertyChanged;
 				if (Routing.IsImplicit(item))
 					items.Add(item.CurrentItem);
 				else
@@ -209,6 +216,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				void SetValues(BaseShellItem bsi, NavigationViewItemViewModel vm)
 				{
 					vm.Content = bsi.Title;
+					vm.IsEnabled = bsi.IsEnabled;
 					var iconSource = bsi.Icon?.ToIconSource(MauiContext!);
 
 					if (iconSource != null)
@@ -343,6 +351,27 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			return TemplatedItemSourceFactory.Create(_currentSearchHandler.ItemsSource, _currentSearchHandler.ItemTemplate, _currentSearchHandler,
 				null, null, null, MauiContext);
+		}
+
+		private void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (_mainLevelTabs == null || sender is not BaseShellItem shellItem)
+				return;
+			for (int i = 0; i < _mainLevelTabs.Count; i++)
+			{
+				if (_mainLevelTabs[i].Data != sender)
+					continue;
+				switch (e.PropertyName)
+				{
+					case nameof(BaseShellItem.IsEnabled):
+						_mainLevelTabs[i].IsEnabled = shellItem.IsEnabled;
+						break;
+					case nameof(BaseShellItem.Title):
+						_mainLevelTabs[i].Content = shellItem.Title;
+						break;
+				}
+				return;
+			}
 		}
 
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)
