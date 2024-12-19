@@ -1,14 +1,39 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, IMauiPlatformView
 	{
-		public MauiScrollView()
+		bool _invalidateParentWhenMovedToWindow;
+		CGSize _lastContentSize;
+
+		WeakReference<IView>? _reference;
+
+		internal IView? View
 		{
+			get => _reference != null && _reference.TryGetTarget(out var v) ? v : null;
+			set => _reference = value == null ? null : new(value);
+		}
+
+		public override CGSize ContentSize
+		{
+			get => base.ContentSize;
+			set
+			{
+				base.ContentSize = value;
+
+				// If the ContentSize changed, we need to invalidate the measure of the ScrollView
+				if (_lastContentSize != value)
+				{
+					_lastContentSize = value;
+					View?.InvalidateMeasure();
+				}
+			}
 		}
 
 		// overriding this method so it does not automatically scroll large UITextFields
@@ -19,8 +44,25 @@ namespace Microsoft.Maui.Platform
 				base.ScrollRectToVisible(rect, animated);
 		}
 
+		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		void IMauiPlatformView.InvalidateMeasure(bool isPropagating)
+		{
+			// To correctly invalidate the measure of a ScrollView, we need to include its content
+			if (!isPropagating)
+			{
+				Subviews.FirstOrDefault()?.SetNeedsLayout();
+			}
+
+			SetNeedsLayout();
+		}
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
+
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{
 			add => _movedToWindow += value;
@@ -31,6 +73,11 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 	}
 }

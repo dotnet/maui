@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
+		CGSize _previousContentSize;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -190,6 +191,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
+			InvalidateMeasureIfContentSizeChanged();
 		}
 
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -209,6 +211,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsSource?.Dispose();
 			ItemsSource = new Items.EmptySource();
 			CollectionView.ReloadData();
+		}
+
+		internal Size? GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
 		void EnsureLayoutInitialized()
@@ -374,6 +386,57 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				HideEmptyView();
 			}
+		}
+
+		void InvalidateMeasureIfContentSizeChanged()
+		{
+			var contentSize = CollectionView?.CollectionViewLayout?.CollectionViewContentSize;
+
+			if (!contentSize.HasValue)
+			{
+				return;
+			}
+
+			bool widthChanged = _previousContentSize.Width != contentSize.Value.Width;
+			bool heightChanged = _previousContentSize.Height != contentSize.Value.Height;
+
+			if (_initialized && (widthChanged || heightChanged))
+			{
+				var screenFrame = CollectionView?.Window?.Frame;
+
+				if (!screenFrame.HasValue)
+				{
+					return;
+				}
+
+				var screenWidth = screenFrame.Value.Width;
+				var screenHeight = screenFrame.Value.Height;
+				bool invalidate = false;
+
+				// If both the previous content size and the current content size are larger
+				// than the screen size, then we know that we're already maxed out and the 
+				// CollectionView items are scrollable. There's no reason to force an invalidation
+				// of the CollectionView to expand/contract it.
+
+				// If either size is smaller than that, we need to invalidate to ensure that the 
+				// CollectionView is re-measured and set to the correct size.
+
+				if (widthChanged && (contentSize.Value.Width < screenWidth || _previousContentSize.Width < screenWidth))
+				{
+					invalidate = true;
+				}
+				else if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
+				{
+					invalidate = true;
+				}
+
+				if (invalidate)
+				{
+					ItemsView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				}
+			}
+
+			_previousContentSize = contentSize.Value;
 		}
 
 		void AlignEmptyView()

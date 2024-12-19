@@ -34,6 +34,16 @@ namespace Microsoft.Maui.Handlers
 			return new MauiScrollView();
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			if (PlatformView is MauiScrollView scrollView)
+			{
+				scrollView.View = view;
+			}
+		}
+
 		protected override void ConnectHandler(UIScrollView platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -221,10 +231,6 @@ namespace Microsoft.Maui.Handlers
 
 			var viewportWidth = Math.Min(crossPlatformContentSize.Width, widthConstraint);
 			var viewportHeight = Math.Min(crossPlatformContentSize.Height, heightConstraint);
-
-			// Since the UIScrollView might not be arranged yet, we can't rely on its Bounds for the viewport height/width
-			// So we'll use the constraints instead.
-			SetContentSizeForOrientation(platformView, widthConstraint, heightConstraint, virtualView.Orientation, crossPlatformContentSize);
 
 			var finalWidth = ViewHandlerExtensions.ResolveConstraints(viewportWidth, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
 			var finalHeight = ViewHandlerExtensions.ResolveConstraints(viewportHeight, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
