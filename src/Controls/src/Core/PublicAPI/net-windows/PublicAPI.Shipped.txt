@@ -7269,8 +7269,8 @@ override Microsoft.Maui.Controls.Platform.Compatibility.CellControl.MeasureOverr
 override Microsoft.Maui.Controls.Platform.ItemContentControl.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
 override Microsoft.Maui.Controls.Platform.ItemContentControl.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 override Microsoft.Maui.Controls.Platform.MauiCommandBar.OnApplyTemplate() -> void
-override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
-override Microsoft.Maui.Controls.Platform.ShellFlyoutItemView.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
+
+
 override Microsoft.Maui.Controls.RadialGradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.RadioButton.ChangeVisualState() -> void
 override Microsoft.Maui.Controls.RadioButton.OnApplyTemplate() -> void
