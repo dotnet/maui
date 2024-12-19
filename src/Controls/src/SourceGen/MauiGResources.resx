@@ -221,4 +221,8 @@
     <value>Cannot convert "{0}" into LayoutOptions, expected values are "Start", "Center, "End" or "Fill".</value>
     <comment/>
   </data>
+  <data name="ConstraintConversionFailed" xml:space="preserve">
+    <value>Cannot convert "{0}" into Constraint.</value>
+    <comment>1</comment>
+  </data>
 </root>
