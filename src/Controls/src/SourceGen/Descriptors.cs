@@ -157,6 +157,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
+			
+		public static DiagnosticDescriptor LayoutOptionsConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1020",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.LayoutOptionsConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
 
 		//Symbol resolution
 		public static DiagnosticDescriptor TypeResolution = new DiagnosticDescriptor(

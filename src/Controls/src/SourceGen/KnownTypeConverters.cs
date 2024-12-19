@@ -777,4 +777,44 @@ static class KnownTypeConverters
 
         return "default";
     }
+
+    internal static string ConvertLayoutOptions(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+
+            var parts = value.Split('.');
+            if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
+            {
+                reportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+                return "default";
+            }
+
+            value = parts[parts.Length - 1];
+            var layoutOptionsMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Start", "global::Microsoft.Maui.Controls.LayoutOptions.Start" },
+                { "Center", "global::Microsoft.Maui.Controls.LayoutOptions.Center" },
+                { "End", "global::Microsoft.Maui.Controls.LayoutOptions.End" },
+                { "Fill", "global::Microsoft.Maui.Controls.LayoutOptions.Fill" },
+                
+                // The following options are obsoleted, but here for now for compatibility
+                { "StartAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.StartAndExpand" },
+                { "CenterAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.CenterAndExpand" },
+                { "EndAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.EndAndExpand" },
+                { "FillAndExpand", "global::Microsoft.Maui.Controls.LayoutOptions.FillAndExpand" }
+            };
+
+            if (layoutOptionsMap.TryGetValue(value, out var layoutOption))
+            {
+                return layoutOption;
+            }
+        }
+
+        reportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+        return "default";
+    }
 }
