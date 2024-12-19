@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Storage
 			};
 
 #if !MACCATALYST
-			if (documentPicker.PresentationController != null)
+			// Only assign the PresentationController.Delegate on iOS when it is not running on Mac.
+			if (documentPicker.PresentationController != null && 
+				!(OperatingSystem.IsIOSVersionAtLeast(14, 0) && NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac))
 			{
 				documentPicker.PresentationController.Delegate =
 					new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
