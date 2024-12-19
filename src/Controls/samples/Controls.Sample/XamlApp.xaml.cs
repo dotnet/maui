@@ -48,16 +48,26 @@ namespace Maui.Controls.Sample
 			}
 		}
 
+		MauiWindow? _window;
 		// Must not use MainPage for multi-window
 		protected override Window CreateWindow(IActivationState? activationState)
 		{
 			var services = activationState!.Context.Services;
-			var window = new MauiWindow(services.GetRequiredService<Page>())
+
+			// This is a multi-window scenario so we'll just go with this path
+			if (Windows.Count > 0)
+			{
+				return new MauiWindow(services.GetRequiredService<Page>())
+				{
+					Title = ".NET MAUI Samples Gallery"
+				};
+			}
+
+			// This is the first window, so we'll cache it and return it if the app has no windows
+			return _window ??= new MauiWindow(services.GetRequiredService<Page>())
 			{
 				Title = ".NET MAUI Samples Gallery"
 			};
-
-			return window;
 		}
 
 		public IServiceProvider Services { get; }
