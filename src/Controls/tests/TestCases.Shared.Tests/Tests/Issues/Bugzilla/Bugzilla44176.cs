@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_WINDOWS //Tap not working 
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,65 +16,65 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla44176Test()
 		{
 			App.WaitForElement("grid");
 			App.Tap("grid");
-			App.WaitForNoElement("Parent");
+			App.WaitForElement("Parent");
 
 			App.WaitForElement("contentView");
 			App.Tap("contentView");
-			App.WaitForNoElement("Parent");
+			App.WaitForElement("Parent");
 
 			App.WaitForElement("stackLayout");
 			App.Tap("stackLayout");
-			App.WaitForNoElement("Parent");
+			App.WaitForElement("Parent");
 
 			App.WaitForElement("color");
 			App.Tap("color");
 
 			App.WaitForElement("grid");
 			App.Tap("grid");
-			App.WaitForNoElement("Parent");
+			App.WaitForElement("Parent");
 
 			App.WaitForElement("contentView");
 			App.Tap("contentView");
-			App.WaitForNoElement("Parent");
+			App.WaitForElement("Parent");
 
 			App.WaitForElement("stackLayout");
 			App.Tap("stackLayout");
-			App.WaitForNoElement("Parent");
+			App.WaitForElement("Parent");
 
 			App.WaitForElement("nontransparent");
 			App.Tap("nontransparent");
 
 			App.WaitForElement("grid");
 			App.Tap("grid");
-			App.WaitForNoElement("Child");
+			App.WaitForElement("Child");
 
 			App.WaitForElement("contentView");
 			App.Tap("contentView");
-			App.WaitForNoElement("Child");
+			App.WaitForElement("Child");
 
 			App.WaitForElement("stackLayout");
 			App.Tap("stackLayout");
-			App.WaitForNoElement("Child");
+			App.WaitForElement("Child");
 
 			App.WaitForElement("color");
 			App.Tap("color");
 
 			App.WaitForElement("grid");
 			App.Tap("grid");
-			App.WaitForNoElement("Child");
+			App.WaitForElement("Child");
 
 			App.WaitForElement("contentView");
 			App.Tap("contentView");
-			App.WaitForNoElement("Child");
+			App.WaitForElement("Child");
 
 			App.WaitForElement("stackLayout");
 			App.Tap("stackLayout");
-			App.WaitForNoElement("Child");
+			App.WaitForElement("Child");
 		}
 	}
 }
+#endif

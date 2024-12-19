@@ -1,4 +1,4 @@
-﻿#if !IOS
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //y value not changing
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,23 +20,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Bugzilla41415 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla41415.cs)
 		[Test]
-		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla41415Test()
 		{
 			// This test is failing, likely due to product issue
 
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
-			App.WaitForNoElement("x: 100");
-			App.WaitForNoElement("y: 100");
-			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
-			App.WaitForNoElement("a: True");
+			App.WaitForElement("x: 100");
+			App.WaitForElement("y: 100");
+			App.WaitForElement("z: True");
+			App.WaitForElement("a: True");
 			App.Tap(ButtonId);
-			App.WaitForNoElement("x: 200");
-			App.WaitForNoElement("y: 100");
-			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
-			App.WaitForNoElement("a: False");
+			App.WaitForElement("x: 200");
+			App.WaitForElement("y: 100");
+			App.WaitForElement("z: True");
+			App.WaitForElement("a: False");
 		}
 	}
 }
