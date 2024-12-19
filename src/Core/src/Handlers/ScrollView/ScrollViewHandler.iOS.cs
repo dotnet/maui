@@ -23,6 +23,12 @@ namespace Microsoft.Maui.Handlers
 				{
 					return true;
 				}
+
+				if(VirtualView?.Background is not null)
+				{
+					return true;
+				}
+
 				return base.NeedsContainer;
 			}
 		}
@@ -74,6 +80,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateIsEnabled(scrollView);
 		}
+
+		public static void MapBackground(IScrollViewHandler handler, IScrollView scrollView)
+        {
+            handler.UpdateValue(nameof(IViewHandler.ContainerView));
+            handler.ToPlatform().UpdateBackground(scrollView);
+        }
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
