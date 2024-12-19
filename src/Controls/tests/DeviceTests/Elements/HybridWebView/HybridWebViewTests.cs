@@ -379,6 +379,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		private class TestDotNetMethods
 		{
+			private static ComputationResult NewComplexResult =>
+				new ComputationResult { result = 123, operationName = "Test" };
+
 			public string LastMethodCalled { get; private set; }
 
 			public void Invoke_NoParam_NoReturn()
@@ -390,6 +393,33 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				UpdateLastMethodCalled();
 				return null;
+			}
+
+			public async Task Invoke_NoParam_ReturnTask()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+			}
+
+			public async Task<object> Invoke_NoParam_ReturnTaskNull()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+				return null;
+			}
+
+			public async Task<int> Invoke_NoParam_ReturnTaskValueType()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+				return 2;
+			}
+
+			public async Task<ComputationResult> Invoke_NoParam_ReturnTaskComplex()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+				return NewComplexResult;
 			}
 
 			public int Invoke_OneParam_ReturnValueType(Dictionary<string, int> dict)
@@ -417,7 +447,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.Null(obj);
 				UpdateLastMethodCalled();
-				return new ComputationResult { result = 123, operationName = "Test" };
+				return NewComplexResult;
 			}
 
 			public void Invoke_ManyParams_NoReturn(Dictionary<string, int> dict, string str, object obj, ComputationResult computationResult, int[] arr)
@@ -453,15 +483,23 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			public IEnumerator<object[]> GetEnumerator()
 			{
+				const string ComplexResult = "{\\\"result\\\":123,\\\"operationName\\\":\\\"Test\\\"}";
+				const string DictionaryResult = "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}";
+				const int ValueTypeResult = 2;
+
 				// Test variations of:
 				// 1. Data type: ValueType, RefType, string, complex type
 				// 2. Containers of those types: array, dictionary
 				// 3. Methods with different return values (none, simple, complex, etc.)
 				yield return new object[] { "Invoke_NoParam_NoReturn", null };
 				yield return new object[] { "Invoke_NoParam_ReturnNull", null };
-				yield return new object[] { "Invoke_OneParam_ReturnValueType", 2 };
-				yield return new object[] { "Invoke_OneParam_ReturnDictionary", "{\\\"first\\\":111,\\\"second\\\":222,\\\"third\\\":333}" };
-				yield return new object[] { "Invoke_NullParam_ReturnComplex", "{\\\"result\\\":123,\\\"operationName\\\":\\\"Test\\\"}" };
+				yield return new object[] { "Invoke_NoParam_ReturnTask", null };
+				yield return new object[] { "Invoke_NoParam_ReturnTaskNull", null };
+				yield return new object[] { "Invoke_NoParam_ReturnTaskValueType", ValueTypeResult };
+				yield return new object[] { "Invoke_NoParam_ReturnTaskComplex", ComplexResult };
+				yield return new object[] { "Invoke_OneParam_ReturnValueType", ValueTypeResult };
+				yield return new object[] { "Invoke_OneParam_ReturnDictionary", DictionaryResult };
+				yield return new object[] { "Invoke_NullParam_ReturnComplex", ComplexResult };
 				yield return new object[] { "Invoke_ManyParams_NoReturn", null };
 			}
 
