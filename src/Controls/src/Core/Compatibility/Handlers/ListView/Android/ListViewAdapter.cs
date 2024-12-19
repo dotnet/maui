@@ -623,6 +623,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnDataChanged();
+			if(e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				_realListView.SmoothScrollToPosition(0);
+			}
 		}
 
 		void OnDataChanged()
