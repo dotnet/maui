@@ -7,13 +7,13 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		static int GetChildCount(ContentViewHandler contentViewHandler)
 		{
-			return contentViewHandler.PlatformView.Children.Count;
+			return contentViewHandler.PlatformView.CachedChildren.Count;
 		}
 
 		static int GetContentChildCount(ContentViewHandler contentViewHandler)
 		{
-			if (contentViewHandler.PlatformView.Children[0] is LayoutPanel childLayoutPanel)
-				return childLayoutPanel.Children.Count;
+			if (contentViewHandler.PlatformView.CachedChildren[0] is LayoutPanel childLayoutPanel)
+				return childLayoutPanel.CachedChildren.Count;
 			else
 				return 0;
 		}

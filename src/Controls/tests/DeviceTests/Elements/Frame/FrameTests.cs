@@ -448,21 +448,27 @@ namespace Microsoft.Maui.DeviceTests
 			public ContentLayoutPanel(IView view, double widthConstraint, double heightConstraint)
 			{
 				if (!double.IsPositiveInfinity(widthConstraint))
+				{
 					this.Width = widthConstraint;
+				}
 
 				if (!double.IsPositiveInfinity(heightConstraint))
+				{
 					this.Height = heightConstraint;
+				}
 
 				_view = view;
 				_widthConstraint = widthConstraint;
 				_heightConstraint = heightConstraint;
 				var platformView = view.ToPlatform();
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. In tests, we don't mind.
 				// Just in case this view is already parented to a wrapper that's been cycled out
 				if (platformView.Parent is ContentLayoutPanel clp)
 					clp.Children.Remove(platformView);
 
 				Children.Add(platformView);
+#pragma warning restore RS0030 // Do not use banned APIs
 			}
 
 			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();

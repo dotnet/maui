@@ -86,14 +86,19 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
 			{
 				var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. In tests, we don't mind.
+				var windowRootViewContainerChildren = windowRootViewContainer.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 				var overlayView =
-					windowRootViewContainer
-						.Children
+					windowRootViewContainerChildren
 						.OfType<W2DGraphicsView>()
 						.SingleOrDefault();
 
 				Assert.NotNull(overlayView);
-				Assert.Equal(overlayView, windowRootViewContainer.Children.Last());
+				Assert.Equal(overlayView, windowRootViewContainerChildren.Last());
+
 				return Task.CompletedTask;
 			});
 		}
@@ -109,7 +114,12 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
 				var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
-				var countBeforePageSwap = windowRootViewContainer.Children.Count;
+				
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. In tests, we don't mind.
+				var windowRootViewContainerChildren = windowRootViewContainer.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
+				var countBeforePageSwap = windowRootViewContainerChildren.Count;
 
 				var mainPageRootView =
 					mainPage.FindMauiContext().GetNavigationRootManager().RootView;
@@ -118,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(swappedInMainPage.CurrentPage);
 				await OnFrameSetToNotEmpty(swappedInMainPage.CurrentPage);
 
-				var countAfterPageSwap = windowRootViewContainer.Children.Count;
+				var countAfterPageSwap = windowRootViewContainerChildren.Count;
 				Assert.Equal(countBeforePageSwap, countAfterPageSwap);
 			});
 		}
