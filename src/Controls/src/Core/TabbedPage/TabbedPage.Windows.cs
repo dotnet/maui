@@ -134,7 +134,10 @@ namespace Microsoft.Maui.Controls
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
+			{
+				_navigationView.SelectedItem = null;
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
+			}
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
 
@@ -331,6 +334,7 @@ namespace Microsoft.Maui.Controls
 						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
+						vm.IsSelected = page == view.CurrentPage;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
