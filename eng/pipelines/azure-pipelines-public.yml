@@ -58,7 +58,10 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedWindowsImage)
+        os: windows
       timeout: 120
       testOS: Windows
     - name: mac_unit_tests
