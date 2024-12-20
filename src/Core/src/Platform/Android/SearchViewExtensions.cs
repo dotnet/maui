@@ -118,6 +118,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateSearchButtonColor(this SearchView searchView, ISearchBar searchBar)
+		{
+			if (searchView.Resources is null)
+				return;
+
+			var searchButtonIdentifier = Resource.Id.search_mag_icon;
+
+			if (searchButtonIdentifier > 0)
+			{
+				var image = searchView.FindViewById<ImageView>(searchButtonIdentifier);
+
+				if (image?.Drawable is not null)
+				{
+					if (searchBar.SearchButtonColor is not null)
+						image.Drawable.SetColorFilter(searchBar.SearchButtonColor, FilterMode.SrcIn);
+					else
+						image.Drawable.ClearColorFilter();
+				}
+			}
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
