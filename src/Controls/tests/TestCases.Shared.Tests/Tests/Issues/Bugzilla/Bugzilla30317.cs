@@ -1,5 +1,3 @@
-/*
-#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -9,81 +7,106 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 [Category(UITestCategories.TabbedPage)]
 public class Bugzilla30317 : _IssuesUITest
 {
+
+#if WINDOWS //On Windows title AutomationId is not working, so using text to find the element. 
+	const string PageOne = "Set ItemSource On Appearing";
+	const string PageTwo = "Set ItemSource in ctor"; 
+#else
+    const string PageOne = "PageOne";
+	const string PageTwo = "PageTwo"; 
+#endif
+
+#if ANDROID 
+    const string TabOne = "TABONECTOR";
+    const string TabTwo = "TABTWOONAPPEARING";
+#elif WINDOWS
+	const string TabOne = "TabOneCtor";
+    const string TabTwo = "TabTwoOnAppearing";
+#else
+	const string TabOne = "TabbedPageOne";
+	const string TabTwo = "TabbedPageTwo";
+#endif
+	const string PageTwoButton = "GoToPageTwoButton";
+	const string PageThreeButton = "GoToPageThreeButton";
+	const string PageOneItem1 = "PageOneItem1";
+	const string PageOneItem5 = "PageOneItem5";
+	const string PageTwoItem1 = "PageTwoItem1";
+	const string PageTwoItem5 = "PageTwoItem5";
+
+	const string TabOneItem1 = "PageThreeTabOneItem1";
+	const string TabOneItem5 = "PageThreeTabOneItem5";
+	const string TabTwoItem1 = "PageThreeTabTwoItem1";
+	const string TabTwoItem5 = "PageThreeTabTwoItem5";
+
 	public Bugzilla30317(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=30137";
-
-	[Test]
+ 
+	[Test, Order(1)]
 	public void Bugzilla30317ItemSourceOnAppearingContentPage()
 	{
-		App.Screenshot("I am at Bugzilla30317");
-		App.WaitForElement("GoToPageTwoButton");
-		App.Screenshot("I see Page 1");
+		App.WaitForElement(PageOne);
 
-		App.WaitForElement("PageOneItem1");
-		App.TouchAndHold("PageOneItem1");
-
-		App.WaitForElement("PageOneItem5");
-		App.TouchAndHold("PageOneItem5");
-
-		App.Screenshot("I did not crash");
+		App.WaitForElement(PageOneItem1);
+		TouchAndHold(PageOneItem1);
+ 
+		App.WaitForElement(PageOneItem5);
+		TouchAndHold(PageOneItem5);
 	}
-
-	[Test]
+ 
+	[Test, Order(2)]
 	public void Bugzilla30317ItemSourceCtorContentPage()
 	{
-		App.WaitForElement("GoToPageTwoButton");
-		App.Tap("GoToPageTwoButton");
+		App.WaitForElement(PageTwoButton);
+		App.Tap(PageTwoButton);
+		App.WaitForElement(PageTwo);
 
-		App.WaitForElement("PageTwo");
-		App.Screenshot("I see Page 2");
-
-		App.WaitForElement("PageTwoItem1");
-		App.TouchAndHold("PageTwoItem1");
-
-		App.WaitForElement("PageTwoItem5");
-		App.TouchAndHold("PageTwoItem5");
-
-		App.Screenshot("I did not crash");
+		App.WaitForElement(PageTwoItem1);
+		TouchAndHold(PageTwoItem1);
+ 
+		App.WaitForElement(PageTwoItem5);
+		TouchAndHold(PageTwoItem5);
 	}
-
-	[Test]
+ 
+	[Test, Order(3)]
 	public void Bugzilla30317ItemSourceTabbedPage()
 	{
-		App.WaitForElement("GoToPageTwoButton");
-		App.Tap("GoToPageTwoButton");
-
-		App.Screenshot("I see Page 2");
-		App.WaitForElement("PageTwo");
-
-		App.WaitForElement("GoToPageThreeButton");
-		App.Tap("GoToPageThreeButton");
-
-		App.Screenshot("I see TabbedPage One");
-		App.WaitForElement("TabOneCtor");
-
-		App.WaitForElement("PageThreeTabOneItem1");
-		App.TouchAndHold("PageThreeTabOneItem1");
-		App.WaitForElement("PageThreeTabOneItem1");
-
-		App.WaitForElement("PageThreeTabOneItem5");
-		App.TouchAndHold("PageThreeTabOneItem5");
-		App.WaitForElement("PageThreeTabOneItem5");
-
-		App.Screenshot("I see TabbedPage Two");
-		App.WaitForElement("TabTwoOnAppearing");
-		App.Tap("TabTwoOnAppearing");
-
-		App.WaitForElement("PageThreeTabTwoItem1");
-		App.TouchAndHold("PageThreeTabTwoItem1");
-		App.WaitForElement("PageThreeTabTwoItem1");
-
-		App.WaitForElement("PageThreeTabTwoItem5");
-		App.TouchAndHold("PageThreeTabTwoItem5");
-		App.WaitForElement("PageThreeTabTwoItem5");
+ 
+		App.WaitForElement(PageTwo);
+		App.WaitForElement(PageThreeButton);
+		App.Tap(PageThreeButton);
+ 
+		App.WaitForElement(TabTwo);
+		App.Tap(TabTwo);
+ 
+		App.WaitForElement(TabTwoItem1);
+		TouchAndHold(TabTwoItem1);
+		App.WaitForElement(TabTwoItem1);
+ 
+		App.WaitForElement(TabTwoItem5);
+		TouchAndHold(TabTwoItem5);
+		App.WaitForElement(TabTwoItem5);
+ 
+		App.WaitForElement(TabOne);
+		App.Tap(TabOne);
+ 
+		App.WaitForElement(TabOneItem1);
+		TouchAndHold(TabOneItem1);
+		App.WaitForElement(TabOneItem1);
+ 
+		App.WaitForElement(TabOneItem5);
+		TouchAndHold(TabOneItem5);
+		App.WaitForElement(TabOneItem5);
+	}
+ 
+	void TouchAndHold(string item)
+	{
+#if MACCATALYST //In Catalyst TouchAndHold is not supported. So using LongPress
+		App.LongPress(item);
+#else
+    	App.TouchAndHold(item);
+#endif
 	}
 }
-#endif
-*/
