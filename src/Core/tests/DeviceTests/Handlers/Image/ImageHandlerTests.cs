@@ -160,7 +160,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(image, () => image.Aspect, (h) => GetNativeAspect(h), aspect);
 		}
 
-		[Theory(Skip = "See: https://github.com/dotnet/maui/issues/6415")]
+		[Theory]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#000000")]
