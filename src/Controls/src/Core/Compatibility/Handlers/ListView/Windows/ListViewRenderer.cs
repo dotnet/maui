@@ -286,10 +286,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void ResetSelectedItem()
 		{
-			if (Element.TemplatedItems.ItemsSource is not null)
+			var itemSource = Element.TemplatedItems.ItemsSource;
+			if (itemSource is not null)
 			{
 				bool isSelectedItemInList = false;
-				foreach (var item in Element.TemplatedItems.ItemsSource)
+				foreach (var item in itemSource)
 				{
 					if (item.Equals(Element.SelectedItem))
 					{
