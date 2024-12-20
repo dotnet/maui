@@ -1,0 +1,54 @@
+parameters:
+  mauiSourcePath: $(Build.SourcesDirectory)
+  buildConfig: Debug
+  repoLogPath: $(Build.Arcade.LogsPath)
+  installPackageArtifacts: true
+
+steps:
+- checkout: self
+  fetchDepth: 1
+  clean: true
+
+- template: /eng/pipelines/common/setup-jdk.yml
+
+- task: UseDotNet@2
+  displayName: 'Use .NET SDK $(DOTNET_VERSION)'
+  inputs:
+    packageType: sdk
+    version: $(DOTNET_VERSION)
+    includePreviewVersions: true
+
+
+- ${{ if eq(parameters.installPackageArtifacts, true) }}:
+  - task: DownloadPipelineArtifact@2
+    displayName: Download PackageArtifacts
+    inputs:
+      artifactName: PackageArtifacts
+      itemPattern: '**/*.nupkg'
+      targetPath: ${{ parameters.mauiSourcePath }}/artifacts
+
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview without workloads
+    inputs:
+      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview workloads from PackageArtifacts
+    inputs:
+      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-t:Install -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+
+- ${{ else }}:
+  - task: DotNetCoreCLI@2
+    displayName: Install dotnet preview
+    inputs:
+      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: Build MSBuild Tasks
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
+      arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/Microsoft.Maui.BuildTasks.binlog'
