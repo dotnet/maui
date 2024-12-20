@@ -345,53 +345,55 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 		}
 
-		// TODO: Flaky test, disable for now
-		// [Test]
-		// [Category(UITestCategories.Gestures)]
-		// public void DropEventCoordinates()
-		// {
-		// 	App.WaitForElement("TargetView");
-		// 	App.EnterText("TargetView", "DragAndDropBetweenLayouts");
-		// 	App.Tap("GoButton");
+#if TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_MACCATALYST
+		// TODO: Flaky test, disabling for Win and Mac.
+		[Test]
+		[Category(UITestCategories.Gestures)]
+		public void DropEventCoordinates()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
+			App.Tap("GoButton");
 
-		// 	App.Tap("ResetButton");
+			App.Tap("ResetButton");
 
-		// 	App.WaitForElement("Blue");
-		// 	App.WaitForElement("Green");
-		// 	App.DragAndDrop("Blue", "Green");
+			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
+			App.DragAndDrop("Blue", "Green");
 
-		// 	var dropRelativeToLayout = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
-		// 	var dropRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DropRelativeScreen").GetText());
-		// 	var dropRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DropRelativeLabel").GetText());
+			var dropRelativeToLayout = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
+			var dropRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DropRelativeScreen").GetText());
+			var dropRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DropRelativeLabel").GetText());
 
-		// 	var dragRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DragRelativeLabel").GetText());
-		// 	var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DragStartRelativeScreen").GetText());
+			var dragRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DragRelativeLabel").GetText());
+			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DragStartRelativeScreen").GetText());
 
-		// 	Assert.That(dropRelativeToLayout, Is.Not.Null);
-		// 	Assert.That(dropRelativeToScreen, Is.Not.Null);
-		// 	Assert.That(dropRelativeToLabel, Is.Not.Null);
+			Assert.That(dropRelativeToLayout, Is.Not.Null);
+			Assert.That(dropRelativeToScreen, Is.Not.Null);
+			Assert.That(dropRelativeToLabel, Is.Not.Null);
 
-		// 	Assert.That(dragRelativeToLabel, Is.Not.Null);
-		// 	Assert.That(dragStartRelativeToScreen, Is.Not.Null);
+			Assert.That(dragRelativeToLabel, Is.Not.Null);
+			Assert.That(dragStartRelativeToScreen, Is.Not.Null);
 
-		// 	Assert.That(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
-		// 	Assert.That(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
+			Assert.That(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
+			Assert.That(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
 
-		// 	// The position of the drop relative the layout should be less than that relative to the screen
-		// 	// There are other elements in the screen, plus the ContentView of the test has some margin
-		// 	Assert.That(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
-		// 	Assert.That(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
+			// The position of the drop relative the layout should be less than that relative to the screen
+			// There are other elements in the screen, plus the ContentView of the test has some margin
+			Assert.That(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
+			Assert.That(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
 
-		// 	// Since the label is below the the box, the Y position of the drop relative to the label should be negative
-		// 	Assert.That(dropRelativeToLabel!.Value.Y < 0);
+			// Since the label is below the the box, the Y position of the drop relative to the label should be negative
+			Assert.That(dropRelativeToLabel!.Value.Y < 0);
 
-		// 	// The drop is executed left to right, so the X value should be higher than where it started
-		// 	Assert.That(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
+			// The drop is executed left to right, so the X value should be higher than where it started
+			Assert.That(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 
-		// 	// The label receiving the coordinates of the drop is below that which receives the coordinates of the drag
-		// 	// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
-		// 	Assert.That(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
-		// }
+			// The label receiving the coordinates of the drop is below that which receives the coordinates of the drag
+			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
+			Assert.That(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
+		}
+#endif
 #endif
 
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
