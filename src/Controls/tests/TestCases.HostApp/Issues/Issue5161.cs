@@ -76,8 +76,7 @@ public class Issue5161 : Shell
             {
                 new Label
                 {
-                    Text="This is second Page",
-                    AutomationId="SecondPageLabel"
+                    Text = "This is Second Page",
                 }
             }
             };
@@ -109,12 +108,14 @@ public class Issue5161 : Shell
                 HorizontalOptions = LayoutOptions.Center,
                 Children =
             {
-                label,
-                button
+                new Label
+                {
+                    Text = "This is Third Page",
+                }
             }
             };
-
         }
+
         private void OnButtonClicked(object sender, EventArgs e)
         {
             if (Application.Current?.Windows.Count > 0 &&
