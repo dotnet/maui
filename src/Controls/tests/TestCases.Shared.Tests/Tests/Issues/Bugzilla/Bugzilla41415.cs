@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID // ScrollY and ScrollX values are resetted on Android, Issue:  
+﻿#if TEST_FAILS_ON_ANDROID // ScrollY and ScrollX values are resetted on Android, Issue: https://github.com/dotnet/maui/issues/26747
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

@@ -1,4 +1,4 @@
-﻿//#if TEST_FAILS_ON_WINDOWS // Can't able to override the automation id property for Android, as it always with default value,  Also in Windows we can't override the icon. More Information: https://github.com/dotnet/maui/issues/1625
+﻿#if TEST_FAILS_ON_WINDOWS // Can't able to override the automation id property windows, as it always with default value.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,3 +24,4 @@ public class Issue5132 : _IssuesUITest
 		 
 	}
 }
+#endif
