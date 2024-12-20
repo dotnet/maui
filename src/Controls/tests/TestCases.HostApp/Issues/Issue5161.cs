@@ -75,7 +75,8 @@ public class Issue5161 : Shell
             {
                 new Label
                 {
-                    Text = "This is Second Page",
+                    Text="This is second Page",
+                    AutomationId="SecondPageLabel"
                 }
             }
             };
@@ -85,18 +86,46 @@ public class Issue5161 : Shell
     {
         public ThirdPage()
         {
+            var label = new Label
+            {
+                Text = "This is Third Page",
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
+            };
+
+            var button = new Button
+            {
+                Text = "Enable SecondTab",
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
+            };
+            button.AutomationId="Button";
+            button.Clicked += OnButtonClicked;
             Content = new StackLayout
             {
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.Center,
                 Children =
             {
-                new Label
-                {
-                    Text = "This is Third Page",
-                }
+                label,
+                button
             }
             };
+
+        }
+        private void OnButtonClicked(object sender, EventArgs e)
+        {
+            if (Application.Current?.Windows.Count > 0 &&
+                Application.Current.Windows[0].Page is Shell shell)
+            {
+                var secondTab = shell.CurrentItem?.Items[1];
+                if (secondTab is not null)
+                    secondTab.IsEnabled = true;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Shell not found!");
+            }
         }
     }
 }
