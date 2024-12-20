@@ -538,7 +538,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual CGRect DetermineEmptyViewFrame()
 		{
-			nfloat emptyViewHeight = 0;
+			nfloat emptyViewHeight = CollectionView.Frame.Height;
 
 			if (_emptyViewFormsElement is IView emptyView)
 			{
