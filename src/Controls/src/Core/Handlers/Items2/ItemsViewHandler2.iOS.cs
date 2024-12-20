@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -67,7 +68,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected abstract ItemsViewController2<TItemsView> CreateController(TItemsView newElement, UICollectionViewLayout layout);
 
-		protected override UIView CreatePlatformView() => Controller?.View;
+		protected override UIView CreatePlatformView()
+		{
+			UIView controllerView = Controller?.View ?? throw new InvalidOperationException("ItemsViewController2's view should not be null at this point.");
+
+			// Reset the bounds and center, as they are set to the size of the screen by default
+			// but we want SizeThatFits to return the actual desired size.
+			controllerView.Bounds = new CGRect();
+			controllerView.Center = new CGPoint();
+
+			return controllerView;
+		}
 
 		public static void MapItemsSource(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
