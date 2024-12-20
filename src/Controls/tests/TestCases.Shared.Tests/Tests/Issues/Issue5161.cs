@@ -15,12 +15,13 @@ public Issue5161(TestDevice testDevice) : base(testDevice)
 		[Category(UITestCategories.Shell)]
 		public void CheckIsEnabled()
 		{
-			App.WaitForElement("ThirdPage");
-            App.Tap("ThirdPage");
-			App.Tap("SecondPage");
+			App.WaitForElement("ThirdTab");
+            App.Tap("ThirdTab");
+			App.WaitForElement("ThirdPageLabel");
+			App.Tap("SecondTab");
             App.WaitForNoElement("SecondPageLabel");
-			App.Tap("Button");
-			App.Tap("SecondPage");
+			App.Tap("EnableSecondTab");
+			App.Tap("SecondTab");
 			App.WaitForElement("SecondPageLabel");
 		}
 }

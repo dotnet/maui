@@ -21,7 +21,7 @@ public class Issue5161 : Shell
         {
             Title = "SecondPage",
             IsEnabled = false,
-            AutomationId = "SecondPage"
+            AutomationId = "SecondTab"
         };
         secondPageTab.Items.Add(new ShellContent
         {
@@ -31,7 +31,7 @@ public class Issue5161 : Shell
         {
             Title = "ThirdPage",
             IsEnabled = true,
-            AutomationId = "ThirdPage"
+            AutomationId = "ThirdTab"
         };
         thirdTab.Items.Add(new ShellContent
         {
@@ -90,7 +90,8 @@ public class Issue5161 : Shell
             {
                 Text = "This is Third Page",
                 HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
+                VerticalOptions = LayoutOptions.Center,
+                AutomationId="ThirdPageLabel"
             };
 
             var button = new Button
@@ -98,7 +99,7 @@ public class Issue5161 : Shell
                 Text = "Enable SecondTab",
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
-                AutomationId = "Button"
+                AutomationId = "EnableSecondTab"
             };
             button.Clicked += OnButtonClicked;
             Content = new StackLayout
