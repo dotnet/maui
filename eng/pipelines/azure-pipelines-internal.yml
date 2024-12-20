@@ -79,7 +79,7 @@ extends:
         pool: ${{ parameters.VM_IMAGE_HOST }}
         enableSourceIndex: true
         sourceIndexParams:
-          sourceIndexBuildCommand: build.cmd -restore -build -ci -warnAsError 0 /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
+          sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
           binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
 
       # Publish and validation steps. Only run in official builds
@@ -103,7 +103,10 @@ extends:
         jobMatrix:
         - name: win_unit_tests
           displayName: Windows Unit Tests
-          pool: ${{ parameters.VM_IMAGE_HOST }}
+          pool:
+            name: Azure Pipelines
+            vmImage: $(HostedWindowsImage)
+            os: windows
           timeout: 120
           testOS: Windows
         - name: mac_unit_tests
