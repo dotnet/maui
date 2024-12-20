@@ -193,9 +193,10 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: or(
-              ${{ parameters.pushMauiPackagesToMaestro }},
-              eq(variables['PushMauiPackagesToMaestro'], 'true'))
+            pushMauiPackagesToMaestro: ${{  or(
+              parameters.pushMauiPackagesToMaestro,
+              eq(variables['PushMauiPackagesToMaestro'], 'true')
+              ) }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
