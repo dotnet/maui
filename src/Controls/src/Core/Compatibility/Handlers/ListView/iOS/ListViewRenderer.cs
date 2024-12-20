@@ -621,12 +621,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void ResetSelectedItem()
 		{
-			if (ListView.TemplatedItems.ItemsSource is not null)
+			var itemsSource = ListView.TemplatedItems.ItemsSource;
+			if (itemsSource is not null)
 			{
 				bool isSelectedItemInList = false;
-				foreach (var item in ListView.TemplatedItems.ItemsSource)
+				foreach (var item in itemsSource)
 				{
-					if (item.Equals(ListView.SelectedItem))
+					if (Equals(item, ListView.SelectedItem))
 					{
 						isSelectedItemInList = true;
 						break;
