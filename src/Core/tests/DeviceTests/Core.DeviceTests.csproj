@@ -48,6 +48,7 @@
     <MauiImage Include="Resources\Images\*" />
     <MauiFont Include="Resources\Fonts\*" />
     <EmbeddedResource Include="Resources\Fonts\dokdo_regular.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\ionicons.ttf" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

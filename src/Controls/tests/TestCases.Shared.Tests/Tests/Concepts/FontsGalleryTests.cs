@@ -26,6 +26,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test]
 		public void FromBundle_Image() => LoadAndVerify(Test.Fonts.FromBundle_Image);
 
+#if WINDOWS
+		[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
+#endif
 		[Test]
 		public void FromBundle_Label() => LoadAndVerify(Test.Fonts.FromBundle_Label);
 

@@ -1,10 +1,74 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Storage;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
+		[Fact]
+		[Category(TestCategory.Fonts)]
+		public async Task FontFamilyIsCorrectForRendering()
+		{
+			var label = new LabelStub
+			{
+				Font = Font.OfSize("Ion", 20),
+				Text = "\xf30c",
+			};
+
+			var (bounds, font) = await GetValueAsync(label, handler =>
+			{
+				var fe = handler.VirtualView.ToPlatform();
+				var tb = fe as TextBlock;
+
+				return tb.AttachAndRun(() => (tb.GetBoundingBox(), tb.FontFamily.Source), MauiContext);
+			});
+
+			var expectedFont = "ms-appx:///ionicons.ttf#Ionicons";
+
+			Assert.Equal(expectedFont, font);
+			Assert.True(bounds.Width > 20, "Width was too narrow, the font probably did not load correctly.");
+			Assert.True(bounds.Height < 30, "Height was too tall, the font probably did not load correctly.");
+		}
+
+		[Fact]
+		[Category(TestCategory.Fonts)]
+		public async Task EmbeddedFontFamilyIsCorrectForRendering()
+		{
+			var label = new LabelStub
+			{
+				Font = Font.OfSize("Embedded", 20),
+				Text = "\xf30c",
+			};
+
+			var (bounds, font) = await GetValueAsync(label, handler =>
+			{
+				var fe = handler.VirtualView.ToPlatform();
+				var tb = fe as TextBlock;
+
+				return tb.AttachAndRun(() => (tb.GetBoundingBox(), tb.FontFamily.Source), MauiContext);
+			});
+
+
+#if UNPACKAGED
+			var expectedSuffix = "Fonts\\ionicons.ttf#Ionicons";
+			var root = Path.GetFullPath(Path.Combine(FileSystem.CacheDirectory, ".."));
+			var fullFontName = Path.GetFullPath(Path.Combine(root, expectedSuffix));
+			var expectedFont = "ms-appx:///" + fullFontName.Replace("\\", "/", StringComparison.OrdinalIgnoreCase);
+#else
+			var expectedFont = "ms-appdata:///temp/Fonts/ionicons.ttf#Ionicons";
+#endif
+
+			Assert.Equal(expectedFont, font);
+			Assert.True(bounds.Width > 20, "Width was too narrow, the font probably did not load correctly.");
+			Assert.True(bounds.Height < 30, "Height was too tall, the font probably did not load correctly.");
+		}
+
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
