@@ -50,15 +50,13 @@ public class Issue5161 : Shell
         {
             Content = new StackLayout
             {
-                VerticalOptions = LayoutOptions.CenterAndExpand,
-                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
                 Children =
             {
                 new Label
                 {
                     Text = "This is First Page",
-                    VerticalOptions = LayoutOptions.CenterAndExpand,
-                    HorizontalOptions = LayoutOptions.CenterAndExpand
                 }
             }
             };
@@ -71,15 +69,13 @@ public class Issue5161 : Shell
         {
             Content = new StackLayout
             {
-                VerticalOptions = LayoutOptions.CenterAndExpand,
-                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
                 Children =
             {
                 new Label
                 {
                     Text = "This is Second Page",
-                    VerticalOptions = LayoutOptions.CenterAndExpand,
-                    HorizontalOptions = LayoutOptions.CenterAndExpand
                 }
             }
             };
@@ -91,15 +87,13 @@ public class Issue5161 : Shell
         {
             Content = new StackLayout
             {
-                VerticalOptions = LayoutOptions.CenterAndExpand,
-                HorizontalOptions = LayoutOptions.CenterAndExpand,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
                 Children =
             {
                 new Label
                 {
                     Text = "This is Third Page",
-                    VerticalOptions = LayoutOptions.CenterAndExpand,
-                    HorizontalOptions = LayoutOptions.CenterAndExpand
                 }
             }
             };
