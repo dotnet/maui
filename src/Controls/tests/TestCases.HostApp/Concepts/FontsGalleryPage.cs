@@ -8,7 +8,27 @@ internal class FontsGalleryPage : CoreGalleryBasePage
 		AddLabel(Test.Fonts.FromEmbedded_Label, "q", "Dokdo");
 
 		AddImage(Test.Fonts.FromBundle_Image, "\xf133", "FA");
-		AddLabel(Test.Fonts.FromBundle_Label, "\xf133", "FA");
+		// AddLabel(Test.Fonts.FromBundle_Label, "\xf133", "FA");
+
+		
+
+		{
+			var label = new Label
+			{
+				FontFamily = "FA",
+				FontSize = 48,
+				Text = "\xf133",
+				WidthRequest = 48,
+				HeightRequest = 48,
+			};
+			var familyContainer = new StateViewContainer<Label>(Test.Fonts.FromBundle_Label, label);
+			familyContainer.StateChangeButton.Clicked += (s, a) =>
+			{
+				label.FontFamily = label.FontFamily == "FA" ? "Ion" : "FA";
+				label.Text = label.FontFamily == "FA" ? "\xf133" : "\xf30c";
+			};
+			Add(familyContainer);
+		}
 	}
 
 	ViewContainer<View> AddImage(Test.Fonts test, string text, string fontFamily) =>
