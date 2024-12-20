@@ -145,7 +145,6 @@ extends:
                 parameters:
                   publishArtifacts: false
                   platform: ${{ parameters.PackPlatform.name }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '$(Build.ArtifactStagingDirectory)'
@@ -160,7 +159,6 @@ extends:
                     - template: /eng/pipelines/common/provision.yml@self
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                         skipAndroidImages: true
                         skipAndroidSdks: true
