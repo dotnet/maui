@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
-			return image.ImageWithRenderingMode(UIImageRenderingMode.Automatic);
+			return image.ImageWithRenderingMode(imageSource.Color == null ? UIImageRenderingMode.Automatic : UIImageRenderingMode.AlwaysOriginal);
 		}
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
