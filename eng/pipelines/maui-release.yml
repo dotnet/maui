@@ -34,7 +34,8 @@ variables:
 
 parameters:
   - name: pushMauiPackagesToMaestro
-    default: true
+    type: boolean
+    default: false
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
@@ -192,7 +193,9 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+            pushMauiPackagesToMaestro: or(
+              ${{ parameters.pushMauiPackagesToMaestro }},
+              eq(variables['PushMauiPackagesToMaestro'], 'true'))
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
