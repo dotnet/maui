@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
 		PropertyChangedEventHandler _layoutPropertyChanged;
+		bool _hasScrollableParent;
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
@@ -526,6 +527,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+#nullable enable
+		public override bool OnInterceptTouchEvent(MotionEvent? ev)
+		{
+			if (_hasScrollableParent)
+			{
+				Parent?.RequestDisallowInterceptTouchEvent(true);
+			}
+			return base.OnInterceptTouchEvent(ev);
+		}
+#nullable disable
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
@@ -538,6 +550,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// (Deliberately checking the private member here rather than the property accessor; the accessor will
 			// create a new ScrollHelper if needed, and there's no reason to do that until a Scroll is requested.)
 			_scrollHelper?.AdjustScroll();
+
+			_hasScrollableParent = HasScrollableParent();
+		}
+
+		private bool HasScrollableParent()
+		{
+			var parent = Parent;
+			while (parent != null)
+			{
+				if (parent is Android.Widget.ScrollView || parent is RecyclerView || parent is AndroidX.Core.Widget.NestedScrollView)
+					return true;
+
+				parent = parent.Parent;
+			}
+			return false;
 		}
 
 		protected override void Dispose(bool disposing)
