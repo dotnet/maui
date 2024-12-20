@@ -32,8 +32,8 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedFont = "ms-appx:///ionicons.ttf#Ionicons";
 
 			Assert.Equal(expectedFont, font);
-			Assert.True(bounds.Width > 20, "Width was too narrow, the font probably did not load correctly.");
-			Assert.True(bounds.Height < 30, "Height was too tall, the font probably did not load correctly.");
+			Assert.True(bounds.Width > 20, $"Width ({bounds.Width}) was too narrow, the font probably did not load correctly.");
+			Assert.True(bounds.Height < 30, $"Height ({bounds.Height}) was too tall, the font probably did not load correctly.");
 		}
 
 		[Fact]
@@ -65,8 +65,8 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 			Assert.Equal(expectedFont, font);
-			Assert.True(bounds.Width > 20, "Width was too narrow, the font probably did not load correctly.");
-			Assert.True(bounds.Height < 30, "Height was too tall, the font probably did not load correctly.");
+			Assert.True(bounds.Width > 20, $"Width ({bounds.Width}) was too narrow, the font probably did not load correctly.");
+			Assert.True(bounds.Height < 30, $"Height ({bounds.Height}) was too tall, the font probably did not load correctly.");
 		}
 
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
