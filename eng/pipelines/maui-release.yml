@@ -33,15 +33,6 @@ variables:
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
-  - name: pushMauiPackagesToMaestro
-    type: boolean
-    default: false
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -193,10 +184,7 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{  or(
-              parameters.pushMauiPackagesToMaestro,
-              eq(variables['PushMauiPackagesToMaestro'], 'true')
-              ) }}
+            pushMauiPackagesToMaestro: ${{ eq(variables['PushMauiPackagesToMaestro'], 'true') }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
