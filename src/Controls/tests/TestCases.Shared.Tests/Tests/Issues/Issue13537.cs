@@ -29,6 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 
+#if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var result = App.WaitForElement("HomePageTestLabel").GetText();
 			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
+#endif
 
 		[Test]
 		[Category(UITestCategories.Shell)]
