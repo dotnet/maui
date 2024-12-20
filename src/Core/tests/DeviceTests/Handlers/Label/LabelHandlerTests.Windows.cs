@@ -11,9 +11,11 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class LabelHandlerTests
 	{
-		[Fact]
+		[Theory]
 		[Category(TestCategory.Fonts)]
-		public async Task FontFamilyIsCorrectForRendering()
+		[InlineData(true, Skip = "https://github.com/dotnet/maui/issues/26749")]
+		[InlineData(false)]
+		public async Task FontFamilyIsCorrectForRendering(bool validateSize)
 		{
 			var label = new LabelStub
 			{
@@ -32,13 +34,19 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedFont = "ms-appx:///ionicons.ttf#Ionicons";
 
 			Assert.Equal(expectedFont, font);
-			Assert.True(bounds.Width > 20, $"Width ({bounds.Width}) was too narrow, the font probably did not load correctly.");
-			Assert.True(bounds.Height < 30, $"Height ({bounds.Height}) was too tall, the font probably did not load correctly.");
+
+			if (validateSize)
+			{
+				Assert.True(bounds.Width > 20, $"Width ({bounds.Width}x{bounds.Height}) was too narrow, the font probably did not load correctly.");
+				Assert.True(bounds.Height < 30, $"Height ({bounds.Width}x{bounds.Height}) was too tall, the font probably did not load correctly.");
+			}
 		}
 
-		[Fact]
+		[Theory]
 		[Category(TestCategory.Fonts)]
-		public async Task EmbeddedFontFamilyIsCorrectForRendering()
+		[InlineData(true, Skip = "https://github.com/dotnet/maui/issues/26749")]
+		[InlineData(false)]
+		public async Task EmbeddedFontFamilyIsCorrectForRendering(bool validateSize)
 		{
 			var label = new LabelStub
 			{
@@ -65,8 +73,12 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 			Assert.Equal(expectedFont, font);
-			Assert.True(bounds.Width > 20, $"Width ({bounds.Width}) was too narrow, the font probably did not load correctly.");
-			Assert.True(bounds.Height < 30, $"Height ({bounds.Height}) was too tall, the font probably did not load correctly.");
+
+			if (validateSize)
+			{
+				Assert.True(bounds.Width > 20, $"Width ({bounds.Width}x{bounds.Height}) was too narrow, the font probably did not load correctly.");
+				Assert.True(bounds.Height < 30, $"Height ({bounds.Width}x{bounds.Height}) was too tall, the font probably did not load correctly.");
+			}
 		}
 
 		TextBlock GetPlatformLabel(LabelHandler labelHandler) =>
