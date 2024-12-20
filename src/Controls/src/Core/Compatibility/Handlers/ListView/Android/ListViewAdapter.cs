@@ -634,12 +634,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					break;
 				case NotifyCollectionChangedAction.Remove:
 				case NotifyCollectionChangedAction.Replace:
-					if (_listView.TemplatedItems.ItemsSource is not null)
+					var itemsSource = _listView.TemplatedItems.ItemsSource;
+					if (itemsSource is not null)
 					{
 						bool isSelectedItemInList = false;
-						foreach (var item in _listView.TemplatedItems.ItemsSource)
+						foreach (var item in itemsSource)
 						{
-							if (item.Equals(_listView.SelectedItem))
+							if (Equals(item, _listView.SelectedItem))
 							{
 								isSelectedItemInList = true;
 								break;
