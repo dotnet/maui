@@ -16,13 +16,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		public void ListViewSelectedItemUpdated()
 		{
-			App.WaitForElement("ClearButton");
-			App.Tap("Orange Juice");
-			App.Tap("DisplayItem");
-			App.Tap("ClearButton");
-			App.Tap("DisplayItem");
+			App.WaitForElement("RemoveSelectedItemButton");
+			App.Tap("ShowSelectedItem");
 			var label = App.WaitForElement("SelectedItemLabel");
-			Assert.That(label.GetText(), Is.EqualTo("No item selected"));
+			Assert.That(label.GetText(), Is.EqualTo("Tea"));
+			App.Tap("ClearButton");
+			App.Tap("ShowSelectedItem");
+			Assert.That(label.GetText(), Is.EqualTo("null"));
+			App.Tap("ChangeItemsButton");
+			App.Tap("ShowSelectedItem");
+			Assert.That(label.GetText(), Is.EqualTo("Soda"));
+			App.Tap("RemoveSelectedItemButton");
+			App.Tap("ShowSelectedItem");
+			Assert.That(label.GetText(), Is.EqualTo("null"));
 		}
 	}
 }
