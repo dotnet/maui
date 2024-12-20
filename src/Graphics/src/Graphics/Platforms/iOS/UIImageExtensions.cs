@@ -1,4 +1,6 @@
+using System;
 using CoreGraphics;
+using SceneKit;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform
@@ -27,21 +29,41 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			UIGraphics.BeginImageContext(size);
-			target.Draw(new CGRect(CGPoint.Empty, size));
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			if (disposeOriginal)
+			if (!OperatingSystem.IsIOSVersionAtLeast(17))
 			{
-				target.Dispose();
+				UIGraphics.BeginImageContext(size);
+				target.Draw(new CGRect(CGPoint.Empty, size));
+				var image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				if (disposeOriginal)
+				{
+					target.Dispose();
+				}
+
+				return image;
 			}
 
-			return image;
+			using (var renderer = new UIGraphicsImageRenderer(target.Size))
+			{
+				var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
+				{
+					var cgcontext = imageContext.CGContext;
+					cgcontext.DrawImage(new CGRect(CGPoint.Empty, size), target.CGImage);
+
+					if (disposeOriginal)
+					{
+						target.Dispose();
+					}
+				});
+
+				return resultImage;
+			}
 		}
 
 		public static UIImage NormalizeOrientation(this UIImage target, bool disposeOriginal = false)
 		{
+
 			if (target.Orientation == UIImageOrientation.Up)
 			{
 				return target;
@@ -57,6 +79,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				target.Draw(CGPoint.Empty);
 			});
+
 
 			if (disposeOriginal)
 			{

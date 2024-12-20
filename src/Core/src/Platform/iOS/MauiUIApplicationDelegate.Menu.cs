@@ -36,7 +36,7 @@ namespace Microsoft.Maui
 				var activeWindowScenes = new List<UIWindowScene>();
 				foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
 				{
-					if (scene is UIWindowScene windowScene &&
+					if (scene is UIWindowScene windowScene && 
 						windowScene.TraitCollection.ActiveAppearance == UIUserInterfaceActiveAppearance.Active)
 					{
 						activeWindowScenes.Add(windowScene);
