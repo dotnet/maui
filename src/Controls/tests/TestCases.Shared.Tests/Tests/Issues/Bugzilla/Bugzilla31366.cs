@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // For more information :https://github.com/dotnet/maui/issues/24243
+﻿#if TEST_FAILS_ON_WINDOWS // Fails on windows, More information :https://github.com/dotnet/maui/issues/24243
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
 		{
 			App.WaitForElement("StartPopOnAppearingTest");
