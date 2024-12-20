@@ -14,8 +14,9 @@
 			var grid = new Grid
 			{
 				BackgroundColor = Colors.Yellow,
-				WidthRequest = 1000,
-				HeightRequest = 1000,
+				// To make this test works for desktop apps, we need to set a big size for the grid
+				WidthRequest = 3000,
+				HeightRequest = 3000,
 				Children =
 				{
 					new BoxView

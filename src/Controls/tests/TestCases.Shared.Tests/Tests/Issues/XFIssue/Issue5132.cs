@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // AutomationId not working on Android and Icon not override on Windows More Information: https://github.com/dotnet/maui/issues/1625
+﻿//#if TEST_FAILS_ON_WINDOWS // Can't able to override the automation id property for Android, as it always with default value,  Also in Windows we can't override the icon. More Information: https://github.com/dotnet/maui/issues/1625
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,10 +18,9 @@ public class Issue5132 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellFlyoutAndHamburgerAutomationProperties()
 	{
-		App.WaitForElement(_idIconElement);
-		App.Tap(_idIconElement);
+		App.WaitForElement(AppiumQuery.ByAccessibilityId(_idIconElement));
+		App.Tap(AppiumQuery.ByAccessibilityId(_idIconElement));
 		App.WaitForElement("Connect");
 		 
 	}
 }
-#endif

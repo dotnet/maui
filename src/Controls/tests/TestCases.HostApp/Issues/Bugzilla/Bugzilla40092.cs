@@ -40,10 +40,9 @@ public class Bugzilla40092 : TestContentPage
 
 	}
 
-	protected override void OnAppearing()
+	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		// As we going to use verifyscreenshot , so here just remove the displayalert.
-		//await DisplayAlert("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
+		await DisplayAlert("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
 	}
 }

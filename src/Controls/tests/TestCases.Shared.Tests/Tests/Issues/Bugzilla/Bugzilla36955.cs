@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -32,7 +32,7 @@ public class Bugzilla36955 : _IssuesUITest
 #elif IOS
         App.Tap(AppiumQuery.ByXPath("//XCUIElementTypeSwitch[@name='Toggle switch; nothing should crash']"));
 #elif MACCATALYST
-		App.ClickCoordinates(774,140);
+		App.ClickCoordinates(1051,198);
 #endif
 	}
 }

@@ -1,4 +1,4 @@
-﻿#if !IOS
+﻿#if TEST_FAILS_ON_ANDROID // ScrollY and ScrollX values are resetted on Android, Issue:  
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,25 +18,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollX and ScrollY values are not consistent with iOS";
 
-		// Bugzilla41415 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla41415.cs)
 		[Test]
-		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla41415Test()
 		{
-			// This test is failing, likely due to product issue
-
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
-			App.WaitForNoElement("x: 100");
-			App.WaitForNoElement("y: 100");
-			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
-			App.WaitForNoElement("a: True");
-			App.Tap(ButtonId);
-			App.WaitForNoElement("x: 200");
-			App.WaitForNoElement("y: 100");
-			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
-			App.WaitForNoElement("a: False");
+			App.WaitForElementTillPageNavigationSettled("x: 100");
+			App.WaitForElementTillPageNavigationSettled("y: 100");
+			App.WaitForElement("z: True", timeout: TimeSpan.FromSeconds(25));
+			App.WaitForElement("a: True");
+			App.Tap(ButtonId);	
+			App.WaitForElementTillPageNavigationSettled("y: 100");
+			App.WaitForElement("z: True", timeout: TimeSpan.FromSeconds(25));
+			App.WaitForElement("a: False");
+			App.WaitForElementTillPageNavigationSettled("x: 200");
 		}
 	}
 }
