@@ -21,8 +21,8 @@
 				{
 					new BoxView
 					{
-						WidthRequest =  200,
-						HeightRequest = 200,
+						WidthRequest =  2200,
+						HeightRequest = 2200,
 						BackgroundColor = Colors.Red,
 						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center
