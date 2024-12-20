@@ -38,8 +38,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// They are currently provided in place of LayoutManager's default offset calculation
 			// because it does not report accurate values in the presence of uneven rows.
 			// See https://stackoverflow.com/questions/27507715/android-how-to-get-the-current-x-offset-of-recyclerview
-			_horizontalOffset += dx;
-			_verticalOffset += dy;
+			_horizontalOffset = recyclerView.ComputeHorizontalScrollOffset();
+			_verticalOffset = recyclerView.ComputeVerticalScrollOffset();
 
 			var (First, Center, Last) = GetVisibleItemsIndex(recyclerView);
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
