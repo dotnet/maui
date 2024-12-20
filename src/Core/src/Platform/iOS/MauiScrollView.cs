@@ -43,8 +43,11 @@ namespace Microsoft.Maui.Platform
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
 				}
 
-				var size = scrollView.ArrangeContentUnbounded(new Rect(new Point(), bounds.Size.ToSize()));
+				// Account for safe area adjustments automatically added by iOS
+				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
+				var size = scrollView.ArrangeContentUnbounded(new Rect(new Point(), crossPlatformBounds));
 				ContentSize = size.ToCGSize();
+				_arranged = true;
 			}
 
 			base.LayoutSubviews();

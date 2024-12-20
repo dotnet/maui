@@ -46,6 +46,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var entry = new Entry() { Text = "In a ScrollView", HeightRequest = 10 };
 
+
+			static CoreGraphics.CGSize getViewportSize(UIScrollView scrollView)
+			{
+				return scrollView.AdjustedContentInset.InsetRect(scrollView.Bounds).Size;
+			};
+
 			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
 			{
 				return CreateHandlerAsync<ScrollViewHandler>(scrollView);
@@ -70,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 					await Task.Yield();
 
 					var contentSize = uiScrollView.ContentSize;
-					var viewportSize = uiScrollView.Bounds.Size;
+					var viewportSize = getViewportSize(uiScrollView);
 
 					Assert.Equal(viewportSize.Height, contentSize.Height);
 					Assert.Equal(viewportSize.Width, contentSize.Width);
