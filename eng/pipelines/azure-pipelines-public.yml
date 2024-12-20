@@ -62,6 +62,8 @@ stages:
         name: Azure Pipelines
         vmImage: $(HostedWindowsImage)
         os: windows
+      timeout: 120
+      testOS: Windows
     - name: mac_unit_tests
       displayName: macOS Unit Tests
       pool:
