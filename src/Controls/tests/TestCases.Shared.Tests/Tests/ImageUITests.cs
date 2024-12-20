@@ -40,6 +40,7 @@ internal class ImageUITests : _ViewUITests
 #endif
 
 	[Test]
+	[FailsOnMacWhenRunningOnXamarinUITest("This test is not working on Mac Catalyst")]
 	public async Task IsAnimationPlaying()
 	{
 		var remote = GoToStateRemote();
