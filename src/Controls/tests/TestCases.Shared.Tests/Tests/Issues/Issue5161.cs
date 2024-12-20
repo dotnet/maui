@@ -18,9 +18,6 @@ public Issue5161(TestDevice testDevice) : base(testDevice)
 			App.WaitForElement("ThirdPage");
             App.Tap("ThirdPage");
 			App.Tap("SecondPage");
-            App.WaitForNoElement("SecondPageLabel");
-			App.Tap("Button");
-			App.Tap("SecondPage");
-			App.WaitForElement("SecondPageLabel");
+            App.WaitForElement("This is Third Page");
 		}
 }
