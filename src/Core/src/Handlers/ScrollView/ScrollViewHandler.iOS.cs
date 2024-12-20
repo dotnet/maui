@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout
 	{
 		const nint ContentTag = 0x845fed;
 
@@ -155,6 +155,22 @@ namespace Microsoft.Maui.Handlers
 				platformContent.Tag = ContentTag;
 				platformView.AddSubview(platformContent);
 			}
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			//TODO: We might need to move the MauiScrollView measuring code here just to be overly careful
+			// If someone is inheriting from this handler and implementing ICrossPlatformLayout themselves
+			// then we need to keep this path active
+			return (VirtualView as ICrossPlatformLayout)?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+		{
+			//TODO: We might need to move the MauiScrollView measuring code here just to be overly careful
+			// If someone is inheriting from this handler and implementing ICrossPlatformLayout themselves
+			// then we need to keep this path active
+			return (VirtualView as ICrossPlatformLayout)?.CrossPlatformArrange(bounds) ?? Size.Zero;
 		}
 
 		class ScrollEventProxy
