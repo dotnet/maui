@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //Unable to access the switch element directly when it placed inside the TableView, Also Hardcoded TapCoordinates don't work reliably in CI environments for desktop platforms.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -24,15 +25,11 @@ public class Bugzilla36955 : _IssuesUITest
 	}
 	void ToggleSwitch()
 	{
-		//Unable to access the switch element directly when it placed inside the TableView, so using TapCoordinates to tap on the switch
-#if WINDOWS
-        App.TapCoordinates(1340,160);
-#elif ANDROID
+#if ANDROID
 		App.TapCoordinates(1000, 100);
 #elif IOS
         App.Tap(AppiumQuery.ByXPath("//XCUIElementTypeSwitch[@name='Toggle switch; nothing should crash']"));
-#elif MACCATALYST
-		App.ClickCoordinates(1051,198);
 #endif
 	}
 }
+#endif

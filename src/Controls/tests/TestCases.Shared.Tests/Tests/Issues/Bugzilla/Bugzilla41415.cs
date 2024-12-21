@@ -23,13 +23,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
+			App.WaitForElement(ButtonId);
 			App.WaitForElementTillPageNavigationSettled("x: 100");
 			App.WaitForElementTillPageNavigationSettled("y: 100");
-			App.WaitForElement("z: True", timeout: TimeSpan.FromSeconds(25));
+			App.WaitForElement("z: True");
 			App.WaitForElement("a: True");
-			App.Tap(ButtonId);	
+			App.Tap(ButtonId);
+			App.WaitForElement(ButtonId);
 			App.WaitForElementTillPageNavigationSettled("y: 100");
-			App.WaitForElement("z: True", timeout: TimeSpan.FromSeconds(25));
+			App.WaitForElement("z: True");
 			App.WaitForElement("a: False");
 			App.WaitForElementTillPageNavigationSettled("x: 200");
 		}
