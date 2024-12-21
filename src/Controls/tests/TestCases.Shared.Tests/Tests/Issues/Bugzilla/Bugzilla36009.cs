@@ -1,4 +1,4 @@
-﻿
+﻿#if TEST_FAILS_ON_WINDOWS // BoxView automation is not supported in windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,7 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla36009Test()
 		{
-			App.WaitForElement("Victory");
+			App.WaitForElementTillPageNavigationSettled("Victory");
 		}
 	}
 }
+#endif
