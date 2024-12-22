@@ -95,7 +95,7 @@
   </style>
 
   <style name="collectionViewTheme">
-    <item name="collectionViewStyle">@style/scrollViewScrollBars</item>
+    <item name="android:scrollbars">vertical|horizontal</item>
   </style>
 
   <style name="scrollViewTheme">

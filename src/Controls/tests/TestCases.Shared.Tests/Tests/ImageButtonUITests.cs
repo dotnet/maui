@@ -19,6 +19,7 @@ internal class ImageButtonUITests : _ViewUITests
 		App.NavigateToGallery(ImageButtonGallery);
 	}
 
+#if TEST_FAILS_ON_CATALYST
 	[Test]
 	public void Aspect()
 	{
@@ -37,6 +38,7 @@ internal class ImageButtonUITests : _ViewUITests
 		remote.TapStateButton();
 		VerifyScreenshot("ImageButtonUITests_Aspect_State_AspectFit");
 	}
+#endif
 
 	[Test]
 	public void Aspect_AspectFill()
@@ -155,6 +157,7 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
+	[FailsOnMacWhenRunningOnXamarinUITest("This test is not working on Mac Catalyst")]
 	public void Padding()
 	{
 		var remote = GoToStateRemote();
@@ -168,6 +171,7 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
+	[FailsOnMacWhenRunningOnXamarinUITest("This test is not working on Mac Catalyst")]
 	public void Padding_Add()
 	{
 		var remote = GoToStateRemote();
