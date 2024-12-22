@@ -10,7 +10,7 @@ public class StackLayoutIssue : TestContentPage
 #pragma warning disable CS0618 // Type or member is obsolete
 		var logo = new Image
 		{
-			Source = "cover1.jpg",
+			Source = "test.jpg",
 			WidthRequest = 20,
 			HeightRequest = 20,
 			VerticalOptions = LayoutOptions.FillAndExpand,
@@ -120,7 +120,7 @@ public class StackLayoutIssue : TestContentPage
 
 		var qrButton = new Image
 		{
-			Source = "cover1.jpg",
+			Source = "test.jpg",
 			WidthRequest = 100,
 			HeightRequest = 100,
 			AutomationId="SecondImage"
