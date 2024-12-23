@@ -34,6 +34,11 @@ namespace Maui.Controls.Sample
 			appBuilder.ConfigureCollectionViewHandlers();
 
 #endif
+			// Register the custom handler
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler(typeof(Bugzilla60122._60122Image), typeof(Bugzilla60122._60122ImageHandler));
+			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();
