@@ -18,9 +18,13 @@ namespace Microsoft.Maui.Controls.SourceGen;
 using static LocationHelpers;
 static class NodeSGExtensions
 {
-	static Dictionary<ITypeSymbol, (Func<string, ITypeSymbol, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)>? KnownSGTypeConverters;
+    delegate string ConverterDelegate(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath);
 
-    static Dictionary<ITypeSymbol, (Func<string, ITypeSymbol, Action<Diagnostic>, IXmlLineInfo, string, string>, ITypeSymbol)> GetKnownSGTypeConverters(SourceGenContext context)
+    public delegate string ProvideValueDelegate(IElementNode markupNode, Action<Diagnostic> reportDiagnostic, SourceGenContext context, out ITypeSymbol? returnType);
+
+	static Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? KnownSGTypeConverters;
+
+    static Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)> GetKnownSGTypeConverters(SourceGenContext context)
         => KnownSGTypeConverters ??= new (SymbolEqualityComparer.Default)
 	{
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Converters.RectTypeConverter")!, (KnownTypeConverters.ConvertRect, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Graphics.Rect")!) },
@@ -49,6 +53,13 @@ static class NodeSGExtensions
         //{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PathGeometryConverter")!, (KnownTypeConverters.ConvertPathGeometry, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Geometry")!) },
         //{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (KnownTypeConverters.ConvertStrokeShape, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 	};
+
+    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGMarkups;
+    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownSGMarkups(SourceGenContext context)
+        => KnownSGMarkups ??= new (SymbolEqualityComparer.Default)
+    {
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
+    };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
     {

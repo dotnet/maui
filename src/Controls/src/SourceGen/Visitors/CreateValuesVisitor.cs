@@ -63,7 +63,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
             var typeNode = node.Properties[new XmlName("", "Type")];
             ValueNode vTypeNode = typeNode as ValueNode ?? (typeNode as ElementNode)!.CollectionItems[0] as ValueNode ?? throw new Exception("ArrayExtension Type not found");
-            var arrayType = (vTypeNode.Value as string)?.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, vTypeNode as BaseNode) 
+            var arrayType = (vTypeNode.Value as string)?.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, vTypeNode) 
                 ?? throw new Exception($"Type {vTypeNode.Value} not found");
 
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, arrayType.Name!.Split('.').Last()+"Array");

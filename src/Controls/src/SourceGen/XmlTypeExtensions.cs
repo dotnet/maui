@@ -87,7 +87,7 @@ static class XmlTypeExtensions
 		return true;
 	}
 
-	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, BaseNode node)
+	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, INode node)
 	{
 		XmlType xmlType = TypeArgumentsParser.ParseSingle(nameAndPrefix, node.NamespaceResolver, (IXmlLineInfo)node);
 		return xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
