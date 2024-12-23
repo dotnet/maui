@@ -33,25 +33,25 @@ namespace Microsoft.Maui.Handlers
 			return new MauiScrollView();
 		}
 
-		public override void SetVirtualView(IView view)
-		{
-			base.SetVirtualView(view);
-
-			if (PlatformView is MauiScrollView platformScrollView && view is IScrollView scrollView)
-			{
-				platformScrollView.View = scrollView;
-			}
-		}
-
 		protected override void ConnectHandler(UIScrollView platformView)
 		{
 			base.ConnectHandler(platformView);
+
+			if (platformView is MauiScrollView platformScrollView)
+			{
+				platformScrollView.CrossPlatformLayout = this;
+			}
 
 			_eventProxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIScrollView platformView)
 		{
+			if (platformView is MauiScrollView platformScrollView)
+			{
+				platformScrollView.CrossPlatformLayout = null;
+			}
+
 			base.DisconnectHandler(platformView);
 
 			PendingScrollToRequest = null;
@@ -159,17 +159,28 @@ namespace Microsoft.Maui.Handlers
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			//TODO: We might need to move the MauiScrollView measuring code here just to be overly careful
-			// If someone is inheriting from this handler and implementing ICrossPlatformLayout themselves
-			// then we need to keep this path active
-			return (VirtualView as ICrossPlatformLayout)?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
+			if (VirtualView is not { } scrollView)
+			{
+				return Size.Zero;
+			}
+
+			var scrollOrientation = scrollView.Orientation;
+			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
+			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
+			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
+
+			// Our target size is the smaller of it and the constraints
+			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
+			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
+
+			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
+			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
+
+			return new Size(width, height);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
-			//TODO: We might need to move the MauiScrollView measuring code here just to be overly careful
-			// If someone is inheriting from this handler and implementing ICrossPlatformLayout themselves
-			// then we need to keep this path active
 			return (VirtualView as ICrossPlatformLayout)?.CrossPlatformArrange(bounds) ?? Size.Zero;
 		}
 

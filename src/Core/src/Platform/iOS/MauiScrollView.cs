@@ -14,12 +14,12 @@ namespace Microsoft.Maui.Platform
 		double _lastMeasureHeight;
 		double _lastMeasureWidth;
 
-		WeakReference<IScrollView>? _reference;
+		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
-		internal IScrollView? View
+		internal ICrossPlatformLayout? CrossPlatformLayout
 		{
-			get => _reference != null && _reference.TryGetTarget(out var v) ? v : null;
-			set => _reference = value == null ? null : new(value);
+			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
+			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
 		}
 
 		public override void LayoutSubviews()
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			// LayoutSubviews is invoked while scrolling, so we need to arrange the content only when it's necessary.
 			// This could be done via `override ScrollViewHandler.PlatformArrange` but that wouldn't cover the case
 			// when the ScrollView is attached to a non-MauiView parent (i.e. DeviceTests).
-			if (!_arranged && View is { } scrollView)
+			if (!_arranged && CrossPlatformLayout is { } crossPlatformLayout)
 			{
 				var bounds = Bounds;
 				var widthConstraint = (double)bounds.Width;
@@ -39,11 +39,10 @@ namespace Microsoft.Maui.Platform
 				// the window); there's no guarantee that SizeThatFits has been called in that case.
 				if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
 				{
-					CrossPlatformMeasure(scrollView, widthConstraint, heightConstraint);
+					crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
 				}
 
-				ICrossPlatformLayout crossPlatformLayout = scrollView;
 				// Account for safe area adjustments automatically added by iOS
 				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
 				var size = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
@@ -56,7 +55,7 @@ namespace Microsoft.Maui.Platform
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			if (View is not { } scrollView)
+			if (CrossPlatformLayout is not { } crossPlatformLayout)
 			{
 				return new CGSize();
 			}
@@ -64,7 +63,7 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = (double)size.Width;
 			var heightConstraint = (double)size.Height;
 
-			var contentSize = CrossPlatformMeasure(scrollView, widthConstraint, heightConstraint);
+			var contentSize = crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
 			return contentSize;
@@ -77,23 +76,6 @@ namespace Microsoft.Maui.Platform
 			_arranged = false;
 
 			TryToInvalidateSuperView(false);
-		}
-
-		static Size CrossPlatformMeasure(IScrollView scrollView, double widthConstraint, double heightConstraint)
-		{
-			var scrollOrientation = scrollView.Orientation;
-			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
-			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
-			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
-
-			// Our target size is the smaller of it and the constraints
-			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
-			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
-
-			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
-			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
-
-			return new Size(width, height);
 		}
 
 		bool IsMeasureValid(double widthConstraint, double heightConstraint)
