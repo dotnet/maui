@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // On Catalyst, the CheckBox was not able to be tapped in the CI.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CheckBox), Order(1)]
-		public void VerifyCheckBoxCheckedState()
+		public void VerifyCheckBoxUnCheckedState()
 		{
 			App.WaitForElement("CheckBox");
 			App.Tap("CheckBox");
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CheckBox), Order(2)]
-		public void VerifyCheckBoxUnCheckedState()
+		public void VerifyCheckBoxCheckedState()
 		{
 			App.WaitForElement("CheckBox");
 			App.Tap("CheckBox");
@@ -31,3 +32,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
