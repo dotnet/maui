@@ -1,7 +1,4 @@
-﻿//#if !WINDOWS
-// This test won't work on Windows right now because we can only test desktop, so touch events
-// (like LongPress) don't really work. The test should work manually on a touch screen, though.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -32,5 +29,3 @@ public class Bugzilla60122 : _IssuesUITest
 		App.WaitForElement(Success);
 	}
 }
-
-//#endif

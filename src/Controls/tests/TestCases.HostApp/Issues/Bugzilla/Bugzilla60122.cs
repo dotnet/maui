@@ -14,6 +14,8 @@ public class Bugzilla60122 : TestContentPage
 		var customImage = new _60122Image
 		{
 			AutomationId = ImageId,
+			HeightRequest = 60,
+			WidthRequest = 60,
 			Source = "coffee.png"
 		};
 
@@ -73,17 +75,28 @@ public class Bugzilla60122 : TestContentPage
                     {
                         var _gestureRecognizer = new global::Windows.UI.Input.GestureRecognizer();
                         _gestureRecognizer.GestureSettings = global::Windows.UI.Input.GestureSettings.HoldWithMouse;
-                        winImage.AddHandler(Microsoft.UI.Xaml.UIElement.HoldingEvent, new HoldingEventHandler(OnHolding), true);
+						winImage.Holding += OnHolding;
                     }
                     #endif
                 }
             });
         }
 
+#if WINDOWS
+		void OnHolding(object sender, Microsoft.UI.Xaml.Input.HoldingRoutedEventArgs holdingRoutedEventArgs)
+		{
+			if (holdingRoutedEventArgs.HoldingState == Microsoft.UI.Input.HoldingState.Completed && VirtualView is _60122Image customImage)
+			{
+				customImage?.HandleLongPress(customImage, new EventArgs());
+			}
+		}
+
+#else
+
 #if IOS || MACCATALYST
 		private void OnLongPress()
-#else
-        private void OnLongPress(object sender, EventArgs e)
+#elif ANDROID
+		private void OnLongPress(object sender, EventArgs e)
 #endif
         {
             if (VirtualView is _60122Image customImage)
@@ -91,5 +104,6 @@ public class Bugzilla60122 : TestContentPage
                 customImage.HandleLongPress(customImage, EventArgs.Empty);
             }
         }
+#endif
     }
 }
