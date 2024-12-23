@@ -16,10 +16,10 @@ public class Issue21708 : _IssuesUITest
 	{
 		App.WaitForElement("Fill");
 		App.Tap("Fill");
-		App.Tap("Scroll");
+		App.ScrollDown("CollectionView");
 		App.Tap("Empty");
 		App.Tap("Fill");
-		App.Tap("Scroll");
-		VerifyScreenshot();
+		App.ScrollDown("CollectionView");
+		Assert.That(App.FindElement("Label").GetText(), Is.LessThanOrEqualTo("50"));
 	}
 }
