@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
-			App.WaitForElement("GoBackDelayed");
+			App.WaitForElementTillPageNavigationSettled("GoBackDelayed");
 			App.Tap("GoBackDelayed");
 			App.TapBackArrow();
 

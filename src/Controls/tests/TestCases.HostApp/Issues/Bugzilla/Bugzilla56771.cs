@@ -96,7 +96,6 @@ namespace Maui.Controls.Sample.Issues
 
 			public void InsertRangeAt(int startIndex, params T[] items)
 			{
-				int originalIndex = startIndex;
 				int idx = this.Count;
 				foreach (var item in items)
 				{
@@ -104,7 +103,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 				if (idx < Count)
 				{
-					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems: items.ToList(), startingIndex: originalIndex));
+					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, changedItems: items.ToList(), startingIndex: startIndex));
 					OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
 					OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 				}

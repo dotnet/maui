@@ -22,8 +22,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Bugzilla44461Test()
 		{
 			var positions = TapButton(0);
-			ClassicAssert.AreEqual(positions.initialPosition.X, positions.finalPosition.X);
-			ClassicAssert.LessOrEqual(positions.finalPosition.X, 1);
+			Assert.That(positions.initialPosition.X, Is.EqualTo(positions.finalPosition.X));
+			Assert.That(positions.finalPosition.X, Is.LessThanOrEqualTo(1));
 			VerifyScreenshot();
 		}
 
