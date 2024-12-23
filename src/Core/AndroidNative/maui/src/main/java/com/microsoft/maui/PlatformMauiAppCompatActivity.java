@@ -16,7 +16,10 @@ public class PlatformMauiAppCompatActivity {
     {
         if (!allowFragmentRestore && savedInstanceState != null) {
             savedInstanceState.remove("android:support:fragments");
-            savedInstanceState.remove("androidx.lifecycle.BundlableSavedStateRegistry.key");
+            Bundle bundle = savedInstanceState.getBundle("androidx.lifecycle.BundlableSavedStateRegistry.key");
+            if (bundle != null) {
+                bundle.remove("android:support:fragments");
+            }
         }
 
         boolean mauiSplashAttrValue = false;
