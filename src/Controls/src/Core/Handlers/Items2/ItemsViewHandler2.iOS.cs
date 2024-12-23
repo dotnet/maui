@@ -70,13 +70,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override UIView CreatePlatformView()
 		{
-			UIView controllerView = Controller?.View ?? throw new InvalidOperationException("ItemsViewController2's view should not be null at this point.");
-
-			// Reset the bounds and center, as they are set to the size of the screen by default
-			// but we want SizeThatFits to return the actual desired size.
-			controllerView.Bounds = new CGRect();
-			controllerView.Center = new CGPoint();
-
+			var controllerView = Controller?.View ?? throw new InvalidOperationException("ItemsViewController2's view should not be null at this point.");
 			return controllerView;
 		}
 
@@ -186,35 +180,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return true;
 		}
 
-		// public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		// {
-		// 	var size = base.GetDesiredSize(widthConstraint, heightConstraint);
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var contentSize = Controller.GetSize();
 
-		// 	var potentialContentSize = Controller.GetSize();
+			// Our target size is the smaller of it and the constraints
+			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
+			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
 
+			IView virtualView = VirtualView;
 
-		// 	System.Diagnostics.Debug.WriteLine($"potentialContentSize: {potentialContentSize}");
-		// 	// If contentSize comes back null, it means none of the content has been realized yet;
-		// 	// we need to return the expansive size the collection view wants by default to get
-		// 	// it to start measuring its content
-		// 	if (potentialContentSize == null)
-		// 	{
-		// 		return size;
-		// 	}
+			width = ViewHandlerExtensions.ResolveConstraints(width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
-		// 	var contentSize = potentialContentSize.Value;
-
-		// 	// If contentSize does have a value, our target size is the smaller of it and the constraints
-
-		// 	size.Width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
-		// 	size.Height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
-
-		// 	var virtualView = this.VirtualView as IView;
-
-		// 	size.Width = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-		// 	size.Height = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
-
-		// 	return size;
-		// }
+			return new Size(width, height);
+		}
 	}
 }

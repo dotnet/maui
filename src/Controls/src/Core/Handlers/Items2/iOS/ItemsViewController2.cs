@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
+		CGSize _previousContentSize;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -190,6 +191,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
+			InvalidateMeasureIfContentSizeChanged();
 		}
 
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -319,6 +321,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Frame.Width, CollectionView.Frame.Height);
 		}
 
+		void InvalidateMeasureIfContentSizeChanged()
+		{
+			if (CollectionView?.CollectionViewLayout?.CollectionViewContentSize is not { } contentSize)
+			{
+				return;
+			}
+
+			var previousContentSize = _previousContentSize;
+			_previousContentSize = contentSize;
+
+			bool widthChanged = previousContentSize.Width != contentSize.Width;
+			bool heightChanged = previousContentSize.Height != contentSize.Height;
+
+			if (_initialized && (widthChanged || heightChanged))
+			{
+				if (CollectionView?.Bounds is not { } bounds)
+				{
+					return;
+				}
+
+				var cvWidth = bounds.Width;
+				var cvHeight = bounds.Height;
+				bool invalidate = false;
+
+				// If both the previous content size and the current content size are larger
+				// than the UICollectionView size, then we know that we're already maxed out and the 
+				// CollectionView items are scrollable. There's no reason to force an invalidation
+				// of the CollectionView to expand/contract it.
+
+				// If either size is smaller than that, we need to invalidate to ensure that the 
+				// CollectionView is re-measured and set to the correct size.
+
+				if (widthChanged && (contentSize.Width <= cvWidth || previousContentSize.Width <= cvWidth))
+				{
+					invalidate = true;
+				}
+				else if (heightChanged && (contentSize.Height <= cvHeight || previousContentSize.Height <= cvHeight))
+				{
+					invalidate = true;
+				}
+
+				if (invalidate)
+				{
+					ItemsView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				}
+			}
+		}
+
+		internal Size GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		}
 
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
