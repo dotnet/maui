@@ -364,7 +364,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (invalidate)
 				{
-					ItemsView.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+					(ItemsView as IView)?.InvalidateMeasure();
 				}
 			}
 		}
