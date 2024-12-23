@@ -6,52 +6,47 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Github, 21708, "CollectionView.Scrolled event offset isn't correctly reset when items change on Android", PlatformAffected.All)]
 	public partial class Issue21708 : ContentPage
 	{
-		public static readonly BindableProperty ItemsProperty = BindableProperty.Create(nameof(Items), typeof(IEnumerable<int>), typeof(MainPage), default(IEnumerable<int>));
-		public static readonly BindableProperty VerticalOffsetProperty = BindableProperty.Create(nameof(VerticalOffset), typeof(double), typeof(MainPage), default(double));
-		readonly ObservableCollection<int> _items;
+		ObservableCollection<int> _items;
+        double _verticalOffset;
 
-		public IEnumerable<int> Items
-		{
-			get => (IEnumerable<int>)GetValue(ItemsProperty);
-			set => SetValue(ItemsProperty, value);
-		}
-
-		public double VerticalOffset
-		{
-			get => (double)GetValue(VerticalOffsetProperty);
-			set => SetValue(VerticalOffsetProperty, value);
-		}
-
-		public Issue21708()
-		{
-			InitializeComponent();
-
-			_items = new ObservableCollection<int>();
-			Items = new ReadOnlyObservableCollection<int>(_items);
-
+        public Issue21708()
+        {
+            InitializeComponent();
+            _items = new ObservableCollection<int>();
+            CollectionView.ItemsSource = _items;
 			BindingContext = this;
-		}
+        }
 
-		void CollectionView_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
-		{
-			VerticalOffset = e.VerticalOffset;
-		}
+        public double VerticalOffset
+        {
+            get => _verticalOffset;
+            set
+            {
+                _verticalOffset = value;
+                OnPropertyChanged(nameof(VerticalOffset));
+            }
+        }
 
-		void EmptyButton_OnClicked(object sender, EventArgs e)
-		{
-			_items.Clear();
-		}
+        void CollectionView_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
+        {
+            VerticalOffset = e.VerticalOffset;
+        }
 
-		void FillButton_OnClicked(object sender, EventArgs e)
-		{
-			foreach (var i in Enumerable.Range(0, 50))
-				_items.Add(i);
-		}
+        void EmptyButton_OnClicked(object sender, EventArgs e)
+        {
+            _items.Clear();
+        }
 
-		private void Button_Clicked(object sender, EventArgs e)
-		{
-			CollectionView.ScrollTo(50);
-		}
+        void FillButton_OnClicked(object sender, EventArgs e)
+        {
+            foreach (var i in Enumerable.Range(0, 50))
+                _items.Add(i);
+        }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            CollectionView.ScrollTo(50);
+        }
 
 	}
 }
