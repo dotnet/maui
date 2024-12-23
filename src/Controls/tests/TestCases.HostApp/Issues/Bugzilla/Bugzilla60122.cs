@@ -42,11 +42,6 @@ public class Bugzilla60122 : TestContentPage
 		{
 			LongPress?.Invoke(this, new EventArgs());
 		}
-
-		protected override void OnHandlerChanged()
-		{
-			base.OnHandlerChanged();
-		}
 	}
 
 	public class _60122ImageHandler : ImageHandler
@@ -57,27 +52,27 @@ public class Bugzilla60122 : TestContentPage
             {
                 if (view is _60122Image customImage)
                 {
-                    #if IOS || MACCATALYST
+#if IOS || MACCATALYST
                     if (handler.PlatformView is UIKit.UIImageView uiImageView)
                     {
                         var gesture = new UIKit.UILongPressGestureRecognizer(OnLongPress);
                         uiImageView.AddGestureRecognizer(gesture);
                         uiImageView.UserInteractionEnabled = true;
                     }
-                    #elif ANDROID
+#elif ANDROID
                     if (handler.PlatformView is Android.Widget.ImageView androidImageView)
                     {
                         androidImageView.LongClickable = true;
                         androidImageView.LongClick += OnLongPress;
                     }
-					#elif WINDOWS
+#elif WINDOWS
 					if (handler.PlatformView is Microsoft.UI.Xaml.Controls.Image winImage)
                     {
                         var _gestureRecognizer = new global::Windows.UI.Input.GestureRecognizer();
                         _gestureRecognizer.GestureSettings = global::Windows.UI.Input.GestureSettings.HoldWithMouse;
 						winImage.Holding += OnHolding;
                     }
-                    #endif
+#endif
                 }
             });
         }
