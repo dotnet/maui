@@ -13,35 +13,16 @@ public class Bugzilla45125 : TestContentPage
 	const string DisappearingLabelId = "disappearing";
 	const string TestButtonId = "TestButtonId";
 
-	static int _Appearing = 0;
-	static int _Disappearing = 0;
+	int _Appearing = 0;
+	int _Disappearing = 0;
 
-	static Label _status = new Label
-	{
-		TextColor = Colors.White,
-		//TODO: NoWrap causes the Label to be missing from the Horizontal StackLayout
-		//LineBreakMode = LineBreakMode.NoWrap
-	};
+	Label _status;
 
-	static Label _groupsAppearing = new Label
-	{
-		TextColor = Colors.Green,
-		AutomationId = AppearingLabelId
-	};
+	Label _groupsAppearing;
 
-	static Label _groupsDisappearing = new Label
-	{
-		TextColor = Colors.Blue,
-		AutomationId = DisappearingLabelId
-	};
+	Label _groupsDisappearing;
 
-	static ScrollView _scroll = new ScrollView
-	{
-		BackgroundColor = Colors.Black,
-		Content = _status,
-		MinimumWidthRequest = 200
-	};
-
+	ScrollView _scroll;
 
 	class GroupItem
 	{
@@ -78,9 +59,33 @@ public class Bugzilla45125 : TestContentPage
 
 	protected override void Init()
 	{
+		_status = new Label
+		{
+			TextColor = Colors.White
+		};
+
+		_groupsAppearing = new Label
+		{
+			TextColor = Colors.Green,
+			AutomationId = AppearingLabelId
+		};
+
+		_groupsDisappearing = new Label
+		{
+			TextColor = Colors.Blue,
+			AutomationId = DisappearingLabelId
+		};
+
+		_scroll = new ScrollView
+		{
+			BackgroundColor = Colors.Black,
+			Content = _status,
+			MinimumWidthRequest = 200
+		};
+
 		_status.Text = _groupsAppearing.Text = _groupsDisappearing.Text = "";
 		_Appearing = _Disappearing = 0;
-		_scroll.SetScrolledPosition(0, 0);
+		_scroll.ScrollToAsync(0, 0, false);
 
 		InitTest(ListViewCachingStrategy.RecycleElement, true);
 	}
@@ -108,6 +113,30 @@ public class Bugzilla45125 : TestContentPage
 		listView.ItemAppearing += ListView_ItemAppearing;
 		listView.ItemDisappearing += ListView_ItemDisappearing;
 
+		_status = new Label
+		{
+			TextColor = Colors.White
+		};
+
+		_groupsAppearing = new Label
+		{
+			TextColor = Colors.Green,
+			AutomationId = AppearingLabelId
+		};
+
+		_groupsDisappearing = new Label
+		{
+			TextColor = Colors.Blue,
+			AutomationId = DisappearingLabelId
+		};
+
+		_scroll = new ScrollView
+		{
+			BackgroundColor = Colors.Black,
+			Content = _status,
+			MinimumWidthRequest = 200
+		};
+
 		var horStack = new StackLayout
 		{
 			Orientation = StackOrientation.Horizontal,
@@ -129,6 +158,7 @@ public class Bugzilla45125 : TestContentPage
 		var firstGroup = groups.First();
 		var firstItem = firstGroup.First();
 
+
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0612 // Type or member is obsolete
 		Device.StartTimer(TimeSpan.FromSeconds(1), () => { listView.ScrollTo(lastItem, lastGroup, ScrollToPosition.End, true); return false; });
@@ -139,7 +169,6 @@ public class Bugzilla45125 : TestContentPage
 		Device.StartTimer(TimeSpan.FromSeconds(2), () => { listView.ScrollTo(firstItem, firstItem, ScrollToPosition.MakeVisible, true); return false; });
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
-
 		_TestNumber++;
 	}
 
@@ -147,7 +176,7 @@ public class Bugzilla45125 : TestContentPage
 	{
 		_status.Text = _groupsAppearing.Text = _groupsDisappearing.Text = "";
 		_Appearing = _Disappearing = 0;
-		_scroll.SetScrolledPosition(0, 0);
+		_scroll.ScrollToAsync(0, 0, false);
 
 		switch (_TestNumber)
 		{
