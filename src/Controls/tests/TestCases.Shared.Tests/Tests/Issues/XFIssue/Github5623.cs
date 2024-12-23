@@ -1,4 +1,4 @@
-﻿#if !MACCATALYST && !IOS
+﻿#if TEST_FAILS_ON_CATALYST //ScrollTo method doesn't working on the MacCatalyst.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -19,13 +19,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void CollectionViewInfiniteScroll()
 		{
 			// The reproduction initially adds 10 elements to the CollectionView, and we need to scroll to the bottom
 			// to trigger the RemainingItemsThresholdReached event
 			App.WaitForElement(automationId);
 			App.ScrollTo("12");
+			App.WaitForElement("12");
 		}
 	}
 }
