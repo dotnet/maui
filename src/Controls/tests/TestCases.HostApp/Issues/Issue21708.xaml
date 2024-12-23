@@ -24,14 +24,6 @@
             Clicked="FillButton_OnClicked"
             Text="Fill" />
 
-		<Button
-            Grid.Row="0"
-            Grid.Column="1"
-            Margin="10"
-			AutomationId="Scroll"
-			Clicked="Button_Clicked"
-            Text="Scroll" />
-
         <Button
             Grid.Row="0"
             Grid.Column="2"
@@ -40,19 +32,19 @@
             Clicked="EmptyButton_OnClicked"
             Text="Empty" />
 
-        <Label
-            Grid.Row="1"
-            Grid.Column="0"
-            Grid.ColumnSpan="3">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="VerticalOffset: " />
-                    <Span Text="{Binding VerticalOffset, Mode=OneWay}" />
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
+                   <Label
+        Grid.Row="1"
+        Grid.Column="0"
+        AutomationId="VerticalOffsetLabel"
+        Text="VerticalOffset: " />
+        
+    <Label AutomationId="Label"
+        Grid.Row="1"
+        HorizontalTextAlignment="Start"
+        Grid.Column="1"
+        Text="{Binding VerticalOffset}" />
 
-        <CollectionView
+        <CollectionView AutomationId="CollectionView"
             x:Name="CollectionView"
             Grid.Row="2"
             Grid.Column="0"
