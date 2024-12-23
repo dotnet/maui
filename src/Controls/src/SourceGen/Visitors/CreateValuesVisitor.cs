@@ -116,21 +116,6 @@ class CreateValuesVisitor : IXamlNodeVisitor
         if (NodeSGExtensions.GetKnownSGMarkups(Context).TryGetValue(type, out var handler))
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            Writer.WriteLine($"var {variableName} = {handler(node, Context.ReportDiagnostic, Context, node as IXmlLineInfo, Context.FilePath!, out var returnType)};");
-            Context.Variables[node] = new LocalVariable(returnType!, variableName);
-
-            //skip the node as it has been fully exhausted
-            foreach (var prop in node.Properties)
-                if (!node.SkipProperties.Contains(prop.Key))
-                    node.SkipProperties.Add(prop.Key);
-            node.CollectionItems.Clear();
-            return;
-        }
-
-
-        if (NodeSGExtensions.GetKnownSGMarkups(Context).TryGetValue(type, out var handler))
-        {
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
             Writer.WriteLine($"var {variableName} = {handler(node, Context.ReportDiagnostic, Context, out var returnType)};");
             Context.Variables[node] = new LocalVariable(returnType!, variableName);
 
