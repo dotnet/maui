@@ -37,7 +37,10 @@ namespace Maui.Controls.Sample
 			// Register the custom handler
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
-				handlers.AddHandler(typeof(Bugzilla60122._60122Image), typeof(Bugzilla60122._60122ImageHandler));
+				handlers.AddHandler(typeof(_60122Image), typeof(_60122ImageHandler));
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
+#endif
 			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
