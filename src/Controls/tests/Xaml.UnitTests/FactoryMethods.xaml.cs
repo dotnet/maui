@@ -54,8 +54,6 @@ public partial class FactoryMethods : ContentPage
 		[Test]
 		public void TestStringCtor([Values]XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.SourceGen)
-				MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(FactoryMethods));
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("alternate ctor foobar", layout.v1.Content.Content);
 		}
