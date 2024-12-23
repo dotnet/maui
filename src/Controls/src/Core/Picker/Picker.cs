@@ -281,9 +281,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				// Unlock, then clear, so OnItemsCollectionChanged executes
 				((LockableObservableListWrapper)Items).IsLocked = false;
-				((LockableObservableListWrapper)Items).InternalClear();
 			}
 		}
 
