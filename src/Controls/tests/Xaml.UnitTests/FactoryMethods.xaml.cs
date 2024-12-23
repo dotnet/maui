@@ -68,6 +68,9 @@ public partial class FactoryMethods : ContentPage
 		[Test]
 		public void TestArgumentlessFactoryMethod([Values]XamlInflator inflator)
 		{
+			if (inflator == XamlInflator.SourceGen)
+				MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(FactoryMethods));
+
 			var layout = new FactoryMethods(inflator);
 			Assert.AreEqual("parameterless factory", layout.v3.Content.Content);
 		}
