@@ -4,24 +4,23 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public class Bz53318ListView : ListView
 {
+	public Bz53318ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : base(cachingStrategy) { }
 }
 
 [XamlCompilation(XamlCompilationOptions.Skip)]
 [XamlProcessing(XamlInflator.Runtime|XamlInflator.SourceGen, true)]
 public partial class Bz53318 : ContentPage
 {
-	public Bz53318()
-	{
-		InitializeComponent();
-	}
+	public Bz53318() => InitializeComponent();
 
 	[TestFixture]
 	public class Tests
 	{
 		[Test]
-		public void DoesCompilesArgsInsideDataTemplate()
+		public void DoesCompilesArgsInsideDataTemplate([Values(XamlInflator.XamlC)] XamlInflator inflator)
 		{
-			Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
+			if (inflator == XamlInflator.XamlC)
+				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Bz53318)));
 		}
 	}
 }

@@ -199,6 +199,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor MethodResolution = new DiagnosticDescriptor(
+			id: "MAUIX2003",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.MethodResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
 
 		// public static BuildExceptionCode TypeResolution = new BuildExceptionCode("XC", 0000, nameof(TypeResolution), "");
 		// public static BuildExceptionCode PropertyResolution = new BuildExceptionCode("XC", 0001, nameof(PropertyResolution), "");

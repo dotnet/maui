@@ -29,3 +29,4 @@ MAUIG1021 | XamlParsing | Error | Descriptors
 MAUIX2000 | XamlInflation | Error | TypeResolutionFailed
 MAUIX2001 | XamlInflation | Error | Descriptors
 MAUIX2002 | XamlInflation | Error | Descriptors
+MAUIX2003 | XamlInflation | Error | Descriptors

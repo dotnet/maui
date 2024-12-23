@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -224,5 +224,9 @@
   <data name="ConstraintConversionFailed" xml:space="preserve">
     <value>Cannot convert "{0}" into Constraint.</value>
     <comment>1</comment>
+  </data>
+  <data name="MethodResolution" xml:space="preserve">
+    <value>No method found for '{0}'.</value>
+    <comment>0 is a method or ctor name</comment>
   </data>
 </root>
