@@ -13,21 +13,29 @@ namespace Maui.Controls.Sample.Issues
 				RowDefinitions = new RowDefinitionCollection(
 					new RowDefinition(GridLength.Auto),
 					new RowDefinition(GridLength.Auto),
+					new RowDefinition(GridLength.Auto),
 					new RowDefinition(GridLength.Star)),
 				ColumnDefinitions = new ColumnDefinitionCollection(new ColumnDefinition(GridLength.Star)),
 	        };
-	        var scrollView = new ScrollView();
+	        var scrollView = new ScrollView { AutomationId = "TheScrollView" };
 	        var scrollViewVsl = new VerticalStackLayout();
 	        var button = new Button
 	        {
 		        Text = "Add Label",
 		        AutomationId = "AddLabelButton",
 	        };
+
 	        var sizeLabel = new Label
 	        {
 		        AutomationId = "SizeLabel",
 	        };
-	        sizeLabel.SetBinding(Label.TextProperty, new Binding("Height", source: scrollView));
+	        sizeLabel.SetBinding(Label.TextProperty, new Binding(nameof(View.Height), source: scrollView));
+
+	        var scrollOffsetLabel = new Label
+	        {
+		        AutomationId = "ScrollOffsetLabel",
+	        };
+	        scrollOffsetLabel.SetBinding(Label.TextProperty, new Binding(nameof(ScrollView.ScrollY), source: scrollView));
 
 	        var i = 0;
 	        scrollView.BackgroundColor = Colors.LightBlue;
@@ -42,7 +50,8 @@ namespace Maui.Controls.Sample.Issues
 	        scrollView.Content = scrollViewVsl;
 	        grid.Add(button, 0, 0);
 	        grid.Add(sizeLabel, 0, 1);
-	        grid.Add(scrollView, 0, 2);
+	        grid.Add(scrollOffsetLabel, 0, 2);
+	        grid.Add(scrollView, 0, 3);
 	        
 	        Content = grid;
         }
@@ -51,8 +60,8 @@ namespace Maui.Controls.Sample.Issues
         {
 	        return new Label
 	        {
-		        Text = "Huge Label",
-		        FontSize = 50,
+		        Text = "Huge",
+		        FontSize = 100,
 		        BackgroundColor = Colors.SlateBlue,
 		        AutomationId = automationId,
 	        };

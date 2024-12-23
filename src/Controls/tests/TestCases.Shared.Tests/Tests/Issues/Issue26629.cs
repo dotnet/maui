@@ -24,6 +24,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Label1");
 			var newSize = double.Parse(sizeLabel.GetText()!);
 			ClassicAssert.Greater(newSize, initialSize);
+
+			for (int i = 0; i < 12; i++)
+			{
+				addLabelButton.Tap();
+			}
+
+			// Verify that the ScrollView is now scrollable
+			App.ScrollDown("TheScrollView");
+			var scrollY = double.Parse(App.WaitForElement("ScrollOffsetLabel").GetText()!);
+			ClassicAssert.Greater(scrollY, 0);
 		}
 	}
 }

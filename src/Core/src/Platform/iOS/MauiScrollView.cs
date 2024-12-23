@@ -63,10 +63,10 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = (double)size.Width;
 			var heightConstraint = (double)size.Height;
 
-			var measuredSize = CrossPlatformMeasure(scrollView, widthConstraint, heightConstraint);
+			var contentSize = CrossPlatformMeasure(scrollView, widthConstraint, heightConstraint);
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
-			return measuredSize;
+			return contentSize;
 		}
 
 		public override void SetNeedsLayout()
@@ -80,18 +80,19 @@ namespace Microsoft.Maui.Platform
 
 		static Size CrossPlatformMeasure(IScrollView scrollView, double widthConstraint, double heightConstraint)
 		{
-			if (scrollView.Orientation is ScrollOrientation.Horizontal or ScrollOrientation.Both)
-			{
-				widthConstraint = double.PositiveInfinity;
-			}
+			var scrollOrientation = scrollView.Orientation;
+			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
+			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
+			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
 
-			if (scrollView.Orientation is ScrollOrientation.Vertical or ScrollOrientation.Both)
-			{
-				heightConstraint = double.PositiveInfinity;
-			}
+			// Our target size is the smaller of it and the constraints
+			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
+			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
 
-			var measuredSize = scrollView.MeasureContent(scrollView.Padding, widthConstraint, heightConstraint);
-			return measuredSize;
+			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
+			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
+
+			return new Size(width, height);
 		}
 
 		bool IsMeasureValid(double widthConstraint, double heightConstraint)
