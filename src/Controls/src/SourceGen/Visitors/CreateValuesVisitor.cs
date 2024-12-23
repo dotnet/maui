@@ -15,6 +15,7 @@ using System.Collections;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using static LocationHelpers;
 class CreateValuesVisitor : IXamlNodeVisitor
 {
    public CreateValuesVisitor(SourceGenContext context) => Context = context;
@@ -133,7 +134,9 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
         {
             ctor = type.InstanceConstructors.FirstOrDefault(c 
-                => c.MatchXArguments(node, Context, out parameters)); 
+                => c.MatchXArguments(node, Context, out parameters));
+            if (ctor is null)
+                Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, type.Name), type.ToDisplayString()));
         }
         //x:FactoryMethod
         else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
@@ -144,10 +147,9 @@ class CreateValuesVisitor : IXamlNodeVisitor
             factoryMethod = type.GetAllMethods(factoryMehodName!, Context).FirstOrDefault(m =>
                        m.IsStatic 
                     && m.MatchXArguments(node, Context, out parameters));
-            //TODO report diagnostic if factoryMethodSymbol is null (not found)
+            if (factoryMethod is null)
+                Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, factoryMehodName!), factoryMehodName));
         }
-
-
         
         //does it has a default parameterless ctor ?
         ctor ??= type.InstanceConstructors.FirstOrDefault(c => c.Parameters.Length == 0);
