@@ -107,9 +107,23 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//if type is Xaml2009Primitive
 		if (IsXaml2009LanguagePrimitive(node)) {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            Context.Variables[node] = new LocalVariable(type, variableName);
-
             Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
+            Context.Variables[node] = new LocalVariable(type, variableName);
+            return;
+        }
+
+
+        if (NodeSGExtensions.GetKnownSGMarkups(Context).TryGetValue(type, out var handler))
+        {
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            Writer.WriteLine($"var {variableName} = {handler(node, Context.ReportDiagnostic, Context, node as IXmlLineInfo, Context.FilePath!, out var returnType)};");
+            Context.Variables[node] = new LocalVariable(returnType!, variableName);
+
+            //skip the node as it has been fully exhausted
+            foreach (var prop in node.Properties)
+                if (!node.SkipProperties.Contains(prop.Key))
+                    node.SkipProperties.Add(prop.Key);
+            node.CollectionItems.Clear();
             return;
         }
 
@@ -127,7 +141,6 @@ class CreateValuesVisitor : IXamlNodeVisitor
             node.CollectionItems.Clear();
             return;
         }
-
 
         IMethodSymbol? ctor = null;
         IList<(INode node, ITypeSymbol type, ITypeSymbol? converter)>? parameters = null;
