@@ -1,4 +1,5 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST	  //When clicking Button0 (the first button) incorrectly centers it in the ScrollView instead of maintaining its left alignment.
+//Issue Link: https://github.com/dotnet/maui/issues/26760
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -7,7 +8,6 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	[Category(UITestCategories.ScrollView)]
-	[Category(UITestCategories.Compatibility)]
 	public class Bugzilla44461UITests : _IssuesUITest
 	{
 		public Bugzilla44461UITests(TestDevice device)
@@ -19,15 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Bugzilla44461 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla44461.cs)
 		[Test]
-		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla44461Test()
 		{
 			var positions = TapButton(0);
 			ClassicAssert.AreEqual(positions.initialPosition.X, positions.finalPosition.X);
 			ClassicAssert.LessOrEqual(positions.finalPosition.X, 1);
-			App.Screenshot("Button0 is aligned with the left side of the screen");
+			VerifyScreenshot();
 		}
 
 		(System.Drawing.Rectangle initialPosition, System.Drawing.Rectangle finalPosition) TapButton(int position)
