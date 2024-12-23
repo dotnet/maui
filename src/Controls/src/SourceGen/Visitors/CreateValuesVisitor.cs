@@ -142,12 +142,24 @@ class CreateValuesVisitor : IXamlNodeVisitor
             return;
         }
 
-        IMethodSymbol? ctor = null;
+        IMethodSymbol? ctor = null, factoryMethod = null;
         IList<(INode node, ITypeSymbol type, ITypeSymbol? converter)>? parameters = null;
+        //ctor with x:Arguments
 		if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
         {
             ctor = type.InstanceConstructors.FirstOrDefault(c 
                 => c.MatchXArguments(node, Context, out parameters)); 
+        }
+        //x:FactoryMethod
+        else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
+        {
+            var factoryMehodName = (node.Properties[XmlName.xFactoryMethod] as ValueNode)!.Value as string;
+            //TODO report diagnostic if factoryMethod is null/not a string
+
+            factoryMethod = type.GetAllMethods(factoryMehodName!, Context).FirstOrDefault(m =>
+                       m.IsStatic 
+                    && m.MatchXArguments(node, Context, out parameters));
+            //TODO report diagnostic if factoryMethodSymbol is null (not found)
         }
 
 
@@ -155,7 +167,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         //does it has a default parameterless ctor ?
         ctor ??= type.InstanceConstructors.FirstOrDefault(c => c.Parameters.Length == 0);
 
-        if (ctor is null /* && factoryMethod is null*/)
+        if (ctor is null && factoryMethod is null)
         {
             //TODO we need an extension method for that and cache the result. it happens eveytime we have a Style
             ctor = type.InstanceConstructors.FirstOrDefault(c 
@@ -201,7 +213,15 @@ class CreateValuesVisitor : IXamlNodeVisitor
             Context.Variables[node] = new LocalVariable(type, variableName);
             node.RegisterSourceInfo(Context, Writer);
             return;
-        } 
+        }
+        else if (factoryMethod != null)
+        {
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            Writer.WriteLine($"var {variableName} = {factoryMethod.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
+            Context.Variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
+            node.RegisterSourceInfo(Context, Writer);
+            return;
+        }
         else if (ctor != null)
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
