@@ -1,3 +1,5 @@
+using Microsoft.Maui.Handlers;
+
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -38,5 +40,56 @@ public class Bugzilla60122 : TestContentPage
 		{
 			LongPress?.Invoke(this, new EventArgs());
 		}
+
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+		}
 	}
+
+	public class _60122ImageHandler : ImageHandler
+	{
+        public _60122ImageHandler() : base(ImageHandler.Mapper)
+        {
+            Mapper.AppendToMapping("_60122ImageCustom", (handler, view) =>
+            {
+                if (view is _60122Image customImage)
+                {
+                    #if IOS || MACCATALYST
+                    if (handler.PlatformView is UIKit.UIImageView uiImageView)
+                    {
+                        var gesture = new UIKit.UILongPressGestureRecognizer(OnLongPress);
+                        uiImageView.AddGestureRecognizer(gesture);
+                        uiImageView.UserInteractionEnabled = true;
+                    }
+                    #elif ANDROID
+                    if (handler.PlatformView is Android.Widget.ImageView androidImageView)
+                    {
+                        androidImageView.LongClickable = true;
+                        androidImageView.LongClick += OnLongPress;
+                    }
+					#elif WINDOWS
+					if (handler.PlatformView is Microsoft.UI.Xaml.Controls.Image winImage)
+                    {
+                        var _gestureRecognizer = new global::Windows.UI.Input.GestureRecognizer();
+                        _gestureRecognizer.GestureSettings = global::Windows.UI.Input.GestureSettings.HoldWithMouse;
+                        winImage.AddHandler(Microsoft.UI.Xaml.UIElement.HoldingEvent, new HoldingEventHandler(OnHolding), true);
+                    }
+                    #endif
+                }
+            });
+        }
+
+#if IOS || MACCATALYST
+		private void OnLongPress()
+#else
+        private void OnLongPress(object sender, EventArgs e)
+#endif
+        {
+            if (VirtualView is _60122Image customImage)
+            {
+                customImage.HandleLongPress(customImage, EventArgs.Empty);
+            }
+        }
+    }
 }

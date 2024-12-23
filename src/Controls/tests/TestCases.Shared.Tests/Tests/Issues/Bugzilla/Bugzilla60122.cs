@@ -1,4 +1,4 @@
-﻿#if !WINDOWS
+﻿//#if !WINDOWS
 // This test won't work on Windows right now because we can only test desktop, so touch events
 // (like LongPress) don't really work. The test should work manually on a touch screen, though.
 using NUnit.Framework;
@@ -15,21 +15,22 @@ public class Bugzilla60122 : _IssuesUITest
 
 	public override string Issue => "LongClick on image not working";
 
-	/*
+	
 	const string ImageId = "60122Image";
 	const string Success = "Success";
 
-	[FailsOnAndroidWhenRunningOnXamarinUITest]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[Test]
 	[Category(UITestCategories.Gestures)]
 	public void LongClickFiresOnCustomImageRenderer()
 	{
 		App.WaitForElement(ImageId);
+#if MACCATALYST
+		App.LongPress(ImageId);
+#else
 		App.TouchAndHold(ImageId);
+#endif
 		App.WaitForElement(Success);
 	}
-	*/
 }
 
-#endif
+//#endif
