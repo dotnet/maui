@@ -2,17 +2,17 @@
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents
 	{
-		bool _arranged;
 		bool _invalidateParentWhenMovedToWindow;
 		double _lastMeasureHeight;
 		double _lastMeasureWidth;
+		double _lastArrangeHeight;
+		double _lastArrangeWidth;
 
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
@@ -27,11 +27,14 @@ namespace Microsoft.Maui.Platform
 			// LayoutSubviews is invoked while scrolling, so we need to arrange the content only when it's necessary.
 			// This could be done via `override ScrollViewHandler.PlatformArrange` but that wouldn't cover the case
 			// when the ScrollView is attached to a non-MauiView parent (i.e. DeviceTests).
-			if (!_arranged && CrossPlatformLayout is { } crossPlatformLayout)
+			var bounds = Bounds;
+			var widthConstraint = (double)bounds.Width;
+			var heightConstraint = (double)bounds.Height;
+			var frameChanged = _lastArrangeWidth != widthConstraint || _lastArrangeHeight != heightConstraint;
+			if (frameChanged && CrossPlatformLayout is { } crossPlatformLayout)
 			{
-				var bounds = Bounds;
-				var widthConstraint = (double)bounds.Width;
-				var heightConstraint = (double)bounds.Height;
+				_lastArrangeWidth = widthConstraint;
+				_lastArrangeHeight = heightConstraint;
 
 				// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
 				// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
@@ -47,7 +50,6 @@ namespace Microsoft.Maui.Platform
 				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
 				var size = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
 				ContentSize = size.ToCGSize();
-				_arranged = true;
 			}
 
 			base.LayoutSubviews();
@@ -73,7 +75,6 @@ namespace Microsoft.Maui.Platform
 		{
 			base.SetNeedsLayout();
 			InvalidateConstraintsCache();
-			_arranged = false;
 
 			TryToInvalidateSuperView(false);
 		}
@@ -89,6 +90,8 @@ namespace Microsoft.Maui.Platform
 		{
 			_lastMeasureWidth = double.NaN;
 			_lastMeasureHeight = double.NaN;
+			_lastArrangeWidth = double.NaN;
+			_lastArrangeHeight = double.NaN;
 		}
 
 		void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
