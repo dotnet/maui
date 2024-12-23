@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			       xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue21708">
+
+	<Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+			<ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Button
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="10"
+			AutomationId="Fill"
+            Clicked="FillButton_OnClicked"
+            Text="Fill" />
+
+		<Button
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="10"
+			AutomationId="Scroll"
+			Clicked="Button_Clicked"
+            Text="Scroll" />
+
+        <Button
+            Grid.Row="0"
+            Grid.Column="2"
+            Margin="10"
+			AutomationId="Empty"
+            Clicked="EmptyButton_OnClicked"
+            Text="Empty" />
+
+        <Label
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="3">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="VerticalOffset: " />
+                    <Span Text="{Binding VerticalOffset, Mode=OneWay}" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+        <CollectionView
+            x:Name="CollectionView"
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            ItemsSource="{Binding Items}"
+            Scrolled="CollectionView_OnScrolled">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label
+                        Margin="10"
+                        FontSize="Default"
+                        HeightRequest="20"
+                        HorizontalTextAlignment="Center"
+                        Text="{Binding .}"
+                        TextColor="RoyalBlue" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+		
+</ContentPage>
