@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Unable to dynamically set unselected IconImageSource Color on Android";
 
 		[Test, Order(1)]
-		[Category(UITestCategories.ActivityIndicator)]
+		[Category(UITestCategories.TabbedPage)]
 		public void FontImageSourceColorShouldApplyOnTabIcon()
 		{
 			App.WaitForElement("Button");
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test, Order(2)]
-		[Category(UITestCategories.ActivityIndicator)]
+		[Category(UITestCategories.TabbedPage)]
 		public void DynamicFontImageSourceColorShouldApplyOnTabIcon()
 		{
 			App.WaitForElement("Button");
