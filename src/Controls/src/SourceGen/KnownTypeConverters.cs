@@ -201,7 +201,7 @@ static class KnownTypeConverters
     const string RoundRectangle = nameof(RoundRectangle);
     internal static readonly char[] Delimiter = [' '];
 
-    internal static string ConvertRect(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertRect(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
         var values = value.Split([','], StringSplitOptions.RemoveEmptyEntries)
@@ -225,7 +225,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertColor(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertColor(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -262,7 +262,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertPoint(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertPoint(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
@@ -280,7 +280,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertThickness(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertThickness(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
@@ -343,7 +343,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertCornerRadius(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertCornerRadius(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
@@ -397,7 +397,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertEasing(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertEasing(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         var easingName = value;
 
@@ -420,7 +420,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertEnum(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertEnum(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
         {
@@ -438,7 +438,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertFlexBasis(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertFlexBasis(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -466,7 +466,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertFlowDirection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertFlowDirection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrWhiteSpace(value))
         {
@@ -495,7 +495,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertGridLength(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertGridLength(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -527,7 +527,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertColumnDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertColumnDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -547,7 +547,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertRowDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertRowDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {
@@ -567,7 +567,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertImageSource(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertImageSource(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         // IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
@@ -583,7 +583,7 @@ static class KnownTypeConverters
         return "default";
     }
     
-    internal static string ConvertListString(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertListString(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
     {
         if (!string.IsNullOrEmpty(value))
         {

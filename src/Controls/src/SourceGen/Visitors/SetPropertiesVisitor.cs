@@ -190,8 +190,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
             //TODO if the var is already created and in context.Variables, use that
             //TODO if we don't need the var, don't create it (this will likely be optimized by the compiler anyway, but...)
-            Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context, node as IXmlLineInfo)};");
             var variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType.Name!.Split('.').Last()));
+            Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context, node as IXmlLineInfo)};");
 
             if (CanAddToResourceDictionary(variable, propertyType, node, node as IXmlLineInfo, Context))
             {
@@ -536,8 +536,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         if (CanAddToResourceDictionary(parentVar, propertyType!, (IElementNode)valueNode, iXmlLineInfo, context))
         {
-            writer.WriteLine($"var {rdVar.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, valueNode, context, iXmlLineInfo)};");
             var rdVar = new LocalVariable(propertyType!, NamingHelpers.CreateUniqueVariableName(context, propertyType!.Name!.Split('.').Last()));
+            writer.WriteLine($"var {rdVar.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, valueNode, context, iXmlLineInfo)};");
             AddToResourceDictionary(writer, rdVar, (IElementNode)valueNode, iXmlLineInfo, context);
             return;
         }
