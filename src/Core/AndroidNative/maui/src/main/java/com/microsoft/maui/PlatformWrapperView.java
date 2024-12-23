@@ -1,31 +1,127 @@
 package com.microsoft.maui;
 
+import android.app.Application;
 import android.content.Context;
+import android.os.Build;
+
+import android.graphics.BlurMaskFilter;
+import android.graphics.Color;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Shader;
+
 import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.microsoft.maui.PlatformPaintType;
+import com.microsoft.maui.glide.ShadowBitmapPool;
+
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
+
 public abstract class PlatformWrapperView extends PlatformContentViewGroup {
+
     public PlatformWrapperView(Context context) {
         super(context);
         this.viewBounds = new Rect();
+        this.bitmapPool = ShadowBitmapPool.get(context);
         setClipChildren(false);
         setWillNotDraw(true);
     }
 
+    private final BitmapPool bitmapPool;
     private final Rect viewBounds;
-    private boolean hasShadow;
 
-    /**
-     * Set by C#, determining if we need to call drawShadow()
-     * Intentionally invalidates the view in case shadow definition changed
-     * @param hasShadow
-     */
+    private Paint shadowPaint;
+    private Bitmap shadowBitmap;
+    private Canvas shadowCanvas;
+    private boolean shadowInvalidated = true;
+
+    private int paintType = PlatformPaintType.NONE;
+    private float offsetX = 0;
+    private float offsetY = 0;
+    private float radius = 0;
+    private int[] colors = new int[0];
+    private float[] positions = new float[0];
+    private float[] bounds = new float[0];
+
+    @Override
+    protected void setHasClip(boolean hasClip) {
+        super.setHasClip(hasClip);
+        shadowInvalidated = true;
+    }
+
+    @Deprecated
     protected final void setHasShadow(boolean hasShadow) {
-        this.hasShadow = hasShadow;
+        // TODO: remove this method in .NET10
+    }
+
+    protected final void updateShadow(int paintType, float radius, float offsetX, float offsetY, int[] colors, float[] positions, float[] bounds) {
+        this.paintType = paintType;
+        this.radius = radius;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.colors = colors;
+        this.positions = positions;
+        this.bounds = bounds;
+
+        if (paintType == PlatformPaintType.NONE) {
+            shadowPaint = null;
+            shadowCanvas = null;
+            if (shadowBitmap != null) {
+                bitmapPool.put(shadowBitmap);
+                shadowBitmap = null;
+            }
+        } else {
+            shadowCanvas = new Canvas();
+            shadowPaint = new Paint();
+            shadowPaint.setAntiAlias(true);
+            shadowPaint.setDither(true);
+            shadowPaint.setFilterBitmap(true);
+
+            if (radius > 0) {
+                shadowPaint.setMaskFilter(new BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL));
+            }
+            
+            if (paintType == PlatformPaintType.SOLID) {
+                shadowPaint.setColor(colors.length > 0 ? colors[0] : android.graphics.Color.BLACK);
+            }
+        }
+
+        shadowInvalidated = true;
         invalidate();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        shadowInvalidated = true;
+        if (shadowBitmap != null) {
+            bitmapPool.put(shadowBitmap);
+            shadowBitmap = null;
+        }
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        shadowInvalidated = true;
+    }
+
+    @Override
+    public void requestLayout() {
+        super.requestLayout();
+        shadowInvalidated = true;
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        shadowInvalidated = true;
     }
 
     @Override
@@ -44,7 +140,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     @Override
     protected void dispatchDraw(Canvas canvas) {
         // Only call into C# if there is a Shadow
-        if (hasShadow) {
+        if (paintType != PlatformPaintType.NONE) {
             int viewWidth = viewBounds.width();
             int viewHeight = viewBounds.height();
             if (getChildCount() > 0)
@@ -55,17 +151,84 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
                 if (viewHeight == 0)
                     viewHeight = child.getMeasuredHeight();
             }
-            drawShadow(canvas, viewWidth, viewHeight);
+
+            if (viewWidth > 0 && viewHeight > 0) {
+                drawShadow(canvas, viewWidth, viewHeight);
+            }
         }
         super.dispatchDraw(canvas);
     }
 
-    /**
-     * Overridden in C#, for custom logic around shadows
-     * @param canvas
-     * @param viewWidth
-     * @param viewHeight
-     * @return
-     */
-    protected abstract void drawShadow(@NonNull Canvas canvas, int viewWidth, int viewHeight);
+    protected void drawShadow(@NonNull Canvas canvas, int viewWidth, int viewHeight) {
+        int bitmapWidth = viewWidth + (int)(radius * 2.5);
+        int bitmapHeight = viewHeight + (int)(radius * 2.5);
+        int drawOriginX = (bitmapWidth - viewWidth) / 2;
+        int drawOriginY = (bitmapHeight - viewHeight) / 2;
+
+        if (shadowInvalidated) {
+            shadowInvalidated = false;
+
+            if (shadowBitmap != null) {
+                if (shadowBitmap.getWidth() == bitmapWidth && shadowBitmap.getHeight() == bitmapHeight) {
+                    shadowBitmap.eraseColor(Color.TRANSPARENT);
+                } else {
+                    bitmapPool.put(shadowBitmap);
+                    shadowBitmap = bitmapPool.get(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
+                }
+            } else {
+                shadowBitmap = bitmapPool.get(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
+            }
+
+            shadowCanvas.setBitmap(shadowBitmap);
+
+            // Create the local copy of all content to draw bitmap as a bottom layer of natural canvas.
+            shadowCanvas.save();
+            shadowCanvas.translate(drawOriginX, drawOriginY);
+            super.dispatchDraw(shadowCanvas);
+            shadowCanvas.restore();
+
+            // Get the alpha bounds of bitmap
+            Bitmap extractAlpha = shadowBitmap.extractAlpha();
+            
+            // Clear the shadow canvas
+            shadowCanvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
+            
+            // Apply shader if needed
+            Shader shader = createShader(bitmapWidth, bitmapHeight);
+            if (shader != null) {
+                shadowPaint.setShader(shader);
+            }
+            
+            shadowCanvas.drawBitmap(extractAlpha, 0, 0, shadowPaint);
+
+            extractAlpha.recycle();
+        }
+    
+        // Draw shadow rectangle
+        canvas.drawBitmap(shadowBitmap, offsetX - drawOriginX, offsetY - drawOriginY, null);
+    }
+
+    private Shader createShader(int bitmapWidth, int bitmapHeight) {
+        Shader shader = null;
+
+        if (paintType == PlatformPaintType.LINEAR) {
+            shader = new android.graphics.LinearGradient(
+                bounds[0] * bitmapWidth, bounds[1] * bitmapHeight,  // Start point
+                bounds[2] * bitmapWidth, bounds[3] * bitmapHeight,  // End point
+                colors,
+                positions,
+                android.graphics.Shader.TileMode.CLAMP
+            );
+        } else if (paintType == PlatformPaintType.RADIAL) {
+            shader = new android.graphics.RadialGradient(
+                bounds[0] * bitmapWidth, bounds[1] * bitmapHeight,  // Center point
+                bounds[2] * Math.max(bitmapWidth, bitmapHeight),   // Radius
+                colors,
+                positions,
+                android.graphics.Shader.TileMode.CLAMP
+            );
+        }
+
+        return shader;
+    }
 }
