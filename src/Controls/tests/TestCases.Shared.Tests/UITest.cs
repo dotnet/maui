@@ -273,7 +273,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ExitFullScreen();
 
 			// Wait a little bit to complete the system animation moving the App Window to previous state.
-			Thread.Sleep(1000);
+			Thread.Sleep(500);
 
 			return screenshotPngBytes;
 		}
