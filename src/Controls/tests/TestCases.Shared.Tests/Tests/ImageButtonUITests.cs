@@ -157,6 +157,7 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
+	[FailsOnMacWhenRunningOnXamarinUITest("This test is not working on Mac Catalyst")]
 	public void Padding()
 	{
 		var remote = GoToStateRemote();
@@ -170,6 +171,7 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	[Test]
+	[FailsOnMacWhenRunningOnXamarinUITest("This test is not working on Mac Catalyst")]
 	public void Padding_Add()
 	{
 		var remote = GoToStateRemote();
