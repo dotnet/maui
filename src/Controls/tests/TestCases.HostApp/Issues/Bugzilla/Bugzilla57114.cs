@@ -139,9 +139,9 @@ namespace Maui.Controls.Sample.Issues
     }
 
 #elif WINDOWS
-	public class _57114ViewHandler : ViewHandler<_57114View, Grid>
+	public class _57114ViewHandler : ViewHandler<_57114View, Microsoft.UI.Xaml.Controls.Grid>
     {
-        public static IPropertyMapper<Bugzilla57114._57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
+        public static IPropertyMapper<_57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
         {
             [nameof(_57114View.BackgroundColor)] = MapBackgroundColor
         };
@@ -150,9 +150,10 @@ namespace Maui.Controls.Sample.Issues
         {
         }
 
-        protected override Windows.UI.Xaml.Controls.Grid CreatePlatformView()
+        protected override Microsoft.UI.Xaml.Controls.Grid CreatePlatformView()
         {
-            var nativeView = new Grid();
+			Microsoft.UI.Xaml.Controls.Grid nativeView = new Microsoft.UI.Xaml.Controls.Grid();
+			nativeView.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock() { Text = "_57114View" });
             nativeView.Tapped += OnTapped;
             return nativeView;
         }
@@ -161,7 +162,7 @@ namespace Maui.Controls.Sample.Issues
         {
             if (handler.PlatformView != null)
             {
-                handler.PlatformView.Background = new Windows.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(
+                handler.PlatformView.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(
                     (byte)(view.BackgroundColor.Alpha * 255),
                     (byte)(view.BackgroundColor.Red * 255),
                     (byte)(view.BackgroundColor.Green * 255),
@@ -169,7 +170,7 @@ namespace Maui.Controls.Sample.Issues
             }
         }
 
-        private void OnTapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs tappedRoutedEventArgs)
+        private void OnTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             MessagingCenter.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
