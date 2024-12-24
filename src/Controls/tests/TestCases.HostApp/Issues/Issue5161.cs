@@ -19,7 +19,7 @@ public class Issue5161 : Shell
 
         var secondPageTab = new Tab
         {
-            Title = "SecondPage",
+            Title = "SecondTab",
             IsEnabled = false,
             AutomationId = "SecondTab"
         };
@@ -29,7 +29,7 @@ public class Issue5161 : Shell
         });
         var thirdTab = new Tab
         {
-            Title = "ThirdPage",
+            Title = "ThirdTab",
             IsEnabled = true,
             AutomationId = "ThirdTab"
         };
