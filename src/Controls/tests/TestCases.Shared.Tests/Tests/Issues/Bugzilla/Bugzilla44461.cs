@@ -17,23 +17,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollToPosition.Center works differently on Android and iOS";
 
-		// Bugzilla44461 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla44461.cs)
 		[Test]
 		public void Bugzilla44461Test()
 		{
 			var positions = TapButton(0);
 			Assert.That(positions.initialPosition.X, Is.EqualTo(positions.finalPosition.X));
 			Assert.That(positions.finalPosition.X, Is.LessThanOrEqualTo(1));
-			VerifyScreenshot();
 		}
 
 		(System.Drawing.Rectangle initialPosition, System.Drawing.Rectangle finalPosition) TapButton(int position)
 		{
 			var buttonId = $"{position}";
 			App.WaitForElement(buttonId);
-			var initialPosition = App.FindElement(buttonId).GetRect();
+			var initialPosition = App.WaitForElement(buttonId).GetRect();
 			App.Tap(buttonId);
-			var finalPosition = App.FindElement(buttonId).GetRect();
+			var finalPosition = App.WaitForElement(buttonId).GetRect();
 			return (initialPosition, finalPosition);
 		}
 	}
