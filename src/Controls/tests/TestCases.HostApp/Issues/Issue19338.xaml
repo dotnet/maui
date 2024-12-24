@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19338">
+    <StackLayout>
+        <CollectionView
+            x:Name="CV"
+            HeightRequest="300"
+            Margin="0,50,0,0">
+            <CollectionView.Header>
+                <Border BackgroundColor="Red">
+                    <Label
+                        FontSize="16"
+                        AutomationId="HeaderLabel"
+                        HorizontalTextAlignment="Center"
+                        Text="(Header) This is a border with shadows">
+                    </Label>
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="Green"
+                            Radius="4"
+                            Offset="0,4"/>
+                    </Border.Shadow>
+                </Border>
+            </CollectionView.Header>
+            <CollectionView.Footer>
+                <Label
+                    FontSize="16"
+                    HorizontalTextAlignment="Center"
+                    Text="(Footer) This is a label with shadows">
+                    <Label.Shadow>
+                        <Shadow
+                            Brush="Green"
+                            Radius="4"
+                            Offset="0,4"/>
+                    </Label.Shadow>
+                </Label>
+            </CollectionView.Footer>
+        </CollectionView>
+    </StackLayout>
+</ContentPage>
