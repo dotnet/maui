@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 6625, "Changing image source on Android causes flicker between images", PlatformAffected.Android)]
 	public partial class Issue6625 : ContentPage
@@ -24,14 +17,14 @@ namespace Maui.Controls.Sample.Issues
 			new FontImageSource { FontFamily = "FA", Glyph = "\uf111", Size = 200, Color = Colors.Blue },
 			new FontImageSource { FontFamily = "FA", Glyph = "\uf192", Size = 200, Color = Colors.Blue }
 		];
-		
+
 		int imageNo = -1;
 
 		public Issue6625()
 		{
 			InitializeComponent();
 			Container.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(NextImage) });
-		    NextImage();
+			NextImage();
 		}
 
 		void NextImage()

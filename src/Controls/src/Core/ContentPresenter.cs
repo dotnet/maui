@@ -1,13 +1,16 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPresenter']/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class ContentPresenter : Compatibility.Layout, IContentView
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
 		public static BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
@@ -16,8 +19,12 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public ContentPresenter()
 		{
-			SetBinding(ContentProperty, new Binding(ContentProperty.PropertyName, source: RelativeBindingSource.TemplatedParent,
-				converterParameter: this, converter: new ContentConverter()));
+			this.SetBinding(
+				ContentProperty,
+				static (IContentView view) => view.Content,
+				source: RelativeBindingSource.TemplatedParent,
+				converter: new ContentConverter(),
+				converterParameter: this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentPresenter.xml" path="//Member[@MemberName='Content']/Docs/*" />
@@ -30,17 +37,18 @@ namespace Microsoft.Maui.Controls
 		object IContentView.Content => Content;
 		IView IContentView.PresentedContent => Content;
 
+		[Obsolete("Use InvalidateArrange if you need to trigger a new arrange and then put your arrange logic inside ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
 			{
 				Element element = LogicalChildrenInternal[i];
 				var child = element as View;
-				if (child != null)
-					LayoutChildIntoBoundingRegion(child, new Rect(x, y, width, height));
+				child?.Arrange(new Rect(x, y, width, height));
 			}
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			double widthRequest = WidthRequest;
@@ -121,6 +129,11 @@ namespace Microsoft.Maui.Controls
 		{
 			this.ArrangeContent(bounds);
 			return bounds.Size;
+		}
+
+		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
+		{
+			base.InvalidateMeasureLegacy(trigger, depth, 1);
 		}
 	}
 }

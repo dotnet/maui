@@ -1,7 +1,7 @@
 if (IsMac)
 {
 	ForceJavaCleanup();
-	MicrosoftOpenJdk ("11.0.13.8.1");
+	MicrosoftOpenJdk ("17.0.12");
 	//this is needed for tools on macos like for nuget pack additional target and for classic xamarin projects
 	Item("https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.206.macos10.xamarin.universal.pkg");
 	
@@ -15,11 +15,15 @@ string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS"
 string SKIP_ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_SDKS");
 string SKIP_ANDROID_API_IMAGES = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_IMAGES");
 
+string INSTALL_DEFAULT_ANDROID_API = Environment.GetEnvironmentVariable ("INSTALL_DEFAULT_ANDROID_API");
+
 
 Console.WriteLine($"LOGGING:");
 Console.WriteLine($"ANDROID_API_SDKS: {ANDROID_API_SDKS}");
 Console.WriteLine($"SKIP_ANDROID_API_SDKS: {SKIP_ANDROID_API_SDKS}");
 Console.WriteLine($"SKIP_ANDROID_API_IMAGES: {SKIP_ANDROID_API_IMAGES}");
+Console.WriteLine($"INSTALL_DEFAULT_ANDROID_API: {INSTALL_DEFAULT_ANDROID_API}");
+
 if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP_ANDROID_API_SDKS))
 {
 	AndroidSdk()
@@ -34,7 +38,8 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 		.ApiLevel((AndroidApiLevel)31)
 		.ApiLevel((AndroidApiLevel)32)
 		.ApiLevel((AndroidApiLevel)33)
-		.ApiLevel((AndroidApiLevel)34);
+		.ApiLevel((AndroidApiLevel)34)
+		.ApiLevel((AndroidApiLevel)35);
 
 	if(string.IsNullOrWhiteSpace(SKIP_ANDROID_API_IMAGES))
 	{
@@ -70,9 +75,15 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 		}
 	}
 
-	AndroidSdk().SdkManagerPackage ("build-tools;33.0.0");
+	AndroidSdk().SdkManagerPackage ("build-tools;35.0.0");
 }
 
+if(!string.IsNullOrEmpty(INSTALL_DEFAULT_ANDROID_API))
+{
+	AndroidSdk()
+		.ApiLevel((AndroidApiLevel)35)
+		.SdkManagerPackage ("build-tools;35.0.0");;
+}
 
 else if(!String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 8814,
 		"[Bug] UWP Shell cannot host CollectionView/CarouselView",
@@ -24,6 +18,7 @@ namespace Maui.Controls.Sample.Issues
 
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, new Binding("."));
+				label.SetBinding(Label.AutomationIdProperty, new Binding("."));
 
 				layout.Children.Add(label);
 

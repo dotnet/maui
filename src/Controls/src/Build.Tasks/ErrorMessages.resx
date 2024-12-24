@@ -137,10 +137,16 @@
   </data>
   <data name="BindingWithoutDataType" xml:space="preserve">
     <value>Binding could be compiled to improve runtime performance if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
-  </data>  
+  </data>
   <data name="BindingWithNullDataType" xml:space="preserve">
     <value>Binding could be compiled to improve runtime performance if x:DataType is not explicitly null. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
-  </data>  
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Binding might be compiled incorrectly since the x:DataType annotation comes from an outer scope. Make sure you annotate all DataTemplate XAML elements with the correct x:DataType. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>Binding was not compiled because it has an explicitly set Source property and compilation of bindings with Source is not enabled. Consider enabling this optimization by setting the &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; in your project file and make sure the correct x:DataType is specified for this binding. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Binding: Property "{0}" not found on "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -231,7 +237,7 @@
     <value>Source property is not a string literal.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>StyleSheet can not have both a Source and a content.</value>
+    <value>StyleSheet cannot have both a Source and a content.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>Style property or Content is not a string literal.</value>
@@ -241,8 +247,13 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.</value>
+    <value>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.</value>
   </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Consider attributing the markup extension "{0}" with [RequireService] or [AcceptEmptyServiceProvider] if it doesn't require any.</value>
+    <comment>0 is type name</comment>
+  </data>
+
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Undeclared xmlns prefix "{0}".</value>
     <comment>0 is the xmlns prefix</comment>
@@ -257,5 +268,7 @@
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key expects a string literal.</value>
   </data>
-  
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>A key is required in {StaticResource}.</value>
+  </data>  
 </root>

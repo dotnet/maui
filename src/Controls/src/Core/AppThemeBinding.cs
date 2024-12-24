@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			{
 				Binding.Apply(false);
 			}
-			
+
 			public AppThemeBinding Binding { get; }
 
 			public void Unsubscribe()
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 					target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
 				else
 				{
-					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+					if (!BindingExpressionHelper.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
 					{
 						BindingDiagnostics.SendBindingFailure(this, null, target, _targetProperty, "AppThemeBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
 						return;

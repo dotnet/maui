@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		// Using an IP address means that WebView2 doesn't wait for any DNS resolution,
 		// making it substantially faster. Note that this isn't real HTTP traffic, since
 		// we intercept all the requests within this origin.
-		internal static readonly string AppHostAddress = "0.0.0.0";
+		internal static readonly string AppHostAddress = HostAddressHelper.GetAppHostAddress();
 
 		/// <summary>
-		/// Gets the application's base URI. Defaults to <c>https://0.0.0.0/</c>
+		/// Gets the application's base URI. Defaults to <c>https://0.0.0.1/</c>.
 		/// </summary>
 		protected static readonly string AppOrigin = $"https://{AppHostAddress}/";
 

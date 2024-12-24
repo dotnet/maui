@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
 			var creator = PlatformGraphicsService.Creator;
-			
+
 			if (creator == null)
 			{
 				throw new Exception("No resource creator has been registered globally or for this thread.");

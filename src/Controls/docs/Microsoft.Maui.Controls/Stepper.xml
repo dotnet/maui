@@ -117,7 +117,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new instance of the Stepper class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -149,7 +148,6 @@
         <param name="val">The current selected value.</param>
         <param name="increment">The increment by which Value is increased or decreased.</param>
         <summary>Initializes a new instance of the Stepper class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Increment">
@@ -201,7 +199,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Increment bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Maximum">
@@ -227,7 +224,6 @@
       <Docs>
         <summary>Gets or sets the maximum selectable value. This is a bindable property.</summary>
         <value>A double.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MaximumProperty">
@@ -252,7 +248,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Maximum bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Minimum">
@@ -278,7 +273,6 @@
       <Docs>
         <summary>Gets or sets the minimum selectabel value. This is a bindable property.</summary>
         <value>A double.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MinimumProperty">
@@ -303,7 +297,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Minimum bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -334,8 +327,6 @@
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Stepper" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StepperPosition">
@@ -360,9 +351,6 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StepperPositionProperty">
@@ -387,8 +375,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -414,7 +400,6 @@
       <Docs>
         <summary>Gets or sets the current value. This is a bindable property.</summary>
         <value>A double.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ValueChanged">
@@ -439,7 +424,6 @@
       </ReturnValue>
       <Docs>
         <summary>Raised when the <see cref="P:Microsoft.Maui.Controls.Stepper.Value" /> property changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ValueProperty">
@@ -464,7 +448,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Value bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

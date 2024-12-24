@@ -11,8 +11,6 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">
@@ -30,7 +28,6 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Popover">
@@ -48,7 +45,6 @@
       </ReturnValue>
       <MemberValue>3</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Split">
@@ -66,7 +62,6 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="SplitOnLandscape">
@@ -84,7 +79,6 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="SplitOnPortrait">
@@ -102,7 +96,6 @@
       </ReturnValue>
       <MemberValue>4</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
   </Members>

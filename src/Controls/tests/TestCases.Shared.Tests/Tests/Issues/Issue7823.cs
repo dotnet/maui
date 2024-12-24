@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ToolbarItem)]
-		[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public void UpdateToolbarItemAfterNavigate()
 		{
 			// 1. Navigate from Page with a ToolbarItem using an Icon. 

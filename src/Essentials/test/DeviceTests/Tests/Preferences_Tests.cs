@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Storage;
 using Xunit;
 
@@ -220,11 +221,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.False(Preferences.ContainsKey("NotContainsKey1", sharedName));
 		}
 
-		[Theory(
-#if WINDOWS
-		Skip = "Fails on Windows unpackaged"
-#endif
-		)]
+		[Theory]
 		[InlineData(null, DateTimeKind.Utc)]
 		[InlineData(sharedNameTestData, DateTimeKind.Utc)]
 		[InlineData(null, DateTimeKind.Local)]
@@ -248,6 +245,27 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void FailsWithUnsupportedType() =>
 			Assert.Throws<NotSupportedException>(() => Preferences.Default.Set("anything", new int[] { 1 }));
+
+#if WINDOWS
+		[Fact]
+		public void DateTime_Supports_Reading_String_Compat()
+		{
+			// This is a special test where when unpackaged on windows in .NET 8
+			// dates were stored as ToString but in .NET 9 they are stored as ToBinary.
+			// This test ensures that the compat layer is working correctly
+			// and that the date is read correctly regardless of the storage format.
+			// This test is only valid on windows unpackaged.
+
+			if (ApplicationModel.AppInfoUtils.IsPackagedApp)
+				return;
+
+			Preferences.Default.Set("datetime_compat", testDateTime.ToString(), null);
+
+			var get = Preferences.Default.Get("datetime_compat", DateTime.MinValue, null);
+
+			Assert.Equal(testDateTime, get);
+		}
+#endif
 
 		[Theory]
 		[InlineData("datetime1", null)]
@@ -455,11 +473,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.False(Preferences.Default.ContainsKey("NotContainsKey1", sharedName));
 		}
 
-		[Theory(
-#if WINDOWS
-		Skip = "Fails on Windows unpackaged"
-#endif
-		)]
+		[Theory]
 		[InlineData(null, DateTimeKind.Utc)]
 		[InlineData(sharedNameTestData, DateTimeKind.Utc)]
 		[InlineData(null, DateTimeKind.Local)]
@@ -474,6 +488,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			Assert.Equal(date, get);
 			Assert.Equal(kind, get.Kind);
+		}
+
+		public static IEnumerable<object[]> GetDateTimeOffsetData()
+		{
+			yield return [null, TimeSpan.Zero];
+			yield return [sharedNameTestData, TimeSpan.Zero];
+			yield return [null, TimeSpan.FromHours(1)];
+			yield return [sharedNameTestData, TimeSpan.FromHours(1)];
+		}
+
+		[Theory]
+		[MemberData(nameof(GetDateTimeOffsetData))]
+		public void DateTimeOffsetPreservesOffset_NonStatic(string sharedName, TimeSpan offset)
+		{
+			var date = new DateTime(2018, 05, 07, 8, 30, 0);
+			var dateTimeOffset = new DateTimeOffset(date, offset);
+
+			Preferences.Default.Set("datetimeoffset_offset", dateTimeOffset, sharedName);
+
+			var get = Preferences.Default.Get("datetimeoffset_offset", DateTimeOffset.MinValue, sharedName);
+
+			Assert.Equal(offset, get.Offset);
 		}
 		#endregion
 	}

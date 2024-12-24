@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 			NavigationPage.SetBackButtonTitle(page, titleText);
 			changeTitleView_Clicked(this, EventArgs.Empty);
 
-			string result = (titleText == null) ? "<null>" : titleText;
+			string result = titleText ?? "<null>";
 			btnToggleBackButtonTitle.Text = $"Toggle Back Button Title Text: {result}";
 		}
 

@@ -39,8 +39,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the type of the objects with which this <see cref="T:Microsoft.Maui.Controls.TriggerAction" /> can be associated.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Invoke">
@@ -66,7 +64,6 @@
       <Docs>
         <param name="sender">The object on which to invoke the action.</param>
         <summary>Application developers override this method to provide the behavior that is triggered.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

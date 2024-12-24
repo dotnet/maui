@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			return ItemsViewLayout.GetMinimumLineSpacingForSection(collectionView, layout, section);
 		}
-		
+
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
 			ViewController?.CellDisplayingEndedFromDelegate(cell, indexPath);

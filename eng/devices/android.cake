@@ -47,6 +47,7 @@ Information("Android SDK Root: {0}", androidSdkRoot);
 Information("Project File: {0}", projectPath);
 Information("Build Binary Log (binlog): {0}", binlogDirectory);
 Information("Build Configuration: {0}", configuration);
+Information("Build Target Framework: {0}", targetFramework);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
@@ -250,6 +251,11 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	}
 	finally
 	{
+		if (testsFailed)
+		{
+			// uncomment if you want to copy the test app to the results directory for any reason
+			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
+		}
 
 		HandleTestResults(resultsDir, testsFailed, false);
 	}
@@ -322,8 +328,8 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-{platform}.binlog";
-	var appiumLog = $"{binDir}/appium_{platform}.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
+	var appiumLog = $"{binDir}/appium_{platform}_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -376,7 +382,17 @@ void PerformCleanupIfNeeded(bool cleanupEnabled)
 void SetAndroidEnvironmentVariables(string sdkRoot)
 {
 	// Set up Android SDK environment variables and paths
-	string[] paths = { $"{sdkRoot}/tools/bin", $"{sdkRoot}/cmdline-tools/latest/bin", $"{sdkRoot}/cmdline-tools/5.0/bin", $"{sdkRoot}/cmdline-tools/7.0/bin", $"{sdkRoot}/platform-tools", $"{sdkRoot}/emulator" };
+	string[] paths = { 
+		$"{sdkRoot}/tools/bin", 
+		$"{sdkRoot}/cmdline-tools/latest/bin", 
+		$"{sdkRoot}/cmdline-tools/5.0/bin", 
+		$"{sdkRoot}/cmdline-tools/7.0/bin", 
+		$"{sdkRoot}/cmdline-tools/11.0/bin", 
+		$"{sdkRoot}/cmdline-tools/12.0/bin",
+		$"{sdkRoot}/cmdline-tools/13.0/bin",
+		$"{sdkRoot}/platform-tools", 
+		$"{sdkRoot}/emulator" };
+		
 	foreach (var path in paths)
 	{
 		SetEnvironmentVariable("PATH", path, prepend: true);

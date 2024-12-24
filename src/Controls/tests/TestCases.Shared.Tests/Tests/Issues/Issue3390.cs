@@ -15,13 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
 		public void Issue3390Test()
 		{
 			App.WaitForElement("TestButton");
 			App.Tap("TestButton");
-			App.WaitForNoElement("Success");
+			Assert.That(App.FindElement("TestButton").GetText(), Is.EqualTo("Success"));
 		}
 	}
 }

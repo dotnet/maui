@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMac]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2728TestsItalicLabel()
 		{
 			App.WaitForNoElement(LabelHome);

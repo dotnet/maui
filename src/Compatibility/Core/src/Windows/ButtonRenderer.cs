@@ -15,7 +15,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class ButtonRenderer : ViewRenderer<Button, FormsButton>
+	public partial class ButtonRenderer : ViewRenderer<Button, FormsButton>
 	{
 		bool _fontApplied;
 		TextBlock _textBlock = null;

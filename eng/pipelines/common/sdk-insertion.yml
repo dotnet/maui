@@ -57,10 +57,11 @@ jobs:
       buildNumber: $(ReleaseDropPrefix)/nugets
       destinationPath: ${{ parameters.nugetArtifactPath }}
 
-  - task: UseDotNet@2
-    displayName: Install .NET 9.x
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+    displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:
-      version: 9.x
+      packageType: sdk
+      version: $(DOTNET_VERSION)
       includePreviewVersions: true
 
   - task: AzureCLI@2
@@ -70,13 +71,11 @@ jobs:
       scriptType: ps
       scriptLocation: inlineScript
       inlineScript: >-
-        & dotnet build $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
+        dotnet build $(Build.SourcesDirectory)\src\Workload\Microsoft.Maui.Sdk\Microsoft.Maui.Sdk.csproj
         -t:PushManifestToBuildAssetRegistry
         -p:OfficialBuildId=$(_BuildOfficalId)
         -p:OutputPath=${{ parameters.nugetArtifactPath }}
         -v:n -bl:$(Build.StagingDirectory)\binlogs\push-bar-manifest.binlog
-    # Execute outside of the source directory to avoid any conflicting global.json file
-      workingDirectory: $(Build.SourcesDirectory)\..
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))
 
   - task: AzureCLI@2
@@ -90,7 +89,5 @@ jobs:
         $arcadeServicesSource = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json'
         & dotnet tool update microsoft.dotnet.darc --version "$darcVersion" --add-source "$arcadeServicesSource" --tool-path $(Agent.ToolsDirectory)\darc -v n
         & $(Agent.ToolsDirectory)\darc\darc add-build-to-channel --default-channels --id $(BARBuildId) --ci --publishing-infra-version 3 --azdev-pat $(System.AccessToken)
-    # Execute outside of the source directory to avoid any conflicting global.json file
-      workingDirectory: $(Build.SourcesDirectory)\..
     displayName: Add build to default darc channel
     condition: and(succeeded(), eq('${{ parameters.pushMauiPackagesToMaestro }}', 'true'))

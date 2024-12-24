@@ -45,7 +45,6 @@
   </Interfaces>
   <Docs>
     <summary>An IDictionary that maps identifier strings to arbitrary resource objects.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -67,7 +66,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new empty <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" /> object.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -90,7 +88,6 @@
       <Docs>
         <param name="mergedResourceDictionary">The resource dictionary to add.</param>
         <summary>Add <paramref name="mergedResourceDictionary" /> to the merged dictionaries in <see langword="this" /> resource dictionary.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -142,7 +139,6 @@
       <Docs>
         <param name="styleSheet">The style sheet to add</param>
         <summary>Adds <paramref name="styleSheet" /> to <see langword="this" /> resource dictionary's list of style sheets.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -176,7 +172,6 @@
         <param name="key">The identifier to be used to retrieve the <paramref name="value" />.</param>
         <param name="value">The <see cref="T:System.Object" /> associated with the <paramref name="key" />.</param>
         <summary>Adds <paramref name="key" /> and <paramref name="value" /> to the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" /> as a key-value pair.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -205,7 +200,6 @@
       <Parameters />
       <Docs>
         <summary>Empties the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainsKey">
@@ -237,7 +231,6 @@
       <Docs>
         <param name="key">The identifier being searched for.</param>
         <summary>Whether the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" /> contains a key-value pair identified by <paramref name="key" />.</summary>
-        <returns>To be added.</returns>
         <remarks>This method will only return true if the key is in the immediate ResourceDictionary; it will not search any merged dictionaries.</remarks>
       </Docs>
     </Member>
@@ -266,8 +259,6 @@
       </ReturnValue>
       <Docs>
         <summary>The number of entries in the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnumerator">
@@ -296,8 +287,6 @@
       <Parameters />
       <Docs>
         <summary>Returns a <see cref="T:System.Collections.Generic.IEnumerator`1" /> of the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" />'s <see cref="T:System.Collections.Generic.KeyValuePair`2" />s.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -329,8 +318,6 @@
       <Docs>
         <param name="index">The identifier of the desired object.</param>
         <summary>Retrieves the <see cref="T:System.Object" /> value associated with the key <paramref name="index" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Keys">
@@ -358,8 +345,6 @@
       </ReturnValue>
       <Docs>
         <summary>The collection of identifier <see langword="string" />s that are keys in the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MergedDictionaries">
@@ -378,8 +363,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the collection of dictionaries that were merged into this dictionary.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MergedWith">
@@ -410,7 +393,6 @@
       <Docs>
         <summary>Gets or sets the type of object with which the resource dictionary is merged.</summary>
         <value>The type of object with which the resource dictionary is merged, or null if the dictionary is not merged with another.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -444,14 +426,13 @@
         <summary>Removes the key and value identified by <paramref name="key" /> from the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" />.</summary>
         <returns>
           <see langword="true" /> if the key existed and the removal was successful.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetAndLoadSource">
-      <MemberSignature Language="C#" Value="public void SetAndLoadSource (Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetAndLoadSource(class System.Uri value, string resourcePath, class System.Reflection.Assembly assembly, class System.Xml.IXmlLineInfo lineInfo) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ResourceDictionary.SetAndLoadSource(System.Uri,System.String,System.Reflection.Assembly,System.Xml.IXmlLineInfo)" />
-      <MemberSignature Language="F#" Value="member this.SetAndLoadSource : Uri * string * System.Reflection.Assembly * System.Xml.IXmlLineInfo -&gt; unit" Usage="resourceDictionary.SetAndLoadSource (value, resourcePath, assembly, lineInfo)" />
+    <Member MemberName="SetAndCreateSource&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public void SetAndCreateSource&lt;T&gt; (Uri value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetAndCreateSource&lt;string&gt;(class System.Uri value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource``1(System.Uri)" />
+      <MemberSignature Language="F#" Value="member this.SetAndCreateSource : Uri -&gt; unit" Usage="resourceDictionary.SetAndCreateSource (value)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
@@ -466,19 +447,21 @@
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <BaseTypeName>Microsoft.Maui.Controls.ResourceDictionary</BaseTypeName>
+            <ParameterAttribute>DefaultConstructorConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
       <Parameters>
         <Parameter Name="value" Type="System.Uri" />
-        <Parameter Name="resourcePath" Type="System.String" />
-        <Parameter Name="assembly" Type="System.Reflection.Assembly" />
-        <Parameter Name="lineInfo" Type="System.Xml.IXmlLineInfo" />
       </Parameters>
       <Docs>
+        <typeparam name="T">To be added.</typeparam>
         <param name="value">To be added.</param>
-        <param name="resourcePath">To be added.</param>
-        <param name="assembly">To be added.</param>
-        <param name="lineInfo">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Source">
@@ -503,7 +486,6 @@
       <Docs>
         <summary>Gets or sets the URI of the merged resource dictionary.</summary>
         <value>The URI of the merged resource dictionary.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;.Add">
@@ -535,7 +517,6 @@
       <Docs>
         <param name="item">The item to add.</param>
         <summary>Adds an item to the collection.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;.Contains">
@@ -567,8 +548,6 @@
       <Docs>
         <param name="item">The item to add.</param>
         <summary>Returns a value that indicates whether the dictionary contains the value in <paramref name="item" />, indexed by the key in <paramref name="item" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;.CopyTo">
@@ -602,7 +581,6 @@
         <param name="array">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="arrayIndex">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;.IsReadOnly">
@@ -630,8 +608,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether the resource dictionary is read-only.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.Generic.ICollection&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;.Remove">
@@ -663,8 +639,6 @@
       <Docs>
         <param name="item">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
@@ -693,8 +667,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TryGetValue">
@@ -720,9 +692,6 @@
       <Docs>
         <param name="key">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Values">
@@ -750,8 +719,6 @@
       </ReturnValue>
       <Docs>
         <summary>Retrieves the values of the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IResourceDictionary.ValuesChanged">
@@ -771,8 +738,6 @@
         <ReturnType>System.EventHandler&lt;Microsoft.Maui.Controls.Internals.ResourcesChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

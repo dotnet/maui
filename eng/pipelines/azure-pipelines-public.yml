@@ -1,0 +1,75 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+    - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - '**.md'
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    - feature/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - '**.md'
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - template: /eng/common/templates/variables/pool-providers.yml@self 
+  - template: /eng/pipelines/common/variables.yml@self
+  - template: /eng/pipelines/arcade/variables.yml@self
+
+parameters:
+  - name: VM_IMAGE_HOST
+    type: object
+    default:
+      name: NetCore-Public
+      image: 1es-windows-2022
+      os: windows
+
+stages:
+- template: /eng/pipelines/arcade/stage-pack.yml@self
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    publishTaskPrefix: ''
+
+- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+  parameters:
+    jobMatrix:
+    - name: win_unit_tests
+      displayName: Windows Unit Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedWindowsImage)
+        os: windows
+      timeout: 120
+      testOS: Windows
+    - name: mac_unit_tests
+      displayName: macOS Unit Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testOS: macOS
+    publishTaskPrefix: ''

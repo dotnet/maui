@@ -16,7 +16,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer instead")]
-	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
+	public partial class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualNativeElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
 																																	  where TNativeElement : FrameworkElement
 	{
 		string _defaultAutomationPropertiesName;
@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (ArrangeNativeChildren)
 			{
 				// in the event that a custom renderer has added native controls,
-				// we need to be sure to arrange them so that they are laid out.
+				// we need to be sure to arrange them so that they are arranged.
 				var nativeChildren = Children;
 				for (int i = 0; i < nativeChildren.Count; i++)
 				{

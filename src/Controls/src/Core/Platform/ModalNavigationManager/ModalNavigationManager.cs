@@ -193,10 +193,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		Task _waitForModalToFinishTask = Task.CompletedTask;
+
 		public async Task<Page?> PopModalAsync(bool animated)
 		{
 			if (_modalPages.Count <= 0)
 				throw new InvalidOperationException("PopModalAsync failed because modal stack is currently empty.");
+
+			await _waitForModalToFinishTask;
 
 			Page modal = _modalPages[_modalPages.Count - 1].Page;
 
@@ -239,7 +243,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (FireLifeCycleEvents)
 			{
-				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+				modal.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Pop));
 				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
 			}
 
@@ -251,6 +255,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
+			await _waitForModalToFinishTask;
+
 			_window.OnModalPushing(modal);
 
 			var previousPage = CurrentPage;
@@ -295,7 +301,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (FireLifeCycleEvents)
 			{
-				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+				previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Push));
 				CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 			}
 
@@ -375,8 +381,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
-			else if (_window.IsActivated &&
-					_window?.Page?.Handler is not null)
+			else if (IsWindowReadyForModals)
 			{
 				if (CurrentPlatformPage.Handler is null)
 				{
@@ -390,14 +395,15 @@ namespace Microsoft.Maui.Controls.Platform
 				// This accounts for cases where we swap the root page out
 				// We want to wait for that to finish loading before processing any modal changes
 #if ANDROID
-				else if (!_window.Page.IsLoadedOnPlatform())
+				else if (_window?.Page is not null && !_window.Page.IsLoadedOnPlatform())
 				{
 					var windowPage = _window.Page;
 					_platformPageWatchingForLoaded =
 						windowPage.OnLoaded(() => OnCurrentPlatformPageLoaded(windowPage, EventArgs.Empty));
 				}
 #endif
-				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
+
+				if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
 						  CurrentPlatformPage.Handler is not null)
 				{
 					var currentPlatformPage = CurrentPlatformPage;
@@ -424,15 +430,22 @@ namespace Microsoft.Maui.Controls.Platform
 			SyncPlatformModalStack();
 		}
 
+		bool IsWindowReadyForModals =>
+					_window?.Page?.Handler is not null &&
+#if WINDOWS
+					_firstActivated;
+#else
+					_window.IsActivated;
+#endif
+
 		bool IsModalPlatformReady
 		{
 			get
 			{
 				bool result =
-					_window?.Page?.Handler is not null &&
-					_window.IsActivated
+					IsWindowReadyForModals
 #if ANDROID
-					&& _window.Page.IsLoadedOnPlatform()
+					&& _window?.Page?.IsLoadedOnPlatform() == true
 #endif
 					&& CurrentPlatformPage?.Handler is not null
 					&& CurrentPlatformPage.IsLoadedOnPlatform();

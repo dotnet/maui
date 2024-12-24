@@ -82,8 +82,6 @@ namespace Microsoft.Maui.Controls
 			if (stack.Count > 1)
 				previousPage = stack[stack.Count - 1];
 
-			ToolbarItems = _toolbarTracker.ToolbarItems;
-
 			UpdateBackbuttonBehavior();
 			bool backButtonVisible = true;
 
@@ -95,6 +93,7 @@ namespace Microsoft.Maui.Controls
 			_drawerToggleVisible = stack.Count <= 1;
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
+			ToolbarItems = _toolbarTracker.ToolbarItems;
 
 			UpdateTitle();
 

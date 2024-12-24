@@ -12,7 +12,6 @@
   </Base>
   <Docs>
     <summary>Enumeration of modes for the root menu of a Shell application.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Disabled">
@@ -30,7 +29,6 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Flyout">
@@ -48,7 +46,6 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Locked">
@@ -66,7 +63,6 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
   </Members>

@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, FormsProgressBar>
+	public partial class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, FormsProgressBar>
 	{
 		object _foregroundDefault;
 

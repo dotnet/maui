@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Alerts Gallery");
 		}
 
-// TODO: UI testing alert code is not yet implemented on Windows.
+		// TODO: UI testing alert code is not yet implemented on Windows.
 #if !WINDOWS
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]

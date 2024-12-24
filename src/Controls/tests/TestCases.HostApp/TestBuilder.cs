@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
-
-namespace Controls.Sample.UITests
+﻿namespace Controls.Sample.UITests
 {
 	public static class TestBuilder
 	{

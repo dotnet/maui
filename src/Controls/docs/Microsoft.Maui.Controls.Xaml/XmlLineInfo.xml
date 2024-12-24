@@ -19,7 +19,6 @@
   </Interfaces>
   <Docs>
     <summary>For internal use by the XAML infrastructure.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -59,7 +57,6 @@
         <param name="linenumber">For internal use by the XAML engine.</param>
         <param name="lineposition">For internal use by the XAML engine.</param>
         <summary>For internal use by the XAML engine.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasLineInfo">
@@ -83,8 +80,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the XAML infrastructure.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LineNumber">
@@ -107,8 +102,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the XAML infrastructure.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LinePosition">
@@ -131,8 +124,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the XAML infrastructure.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
