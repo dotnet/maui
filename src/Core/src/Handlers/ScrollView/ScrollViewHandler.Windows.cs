@@ -131,10 +131,10 @@ namespace Microsoft.Maui.Handlers
 
 			if (GetContentPanel(scrollViewer) is ContentPanel currentPaddingLayer)
 			{
-				if (currentPaddingLayer.Children.Count == 0 || currentPaddingLayer.Children[0] != nativeContent)
+				if (currentPaddingLayer.CachedChildren.Count == 0 || currentPaddingLayer.CachedChildren[0] != nativeContent)
 				{
-					currentPaddingLayer.Children.Clear();
-					currentPaddingLayer.Children.Add(nativeContent);
+					currentPaddingLayer.CachedChildren.Clear();
+					currentPaddingLayer.CachedChildren.Add(nativeContent);
 
 				}
 			}
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 			};
 
 			scrollViewer.Content = null;
-			paddingShim.Children.Add(nativeContent);
+			paddingShim.CachedChildren.Add(nativeContent);
 			scrollViewer.Content = paddingShim;
 		}
 
