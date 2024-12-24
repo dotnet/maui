@@ -1,4 +1,5 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿using Microsoft.Maui.Handlers;
+namespace Maui.Controls.Sample.Issues
 {
 
 	[Issue(IssueTracker.Bugzilla, 57114, "Forms gestures are not supported on UIViews that have native gestures", PlatformAffected.iOS)]
@@ -78,10 +79,103 @@
 				_results.Text = Testing;
 			}
 		}
+	}
 
+	public class _57114View : View
+	{
 
-		public class _57114View : View
+	}
+#if ANDROID
+	public class _57114ViewHandler : ViewHandler<_57114View, Android.Views.View>
+	{
+		public _57114ViewHandler() : base(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper)
 		{
 		}
+
+		protected override Android.Views.View CreatePlatformView()
+		{
+			Android.Views.View view = new Android.Views.View(Context);
+			//view.Touch += OnTouch;
+			return view;
+		}
+
+		private void OnTouch(object sender, Android.Views.View.TouchEventArgs e)
+		{
+			MessagingCenter.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+			e.Handled = false;
+		}
 	}
+#elif IOS || MACCATALYST
+
+	public class _57114ViewHandler : ViewHandler<_57114View, UIKit.UIView>
+    {
+        public static IPropertyMapper<_57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
+        {
+            
+        };
+
+        public _57114ViewHandler() : base(Mapper)
+        {
+        }
+
+        protected override UIKit.UIView CreatePlatformView()
+        {
+            var view = new UIKit.UIView();
+            var rec = new CustomGestureRecognizer();
+            view.AddGestureRecognizer(rec);
+            return view;
+        }
+    }
+
+    public class CustomGestureRecognizer : UIKit.UIGestureRecognizer
+    {
+        public override void TouchesBegan(Foundation.NSSet touches, UIKit.UIEvent evt)
+        {
+            base.TouchesBegan(touches, evt);
+#pragma warning disable CS0618 // Type or member is obsolete
+            MessagingCenter.Instance.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+    }
+
+#elif WINDOWS
+	public class _57114ViewHandler : ViewHandler<_57114View, Grid>
+    {
+        public static IPropertyMapper<Bugzilla57114._57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
+        {
+            [nameof(_57114View.BackgroundColor)] = MapBackgroundColor
+        };
+
+        public _57114ViewHandler() : base(Mapper)
+        {
+        }
+
+        protected override Windows.UI.Xaml.Controls.Grid CreatePlatformView()
+        {
+            var nativeView = new Grid();
+            nativeView.Tapped += OnTapped;
+            return nativeView;
+        }
+
+        public static void MapBackgroundColor(_57114ViewHandler handler, _57114View view)
+        {
+            if (handler.PlatformView != null)
+            {
+                handler.PlatformView.Background = new Windows.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(
+                    (byte)(view.BackgroundColor.Alpha * 255),
+                    (byte)(view.BackgroundColor.Red * 255),
+                    (byte)(view.BackgroundColor.Green * 255),
+                    (byte)(view.BackgroundColor.Blue * 255)));
+            }
+        }
+
+        private void OnTapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            MessagingCenter.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+    }
+#endif
+
 }

@@ -38,6 +38,7 @@ namespace Maui.Controls.Sample
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
 				handlers.AddHandler(typeof(_60122Image), typeof(_60122ImageHandler));
+				handlers.AddHandler(typeof(_57114View), typeof(_57114ViewHandler));
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
 #endif
