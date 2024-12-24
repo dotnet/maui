@@ -20,6 +20,9 @@ class PrePost : IDisposable
 
     public static PrePost NewConditional(IndentedTextWriter codeWriter, string condition)
         => new(() => codeWriter.WriteLineNoTabs($"#if {condition}"), () => codeWriter.WriteLineNoTabs("#endif"));
+
+    public static PrePost NewDisableWarning(IndentedTextWriter codeWriter, string warning)
+        => new(() => codeWriter.WriteLineNoTabs($"#pragma warning disable {warning}"), () => codeWriter.WriteLineNoTabs($"#pragma warning restore {warning}"));
     readonly Action post;
     PrePost(Action pre, Action post)
     {

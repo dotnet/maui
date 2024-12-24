@@ -193,7 +193,10 @@ static class NodeSGExtensions
             if (!acceptEmptyServiceProvider)
             {
                 var serviceProvider = valueNode.GetOrCreateServiceProvider(context.Writer, context, requiredServices);
-                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name}) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
+                if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
+                    return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name}) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
+                else
+                    return $"({targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name})";
             }
             else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
                 return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
