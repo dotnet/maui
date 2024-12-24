@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,7 +8,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		const string Pop = "PopModal";
 		const string Push = "PushModal";
+#if ANDROID
+		const string Page2 = "PAGE 2";
+#else
 		const string Page2 = "Page 2";
+#endif
 
 		public Bugzilla43519(TestDevice testDevice) : base(testDevice)
 		{
@@ -20,7 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void TabbedModalNavigation()
 		{
 			App.WaitForElement(Page2);
@@ -33,4 +35,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
