@@ -13,6 +13,7 @@ namespace Maui.Controls.Sample.Issues
         {
             InitializeComponent();
             _items = new ObservableCollection<int>();
+            AddItemsToCollectionView();
             CollectionView.ItemsSource = _items;
 			BindingContext = this;
         }
@@ -38,10 +39,14 @@ namespace Maui.Controls.Sample.Issues
         }
 
         void FillButton_OnClicked(object sender, EventArgs e)
-        {
-            foreach (var i in Enumerable.Range(0, 20))
-                _items.Add(i);
-        }
+		{
+			AddItemsToCollectionView();
+		}
 
+		void AddItemsToCollectionView()
+		{
+			foreach (var i in Enumerable.Range(0, 50))
+				_items.Add(i);
+		}
 	}
 }
