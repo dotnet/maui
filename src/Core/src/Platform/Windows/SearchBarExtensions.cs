@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateSearchButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			var brush = searchButtonColor?.ToPlatform();
+			var brush = searchBar.SearchButtonColor?.ToPlatform();
 
 			if (platformControl.QueryIcon is SymbolIcon queryIcon)
 			{
