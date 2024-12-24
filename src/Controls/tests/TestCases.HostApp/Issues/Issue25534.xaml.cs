@@ -23,13 +23,6 @@ namespace Maui.Controls.Sample.Issues
             var viewModel = new Issue25534PageModel();
             this.BindingContext = viewModel;
 
-			var dotnetBotImage = new Image
-			{
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-				Source = "dotnet_bot_resized.png"
-			};
-
             var button = new Button
             {
                 Text = "Go To Second Page",
@@ -43,7 +36,6 @@ namespace Maui.Controls.Sample.Issues
                 await Navigation.PushAsync(secondaryPage);
             };
             var stack = new StackLayout();
-            stack.Children.Add(dotnetBotImage);
             stack.Children.Add(button);
 
             this.Content = stack;
