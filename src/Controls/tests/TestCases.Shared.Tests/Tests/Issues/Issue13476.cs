@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //Timeout Exception - Grid automation Id(TitleViewId)
+﻿#if TEST_FAILS_ON_WINDOWS // AutomationId for Grid is not work on Windows
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
