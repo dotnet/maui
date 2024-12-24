@@ -95,14 +95,15 @@ namespace Maui.Controls.Sample.Issues
 		protected override Android.Views.View CreatePlatformView()
 		{
 			Android.Views.View view = new Android.Views.View(Context);
-			//view.Touch += OnTouch;
+			view.Touch += OnTouch;
 			return view;
 		}
 
 		private void OnTouch(object sender, Android.Views.View.TouchEventArgs e)
 		{
-			MessagingCenter.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
-			e.Handled = false;
+#pragma warning disable CS0618 // Type or member is obsolete
+            MessagingCenter.Instance.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 #elif IOS || MACCATALYST
