@@ -53,16 +53,16 @@ public class Issue5412SettingPage : ContentPage
 			HorizontalOptions = LayoutOptions.CenterAndExpand,
 			VerticalOptions = LayoutOptions.CenterAndExpand,
 			Children = {
-				//new Label
-				//{
-				//	Text = "Settings Page",
-				//	FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label))
-				//},
-				//new Label
-				//{
-				//	Text = "Navigate back and check the navbar & menu are still visible.",
-				//	FontSize = Device.GetNamedSize (NamedSize.Medium, typeof(Label))
-				//},
+				new Label
+				{
+					Text = "Settings Page",
+					FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label))
+				},
+				new Label
+				{
+					Text = "Navigate back and check the navbar & menu are still visible.",
+					FontSize = Device.GetNamedSize (NamedSize.Medium, typeof(Label))
+				},
 			}
 		};
 #pragma warning restore CS0612 // Type or member is obsolete
@@ -93,16 +93,16 @@ public class Issue5412IndexPage : ContentPage
 			HorizontalOptions = LayoutOptions.CenterAndExpand,
 			VerticalOptions = LayoutOptions.CenterAndExpand,
 			Children = {
-				//new Label
-				//{
-				//	Text = "Index Page",
-				//	FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label))
-				//},
-				//new Label
-				//{
-				//	Text = "Open the hamburger menu and navigate to settings page",
-				//	FontSize = Device.GetNamedSize (NamedSize.Medium, typeof(Label))
-				//},
+				new Label
+				{
+					Text = "Index Page",
+					FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label))
+				},
+				new Label
+				{
+					Text = "Open the hamburger menu and navigate to settings page",
+					FontSize = Device.GetNamedSize (NamedSize.Medium, typeof(Label))
+				},
 			}
 		};
 #pragma warning restore CS0612 // Type or member is obsolete
