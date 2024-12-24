@@ -30,14 +30,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var (visibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex) = GetVisibleItemsIndex();
 
 			var contentInset = scrollView.ContentInset;
-			var contentOffsetX = scrollView.ContentOffset.X + contentInset.Left;
-			var contentOffsetY = scrollView.ContentOffset.Y + contentInset.Top;
-
-			if (!visibleItems && ViewController.ItemsSource.ItemCount == 0)
-			{
-				contentOffsetX = 0;
-				contentOffsetY = 0;
-			}
+			var contentOffsetX = !visibleItems ? 0 : scrollView.ContentOffset.X + contentInset.Left;
+			var contentOffsetY = !visibleItems ? 0 : scrollView.ContentOffset.Y + contentInset.Top;
 
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
 			{
