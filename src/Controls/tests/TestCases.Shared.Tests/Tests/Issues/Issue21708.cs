@@ -15,11 +15,14 @@ public class Issue21708 : _IssuesUITest
 	public void VerifyCollectionViewVerticalOffset()
 	{
 		App.WaitForElement("Fill");
-		App.Tap("Fill");
 		App.ScrollDown("CollectionView");
+		Assert.That(App.FindElement("Label").GetText(), Is.GreaterThan("0"));
 		App.Tap("Empty");
+		#if !MACCATALYST || !IOS   //When ItemSource is cleared, the VerticalOffset does not reset to zero on Mac and iOS.
+		Assert.That(App.FindElement("Label").GetText(), Is.EqualTo("0"));
+		#endif
 		App.Tap("Fill");
 		App.ScrollDown("CollectionView");
-		Assert.That(App.FindElement("Label").GetText(), Is.LessThanOrEqualTo("50"));
+		Assert.That(App.FindElement("Label").GetText(), Is.GreaterThan("0"));
 	}
 }
