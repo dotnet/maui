@@ -95,8 +95,25 @@ namespace Maui.Controls.Sample.Issues
 		protected override Android.Views.View CreatePlatformView()
 		{
 			Android.Views.View view = new Android.Views.View(Context);
-			view.Touch += OnTouch;
 			return view;
+		}
+
+		protected override void ConnectHandler(Android.Views.View platformView)
+		{
+			base.ConnectHandler(platformView);
+			if (PlatformView is Android.Views.View view)
+			{
+				view.Touch += OnTouch;
+			}
+		}
+
+		protected override void DisconnectHandler(Android.Views.View platformView)
+		{
+			base.DisconnectHandler(platformView);
+			if (PlatformView is Android.Views.View view)
+			{
+				view.Touch -= OnTouch;
+			}
 		}
 
 		private void OnTouch(object sender, Android.Views.View.TouchEventArgs e)
@@ -144,7 +161,6 @@ namespace Maui.Controls.Sample.Issues
     {
         public static IPropertyMapper<_57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
         {
-            [nameof(_57114View.BackgroundColor)] = MapBackgroundColor
         };
 
         public _57114ViewHandler() : base(Mapper)
@@ -153,25 +169,30 @@ namespace Maui.Controls.Sample.Issues
 
         protected override Microsoft.UI.Xaml.Controls.Grid CreatePlatformView()
         {
-			Microsoft.UI.Xaml.Controls.Grid nativeView = new Microsoft.UI.Xaml.Controls.Grid();
+			Microsoft.UI.Xaml.Controls.Grid nativeView = new Microsoft.UI.Xaml.Controls.Grid() { Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.AliceBlue) };
 			nativeView.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock() { Text = "_57114View" });
-            nativeView.Tapped += OnTapped;
             return nativeView;
         }
 
-        public static void MapBackgroundColor(_57114ViewHandler handler, _57114View view)
-        {
-            if (handler.PlatformView != null)
-            {
-                handler.PlatformView.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(global::Windows.UI.Color.FromArgb(
-                    (byte)(view.BackgroundColor.Alpha * 255),
-                    (byte)(view.BackgroundColor.Red * 255),
-                    (byte)(view.BackgroundColor.Green * 255),
-                    (byte)(view.BackgroundColor.Blue * 255)));
-            }
-        }
+		protected override void ConnectHandler(Microsoft.UI.Xaml.Controls.Grid platformView)
+		{
+			base.ConnectHandler(platformView);
+			if (PlatformView is Microsoft.UI.Xaml.Controls.Grid view)
+			{
+				view.Tapped += OnTapped;
+			}
+		}
 
-        private void OnTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs tappedRoutedEventArgs)
+		protected override void DisconnectHandler(Microsoft.UI.Xaml.Controls.Grid platformView)
+		{
+			base.DisconnectHandler(platformView);
+			if (PlatformView is Microsoft.UI.Xaml.Controls.Grid view)
+			{
+				view.Tapped -= OnTapped;
+			}
+		}
+
+		private void OnTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             MessagingCenter.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
