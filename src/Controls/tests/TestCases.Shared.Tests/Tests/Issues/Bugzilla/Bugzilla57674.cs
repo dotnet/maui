@@ -14,16 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla57674Test()
 		{
-			App.Screenshot("Initial Status");
 			App.WaitForElement("IssueListView");
+			App.WaitForNoElement("Hello World!");
 			App.Tap("IssueButton");
-			App.Screenshot("Element Added to List");
+			App.WaitForElement("Hello World!");
 		}
 	}
 }
