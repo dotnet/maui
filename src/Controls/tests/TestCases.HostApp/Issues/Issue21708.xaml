@@ -39,6 +39,7 @@
         Text="VerticalOffset: " />
         
     <Label AutomationId="Label"
+        Grid.ColumnSpan="2"
         Grid.Row="1"
         HorizontalTextAlignment="Start"
         Grid.Column="1"
