@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage.Streams;
@@ -357,8 +358,16 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
-					_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
-					_tappedEventHandler = null;
+					if (_control is TextBox)
+					{
+						_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
+						_tappedEventHandler = null;
+					}
+					else
+					{
+						_container.Tapped -= OnTap;
+					}
+
 					_container.RightTapped -= OnTap;
 				}
 
@@ -366,8 +375,15 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
-					_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
-					_doubleTappedEventHandler = null;
+					if (_control is TextBox)
+					{
+						_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
+						_doubleTappedEventHandler = null;
+					}
+					else
+					{
+						_container.DoubleTapped -= OnTap;
+					}
 				}
 
 				if ((_subscriptionFlags & SubscriptionFlags.ContainerPgrPointerEventsSubscribed) != 0)
@@ -848,8 +864,17 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
-				_tappedEventHandler = new TappedEventHandler(OnTap);
-				_container.AddHandler(FrameworkElement.TappedEvent,_tappedEventHandler, true);
+
+				if (_control is TextBox)
+				{
+					_tappedEventHandler = new TappedEventHandler(OnTap);
+					_container.AddHandler(FrameworkElement.TappedEvent, _tappedEventHandler, true);
+				}
+				else
+				{
+					_container.Tapped += OnTap;
+				}
+
 				_container.RightTapped += OnTap;
 			}
 			else
@@ -865,8 +890,16 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
-				_doubleTappedEventHandler = new DoubleTappedEventHandler(OnTap);
-				_container.AddHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler, true);
+
+				if (_control is TextBox)
+				{
+					_doubleTappedEventHandler = new DoubleTappedEventHandler(OnTap);
+					_container.AddHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler, true);
+				}
+				else
+				{
+					_container.DoubleTapped += OnTap;
+				}
 			}
 			else
 			{
