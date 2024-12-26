@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Handlers
 
 				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
 				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
-				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
-				var minScrollVertical = Math.Min(request.VerticalOffset, availableScrollHeight);
-				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
+				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
+				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
+				uiScrollView.SetContentOffset(new CoreGraphics.CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
 
 				if (request.Instant)
 				{
