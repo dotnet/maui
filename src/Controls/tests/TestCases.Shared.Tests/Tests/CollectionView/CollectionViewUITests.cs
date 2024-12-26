@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			: base(device)
 		{
 		}
-		
+
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
@@ -31,13 +31,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			var galleryName = $"{collectionTestName} Galleries";
 			var regexGalleryName = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
 
-			App.WaitForElement(regexGalleryName);
+			App.WaitForElementTillPageNavigationSettled(regexGalleryName);
 			App.Tap(regexGalleryName);
 		}
 
 		internal void VisitSubGallery(string galleryName)
 		{
-			App.WaitForElement(galleryName);
+			App.WaitForElementTillPageNavigationSettled(galleryName);
 			App.Tap(galleryName);
 		}
 	}
