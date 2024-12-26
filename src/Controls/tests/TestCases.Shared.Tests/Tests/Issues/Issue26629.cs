@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_CATALYST // Swipe, ScrollDown not working on Catalyst 
+
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -37,3 +39,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+
+#endif
