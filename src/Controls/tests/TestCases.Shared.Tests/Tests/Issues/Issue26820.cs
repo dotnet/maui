@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void AnimationCancel()
+		public void ListViewShouldRenderProperRowHeight()
 		{
 			App.WaitForElement("listView");
 			VerifyScreenshot();
