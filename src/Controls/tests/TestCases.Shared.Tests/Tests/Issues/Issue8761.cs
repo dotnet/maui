@@ -1,6 +1,4 @@
-﻿#if ANDROID
-// https://github.com/dotnet/maui/issues/22892
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,4 +24,3 @@ public class Issue8761 : _IssuesUITest
 		}
 	}
 }
-#endif
