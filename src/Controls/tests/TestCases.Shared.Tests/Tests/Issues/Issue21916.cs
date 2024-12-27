@@ -1,4 +1,4 @@
-#if !ANDROID && !MACCATALYST
+#if !ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
