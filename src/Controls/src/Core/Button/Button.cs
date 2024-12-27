@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A button <see cref="View" /> that reacts to touch events.
 	/// </summary>
+	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
 		const double DefaultSpacing = 10;
@@ -606,6 +607,11 @@ namespace Microsoft.Maui.Controls
 
 			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 				=> throw new NotSupportedException();
+		}
+
+		private protected override string GetDebbugerDisplay()
+		{
+			return $"Text = {Text}, Command = {Command}, " + base.GetDebbugerDisplay();
 		}
 	}
 }
