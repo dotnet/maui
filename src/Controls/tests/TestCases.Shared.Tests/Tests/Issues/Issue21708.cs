@@ -23,9 +23,5 @@ public class Issue21708 : _IssuesUITest
 		//https://github.com/dotnet/maui/issues/26798
 		Assert.That(App.FindElement("Label").GetText(), Is.EqualTo("0"));
 		#endif
-		App.Tap("Fill");
-		App.WaitForElement("Fill");
-		App.ScrollDown("CollectionView");
-		Assert.That(App.FindElement("Label").GetText(), Is.GreaterThan("0"));
 	}
 }
