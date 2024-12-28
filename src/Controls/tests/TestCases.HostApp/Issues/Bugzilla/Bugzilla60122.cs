@@ -85,12 +85,16 @@ public class _60122ImageHandler : ImageHandler
 			customImage?.HandleLongPress(customImage, new EventArgs());
 		}
 	}
-#else
-#if IOS || MACCATALYST
-	private void OnLongPress()
+#elif IOS || MACCATALYST
+	void OnLongPress()
+	{
+		if (VirtualView is _60122Image customImage)
+		{
+			customImage.HandleLongPress(customImage, EventArgs.Empty);
+		}
+	}
 #elif ANDROID
-	private void OnLongPress(object sender, EventArgs e)
-#endif
+	void OnLongPress(object sender, EventArgs e)
 	{
 		if (VirtualView is _60122Image customImage)
 		{
