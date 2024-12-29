@@ -39,23 +39,15 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	abstract class MarkupExpressionParser
 	{
-		protected struct Property
+		protected struct Property(bool last, string? name, string? strValue, object? value)
 		{
-			public bool last;
-			public string? name = null;
-			public string? strValue = null;
-			 public object? value = null;
-
-			public Property(bool last, string? name, string? strValue, object? value)
-			{
-				this.last = last;
-				this.name = name;
-				this.strValue = strValue;
-				this.value = value;
-			}
+			public bool last = last;
+			public string? name = name;
+			public string? strValue = strValue;
+			 public object? value = value;
 		}
-#if !__SOURCEGEN__
 
+#if !__SOURCEGEN__
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
 		public object ParseExpression(ref string expression, IServiceProvider serviceProvider)

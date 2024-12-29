@@ -88,11 +88,13 @@ static class XmlTypeExtensions
 	}
 
 	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, INode node)
+		=> GetTypeSymbol(nameAndPrefix, reportDiagnostic, compilation, xmlnsCache, node.NamespaceResolver, (IXmlLineInfo)node);
+
+	public static ITypeSymbol? GetTypeSymbol(this string nameAndPrefix, Action<Diagnostic>? reportDiagnostic, Compilation compilation, AssemblyCaches xmlnsCache, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
 	{
-		XmlType xmlType = TypeArgumentsParser.ParseSingle(nameAndPrefix, node.NamespaceResolver, (IXmlLineInfo)node);
+		XmlType xmlType = TypeArgumentsParser.ParseSingle(nameAndPrefix, resolver, lineInfo);
 		return xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
 	}
-
 
 	//FIXME should return a ITypeSymbol, and properly construct it for generics. globalalias param should go away
     // public static ITypeSymbol GetTypeSymbol(this XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, bool globalAlias = true)

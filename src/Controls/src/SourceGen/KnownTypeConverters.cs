@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
@@ -201,8 +202,9 @@ static class KnownTypeConverters
     const string RoundRectangle = nameof(RoundRectangle);
     internal static readonly char[] Delimiter = [' '];
 
-    public static string ConvertRect(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertRect(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
         var values = value.Split([','], StringSplitOptions.RemoveEmptyEntries)
                           .Select(v => v.Trim());
@@ -220,13 +222,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.RectConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertColor(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertColor(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             // Any named colors are ok. Surrounding white spaces are ok.
@@ -257,13 +260,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertPoint(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertPoint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
         {
@@ -275,13 +279,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertThickness(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertThickness(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
         {
@@ -338,13 +343,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ThicknessConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertCornerRadius(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertCornerRadius(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
         {
@@ -392,13 +398,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.CornerRadiusConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertEasing(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertEasing(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         var easingName = value;
 
         if (!string.IsNullOrWhiteSpace(easingName))
@@ -415,13 +422,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.EasingConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertEnum(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
         {
             var detectedEnumValue = toType.GetFields().FirstOrDefault(
@@ -433,13 +441,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
 
         return "default";
     }
 
-    public static string ConvertFlexBasis(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertFlexBasis(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
@@ -461,13 +470,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertFlowDirection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertFlowDirection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrWhiteSpace(value))
         {
             value = value.Trim();
@@ -487,16 +497,17 @@ static class KnownTypeConverters
                 return "global::Microsoft.Maui.FlowDirection.MatchParent";
             }
 
-            return ConvertEnum(value, toType, reportDiagnostic, xmlLineInfo, filePath);
+            return ConvertEnum(value, node, toType, context);
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlowDirectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertGridLength(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertGridLength(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
@@ -522,33 +533,33 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.GridLengthConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertColumnDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertColumnDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             var lengths = value.Split(',');
 
             var columnDefinitions = new List<string>();
             foreach (var length in lengths)
-            {
-                columnDefinitions.Add($"new ColumnDefinition({ConvertGridLength(length, toType, reportDiagnostic, xmlLineInfo, filePath)})");
-            }
+                columnDefinitions.Add($"new ColumnDefinition({ConvertGridLength(length, node, toType, context)})");
 
             return $"new global::Microsoft.Maui.Controls.ColumnDefinitionCollection([{string.Join(", ", columnDefinitions)}])";
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.ColumnDefinitionCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ColumnDefinitionCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertRowDefinitionCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertRowDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             var lengths = value.Split(',');
@@ -556,19 +567,20 @@ static class KnownTypeConverters
             var rowDefinitions = new List<string>();
             foreach (var length in lengths)
             {
-                rowDefinitions.Add($"new RowDefinition({ConvertGridLength(length, toType, reportDiagnostic, xmlLineInfo, filePath)})");
+                rowDefinitions.Add($"new RowDefinition({ConvertGridLength(length, node, toType, context)})");
             }
 
             return $"new global::Microsoft.Maui.Controls.RowDefinitionCollection([{string.Join(", ", rowDefinitions)}])";
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.RowDefinitionCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.RowDefinitionCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    public static string ConvertImageSource(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertImageSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
         {
@@ -578,13 +590,14 @@ static class KnownTypeConverters
                 $"global::Microsoft.Maui.Controls.ImageSource.FromUri(new global::System.Uri(\"{uri}\"))" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
     
-    public static string ConvertListString(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    public static string ConvertListString(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
@@ -592,13 +605,14 @@ static class KnownTypeConverters
             return $"new global::System.Collections.Generic.List<string>(new[] {{ {string.Join(", ", value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }})";
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    internal static string ConvertPointCollection(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    internal static string ConvertPointCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             string[] points = value.Split([' ', ',']);
@@ -619,13 +633,13 @@ static class KnownTypeConverters
 					}
 					else
 					{
-						pointCollection.Add(ConvertPoint($"{x},{number}", toType, reportDiagnostic, xmlLineInfo, filePath));
+						pointCollection.Add(ConvertPoint($"{x},{number}", node, toType, context));
 						hasX = false;
 					}
 				}
 				else
                 {
-					reportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
                     return "default";
                 }
@@ -633,7 +647,7 @@ static class KnownTypeConverters
 
 			if (hasX)
             {
-				reportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
                 return "default";
             }
@@ -641,13 +655,14 @@ static class KnownTypeConverters
 			return $"new global::Microsoft.Maui.Controls.PointCollection(new[] {{ {string.Join(", ", pointCollection)} }})";
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    internal static string ConvertPathGeometry(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    internal static string ConvertPathGeometry(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
@@ -656,13 +671,14 @@ static class KnownTypeConverters
             return "new global::Microsoft.Maui.Controls.Shapes.PathGeometry()";
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.PathGeometryConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.PathGeometryConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    internal static string ConvertStrokeShape(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    internal static string ConvertStrokeShape(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
@@ -723,7 +739,7 @@ static class KnownTypeConverters
                     return "new global::Microsoft.Maui.Controls.Shapes.Polygon()";
                 }
 
-                var pointCollection = ConvertPointCollection(parts[1], toType, reportDiagnostic, xmlLineInfo, filePath);
+                var pointCollection = ConvertPointCollection(parts[1], node, toType, context);
 
                 // If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
                 if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
@@ -742,7 +758,7 @@ static class KnownTypeConverters
                     return "new global::Microsoft.Maui.Controls.Shapes.Polyline()";
                 }
 
-                var pointCollection = ConvertPointCollection(parts[1], toType, reportDiagnostic, xmlLineInfo, filePath);
+                var pointCollection = ConvertPointCollection(parts[1], node, toType, context);
 
                 // If this happens the ConvertPointCollection method already reported an error, but lets still produce valid code.
                 if (pointCollection.Equals("default", StringComparison.OrdinalIgnoreCase))
@@ -766,20 +782,21 @@ static class KnownTypeConverters
 
                 if (parts.Length > 1)
                 {
-                    cornerRadius = ConvertCornerRadius(parts[1], toType, reportDiagnostic, xmlLineInfo, filePath);
+                    cornerRadius = ConvertCornerRadius(parts[1], node, toType, context);
                 }
 
                 return $"new global::Microsoft.Maui.Controls.Shapes.RoundRectangle {{ CornerRadius = {cornerRadius} }}";
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.StrokeShapeConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.StrokeShapeConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    internal static string ConvertLayoutOptions(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    internal static string ConvertLayoutOptions(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
         {
             value = value.Trim();
@@ -787,7 +804,7 @@ static class KnownTypeConverters
             var parts = value.Split('.');
             if (parts.Length > 2 || (parts.Length == 2 && parts[0] != "LayoutOptions"))
             {
-                reportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+                context.ReportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
                 return "default";
             }
@@ -813,13 +830,14 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.LayoutOptionsConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
 
-    internal static string ConvertConstraint(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath)
+    internal static string ConvertConstraint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
     {
+        var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here
         if (!string.IsNullOrEmpty(value))
         {
@@ -831,8 +849,30 @@ static class KnownTypeConverters
             }
         }
 
-        reportDiagnostic(Diagnostic.Create(Descriptors.ConstraintConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConstraintConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
         return "default";
     }
+
+	internal static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+	{
+        var parts = value.Split('.');
+
+        if (parts.Length != 2)
+        {
+            // reportDiagnostic(Diagnostic.Create(Descriptors.BindablePropertyConversionFailed, LocationCreate(filePath, xmlLineInfo, value), value));
+
+            return "default";
+        }
+
+        if (parts.Length == 2)
+        {
+            var typesymbol = parts[0]!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, null!)!;
+
+            var name = parts[1];
+            return typesymbol.GetBindableProperty("", ref name, out _, context, node)!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType));
+            
+        }
+        return "null";
+	}
 }
