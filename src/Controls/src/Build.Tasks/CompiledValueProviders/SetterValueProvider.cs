@@ -17,8 +17,8 @@ namespace Microsoft.Maui.Controls.XamlC
 				((IElementNode)node).CollectionItems.Count == 1)
 				valueNode = ((IElementNode)node).CollectionItems[0];
 
-			var bpNode = ((ValueNode)((IElementNode)node).Properties[new XmlName("", "Property")]);
-			var bpRef = (new BindablePropertyConverter()).GetBindablePropertyFieldReference((string)bpNode.Value, context, module, bpNode);
+			var bpNode = (ValueNode)((IElementNode)node).Properties[new XmlName("", "Property")];
+			var bpRef = new BindablePropertyConverter().GetBindablePropertyFieldReference((string)bpNode.Value, context, module, bpNode);
 
 			if (SetterValueIsCollection(bpRef, module, node, context))
 				yield break;
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			// Is the generic argument assignable from this value?
 			var genericType = generic.GenericArguments[0];
 
-			if (!(items[0] is IElementNode firstItem))
+			if (items[0] is not IElementNode firstItem)
 				return false;
 
 			return context.Variables[firstItem].VariableType.InheritsFromOrImplements(context.Cache, genericType);

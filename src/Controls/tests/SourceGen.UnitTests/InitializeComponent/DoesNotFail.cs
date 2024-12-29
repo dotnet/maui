@@ -14,8 +14,16 @@ public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:local="clr-namespace:Test"
-	x:Class="Test.TestPage" 
-    Title="{Binding Title, Converter={local:TestConverter}}"/>
+	x:Class="Test.TestPage" >
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<x:Array x:Key="stringArray" Type="{x:Type x:String}">
+				<x:String>Test1</x:String>
+				<x:String>Test2</x:String>
+			</x:Array>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+</ContentPage>
 """;
 
 		var code =

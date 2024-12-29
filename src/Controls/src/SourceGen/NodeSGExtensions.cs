@@ -12,15 +12,16 @@ using System.Linq;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
 static class NodeSGExtensions
 {
-    delegate string ConverterDelegate(string value, ITypeSymbol toType, Action<Diagnostic> reportDiagnostic, IXmlLineInfo xmlLineInfo, string filePath);
+    delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context);
 
-    public delegate string ProvideValueDelegate(IElementNode markupNode, Action<Diagnostic> reportDiagnostic, SourceGenContext context, out ITypeSymbol? returnType);
+    public delegate string ProvideValueDelegate(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType);
 
 	static Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? KnownSGTypeConverters;
 
@@ -55,10 +56,11 @@ static class NodeSGExtensions
 	};
 
     static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGMarkups;
-    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownSGMarkups(SourceGenContext context)
+    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
         => KnownSGMarkups ??= new (SymbolEqualityComparer.Default)
     {
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
     };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -86,15 +88,15 @@ static class NodeSGExtensions
 	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
         => context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!);
 
-	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
     {
         var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
         if (typeandconverter == null)
             return string.Empty;
-        return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, iXmlLineInfo);
+        return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context);
     }
 
-    public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
     {
         List<AttributeData> attributes = [
             .. property.GetAttributes().ToList(),
@@ -102,19 +104,19 @@ static class NodeSGExtensions
         ];
         
         var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
-        return valueNode.ConvertTo(property.Type, typeConverter, context, iXmlLineInfo);
+        return valueNode.ConvertTo(property.Type, typeConverter, context);
     }
 
-    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context)
     {
         List<AttributeData> attributes = [.. toType.GetAttributes()];
         
         var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
 
-        return valueNode.ConvertTo(toType, typeConverter, context, iXmlLineInfo);
+        return valueNode.ConvertTo(toType, typeConverter, context);
     }
     
-    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
 
@@ -124,57 +126,135 @@ static class NodeSGExtensions
             if (!context.Compilation.HasImplicitConversion(returntype, toType))
                 //this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
                 //FIXME: better error message
-                context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.FilePath!, iXmlLineInfo, valueString), $"Cannot convert {returntype} to {toType}"));
-            return converterAndReturnType.Item1.Invoke(valueString, toType, context.ReportDiagnostic, iXmlLineInfo, context.FilePath!);
+                context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
+            return converterAndReturnType.Item1.Invoke(valueString, valueNode, toType, context);
         }
 
         if (typeConverter is not null)
-            return valueNode.ConvertWithConverter(typeConverter, toType, context, iXmlLineInfo);
+            return valueNode.ConvertWithConverter(typeConverter, toType, context);
 
-        return ValueForLanguagePrimitive(valueString, toType, context);
+        return ValueForLanguagePrimitive(valueString, toType, context, valueNode);
     }
 
-    public static string ValueForLanguagePrimitive(string valueString, ITypeSymbol toType, SourceGenContext context)
+    public static string ValueForLanguagePrimitive(string valueString, ITypeSymbol toType, SourceGenContext context, IXmlLineInfo lineInfo)
     {
+        void reportDiagnostic() 
+            => context.ReportDiagnostic(Diagnostic.Create(Descriptors.InvalidFormat, LocationHelpers.LocationCreate(context.FilePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
+
         if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 
-        if (toType.SpecialType == SpecialType.System_SByte && sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
-            return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Byte && byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
-            return SymbolDisplay.FormatPrimitive(byteValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Int16 && short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
-            return SymbolDisplay.FormatPrimitive(shortValue, true, false);
-        if (toType.SpecialType == SpecialType.System_UInt16 && ushort.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
-            return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Int32 && int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var intValue))
-            return SymbolDisplay.FormatPrimitive(intValue, true, false);
-        if (toType.SpecialType == SpecialType.System_UInt32 && uint.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var uintValue))
-            return SymbolDisplay.FormatPrimitive(uintValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Int64 && long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var longValue))
-            return SymbolDisplay.FormatPrimitive(longValue, true, false);
-        if (toType.SpecialType == SpecialType.System_UInt64 && ulong.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ulongValue))
-            return SymbolDisplay.FormatPrimitive(ulongValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Single && float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
-            return SymbolDisplay.FormatPrimitive(floatValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Double && double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
-            return SymbolDisplay.FormatPrimitive(doubleValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Boolean && bool.TryParse(valueString, out var boolValue))
-            return SymbolDisplay.FormatPrimitive(boolValue, true, false);
-        if (toType.SpecialType == SpecialType.System_Char && char.TryParse(valueString, out var charValue))
-            return SymbolDisplay.FormatPrimitive(charValue, true, false);
+        if (toType.SpecialType == SpecialType.System_SByte)
+        {
+            if(sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
+                return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Byte)
+        {
+            if (byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
+                return SymbolDisplay.FormatPrimitive(byteValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Int16)
+        {
+            if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
+                return SymbolDisplay.FormatPrimitive(shortValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_UInt16)
+        {
+            if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
+                return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Int32)
+        {
+            if (int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var intValue))
+                return SymbolDisplay.FormatPrimitive(intValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_UInt32)
+        {
+            if (uint.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var uintValue))
+                return SymbolDisplay.FormatPrimitive(uintValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Int64)
+        {
+            if (long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var longValue))
+                return SymbolDisplay.FormatPrimitive(longValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_UInt64)
+        {
+            if (ulong.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ulongValue))
+                return SymbolDisplay.FormatPrimitive(ulongValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Single)
+        {
+            if (float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
+                return SymbolDisplay.FormatPrimitive(floatValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Double)
+        {
+            if (double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
+                return SymbolDisplay.FormatPrimitive(doubleValue, true, false);
+            else
+                reportDiagnostic();
+        }    
+        if (toType.SpecialType == SpecialType.System_Boolean)
+        {
+            if (bool.TryParse(valueString, out var boolValue))
+                return SymbolDisplay.FormatPrimitive(boolValue, true, false);
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Char)
+        {
+            if (char.TryParse(valueString, out var charValue))
+                return SymbolDisplay.FormatPrimitive(charValue, true, false);
+            else
+                reportDiagnostic();
+        }
         if (toType.SpecialType == SpecialType.System_String && valueString.StartsWith("{}", StringComparison.Ordinal))
             return SymbolDisplay.FormatLiteral(valueString.Substring(2), true);
         if (toType.SpecialType == SpecialType.System_String)
             return SymbolDisplay.FormatLiteral(valueString, true);    
-        if (toType.SpecialType == SpecialType.System_DateTime && DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeValue))
-            return $"new global::System.DateTime({dateTimeValue.Ticks})";
-        if (toType.SpecialType == SpecialType.System_Decimal && decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
-            return $"new global::System.Decimal({decimalValue})";
+        if (toType.SpecialType == SpecialType.System_DateTime)
+        {
+            if (DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeValue))
+                return $"new global::System.DateTime({dateTimeValue.Ticks})";
+            else
+                reportDiagnostic();
+        }
+        if (toType.SpecialType == SpecialType.System_Decimal)
+        {
+            if (decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
+                return $"new global::System.Decimal({decimalValue})";
+            else
+                reportDiagnostic();
+        }
         if (toType.TypeKind == TypeKind.Enum)
             return string.Join(" | ", valueString.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}"));
-        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default) && TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out var timeSpanValue))
-            return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
+        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default))
+        {
+            if (TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out var timeSpanValue))
+                return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
+            else
+                reportDiagnostic();
+        }
         if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.Uri")!, SymbolEqualityComparer.Default))
             return $"new global::System.Uri(\"{valueString}\", global::System.UriKind.RelativeOrAbsolute)";
 
@@ -182,7 +262,7 @@ static class NodeSGExtensions
         return SymbolDisplay.FormatLiteral(valueString, true);    
 	}
 
-    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo iXmlLineInfo)
+    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
         //TODO check if there's a SourceGen version of the converter
@@ -284,8 +364,79 @@ static class NodeSGExtensions
         var filePath = context.FilePath;
         var lineInfo = node as IXmlLineInfo;
         using (PrePost.NewConditional(writer, "_MAUIXAML_SG_SOURCEINFO"))
-        {
             writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+    }
+
+    public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
+    {
+        static string? GetTargetTypeName(INode node)
+			=> (((ElementNode)node).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+
+
+        var parts = ((string)node.Value).Split('.');
+        if (parts.Length == 1)
+        {
+            string? typeName = null;
+            var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
+            if (   node.Parent is ElementNode { XmlType.NamespaceUri: XamlParser.MauiUri }
+                && (   node.Parent is ElementNode { XmlType.Name: "Setter" }
+                    || node.Parent is ElementNode { XmlType.Name: "PropertyCondition" }))
+            {
+                if (parent!.XmlType.NamespaceUri == XamlParser.MauiUri &&
+                    (parent.XmlType.Name == "Trigger"
+                        || parent.XmlType.Name == "DataTrigger"
+                        || parent.XmlType.Name == "MultiTrigger"
+                        || parent.XmlType.Name == "Style"))
+                {
+                    typeName = GetTargetTypeName(parent);
+                }
+                else if (parent.XmlType.NamespaceUri == XamlParser.MauiUri && parent.XmlType.Name == "VisualState")
+                {
+                    typeName = FindTypeNameForVisualState(parent, context, node);
+                }
+            }
+            else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri && (node.Parent as ElementNode)?.XmlType.Name == "Trigger")
+            {
+                typeName = GetTargetTypeName(node.Parent!);
+            }
+            var typeSymbol = XmlTypeExtensions.GetTypeSymbol(typeName!, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+            var propertyName = parts[0];
+            return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
         }
+        else if (parts.Length == 2)
+        {
+            var typeSymbol = XmlTypeExtensions.GetTypeSymbol(parts[0], context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+            string propertyName = parts[1];
+            return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
+        }
+        else
+        {
+            throw new Exception();
+            // FIXME context.ReportDiagnostic
+        }
+    }
+
+    static string? FindTypeNameForVisualState(IElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
+    {
+        //1. parent is VisualState, don't check that
+
+        //2. check that the VS is in a VSG
+        if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != "VisualStateGroup")
+            //FIXME context.RreportDiagnostic
+            throw new Exception($"Expected VisualStateGroup but found {parent.Parent}");
+
+        //3. if the VSG is in a VSGL, skip that as it could be implicit
+        if (target.Parent is ListNode
+            || ((target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri
+                && (target.Parent as IElementNode)?.XmlType.Name == "VisualStateGroupList"))
+            target = (IElementNode)target.Parent.Parent;
+        else
+            target = (IElementNode)target.Parent;
+
+        //4. target is now a Setter in a Style, or a VE
+        if (target.XmlType.NamespaceUri == XamlParser.MauiUri && target.XmlType.Name == "Setter")
+            return ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+        else
+            return target.XmlType.Name;
     }
 }

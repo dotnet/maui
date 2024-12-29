@@ -53,5 +53,5 @@ static class IMethodSymbolExtensions
     }
 
 	public static IEnumerable<string> ToMethodParameters(this IEnumerable<(INode node, ITypeSymbol type, ITypeSymbol? converter)> parameters, SourceGenContext context)
-        => parameters.Select(p => p.node is ValueNode vn ? vn.ConvertTo(p.type, p.converter, context, vn as IXmlLineInfo) : p.node is ElementNode en ? context.Variables[en].Name : "null");
+        => parameters.Select(p => p.node is ValueNode vn ? vn.ConvertTo(p.type, p.converter, context) : p.node is ElementNode en ? context.Variables[en].Name : "null");
 }
