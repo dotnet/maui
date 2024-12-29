@@ -42,7 +42,7 @@ class SetResourcesVisitor(SourceGenContext context) : IXamlNodeVisitor
             if (   propertyName.LocalName == "Resources" 
                 || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal))
             {
-                SetPropertiesVisitor.SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node);
+                SetPropertiesVisitor.SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context);
                 return;
             }
         }

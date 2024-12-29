@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 internal class KnownMarkups
 {
-	public static string ProvideValueForStaticExtension(IElementNode markupNode, Action<Diagnostic> reportDiagnostic, SourceGenContext context, out ITypeSymbol? returnType)
+	public static string ProvideValueForStaticExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType)
 	{
 		returnType = null;
 		if (!markupNode.Properties.TryGetValue(new XmlName("", "Member"), out INode ntype))
@@ -21,7 +21,7 @@ internal class KnownMarkups
 			if (IsNullOrEmpty(member) || !member!.Contains("."))
 			{
 				//FIXME
-				reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null));
 				return string.Empty;
 			}
 
@@ -29,11 +29,11 @@ internal class KnownMarkups
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 
-			var typeSymbol = typename.GetTypeSymbol(reportDiagnostic, context.Compilation, context.XmlnsCache, markupNode);
+			var typeSymbol = typename.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, markupNode);
 			if (typeSymbol == null)
 			{
 				//FIXME
-				reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typename}"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typename}"));
 				return string.Empty;
 			}
 			var field = typeSymbol.GetAllFields(membername, context).FirstOrDefault(f => f.IsStatic);
@@ -43,7 +43,7 @@ internal class KnownMarkups
 			if (field == null && property == null)
 			{
 				//FIXME
-				reportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, "Member not found"));
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, "Member not found"));
 				return string.Empty;
 			}
 			if (field != null)
@@ -60,4 +60,32 @@ internal class KnownMarkups
 			//Should never happen
 			return "null";
 	}
+
+	public static string ProvideValueForSetter(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
+
+		if (!node.Properties.TryGetValue(new XmlName("", "Value"), out INode? valueNode) &&
+			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Value"), out valueNode) &&
+			node.CollectionItems.Count == 1)
+			valueNode = node.CollectionItems[0];
+		
+		var bpNode = (ValueNode)node.Properties[new XmlName("", "Property")];
+		var bpRef = bpNode.GetBindableProperty(context);
+
+		string targetsetter;
+		if (node.Properties.TryGetValue(new XmlName("", "TargetName"), out var targetNode))
+			targetsetter = $"TargetName = \"{((ValueNode)targetNode).Value}\", ";
+		else
+			targetsetter="";
+
+		if (valueNode is ValueNode vn)
+			return $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, Value = {vn.ConvertTo(bpRef, context)}}}";
+		else if (context.Variables.TryGetValue(valueNode, out var variable))
+			return $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, Value = {variable.Name}}}";
+	
+		//FIXME context.ReportDiagnostic
+		throw new Exception();
+	}
+
 }

@@ -229,4 +229,8 @@
     <value>No method found for '{0}'.</value>
     <comment>0 is a method or ctor name</comment>
   </data>
+  <data name="InvalidFormat" xml:space="preserve">
+    <value>Cannot convert "{0}" into "{1}".</value>
+    <comment>/</comment>
+  </data>
 </root>

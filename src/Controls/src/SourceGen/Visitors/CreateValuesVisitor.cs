@@ -114,10 +114,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
         }
 
 
-        if (NodeSGExtensions.GetKnownSGMarkups(Context).TryGetValue(type, out var handler))
+        if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var handler))
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            Writer.WriteLine($"var {variableName} = {handler(node, Context.ReportDiagnostic, Context, out var returnType)};");
+            Writer.WriteLine($"var {variableName} = {handler(node, Context, out var returnType)};");
             Context.Variables[node] = new LocalVariable(returnType!, variableName);
 
             //skip the node as it has been fully exhausted
@@ -194,7 +194,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             && (isColor || type.IsValueType))
         { //<Color>HotPink</Color>
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            var valueString = valueNode.ConvertTo(type, Context, valueNode as IXmlLineInfo);
+            var valueString = valueNode.ConvertTo(type, Context);
             
             Writer.WriteLine($"var {variableName} = {valueString};");
             Context.Variables[node] = new LocalVariable(type, variableName);
@@ -274,7 +274,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             return "default";
         var valueString = (string)((ValueNode)node.CollectionItems[0]).Value;
 
-        return NodeSGExtensions.ValueForLanguagePrimitive(valueString, toType: type, context);
+        return NodeSGExtensions.ValueForLanguagePrimitive(valueString, toType: type, context, node);
     }
 }
 
