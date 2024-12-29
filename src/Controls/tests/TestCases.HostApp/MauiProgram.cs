@@ -37,8 +37,10 @@ namespace Maui.Controls.Sample
 			// Register the custom handler
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
+#if IOS || MACCATALYST || ANDROID || WINDOWS
 				handlers.AddHandler(typeof(_60122Image), typeof(_60122ImageHandler));
 				handlers.AddHandler(typeof(_57114View), typeof(_57114ViewHandler));
+#endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
 #endif
