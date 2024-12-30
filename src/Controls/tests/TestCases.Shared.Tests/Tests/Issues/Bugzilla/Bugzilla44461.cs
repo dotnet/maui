@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -16,6 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ScrollToPosition.Center works differently on Android and iOS";
 
 		[Test]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla44461Test()
 		{
 			var positions = TapButton(0);
@@ -34,3 +38,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
