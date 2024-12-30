@@ -560,6 +560,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (newSize != _currentSize && newSize.Width > 0 && newSize.Height > 0)
 			{
+				ListViewBase.SizeChanged -= OnListViewSizeChanged;
 				_currentSize = newSize;
 
 				if (_isCarouselViewReady)
