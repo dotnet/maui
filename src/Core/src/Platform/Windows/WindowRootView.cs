@@ -444,6 +444,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_titleBar is null || mauiContext is null)
 			{
+				UpdateBackgroundColorForButtons();
 				if (AppTitleBarContentControl is not null)
 				{
 					AppTitleBarContentControl.Content = null;
@@ -510,10 +511,16 @@ namespace Microsoft.Maui.Platform
 
 		private void UpdateBackgroundColorForButtons()
 		{
-			if (NavigationViewControl?.ButtonHolderGrid is not null &&
-				_titleBar?.Background is SolidPaint bg)
+			if (NavigationViewControl?.ButtonHolderGrid is not null)
 			{
+				if (_titleBar?.Background is SolidPaint bg)
+				{
 				NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
+			}
+				else
+				{
+					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(UI.Colors.Transparent);
+		}
 			}
 		}
 

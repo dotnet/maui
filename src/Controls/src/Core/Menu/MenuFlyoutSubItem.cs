@@ -1,12 +1,6 @@
 #nullable disable
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Windows.Input;
-using Microsoft.Maui.Controls.StyleSheets;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,10 +10,7 @@ namespace Microsoft.Maui.Controls
 
 		public MenuFlyoutSubItem()
 		{
-			LogicalChildrenInternalBackingStore = new CastingList<Element, IMenuElement>(_menus);
 		}
-
-		private protected override IList<Element> LogicalChildrenInternalBackingStore { get; }
 
 		public IMenuElement this[int index]
 		{
@@ -38,6 +29,7 @@ namespace Microsoft.Maui.Controls
 		public void Add(IMenuElement item)
 		{
 			var index = _menus.Count;
+			_menus.Add(item);
 			AddLogicalChild((Element)item);
 			NotifyHandler(nameof(IMenuBarItemHandler.Add), index, item);
 		}
@@ -70,6 +62,7 @@ namespace Microsoft.Maui.Controls
 
 		public void Insert(int index, IMenuElement item)
 		{
+			_menus.Insert(index, item);
 			InsertLogicalChild(index, (Element)item);
 			NotifyHandler(nameof(IMenuFlyoutSubItemHandler.Insert), index, item);
 		}
@@ -77,7 +70,10 @@ namespace Microsoft.Maui.Controls
 		public bool Remove(IMenuElement item)
 		{
 			var index = _menus.IndexOf(item);
-			var result = RemoveLogicalChild((Element)item, index);
+			_menus.RemoveAt(index);
+
+			// Logical Child Index might not match location in _menus list
+			var result = RemoveLogicalChild((Element)item);
 			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
 			return result;
@@ -86,7 +82,10 @@ namespace Microsoft.Maui.Controls
 		public void RemoveAt(int index)
 		{
 			var item = _menus[index];
-			RemoveLogicalChild((Element)item, index);
+			_menus.RemoveAt(index);
+
+			// Logical Child Index might not match location in _menus list
+			RemoveLogicalChild((Element)item);
 			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 		}
 
