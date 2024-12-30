@@ -272,6 +272,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			// TODO: After take the screenshot, restore the App Window to the previous state.
 			App.ExitFullScreen();
 
+			// Wait a little bit to complete the system animation moving the App Window to previous state.
+			Thread.Sleep(500);
+
 			return screenshotPngBytes;
 		}
 #endif
