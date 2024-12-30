@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Entry");
 			App.Tap("Entry");
-			VerifyScreenshot();
+			App.WaitForElement("Tapped");
 		}
 	}
 }
