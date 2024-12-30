@@ -515,12 +515,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_titleBar?.Background is SolidPaint bg)
 				{
-				NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
-			}
+					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
+				}
 				else
 				{
 					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(UI.Colors.Transparent);
-		}
+				}
 			}
 		}
 
