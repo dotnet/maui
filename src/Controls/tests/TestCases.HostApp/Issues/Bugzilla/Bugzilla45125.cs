@@ -59,6 +59,17 @@ public class Bugzilla45125 : TestContentPage
 
 	protected override void Init()
 	{
+		InitializeControls();
+
+		_status.Text = _groupsAppearing.Text = _groupsDisappearing.Text = "";
+		_Appearing = _Disappearing = 0;
+		_scroll.SetScrolledPosition(0, 0);
+
+		InitTest(ListViewCachingStrategy.RecycleElement, true);
+	}
+
+	void InitializeControls(){
+
 		_status = new Label
 		{
 			TextColor = Colors.White
@@ -80,14 +91,9 @@ public class Bugzilla45125 : TestContentPage
 		{
 			BackgroundColor = Colors.Black,
 			Content = _status,
-			MinimumWidthRequest = 200
+			WidthRequest = 200,
+			HeightRequest = 500
 		};
-
-		_status.Text = _groupsAppearing.Text = _groupsDisappearing.Text = "";
-		_Appearing = _Disappearing = 0;
-		_scroll.ScrollToAsync(0, 0, false);
-
-		InitTest(ListViewCachingStrategy.RecycleElement, true);
 	}
 
 	void InitTest(ListViewCachingStrategy cachingStrategy, bool useTemplate)
@@ -99,6 +105,8 @@ public class Bugzilla45125 : TestContentPage
 			ItemsSource = groups,
 			ItemTemplate = new DataTemplate(typeof(MyCell)),
 			HasUnevenRows = true,
+			HeightRequest = 500,
+			WidthRequest = 200,
 
 			// Must be grouped to repro
 			IsGroupingEnabled = true
@@ -113,40 +121,18 @@ public class Bugzilla45125 : TestContentPage
 		listView.ItemAppearing += ListView_ItemAppearing;
 		listView.ItemDisappearing += ListView_ItemDisappearing;
 
-		_status = new Label
-		{
-			TextColor = Colors.White
-		};
+		InitializeControls();
 
-		_groupsAppearing = new Label
+		var horStack = new HorizontalStackLayout
 		{
-			TextColor = Colors.Green,
-			AutomationId = AppearingLabelId
+			HeightRequest = 500
 		};
-
-		_groupsDisappearing = new Label
-		{
-			TextColor = Colors.Blue,
-			AutomationId = DisappearingLabelId
-		};
-
-		_scroll = new ScrollView
-		{
-			BackgroundColor = Colors.Black,
-			Content = _status,
-			MinimumWidthRequest = 200
-		};
-
-		var horStack = new StackLayout
-		{
-			Orientation = StackOrientation.Horizontal,
-			Children = { _scroll, listView },
-			HeightRequest = 300
-		};
+		horStack.Children.Add(_scroll);
+		horStack.Children.Add(listView);
 
 		Button nextButton = new Button { Text = "Next", AutomationId = TestButtonId };
 		nextButton.Clicked += NextButton_Clicked;
-		StackLayout stack = new StackLayout
+		VerticalStackLayout stack = new VerticalStackLayout
 		{
 			Children = { new Label { Text = Instructions }, _groupsAppearing, _groupsDisappearing, horStack, nextButton }
 		};
@@ -158,7 +144,6 @@ public class Bugzilla45125 : TestContentPage
 		var firstGroup = groups.First();
 		var firstItem = firstGroup.First();
 
-
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0612 // Type or member is obsolete
 		Device.StartTimer(TimeSpan.FromSeconds(1), () => { listView.ScrollTo(lastItem, lastGroup, ScrollToPosition.End, true); return false; });
@@ -169,6 +154,7 @@ public class Bugzilla45125 : TestContentPage
 		Device.StartTimer(TimeSpan.FromSeconds(2), () => { listView.ScrollTo(firstItem, firstItem, ScrollToPosition.MakeVisible, true); return false; });
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
+
 		_TestNumber++;
 	}
 
@@ -176,7 +162,7 @@ public class Bugzilla45125 : TestContentPage
 	{
 		_status.Text = _groupsAppearing.Text = _groupsDisappearing.Text = "";
 		_Appearing = _Disappearing = 0;
-		_scroll.ScrollToAsync(0, 0, false);
+		_scroll.SetScrolledPosition(0, 0);
 
 		switch (_TestNumber)
 		{

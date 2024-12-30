@@ -17,21 +17,14 @@ public class Issue5412 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue5412Test() 
 	{
-	    App.WaitForElement("Index Page");
-#if ANDROID || WINDOWS
-		App.TapFlyoutPageIcon();
-#else
-		App.Tap("Menu title");
-#endif
-		App.WaitForElement("Settings");
+	    App.WaitForElementTillPageNavigationSettled("Index Page");
+		App.TapFlyoutPageIcon("Menu title");
+		App.WaitForElementTillPageNavigationSettled("Settings");
 		App.Tap("Settings");
-		App.WaitForElement("Settings Page");
-#if ANDROID || WINDOWS || MACCATALYST
+		App.WaitForElementTillPageNavigationSettled("Settings Page");
 		App.TapBackArrow();
-#elif IOS
-		App.Back();
-#endif
+
 		// This fails if the menu isn't displayed (original error behavior)
-		App.WaitForElement("Index Page");
+		App.WaitForElementTillPageNavigationSettled("Index Page");
 	}
 }
