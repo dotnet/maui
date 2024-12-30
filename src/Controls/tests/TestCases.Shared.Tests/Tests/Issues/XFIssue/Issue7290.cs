@@ -26,9 +26,9 @@ public class Issue7290 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void DisplayActionSheetAndDisplayAlertFromOnAppearing()
 	{
-		App.WaitForElement(Cancel);
+		App.WaitForElementTillPageNavigationSettled(Cancel);
 		App.Tap(Cancel);
-		App.WaitForElement(Close);
+		App.WaitForElementTillPageNavigationSettled(Close);
 		App.Tap(Close);
 	}
 }
