@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void VerifyCollectionViewVisualState()
 		{
 			App.WaitForElement("CollectionView");
@@ -24,4 +22,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
