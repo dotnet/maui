@@ -12,7 +12,6 @@ public class Issue5412 : _IssuesUITest
 
 	public override string Issue => "5412 - (NavigationBar disappears on FlyoutPage)";
 
-	// TODO: Check corresponding AppHost UI page, that needs updating. Things are commented out there.
 	[Test]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue5412Test() 
@@ -26,5 +25,6 @@ public class Issue5412 : _IssuesUITest
 
 		// This fails if the menu isn't displayed (original error behavior)
 		App.WaitForElementTillPageNavigationSettled("Index Page");
+		App.WaitForFlyoutIcon("Menu title", isShell: false);
 	}
 }
