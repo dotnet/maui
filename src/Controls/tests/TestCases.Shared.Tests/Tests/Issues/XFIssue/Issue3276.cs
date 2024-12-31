@@ -24,7 +24,9 @@ public class Issue3276 : _IssuesUITest
 	[Category(UITestCategories.ContextActions)]
 	public void Issue3276Test()
 	{
+		App.WaitForElement(Second);
 		App.Tap(Second);
+		App.WaitForElement(First);
 		App.Tap(First);
 		App.WaitForElement("second 1");
 	}

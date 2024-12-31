@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,14 +17,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
-		public async Task Issue59172Test()
+		public void Issue59172Test()
 		{
+			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
+			App.WaitForElementTillPageNavigationSettled("GoBackDelayed");
 			App.Tap("GoBackDelayed");
-			App.Back();
-
-			await Task.Delay(1000);
+			App.TapBackArrow();
 
 			// App should not have crashed
 			App.WaitForElement("GoForward");
@@ -33,14 +31,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
-		public async Task Issue59172RecoveryTest()
+		public void Issue59172RecoveryTest()
 		{
+			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
+			App.WaitForElement("GoBackDelayedSafe");
 			App.Tap("GoBackDelayedSafe");
-			App.Back();
-
-			await Task.Delay(1000);
+			App.TapBackArrow();
 
 			App.Tap("GoForward");
 
@@ -49,4 +46,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

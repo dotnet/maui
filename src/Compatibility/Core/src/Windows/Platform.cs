@@ -331,7 +331,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				};
 
 				Canvas.SetZIndex(_busyIndicator, 1);
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				_container.Children.Add(_busyIndicator);
+#pragma warning restore RS0030 // Do not use banned APIs
 			}
 
 			return _busyIndicator;
@@ -435,8 +438,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			IVisualElementRenderer pageRenderer = GetRenderer(page);
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			if (_container.Children.Contains(pageRenderer.ContainerElement))
 				_container.Children.Remove(pageRenderer.ContainerElement);
+#pragma warning restore RS0030 // Do not use banned APIs
 		}
 
 		void AddPage(Page page)
@@ -451,8 +456,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			IVisualElementRenderer pageRenderer = page.GetOrCreateRenderer();
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			if (!_container.Children.Contains(pageRenderer.ContainerElement))
 				_container.Children.Add(pageRenderer.ContainerElement);
+#pragma warning restore RS0030 // Do not use banned APIs
 
 			pageRenderer.ContainerElement.Width = _container.ActualWidth;
 			pageRenderer.ContainerElement.Height = _container.ActualHeight;
