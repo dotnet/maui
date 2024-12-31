@@ -42,9 +42,11 @@ public class Bugzilla30317 : _IssuesUITest
 	{
 	}
 
+	protected override bool ResetAfterEachTest => true;
+
 	public override string Issue => "https://bugzilla.xamarin.com/show_bug.cgi?id=30137";
  
-	[Test, Order(1)]
+	[Test]
 	public void Bugzilla30317ItemSourceOnAppearingContentPage()
 	{
 		App.WaitForElement(PageOne);
@@ -56,12 +58,12 @@ public class Bugzilla30317 : _IssuesUITest
 		TouchAndHold(PageOneItem5);
 	}
  
-	[Test, Order(2)]
+	[Test]
 	public void Bugzilla30317ItemSourceCtorContentPage()
 	{
 		App.WaitForElement(PageTwoButton);
 		App.Tap(PageTwoButton);
-		App.WaitForElement(PageTwo);
+		App.WaitForElementTillPageNavigationSettled(PageTwo);
 
 		App.WaitForElement(PageTwoItem1);
 		TouchAndHold(PageTwoItem1);
@@ -70,18 +72,21 @@ public class Bugzilla30317 : _IssuesUITest
 		TouchAndHold(PageTwoItem5);
 	}
  
-	[Test, Order(3)]
+	[Test]
 	public void Bugzilla30317ItemSourceTabbedPage()
 	{
+
+		App.WaitForElement(PageTwoButton);
+		App.Tap(PageTwoButton);
+		App.WaitForElementTillPageNavigationSettled(PageTwo);
  
-		App.WaitForElement(PageTwo);
 		App.WaitForElement(PageThreeButton);
 		App.Tap(PageThreeButton);
  
-		App.WaitForElement(TabTwo);
+		App.WaitForElementTillPageNavigationSettled(TabTwo);
 		App.Tap(TabTwo);
  
-		App.WaitForElement(TabTwoItem1);
+		App.WaitForElementTillPageNavigationSettled(TabTwoItem1);
 		TouchAndHold(TabTwoItem1);
 		App.WaitForElement(TabTwoItem1);
  
