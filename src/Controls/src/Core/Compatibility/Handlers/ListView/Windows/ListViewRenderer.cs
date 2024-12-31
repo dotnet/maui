@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return source is INotifyCollectionChanged && source is IList;
 		}
 
-		void ReloadData()
+		void ReloadData(bool HasUnevenRowsChanged = false)
 		{
 			var isStillTheSameUnderlyingItemsSource = _collection != null && object.ReferenceEquals(_collection, Element?.ItemsSource);
 
@@ -173,6 +173,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					_collection = (IList)Element.ItemsSource;
 				}
+			}
+
+			if (HasUnevenRowsChanged)
+			{
+				// We need to reset the ItemsSource when HasUnevenRowsChanged this causes the ListView to update the view
+				isStillTheSameUnderlyingItemsSource = false;
 			}
 
 			if (isStillTheSameUnderlyingItemsSource && _collectionViewSource != null)
@@ -286,6 +292,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == ListView.HasUnevenRowsProperty.PropertyName)
 			{
 				ClearSizeEstimate();
+				// Update Itemsource to update view that HasUnevenRowsProperty has changed.
+				ReloadData(true);
 			}
 			else if (e.PropertyName == ListView.ItemTemplateProperty.PropertyName)
 			{
