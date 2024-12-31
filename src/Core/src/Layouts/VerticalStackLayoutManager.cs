@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Layouts
 			double measuredHeight = 0;
 			double measuredWidth = 0;
 			double childWidthConstraint = widthConstraint - padding.HorizontalThickness;
+			double childHeightConstraint;
 			int spacingCount = 0;
 
 			for (int n = 0; n < Stack.Count; n++)
@@ -28,7 +29,11 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				spacingCount += 1;
-				var measure = child.Measure(childWidthConstraint, double.PositiveInfinity);
+				childHeightConstraint =  double.PositiveInfinity;
+				if (child is IScrollView)
+					childHeightConstraint = heightConstraint - measuredHeight;
+
+				var measure = child.Measure(childWidthConstraint, childHeightConstraint);
 				measuredHeight += measure.Height;
 				measuredWidth = Math.Max(measuredWidth, measure.Width);
 			}
