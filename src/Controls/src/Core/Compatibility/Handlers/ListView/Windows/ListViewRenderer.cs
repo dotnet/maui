@@ -578,7 +578,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ScrollTo(listProxy.ProxiedEnumerable, listProxy[0], ScrollToPosition.Start, true, true);
 		}
 
-		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item)
+		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item, ScrollToPosition toPosition)
 		{
 			var selectorItem = List.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.Primitives.SelectorItem;
 			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
@@ -586,8 +586,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!position.HasValue)
 				return false;
 			// scroll with animation
-			viewer.ChangeView(position.Value.X, position.Value.Y, null);
+			
+			if (toPosition == ScrollToPosition.Center)
+			{
+                double offset = (viewer.ViewportHeight - MeasureItemHeight(viewer, item)) / 2;
+				viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+			}
+			else if (toPosition == ScrollToPosition.End)
+			{
+				double offset = viewer.ViewportHeight - MeasureItemHeight(viewer, item);
+				viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+			}
+			else
+				viewer.ChangeView(position.Value.X, position.Value.Y, null);
+			
 			return true;
+		}
+
+		double MeasureItemHeight(ScrollViewer viewer, object item)
+		{
+			var content = (FrameworkElement)List.ItemTemplate.LoadContent();
+			content.DataContext = item;
+			content.Measure(new global::Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
+			return content.DesiredSize.Height;
 		}
 
 #pragma warning disable 1998 // considered for removal
@@ -617,7 +638,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			object c = t[location.Item2];
 
 			// scroll to desired item with animation
-			if (shouldAnimate && ScrollToItemWithAnimation(viewer, c))
+			if (shouldAnimate && ScrollToItemWithAnimation(viewer, c, toPosition))
 				return;
 
 			double viewportHeight = viewer.ViewportHeight;
@@ -645,17 +666,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					case ScrollToPosition.End:
 					case ScrollToPosition.Center:
 						{
-							var content = (FrameworkElement)List.ItemTemplate.LoadContent();
-							content.DataContext = c;
-							content.Measure(new global::Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
 
-							double tHeight = content.DesiredSize.Height;
+							double tHeight = MeasureItemHeight(viewer, item);
 
 							if (toPosition == ScrollToPosition.Center)
 								semanticLocation.Bounds = new WRect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
 							else
 								semanticLocation.Bounds = new WRect(0, viewportHeight - tHeight, 0, 0);
 
+							List.MakeVisible(semanticLocation);
 							break;
 						}
 				}
