@@ -68,6 +68,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='Time']/Docs/*" />
+#if NET6_0_OR_GREATER
+		[System.ComponentModel.TypeConverter(typeof(TimeOnlyToTimeSpanConverter))]
+#endif
 		public TimeSpan Time
 		{
 			get { return (TimeSpan)GetValue(TimeProperty); }
