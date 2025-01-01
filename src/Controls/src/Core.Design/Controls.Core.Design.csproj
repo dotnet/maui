@@ -39,6 +39,13 @@
     <Reference Include="System.Xaml" />
 	</ItemGroup>
 	<ItemGroup>
+		<!-- Security SBOM targets -->
+		<PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>    
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
 	</ItemGroup>
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
