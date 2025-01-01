@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
 using BasePlatformType = ObjCRuntime.INativeObject;
@@ -72,20 +73,7 @@ namespace Microsoft.Maui.Platform
 			// DI.Ext Service provider. We just register them all as transient? possibly?
 			if (handler == null)
 			{
-				var viewType = view.GetType();
-				try
-				{
-					if (handlersWithConstructors.Contains(viewType))
-						handler = viewType.CreateTypeWithInjection(context);
-					else
-						handler = context.Handlers.GetHandler(viewType);
-				}
-				catch (MissingMethodException)
-				{
-					handler = viewType.CreateTypeWithInjection(context);
-					if (handler != null)
-						handlersWithConstructors.Add(view.GetType());
-				}
+				handler = CreateElementHandler(view, context, handler);
 			}
 
 			if (handler == null)
@@ -97,6 +85,37 @@ namespace Microsoft.Maui.Platform
 
 			if (handler.VirtualView != view)
 				handler.SetVirtualView(view);
+
+			return handler;
+		}
+
+		static IElementHandler? CreateElementHandler(IElement view, IMauiContext context, IElementHandler? handler)
+		{
+#if IOS || ANDROID || MACCATALYST // Current implementation supports UIKit and Android only => See maui/src/Core/src/Handlers/Layout/HeadlessLayoutHandler
+			if (view is ICompressedLayout { IsHeadless: true } && view.Parent is ILayout)
+			{
+				return new HeadlessLayoutHandler();
+			}
+#endif
+
+			var viewType = view.GetType();
+			try
+			{
+				if (handlersWithConstructors.Contains(viewType))
+				{
+					return viewType.CreateTypeWithInjection(context);
+				}
+
+				handler = context.Handlers.GetHandler(viewType);
+			}
+			catch (MissingMethodException)
+			{
+				handler = viewType.CreateTypeWithInjection(context);
+				if (handler != null)
+				{
+					handlersWithConstructors.Add(view.GetType());
+				}
+			}
 
 			return handler;
 		}
