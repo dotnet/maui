@@ -40,16 +40,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 			}
 
-			if (_headerUIView is MauiView hv)
-			{
-				hv.LayoutChanged -= HeaderViewLayoutChanged;
-			}
-
-			if (_footerUIView is MauiView fv)
-			{
-				fv.LayoutChanged -= FooterViewLayoutChanged;
-			}
-
 			_headerUIView = null;
 			_headerViewFormsElement = null;
 			_footerUIView = null;
@@ -125,36 +115,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFooterView()
 		{
-			if (_footerUIView is MauiView mvPrevious)
-			{
-				mvPrevious.LayoutChanged -= FooterViewLayoutChanged;
-			}
-
 			UpdateSubview(ItemsView?.Footer, ItemsView?.FooterTemplate, FooterTag,
 				ref _footerUIView, ref _footerViewFormsElement);
 			UpdateHeaderFooterPosition();
-
-			if (_footerUIView is MauiView mv)
-			{
-				mv.LayoutChanged += FooterViewLayoutChanged;
-			}
 		}
 
 		internal void UpdateHeaderView()
 		{
-			if (_headerUIView is MauiView mvPrevious)
-			{
-				mvPrevious.LayoutChanged -= HeaderViewLayoutChanged;
-			}
-
 			UpdateSubview(ItemsView?.Header, ItemsView?.HeaderTemplate, HeaderTag,
 				ref _headerUIView, ref _headerViewFormsElement);
 			UpdateHeaderFooterPosition();
-
-			if (_headerUIView is MauiView mv)
-			{
-				mv.LayoutChanged += HeaderViewLayoutChanged;
-			}
 		}
 
 
@@ -200,8 +170,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var currentInset = CollectionView.ContentInset;
 
-				nfloat headerWidth = _headerUIView?.Frame.Width ?? 0f;
-				nfloat footerWidth = _footerUIView?.Frame.Width ?? 0f;
+				nfloat headerWidth = _headerViewFormsElement?.ToPlatform()?.Frame.Width ?? 0f;
+				nfloat footerWidth = _footerViewFormsElement?.ToPlatform()?.Frame.Width ?? 0f;
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
 				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
@@ -230,8 +200,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				var currentInset = CollectionView.ContentInset;
-				nfloat headerHeight = _headerUIView?.Frame.Height ?? 0f;
-				nfloat footerHeight = _footerUIView?.Frame.Height ?? 0f;
+				nfloat headerHeight = _headerViewFormsElement?.ToPlatform()?.Frame.Height ?? 0f;
+				nfloat footerHeight = _footerViewFormsElement?.ToPlatform()?.Frame.Height ?? 0f;
 				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
 
 				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight)
@@ -282,16 +252,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_footerViewFormsElement != null)
 				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
-		}
-
-		void HeaderViewLayoutChanged(object sender, EventArgs e)
-		{
-			HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
-		}
-
-		void FooterViewLayoutChanged(object sender, EventArgs e)
-		{
-			HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
 		}
 	}
 }
