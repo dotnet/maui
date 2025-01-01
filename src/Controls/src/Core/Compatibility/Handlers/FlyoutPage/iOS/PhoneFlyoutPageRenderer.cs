@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (FlyoutOverlapsDetailsInPopoverMode)
 			{
-				if (FlyoutPageController.ShouldShowSplitMode)
+				if (FlyoutPageController.ShouldShowSplitMode || Presented)
 					UpdatePresented(true);
 				else
 					UpdatePresented(false);
