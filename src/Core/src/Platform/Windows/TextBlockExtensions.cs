@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Documents;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class TextBlockExtensions
+	public static partial class TextBlockExtensions
 	{
 		public static void UpdateFont(this TextBlock platformControl, Font font, IFontManager fontManager)
 		{
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Platform
 
 			// Just in case we are not given text with elements.
 			var modifiedText = string.Format("<div>{0}</div>", text);
-			modifiedText = Regex.Replace(modifiedText, "<br>", "<br></br>", RegexOptions.IgnoreCase);
+			modifiedText = RegexHelper.NewLinesRegex.Replace(modifiedText, "<br></br>");
 
 			// Reset the text because we will add to it.
 			platformControl.Inlines.Clear();
@@ -129,5 +129,27 @@ namespace Microsoft.Maui.Platform
 
 			return XElement.Load(reader);
 		}
+
+	}
+
+	internal partial class RegexHelper
+	{
+#if NET7_0_OR_GREATER
+		// .NET 9 allows partial properties, no need for method
+		// get every quote in the string along with all the backslashes preceding it
+		[GeneratedRegex (@"<br>", RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex NewLinesRegex
+		{
+			get;
+		}
+#else
+		internal static readonly Regex NewLinesRegex =
+										new (
+											// get every quote in the string along with all the backslashes preceding it
+											@"<br>",
+											RegexOptions.Compiled | RegexOptions.IgnoreCase,
+											TimeSpan.FromMilliseconds(1000) 		// against malicious input
+											);		
+#endif											
 	}
 }

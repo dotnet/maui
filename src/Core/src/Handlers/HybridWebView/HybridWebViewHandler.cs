@@ -364,7 +364,8 @@ namespace Microsoft.Maui.Handlers
 				return js;
 
 			//get every quote in the string along with all the backslashes preceding it
-			var singleQuotes = Regex.Matches(js, @"(\\*?)'");
+			//var singleQuotes = Regex.Matches(js, @"(\\*?)'");
+			var singleQuotes = RegexHelper.AllQuotesWithPrecedingBackslashsRegex.Matches(js);
 
 			var uniqueMatches = new List<string>();
 
@@ -386,7 +387,8 @@ namespace Microsoft.Maui.Handlers
 				var numberOfBackslashes = match.Length - 1;
 				var slashesToAdd = (numberOfBackslashes * 2) + 1;
 				var replacementStr = "'".PadLeft(slashesToAdd + 1, '\\');
-				js = Regex.Replace(js, @"(?<=[^\\])" + Regex.Escape(match), replacementStr);
+				// dynamic - not easy to use GeneratedRegex 
+				js = Regex.Replace(js, @"(?<=[^\\])" + Regex.Escape(match), replacementStr, RegexOptions.Compiled);
 			}
 
 			return js;
@@ -429,5 +431,26 @@ namespace Microsoft.Maui.Handlers
 			return Interlocked.Increment(ref _asyncInvokeTaskId);
 		}
 		ConcurrentDictionary<string, TaskCompletionSource<string>> IHybridWebViewTaskManager.AsyncTaskCallbacks => _asyncTaskCallbacks;
+
+		internal partial class RegexHelper
+		{
+#if NET7_0_OR_GREATER
+
+			// get every quote in the string along with all the backslashes preceding it
+			[GeneratedRegex (@"(\\*?)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			public static partial Regex AllQuotesWithPrecedingBackslashsRegex
+			{
+				get;
+			}
+#else
+			static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
+											new (
+												// get every quote in the string along with all the backslashes preceding it
+												@"(\\*?)'",
+												RegexOptions.Compiled,
+												TimeSpan.FromMilliseconds(1000) 		// against malicious input
+												);		
+#endif											
+		}
 	}
 }
