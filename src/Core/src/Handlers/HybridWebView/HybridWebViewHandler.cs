@@ -25,11 +25,13 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -153,89 +155,124 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
+		internal async Task<byte[]?> InvokeDotNetAsync(NameValueCollection invokeQueryString)
 		{
 			try
 			{
-				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+				var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
+
 				var invokeDataString = invokeQueryString["data"];
 				if (string.IsNullOrEmpty(invokeDataString))
 				{
 					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
 				}
 
-				byte[]? contentBytes = null;
-				string? contentType = null;
-
 				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
 
-				if (invokeData != null && invokeData.MethodName != null)
+				if (invokeData?.MethodName is null)
 				{
-					var t = ((IHybridWebView)VirtualView).InvokeJavaScriptType;
-					var result = InvokeDotNetMethod(t!, invokeTarget, invokeData);
-
-					contentType = "application/json";
-
-					DotNetInvokeResult dotNetInvokeResult;
-
-					if (result is not null)
-					{
-						var resultType = result.GetType();
-						if (resultType.IsArray || resultType.IsClass)
-						{
-							dotNetInvokeResult = new DotNetInvokeResult()
-							{
-								Result = JsonSerializer.Serialize(result),
-								IsJson = true,
-							};
-						}
-						else
-						{
-							dotNetInvokeResult = new DotNetInvokeResult()
-							{
-								Result = result,
-							};
-						}
-					}
-					else
-					{
-						dotNetInvokeResult = new();
-					}
-
-					contentBytes = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult));
+					throw new ArgumentException("The invoke data did not provide a method name.", nameof(invokeQueryString));
 				}
 
-				return (contentBytes, contentType);
+				var invokeResult = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
+				var result = GetInvokeResult(invokeResult);
+				var json = JsonSerializer.Serialize(result);
+				var contentBytes = Encoding.UTF8.GetBytes(json);
+
+				return contentBytes;
 			}
 			catch (Exception)
 			{
 				// TODO: Log this
 			}
 
-			return (null, null);
+			return default;
+
+			static DotNetInvokeResult GetInvokeResult(object? result)
+			{
+				// null invoke result means an empty result
+				if (result is null)
+				{
+					return new();
+				}
+
+				// a reference type or an array should be serialized to JSON
+				var resultType = result.GetType();
+				if (resultType.IsArray || resultType.IsClass)
+				{
+					return new DotNetInvokeResult()
+					{
+						Result = JsonSerializer.Serialize(result),
+						IsJson = true,
+					};
+				}
+
+				// a value type should be returned as is
+				return new DotNetInvokeResult()
+				{
+					Result = result,
+				};
+			}
 		}
 
-		private static object? InvokeDotNetMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, object jsInvokeTarget, JSInvokeMethodData invokeData)
+		private static async Task<object?> InvokeDotNetMethodAsync(
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType,
+			object jsInvokeTarget,
+			JSInvokeMethodData invokeData)
 		{
-			var invokeMethod = t.GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
-			if (invokeMethod == null)
+			var requestMethodName = invokeData.MethodName!;
+			var requestParams = invokeData.ParamValues;
+
+			var dotnetMethod = targetType.GetMethod(requestMethodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
+			if (dotnetMethod is null)
 			{
-				throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
+				throw new InvalidOperationException($"The method {requestMethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
 			}
 
-			if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
+			var dotnetParams = dotnetMethod.GetParameters();
+			if (requestParams is not null && dotnetParams.Length != requestParams.Length)
 			{
-				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
+				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {requestMethodName} ({dotnetParams.Length}) doesn't match the number of values passed from JavaScript code ({requestParams.Length}).");
 			}
 
-			var paramObjectValues =
-				invokeData.ParamValues?
-					.Zip(invokeMethod.GetParameters(), (s, p) => s == null ? null : JsonSerializer.Deserialize(s, p.ParameterType))
-					.ToArray();
+			object?[]? invokeParamValues = null;
+			if (requestParams is not null)
+			{
+				invokeParamValues = new object?[requestParams.Length];
+				for (var i = 0; i < requestParams.Length; i++)
+				{
+					var reqValue = requestParams[i];
+					var paramType = dotnetParams[i].ParameterType;
+					var deserialized = JsonSerializer.Deserialize(reqValue, paramType);
+					invokeParamValues[i] = deserialized;
+				}
+			}
 
-			return invokeMethod.Invoke(jsInvokeTarget, paramObjectValues);
+			var dotnetReturnValue = dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
+
+			if (dotnetReturnValue is null)
+			{
+				return null;
+			}
+
+			if (dotnetReturnValue is Task task) // Task and/or Task<T>
+			{
+				await task;
+
+				// Task<T>
+				if (dotnetMethod.ReturnType.IsGenericType)
+				{
+					var resultProperty = dotnetMethod.ReturnType.GetProperty(nameof(Task<object>.Result));
+					return resultProperty?.GetValue(task);
+				}
+
+				// Task
+				return null;
+			}
+
+			return dotnetReturnValue;
 		}
-
 
 		private sealed class JSInvokeMethodData
 		{
