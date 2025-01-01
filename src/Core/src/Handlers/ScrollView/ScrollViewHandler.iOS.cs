@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Handlers
 			var scrollOrientation = scrollView.Orientation;
 			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
 			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
-			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
+			var contentSize = MeasureContent(scrollView, scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
 
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
@@ -177,6 +177,21 @@ namespace Microsoft.Maui.Handlers
 			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
 
 			return new Size(width, height);
+		}
+
+		static Size MeasureContent(IContentView contentView, Thickness inset, double widthConstraint, double heightConstraint)
+		{
+			var content = contentView.PresentedContent;
+
+			var contentSize = Size.Zero;
+
+			if (content != null)
+			{
+				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
+					heightConstraint - inset.VerticalThickness);
+			}
+
+			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
