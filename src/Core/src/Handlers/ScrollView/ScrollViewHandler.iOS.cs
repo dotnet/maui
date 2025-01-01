@@ -12,20 +12,6 @@ namespace Microsoft.Maui.Handlers
 
 		readonly ScrollEventProxy _eventProxy = new();
 
-		public override bool NeedsContainer
-		{
-			get
-			{
-				//if we are being wrapped by a BorderView we need a container
-				//so we can handle masks and clip shapes
-				if (VirtualView?.Parent is IBorderView)
-				{
-					return true;
-				}
-				return base.NeedsContainer;
-			}
-		}
-
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
 
 		protected override UIScrollView CreatePlatformView()
