@@ -240,7 +240,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemDisplayBindingChanged(BindingBase oldValue, BindingBase newValue)
 		{
-			ResetItems();
+			ResetItems(oldValue as IList, newValue as IList);
 		}
 
 		void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null)
 			{
 				((LockableObservableListWrapper)Items).IsLocked = true;
-				ResetItems();
+				ResetItems(oldValue, newValue);
 			}
 			else
 			{
@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls
 					RemoveItems(e);
 					break;
 				default: //Move, Replace, Reset
-					ResetItems();
+					ResetItems(e.OldItems, e.NewItems);
 					break;
 			}
 
@@ -339,7 +339,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void ResetItems()
+		void ResetItems(IList oldValue, IList newValue)
 		{
 			if (ItemsSource == null)
 				return;
@@ -348,7 +348,10 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex();
+			if (oldValue is null || (newValue?.Count ?? -1) < oldValue.Count)
+			{
+				ClampSelectedIndex();
+			}
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
