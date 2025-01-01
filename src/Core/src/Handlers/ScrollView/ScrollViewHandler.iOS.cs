@@ -2,6 +2,7 @@
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -184,6 +185,16 @@ namespace Microsoft.Maui.Handlers
 			var content = contentView.PresentedContent;
 
 			var contentSize = Size.Zero;
+
+			if (widthConstraint != double.PositiveInfinity && Dimension.IsExplicitSet(contentView.Width))
+			{
+				widthConstraint = contentView.Width;
+			}
+
+			if (heightConstraint != double.PositiveInfinity && Dimension.IsExplicitSet(contentView.Height))
+			{
+				heightConstraint = contentView.Height;
+			}
 
 			if (content != null)
 			{
