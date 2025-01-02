@@ -21,9 +21,7 @@ public class Issue6878 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellItemItemsClearTests()
 	{
-		App.WaitForTabElement(StatusLabel);
 		App.TapTab(ClearShellItems);
-
 		var label = App.WaitForTabElement(StatusLabel);
 		Assert.That(label.ReadText(), Is.EqualTo(StatusLabelText));
 		App.TapTab(PostClearTopTab, true);

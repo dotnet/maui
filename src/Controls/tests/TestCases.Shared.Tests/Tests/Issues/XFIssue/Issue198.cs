@@ -29,7 +29,6 @@ public class Issue198 : _IssuesUITest
 		// App.EnterText("SearchBarGo", "G198");
 		// App.Tap("SearchButton");
 	
-		App.WaitForTabElement(PageThree);
 		App.TapTab(PageThree);
 	
 		App.WaitForElement("No Crash");

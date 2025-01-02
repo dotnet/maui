@@ -45,7 +45,6 @@ public class TabbedPageTests : _IssuesUITest
 	{
 		App.WaitForElement(HomePage);
 		App.Tap(HomePage);
-		App.WaitForTabElement(Page2);
 		App.TapTab(Page2);
 		App.WaitForElement(Pop2);
 

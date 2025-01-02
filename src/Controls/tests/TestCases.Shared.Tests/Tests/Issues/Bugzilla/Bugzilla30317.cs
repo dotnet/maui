@@ -16,16 +16,9 @@ public class Bugzilla30317 : _IssuesUITest
 	const string PageTwo = "PageTwo"; 
 #endif
 
-#if ANDROID 
-    const string TabOne = "TABONECTOR";
-    const string TabTwo = "TABTWOONAPPEARING";
-#elif WINDOWS
+
 	const string TabOne = "TabOneCtor";
     const string TabTwo = "TabTwoOnAppearing";
-#else
-	const string TabOne = "TabbedPageOne";
-	const string TabTwo = "TabbedPageTwo";
-#endif
 	const string PageTwoButton = "GoToPageTwoButton";
 	const string PageThreeButton = "GoToPageThreeButton";
 	const string PageOneItem1 = "PageOneItem1";
@@ -78,8 +71,7 @@ public class Bugzilla30317 : _IssuesUITest
 		App.WaitForElement(PageThreeButton);
 		App.Tap(PageThreeButton);
  
-		App.WaitForElement(TabTwo);
-		App.Tap(TabTwo);
+		App.TapTab(TabTwo);
  
 		App.WaitForElement(TabTwoItem1);
 		TouchAndHold(TabTwoItem1);
@@ -89,8 +81,7 @@ public class Bugzilla30317 : _IssuesUITest
 		TouchAndHold(TabTwoItem5);
 		App.WaitForElement(TabTwoItem5);
  
-		App.WaitForElement(TabOne);
-		App.Tap(TabOne);
+		App.TapTab(TabOne);
  
 		App.WaitForElement(TabOneItem1);
 		TouchAndHold(TabOneItem1);

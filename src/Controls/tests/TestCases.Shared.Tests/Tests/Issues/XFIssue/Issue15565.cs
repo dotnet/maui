@@ -21,14 +21,17 @@ public class Issue15565 : _IssuesUITest
 	[Test]
 	public void TitleViewHeightIsNotZero()
 	{
-		App.TapTab(Page1,true);
-        var titleView = App.WaitForElement("title 1").GetRect();
-        var topTab = App.WaitForTabElement(Page1).GetRect();
- 
-        var titleViewBottom = titleView.Y + titleView.Height;
-        var topTabTop = topTab.Y;
- 
-        Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned in iOS 16");
+		App.TapTab(Page1, true);
+#if WINDOWS // In Windows the Page 1 items are inside the root navViewItem which shows in popup, so we need to tap it once to make them visible..
+		App.Tap("navViewItem");
+#endif
+		var titleView = App.WaitForElement("title 1").GetRect();
+		var topTab = App.WaitForTabElement(Page1).GetRect();
+
+		var titleViewBottom = titleView.Y + titleView.Height;
+		var topTabTop = topTab.Y;
+
+		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned in iOS 16");
 	}
 
 
@@ -43,10 +46,10 @@ public class Issue15565 : _IssuesUITest
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement("title 1");
-		ValidateElementsCount("title 1");     
-		App.TapTab(Page1,true);
-		App.TapTab(Page2,true);
-		App.TapTab(Page3,true);
+		ValidateElementsCount("title 1");
+		App.TapTab(Page1, true);
+		App.TapTab(Page2, true);
+		App.TapTab(Page3, true);
 		ValidateElementsCount("title 3");
 	}
 

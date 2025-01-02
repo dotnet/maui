@@ -27,7 +27,6 @@ public class TabbedPageWithList : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
 	{
-		App.WaitForTabElement(ListPage);
 		App.TapTab(ListPage);
 
 		App.WaitForElement("Jason");

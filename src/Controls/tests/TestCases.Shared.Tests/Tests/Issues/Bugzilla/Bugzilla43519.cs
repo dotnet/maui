@@ -22,7 +22,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void TabbedModalNavigation()
 		{
-			App.WaitForTabElement(Page2);
 			App.TapTab(Page2);
 			App.WaitForElement(Push);
 			App.Tap(Push);

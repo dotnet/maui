@@ -30,7 +30,6 @@ public class Bugzilla32801 : _IssuesUITest
                 App.WaitForElementTillPageNavigationSettled(Level3StackButton);
                 App.Tap(Level3StackButton);
                 App.WaitForElement("Stack 3");
-                App.WaitForTabElement(Tab1);
                 App.TapTab(Tab1);
                 App.WaitForElementTillPageNavigationSettled(SecondTabStackButton);
                 App.Tap(SecondTabStackButton);

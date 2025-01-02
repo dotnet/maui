@@ -14,11 +14,13 @@ public class ShellTitleView : _IssuesUITest
     const string Page2 = "page 2";
     const string Page3 = "page 3";
     const string Page4 = "page 4";
-    const string Page = "page 2";
+    
 #if WINDOWS
     const string TitleViewId="commandBar";
+	const string Page="navViewItem";
 #else
     const string TitleViewId = "TitleViewId";
+	const string Page = "page 2";
 #endif
 
     public override string Issue => "Shell Title View Tests";
@@ -44,8 +46,8 @@ public class ShellTitleView : _IssuesUITest
 	[Test]
 	public void TitleViewPositionsCorrectly()
 	{
-		var titleView = App.WaitForTabElement(TitleViewId).GetRect();
-		var topTab = App.WaitForTabElement(Page).GetRect();
+		var titleView = App.WaitForElement(TitleViewId).GetRect();
+		var topTab = App.WaitForElement(Page).GetRect();
 		var titleViewBottom = titleView.Y + titleView.Height;
 		var topTabTop = topTab.Y;
 		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned behind tabs");
@@ -54,14 +56,14 @@ public class ShellTitleView : _IssuesUITest
 	[Test]
 	public void NoDuplicateTitleViews()
 	{
-		App.WaitForTabElement(TitleViewId);
+		App.WaitForElement(TitleViewId);
 		Assert.That(App.FindElements(TitleViewId).Count, Is.EqualTo(1));
 		App.TapTab(Page2, true);
 		App.WaitForElement("Instructions");
 		App.TapTab(Page3,true);
 		App.WaitForElement("Instructions");
 		App.TapTab(Page4,true);
-		App.WaitForTabElement(TitleViewId);
+		App.WaitForElement(TitleViewId);
 		Assert.That(App.FindElements(TitleViewId).Count, Is.EqualTo(1));
 	}
 }

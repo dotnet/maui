@@ -6,8 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue1323 : _IssuesUITest
 {
-
-
 	const string Tab1 = "Page 1";
 	const string Tab2 = "Page5";
 
