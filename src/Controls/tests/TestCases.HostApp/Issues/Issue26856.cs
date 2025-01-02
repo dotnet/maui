@@ -12,7 +12,7 @@
 			menuBarItem.Add(new MenuFlyoutItem { Text = "Original Item" });
 
 			// Create MenuFlyoutSubItem
-			var menuFlyoutSubItem = new MenuFlyoutSubItem { Text = "Flyout"  };
+			var menuFlyoutSubItem = new MenuFlyoutSubItem { Text = "Flyout" };
 
 			// Add MenuFlyoutItem to MenuFlyoutSubItem
 			menuFlyoutSubItem.Add(new MenuFlyoutItem { Text = "Original Sub Item" });
@@ -29,7 +29,7 @@
 				Spacing = 25
 			};
 
-			var label = new Label { Text = "Menu Test", AutomationId ="Label" };
+			var label = new Label { Text = "Menu Test" };
 			var button = new Button
 			{
 				Text = "Add Flyout Sub Item"
@@ -44,6 +44,7 @@
 
 			// Set Content of the Page
 			AddContentPage(new ContentPage { Content = layout });
+			FlyoutBehavior = FlyoutBehavior.Disabled;
 		}
 
 		private void OnButtonClicked(object sender, EventArgs e)

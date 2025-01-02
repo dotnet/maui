@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Page)]
 		public void MenuFlyoutItemShouldVisibleInsideMenuFlyoutSubItems()
 		{
-			App.WaitForElement("Label");
+			App.WaitForElement("Button");
 			App.Tap("Button");
 			App.Tap("Menu Flyout Item");
 			App.WaitForElement("Flyout");
