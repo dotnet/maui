@@ -46,7 +46,6 @@ namespace Maui.Controls.Sample.Issues
 			};
 			upButton.Clicked += UpButton_Clicked;
 
-
 			var downButton = new Button
 			{
 				Text = "Down",
@@ -69,7 +68,6 @@ namespace Maui.Controls.Sample.Issues
 			stackLayout.Children.Add(upButton);
 			stackLayout.Children.Add(downButton);
 			stackLayout.Children.Add(label);
-
 			this.Content = stackLayout;
 		}
 
