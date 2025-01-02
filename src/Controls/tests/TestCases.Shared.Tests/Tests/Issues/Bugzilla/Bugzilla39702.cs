@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(TheEntry);
 			App.EnterText(TheEntry, Success);
-			App.WaitForElement(Success);
+			App.WaitForElementTillPageNavigationSettled(Success);
 		}
 	}
 }
