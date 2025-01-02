@@ -590,13 +590,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				case ScrollToPosition.Center:
 					{
-						double offset = (viewer.ViewportHeight - MeasureItemHeight(viewer, item)) / 2;
+						double offset = (viewer.ViewportHeight - GetContentDesiredHeight(viewer, item)) / 2;
 						viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
 						break;
 					}
 				case ScrollToPosition.End:
 					{
-						double offset = viewer.ViewportHeight - MeasureItemHeight(viewer, item);
+						double offset = viewer.ViewportHeight - GetContentDesiredHeight(viewer, item);
 						viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
 						break;
 					}
@@ -672,7 +672,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					case ScrollToPosition.Center:
 						{
 
-							double tHeight = MeasureItemHeight(viewer, item);
+							double tHeight = GetContentDesiredHeight(viewer, item);
 
 							if (toPosition == ScrollToPosition.Center)
 								semanticLocation.Bounds = new WRect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
