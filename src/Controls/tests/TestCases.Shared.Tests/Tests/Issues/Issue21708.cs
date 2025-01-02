@@ -8,7 +8,7 @@ public class Issue21708 : _IssuesUITest
 {
 	public Issue21708(TestDevice device) : base(device) { }
 
-	public override string Issue => "CollectionView.Scrolled event offset isn't correctly reset when items change on Android";
+	public override string Issue => "CollectionView.Scrolled event offset isn't correctly reset when items change";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
