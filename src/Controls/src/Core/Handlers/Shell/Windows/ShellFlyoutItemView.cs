@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var request = view.Measure(availableSize.Width, availableSize.Height);
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
-				return request.ToPlatform();
+				return base.MeasureOverride(availableSize);
 			}
 
 			return base.MeasureOverride(availableSize);
