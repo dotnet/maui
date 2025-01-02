@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 	{
 		View? _content;
 
-		internal MauiHorizontalScrollView? _hScrollView { get; private set; }
+		MauiHorizontalScrollView? _hScrollView;
 		bool _isBidirectional;
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
 		ScrollBarVisibility _defaultHorizontalScrollVisibility;
@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		internal float LastY { get; set; }
 
 		internal bool ShouldSkipOnTouch;
+		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
 
 		public MauiScrollView(Context context) : base(context)
 		{

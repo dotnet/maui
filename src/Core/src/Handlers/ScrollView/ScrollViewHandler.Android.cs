@@ -102,11 +102,11 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Orientation == ScrollOrientation.Both)
 			{
-				if (scrollX == 0 && PlatformView._hScrollView is not null)
+				if (scrollX == 0)
 				{
 					// Need to pass the native HorizontalScrollView's ScrollX position to the virtual view to resolve
     				// the zero scroll offset issue since the framework returns an improper ScrollX value.
-					scrollX = PlatformView._hScrollView.ScrollX;
+					scrollX = PlatformView.HorizontalScrollOffset;
 				}
 
 				if (scrollY == 0)
