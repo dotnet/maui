@@ -146,6 +146,21 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateSearchButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		{
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+			
+			if (textField?.LeftView is not UIImageView iconView || iconView.Image is null)
+				return;
+			
+			if (searchBar.SearchButtonColor is not null)
+			{
+				iconView.Image = iconView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+				iconView.TintColor = searchBar.SearchButtonColor.ToPlatform();
+			}
+
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField = null)
 		{
 			textField ??= uiSearchBar.GetSearchTextField();
