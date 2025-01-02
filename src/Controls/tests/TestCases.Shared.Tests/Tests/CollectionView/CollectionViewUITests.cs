@@ -31,14 +31,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			var galleryName = $"{collectionTestName} Galleries";
 			var regexGalleryName = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
 
-			App.WaitForElement(regexGalleryName);
-			App.Click(regexGalleryName);
+			App.WaitForElementTillPageNavigationSettled(regexGalleryName);
+			App.Tap(regexGalleryName);
 		}
 
 		internal void VisitSubGallery(string galleryName)
 		{
-			App.WaitForElement(galleryName);
-			App.Click(galleryName);
+			App.WaitForElementTillPageNavigationSettled(galleryName);
+			App.Tap(galleryName);
 		}
 	}
 }
