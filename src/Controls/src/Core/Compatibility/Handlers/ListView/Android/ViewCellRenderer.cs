@@ -307,7 +307,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 
 					var size = _viewHandler.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec);
-					height = (int)Context.ToPixels(_viewCell.Height > 0 ? _viewCell.Height : size.Height);
+					if (_viewCell.Height > 0)
+						height = (int)Context.ToPixels(_viewCell.Height);
+					else
+						height = (int)size.Height;
 				}
 				else
 				{
