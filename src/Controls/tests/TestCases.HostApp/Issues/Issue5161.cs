@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 
-namespace CControls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 5161, "ShellContent IsEnabledProperty does not work", PlatformAffected.iOS)]
 public class Issue5161 : Shell
 {
