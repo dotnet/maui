@@ -586,24 +586,29 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!position.HasValue)
 				return false;
 			// scroll with animation
-			
-			if (toPosition == ScrollToPosition.Center)
+			switch (toPosition)
 			{
-                double offset = (viewer.ViewportHeight - MeasureItemHeight(viewer, item)) / 2;
-				viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+				case ScrollToPosition.Center:
+					{
+						double offset = (viewer.ViewportHeight - MeasureItemHeight(viewer, item)) / 2;
+						viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+						break;
+					}
+				case ScrollToPosition.End:
+					{
+						double offset = viewer.ViewportHeight - MeasureItemHeight(viewer, item);
+						viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+						break;
+					}
+				default:
+					viewer.ChangeView(position.Value.X, position.Value.Y, null);
+					break;
 			}
-			else if (toPosition == ScrollToPosition.End)
-			{
-				double offset = viewer.ViewportHeight - MeasureItemHeight(viewer, item);
-				viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
-			}
-			else
-				viewer.ChangeView(position.Value.X, position.Value.Y, null);
-			
+
 			return true;
 		}
 
-		double MeasureItemHeight(ScrollViewer viewer, object item)
+		double GetContentDesiredHeight(ScrollViewer viewer, object item)
 		{
 			var content = (FrameworkElement)List.ItemTemplate.LoadContent();
 			content.DataContext = item;
