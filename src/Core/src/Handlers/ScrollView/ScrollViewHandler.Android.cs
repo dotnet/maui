@@ -97,8 +97,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			VirtualView.VerticalOffset = Context.FromPixels(e.ScrollY);
-			VirtualView.HorizontalOffset = Context.FromPixels(e.ScrollX);
+			// Pass the native ScrollView's ScrollY to the virtual view to maintain the correct vertical offset.
+			VirtualView.VerticalOffset = Context.FromPixels(PlatformView.ScrollY);
+			// Need to pass the native HorizontalScrollView's ScrollX position to the virtual view to resolve
+    		// the zero scroll offset issue since the framework returns an improper ScrollX value.
+			VirtualView.HorizontalOffset = Context.FromPixels(PlatformView._hScrollView?.ScrollX ?? e.ScrollX);
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)

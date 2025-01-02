@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 	{
 		View? _content;
 
-		MauiHorizontalScrollView? _hScrollView;
+		internal MauiHorizontalScrollView? _hScrollView { get; private set; }
 		bool _isBidirectional;
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
 		ScrollBarVisibility _defaultHorizontalScrollVisibility;
