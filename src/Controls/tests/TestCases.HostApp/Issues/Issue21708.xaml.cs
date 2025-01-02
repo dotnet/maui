@@ -3,7 +3,7 @@
 namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 21708, "CollectionView.Scrolled event offset isn't correctly reset when items change on Android", PlatformAffected.All)]
+	[Issue(IssueTracker.Github, 21708, "CollectionView.Scrolled event offset isn't correctly reset when items change", PlatformAffected.All)]
 	public partial class Issue21708 : ContentPage
 	{
 		ObservableCollection<int> _items;
