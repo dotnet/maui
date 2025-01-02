@@ -11,9 +11,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #if ANDROID
 	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
-	[TestFixture(TestDevice.iOS)]
+		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
-	[TestFixture(TestDevice.Mac)]
+		[TestFixture(TestDevice.Mac)]
 #elif WINTEST
 		[TestFixture(TestDevice.Windows)]
 #endif
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 		}
-
+		
 #if MACUITEST
 		byte[] TakeScreenshot()
 		{
