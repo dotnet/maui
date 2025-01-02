@@ -16,16 +16,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void ScrollToSelectedItem26857()
+		public void Issue26857Test_SelectItemDown()
 		{
 			App.WaitForElement("DownButton");
 			App.Tap("DownButton");
-			var downLabel = App.WaitForElement("SelectedItemLabel");
-			Assert.That(downLabel.GetText(), Is.EqualTo("Item 5"));
+			VerifyScreenshot("DownButton");
+		}
+
+		[Test]
+		[Category(UITestCategories.ListView)]
+		public void Issue26857Test_SelectItemUp()
+		{
 			App.WaitForElement("UpButton");
 			App.Tap("UpButton");
-			var upLabel = App.WaitForElement("SelectedItemLabel");
-			Assert.That(upLabel.GetText(), Is.EqualTo("Item 3"));
+			VerifyScreenshot("UpButton");
 		}
 	}
 }
