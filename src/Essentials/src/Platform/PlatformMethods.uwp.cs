@@ -98,7 +98,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public static Maui.Graphics.Rect GetCaptionButtonsBound(IntPtr hWnd)
 		{
-			DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CAPTION_BUTTON_BOUNDS, out RECT value, Marshal.SizeOf(typeof(RECT)));
+			DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CAPTION_BUTTON_BOUNDS, out RECT value, Marshal.SizeOf<RECT>());
 			var density = GetDpiForWindow(hWnd) / 96f;
 			return new Graphics.Rect(
 				value.Left / density,

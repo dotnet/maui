@@ -33,7 +33,6 @@
   </Interfaces>
   <Docs>
     <summary>Contains a list of visual state groups for an application.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -49,7 +48,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.VisualStateGroupList" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -67,8 +65,6 @@
       </Parameters>
       <Docs>
         <param name="isDefault">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Add">
@@ -94,7 +90,6 @@
       <Docs>
         <param name="item">The visual state group to add to the list.</param>
         <summary>Adds the specified visual state group to the list.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -117,7 +112,6 @@
       <Parameters />
       <Docs>
         <summary>Removes all visual state groups from the list.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Contains">
@@ -145,7 +139,6 @@
         <summary>Checks whether <paramref name="item" /> is in the list of visual state groups.</summary>
         <returns>
           <see langword="true" /> if <paramref name="item" /> is in the list of groups. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CopyTo">
@@ -173,7 +166,6 @@
         <param name="array">To be added.</param>
         <param name="arrayIndex">To be added.</param>
         <summary>Copies the list group to the specified <paramref name="array" />, starting at <paramref name="arrayIndex" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">
@@ -196,7 +188,6 @@
       <Docs>
         <summary>Gets the number of visual state groups in the list.</summary>
         <value>The number of visual state groups in the list.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnumerator">
@@ -220,7 +211,6 @@
       <Docs>
         <summary>Returns an enumerator for iterating over the groups in the list.</summary>
         <returns>An enumerator for iterating over the groups in the list.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IndexOf">
@@ -247,7 +237,6 @@
         <param name="item">The group whose index to get.</param>
         <summary>Returns the index of <paramref name="item" /> if found. Otherwise, returns <c>-1</c>.</summary>
         <returns>The index of <paramref name="item" /> if found. Otherwise, <c>-1</c>.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Insert">
@@ -302,7 +291,6 @@
         <summary>Gets a Boolean value that tells whether this list is read-only.</summary>
         <value>
           <see langword="true" /> if the list is read-only. Otherwise, <see langword="false" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -329,7 +317,6 @@
         <param name="index">The index of the item to get or set.</param>
         <summary>Gets or sets the item at the specified <paramref name="index" />.</summary>
         <value>The item at the specified <paramref name="index" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -356,7 +343,6 @@
         <param name="item">The item to remove.</param>
         <summary>Removes the group from the list of groups.</summary>
         <returns>The removed group.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveAt">
@@ -382,7 +368,6 @@
       <Docs>
         <param name="index">The index of the item to remove.</param>
         <summary>Removes the item at the specified <paramref name="index" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="System.Collections.IEnumerable.GetEnumerator">
@@ -406,7 +391,6 @@
       <Docs>
         <summary>Gets an enumerator that iterates over the groups in this list.</summary>
         <returns>An enumerator that iterates over the groups in this list.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

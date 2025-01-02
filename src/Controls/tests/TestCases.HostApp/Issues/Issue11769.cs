@@ -1,4 +1,6 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿using Microsoft.Maui.ApplicationModel;
+
+namespace Maui.Controls.Sample.Issues
 {
 
 	[Issue(IssueTracker.Github, 11769, "[Bug] Shell throws exception when delay adding Shell Content", issueTestNumber: 2)]
@@ -14,9 +16,7 @@
 				}
 			});
 
-#pragma warning disable CS0612 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-			Device.InvokeOnMainThreadAsync(() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
 			{
 				var shellContent = new ShellContent()
 				{
@@ -28,8 +28,6 @@
 
 				Items[0].Items[0].Items.Add(shellContent);
 			});
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 
@@ -40,9 +38,7 @@
 		protected override void Init()
 		{
 			Items.Add(new FlyoutItem());
-#pragma warning disable CS0612 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-			Device.InvokeOnMainThreadAsync(() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
 			{
 				var tab = new Tab()
 				{
@@ -60,8 +56,6 @@
 
 				Items[0].Items.Add(tab);
 			});
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 
@@ -71,9 +65,7 @@
 	{
 		protected override void Init()
 		{
-#pragma warning disable CS0612 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-			Device.InvokeOnMainThreadAsync(() =>
+			MainThread.InvokeOnMainThreadAsync(() =>
 			{
 				var page = AddBottomTab("Flyout Item");
 				page.Content = new Label()
@@ -81,8 +73,6 @@
 					Text = "Success"
 				};
 			});
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0612 // Type or member is obsolete
 		}
 	}
 }

@@ -47,7 +47,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.FontTypeConverter" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -70,8 +69,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Converts <paramref name="value" /> into a <see cref="T:Microsoft.Maui.Controls.Font" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

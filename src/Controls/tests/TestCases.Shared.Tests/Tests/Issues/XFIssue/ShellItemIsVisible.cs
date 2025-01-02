@@ -10,68 +10,109 @@ public class ShellItemIsVisible : _IssuesUITest
 	public ShellItemIsVisible(TestDevice testDevice) : base(testDevice)
 	{
 	}
+#if ANDROID
+	const string TitlePage = "ITEM TITLE PAGE";
+	const string TopTab1 = "TOP TAB 1";
+	const string TopTab2 = "TOP TAB 2";
+#else
+    const string TitlePage="Item Title Page";
+    const string TopTab1="Top Tab 1";
+    const string TopTab2="Top Tab 2";
+#endif
 
 	public override string Issue => "Shell Items IsVisible Test";
 
-	//	[Test]
-	//public void FlyoutItemVisible()
-	//{
-	//	RunningApp.Tap("ToggleFlyoutItem3");
-	//	ShowFlyout();
-	//	RunningApp.WaitForElement("Item2 Flyout");
-	//	RunningApp.WaitForNoElement("Item3 Flyout");
-	//}
+	[Test, Order(1)]
+	public void FlyoutItemVisible()
+	{
+		App.WaitForElement("ToggleFlyoutItem3");
+		App.WaitForElement("ToggleFlyoutItem3");
+		App.Tap("ToggleFlyoutItem3");
+		App.ShowFlyout();
+		App.WaitForElement("Item2 Flyout");
+		App.WaitForNoElement("Item3 Flyout");
+	}
 
-	//[Test]
-	//public void HideActiveShellContent()
-	//{
-	//	RunningApp.Tap("ToggleItem1");
-	//	RunningApp.WaitForElement("Welcome to Tab 1");
-	//	RunningApp.WaitForNoElement("ToggleItem1");
-	//}
-
-	//[Test]
-	//public void HideFlyoutItem()
-	//{
-	//	RunningApp.WaitForElement("ToggleItem1");
-	//	ShowFlyout();
-	//	RunningApp.WaitForElement("Item2 Flyout");
-	//	RunningApp.Tap("Item2 Flyout");
-	//	RunningApp.Tap("AllVisible");
-	//	RunningApp.Tap("ToggleItem2");
-	//	ShowFlyout();
-	//	RunningApp.WaitForElement("Item1 Flyout");
-	//	RunningApp.WaitForNoElement("Item2 Flyout");
-	//}
-
-	//[Test]
-	//public void ClearAndRecreateShellElements()
-	//{
-	//	RunningApp.WaitForElement("ClearAndRecreate");
-	//	RunningApp.Tap("ClearAndRecreate");
-	//	RunningApp.WaitForElement("ClearAndRecreate");
-	//	RunningApp.Tap("ClearAndRecreate");
-	//}
+	[Test, Order(6)]
+	public void HideActiveShellContent()
+	{
+		App.WaitForElement("Item1 Flyout");
+		App.Tap("Item1 Flyout");
+		App.WaitForElementTillPageNavigationSettled(TitlePage);
+		TapTobTab(TitlePage);
+		App.WaitForElementTillPageNavigationSettled("ToggleItem1");
+		App.Tap("ToggleItem1");
+		App.WaitForElement("Welcome to Tab 1");
+		App.WaitForNoElement("ToggleItem1");
+	}
 
 
-	//[Test]
-	//public void ClearAndRecreateFromSecondaryPage()
-	//{
-	//	RunningApp.WaitForElement("ClearAndRecreate");
-	//	ShowFlyout();
-	//	RunningApp.Tap("Item2 Flyout");
-	//	RunningApp.Tap("ToggleItem1");
-	//	RunningApp.Tap("ClearAndRecreate");
-	//	RunningApp.Tap("Top Tab 2");
-	//	RunningApp.Tap("Top Tab 1");
-	//}
+	[Test, Order(5)]
+	public void HideFlyoutItem()
+	{
+		App.TapInShellFlyout("Item2 Flyout");
+		App.WaitForElement("ToggleItem1");
+		App.ShowFlyout();
+		App.WaitForElement("Item2 Flyout");
+		App.Tap("Item2 Flyout");
+		App.WaitForElementTillPageNavigationSettled("AllVisible");
+		App.Tap("AllVisible");
+		App.WaitForElementTillPageNavigationSettled("ToggleItem2");
+		App.Tap("ToggleItem2");
+		App.WaitForElementTillPageNavigationSettled(TitlePage);
+		App.ShowFlyout();
+		App.WaitForElement("Item1 Flyout");
+		App.WaitForNoElement("Item2 Flyout");
+	}
 
-	//[Test]
-	//public void ClearAndRecreateShellContent()
-	//{
-	//	RunningApp.WaitForElement("ClearAndRecreateShellContent");
-	//	RunningApp.Tap("ClearAndRecreateShellContent");
-	//	RunningApp.WaitForElement("ClearAndRecreate");
-	//	RunningApp.Tap("ClearAndRecreate");
-	//}
+#if !IOS // This test fails on CI for iOS. But in local it not replicate.
+	[Test, Order(2)]
+	public void ClearAndRecreateShellElements()
+	{
+		App.WaitForElement("Item1 Flyout");
+		App.Tap("Item1 Flyout");
+		App.WaitForElement("ClearAndRecreate");
+		App.Tap("ClearAndRecreate");
+		App.WaitForElementTillPageNavigationSettled("ClearAndRecreate");
+		App.Tap("ClearAndRecreate");
+	}
+#endif
+
+#if !WINDOWS // The test fails on Windows and throws an exception: "Navigation still processing" when tapping ClearAndRecreate after tapping ToggleItem1. MoreInformation:https://github.com/dotnet/maui/issues/17608
+	[Test, Order(4)]
+	public void ClearAndRecreateFromSecondaryPage()
+	{
+		App.WaitForElement("ClearAndRecreate");
+		App.ShowFlyout();
+		App.WaitForElement("Item2 Flyout");
+		App.Tap("Item2 Flyout");
+		App.WaitForElementTillPageNavigationSettled("ToggleItem1");
+		App.Tap("ToggleItem1");
+		App.WaitForElementTillPageNavigationSettled("ClearAndRecreate");
+		App.Tap("ClearAndRecreate");
+		App.WaitForElementTillPageNavigationSettled(TopTab2);
+		App.Tap(TopTab2);
+		App.WaitForElementTillPageNavigationSettled(TopTab1);
+		App.Tap(TopTab1);
+	}
+#endif
+	[Test, Order(3)]
+	public void ClearAndRecreateShellContent()
+	{
+#if IOS // TODO: Remove this once enabled the test order 2 in iOS
+		App.WaitForElement("Item1 Flyout");
+		App.Tap("Item1 Flyout");
+#endif
+		App.WaitForElementTillPageNavigationSettled("ClearAndRecreateShellContent");
+		App.Tap("ClearAndRecreateShellContent");
+		App.WaitForElement("ClearAndRecreate");
+		App.Tap("ClearAndRecreate");
+	}
+	void TapTobTab(string tab)
+	{
+#if WINDOWS
+        App.Tap("navViewItem");
+#endif
+		App.Tap(tab);
+	}
 }

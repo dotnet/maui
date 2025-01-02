@@ -135,6 +135,18 @@
     <value>Liaison : type d'index d'indexeur non pris en charge : "{0}".</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Si x:DataType est spécifié, la liaison peut être compilée pour améliorer les performances d’exécution. Pour plus d’informations, consultez https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>Si x:DataType n’est pas explicitement null, la liaison peut être compilée pour améliorer les performances d’exécution. Pour plus d’informations, consultez https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>La compilation de la liaison peut être incorrecte car l’annotation x:DataType provient d’une étendue externe. Assurez-vous d’annoter tous les éléments XAML de DataTemplate avec le x:DataType correspondant. Pour plus d’informations, consultez https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>La liaison n’a pas été compilée car elle contient une propriété Source explicitement définie et la compilation des liaisons avec Source n’est pas activée. Envisagez d’activer cette optimisation en définissant &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; dans votre fichier de projet et assurez-vous que le type x:DataType correspondant est spécifié pour cette liaison. Pour plus d’informations, consultez https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Liaison : propriété "{0}" introuvable sur "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Un élément nommé "{0}" existe déjà dans ce NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Property, Property setter ou BindableProperty « {0} » est obsolète.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Propriété obligatoire "{0}" manquante sur "{1}".</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>La propriété Source n'est pas un littéral de chaîne.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>StyleSheet ne peut pas avoir à la fois Source et un contenu.</value>
+    <value>StyleSheet ne peut pas avoir à la fois une Source et un contenu.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>La propriété Style ou le contenu n'est pas un littéral de chaîne.</value>
@@ -233,6 +248,10 @@
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType attend un littéral de chaîne, une balise {{x:Type}} ou {{x:Null}}.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Si elle n’en requiert aucun, vous pouvez attribuer l’extension de balisage « {0} » avec [RequireService] ou [AcceptEmptyServiceProvider].</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Préfixe xmlns non déclaré "{0}".</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key attend un littéral de chaîne.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>Une clé est requise dans {StaticResource}.</value>
   </data>
 </root>

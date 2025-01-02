@@ -21,16 +21,16 @@ public class Issue5412 : _IssuesUITest
 	//	var settings = "Settings";
 	//	var back = "Back";
 
-	//	RunningApp.WaitForElement(hamburgerText);
-	//	RunningApp.Tap(hamburgerText);
+	//	App.WaitForElement(hamburgerText);
+	//	App.Tap(hamburgerText);
 
-	//	RunningApp.WaitForElement(settings);
-	//	RunningApp.Tap(settings);
+	//	App.WaitForElement(settings);
+	//	App.Tap(settings);
 
-	//	RunningApp.WaitForElement(back);
-	//	RunningApp.Tap(back);
+	//	App.WaitForElement(back);
+	//	App.Tap(back);
 
 	//	// This fails if the menu isn't displayed (original error behavior)
-	//	RunningApp.WaitForElement(hamburgerText);
+	//	App.WaitForElement(hamburgerText);
 	//}
 }

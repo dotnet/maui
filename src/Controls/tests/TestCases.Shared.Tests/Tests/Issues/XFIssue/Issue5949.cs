@@ -6,22 +6,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue5949 : _IssuesUITest
 {
+	public const string BackButton = "5949GoBack";
+	public const string ToolBarItem = "Login";
+
 	public Issue5949(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "CollectionView cannot access a disposed object.";
 
-	//[Test]
-	//[Category(UITestCategories.CollectionView)]
-	//public void DoNotAccessDisposedCollectionView()
-	//{
-	//	RunningApp.WaitForElement("Login");
-	//	RunningApp.Tap("Login");
-
-	//	RunningApp.WaitForElement(Issue5949_2.BackButton);
-	//	RunningApp.Tap(Issue5949_2.BackButton);
-
-	//	RunningApp.WaitForElement("Login");
-	//}
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void DoNotAccessDisposedCollectionView()
+	{
+		App.WaitForElement(ToolBarItem);
+		App.Tap(ToolBarItem);
+		App.WaitForElement(BackButton);
+		App.Tap(BackButton);
+		App.WaitForElement(ToolBarItem);
+	}
 }

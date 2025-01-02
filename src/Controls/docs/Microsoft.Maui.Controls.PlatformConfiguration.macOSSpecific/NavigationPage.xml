@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The navigation page instance that Microsoft.Maui.Controls created on the macOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetNavigationTransitionPopStyle">
@@ -38,7 +37,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the NavigationTransitionStyle value that tells what transition is used when a page is popped from the navigation stack.</summary>
         <returns>The NavigationTransitionStyle value that tells the current transition when a page is popped from the navigation stack.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNavigationTransitionPopStyle">
@@ -62,7 +60,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns the NavigationTransitionStyle value that tells what transition is used when a page is popped from the navigation stack.</summary>
         <returns>The NavigationTransitionStyle value that tells the current transition when a page is popped from the navigation stack.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNavigationTransitionPushStyle">
@@ -86,7 +83,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the NavigationTransitionStyle value that tells what transition is used when a page is push on the navigation stack.</summary>
         <returns>The NavigationTransitionStyle value that tells the current transition when a page is pushed on the navigation stack.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNavigationTransitionPushStyle">
@@ -110,7 +106,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns the NavigationTransitionStyle value that tells what transition is used when a page is pushed on the navigation stack.</summary>
         <returns>The NavigationTransitionStyle value that tells the current transition when a page is pushed on the navigation stack.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationTransitionPopStyleProperty">
@@ -129,7 +124,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the transition style of the platform-specific navigation page when a page is popped from the navigation stack.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationTransitionPushStyleProperty">
@@ -148,7 +142,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the transition style of the platform-specific navigation page when a page is pushed on the navigation stack.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetNavigationTransitionPopStyle">
@@ -173,7 +166,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new transition style.</param>
         <summary>Sets the transition style which is used, when popping from the navigation stack.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetNavigationTransitionPushStyle">
@@ -198,7 +190,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new transition style.</param>
         <summary>Sets the transition style which is used, when pushing pages on the navigation stack.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetNavigationTransitionStyle">
@@ -225,7 +216,6 @@
         <param name="pushStyle">The new transition style when a page is pushed on the navigation stack.</param>
         <param name="popStyle">The new transition style when a page is popped from the navigation stack.</param>
         <summary>Sets the transition style which is used, when popping and pushing pages on the navigation stack.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetNavigationTransitionStyle">
@@ -253,7 +243,6 @@
         <param name="popStyle">The new transition style when a page is popped from the navigation stack.</param>
         <summary>Sets the transition style which is used, when popping and pushing pages on the navigation stack.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

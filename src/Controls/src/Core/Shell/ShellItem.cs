@@ -351,7 +351,7 @@ namespace Microsoft.Maui.Controls
 					|| sourceType == typeof(ShellContent)
 					|| sourceType == typeof(TemplatedPage)
 					|| sourceType == typeof(MenuItem);
-			
+
 			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 				=> false;
 

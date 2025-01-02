@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumeration specifying vertical or horizontal scrolling directions.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Both">
@@ -81,7 +80,6 @@
       </ReturnValue>
       <MemberValue>3</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Vertical">

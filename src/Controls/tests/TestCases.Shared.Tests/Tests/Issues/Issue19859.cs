@@ -1,12 +1,11 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue19859 : _IssuesUITest
-    {
+	public class Issue19859 : _IssuesUITest
+	{
 		public Issue19859(TestDevice device) : base(device)
 		{
 		}
@@ -23,4 +22,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.ListViewGroupStyleSelector instead")]
-	public class ListViewGroupStyleSelector : GroupStyleSelector
+	public partial class ListViewGroupStyleSelector : GroupStyleSelector
 	{
 		protected override GroupStyle SelectGroupStyleCore(object group, uint level)
 		{

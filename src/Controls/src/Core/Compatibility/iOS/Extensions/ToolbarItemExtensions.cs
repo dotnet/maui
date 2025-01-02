@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
-			void OnClicked (object sender, EventArgs e)
+			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
 				{
@@ -108,6 +109,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					{
 						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
+						if (item.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null)
+						{
+							TintColor = fontImageSource.Color.ToPlatform();
+						}
 					});
 				}
 			}
@@ -148,7 +153,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				this.SetAccessibilityLabel(item);
 			}
 
-			void OnClicked (object sender, EventArgs e)
+			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
 				{

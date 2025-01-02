@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
@@ -21,8 +22,10 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
+			_commandExecutor.AddCommandGroup(new AppiumClipboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumDeviceActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumPinchToZoomActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumSliderActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumSwipeActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumScrollActions(this));
@@ -85,9 +88,21 @@ namespace UITest.Appium
 			return q.FindElement(this);
 		}
 
+#nullable disable
+		public virtual IUIElement FindElementByText(string text)
+		{
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElement(this);
+		}
+#nullable enable
+
 		public virtual IReadOnlyCollection<IUIElement> FindElements(string id)
 		{
 			return Query.ById(id);
+		}
+
+		public virtual IReadOnlyCollection<IUIElement> FindElementsByText(string text)
+		{
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElements(this);
 		}
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(IQuery query)

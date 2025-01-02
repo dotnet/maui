@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Maui.ApplicationModel;
 using Windows.Storage;
 
@@ -211,12 +212,16 @@ namespace Microsoft.Maui.Storage
 				{
 					if (defaultValue is DateTime dt)
 					{
-						long tempValue = (long)Convert.ChangeType(value, typeof(long), CultureInfo.InvariantCulture);
-						return (T)(object)DateTime.FromBinary(tempValue);
+						// long for the .NET 9+ format
+						if (long.TryParse(value, CultureInfo.InvariantCulture, out var longValue))
+							return (T)(object)DateTime.FromBinary(longValue);
+						// DateTime string for the .NET 8 format
+						if (DateTime.TryParse(value, CultureInfo.InvariantCulture, out var datetimeValue))
+							return (T)(object)datetimeValue;
 					}
 					else if (defaultValue is DateTimeOffset dto)
 					{
-						if (DateTimeOffset.TryParse((string)value, out var dateTimeOffset))
+						if (DateTimeOffset.TryParse((string)value, CultureInfo.InvariantCulture, out var dateTimeOffset))
 						{
 							return (T)(object)dateTimeOffset;
 						}
@@ -245,9 +250,7 @@ namespace Microsoft.Maui.Storage
 			{
 				using var stream = File.OpenRead(AppPreferencesPath);
 
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-				var readPreferences = JsonSerializer.Deserialize<PreferencesDictionary>(stream);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+				PreferencesDictionary readPreferences = JsonSerializer.Deserialize(stream, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
 
 				if (readPreferences != null)
 				{
@@ -268,12 +271,15 @@ namespace Microsoft.Maui.Storage
 			Directory.CreateDirectory(dir);
 
 			using var stream = File.Create(AppPreferencesPath);
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-			JsonSerializer.Serialize(stream, _preferences);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+			JsonSerializer.Serialize(stream, _preferences, PreferencesJsonSerializerContext.Default.PreferencesDictionary);
 		}
 
 		static string CleanSharedName(string sharedName) =>
 			string.IsNullOrEmpty(sharedName) ? string.Empty : sharedName;
 	}
+}
+
+[JsonSerializable(typeof(PreferencesDictionary), TypeInfoPropertyName = nameof(PreferencesDictionary))]
+internal partial class PreferencesJsonSerializerContext : JsonSerializerContext
+{
 }

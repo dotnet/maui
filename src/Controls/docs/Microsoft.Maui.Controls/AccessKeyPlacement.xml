@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates access key placement relative to the control that the access key describes.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Auto">

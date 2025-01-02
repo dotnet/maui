@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates web view behaviors when handling mixed content.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="AlwaysAllow">

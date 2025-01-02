@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The tabbed page instance that Microsoft.Maui.Controls created on the Android platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="BarItemColorProperty">
@@ -41,7 +40,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the color of a bar item.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BarSelectedItemColorProperty">
@@ -68,7 +66,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the color of a selected bar item.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisableSmoothScroll">
@@ -90,8 +87,6 @@
       <Docs>
         <param name="config">To be added.</param>
         <summary>Turns off smooth scrolling for <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisableSwipePaging">
@@ -115,7 +110,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Disables swiped paging.</summary>
         <returns>The updated element on the Android platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableSmoothScroll">
@@ -137,8 +131,6 @@
       <Docs>
         <param name="config">To be added.</param>
         <summary>Turns on smooth scrolling for <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EnableSwipePaging">
@@ -162,7 +154,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Enables swiped paging.</summary>
         <returns>The updated element on the Android platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBarItemColor">
@@ -194,7 +185,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the color for bar items.</summary>
         <returns>The color for bar items.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBarItemColor">
@@ -226,7 +216,6 @@
         <param name="config">The platform specific configuration for the element on which to perform the operation.</param>
         <summary>Returns the color for bar items.</summary>
         <returns>The color for bar items.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBarSelectedItemColor">
@@ -258,7 +247,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the color for selected bar items.</summary>
         <returns>The color for bar items.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBarSelectedItemColor">
@@ -290,7 +278,6 @@
         <param name="config">The platform specific configuration for the element on which to perform the operation.</param>
         <summary>Returns the color for selected bar items.</summary>
         <returns>The color for bar items.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsSmoothScrollEnabled">
@@ -312,8 +299,6 @@
       <Docs>
         <param name="element">To be added.</param>
         <summary>Gets whether smooth scrolling is enabled for <paramref name="element" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsSwipePagingEnabled">
@@ -337,7 +322,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether swiped paging is enabled.</summary>
         <returns>A Boolean value that tells whether swipe paging is enabled.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMaxItemCount">
@@ -361,7 +345,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the maximum allowed number of items.</summary>
         <returns>The maximum allowed number of items.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetMaxItemCount">
@@ -385,7 +368,6 @@
         <param name="config">The platform specific configuration for the element on which to perform the operation.</param>
         <summary>Returns the maximum allowed number of items.</summary>
         <returns>The maximum allowed number of items.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetOffscreenPageLimit">
@@ -409,7 +391,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the number of offscreen pages are cached in memory.</summary>
         <returns>The number of offscreen pages are cached in memory.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetToolbarPlacement">
@@ -433,7 +414,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the toolbar placement.</summary>
         <returns>The toolbar placement.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetToolbarPlacement">
@@ -457,7 +437,6 @@
         <param name="config">The platform specific configuration for the element on which to perform the operation.</param>
         <summary>Returns the toolbar placement.</summary>
         <returns>The toolbar placement.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSmoothScrollEnabled">
@@ -479,8 +458,6 @@
       <Docs>
         <param name="config">To be added.</param>
         <summary>Gets whether smooth scrolling is enabled for <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSmoothScrollEnabledProperty">
@@ -498,7 +475,6 @@
       </ReturnValue>
       <Docs>
         <summary>The <see cref="T:Microsoft.Maui.Controls.BindableProperty" /> associated with the <see cref="M:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.IsSmoothScrollEnabled(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.TabbedPage})" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSwipePagingEnabled">
@@ -523,7 +499,6 @@
         <summary>Gets a Boolean value that controls whether swipe paging is enabled.</summary>
         <returns>
           <see langword="true" /> if swiped paging is enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsSwipePagingEnabledProperty">
@@ -542,7 +517,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage.IsSwipePagingEnabled(Microsoft.Maui.Controls.IPlatformElementConfiguration{Microsoft.Maui.Controls.PlatformConfiguration.Android,Microsoft.Maui.Controls.TabbedPage})" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OffscreenPageLimit">
@@ -566,7 +540,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns the number of offscreen pages are cached in memory.</summary>
         <returns>The number of offscreen pages are cached in memory.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OffscreenPageLimitProperty">
@@ -585,7 +558,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached offscreen page limit property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBarItemColor">
@@ -618,7 +590,6 @@
         <param name="element">The element whose value to set.</param>
         <param name="value">The new bar item color value.</param>
         <summary>Sets the color for bar items.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBarItemColor">
@@ -652,7 +623,6 @@
         <param name="value">The new bar item color value.</param>
         <summary>Sets the color for bar items.</summary>
         <returns>A fluent object on which the developer can make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBarSelectedItemColor">
@@ -685,7 +655,6 @@
         <param name="element">The platform specific element whose value to set.</param>
         <param name="value">The new selected item color value.</param>
         <summary>Sets the color for selected bar items.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBarSelectedItemColor">
@@ -719,7 +688,6 @@
         <param name="value">The new selected item color value.</param>
         <summary>Sets the color for selected bar items.</summary>
         <returns>A fluent object on which the developer can make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsSmoothScrollEnabled">
@@ -744,7 +712,6 @@
         <param name="value">
           <see langword="true" /> if <paramref name="element" /> should enable smooth scrolling.</param>
         <summary>Enables or disables smooth scrolling on <paramref name="element" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsSmoothScrollEnabled">
@@ -771,8 +738,6 @@
         <param name="value">
           <see langword="true" /> if smooth scrolling should be enabled.</param>
         <summary>Enables or disables smooth scrolling on <c>this</c><see cref="T:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsSwipePagingEnabled">
@@ -797,7 +762,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether page swiping is enabled to the provided <paramref name="value" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsSwipePagingEnabled">
@@ -823,7 +787,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether page swiping is enabled to the provided <paramref name="value" />.</summary>
         <returns>The configuration that was updated.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetOffscreenPageLimit">
@@ -848,7 +811,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets the number of off-screen pages that are stored in memory to the provided <paramref name="value" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetOffscreenPageLimit">
@@ -874,7 +836,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets the number of off-screen pages that are stored in memory to the provided <paramref name="value" />.</summary>
         <returns>The configuration that was updated.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetToolbarPlacement">
@@ -899,7 +860,6 @@
         <param name="element">The platform specific element whose value to set.</param>
         <param name="value">The new toolbar placement value.</param>
         <summary>Sets the toolbar placement.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetToolbarPlacement">
@@ -925,7 +885,6 @@
         <param name="value">The new toolbar placement value.</param>
         <summary>Sets the toolbar placement.</summary>
         <returns>A fluent object on which the developer can make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToolbarPlacementProperty">
@@ -944,7 +903,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the placement of the toolbar.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

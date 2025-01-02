@@ -35,7 +35,14 @@ public class Issue12320 : TestShell
 			};
 
 			Shell.SetTabBarIsVisible(contentPage, false);
-			Shell.SetBackButtonBehavior(contentPage, new BackButtonBehavior() { IconOverride = "coffee.png" });
+			Shell.SetBackButtonBehavior(contentPage, new BackButtonBehavior
+			{
+				IconOverride = new FileImageSource
+				{
+					AutomationId = "BackButtonImage",
+					File = "coffee.png"
+				}
+			});
 			await Navigation.PushAsync(contentPage);
 		}
 	}

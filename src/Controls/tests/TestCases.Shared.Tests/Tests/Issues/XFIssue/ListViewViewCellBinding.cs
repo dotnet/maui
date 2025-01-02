@@ -13,39 +13,35 @@ public class ListViewViewCellBinding : _IssuesUITest
 
 	public override string Issue => "ListView ViewCell binding";
 
-	//[Test]
-	//[FailsOnIOS]
-	//public void ListViewViewCellBindingTestsAllElementsPresent()
-	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Remove"));
-	//	RunningApp.WaitForElement(q => q.Marked("Add"));
-	//	RunningApp.WaitForElement(q => q.Marked("1"));
-	//	RunningApp.WaitForElement(q => q.Marked("$100.00"));
-	//	RunningApp.WaitForElement(q => q.Marked("2"));
-	//	RunningApp.WaitForElement(q => q.Marked("$200.00"));
-	//	RunningApp.WaitForElement(q => q.Marked("3"));
-	//	RunningApp.WaitForElement(q => q.Marked("$300.00"));
+	[Test]
 
-	//	RunningApp.Screenshot("All elements exist");
-	//}
+	public void ListViewViewCellBindingTestsAllElementsPresent()
+	{
+		App.WaitForElement("Remove");
+		App.WaitForElement( "Add");
+		App.WaitForElement( "1");
+		App.WaitForElement("100.0");
+		App.WaitForElement("2");
+		App.WaitForElement("200.0");
+		App.WaitForElement("3");
+		App.WaitForElement("300.0");
+	}
 
-	//[Test]
-	//[FailsOnIOS]
-	//public void ListViewViewCellBindingTestsAddListItem()
-	//{
-	//	RunningApp.Tap(q => q.Button("Add"));
-	//	RunningApp.WaitForElement(q => q.Marked("4"));
-	//	RunningApp.WaitForElement(q => q.Marked("$400.00"));
-	//	RunningApp.Screenshot("List item added");
-	//}
+	[Test]
 
-	//[Test]
-	//[FailsOnIOS]
-	//public void ListViewViewCellBindingTestsRemoveListItem()
-	//{
-	//	RunningApp.Tap(q => q.Button("Remove"));
-	//	RunningApp.WaitForNoElement(q => q.Marked("1"));
-	//	RunningApp.WaitForNoElement(q => q.Marked("$100.00"));
-	//	RunningApp.Screenshot("List item removed");
-	//}
+	public void ListViewViewCellBindingTestsAddListItem()
+	{
+		App.Tap("Add");
+		App.WaitForElement("4");
+		App.WaitForElement("400.0");
+	}
+
+	[Test]
+
+	public void ListViewViewCellBindingTestsRemoveListItem()
+	{
+		App.Tap("Remove");
+		App.WaitForNoElement("1");
+		App.WaitForNoElement("100.0");
+	}
 }

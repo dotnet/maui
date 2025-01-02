@@ -405,7 +405,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// If you try to use Margin the RecylcerView won't render anything.
 				if (flyoutView is AndroidX.Core.View.IScrollingView &&
 					flyoutView is ViewGroup vg)
-				{				
+				{
 					if (vg.PaddingBottom != bottomOffset)
 					{
 						vg.SetPadding(0, 0, 0, bottomOffset);

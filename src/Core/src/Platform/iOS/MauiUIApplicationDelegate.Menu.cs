@@ -84,9 +84,9 @@ namespace Microsoft.Maui
 
 		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
-		#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
+#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
 		internal void MenuItemSelected(UICommand uiCommand)
-		#pragma warning restore CA1822
+#pragma warning restore CA1822
 		{
 			uiCommand.SendClicked();
 		}

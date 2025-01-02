@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Issues
 				"event should have been raised twice. If not, this test has failed."
 			};
 
-			_eventRaisedCount = new Label();
+			_eventRaisedCount = new Label() { AutomationId = "SelectionChangedCount" };
 
 			var layout = new StackLayout();
 			var cv = new CollectionView();
@@ -30,9 +30,9 @@ namespace Maui.Controls.Sample.Issues
 
 			cv.SelectionChanged += SelectionChangedHandler;
 
-			layout.AddLogicalChild(instructions);
-			layout.AddLogicalChild(_eventRaisedCount);
-			layout.AddLogicalChild(cv);
+			layout.Children.Add(instructions);
+			layout.Children.Add(_eventRaisedCount);
+			layout.Children.Add(cv);
 
 			Content = layout;
 		}

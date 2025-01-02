@@ -17,9 +17,9 @@ public class Issue2289 : _IssuesUITest
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledFalse()
 	//{
-	//	var disable1 = RunningApp.Query(c => c.Marked("txtCellDisable1"))[0];
+	//	var disable1 = App.Query(c => c.Marked("txtCellDisable1"))[0];
 	//	Assert.IsFalse(disable1.Enabled);
-	//	var disable2 = RunningApp.Query(c => c.Marked("txtCellDisable2"))[0];
+	//	var disable2 = App.Query(c => c.Marked("txtCellDisable2"))[0];
 	//	Assert.IsFalse(disable2.Enabled);
 	//}
 
@@ -27,25 +27,25 @@ public class Issue2289 : _IssuesUITest
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledFalseContextActions()
 	//{
-	//	var disable1 = RunningApp.Query(c => c.Marked("txtCellDisableContextActions1"))[0];
+	//	var disable1 = App.Query(c => c.Marked("txtCellDisableContextActions1"))[0];
 	//	Assert.IsFalse(disable1.Enabled);
 
-	//	var screenBounds = RunningApp.RootViewRect();
+	//	var screenBounds = App.RootViewRect();
 
-	//	RunningApp.DragCoordinates(screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
+	//	App.DragCoordinates(screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
 
-	//	RunningApp.Screenshot("Not showing context menu");
-	//	RunningApp.WaitForNoElement(c => c.Marked("More"));
-	//	RunningApp.TapCoordinates(screenBounds.CenterX, screenBounds.CenterY);
+	//	App.Screenshot("Not showing context menu");
+	//	App.WaitForNoElement(c => c.Marked("More"));
+	//	App.TapCoordinates(screenBounds.CenterX, screenBounds.CenterY);
 	//}
 
 	//[Test]
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledTrue()
 	//{
-	//	var disable1 = RunningApp.Query(c => c.Marked("txtCellEnable1"))[0];
+	//	var disable1 = App.Query(c => c.Marked("txtCellEnable1"))[0];
 	//	Assert.IsTrue(disable1.Enabled);
-	//	var disable2 = RunningApp.Query(c => c.Marked("txtCellEnable2"))[0];
+	//	var disable2 = App.Query(c => c.Marked("txtCellEnable2"))[0];
 	//	Assert.IsTrue(disable2.Enabled);
 	//}
 
@@ -53,14 +53,14 @@ public class Issue2289 : _IssuesUITest
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledTrueContextActions()
 	//{
-	//	var disable1 = RunningApp.Query(c => c.Marked("txtCellEnabledContextActions1"))[0];
+	//	var disable1 = App.Query(c => c.Marked("txtCellEnabledContextActions1"))[0];
 	//	Assert.IsTrue(disable1.Enabled);
 
-	//	var screenBounds = RunningApp.RootViewRect();
+	//	var screenBounds = App.RootViewRect();
 
-	//	RunningApp.DragCoordinates(screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
+	//	App.DragCoordinates(screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
 
-	//	RunningApp.Screenshot("Showing context menu");
-	//	RunningApp.WaitForElement(c => c.Marked("More"));
+	//	App.Screenshot("Showing context menu");
+	//	App.WaitForElement(c => c.Marked("More"));
 	//}
 }

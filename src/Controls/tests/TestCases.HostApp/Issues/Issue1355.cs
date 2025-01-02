@@ -23,7 +23,7 @@
 		{
 			var page = new ContentPage
 			{
-				Content = new Label { Text = Success },
+				Content = new Label { AutomationId = Success, Text = Success },
 				Title = $"CreatePage Iteration: {_runCount}"
 			};
 

@@ -17,7 +17,7 @@ public class Issue8526 : _IssuesUITest
 	//[FailsOnIOS]
 	//public void DisplayPromptShouldWorkInPageLoad()
 	//{
-	//	RunningApp.WaitForElement(Success);
-	//	RunningApp.Tap("Cancel");
+	//	App.WaitForElement(Success);
+	//	App.Tap("Cancel");
 	//}
 }

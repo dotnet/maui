@@ -14,7 +14,7 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	class IndicatorViewRenderer : ViewRenderer<IndicatorView, FrameworkElement>
+	partial class IndicatorViewRenderer : ViewRenderer<IndicatorView, FrameworkElement>
 	{
 		const int DefaultPadding = 4;
 		WSolidColorBrush _selectedColor;

@@ -16,7 +16,7 @@ using WVisualStateManager = Microsoft.UI.Xaml.VisualStateManager;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class SwitchRenderer : ViewRenderer<Switch, ToggleSwitch>
+	public partial class SwitchRenderer : ViewRenderer<Switch, ToggleSwitch>
 	{
 		const string ToggleSwitchCommonStates = "CommonStates";
 		const string ToggleSwitchPointerOver = "PointerOver";

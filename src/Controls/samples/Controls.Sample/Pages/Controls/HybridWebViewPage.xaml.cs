@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,6 +13,8 @@ namespace Maui.Controls.Sample.Pages
 		public HybridWebViewPage()
 		{
 			InitializeComponent();
+
+			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
 		}
 
 		int count;
@@ -28,8 +32,8 @@ namespace Maui.Controls.Sample.Pages
 			var result = await hwv.InvokeJavaScriptAsync<ComputationResult>(
 				"AddNumbers",
 				SampleInvokeJsContext.Default.ComputationResult,
-				new object?[] { x, null, y, null },
-				new[] { SampleInvokeJsContext.Default.Double, null, SampleInvokeJsContext.Default.Double, null });
+				[x, null, y, null],
+				[SampleInvokeJsContext.Default.Double, null, SampleInvokeJsContext.Default.Double, null]);
 
 			if (result is null)
 			{
@@ -47,11 +51,11 @@ namespace Maui.Controls.Sample.Pages
 		{
 			var statusResult = "";
 
-			var asyncFuncResult = await hwv.InvokeJavaScriptAsync<Dictionary<string,string>>(
+			var asyncFuncResult = await hwv.InvokeJavaScriptAsync<Dictionary<string, string>>(
 				"EvaluateMeWithParamsAndAsyncReturn",
 				SampleInvokeJsContext.Default.DictionaryStringString,
-				new object?[] { "new_key", "new_value" },
-				new[] { SampleInvokeJsContext.Default.String, SampleInvokeJsContext.Default.String });
+				["new_key", "new_value"],
+				[SampleInvokeJsContext.Default.String, SampleInvokeJsContext.Default.String]);
 
 			if (asyncFuncResult == null)
 			{
@@ -83,6 +87,48 @@ namespace Maui.Controls.Sample.Pages
 		[JsonSerializable(typeof(Dictionary<string, string>))]
 		internal partial class SampleInvokeJsContext : JsonSerializerContext
 		{
+		}
+
+		private class DotNetMethods
+		{
+			private HybridWebViewPage _hybridWebViewPage;
+
+			public DotNetMethods(HybridWebViewPage hybridWebViewPage)
+			{
+				_hybridWebViewPage = hybridWebViewPage;
+			}
+
+			public void DoSyncWork()
+			{
+				Debug.WriteLine("DoSyncWork");
+			}
+
+			public void DoSyncWorkParams(int i, string s)
+			{
+				Debug.WriteLine($"DoSyncWorkParams: {i}, {s}");
+			}
+
+			public string DoSyncWorkReturn()
+			{
+				Debug.WriteLine("DoSyncWorkReturn");
+				return "Hello from C#!";
+			}
+
+			public SyncReturn DoSyncWorkParamsReturn(int i, string s)
+			{
+				Debug.WriteLine($"DoSyncWorkParamsReturn: {i}, {s}");
+				return new SyncReturn
+				{
+					Message = "Hello from C#! " + s,
+					Value = i,
+				};
+			}
+		}
+
+		public class SyncReturn
+		{
+			public string? Message { get; set; }
+			public int Value { get; set; }
 		}
 	}
 }

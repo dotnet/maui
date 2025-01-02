@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
@@ -13,13 +13,13 @@ public class Issue16910 : _IssuesUITest
 	protected override bool ResetAfterEachTest => true;
 	public Issue16910(TestDevice device)
 		: base(device)
-	{ 
+	{
 
 	}
 
 #if !MACCATALYST
 	[Test]
-	[FailsOnMac("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
+	[FailsOnMacWhenRunningOnXamarinUITest("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");
@@ -30,7 +30,7 @@ public class Issue16910 : _IssuesUITest
 	}
 #endif
 
-// Windows only works with touch inputs which we don't have running on the test server
+	// Windows only works with touch inputs which we don't have running on the test server
 #if !WINDOWS && !MACCATALYST
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()

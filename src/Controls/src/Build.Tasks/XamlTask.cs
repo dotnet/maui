@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool DebugSymbols { get; set; }
 		public string DebugType { get; set; }
 
-		protected TaskLoggingHelper LoggingHelper { get; }
+		internal TaskLoggingHelper LoggingHelper { get; }
 
 		internal XamlTask()
 		{

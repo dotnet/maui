@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Enumerates visual styles for progress bars.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Default">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates the default progress bar style.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Pending">
@@ -52,7 +50,6 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates the pending style, to communicate that a progress estimate has not yet been made.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -35,7 +35,7 @@ public class Issue6484 : TestShell
 
 
 		await Task.Delay(1);
-		layout.AddLogicalChild(
+		layout.Children.Add(
 			new Label()
 			{
 				Text = "If app hasn't crashed test has succeeded",

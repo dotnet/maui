@@ -22,7 +22,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -38,7 +37,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -60,7 +58,6 @@
         <param name="allMembers">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="conditional">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AllMembers">
@@ -79,7 +76,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Conditional">
@@ -98,7 +94,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

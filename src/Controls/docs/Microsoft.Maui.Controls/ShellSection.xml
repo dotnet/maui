@@ -28,7 +28,6 @@
   </Attributes>
   <Docs>
     <summary>Grouped content in a Shell application, navigable by bottom tabs. </summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -42,8 +41,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentItem">
@@ -61,8 +58,6 @@
       </ReturnValue>
       <Docs>
         <summary>The currently selected <see cref="T:Microsoft.Maui.Controls.ShellContent" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentItemProperty">
@@ -80,7 +75,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellSection.CurrentItem" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNavigationStack">
@@ -98,9 +92,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Items">
@@ -118,8 +109,6 @@
       </ReturnValue>
       <Docs>
         <summary>The collection of <see cref="T:Microsoft.Maui.Controls.ShellContent" /> objects managed by <c>this</c><see cref="T:Microsoft.Maui.Controls.ShellSection" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsProperty">
@@ -137,7 +126,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellSection.Items" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -155,8 +143,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildAdded">
@@ -232,8 +218,6 @@
       <Docs>
         <param name="child">To be added.</param>
         <param name="oldLogicalIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnInsertPageBefore">
@@ -256,8 +240,6 @@
       <Docs>
         <param name="page">To be added.</param>
         <param name="before">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPopAsync">
@@ -278,9 +260,6 @@
       </Parameters>
       <Docs>
         <param name="animated">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPopToRootAsync">
@@ -301,9 +280,6 @@
       </Parameters>
       <Docs>
         <param name="animated">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPushAsync">
@@ -326,9 +302,6 @@
       <Docs>
         <param name="page">To be added.</param>
         <param name="animated">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnRemovePage">
@@ -349,8 +322,6 @@
       </Parameters>
       <Docs>
         <param name="page">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -371,9 +342,6 @@
       </Parameters>
       <Docs>
         <param name="shellContent">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -394,9 +362,6 @@
       </Parameters>
       <Docs>
         <param name="page">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Stack">
@@ -413,9 +378,6 @@
         <ReturnType>System.Collections.Generic.IReadOnlyList&lt;Microsoft.Maui.Controls.Page&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.AddContentInsetObserver">
@@ -440,7 +402,6 @@
       <Docs>
         <param name="observer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.AddDisplayedPageObserver">
@@ -467,7 +428,6 @@
         <param name="observer">To be added.</param>
         <param name="callback">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.GetItems">
@@ -488,9 +448,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.ItemsCollectionChanged">
@@ -510,8 +467,6 @@
         <ReturnType>System.Collections.Specialized.NotifyCollectionChangedEventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.NavigationRequested">
@@ -531,8 +486,6 @@
         <ReturnType>System.EventHandler&lt;Microsoft.Maui.Controls.Internals.NavigationRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.PresentedPage">
@@ -553,8 +506,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.RemoveContentInsetObserver">
@@ -579,8 +530,6 @@
       <Docs>
         <param name="observer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.RemoveDisplayedPageObserver">
@@ -605,8 +554,6 @@
       <Docs>
         <param name="observer">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendInsetChanged">
@@ -633,7 +580,6 @@
         <param name="inset">To be added.</param>
         <param name="tabThickness">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendPopped">
@@ -663,7 +609,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendPopped">
@@ -695,8 +640,6 @@
       </Parameters>
       <Docs>
         <param name="page">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendPopping">
@@ -720,8 +663,6 @@
       </Parameters>
       <Docs>
         <param name="poppingCompleted">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendPopping">
@@ -753,8 +694,6 @@
       </Parameters>
       <Docs>
         <param name="page">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellSectionController.SendPoppingToRoot">
@@ -778,8 +717,6 @@
       </Parameters>
       <Docs>
         <param name="finishedPopping">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

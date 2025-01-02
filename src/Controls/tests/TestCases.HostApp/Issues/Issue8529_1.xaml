@@ -8,7 +8,7 @@
     <Shell.BackButtonBehavior>
         <BackButtonBehavior Command="{Binding BackCommand}">
             <BackButtonBehavior.IconOverride>
-                <FileImageSource AutomationId="BackButtonImage" File="star-flyout.png" />
+                <FileImageSource AutomationId="BackButtonImage" File="star_flyout.png" />
             </BackButtonBehavior.IconOverride>
         </BackButtonBehavior>
     </Shell.BackButtonBehavior>

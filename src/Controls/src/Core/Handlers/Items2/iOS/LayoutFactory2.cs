@@ -180,7 +180,7 @@ internal static class LayoutFactory2
 
 			section.BoundarySupplementaryItems = CreateSupplementaryItems(
 				groupingInfo,
-				headerFooterInfo,   
+				headerFooterInfo,
 				scrollDirection,
 				groupWidth,
 				groupHeight);

@@ -12,25 +12,21 @@ public class Issue264 : _IssuesUITest
 
 	public override string Issue => "PopModal NRE";
 
-	// [Test]
-	// [Category(UITestCategories.DisplayAlert)]
-	// [FailsOnIOS]
-	// public void Issue264TestsPushAndPopModal()
-	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("Home"));
-	// 	RunningApp.WaitForElement(q => q.Button("About"));
-	// 	RunningApp.Screenshot("All elements present");
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void Issue264TestsPushAndPopModal()
+	{
+		App.WaitForElement("Home");
+		App.WaitForElement("About");
 
-	// 	RunningApp.Tap(q => q.Button("About"));
-	// 	RunningApp.WaitForElement(q => q.Button("Close"));
-	// 	RunningApp.Screenshot("Modal pushed");
+		App.Tap("About");
+		App.WaitForElement("CloseMe");
 
-	// 	RunningApp.Tap(q => q.Button("Close"));
-	// 	RunningApp.WaitForElement(q => q.Button("About"));
-	// 	RunningApp.Screenshot("Modal popped");
+		App.Tap("CloseMe");
+		App.WaitForElement("About");
 
-	// 	RunningApp.Tap(q => q.Button("Pop me"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Bug Repro's"));
-	// 	RunningApp.Screenshot("No crash");
-	// }
+		// Due to the current architecture of the HostApp, we cannot navigate back to the Bug Repro's page.
+		// App.Tap("Pop me");
+		// App.WaitForElement("Bug Repro's");
+	}
 }

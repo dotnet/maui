@@ -1,4 +1,5 @@
-﻿/*
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Getting an OpenQA.Selenium.InvalidSelectorException : XQueryError:6 - "invalid type" in Line: 32. Using timeout also not works.
+// On iOS test consistently crashes on CI, but passes locally. Adding failure for iOS to ensure CI stability.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,6 +8,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue9006 : _IssuesUITest
 	{
+#if ANDROID
+		const string Back = "";
+		const string Tab1 = "";
+#else
+		const string Back = "Back";
+		const string Tab1 = "Tab 1";
+#endif
+		const string ClickMe = "ClickMe";
+		const string FinalLabel = "FinalLabel";
 		public Issue9006(TestDevice testDevice) : base(testDevice)
 		{
 		}
@@ -18,14 +28,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void ClickingOnTabToPopToRootDoesntBreakNavigation()
 		{
-			this.IgnoreIfPlatforms([TestDevice.Android, TestDevice.Mac, TestDevice.Windows]);
-
-			App.Tap("Click Me");
-			App.WaitForElement("FinalLabel");
-			App.Tap("Tab1AutomationId");
-			App.Tap("Click Me");
-			App.WaitForNoElement("Success");
+			App.WaitForElement(ClickMe);
+			App.Tap(ClickMe);
+			App.WaitForElement(FinalLabel);
+			App.TapBackArrow(Back);
+			App.WaitForElement("This is the intermediate page");
+			App.TapBackArrow(Tab1);
+			App.WaitForElement(ClickMe);
+			App.Tap(ClickMe);
+			App.WaitForElement(FinalLabel);
+			Assert.That(App.WaitForElement(FinalLabel)?.GetText(), Is.EqualTo("Success"));
 		}
 	}
 }
-*/
+#endif

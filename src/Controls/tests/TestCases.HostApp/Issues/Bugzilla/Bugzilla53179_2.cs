@@ -35,7 +35,7 @@ public class Bugzilla53179_2 : TestContentPage
 		{
 			var instructions = new Label { Text = "If you can see this, the test has passed" };
 
-			Content = new StackLayout { Children = { instructions, new Label { Text = Success } } };
+			Content = new StackLayout { Children = { instructions, new Label { AutomationId = Success, Text = Success } } };
 		}
 
 		protected override void OnAppearing()

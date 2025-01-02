@@ -12,7 +12,7 @@ public class Issue6323 : TestTabbedPage
 		{
 			Children.Add(new ContentPage
 			{
-				Content = new Label { Text = "Success" },
+				Content = new Label { Text = "Success", AutomationId = "Success" },
 				Title = "I'm a title"
 			});
 			return false;

@@ -15,21 +15,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(pair.Value);
 			Assert.Equal(default, pair.Key);
 		}
-		
+
 		[Fact]
 		public void OverridesValueWithSameSpecificity()
 		{
 			var list = new SetterSpecificityList<object>();
 			list[SetterSpecificity.ManualValueSetter] = "initial";
-			
+
 			list[SetterSpecificity.ManualValueSetter] = "new";
 			Assert.Equal(1, list.Count);
-			
+
 			var pair = list.GetSpecificityAndValue();
 			Assert.Equal("new", pair.Value);
 			Assert.Equal(SetterSpecificity.ManualValueSetter, pair.Key);
 		}
-		
+
 		[Fact]
 		public async Task RemovingValueDoesNotLeak()
 		{
@@ -43,16 +43,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				weakReference = new WeakReference<object>(o);
 				list[SetterSpecificity.FromBinding] = o;
 			}
-			
+
 			list.Remove(SetterSpecificity.FromBinding);
 
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			
+
 			Assert.False(weakReference.TryGetTarget(out _));
 		}
-		
+
 		[Fact]
 		public async Task RemovingLastValueDoesNotLeak()
 		{
@@ -64,16 +64,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				weakReference = new WeakReference<object>(o);
 				list[SetterSpecificity.ManualValueSetter] = o;
 			}
-			
+
 			list.Remove(SetterSpecificity.ManualValueSetter);
 
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			
+
 			Assert.False(weakReference.TryGetTarget(out _));
 		}
-		
+
 		[Fact]
 		public void GetValueForSpecificity()
 		{
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var foundValue = list[SetterSpecificity.DefaultValue];
 			Assert.Equal(nameof(SetterSpecificity.DefaultValue), foundValue);
 		}
-		
+
 		[Fact]
 		public void NullWhenNoValuesMatchSpecificity()
 		{
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var foundValue = list[SetterSpecificity.FromHandler];
 			Assert.Null(foundValue);
 		}
-		
+
 		[Fact]
 		public void OneValue()
 		{
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(nameof(SetterSpecificity.FromBinding), list.GetValue());
 			Assert.Equal(SetterSpecificity.FromBinding, list.GetSpecificity());
 		}
-		
+
 		[Fact]
 		public void ManyValues()
 		{
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue());
 			Assert.Equal(SetterSpecificity.DefaultValue, list.GetClearedSpecificity());
 		}
-		
+
 		[Fact]
 		public void GetClearedValueForSpecificity()
 		{

@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms Android and iOS.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,51 +7,37 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue1614 : _IssuesUITest
 {
+#if ANDROID
+	const string Done = "Cancel";
+#else
+	const string Done = "Done";
+#endif
+
 	public Issue1614(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "iOS 11 prevents InputAccessoryView from showing in landscape mode";
 	
-	// [Test]
-	// [FailsOnIOS]
-	// public void Issue1614Test()
-	// {
-	// 	RunningApp.SetOrientationPortrait();
+	[Test]
+	[Category(UITestCategories.Picker)]
+	public void Issue1614Test()
+	{
+		TapPicker("Picker");	
+		TapPicker("DatePicker");
+		TapPicker("TimePicker");
+	}
 
-	// 	RunningApp.WaitForElement(x => x.Class("UITextField"));
-	// 	RunningApp.Tap(x => x.Class("UITextField").Index(0));
-	// 	CheckPickerAccessory("UIPickerView");
-	// 	RunningApp.SetOrientationLandscape();
-	// 	CheckPickerAccessory("UIPickerView");
-	// 	RunningApp.SetOrientationPortrait();
-	// 	RunningApp.DismissKeyboard();
-
-	// 	RunningApp.Tap(x => x.Class("UITextField").Index(1));
-	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationLandscape();
-	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationPortrait();
-	// 	RunningApp.DismissKeyboard();
-
-	// 	RunningApp.Tap(x => x.Class("UITextField").Index(2));
-	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationLandscape();
-	// 	CheckPickerAccessory("UIDatePicker");
-	// 	RunningApp.SetOrientationPortrait();
-	// 	RunningApp.DismissKeyboard();
-	// }
-
-	// private void CheckPickerAccessory(string className)
-	// {
-	// 	RunningApp.WaitForElement(x => x.Class("UIButtonLabel"));
-	// 	var buttonRect = RunningApp.Query(x => x.Class("UIButtonLabel"))[0].Rect;
-	// 	var pickerRect = RunningApp.Query(x => x.Class(className))[0].Rect;
-
-	// 	var buttonBottom = buttonRect.Y + buttonRect.Height;
-	// 	var pickerTop = pickerRect.Y;
-
-	// 	Assert.IsTrue(buttonBottom <= pickerTop);
-	// }
+	void TapPicker(string picker)
+	{
+		App.WaitForElement(picker);
+		App.Tap(picker);
+		App.WaitForElement(Done);
+		App.SetOrientationLandscape();
+		App.WaitForElement(Done);
+		App.SetOrientationPortrait();
+		App.WaitForElement(Done);
+		App.Tap(Done);
+	}
 }
 #endif

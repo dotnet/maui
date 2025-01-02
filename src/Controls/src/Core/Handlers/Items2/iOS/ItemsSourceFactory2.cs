@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 
 internal static class ItemsSourceFactory2
 {
-    public static ILoopItemsViewSource CreateForCarouselView(IEnumerable itemsSource, UICollectionViewController collectionViewController, bool loop)
-    {
-        if (itemsSource == null)
-        {
-            return new EmptySource();
-        }
+	public static ILoopItemsViewSource CreateForCarouselView(IEnumerable itemsSource, UICollectionViewController collectionViewController, bool loop)
+	{
+		if (itemsSource == null)
+		{
+			return new EmptySource();
+		}
 
 		return itemsSource switch
 		{

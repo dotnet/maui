@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID // ToolBarItem not shown on FlyoutPage, issue: https://github.com/dotnet/maui/issues/26330
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,23 +13,24 @@ public class Issue2266 : _IssuesUITest
 
 	public override string Issue => "Setting a different Detail page from a FlyoutPage after 2nd time on MainPage";
 
-	// [Test]
-	// [Category(UITestCategories.Navigation)]
-	// [FailsOnIOS]
-	// public void SwapMainPageWithFlyoutPages()
-	// {
-	// 	RunningApp.WaitForElement(q => q.Text("FlyoutPage Navigation"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation"));
-	// 	RunningApp.Tap(q => q.Marked("OpenMaster"));
-	// 	RunningApp.Tap(q => q.Text("Page 1"));
-	// 	RunningApp.Tap(q => q.Text("START"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 1"));
-	// 	RunningApp.WaitForElement(q => q.Text("Page 1"));
-	// 	RunningApp.Tap(q => q.Text("START"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 2"));
-	// 	RunningApp.WaitForElement(q => q.Text("Page 2"));
-	// 	RunningApp.Tap(q => q.Text("START"));
-	// 	RunningApp.Tap(q => q.Text("FlyoutPage Navigation ->> Page 3"));
-	// 	RunningApp.WaitForElement(q => q.Text("Page 3"));
-	// }
+	[Test]
+	[Category(UITestCategories.Navigation)]
+
+	public void SwapMainPageWithFlyoutPages()
+	{
+		App.WaitForElement("FlyoutPage Navigation");
+		App.Tap("FlyoutPage Navigation");
+		App.Tap("OpenMaster");
+		App.Tap("Page 1");
+		App.Tap("START");
+		App.Tap("FlyoutPage Navigation ->> Page 1");
+		App.WaitForElement("Page 1");
+		App.Tap("START");
+		App.Tap("FlyoutPage Navigation ->> Page 2");
+		App.WaitForElement("Page 2");
+		App.Tap("START");
+		App.Tap("FlyoutPage Navigation ->> Page 3");
+		App.WaitForElement("Page 3");
+	}
 }
+#endif

@@ -35,6 +35,8 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
+		public IApp RunningApp => App;
+
 		public abstract IConfig GetTestConfig();
 
 		public void InitialSetup(IServerContext context)

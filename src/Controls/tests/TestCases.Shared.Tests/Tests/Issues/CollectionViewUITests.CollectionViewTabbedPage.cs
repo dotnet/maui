@@ -6,45 +6,46 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class CollectionViewTabbedPageUITests : _IssuesUITest
 	{
+		const string Add1 = "Add1";
+		const string Add2 = "Add2";
+		const string Success = "Success";
+#if ANDROID
+		const string FirstPage = "7700 FIRST PAGE";
+		const string Tab2 = "TAB2";
+		const string Tab3 = "TAB3";
+#else
+		const string FirstPage = "7700 First Page";
+		const string Tab2 = "Tab2";
+		const string Tab3 = "Tab3";
+#endif
+		protected override bool ResetAfterEachTest => true;
+
 		public CollectionViewTabbedPageUITests(TestDevice device)
 			: base(device)
 		{
 		}
-
 		public override string Issue => "If CollectionView in other Tab gets changed before it's displayed, it stays invisible";
 
-		/*
-		const string Add1 = "Add1";
-		const string Add2 = "Add2";
-		const string Success = "Success";
-		const string Tab2 = "Tab2";
-		const string Tab3 = "Tab3";
-
-		// AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue7700.cs)
 		[Test]
-		[FailsOnAllPlatforms("Click does not find Tab elements")]
 		[Category(UITestCategories.CollectionView)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add1);
-			App.Click(Add1);
-			App.Click(Tab2);
-
-			App.WaitForElement(Success);
+			App.Tap(Add1);
+			App.WaitForElement(Tab2);
+			App.Tap(Tab2);
+			App.WaitForElementTillPageNavigationSettled(Success);		
 		}
 
-		// AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue7700.cs)
 		[Test]
-		[FailsOnAllPlatforms("Click does not find Tab elements")]
 		[Category(UITestCategories.CollectionView)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add2);
-			App.Click(Add2);
-			App.Click(Tab3);
-
-			App.WaitForElement(Success);
-		}
-		*/
+			App.Tap(Add2);
+			App.WaitForElement(Tab3);
+			App.Tap(Tab3);
+			App.WaitForElementTillPageNavigationSettled(Success);
+		}		
 	}
 }

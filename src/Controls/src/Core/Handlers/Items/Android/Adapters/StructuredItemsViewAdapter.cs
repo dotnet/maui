@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateHasFooter()
 		{
-			ItemsSource.HasFooter =  (ItemsView.Footer ?? ItemsView.FooterTemplate) is not null;
+			ItemsSource.HasFooter = (ItemsView.Footer ?? ItemsView.FooterTemplate) is not null;
 		}
 
 		bool IsHeader(int position)
