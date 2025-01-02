@@ -6,11 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla32801 : _IssuesUITest
 {
-#if ANDROID
-        const string Tab1 = "TAB 1";    
-#else
         const string Tab1 = "Tab 1";
-#endif
         const string FirstTabAddButton = "FirstTabAddButton";
         const string Level2AddButton = "Level2AddButton";
         const string Level3StackButton = "Level3StackButton";
@@ -34,7 +30,8 @@ public class Bugzilla32801 : _IssuesUITest
                 App.WaitForElementTillPageNavigationSettled(Level3StackButton);
                 App.Tap(Level3StackButton);
                 App.WaitForElement("Stack 3");
-                App.Tap(Tab1);
+                App.WaitForTabElement(Tab1);
+                App.TapTab(Tab1);
                 App.WaitForElementTillPageNavigationSettled(SecondTabStackButton);
                 App.Tap(SecondTabStackButton);
                 App.WaitForElement("Stack 1");

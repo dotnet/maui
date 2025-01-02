@@ -1893,12 +1893,12 @@ namespace UITest.Appium
 		/// <param name="app">The IApp instance.</param>
 		/// <param name="elementId">The id of the element to wait for.</param>
 		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
-		public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+		public static IUIElement WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
 		{
 			if (app is AppiumCatalystApp)
 				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
 
-			app.WaitForElement(elementId, timeout: timeout);
+			return app.WaitForElement(elementId, timeout: timeout);
 		}
 
 		/// <summary>
@@ -2120,10 +2120,10 @@ namespace UITest.Appium
 		/// <remarks>
 		/// For Android apps, the tab name is converted to uppercase before searching.
 		/// </remarks>
-		public static void WaitForTabElement(this IApp app, string tabName)
+		public static IUIElement WaitForTabElement(this IApp app, string tabName)
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
-			app.WaitForElementTillPageNavigationSettled(tabName);
+			return app.WaitForElementTillPageNavigationSettled(tabName);
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,

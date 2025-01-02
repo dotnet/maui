@@ -6,13 +6,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue2470 : _IssuesUITest
 {
-#if ANDROID
-	const string Generate = "GENERATE";
-	const string Results = "RESULTS";
-#else
 	const string Generate = "Generate";
 	const string Results = "Results";
-#endif
+
 	public Issue2470(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -26,7 +22,7 @@ public class Issue2470 : _IssuesUITest
 		App.WaitForElement("Switch");
 		// Tab 1
 		App.Tap("Switch");
-		App.Tap(Results);
+		App.TapTab(Results);
 
 		// Tab 2
 		App.WaitForElement("Entry 0 of 5");
@@ -35,11 +31,11 @@ public class Issue2470 : _IssuesUITest
 		App.WaitForElement("Entry 3 of 5");
 		App.WaitForElement("Entry 4 of 5");
 
-		App.Tap(Generate);
+		App.TapTab(Generate);
 
 		// Tab 1
 		App.Tap("Switch");
-		App.Tap(Results);
+		App.TapTab(Results);
 
 		// Tab 2
 		App.WaitForElement("Entry 0 of 2");
@@ -47,9 +43,9 @@ public class Issue2470 : _IssuesUITest
 
 
 		// Tab 1
-		App.Tap(Generate);
+		App.TapTab(Generate);
 		App.Tap("Switch");
-		App.Tap(Results);
+		App.TapTab(Results);
 
 		// Tab 2
 		App.WaitForElement("Entry 0 of 5");

@@ -12,12 +12,8 @@ public class Issue6878 : _IssuesUITest
 	const string ClearShellItems = "ClearShellItems";
 	const string StatusLabel = "StatusLabel";
 	const string StatusLabelText = "Everything is fine 😎";
-	const string TopTab = "Top Tab";
-#if ANDROID
-    const string PostClearTopTab = "POST CLEAR TOP TAB";
-#else
 	const string PostClearTopTab = "Post clear Top Tab";
-#endif
+
 
 	public override string Issue => "ShellItem.Items.Clear() crashes when the ShellItem has bottom tabs";
 
@@ -25,19 +21,12 @@ public class Issue6878 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellItemItemsClearTests()
 	{
-		App.WaitForElement(StatusLabel);
-		App.Tap(ClearShellItems);
+		App.WaitForTabElement(StatusLabel);
+		App.TapTab(ClearShellItems);
 
-		var label = App.WaitForElement(StatusLabel);
+		var label = App.WaitForTabElement(StatusLabel);
 		Assert.That(label.ReadText(), Is.EqualTo(StatusLabelText));
-		TapTobTab(PostClearTopTab);
+		App.TapTab(PostClearTopTab, true);
 	}
-	void TapTobTab(string tab)
-	{
-		//In Windows the TopTab items are inside the root TabItem which shows in popup, so we need to tap it once to make them visible.
-#if WINDOWS
-        App.Tap("navViewItem");
-#endif
-		App.Tap(tab);
-	}
+	
 }
