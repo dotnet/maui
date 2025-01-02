@@ -53,7 +53,7 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.Tap("AllVisible");
 		App.WaitForElementTillPageNavigationSettled("ToggleItem2");
 		App.Tap("ToggleItem2");
-		App.WaitForElementTillPageNavigationSettled(TitlePage);
+		App.TapTab(TitlePage);
 		App.ShowFlyout();
 		App.WaitForElement("Item1 Flyout");
 		App.WaitForNoElement("Item2 Flyout");
@@ -84,9 +84,7 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.Tap("ToggleItem1");
 		App.WaitForElementTillPageNavigationSettled("ClearAndRecreate");
 		App.Tap("ClearAndRecreate");
-		App.WaitForElementTillPageNavigationSettled(TopTab2);
 		App.TapTab(TopTab2);
-		App.WaitForElementTillPageNavigationSettled(TopTab1);
 		App.TapTab(TopTab1);
 	}
 #endif

@@ -17,7 +17,7 @@ public class ShellTitleView : _IssuesUITest
     
 #if WINDOWS
     const string TitleViewId="commandBar";
-	const string Page="navViewItem";
+	const string Page= "navViewItem";
 #else
     const string TitleViewId = "TitleViewId";
 	const string Page = "page 2";
@@ -47,7 +47,7 @@ public class ShellTitleView : _IssuesUITest
 	public void TitleViewPositionsCorrectly()
 	{
 		var titleView = App.WaitForElement(TitleViewId).GetRect();
-		var topTab = App.WaitForElement(Page).GetRect();
+		var topTab = App.WaitForTabElement(Page).GetRect();
 		var titleViewBottom = titleView.Y + titleView.Height;
 		var topTabTop = topTab.Y;
 		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned behind tabs");

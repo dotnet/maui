@@ -8,7 +8,12 @@ public class Bugzilla52419 : _IssuesUITest
 {
 	const string TabPage1 = "Tab Page 1";
 	const string TabPage2 = "Tab Page 2";
+	#if ANDROID
+	const string BackButtonIdentifier = "";
+	#else
 	const string BackButtonIdentifier = "Tab Page 1";
+	#endif
+	
 	const string PushNewPage = "PushNewPage";
 	const string AppearanceLabel = "AppearanceLabel";
 
@@ -28,7 +33,6 @@ public class Bugzilla52419 : _IssuesUITest
 	 	App.Tap(PushNewPage);
 		App.WaitForElementTillPageNavigationSettled(PushNewPage);
 	 	App.Tap(PushNewPage);
-		App.WaitForElementTillPageNavigationSettled(TabPage2);
 	 	App.TapTab(TabPage2);
 	 	App.TapTab(TabPage1);
 	 	App.TapTab(TabPage2);
