@@ -27,12 +27,22 @@ namespace Maui.Controls.Sample.Issues
 				"Item 13",
 				"Item 14",
 				"Item 15",
+				"Item 16",
+				"Item 17",
+				"Item 18",
+				"Item 19",
+				"Item 20",
+				"Item 21",
+				"Item 22",
+				"Item 23",
+				"Item 24",
+				"Item 25",
 			};
 
 			ListView = new ListView
 			{
 				ItemsSource = Items,
-				SelectedItem = "Item 3",
+				SelectedItem = "Item 10",
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center,
 				WidthRequest = 300,
@@ -41,7 +51,7 @@ namespace Maui.Controls.Sample.Issues
 
 			var button = new Button
 			{
-				Text = "ChangeSelectedItem",
+				Text = "Change Selected Item",
 				AutomationId = "Button",
 				HorizontalOptions = LayoutOptions.Center
 			};
