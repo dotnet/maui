@@ -18,13 +18,20 @@ public class Bugzilla33578 : _IssuesUITest
 	public void TableViewEntryCellShowsDefaultKeyboardThenNumericKeyboardAfterScrolling()
 	{
 		WaitForEntryCell("Enter text here 1");
+		App.ScrollDown("table");
 		App.ScrollDown("table");	
 		WaitForEntryCell("0");
 		TapEntryCell("0");
 		VerifyScreenshot("TableViewEntryCellShowsNumberKeyboard");
 		App.DismissKeyboard();
 		TapEntryCell("Enter text here");
+
+		// Due to SafeArea, ScrollUp will drag the notification window, causing a black window in screenshots
+		// The first entry is already accessible without scrolling on iOS			
+#if !IOS
 		App.ScrollUp("table");
+#endif
+
 		WaitForEntryCell("Enter text here 1");
 		TapEntryCell("Enter text here 1");
 		TapEntryCell("Enter text here 2");
