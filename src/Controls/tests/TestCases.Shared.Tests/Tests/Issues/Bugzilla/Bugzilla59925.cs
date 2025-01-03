@@ -20,6 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("BiggerButton");
 			var intialSize = App.WaitForElement("TestEntry").GetRect().Height;
 
+			// iOS/macOS Catalyst Workaround: Minimum Height Threshold
+			// Issue: Entry control has a minimum vertical height on these platforms.
+			// Impact: Font size increases don't affect height until exceeding this threshold.
+			// Solution: Perform additional taps to ensure font size surpasses the minimum.
+			// This allows subsequent size comparisons to accurately reflect height changes.
 #if IOS || MACCATALYST
 			for (int i = 0; i < 8; i++)
 			{

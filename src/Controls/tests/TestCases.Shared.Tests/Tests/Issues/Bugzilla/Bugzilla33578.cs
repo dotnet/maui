@@ -33,6 +33,7 @@ public class Bugzilla33578 : _IssuesUITest
 
 	void WaitForEntryCell(string name)
 	{
+		// In iOS, find element by text is not working for EntryCell placed inside the TableView.
 #if ANDROID
 		App.WaitForElement(name);
 #else
