@@ -17,7 +17,7 @@ public class Issue2470 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	public void OnservableCollectionChangeListView()
+	public void ObservableCollectionChangeListView()
 	{
 		App.WaitForElement("Switch");
 		// Tab 1
@@ -25,7 +25,7 @@ public class Issue2470 : _IssuesUITest
 		App.TapTab(Results);
 
 		// Tab 2
-		App.WaitForElement("Entry 0 of 5");
+		App.WaitForElementTillPageNavigationSettled("Entry 0 of 5");
 		App.WaitForElement("Entry 1 of 5");
 		App.WaitForElement("Entry 2 of 5");
 		App.WaitForElement("Entry 3 of 5");
@@ -34,21 +34,23 @@ public class Issue2470 : _IssuesUITest
 		App.TapTab(Generate);
 
 		// Tab 1
+		App.WaitForElementTillPageNavigationSettled("Switch");
 		App.Tap("Switch");
 		App.TapTab(Results);
 
 		// Tab 2
-		App.WaitForElement("Entry 0 of 2");
+		App.WaitForElementTillPageNavigationSettled("Entry 0 of 2");
 		App.WaitForElement("Entry 1 of 2");
 
 
 		// Tab 1
 		App.TapTab(Generate);
+		App.WaitForElementTillPageNavigationSettled("Switch");
 		App.Tap("Switch");
 		App.TapTab(Results);
 
 		// Tab 2
-		App.WaitForElement("Entry 0 of 5");
+		App.WaitForElementTillPageNavigationSettled("Entry 0 of 5");
 		App.WaitForElement("Entry 1 of 5");
 		App.WaitForElement("Entry 2 of 5");
 		App.WaitForElement("Entry 3 of 5");
