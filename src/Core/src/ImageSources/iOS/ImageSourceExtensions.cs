@@ -48,6 +48,12 @@ namespace Microsoft.Maui
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
+			// Using UIRenderingMode.Automatic when the FontImageSource color is null (where 'Automatic' adapts based on the context and properly applies color) 
+			// and UIRenderingMode.AlwaysOriginal when the FontImageSource color is specified ensures the given color is applied correctly, 
+			// resolving the TabbedPage Icon color and ToolbarItem  Icon color issues
+			// https://github.com/dotnet/maui/issues/25912
+			// https://github.com/dotnet/maui/issues/26662 
+			// https://github.com/dotnet/maui/issues/12250
 			return image.ImageWithRenderingMode(imageSource.Color == null ? UIImageRenderingMode.Automatic : UIImageRenderingMode.AlwaysOriginal);
 		}
 
