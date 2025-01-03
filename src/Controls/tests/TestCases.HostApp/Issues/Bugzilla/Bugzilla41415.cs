@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None, 41415, "ScrollX and ScrollY Values are not consistent in 'ScrollOrientation.Both' Mode", PlatformAffected.Android)]
+	[Issue(IssueTracker.None, 41415, "ScrollX and ScrollY values at the scrolled event are not consistent in 'ScrollOrientation.Both' mode", PlatformAffected.Android)]
 	public class Bugzilla41415 : ContentPage
 	{
 		const string ButtonId = "ClickId";
