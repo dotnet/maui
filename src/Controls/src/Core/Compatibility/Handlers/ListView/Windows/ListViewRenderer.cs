@@ -589,15 +589,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			switch (toPosition)
 			{
 				case ScrollToPosition.Center:
-					{
-						double offset = (viewer.ViewportHeight - GetContentDesiredHeight(viewer, item)) / 2;
-						viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
-						break;
-					}
 				case ScrollToPosition.End:
 					{
 						double offset = viewer.ViewportHeight - GetContentDesiredHeight(viewer, item);
-						viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+						if (toPosition == ScrollToPosition.Center)
+							viewer.ChangeView(position.Value.X, position.Value.Y - (offset / 2), null);
+						else
+							viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+
 						break;
 					}
 				default:
@@ -679,7 +678,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							else
 								semanticLocation.Bounds = new WRect(0, viewportHeight - tHeight, 0, 0);
 
-							List.MakeVisible(semanticLocation);
 							break;
 						}
 				}

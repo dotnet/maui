@@ -16,20 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void Issue26857Test_SelectItemDown()
+		public void Issue26857Test_SelectItem()
 		{
-			App.WaitForElement("DownButton");
-			App.Tap("DownButton");
-			VerifyScreenshot("DownButton");
-		}
-
-		[Test]
-		[Category(UITestCategories.ListView)]
-		public void Issue26857Test_SelectItemUp()
-		{
-			App.WaitForElement("UpButton");
-			App.Tap("UpButton");
-			VerifyScreenshot("UpButton");
+			App.WaitForElement("Button");
+			App.Tap("Button");
+			VerifyScreenshot();
 		}
 	}
 }
