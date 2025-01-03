@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<ITimePicker, ITimePickerHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if ANDROID
+			[nameof(ITimePicker.Focus)] = MapFocus,
+			[nameof(ITimePicker.Unfocus)] = MapUnfocus,
+#endif
 		};
 
 		public TimePickerHandler() : base(Mapper, CommandMapper)
