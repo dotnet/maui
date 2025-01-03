@@ -386,7 +386,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (Element.Children.Count > selectedIndex && selectedIndex >= 0)
 				Element.CurrentPage = Element.Children[selectedIndex];
 
-			SetIconColorFilter(tab, true);
+			SetIconColorFilter(Element.CurrentPage, tab, true);
 		}
 
 		void TeardownPage(Page page)
@@ -525,10 +525,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		protected virtual void SetTabIconImageSource(TabLayout.Tab tab, Drawable icon)
+		protected virtual void SetTabIconImageSource(Page page, TabLayout.Tab tab, Drawable icon)
 		{
 			tab.SetIcon(icon);
-			SetIconColorFilter(tab);
+			SetIconColorFilter(page, tab);
 		}
 
 		void SetTabIconImageSource(Page page, TabLayout.Tab tab)
@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				_context,
 				result =>
 				{
-					SetTabIconImageSource(tab, result?.Value);
+					SetTabIconImageSource(page, tab, result?.Value);
 				});
 		}
 
@@ -633,75 +633,68 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected virtual ColorStateList GetItemIconTintColorState()
 		{
-			if (IsBottomTabPlacement)
-			{
-				if (_orignalTabIconColors is null)
-					_orignalTabIconColors = _bottomNavigationView.ItemIconTintList;
-			}
-			// this ensures that existing behavior doesn't change
-			else if (!IsBottomTabPlacement && BarSelectedItemColor != null && BarItemColor == null)
-				return null;
+			if (_orignalTabIconColors is null)
+				_orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
 
 			Color barItemColor = BarItemColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
 
-			if (barItemColor == null && barSelectedItemColor == null)
+			if (barItemColor is null && barSelectedItemColor is null)
 				return _orignalTabIconColors;
 
-			if (_newTabIconColors != null)
+			if (_newTabIconColors is not null)
 				return _newTabIconColors;
 
-			int defaultColor;
+			int defaultColor = 0;
+			int checkedColor;
 
 			if (barItemColor is not null)
-			{
 				defaultColor = barItemColor.ToPlatform().ToArgb();
-			}
 			else
-			{
-#pragma warning disable XAOBS001 // Obsolete
-				var styledAttributes =
-					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
-#pragma warning restore XAOBS001 // Obsolete
+				defaultColor = GetDefaultColor(defaultColor);
 
-				try
-				{
-					var defaultColors = styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
-					if (defaultColors is not null)
-					{
-						defaultColor = defaultColors.DefaultColor;
-					}
-					else
-					{
-						// These are the defaults currently set inside android
-						// It's very unlikely we'll hit this path because the 
-						// NavigationBarView_itemIconTint should always resolve
-						// But just in case, we'll just hard code to some defaults
-						// instead of leaving the application in a broken state
-						if (IsDarkTheme)
-							defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
-						else
-							defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
-					}
-				}
-				finally
-				{
-					styledAttributes.Recycle();
-				}
-			}
-
-			if (barItemColor == null && _orignalTabIconColors != null)
-				defaultColor = _orignalTabIconColors.DefaultColor;
-
-			int checkedColor = defaultColor;
-
-			if (barSelectedItemColor != null)
+			if (barSelectedItemColor is not null)
 				checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+			else
+				checkedColor = GetDefaultColor(defaultColor);
 
 			_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
 			return _newTabIconColors;
 		}
 
+		int GetDefaultColor(int defaultColor)
+		{
+#pragma warning disable XAOBS001 // Obsolete
+			var styledAttributes =
+				TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
+#pragma warning restore XAOBS001 // Obsolete
+
+			try
+			{
+				var defaultColors = styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
+				if (defaultColors is not null)
+				{
+					defaultColor = defaultColors.DefaultColor;
+				}
+				else
+				{
+					// These are the defaults currently set inside android
+					// It's very unlikely we'll hit this path because the 
+					// NavigationBarView_itemIconTint should always resolve
+					// But just in case, we'll just hard code to some defaults
+					// instead of leaving the application in a broken state
+					if (IsDarkTheme)
+						defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
+					else
+						defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
+				}
+			}
+			finally
+			{
+				styledAttributes.Recycle();
+			}
+			return defaultColor;
+		}
 
 		void OnMoreSheetDismissed(object sender, EventArgs e)
 		{
@@ -737,11 +730,11 @@ namespace Microsoft.Maui.Controls.Handlers
 				_bottomNavigationView.ItemIconTintList = GetItemIconTintColorState() ?? _orignalTabIconColors;
 			else
 			{
-				var colors = GetItemIconTintColorState() ?? _orignalTabIconColors;
 				for (int i = 0; i < _tabLayout.TabCount; i++)
 				{
 					TabLayout.Tab tab = _tabLayout.GetTabAt(i);
-					this.SetIconColorFilter(tab);
+					var page = Element.Children[i];
+					this.SetIconColorFilter(page, tab);
 				}
 			}
 		}
@@ -780,18 +773,18 @@ namespace Microsoft.Maui.Controls.Handlers
 				_tabLayout.TabTextColors = _currentBarTextColorStateList;
 		}
 
-		void SetIconColorFilter(TabLayout.Tab tab)
+		void SetIconColorFilter(Page page, TabLayout.Tab tab)
 		{
-			SetIconColorFilter(tab, _tabLayout.GetTabAt(_tabLayout.SelectedTabPosition) == tab);
+			SetIconColorFilter(page, tab, _tabLayout.GetTabAt(_tabLayout.SelectedTabPosition) == tab);
 		}
 
-		void SetIconColorFilter(TabLayout.Tab tab, bool selected)
+		void SetIconColorFilter(Page page, TabLayout.Tab tab, bool selected)
 		{
 			var icon = tab.Icon;
 			if (icon == null)
 				return;
 
-			var colors = GetItemIconTintColorState();
+			ColorStateList colors = (page.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null) ? null : GetItemIconTintColorState();
 			if (colors == null)
 				ADrawableCompat.SetTintList(icon, null);
 			else
@@ -967,7 +960,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			void TabLayout.IOnTabSelectedListener.OnTabUnselected(TabLayout.Tab tab)
 			{
-				_tabbedPageManager.SetIconColorFilter(tab, false);
+				_tabbedPageManager.SetIconColorFilter(_tabbedPageManager.Element.CurrentPage, tab, false);
 			}
 		}
 	}
