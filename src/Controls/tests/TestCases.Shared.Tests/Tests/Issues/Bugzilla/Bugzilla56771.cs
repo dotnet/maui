@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test is not applicable for Android and Windows, the exception handling only done for iOS.
+﻿#if TEST_FAILS_ON_ANDROID // Exception handling not performs in Android, Issue: https://github.com/dotnet/maui/issues/26941
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

@@ -1,4 +1,8 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+// On iOS, SwipeView items conflict with Shell menu swipe in from left, Issue: https://github.com/dotnet/maui/issues/26933
+// On Catalyst, Swipe actions not supported in Appium.
+// On Windows, StackLayout AutomationId not works in Automation. 
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -61,3 +65,4 @@ public class Issue9088 : _IssuesUITest
 		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("6")); 
 	}
 }
+#endif
