@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "ScrollX and ScrollY Values Are Not Consistent in 'ScrollOrientation.Both' Mode";
+		public override string Issue => "ScrollX and ScrollY Values are not consistent in 'ScrollOrientation.Both' Mode";
 
 		[Test]
 		public void Bugzilla41415Test()
