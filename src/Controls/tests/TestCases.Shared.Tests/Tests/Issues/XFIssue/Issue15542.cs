@@ -18,6 +18,9 @@ public class Issue15542 : _IssuesUITest
 	public void TitleViewHeightDoesntOverflow()
 	{
 		var titleView = App.WaitForElement("title 1").GetRect();
+#if WINDOWS
+		App.Tap("navViewItem");
+#endif
 		App.WaitForTabElement(Page1);
 		var topTab = App.WaitForTabElement(Page1).GetRect();
 
