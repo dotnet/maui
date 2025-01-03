@@ -63,7 +63,8 @@ namespace Microsoft.Maui.Platform
 			var height = finalSize.Height;
 
 			var actual = CrossPlatformArrange(new Rect(0, 0, width, height));
-
+			actual.Width = Math.Max(actual.Width, 0);
+			actual.Height = Math.Max(actual.Height, 0);
 			return actual.ToPlatform();
 		}
 
