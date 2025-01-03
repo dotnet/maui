@@ -27,6 +27,20 @@ public class Issue2740 : TestFlyoutPage
 		{
 			var listview = new ListView();
 			listview.ItemsSource = new List<string> { "1", "2" };
+
+			listview.ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.AutomationIdProperty, new Binding("."));
+				var viewCell = new ViewCell
+				{
+					View = label
+				};
+
+				return viewCell;
+			});
+
 			listview.ItemTapped += OnItemTapped;
 			Content = listview;
 			Title = "Unit List";

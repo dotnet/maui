@@ -1,3 +1,13 @@
+#addin "nuget:?package=NuGet.Packaging&version=6.7.0"
+#addin "nuget:?package=NuGet.Protocol&version=6.7.0"
+
+using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
+
 bool isCleanSet = HasArgument("clean") || IsTarget("clean");
 
 Task("Clean")
@@ -109,3 +119,35 @@ bool IsTarget(string target) =>
 
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
+
+public async Task DownloadNuGetPackageAsync(string packageId, string version, string outputDirectory, string feedUri)
+{
+    // Create a source repository
+    var repository = Repository.Factory.GetCoreV3(feedUri);
+    
+    // Find the package
+    var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+    var packageVersion = NuGetVersion.Parse(version);
+    var cacheContext = new SourceCacheContext();
+    
+    // Set up logging (optional, use NullLogger if you don't need logging)
+    ILogger logger = NullLogger.Instance;
+
+    // Download the package to the output directory
+    EnsureDirectoryExists(outputDirectory);
+    var packagePath = System.IO.Path.Combine(outputDirectory, $"{packageId}.{version}.nupkg");
+    
+    using (var fileStream = new FileStream(packagePath, FileMode.Create, FileAccess.Write, FileShare.None))
+    {
+        // Download package
+        var success = await resource.CopyNupkgToStreamAsync(
+            packageId, packageVersion, fileStream, cacheContext, logger, default);
+
+        if (!success)
+        {
+            throw new Exception("Failed to download the package.");
+        }
+
+        Information("Package '{0} v{1}' downloaded successfully to {2}", packageId, version, packagePath);
+    }
+}

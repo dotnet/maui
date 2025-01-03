@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Element ParentOverride
 		{
-			get 
+			get
 			{
 				if (_parentOverride is null)
 				{
@@ -335,8 +335,8 @@ namespace Microsoft.Maui.Controls
 		WeakReference<Element> _realParent;
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent 
-		{ 
+		public Element RealParent
+		{
 			get
 			{
 				if (_realParent is null)
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				return null;
-			} 
+			}
 			private set
 			{
 				if (value is null)
@@ -634,11 +634,11 @@ namespace Microsoft.Maui.Controls
 		HashSet<string> _pendingHandlerUpdatesFromBPSet = new HashSet<string>();
 		private protected override void OnBindablePropertySet(BindableProperty property, object original, object value, bool changed, bool willFirePropertyChanged)
 		{
-			if(willFirePropertyChanged)
+			if (willFirePropertyChanged)
 			{
 				_pendingHandlerUpdatesFromBPSet.Add(property.PropertyName);
 			}
-			
+
 			base.OnBindablePropertySet(property, original, value, changed, willFirePropertyChanged);
 			_pendingHandlerUpdatesFromBPSet.Remove(property.PropertyName);
 			UpdateHandlerValue(property.PropertyName, changed);
@@ -1066,8 +1066,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
 
-		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy 
-		{ 
+		HandlerDisconnectPolicy IHandlerDisconnectPolicies.DisconnectPolicy
+		{
 			get => HandlerProperties.GetDisconnectPolicy(this);
 			set => HandlerProperties.SetDisconnectPolicy(this, value);
 		}

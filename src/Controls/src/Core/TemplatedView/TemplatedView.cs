@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -148,6 +149,12 @@ namespace Microsoft.Maui.Controls
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
+
+		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
+		{
+			base.InvalidateMeasureLegacy(trigger, depth, 1);
+		}
+
 #nullable disable
 
 	}

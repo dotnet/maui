@@ -19,17 +19,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void MultipleTapGestures()
 		{
 			App.WaitForElement(TestImage);
 			App.Tap(TestImage);
 
-			App.WaitForNoElement(Gesture1Success);
-			App.WaitForNoElement(Gesture2Success);
-			App.WaitForNoElement(Gesture3Success);
+			App.WaitForElement(Gesture1Success);
+			App.WaitForElement(Gesture2Success);
+			App.WaitForElement(Gesture3Success);
 		}
 	}
 }

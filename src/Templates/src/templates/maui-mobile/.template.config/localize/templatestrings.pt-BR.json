@@ -1,14 +1,14 @@
 {
   "author": "Microsoft",
-  "name": "Aplicativo .NET MAUI",
-  "description": "Um projeto para a criação de um aplicativo .NET MAUI para iOS, Android, Mac Catalyst, Tizen e WinUI",
+  "name": ".NET MAUI App",
+  "description": "Um projeto para a criação de um aplicativo .NET MAUI para iOS, Android, Mac Catalyst, WinUI e Tizen",
   "postActions/openInEditor/description": "Abre MainPage.xaml no editor.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "Restaurar os pacotes NuGet exigidos por esse projeto.",
+  "postActions/restore/manualInstructions/default/text": "Execute 'dotnet restore'",
   "symbols/applicationId/description": "Substitui $(ApplicationId) no projeto",
-  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample content",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
+  "symbols/IncludeSampleContent/displayName": "_Incluir conteúdo de amostra",
+  "symbols/IncludeSampleContent/description": "Configura se deve adicionar páginas de amostra e funcionalidades para demonstrar padrões básicos de uso.",
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto na criação."
 }

@@ -33,14 +33,6 @@ variables:
   - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
-  - name: pushMauiPackagesToMaestro
-    default: true
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -153,7 +145,6 @@ extends:
                 parameters:
                   publishArtifacts: false
                   platform: ${{ parameters.PackPlatform.name }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '$(Build.ArtifactStagingDirectory)'
@@ -168,12 +159,12 @@ extends:
                     - template: /eng/pipelines/common/provision.yml@self
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+                        # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                         skipAndroidImages: true
                         skipAndroidSdks: true
                         installDefaultAndroidApi: true
                         skipProvisioning: true
+                        skipXcode: true
 
       - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:                           # Sign only using the private server   
         - template: /eng/pipelines/common/sign.yml@self                                 
@@ -191,7 +182,7 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+            pushMauiPackagesToMaestro: ${{ eq(variables['PushMauiPackagesToMaestro'], 'true') }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
