@@ -91,7 +91,7 @@ public class Issue5161 : Shell
                 Text = "This is Third Page",
                 HorizontalOptions = LayoutOptions.Center,
                 VerticalOptions = LayoutOptions.Center,
-                AutomationId="ThirdPageLabel"
+                AutomationId = "ThirdPageLabel"
             };
 
             var button = new Button
@@ -130,4 +130,3 @@ public class Issue5161 : Shell
         }
     }
 }
-
