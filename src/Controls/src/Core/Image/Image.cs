@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebbugerDisplay()
 		{
-			return $"Source = {Source}" + base.GetDebbugerDisplay();
+			return $"Source = {Source}, " + base.GetDebbugerDisplay();
 		}
 	}
 }
