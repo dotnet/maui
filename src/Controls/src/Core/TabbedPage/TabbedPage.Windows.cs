@@ -56,13 +56,13 @@ namespace Microsoft.Maui.Controls
 				if (sender is Page page)
 				{
 					//Find the corresponding ViewModel for the triggering Page
-					if (_navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
+					if (Handler?.MauiContext is not null && _navigationView?.MenuItemsSource is IList<NavigationViewItemViewModel> menuItems)
 					{
 						foreach (var item in menuItems)
 						{
 							if (item.Data == page)
 							{
-								item.Icon = page.IconImageSource?.ToIconSource(Handler?.MauiContext!)?.CreateIconElement();
+								item.Icon = page.IconImageSource?.ToIconSource(Handler.MauiContext)?.CreateIconElement();
 								item.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
 								break;
 							}
