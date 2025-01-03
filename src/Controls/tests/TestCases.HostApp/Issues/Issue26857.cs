@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		private ListView ListView;
 		private ObservableCollection<string> Items;
-		private Label label;
+
 		public Issue26857()
 		{
 			Items = new ObservableCollection<string>
@@ -39,24 +39,13 @@ namespace Maui.Controls.Sample.Issues
 				HeightRequest = 220,
 			};
 
-			var upButton = new Button
+			var button = new Button
 			{
-				Text = "Up",
-				AutomationId = "UpButton"
+				Text = "ChangeSelectedItem",
+				AutomationId = "Button",
+				HorizontalOptions = LayoutOptions.Center
 			};
-			upButton.Clicked += UpButton_Clicked;
-
-			var downButton = new Button
-			{
-				Text = "Down",
-				AutomationId = "DownButton"
-			};
-			downButton.Clicked += DownButton_Clicked;
-
-			label = new Label
-			{
-				AutomationId = "SelectedItemLabel"
-			};
+			button.Clicked += Button_Clicked;
 
 			var stackLayout = new StackLayout
 			{
@@ -65,9 +54,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			stackLayout.Children.Add(ListView);
-			stackLayout.Children.Add(upButton);
-			stackLayout.Children.Add(downButton);
-			stackLayout.Children.Add(label);
+			stackLayout.Children.Add(button);
 			this.Content = stackLayout;
 		}
 
@@ -76,21 +63,10 @@ namespace Maui.Controls.Sample.Issues
 			if (ListView?.SelectedItem != null)
 			{
 				ListView.ScrollTo(ListView.SelectedItem, ScrollToPosition.Center, true);
-				label.Text = ListView.SelectedItem as string;
 			}
 		}
 
-		private void UpButton_Clicked(object sender, EventArgs e)
-		{
-			var currentIndex = Items.IndexOf(ListView.SelectedItem as string);
-			if (currentIndex > 0)
-			{
-				ListView.SelectedItem = Items[currentIndex - 2];
-				ScrollToSelectedItem();
-			}
-		}
-
-		private void DownButton_Clicked(object sender, EventArgs e)
+		private void Button_Clicked(object sender, EventArgs e)
 		{
 			var currentIndex = Items.IndexOf(ListView.SelectedItem as string);
 			if (currentIndex < Items.Count - 2)
