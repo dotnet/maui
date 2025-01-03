@@ -596,7 +596,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							viewer.ChangeView(position.Value.X, position.Value.Y - (offset / 2), null);
 						else
 							viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
-
 						break;
 					}
 				default:
