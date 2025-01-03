@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
 				}
 
-				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
+				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || _footerUIView.Frame.X != footerWidth || emptyWidth > 0))
 				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(
 						ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth,
