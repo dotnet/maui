@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebbugerDisplay()
 		{
-			return $"Position = {Position}, Count = {Count}" + base.GetDebbugerDisplay();
+			return $"Position = {Position}, Count = {Count}, " + base.GetDebbugerDisplay();
 		}
 	}
 }

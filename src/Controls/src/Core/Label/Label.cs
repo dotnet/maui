@@ -482,7 +482,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebbugerDisplay()
 		{
-			return $"Text = {Text}" + base.GetDebbugerDisplay();
+			return $"Text = {Text}, " + base.GetDebbugerDisplay();
 		}
 	}
 }
