@@ -12,20 +12,13 @@ public class Bugzilla30317 : _IssuesUITest
 	const string PageOne = "Set ItemSource On Appearing";
 	const string PageTwo = "Set ItemSource in ctor"; 
 #else
-    const string PageOne = "PageOne";
+  const string PageOne = "PageOne";
 	const string PageTwo = "PageTwo"; 
 #endif
 
-#if ANDROID 
-    const string TabOne = "TABONECTOR";
-    const string TabTwo = "TABTWOONAPPEARING";
-#elif WINDOWS
+
 	const string TabOne = "TabOneCtor";
-    const string TabTwo = "TabTwoOnAppearing";
-#else
-	const string TabOne = "TabbedPageOne";
-	const string TabTwo = "TabbedPageTwo";
-#endif
+  const string TabTwo = "TabTwoOnAppearing";
 	const string PageTwoButton = "GoToPageTwoButton";
 	const string PageThreeButton = "GoToPageThreeButton";
 	const string PageOneItem1 = "PageOneItem1";
@@ -82,10 +75,8 @@ public class Bugzilla30317 : _IssuesUITest
  
 		App.WaitForElement(PageThreeButton);
 		App.Tap(PageThreeButton);
- 
-		App.WaitForElementTillPageNavigationSettled(TabTwo);
-		App.Tap(TabTwo);
- 
+		App.TapTab(TabTwo);
+    
 		App.WaitForElementTillPageNavigationSettled(TabTwoItem1);
 		TouchAndHold(TabTwoItem1);
 		App.WaitForElement(TabTwoItem1);
@@ -94,8 +85,7 @@ public class Bugzilla30317 : _IssuesUITest
 		TouchAndHold(TabTwoItem5);
 		App.WaitForElement(TabTwoItem5);
  
-		App.WaitForElement(TabOne);
-		App.Tap(TabOne);
+		App.TapTab(TabOne);
  
 		App.WaitForElement(TabOneItem1);
 		TouchAndHold(TabOneItem1);
@@ -109,7 +99,7 @@ public class Bugzilla30317 : _IssuesUITest
 	void TouchAndHold(string item)
 	{
 #if MACCATALYST //In Catalyst TouchAndHold is not supported. So using LongPress
-		App.LongPress(item);
+      App.LongPress(item);
 #else
     	App.TouchAndHold(item);
 #endif
