@@ -18,8 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("FocusButton");
 			App.Click("FocusButton");
-			App.WaitForElement("FocusedLabel");
-			App.WaitForElement("UnfocusedLabel");
+
+			string text = App.FindElement("StatusLabel").GetText()!;
+			Assert.That(text, Is.EqualTo("FocusedUnfocused"));
 		}
 	}
 }

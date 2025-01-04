@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
-		internal void ShowPickerDialog()
+		void ShowPickerDialog()
 		{
 			if (VirtualView == null)
 				return;
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsFocused = true;
 		}
 
-		internal void HidePickerDialog()
+		void HidePickerDialog()
 		{
 			if (_dialog != null)
 			{

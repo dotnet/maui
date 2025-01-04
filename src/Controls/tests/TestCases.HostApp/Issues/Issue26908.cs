@@ -7,35 +7,25 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			var timePicker = new TimePicker();
-			var focusedLabel = new Label
+			var statusLabel = new Label
 			{
-				AutomationId = "FocusedLabel",
-				Text = "The time picker was focused",
-				IsVisible = false,
-			};
-
-			var unfocusedLabel = new Label
-			{
-				AutomationId = "UnfocusedLabel",
-				Text = "The time picker was unfocused",
-				IsVisible = false,
+				AutomationId = "StatusLabel",
 			};
 
 			timePicker.Focused += (s, e) =>
 			{
-				focusedLabel.IsVisible = true;
+				statusLabel.Text += "Focused";
 				timePicker.Unfocus();
 			};
 
-			timePicker.Unfocused += (s, e) => unfocusedLabel.IsVisible = true;
+			timePicker.Unfocused += (s, e) => statusLabel.Text += "Unfocused";
 
 			Content = new StackLayout
 			{
 				Children =
 				{
 					timePicker,
-					focusedLabel,
-					unfocusedLabel,
+					statusLabel,
 					new Button()
 					{
 						Text = "Focus",
