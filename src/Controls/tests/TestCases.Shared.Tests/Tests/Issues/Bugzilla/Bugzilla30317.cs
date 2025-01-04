@@ -16,9 +16,13 @@ public class Bugzilla30317 : _IssuesUITest
 	const string PageTwo = "PageTwo"; 
 #endif
 
-
+#if IOS || MACCTALYST
+	const string TabOne = "TabbedPageOne";
+	const string TabTwo = "TabbedPageTwo";
+#else
 	const string TabOne = "TabOneCtor";
-  const string TabTwo = "TabTwoOnAppearing";
+  	const string TabTwo = "TabTwoOnAppearing";
+#endif
 	const string PageTwoButton = "GoToPageTwoButton";
 	const string PageThreeButton = "GoToPageThreeButton";
 	const string PageOneItem1 = "PageOneItem1";
@@ -68,7 +72,6 @@ public class Bugzilla30317 : _IssuesUITest
 	[Test]
 	public void Bugzilla30317ItemSourceTabbedPage()
 	{
-
 		App.WaitForElement(PageTwoButton);
 		App.Tap(PageTwoButton);
 		App.WaitForElementTillPageNavigationSettled(PageTwo);
@@ -99,7 +102,7 @@ public class Bugzilla30317 : _IssuesUITest
 	void TouchAndHold(string item)
 	{
 #if MACCATALYST //In Catalyst TouchAndHold is not supported. So using LongPress
-      App.LongPress(item);
+      	App.LongPress(item);
 #else
     	App.TouchAndHold(item);
 #endif
