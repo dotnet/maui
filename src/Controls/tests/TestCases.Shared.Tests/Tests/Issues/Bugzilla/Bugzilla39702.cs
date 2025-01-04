@@ -21,7 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void ControlCanBeFocusedByUnfocusedEvent()
 		{
-			App.WaitForElement(TheEntry);
+			App.WaitForElementTillPageNavigationSettled(TheEntry);
+			Thread.Sleep(3000); // Sample uses delay and then unfocus the editor.
 			App.EnterText(TheEntry, Success);
 			App.WaitForElementTillPageNavigationSettled(Success);
 		}
