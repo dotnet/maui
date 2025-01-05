@@ -26,7 +26,7 @@ namespace UITest.Appium
 
 		readonly AppiumApp _appiumApp;
 
-		readonly List<string> _commands = new()
+		readonly protected List<string> _commands = new()
 		{
 			ScrollLeftCommand,
 			ScrollDownCommand,
@@ -56,7 +56,7 @@ namespace UITest.Appium
 			};
 		}
 
-		CommandResponse ScrollLeft(IDictionary<string, object> parameters)
+		internal CommandResponse ScrollLeft(IDictionary<string, object> parameters)
 		{
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
@@ -142,7 +142,7 @@ namespace UITest.Appium
 			return null;
 		}
 
-		static void ScrollToLeft(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		void ScrollToLeft(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;
@@ -152,10 +152,10 @@ namespace UITest.Appium
 
 			int endX = (int)(position.X + (size.Width * swipePercentage));
 			int endY = startY;
-			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
 
-		static void ScrollToDown(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		void ScrollToDown(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;
@@ -165,10 +165,11 @@ namespace UITest.Appium
 
 			int endX = startX;
 			int endY = (int)(position.Y + (size.Height * 0.05));
-			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
+
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
 
-		static void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;
@@ -178,38 +179,33 @@ namespace UITest.Appium
 
 			int endX = (int)(position.X + (size.Width * 0.05));
 			int endY = startY;
-			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
 
-		static void ScrollToUp(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		void ScrollToUp(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;
-
 			int startX = position.X + size.Width / 2;
 			int startY = (int)(position.Y + (size.Height * 0.05));
 
 			int endX = startX;
 			int endY = (int)(position.Y + (size.Height * swipePercentage));
-			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed);
+			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
 
-		static void PerformActions(
+		virtual protected void PerformActions(
 			AppiumDriver driver,
 			int startX,
 			int startY,
 			int endX,
 			int endY,
 			ScrollStrategy strategy,
-			int swipeSpeed)
+			int swipeSpeed,
+			string? elementId)
 		{
 
 			var pointerKind = PointerKind.Touch;
-			if (driver is MacDriver)
-			{
-				pointerKind = PointerKind.Mouse;
-			}
-
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(pointerKind);
 			var scrollSequence = new ActionSequence(touchDevice, 0);
 			scrollSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, startX, startY, TimeSpan.FromMilliseconds(2)));
