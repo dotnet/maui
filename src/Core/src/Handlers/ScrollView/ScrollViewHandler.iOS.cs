@@ -186,17 +186,17 @@ namespace Microsoft.Maui.Handlers
 
 			var contentSize = Size.Zero;
 
-			if (widthConstraint != double.PositiveInfinity && Dimension.IsExplicitSet(contentView.Width))
+			if (!double.IsInfinity(widthConstraint) && Dimension.IsExplicitSet(contentView.Width))
 			{
 				widthConstraint = contentView.Width;
 			}
 
-			if (heightConstraint != double.PositiveInfinity && Dimension.IsExplicitSet(contentView.Height))
+			if (!double.IsInfinity(heightConstraint) && Dimension.IsExplicitSet(contentView.Height))
 			{
 				heightConstraint = contentView.Height;
 			}
 
-			if (content != null)
+			if (content is not null)
 			{
 				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
 					heightConstraint - inset.VerticalThickness);
