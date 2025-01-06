@@ -118,7 +118,7 @@ if ($AppiumHome) {
 
 # Check for an existing appium install version
 $appiumCurrentVersion = ""
-try { $appiumCurrentVersion = appium -v | Out-String } catch { Write-Debug "Problem" }
+try { $appiumCurrentVersion = (appium -v | Out-String).Trim() -replace "`r", "" -replace "`n", "" } catch { Write-Debug "Problem retrieving current Appium version" }
 
 if ($appiumCurrentVersion) {
     Write-Output  "Existing Appium version $appiumCurrentVersion"
@@ -141,6 +141,10 @@ if ($missingAppium -or ($appiumCurrentVersion -ne $appiumVersion)) {
     npm install --logs-dir=$logsDir --loglevel $npmLogLevel -g appium@$appiumVersion
     write-Output  "Installed appium $appiumVersion"
 }
+
+# Clean npm cache, just in case
+Write-Output  "Cleaning npm cache"
+npm cache clean --force
 
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"

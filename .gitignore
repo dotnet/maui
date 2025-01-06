@@ -382,3 +382,4 @@ snapshots-diff/
 .dotnet
 temp
 .packages
+/src/Templates/.tempTemplateOutput

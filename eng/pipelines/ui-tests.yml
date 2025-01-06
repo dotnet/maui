@@ -144,14 +144,17 @@ stages:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
+      ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+        skipProvisioning: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+      ${{ else }}:  
+        skipProvisioning: true
       projects:
         - name: controls
           desc: Controls

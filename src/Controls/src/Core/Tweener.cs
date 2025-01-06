@@ -43,6 +43,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var running = _step.Invoke((long)millisecondsSinceLastUpdate);
 			HasFinished = !running;
+
+			if (HasFinished)
+				Finished?.Invoke();
 		}
 
 		internal override void ForceFinish()

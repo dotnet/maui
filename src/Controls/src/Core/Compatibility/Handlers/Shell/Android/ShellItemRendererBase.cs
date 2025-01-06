@@ -138,7 +138,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual Task<bool> HandleFragmentUpdate(ShellNavigationSource navSource, ShellSection shellSection, Page page, bool animated)
 		{
-			TaskCompletionSource<bool> result = new TaskCompletionSource<bool>();
+			// We're using RunContinuationsAsynchronously because we don't want a subsequent navigation
+			// to start until the current one has finished.
+			// The AnimationFinished event is used to signal when the animation has completed,
+			// but that doesn't mean the fragment transaction has completed.
+			var result = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
 			bool isForCurrentTab = shellSection == ShellSection;
 			bool initialUpdate = _fragmentMap.Count == 0;
 			if (!_fragmentMap.ContainsKey(ShellSection))

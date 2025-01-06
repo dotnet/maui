@@ -23,7 +23,7 @@ public class Issue6878 : TestShell
 			}
 		};
 
-		_stackContent.AddLogicalChild(BuildClearButton());
+		_stackContent.Children.Add(BuildClearButton());
 		AddTopTab(TopTab).Content = _stackContent;
 
 		CurrentItem = Items.Last();

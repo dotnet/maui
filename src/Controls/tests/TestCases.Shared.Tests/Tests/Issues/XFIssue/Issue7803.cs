@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // DragCoordinates is not supported in MacCatalyst
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,28 +14,22 @@ public class Issue7803 : _IssuesUITest
 	public override string Issue => "[Bug] CarouselView/RefreshView pull to refresh command firing twice on a single pull";
 
 	//[Test]
-	//[Category(UITestCategories.CollectionView)]
-	//[FailsOnMauiIOS]
-	//public void DelayedIsRefreshingAndCommandTest_SwipeDown()
-	//{
-	//	var collectionView = App.WaitForElement(q => q.Marked("CollectionView7803"))[0];
+	[Category(UITestCategories.CollectionView)]
+	public void DelayedIsRefreshingAndCommandTest_SwipeDown()
+	{
+		var collectionView = App.WaitForElement("CollectionView7803");
+		// The drag command doesn't invoke the refresh command, so ScrollUp is used here to trigger the refresh instead.
+		App.ScrollUp("CollectionView7803");
 
-	//	App.Pan(new Drag(collectionView.Rect, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
+		App.WaitForElement("Count: 20");
 
-	//	App.WaitForElement(q => q.Marked("Count: 20"));
-	//	App.WaitForNoElement(q => q.Marked("Count: 30"));
+		App.WaitForNoElement("Count: 30");
 
-	//	AppResult[] lastCellResults = null;
+		// Randomly, a single drag action does not scroll to the end of the list, so two drag actions have been added to enhance test stability.
+		App.DragCoordinates(collectionView.GetRect().Width - 10, collectionView.GetRect().Y + collectionView.GetRect().Height - 50, collectionView.GetRect().Width - 10, collectionView.GetRect().Y + 5);
+		App.DragCoordinates(collectionView.GetRect().Width - 10, collectionView.GetRect().Y + collectionView.GetRect().Height - 50, collectionView.GetRect().Width - 10, collectionView.GetRect().Y + 5);
 
-	//	App.QueryUntilPresent(() =>
-	//	{
-	//		App.DragCoordinates(collectionView.Rect.CenterX, collectionView.Rect.Y + collectionView.Rect.Height - 50, collectionView.Rect.CenterX, collectionView.Rect.Y + 5);
-
-	//		lastCellResults = App.Query("19");
-
-	//		return lastCellResults;
-	//	}, 10, 1);
-
-	//	Assert.IsTrue(lastCellResults?.Any() ?? false);
-	//}
+		App.WaitForElement("19");
+	}
 }
+#endif

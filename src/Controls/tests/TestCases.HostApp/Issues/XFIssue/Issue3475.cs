@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Github, 3475, "[iOS] LayoutCompression Performance Issues", PlatformAffected.iOS)]
-public class Issue3475 : TestContentPage
+public class Issue3475 : TestNavigationPage
 {
 	string _withoutCompressionBtnId = "button1";
 	string _withCompressionBtnId = "button2";
@@ -32,7 +32,7 @@ public class Issue3475 : TestContentPage
 			AutomationId = _withCompressionBtnId
 		};
 
-		Content = new StackLayout
+		var content = new StackLayout
 		{
 			Padding = 10,
 			Children =
@@ -46,6 +46,8 @@ public class Issue3475 : TestContentPage
 				withCompressionBtn
 			}
 		};
+
+		Navigation.PushAsync(new ContentPage { Content = content });
 	}
 
 	public int GetMs(string text)

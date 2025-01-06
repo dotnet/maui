@@ -51,10 +51,10 @@ public class Issue3012 : TestContentPage
 			UnfocusedCount++;
 		};
 
-		var dumbyEntry = new Entry()
+		var otherEntry = new Entry()
 		{
 			Placeholder = "I'm just here as another focus target",
-			AutomationId = "DumbyEntry"
+			AutomationId = "OtherEntry"
 		};
 
 		var divider = new BoxView
@@ -64,7 +64,7 @@ public class Issue3012 : TestContentPage
 		};
 
 		StackLayout stackLayout = new StackLayout();
-		stackLayout.Children.Add(dumbyEntry);
+		stackLayout.Children.Add(otherEntry);
 		stackLayout.Children.Add(divider);
 		stackLayout.Children.Add(entry);
 		stackLayout.Children.Add(_focusedCountLabel);

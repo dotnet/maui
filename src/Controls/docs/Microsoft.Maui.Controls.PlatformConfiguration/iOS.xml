@@ -16,12 +16,6 @@
       <InterfaceName>Microsoft.Maui.Controls.IConfigPlatform</InterfaceName>
     </Interface>
   </Interfaces>
-  <Docs>
-    <summary>Marker class that identifies the iOS platform.</summary>
-    <remarks>
-      <para>Developers specify the type name of this marker class to the <see cref="M:Microsoft.Maui.Controls.IElementConfiguration`1.On``1" /> method to specify the underlying iOS control on which to run a platform-specific effect.</para>
-    </remarks>
-  </Docs>
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public iOS ();" />

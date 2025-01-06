@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateHorizontalScrollBarVisibility();
+			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateVerticalScrollBarVisibility();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
@@ -109,8 +109,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (adapter is EmptyViewAdapter emptyViewAdapter)
 			{
+				var emptyView = emptyViewAdapter.EmptyView ?? emptyViewAdapter.EmptyViewTemplate;
+				Size size = Size.Zero;
+
+				IView view = emptyView as IView ?? (emptyView as DataTemplate)?.CreateContent() as IView;
+
+				if (view is not null)
+				{
+					if (view.Handler is null)
+					{
+						TemplateHelpers.GetHandler(view as View, this.MauiContext);
+					}
+
+					size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				}
+
+				var measuredHeight = !double.IsInfinity(size.Height) ? Context.ToPixels(size.Height) : height;
 				emptyViewAdapter.RecyclerViewWidth = width;
-				emptyViewAdapter.RecyclerViewHeight = height;
+				emptyViewAdapter.RecyclerViewHeight = measuredHeight > 0 ? measuredHeight : height;
 			}
 		}
 	}

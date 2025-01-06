@@ -13,7 +13,7 @@ public class Issue8279 : TestContentPage
 	const string ScrollWithItemWithGroup = "ScrollWithItemWithGroup";
 	const string ScrollWithNoItemNoGroup = "ScrollWithNoItemNoGroup";
 	const string ScrollWithNoItemEmptyGroup = "ScrollWithNoItemEmptyGroup";
-	const string Reset = "Reset";
+	const string ResetButton = "Reset";
 
 	protected override void Init()
 	{
@@ -97,7 +97,7 @@ public class Issue8279 : TestContentPage
 		var resetButton = new Button()
 		{
 			Text = "Reset",
-			AutomationId = Reset,
+			AutomationId = ResetButton,
 			Command = new Command(() => List.ScrollTo(null, firstGroup, ScrollToPosition.Center, true))
 		};
 
@@ -111,13 +111,13 @@ public class Issue8279 : TestContentPage
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
 
-		stackLayout.AddLogicalChild(resetButton);
-		stackLayout.AddLogicalChild(button1);
-		stackLayout.AddLogicalChild(button2);
-		stackLayout.AddLogicalChild(button3);
-		stackLayout.AddLogicalChild(button4);
-		stackLayout.AddLogicalChild(button5);
-		stackLayout.AddLogicalChild(List);
+		stackLayout.Children.Add(resetButton);
+		stackLayout.Children.Add(button1);
+		stackLayout.Children.Add(button2);
+		stackLayout.Children.Add(button3);
+		stackLayout.Children.Add(button4);
+		stackLayout.Children.Add(button5);
+		stackLayout.Children.Add(List);
 
 		Content = stackLayout;
 	}

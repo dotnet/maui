@@ -11,6 +11,7 @@ namespace UITest.Appium
 		const string ToggleWifiCommand = "toggleWifi";
 		const string ToggleDataCommand = "toggleData";
 		const string GetPerformanceDataCommand = "getPerformanceData";
+		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
 		const string GetSystemBarsCommand = "getSystemBars";
 		const string ToggleSecondaryToolbarItemsCommand = "toggleSecondaryToolbarItems";
 
@@ -22,6 +23,7 @@ namespace UITest.Appium
 			ToggleWifiCommand,
 			ToggleDataCommand,
 			GetPerformanceDataCommand,
+			ToggleSystemAnimationsCommand,
 			GetSystemBarsCommand,
 			ToggleSecondaryToolbarItemsCommand,
 		};
@@ -44,6 +46,7 @@ namespace UITest.Appium
 				ToggleWifiCommand => ToggleWifi(parameters),
 				ToggleDataCommand => ToggleData(parameters),
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
+				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
 				GetSystemBarsCommand => GetSystemBars(parameters),
 				ToggleSecondaryToolbarItemsCommand => ToggleSecondaryToolbarItems(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
@@ -108,6 +111,50 @@ namespace UITest.Appium
 			return CommandResponse.FailedEmptyResponse;
 		}
 
+		CommandResponse ToggleSystemAnimations(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				bool enableSystemAnimations = (bool)parameters["enableSystemAnimations"];
+
+				if (enableSystemAnimations)
+				{
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global window_animation_scale 0");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global transition_animation_scale 0");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global animator_duration_scale 0");
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+				else
+				{
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global window_animation_scale 1");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global transition_animation_scale 1");
+					ShellHelper.ExecuteAdbCommand($"adb shell settings put global animator_duration_scale 1");
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+		}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+		
+		CommandResponse ToggleSecondaryToolbarItems(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				_appiumApp.WaitForElement(MoreButton);
+				_appiumApp.Tap(MoreButton);
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+    
 		CommandResponse GetSystemBars(IDictionary<string, object> parameters)
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)

@@ -135,6 +135,18 @@
     <value>Bağlama: "{0}" dizin oluşturucu dizin türü desteklenmiyor.</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>x:DataType belirtildiyse çalışma zamanı performansını iyileştirmek için bağlama derlenebilir. Bkz. https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>x:DataType açıkça null değilse çalışma zamanı performansını iyileştirmek için bağlama derlenebilir. Bkz. https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>x:DataType ek açıklaması bir dış kapsamdan geldiğinden bağlama yanlış derlenmiş olabilir. Tüm DataTemplate XAML öğelerine doğru x:DataType ile not eklediğinizden emin olun. Bkz. https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>Bağlama, açıkça ayarlanmış bir Kaynak özelliğine sahip olduğundan ve Kaynak ile bağlama derlemesi etkinleştirilmediğinden derlenemedi. Proje dosyanızda &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; değerini ayarlayıp bu bağlama için doğru x:DataType'ın belirtilmiş olduğundan emin olun. Bkz. https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Bağlama: "{1}" üzerinde "{0}" özelliği bulunamadı.</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Bu NameScope içinde "{0}" adlı bir öğe zaten var.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Özellik, Özellik ayarlayıcısı veya BindableProperty "{0}" kullanım dışı bırakıldı.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>"{1}" türünde zorunlu "{0}" özelliği eksik.</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>Kaynak özelliği bir dize sabit değeri değil.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>StyleSheet, hem Source hem de içerik bulunduramaz.</value>
+    <value>StyleSheet, hem Kaynak hem de içerik bulunduramaz.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>Style özelliği veya Content bir dize sabit değeri değil.</value>
@@ -233,6 +248,10 @@
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType için bir dize sabit değeri, {{x:Type}} işaretlemesi veya {{x:Null}} bekleniyor.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>"{0}" işaretleme uzantısını [RequireService] ya da uzantı gerekmiyorsa [AcceptEmptyServiceProvider] ile ilişkilendirmeyi düşünün.</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>"{0}" xmlns ön eki bildirilmedi.</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key bir sabit değerli dize bekliyor.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>{StaticResource} içinde bir anahtar gereklidir.</value>
   </data>
 </root>

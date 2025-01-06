@@ -914,6 +914,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return true;
 		}
 
+		[Export("navigationBar:didPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		bool DidPopItem(UINavigationBar _, UINavigationItem __)
+		{
+			_uiRequestedPop = true;
+			return true;
+		}
+
 		internal static void SetFlyoutLeftBarButton(UIViewController containerController, FlyoutPage FlyoutPage)
 		{
 			if (!FlyoutPage.ShouldShowToolbarButton())
