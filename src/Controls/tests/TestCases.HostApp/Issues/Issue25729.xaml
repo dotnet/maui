@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25729">
+        <Grid RowSpacing="10"
+              RowDefinitions="400,Auto,Auto"
+              Margin="10">
+                <StackLayout Grid.Row="0"
+                             BindableLayout.ItemsSource="{Binding CurrentItems}"
+                             Orientation="Vertical">
+                        <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                        <Grid RowDefinitions="50,*,50"
+                                              RowSpacing="25">
+                                                <Label Grid.Row="0"
+                                                       Text="{Binding Title}"
+                                                       HorizontalOptions="Center"
+                                                       FontAttributes="Bold"
+                                                       FontSize="Large"></Label>
+                                                <Picker Grid.Row="1"
+                                                        Title="---Select---"
+                                                        SelectedIndex="0"
+                                                        ItemsSource="{Binding Choices}"
+                                                        ItemDisplayBinding="{Binding ChoiceText}"
+                                                        SelectedItem="{Binding SelectedChoice}"></Picker>
+
+                                                <Label Grid.Row="2"
+                                                       AutomationId="label"
+                                                       Text="{Binding SelectedChoiceText, StringFormat='Selected Choice: {0}'}"></Label>
+                                        </Grid>
+                                </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                </StackLayout>
+
+                <Grid Grid.Row="1"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+                        <Button Grid.Column="0"
+                                Text="Section 1"
+                                AutomationId="button1"
+                                Command="{Binding LoadSection1Command}"/>
+                        <Button Grid.Column="1"
+                                AutomationId="button2"
+                                Text="Section 2"
+                                Command="{Binding LoadSection2Command}"/>
+                </Grid>
+        </Grid>
+</ContentPage>
