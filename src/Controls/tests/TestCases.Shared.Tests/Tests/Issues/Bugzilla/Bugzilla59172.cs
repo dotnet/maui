@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapBackArrow();
 
 			// App should not have crashed
-			App.WaitForElement("GoForward");
+			App.WaitForElementTillPageNavigationSettled("GoForward");
 		}
 
 		[Test]
