@@ -17,18 +17,18 @@ namespace Maui.Controls.Sample.Issues
 		public FirstPage25371()
 		{
 			var stackLayout = new StackLayout();
-		    label = new Label()
+			label = new Label()
 			{
 				Text = "Welcome to Main page",
-				AutomationId ="FirstPageLabel"
+				AutomationId = "FirstPageLabel"
 			};
 
-			var button = new Button() { Text = "MoveToNextPage", AutomationId="MoveToNextPage" };
+			var button = new Button() { Text = "MoveToNextPage", AutomationId = "MoveToNextPage" };
 			button.Clicked += Button_Clicked;
 			stackLayout.Children.Add(label);
 			stackLayout.Children.Add(button);
 			Content = stackLayout;
-			
+
 		}
 
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
@@ -39,6 +39,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
+			label.Text = "Welcome to Main page"; // label text should be reset to original text
 			Navigation.PushAsync(new SecondPage25371());
 		}
 	}
@@ -50,7 +51,7 @@ namespace Maui.Controls.Sample.Issues
 			var label = new Label()
 			{
 				AutomationId = "SecondPageLabel",
-				Text = "Welcome to Second Page",		
+				Text = "Welcome to Second Page",
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center
 			};
