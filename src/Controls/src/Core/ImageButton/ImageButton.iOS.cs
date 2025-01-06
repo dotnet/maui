@@ -17,13 +17,10 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>This method is used to override the SizeThatFitsImage() on wrapper view.</remarks>
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			UIButton platformButton = Handler?.PlatformView as UIButton;
-			if (platformButton is null)
+			if (Handler?.PlatformView is not UIButton platformButton)
 				return Size.Zero;
 
-			ImageButton imageButton = this;
-
-			Thickness padding = imageButton.Padding.IsNaN ? default(Thickness) : imageButton.Padding;
+			Thickness padding = Padding.IsNaN ? default(Thickness) : Padding;
 
 			Thickness contentEdgeInsets = new Thickness
 			{
