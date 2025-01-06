@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //App Crashes on windows, Issue: https://github.com/dotnet/maui/issues/26803
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,16 +14,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Crash when toolbar item removed then page changed";
-
-		// [Test]
-		// [Category(UITestCategories.ToolbarItem)]
-		// [Category(UITestCategories.Compatibility)]
-		// [FailsOnIOSWhenRunningOnXamarinUITest]
-		// [FailsOnMacWhenRunningOnXamarinUITest]
-		// [FailsOnWindowsWhenRunningOnXamarinUITest]
-		// public void TestIssue9419()
-		// {
-		// 	App.WaitForElement(OkResult);
-		// }
+		[Test]
+		[Category(UITestCategories.ToolbarItem)]
+		[Category(UITestCategories.Compatibility)]
+		public void TestIssue9419()
+		{
+			App.WaitForElementTillPageNavigationSettled(OkResult);
+		}
 	}
 }
+#endif
