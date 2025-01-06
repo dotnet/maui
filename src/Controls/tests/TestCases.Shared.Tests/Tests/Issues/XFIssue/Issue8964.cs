@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //The Position property now functions correctly on Android and Windows, issue: https://github.com/dotnet/maui/issues/15443. Note that on Catalyst, swipe and drag options are not supported in Appium.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,34 +13,32 @@ public class Issue8964 : _IssuesUITest
 
 	public override string Issue => "Adding an item to the beginning of the bound ItemSource causes the carousel to skip sometimes";
 
-	//[Test]
-	//[Category(UITestCategories.CarouselView)]
-	//	[FailsOnAndroid]
-	//	[FailsOnIOS]
-	//	public void Issue8964Test()
-	//	{
-	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-	//		var rect = App.Query("carouseView")[0].Rect;
-	//		SwipePreviousItem(rect);
-	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-	//		SwipePreviousItem(rect);
-	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-	//		SwipePreviousItem(rect);
-	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-	//		SwipePreviousItem(rect);
-	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-	//		SwipePreviousItem(rect);
-	//		App.WaitForElement(q => q.Marked($"Item Position - 4"));
-	//		App.WaitForElement(q => q.Marked($"Counter 6"));
-
-	//	}
-
-	//	void SwipePreviousItem(Xamarin.UITest.Queries.AppRect rect)
-	//	{
-	//#if ANDROID
-	//		App.DragCoordinates(rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
-	//#else
-	//		App.SwipeLeftToRight("carouseView");
-	//#endif
-	//	}
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void Issue8964Test()
+	{
+		App.WaitForElement($"Item Position - 4");
+		var rect = App.WaitForElement("carouseView").GetRect();
+		SwipePreviousItem(rect);
+		App.WaitForElement($"Item Position - 4");
+		SwipePreviousItem(rect);
+		App.WaitForElement($"Item Position - 4");
+		SwipePreviousItem(rect);
+		App.WaitForElement($"Item Position - 4");
+		SwipePreviousItem(rect);
+		App.WaitForElement($"Item Position - 4");
+		SwipePreviousItem(rect);
+		App.WaitForElement(	$"Item Position - 4");
+		App.WaitForElement($"Counter 6");
+	}
+ 
+	void SwipePreviousItem(System.Drawing.Rectangle rect)
+	{
+#if ANDROID
+		App.DragCoordinates(rect.X + 10, rect.Y, rect.X + rect.Width - 10, rect.Y);
+#else
+		App.SwipeLeftToRight("carouseView");
+#endif
+	}	
 }
+#endif

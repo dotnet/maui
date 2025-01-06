@@ -7,8 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue3524 : _IssuesUITest
 {
-	const string kText = "Click Me To Increment";
-
+	const string kText = "ClickMeToIncrement";
 	public Issue3524(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -17,12 +16,10 @@ public class Issue3524 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Gestures)]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void SpanGestureCommand()
 	{
 		App.WaitForElement(kText);
 		App.Tap(kText);
-		App.WaitForElement($"{kText}: 1");
+		Assert.That(App.WaitForElement(kText).GetText(), Is.EqualTo("ClickMeToIncrement: 1"));
 	}
 }

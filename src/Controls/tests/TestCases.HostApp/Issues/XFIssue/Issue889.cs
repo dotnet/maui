@@ -66,6 +66,7 @@ public class NestedNavTabPageRootView : TabbedPage
 			{
 				new Button {
 					Text = "Push new page",
+					AutomationId = "PushPage",
 					Command = new Command (() => Navigation.PushAsync (new NestedNavTabPageOneLevel ()))
 				}
 			}
@@ -79,6 +80,7 @@ public class NestedNavTabPageRootView : TabbedPage
 			{
 				new Button {
 					Text = "Push new page",
+					AutomationId = "SecondTabPageButton",
 					Command = new Command (() => Navigation.PushAsync (new NestedNavTabPageOneLevel ()))
 				}
 			}
@@ -103,7 +105,8 @@ public class NestedNavTabPageOneLevel : ContentPage
 			Children = {
 				new Label {
 					TextColor = Colors.Red,
-					Text = "I have been pushed"
+					Text = "I have been pushed",
+					AutomationId = "PushedPageLabel"
 				}
 			}
 		};
