@@ -100,7 +100,7 @@ parameters:
         vmImage: $(macOSXVmImage)
         demands:
           - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals x64
+          - macOS.Architecture -equals arm64
         artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
@@ -348,8 +348,20 @@ stages:
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
               eq(variables['System.TeamProject'], 'devdiv'))
-        ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
-          skipProvisioning: false
+        prepareSteps:
+          - template: common/provision.yml
+            parameters:
+              checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipAndroidSdks: true
+              skipAndroidImages: true
+              installDefaultAndroidApi: true
+              skipXcode: false
+              ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                skipProvisionator: false
+                gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              ${{ else }}:  
+                skipProvisionator: true
           
         
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
