@@ -20,9 +20,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			try 
 			{
 				App.WaitForElement("lightThemeLabel");
+				VerifyScreenshot("NavigationBarBackgroundShouldChangeLightTheme");
 				App.SetDarkTheme();
 				App.WaitForElement("darkThemeLabel");
-				VerifyScreenshot();
+				VerifyScreenshot("NavigationBarBackgroundShouldChangeDarkTheme");
 			}
 			finally
 			{
