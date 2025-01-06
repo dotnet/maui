@@ -35,14 +35,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
-			App.WaitForElement("GoBackDelayedSafe");
+			App.WaitForElementTillPageNavigationSettled("GoBackDelayedSafe");
 			App.Tap("GoBackDelayedSafe");
 			App.TapBackArrow();
 
+			App.WaitForElementTillPageNavigationSettled("GoForward");
 			App.Tap("GoForward");
 
 			// App should navigate
-			App.WaitForElement("GoBackDelayedSafe");
+			App.WaitForElementTillPageNavigationSettled("GoBackDelayedSafe");
 		}
 	}
 }
