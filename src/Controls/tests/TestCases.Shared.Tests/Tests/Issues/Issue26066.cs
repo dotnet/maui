@@ -9,7 +9,7 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
     const string CV2Item1 = "CV2-Item1";
 
 #if MACCATALYST
-    const string Ok = "action-button-999";
+    const string Ok = "action-button--999";
 #else
     const string Ok = "OK";
 #endif
