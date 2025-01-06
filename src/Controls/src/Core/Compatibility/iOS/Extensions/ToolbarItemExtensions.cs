@@ -98,14 +98,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			void UpdateIconAndStyle(ToolbarItem item)
 			{
-				if (item?.IconImageSource == null || item.Parent?.Handler is null)
+				if (item?.IconImageSource == null)
 				{
 					Image = null;
 					Style = UIBarButtonItemStyle.Plain;
 				}
 				else
 				{
-					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+					var mauiContext = item.FindMauiContext();
+					if (mauiContext is null)
+					{
+						return;
+					}
+					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
 						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
