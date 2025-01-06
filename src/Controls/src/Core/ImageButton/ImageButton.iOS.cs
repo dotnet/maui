@@ -22,18 +22,10 @@ namespace Microsoft.Maui.Controls
 
 			Thickness padding = Padding.IsNaN ? default(Thickness) : Padding;
 
-			Thickness contentEdgeInsets = new Thickness
-			{
-				Left = padding.Left,
-				Right = padding.Right,
-				Top = padding.Top,
-				Bottom = padding.Bottom
-			};
-
 			CGSize imageSize = platformButton.CurrentImage?.Size ?? CGSize.Empty;
 
-			double contentWidth = imageSize.Width + contentEdgeInsets.Left + contentEdgeInsets.Right;
-			double contentHeight = imageSize.Height + contentEdgeInsets.Top + contentEdgeInsets.Bottom;
+			double contentWidth = imageSize.Width + padding.HorizontalThickness;
+			double contentHeight = imageSize.Height + padding.VerticalThickness;
 
 			double constrainedWidth = Math.Min(contentWidth, widthConstraint);
 			double constrainedHeight = Math.Min(contentHeight, heightConstraint);
