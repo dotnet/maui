@@ -18,8 +18,8 @@ public class Issue8145 : _IssuesUITest
 	{
 		App.WaitForElement("More");
 		App.Tap("More");
-		App.WaitForElement("target");
+		App.WaitForElementTillPageNavigationSettled("target");
 		App.Tap("target");
-		App.WaitForElement("Success");
+		App.WaitForElementTillPageNavigationSettled("Success");
 	}
 }

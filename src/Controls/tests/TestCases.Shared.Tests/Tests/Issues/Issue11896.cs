@@ -1,4 +1,4 @@
-﻿#if !MACCATALYST && !WINDOWS
+﻿#if TEST_FAILS_ON_WINDOWS //for more information:https://github.com/dotnet/maui/issues/24968
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

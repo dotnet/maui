@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using SkiaSharp;
 using SkiaSharp.Extended;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -18,28 +19,28 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		private readonly string DeleteDirectory;
 		protected readonly string DestinationDirectory;
 
-		public BaseTest(string testContextDirectory = null)
+		public BaseTest(ITestOutputHelper output)
 		{
-			if (!string.IsNullOrEmpty(testContextDirectory))
-			{
-				DestinationDirectory = testContextDirectory;
-				DeleteDirectory = testContextDirectory;
-			}
-			else
-			{
-				var name = GetType().FullName;
-				if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))
-					name = name.Substring(TestFolderName.Length + 1);
+			Output = output;
 
-				var dir = Path.Combine(Path.GetTempPath(), TestFolderName, name, Path.GetRandomFileName());
+			var name = GetType().FullName;
+			if (name.StartsWith(TestFolderName + ".", StringComparison.OrdinalIgnoreCase))
+				name = name.Substring(TestFolderName.Length + 1);
 
-				DestinationDirectory = dir;
-				DeleteDirectory = dir;
-			}
+			var dir = Path.Combine(Path.GetTempPath(), TestFolderName, name, Path.GetRandomFileName());
+
+			DestinationDirectory = dir;
+			DeleteDirectory = dir;
+
+			Output.WriteLine($"Using DestinationDirectory={DestinationDirectory}");
 		}
+
+		public ITestOutputHelper Output { get; }
 
 		public virtual void Dispose()
 		{
+			Output.WriteLine($"Cleaning up directories={DeleteDirectory}");
+
 			if (Directory.Exists(DeleteDirectory))
 				Directory.Delete(DeleteDirectory, true);
 		}
@@ -137,33 +138,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 			else
 			{
-				using var actual = SKImage.FromEncodedData(actualFilename);
-				using var expected = SKImage.FromEncodedData(expectedFilename);
+				var root = GetTestProjectRoot();
+				var diffDir = Path.Combine(root, "errors");
 
-				var similarity = SKPixelComparer.Compare(actual, expected);
+				Output.WriteLine($"Validating image similarity with diff dir:{diffDir}");
 
-				var isSimilar = similarity.ErrorPixelPercentage <= ImageErrorThreshold;
-
-				if (!isSimilar)
-				{
-					var root = GetTestProjectRoot();
-
-					var maskFilename = Path.Combine(root, "errors", expectedFilename);
-					maskFilename = Path.ChangeExtension(maskFilename, ".mask.png");
-
-					Directory.CreateDirectory(Path.GetDirectoryName(maskFilename));
-
-					using (var mask = SKPixelComparer.GenerateDifferenceMask(actual, expected))
-					using (var data = mask.Encode(SKEncodedImageFormat.Png, 100))
-					using (var maskFile = File.Create(maskFilename))
-					{
-						data.SaveTo(maskFile);
-					}
-
-					Assert.True(
-						isSimilar,
-						$"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {maskFilename}");
-				}
+				ImageAssert.Equivalent(actualFilename, expectedFilename, diffDir);
 			}
 		}
 
