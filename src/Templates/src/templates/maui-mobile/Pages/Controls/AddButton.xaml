@@ -10,5 +10,4 @@
     VerticalOptions="End" 
     HorizontalOptions="End"
     Margin="30" 
-    SemanticProperties.Description="New Task Button" 
-    SemanticProperties.Hint="Click to add a new task" />
+    SemanticProperties.Description="Add a new task" />
