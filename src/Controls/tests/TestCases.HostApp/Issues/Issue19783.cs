@@ -12,11 +12,11 @@ namespace Maui.Controls.Sample.Issues
 		{
 			var shellContent = new ShellContent()
 			{
-				ContentTemplate = new DataTemplate(typeof(WelcomePage))
+				ContentTemplate = new DataTemplate(typeof(Issue19783_WelcomePage))
 			};
 			var shellContent2 = new ShellContent()
 			{
-				ContentTemplate = new DataTemplate(typeof(ProfilePage))
+				ContentTemplate = new DataTemplate(typeof(Issue19783_ProfilePage))
 			};
 			this.Items.Add(new FlyoutItem()
 			{
@@ -46,10 +46,10 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class WelcomePage : ContentPage
+	public class Issue19783_WelcomePage : ContentPage
 	{
 		StackLayout stackLayout;
-		public WelcomePage()
+		public Issue19783_WelcomePage()
 		{
 			Title = "Welcome";
 			stackLayout = new StackLayout();
@@ -67,9 +67,9 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class ProfilePage : ContentPage
+	public class Issue19783_ProfilePage : ContentPage
 	{
-		public ProfilePage()
+		public Issue19783_ProfilePage()
 		{
 			Title = "Profile";
 			Content = new Label { Text = "Profile" };
