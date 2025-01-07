@@ -10,7 +10,7 @@ public class Issue7678_2 : TestContentPage
     public Issue7678_2()
     {
         Title = "Issue 7678";
-        BindingContext = new Issue7678ViewModel_2();
+        BindingContext = new Issue7678ViewModel_1();
     }
     protected override void Init()
     {
@@ -48,7 +48,7 @@ public class Issue7678_2 : TestContentPage
     {
         base.OnAppearing();
 
-        await ((Issue7678ViewModel_2)BindingContext).LoadItemsAsync();
+        await ((Issue7678ViewModel_1)BindingContext).LoadItemsAsync();
     }
 
     internal DataTemplate GetCarouselTemplate()
@@ -68,30 +68,29 @@ public class Issue7678_2 : TestContentPage
 
             grid.Children.Add(info);
 
-            var frame = new Frame
+            var border = new Border
             {
-                Content = grid,
-                HasShadow = false
+                Content = grid
             };
 
-            frame.SetBinding(BackgroundColorProperty, new Binding("Color"));
+            border.SetBinding(BackgroundColorProperty, new Binding("Color"));
 
-            return frame;
+            return border;
         });
     }
 }
 
-public class Issue7678Model_2
+public class Issue7678Model_1
 {
     public Color Color { get; set; }
     public string Name { get; set; }
 }
 
-public class Issue7678ViewModel_2 : BindableObject
+public class Issue7678ViewModel_1 : BindableObject
 {
-    ObservableCollection<Issue7678Model_2> _items;
+    ObservableCollection<Issue7678Model_1> _items;
 
-    public ObservableCollection<Issue7678Model_2> Items
+    public ObservableCollection<Issue7678Model_1> Items
     {
         get { return _items; }
         set
@@ -103,14 +102,14 @@ public class Issue7678ViewModel_2 : BindableObject
 
     public async Task LoadItemsAsync()
     {
-        Items = new ObservableCollection<Issue7678Model_2>();
+        Items = new ObservableCollection<Issue7678Model_1>();
 
         var random = new Random();
-        var items = new List<Issue7678Model_2>();
+        var items = new List<Issue7678Model_1>();
 
         for (int n = 0; n < 5; n++)
         {
-            items.Add(new Issue7678Model_2
+            items.Add(new Issue7678Model_1
             {
                 Color = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)),
                 Name = $"{n + 1}"
@@ -119,7 +118,7 @@ public class Issue7678ViewModel_2 : BindableObject
 
         await Task.Delay(500);
 
-        _items = new ObservableCollection<Issue7678Model_2>(items);
+        _items = new ObservableCollection<Issue7678Model_1>(items);
         OnPropertyChanged(nameof(Items));
     }
 }

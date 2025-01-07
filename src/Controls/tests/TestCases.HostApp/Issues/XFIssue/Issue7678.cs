@@ -68,15 +68,14 @@ public class Issue7678 : TestContentPage
 
             grid.Children.Add(info);
 
-            var frame = new Frame
+            var border = new Border
             {
                 Content = grid,
-                HasShadow = false
             };
 
-            frame.SetBinding(BackgroundColorProperty, new Binding("Color"));
+            border.SetBinding(BackgroundColorProperty, new Binding("Color"));
 
-            return frame;
+            return border;
         });
     }
 
