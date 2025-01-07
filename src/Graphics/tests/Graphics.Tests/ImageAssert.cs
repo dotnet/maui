@@ -17,12 +17,16 @@ public static class ImageAssert
 
 	public static void Equivalent(string actualFilename, string expectedFilename, string diffDirectory, double threshold = ImageErrorThreshold)
 	{
+		Assert.True(File.Exists(actualFilename), $"Actual file does not exist: {actualFilename}");
+
 		using var actual = SKImage.FromEncodedData(actualFilename);
 		Equivalent(actual, expectedFilename, diffDirectory, threshold);
 	}
 
 	public static void Equivalent(SKImage actual, string expectedFilename, string diffDirectory, double threshold = ImageErrorThreshold)
 	{
+		Assert.True(File.Exists(expectedFilename), $"Expected file does not exist: {expectedFilename}");
+
 		var expected = SKImage.FromEncodedData(expectedFilename);
 		var similarity = SKPixelComparer.Compare(actual, expected);
 
@@ -54,6 +58,6 @@ public static class ImageAssert
 
 		File.Copy(expectedFilename, Path.ChangeExtension(outputFilename, ".expected.png"), true);
 
-		Assert.Fail($"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels). See {diffFilename}");
+		Assert.Fail($"Image was not equal. Error was {similarity.ErrorPixelPercentage}% ({similarity.AbsoluteError} pixels), which was higher than the theshold of {ImageErrorThreshold}%. See {diffFilename}");
 	}
 }
