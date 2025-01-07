@@ -31,6 +31,7 @@ public class Issue7678 : TestContentPage
 
         var carouselView = new CarouselView
         {
+            AutomationId= "carouselView",
             ItemsLayout = itemsLayout,
             ItemTemplate = GetCarouselTemplate()
         };
@@ -102,6 +103,9 @@ public class Issue7678 : TestContentPage
         public async Task LoadItemsAsync()
         {
             Items = new ObservableCollection<Issue7678Model>();
+
+            await Task.Delay(500);
+
             var random = new Random();
 
             for (int n = 0; n < 5; n++)
@@ -112,7 +116,7 @@ public class Issue7678 : TestContentPage
                     Name = $"{n + 1}"
                 });
             }
-            await Task.Delay(500);
         }
+
     }
 }

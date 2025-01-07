@@ -13,8 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void TestIssue7678()
+		public void VerifyCarouselViewItemsRenderAfterBinding()
 		{
+			App.WaitForElement("carouselView");
 			App.WaitForElement("1");
 		}
 	}
