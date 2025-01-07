@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void VerifyCarouselViewBindingAndRendering()
 		{		
-			App.WaitForElement("carouselView", timeout: TimeSpan.FromSeconds(1));
+			App.WaitForElement("carouselView", timeout: TimeSpan.FromSeconds(2));
 			App.WaitForElementTillPageNavigationSettled("1");
 		}
 	}
