@@ -19,7 +19,7 @@ public class Issue7290 : _IssuesUITest
 	public void DisplayActionSheetAndDisplayAlertFromOnAppearing()
 	{
 		App.TapDisplayAlertButton("Cancel");
-		App.TapDisplayAlertButton("Close", buttonIndex: 1);
+		App.TapDisplayAlertButton("Close Action Sheet", buttonIndex: 1);
 	}
 }
 #endif
