@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // On Catalyst, Swipe actions not supported in Appium.
 // On Windows, StackLayout AutomationId not works in Automation. 
 using NUnit.Framework;
