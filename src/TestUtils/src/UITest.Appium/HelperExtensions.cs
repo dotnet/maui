@@ -69,14 +69,14 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Performs a mouse down/press on the matched element, without a matching release
+		/// Performs a down/press on the matched element, without a matching release
 		/// </summary>
 		/// <param name="app"></param>
 		/// <param name="element"></param>
-		public static void ClickPress(this IApp app, string element)
+		public static void PressDown(this IApp app, string element)
 		{
 			var uiElement = FindElement(app, element);
-			uiElement.Command.Execute("clickPress", new Dictionary<string, object>()
+			uiElement.Command.Execute("pressDown", new Dictionary<string, object>()
 			{
 				{ "element", uiElement }
 			});

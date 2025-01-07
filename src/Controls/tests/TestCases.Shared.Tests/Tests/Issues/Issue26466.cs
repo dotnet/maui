@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public async Task ButtonReleasedTest()
 		{
 			App.WaitForElement(ButtonId);
-			App.ClickPress(ButtonId);
+			App.PressDown(ButtonId);
 
 			await Task.Delay(200);
 
