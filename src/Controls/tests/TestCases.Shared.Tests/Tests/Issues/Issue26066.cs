@@ -8,12 +8,6 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 {
     const string CV2Item1 = "CV2-Item1";
 
-#if MACCATALYST
-    const string Ok = "action-button--999";
-#else
-    const string Ok = "OK";
-#endif
-
 	public override string Issue => "CollectionViewHandler2 RelativeSource binding to AncestorType not working";
 
     [Test]
@@ -22,8 +16,7 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
     {
         App.WaitForElement(CV2Item1);
         App.Click(CV2Item1);
-        App.WaitForElementTillPageNavigationSettled(Ok);
-        App.Click(Ok);
+        App.TapDisplayAlertButton("OK");
         App.WaitForElement(CV2Item1);
     }
 }
