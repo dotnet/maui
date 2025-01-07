@@ -172,6 +172,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
 				}
 
+				// The FooterView frame is updated when the CollectionView does not contain any items.
+				// Previously, the FooterView frame was updated only for a CollectionView with an ItemSource.
 				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || _footerUIView.Frame.X != footerWidth || emptyWidth > 0))
 					_footerUIView.Frame = new CoreGraphics.CGRect(ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth, CollectionView.Frame.Height);
 
@@ -228,6 +230,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					height = ItemsViewLayout.CollectionViewContentSize.Height;
 				}
 
+				// The FooterView frame is updated when the CollectionView does not contain any items.
+				// Previously, the FooterView frame was updated only for a CollectionView with an ItemSource.
 				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
 				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
