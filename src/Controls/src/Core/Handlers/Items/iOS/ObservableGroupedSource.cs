@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				incc.CollectionChanged += CollectionChanged;
 			}
 
+			_groupCount = GroupsCount();
 			ResetGroupTracking();
 		}
 
@@ -198,6 +199,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ResetGroupTracking();
 
+			_groupCount = GroupsCount();
+			
 			_collectionView.ReloadData();
 			if (collectionWasReset)
 			{
@@ -391,6 +394,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			update();
+		}
+
+		int GroupsCount()
+		{
+			if (_groupSource is IList list)
+				return list.Count;
+
+			int count = 0;
+			foreach (var item in _groupSource)
+				count++;
+			return count;
 		}
 	}
 }
