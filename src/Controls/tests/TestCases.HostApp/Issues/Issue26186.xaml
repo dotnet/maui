@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue26186"
-             xmlns:sample="clr-namespace:Maui.Controls.Sample"
+             xmlns:cv1="clr-namespace:Maui.Controls.Sample"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Issue26186">
     <Grid RowDefinitions="Auto, *">
@@ -10,10 +10,10 @@
                 Clicked="Button_Clicked"
                 AutomationId="Button"
                 Text="Update width for CollectionView"/>
-        <CollectionView x:Name="collectionView"
-                        AutomationId="CollectionView"
-                        Grid.Row="1">
-            <CollectionView.Header>
+        <cv1:CollectionView1 x:Name="collectionView"
+                             AutomationId="CollectionView"
+                             Grid.Row="1">
+            <cv1:CollectionView1.Header>
                 <Grid RowSpacing="10"
                       ColumnSpacing="10">
                     <Grid.RowDefinitions>
@@ -49,8 +49,8 @@
                         </Picker.ItemsSource>
                     </Picker>
                 </Grid>
-            </CollectionView.Header>
-            <CollectionView.Footer>
+            </cv1:CollectionView1.Header>
+            <cv1:CollectionView1.Footer>
                 <Grid RowSpacing="10"
                       ColumnSpacing="10">
                     <Grid.RowDefinitions>
@@ -86,7 +86,7 @@
                         </Picker.ItemsSource>
                     </Picker>
                 </Grid>
-            </CollectionView.Footer>
-        </CollectionView>
+            </cv1:CollectionView1.Footer>
+        </cv1:CollectionView1>
     </Grid>
 </ContentPage>
