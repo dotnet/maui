@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 			//On InitialLoading returnType should work.
 			App.Tap("SearchEntry");
+			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
 		}
 
