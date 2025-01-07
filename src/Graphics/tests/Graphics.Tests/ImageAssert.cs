@@ -7,7 +7,7 @@ namespace Microsoft.Maui;
 
 public static class ImageAssert
 {
-	private const double ImageErrorThreshold = 0.0027;
+	private const double ImageErrorThreshold = 0;// 0.0027;
 
 	public static void Equivalent(Stream actualData, string expectedFilename, string diffDirectory, double threshold = ImageErrorThreshold)
 	{
