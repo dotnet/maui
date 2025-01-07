@@ -10,7 +10,7 @@
                              Orientation="Vertical">
                         <BindableLayout.ItemTemplate>
                                 <DataTemplate>
-                                        <Grid RowDefinitions="50,*,50"
+                                        <Grid RowDefinitions="50,*,50,50"
                                               RowSpacing="25">
                                                 <Label Grid.Row="0"
                                                        Text="{Binding Title}"
@@ -19,14 +19,18 @@
                                                        FontSize="Large"></Label>
                                                 <Picker Grid.Row="1"
                                                         Title="---Select---"
-                                                        SelectedIndex="0"
                                                         ItemsSource="{Binding Choices}"
                                                         ItemDisplayBinding="{Binding ChoiceText}"
-                                                        SelectedItem="{Binding SelectedChoice}"></Picker>
+                                                        SelectedItem="{Binding SelectedChoice, Mode=OneWayToSource}"
+                                                        SelectedIndex="{Binding SelectedChoiceIndex}"></Picker>
 
                                                 <Label Grid.Row="2"
                                                        AutomationId="label"
                                                        Text="{Binding SelectedChoiceText, StringFormat='Selected Choice: {0}'}"></Label>
+
+                                                <Label Grid.Row="3"
+                                                       AutomationId="labelindex"
+                                                       Text="{Binding SelectedChoiceIndex, StringFormat='Selected Index: {0}'}"></Label>
                                         </Grid>
                                 </DataTemplate>
                         </BindableLayout.ItemTemplate>

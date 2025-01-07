@@ -23,8 +23,8 @@ namespace Maui.Controls.Sample.Issues
 				Section2Items = [];
 				CurrentItems = [];
 
-				Section1Items.Add(new ItemViewModel() { Title = "Section 1" });
-				Section2Items.Add(new ItemViewModel() { Title = "Section 2" });
+				Section1Items.Add(new ItemViewModel(0, 1, 2) { Title = "Section 1" });
+				Section2Items.Add(new ItemViewModel(10, 11, 12, 13) { Title = "Section 2" });
 
 				LoadSection1Command = new Command(() => CurrentItems.ReplaceRange(Section1Items));
 				LoadSection2Command = new Command(() => CurrentItems.ReplaceRange(Section2Items));
@@ -62,17 +62,22 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
+			private int _selectedChoiceIndex;
+			public int SelectedChoiceIndex
+			{
+				get => _selectedChoiceIndex;
+				set
+				{
+					_selectedChoiceIndex = value;
+					OnPropertyChanged();
+				}
+			}
+
 			public string Title { get; set; }
 
-			public ItemViewModel()
+			public ItemViewModel(params int[] choices)
 			{
-				Choices =
-				[
-					new ChoiceItem() { ChoiceId = 1, ChoiceText = "Choice 1" },
-					new ChoiceItem() { ChoiceId = 2, ChoiceText = "Choice 2" },
-					new ChoiceItem() { ChoiceId = 3, ChoiceText = "Choice 3" },
-				];
-
+				Choices = choices.Select(c => new ChoiceItem { ChoiceId = c, ChoiceText = $"Choice {c}" }).ToList();
 				SelectedChoice = Choices[0];
 			}
 
