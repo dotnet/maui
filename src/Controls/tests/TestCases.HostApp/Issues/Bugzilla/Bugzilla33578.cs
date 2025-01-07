@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 
-[Issue(IssueTracker.Bugzilla, 33578, "TableView EntryCell shows DefaultKeyboard, but after scrolling down and back a NumericKeyboard (")]
+[Issue(IssueTracker.Bugzilla, 33578, "TableView EntryCell shows DefaultKeyboard, but after scrolling down and back a NumericKeyboard")]
 public class Bugzilla33578 : TestContentPage
 {
 	protected override void Init()
