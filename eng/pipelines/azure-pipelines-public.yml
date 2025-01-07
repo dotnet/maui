@@ -73,3 +73,40 @@ stages:
       timeout: 120
       testOS: macOS
     publishTaskPrefix: ''
+
+- template: /eng/pipelines/arcade/stage-integration-tests.yml@self
+  parameters:
+    stageDependsOn: Pack
+    publishTaskPrefix: ''
+    jobMatrix:
+    - name: win_sample_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedWindowsImage)
+        os: windows
+      timeout: 120
+      testCategory: SampleTests
+
+    - name: mac_sample_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: SampleTests
+
+    - name: win_wintemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedWindowsImage)
+        os: windows
+      timeout: 120
+      testCategory: WindowsTemplates
+
+    - name: mac_wintemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: WindowsTemplates
