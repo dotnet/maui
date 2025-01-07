@@ -64,7 +64,14 @@ public partial class Issue24489 : ContentPage
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-		Window.TitleBar = _customTitleBar;
+		if (Window is not null)
+		{
+			Window.TitleBar = _customTitleBar;
+		}
+		else if (Shell.Current?.Window is not null)
+		{
+			Shell.Current.Window.TitleBar = _customTitleBar;
+		}
 	}
 
 	Grid CreateGrid(bool isInitial)

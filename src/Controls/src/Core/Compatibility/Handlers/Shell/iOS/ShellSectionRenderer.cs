@@ -722,6 +722,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				if (Shell.Current?.Window?.TitleBar is TitleBar titleBar && titleBar.IsEnabled && titleBar.IsVisible)
+				{
+					navigationController.NavigationBar?.Superview?.SetNeedsLayout();
+				}
+
 				var tasks = _self._completionTasks;
 				var popTask = _self._popCompletionTask;
 

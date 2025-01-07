@@ -6,13 +6,13 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue24489_2 : _IssuesUITest
+	public class Issue24489_Shell : _IssuesUITest
 	{
-		public Issue24489_2(TestDevice testDevice) : base(testDevice)
+		public Issue24489_Shell(TestDevice testDevice) : base(testDevice)
 		{
 		}
 
-		public override string Issue => "TitleBar with NavigationBar";
+		public override string Issue => "TitleBar with NavigationBar - Shell";
 
 		protected override bool ResetAfterEachTest => true;
 
