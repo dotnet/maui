@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // EmptyView is not accessible through the test framework on Windows.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -27,3 +28,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
