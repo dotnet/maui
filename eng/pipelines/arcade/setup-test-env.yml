@@ -33,11 +33,12 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-p:InstallWorkloadPacks=false -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
-  - task: DotNetCoreCLI@2
-    displayName: Install dotnet preview workloads from PackageArtifacts
-    inputs:
-      projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
-      arguments: '-t:Install -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: Install dotnet preview workloads from PackageArtifacts
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      project: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
+      arguments: '-t:Install -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet-workload.binlog'
 
 - ${{ else }}:
   - task: DotNetCoreCLI@2
