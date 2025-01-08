@@ -51,7 +51,6 @@ stages:
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
     pool: ${{ parameters.VM_IMAGE_HOST }}
-    publishTaskPrefix: ''
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:
