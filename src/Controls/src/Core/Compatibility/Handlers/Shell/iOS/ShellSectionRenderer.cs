@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// You've now added vc1 back because the second call to ViewControllers will still return a ViewControllers list with vc1 in it
 		UIViewController[] _pendingViewControllers;
 
-		public ShellSectionRenderer(IShellContext context) : base()
+		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
@@ -722,9 +722,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				if (Shell.Current?.Window?.TitleBar is TitleBar titleBar && titleBar.IsEnabled && titleBar.IsVisible)
+				if (navigationController.NavigationBar is MauiNavigationBar navBar && navBar.TitleBarNeedsRefresh)
 				{
-					navigationController.NavigationBar?.Superview?.SetNeedsLayout();
+					navBar.Superview?.SetNeedsLayout();
+					navBar.TitleBarNeedsRefresh = false;
 				}
 
 				var tasks = _self._completionTasks;

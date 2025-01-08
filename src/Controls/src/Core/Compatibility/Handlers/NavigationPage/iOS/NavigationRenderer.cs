@@ -1135,7 +1135,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
-					if (r.NavigationBar is MauiControlsNavigationBar navBar && navBar.TitleBarNeedsRefresh)
+					if (r.NavigationBar is MauiNavigationBar navBar && navBar.TitleBarNeedsRefresh)
 					{
 						r.NavigationBar?.Superview?.SetNeedsLayout();
 						navBar.TitleBarNeedsRefresh = false;
@@ -1835,7 +1835,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_viewHandlerWrapper.DisconnectHandler();
 		}
 
-		internal class MauiControlsNavigationBar : UINavigationBar
+		internal class MauiControlsNavigationBar : MauiNavigationBar
 		{
 			[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 			public MauiControlsNavigationBar() : base()
@@ -1868,8 +1868,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public RectangleF BackButtonFrameSize { get; private set; }
 			public UILabel NavBarLabel { get; private set; }
-			internal bool TitleBarNeedsRefresh { get; set; }
-			nfloat? _originalSafeAreaConstant = null;
 
 			public override void LayoutSubviews()
 			{
@@ -1901,53 +1899,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				base.LayoutSubviews();
 			}
-
-			public override void SafeAreaInsetsDidChange()
-			{
-				if (_originalSafeAreaConstant is null)
-				{
-					_originalSafeAreaConstant = SafeAreaInsets.Top;
-				}
-
-				base.SafeAreaInsetsDidChange();
-#if MACCATALYST
-				AdjustForTitleBar();
-#endif
-			}
-
-#if MACCATALYST
-			void AdjustForTitleBar()
-			{
-				var navController = this.FindResponder<NavigationRenderer>();
-
-				if (navController is null)
-				{
-					return;
-				}
-
-				var controller = (navController.Current?.Window?.Handler?.PlatformView as UIWindow)?.RootViewController as WindowViewController;
-
-				if (controller is not null && _originalSafeAreaConstant is nfloat originalSafeAreaConstant)
-				{
-					var frame = navController.NavigationBar.Frame;
-					var currentSafeAreaTop = navController.NavigationBar.SafeAreaInsets.Top;
-					var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
-
-					if (currentSafeAreaTop > 0 && frame.Y < originalSafeAreaConstant && titleBarHeight == 0)
-					{
-						controller.IsFirstLayout = false;
-						navController.NavigationBar.Frame = new CGRect(frame.X, originalSafeAreaConstant, frame.Width, frame.Height);
-						TitleBarNeedsRefresh = true;
-					}
-					else if (controller.IsFirstLayout)
-					{
-						controller.IsFirstLayout = false;
-						navController.NavigationBar.Frame = new CGRect(frame.X, Math.Max(originalSafeAreaConstant - titleBarHeight, 0), frame.Width, frame.Height);
-						TitleBarNeedsRefresh = true;
-					}
-				}
-			}
-#endif
 		}
 
 		class Container : UIView
