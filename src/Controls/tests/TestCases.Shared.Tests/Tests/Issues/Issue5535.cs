@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SwappingEmptyViews()
 		{
 			App.WaitForElement("FilterItems");
