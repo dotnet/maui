@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string SearchBar = "SearchBar";
 		const string ResultText = "ResultText";
 		const string CheckResultButton = "CheckResultButton";
-		const string Success = "Success";
-		const string Failure = "Failure";
+
 		public override string Issue => "SearchBar IsEnabled property not functioning";
 
 		[Test]
@@ -40,8 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 			App.Tap(CheckResultButton);
 			var resultText = App.WaitForElement(ResultText).GetText();
-			Assert.That(resultText, Is.EqualTo(Success));
-
+			Assert.That(resultText, Is.EqualTo("Success"));
 
 		}
 	}

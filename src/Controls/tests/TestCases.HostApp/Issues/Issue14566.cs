@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-
 	[Issue(IssueTracker.Github, 14566, "SearchBar IsEnabled property not functioning", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
 	public class Issue14566 : TestContentPage
 	{
@@ -39,7 +38,6 @@
 			{
 				result.Text = string.IsNullOrWhiteSpace(searchBar.Text) ? Success : Failure;
 			};
-
 
 			layout.Children.Add(searchBar);
 			layout.Children.Add(checkResultButton);
