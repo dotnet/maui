@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Graphics.Skia
 		private float _fontSize = 10f;
 		private float _scaleX = 1;
 		private float _scaleY = 1;
-		private bool _typefaceInvalid;
 		private bool _isBlurred;
 		private float _blurRadius;
 		private SKMaskFilter _blurFilter;
@@ -49,7 +48,6 @@ namespace Microsoft.Maui.Graphics.Skia
 			Alpha = prototype.Alpha;
 			_scaleX = prototype._scaleX;
 			_scaleY = prototype._scaleY;
-			_typefaceInvalid = false;
 
 			_isBlurred = prototype._isBlurred;
 			_blurRadius = prototype._blurRadius;
@@ -217,12 +215,24 @@ namespace Microsoft.Maui.Graphics.Skia
 				if (!ReferenceEquals(_font, value) && (_font is null || !_font.Equals(value)))
 				{
 					_font = value;
-					_typefaceInvalid = true;
+
+					if (_fontPaint != null)
+					{
+#pragma warning disable CS0618 // Type or member is obsolete
+						_fontPaint.Typeface = GetSKTypeface();
+#pragma warning restore CS0618 // Type or member is obsolete
+					}
+
+					if (_fontFont != null)
+					{
+						_fontFont.Typeface = GetSKTypeface();
+					}
 				}
 			}
 
 			get => _font;
 		}
+		private SKTypeface GetSKTypeface() => _font?.ToSKTypeface() ?? SKTypeface.Default;
 
 		public SKPaint FontPaint
 		{
@@ -235,18 +245,17 @@ namespace Microsoft.Maui.Graphics.Skia
 						Color = SKColors.Black,
 						IsAntialias = true,
 #pragma warning disable CS0618 // Type or member is obsolete
-						Typeface = SKTypeface.Default,
+						Typeface = GetSKTypeface(),
 #pragma warning restore CS0618 // Type or member is obsolete
 					};
 				}
-
-				UpdateTypeface();
 
 				return _fontPaint;
 			}
 
 			set => _fontPaint = value;
 		}
+
 
 		public SKFont FontFont
 		{
@@ -256,29 +265,14 @@ namespace Microsoft.Maui.Graphics.Skia
 				{
 					_fontFont = new SKFont
 					{
-						Typeface = SKTypeface.Default,
+						Typeface = GetSKTypeface(),
 					};
 				}
-
-				UpdateTypeface();
 
 				return _fontFont;
 			}
 
 			set => _fontFont = value;
-		}
-
-		private void UpdateTypeface()
-		{
-			if (!_typefaceInvalid)
-				return;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			FontPaint.Typeface = _font?.ToSKTypeface() ?? SKTypeface.Default;
-#pragma warning restore CS0618 // Type or member is obsolete
-			FontFont.Typeface = _font?.ToSKTypeface() ?? SKTypeface.Default;
-
-			_typefaceInvalid = false;
 		}
 
 		public SKPaint FillPaint
@@ -468,7 +462,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		[Obsolete("Use Reset(SKPaint, SKFont, SKPaint, SKPaint) instead")]
 		public void Reset(SKPaint fontPaint, SKPaint fillPaint, SKPaint strokePaint)
-		{	
+		{
 			Reset(fontPaint, fontPaint?.ToFont(), fillPaint, strokePaint);
 		}
 
