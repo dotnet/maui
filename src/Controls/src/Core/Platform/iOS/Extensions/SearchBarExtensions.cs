@@ -16,5 +16,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			uiSearchBar.Text = TextTransformUtilities.GetTransformedText(searchBar.Text, searchBar.TextTransform);
 		}
+
+		internal static void UpdateInputTransparent(this UISearchBar uISearchBar, ISearchBar searchBar)
+		{
+			uISearchBar.UserInteractionEnabled = searchBar.IsEnabled ? !searchBar.InputTransparent : false;
+		}
 	}
 }

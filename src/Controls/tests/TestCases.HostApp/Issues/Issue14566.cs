@@ -25,11 +25,8 @@
 				Placeholder = "Search Placeholder",
 				IsEnabled = false
 			};
-			var searchText = new Label
-			{
-				Text = Failure,
+			var searchText = new Label();
 
-			};
 			searchBar.TextChanged += (sender, e) =>
 			{
 				// Handle text changed event
@@ -40,7 +37,7 @@
 			var checkResultButton = new Button() { AutomationId = CheckResultButton, Text = "Check Result" };
 			checkResultButton.Clicked += (sender, e) =>
 			{
-				result.Text = string.IsNullOrEmpty(searchBar.Text) ? Success : Failure;
+				result.Text = string.IsNullOrWhiteSpace(searchBar.Text) ? Success : Failure;
 			};
 
 
