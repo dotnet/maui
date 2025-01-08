@@ -12,7 +12,7 @@
                         HeightRequest="50">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Horizontal"/>
-                <CollectionView.ItemsLayout>
-                    <CollectionView>
+            </CollectionView.ItemsLayout>
+        </CollectionView>
     </VerticalStackLayout>
 </ContentPage>
