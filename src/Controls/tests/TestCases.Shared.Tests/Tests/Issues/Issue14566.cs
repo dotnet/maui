@@ -1,6 +1,9 @@
 ﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
+#if ANDROID
+using OpenQA.Selenium;
+#endif
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
@@ -23,7 +26,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(CheckResultButton);
 			App.Tap(SearchBar);
+#if ANDROID
+			try
+			{
+				App.EnterText(SearchBar, "Hello");
+			}
+			catch(InvalidElementStateException)
+			{
+				Assert.Pass("SearchBar is disabled");
+			}
+#else
 			App.EnterText(SearchBar, "Hello");
+#endif
 			App.Tap(CheckResultButton);
 			var resultText = App.WaitForElement(ResultText).GetText();
 			Assert.That(resultText, Is.EqualTo(Success));
