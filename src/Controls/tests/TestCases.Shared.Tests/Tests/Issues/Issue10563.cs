@@ -1,4 +1,4 @@
-﻿#if ANDROID || IOS
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // In IOS, the IconImageSource does not display the Icon for the SwipeItem more information: https://github.com/dotnet/maui/issues/14058
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,7 +22,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue10563OpenSwipeViewTest()
 		{
 			App.WaitForElement(OpenLeftId);
