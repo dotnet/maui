@@ -49,13 +49,37 @@ namespace Maui.Controls.Sample.Issues
 				HeightRequest = 220,
 			};
 
-			var button = new Button
+			var horizontalStack = new StackLayout
 			{
-				Text = "Change Selected Item",
-				AutomationId = "Button",
-				HorizontalOptions = LayoutOptions.Center
+				Orientation = StackOrientation.Horizontal,
+				HorizontalOptions = LayoutOptions.Center,
+				Spacing = 20
 			};
-			button.Clicked += Button_Clicked;
+
+			var startButton = new Button
+			{
+				Text = "Start",
+				AutomationId = "StartButton",
+			};
+			startButton.Clicked += ScrollPositionStart_Clicked;
+
+			var centerButton = new Button
+			{
+				Text = "Center",
+				AutomationId = "CenterButton",
+			};
+			centerButton.Clicked += ScrollPositionCenter_Clicked;
+
+			var endButton = new Button
+			{
+				Text = "End",
+				AutomationId = "EndButton",
+			};
+			endButton.Clicked += ScrollPositionEnd_Clicked;
+
+			horizontalStack.Children.Add(startButton);
+			horizontalStack.Children.Add(centerButton);
+			horizontalStack.Children.Add(endButton);
 
 			var stackLayout = new StackLayout
 			{
@@ -64,26 +88,48 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			stackLayout.Children.Add(ListView);
-			stackLayout.Children.Add(button);
+			stackLayout.Children.Add(horizontalStack);
 			this.Content = stackLayout;
 		}
 
-		private void ScrollToSelectedItem()
+		private void ScrollToSelectedItem(ScrollToPosition toPosition)
 		{
 			if (ListView?.SelectedItem != null)
 			{
-				ListView.ScrollTo(ListView.SelectedItem, ScrollToPosition.Center, true);
+				switch (toPosition)
+				{
+					case ScrollToPosition.Start:
+						ListView.ScrollTo(ListView.SelectedItem, ScrollToPosition.Start, true);
+						break;
+					case ScrollToPosition.Center:
+						ListView.ScrollTo(ListView.SelectedItem, ScrollToPosition.Center, true);
+						break;
+					case ScrollToPosition.End:
+						ListView.ScrollTo(ListView.SelectedItem, ScrollToPosition.End, true);
+						break;
+				}	
 			}
 		}
 
-		private void Button_Clicked(object sender, EventArgs e)
+		private void ScrollPositionStart_Clicked(object sender, EventArgs e)
 		{
 			var currentIndex = Items.IndexOf(ListView.SelectedItem as string);
-			if (currentIndex < Items.Count - 2)
-			{
-				ListView.SelectedItem = Items[currentIndex + 2];
-				ScrollToSelectedItem();
-			}
+			ListView.SelectedItem = Items[currentIndex + 2];
+			ScrollToSelectedItem(ScrollToPosition.Start);
+		}
+
+		private void ScrollPositionCenter_Clicked(object sender, EventArgs e)
+		{
+			var currentIndex = Items.IndexOf(ListView.SelectedItem as string);
+			ListView.SelectedItem = Items[currentIndex + 2];
+			ScrollToSelectedItem(ScrollToPosition.Center);
+		}
+
+		private void ScrollPositionEnd_Clicked(object sender, EventArgs e)
+		{
+			var currentIndex = Items.IndexOf(ListView.SelectedItem as string);
+			ListView.SelectedItem = Items[currentIndex + 2];
+			ScrollToSelectedItem(ScrollToPosition.End);
 		}
 	}
 }
