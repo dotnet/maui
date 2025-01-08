@@ -30,8 +30,7 @@ namespace Microsoft.Maui
 
 			UIWindow? window = null;
 
-			// WindowingBehaviors is only available on iOS 16+ and Mac Catalyst
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
 			{
 				// for iOS 14+ where active apperance is supported
 				var activeWindowScenes = new List<UIWindowScene>();
@@ -50,7 +49,7 @@ namespace Microsoft.Maui
 					// we need to pick the newly created window in this case
 					// the order of window scene returned is not trustable, do not use last
 					// after some manual testing, windowing behaviour that is not ready yet is the newly created window
-					if (activeWindowScenes.Count > 1)
+					if ((OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16)) && activeWindowScenes.Count > 1)
 					{
 						foreach (var ws in activeWindowScenes)
 						{
