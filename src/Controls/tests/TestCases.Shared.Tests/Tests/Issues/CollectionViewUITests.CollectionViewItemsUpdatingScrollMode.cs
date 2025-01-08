@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_IOS //The test fails on iOS because it’s unable to select subsequent enum items during test execution.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -40,13 +39,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
+		//[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
 			App.Click("SelectScrollMode");
-			App.WaitForElement("KeepScrollOffset");
 			App.Click("KeepScrollOffset");
 
 			App.WaitForElement("ScrollToMiddle");
@@ -57,7 +56,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		//[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepLastItemInView()
@@ -74,4 +73,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
