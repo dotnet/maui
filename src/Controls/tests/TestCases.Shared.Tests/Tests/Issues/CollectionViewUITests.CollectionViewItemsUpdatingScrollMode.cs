@@ -38,7 +38,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
 		//[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
