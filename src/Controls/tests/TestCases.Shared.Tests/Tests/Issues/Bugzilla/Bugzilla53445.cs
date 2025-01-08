@@ -14,10 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		public void Test()
+		public void Bugzilla53445Test()
 		{
 			App.WaitForElement("Success");
 
@@ -25,14 +22,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("toggle");
 
 			// Tap the grid button; the event should not fire and the label should not change
+			App.WaitForElement("gridbutton");
 			App.Tap("gridbutton");
 			App.WaitForElement("Success");
 
 			// Tap the contentview button; the event should not fire and the label should not change
+			App.WaitForElement("contentviewbutton");
 			App.Tap("contentviewbutton");
 			App.WaitForElement("Success");
 
 			// Tap the stacklayout button; the event should not fire and the label should not change
+			App.WaitForElement("stacklayoutbutton");
 			App.Tap("stacklayoutbutton");
 			App.WaitForElement("Success");
 		}

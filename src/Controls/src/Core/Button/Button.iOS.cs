@@ -142,19 +142,6 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			// if the image is on top or bottom, let's make sure the title is not cut off by ensuring we have enough padding for the image and title.
-			if (image is not null
-				&& (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom))
-			{
-				var maxTitleRect = ComputeTitleRect(platformButton, button, image, double.PositiveInfinity, double.PositiveInfinity, borderWidth, padding, true);
-
-				var smallerWidth = (nfloat)Math.Min(maxTitleRect.Width, platformButton.CurrentImage?.Size.Width ?? 0);
-				if (padding.HorizontalThickness < smallerWidth)
-				{
-					buttonContentWidth += (nfloat)(smallerWidth - padding.HorizontalThickness);
-				}
-			}
-
 			var returnSize = new Size(Math.Min(buttonContentWidth, widthConstraint),
 							Math.Min(buttonContentHeight, heightConstraint));
 
@@ -213,27 +200,40 @@ namespace Microsoft.Maui.Controls
 				var sharedSpacing = spacing / 2;
 
 				// These are just used to shift the image and title to center
-				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidth / 2;
-				imageInsets.Right -= titleWidth / 2;
-				titleInsets.Left -= imageWidth / 2;
-				titleInsets.Right += imageWidth / 2;
+				// Which makes the later math easier to follow				
+				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					imageInsets.Left += titleWidth / 2;
+					imageInsets.Right -= titleWidth / 2;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
+				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
 					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom += (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(((size.Width - imageWidth) / 2) - borderWidth);
+					imageInsets.Right += (float)(((size.Width - imageWidth) / 2) - borderWidth);
 
 					titleInsets.Top += (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
+					titleInsets.Left -= (nfloat)(imageWidth - padding.Left);
+					titleInsets.Right += (nfloat)padding.Right;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(((size.Width - imageWidth) / 2) - borderWidth);
+					imageInsets.Right += (float)(((size.Width - imageWidth) / 2) - borderWidth);
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += (imageHeight / 2) + sharedSpacing;
+
+					titleInsets.Left -= (nfloat)(imageWidth - padding.Left);
+					titleInsets.Right += (nfloat)padding.Right;
+
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
@@ -286,7 +286,8 @@ namespace Microsoft.Maui.Controls
 			var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
 			var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
 
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity)
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity
+			&& (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right))
 			{
 				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
 				// even when the image is on top or bottom.

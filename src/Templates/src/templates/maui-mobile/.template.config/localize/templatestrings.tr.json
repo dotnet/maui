@@ -1,14 +1,14 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Uygulaması",
-  "description": "iOS, Android, Mac Catalyst, Tizen .NET MAUI ve WinUI için yeni bir uygulama oluşturmaya yönelik proje",
+  "description": "iOS, Android, Mac Catalyst, WinUI ve Tizen için bir .NET MAUI uygulaması oluşturmaya yönelik proje",
   "postActions/openInEditor/description": "Düzenleyicide MainPage.xaml dosyasını açar.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır",
   "symbols/applicationId/description": "Projedeki $(ApplicationId) uygulamasın geçersiz kılar",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample content",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "_Örnek içeriği dahil et",
+  "symbols/IncludeSampleContent/description": "Temel kullanım desenlerini göstermek için örnek sayfaların ve işlevler eklenip eklenmeyeceğini belirler.",
+  "symbols/skipRestore/description": "Belirtilmişse, oluşturma anında projenin otomatik geri yüklenmesini atlar."
 }
