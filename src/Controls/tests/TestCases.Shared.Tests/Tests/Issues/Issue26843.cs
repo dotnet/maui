@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 		{
 			var label = App.WaitForElement("NavigationResultLabel");
 			App.WaitForElement("WebView");
-			Assert.That(label.ReadText(), Is.EqualTo("Successfully navigated to the encoded URL"));
+			Assert.That(label.GetText(), Is.EqualTo("Successfully navigated to the encoded URL"));
 		}
 	}
 
