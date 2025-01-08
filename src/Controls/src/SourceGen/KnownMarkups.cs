@@ -101,4 +101,49 @@ internal class KnownMarkups
 			throw new Exception();
 		return $"new global::Microsoft.Maui.Controls.Internals.DynamicResource(\"{key}\")";
 	}
+
+	internal static string ProvideValueForStyleSheetExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.StyleSheets.StyleSheet")!;
+
+		markupNode.Properties.TryGetValue(new XmlName("", "Source"), out INode? sourceNode);
+		if (sourceNode == null)
+			markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Source"), out sourceNode);
+
+		if (!markupNode.Properties.TryGetValue(new XmlName("", "Style"), out INode? styleNode) &&
+			!markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Style"), out styleNode) &&
+			markupNode.CollectionItems.Count == 1)
+			styleNode = markupNode.CollectionItems[0];
+
+		if (sourceNode != null && styleNode != null)
+			throw new Exception(); //FIXME report diagnostic
+			// throw new BuildException(BuildExceptionCode.StyleSheetSourceOrContent, node, null);
+
+		if (sourceNode == null && styleNode == null)
+			throw new Exception(); //FIXME report diagnostic
+			// throw new BuildException(BuildExceptionCode.StyleSheetNoSourceOrContent, node, null);
+
+		if (styleNode != null && styleNode is not ValueNode)
+			throw new Exception(); //FIXME report diagnostic
+			// throw new BuildException(BuildExceptionCode.StyleSheetStyleNotALiteral, node, null);
+
+		if (sourceNode != null && sourceNode is not ValueNode)
+			throw new Exception(); //FIXME report diagnostic
+			// throw new BuildException(BuildExceptionCode.StyleSheetSourceNotALiteral, node, null);
+
+		if (styleNode != null)
+			return $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromString(@\"{(styleNode as ValueNode)!.Value as string}\")";
+		else // sourceNode != null
+		{
+			var source = (string)(sourceNode as ValueNode)!.Value;
+			var uri = $"new global::System::Uri(\"{source}\", UriKind.Relative)";
+			var rootTargetPath = $"global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}))";
+
+			var resourcePath = $"global::Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.GetResourcePath({uri}, {rootTargetPath})";
+			var assembly = $"typeof({context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).Assembly";
+
+			var lineInfo = $"global::Microsoft.Maui.Controls.Xaml.XmlLineInfo({((IXmlLineInfo)markupNode).LineNumber}, {((IXmlLineInfo)markupNode).LinePosition})";
+			return $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource({resourcePath}, {assembly}, {lineInfo})";
+		}
+	}
 }

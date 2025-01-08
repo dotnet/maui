@@ -1,34 +1,28 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Build.Tasks;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Xaml.UnitTests
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+[XamlCompilation(XamlCompilationOptions.Skip)]
+[XamlProcessing(XamlInflator.Runtime, true)]
+public partial class Gh2064 : ContentPage
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
-	public partial class Gh2064 : ContentPage
+	public Gh2064() => InitializeComponent();
+
+	[TestFixture]
+	class Tests
 	{
-		public Gh2064()
+		[Test]
+		public void ReportMissingTargetTypeOnStyle([Values] XamlInflator inflator)
 		{
-			InitializeComponent();
-		}
-
-		public Gh2064(bool useCompiledXaml)
-		{
-			//this stub will be replaced at compile time
-		}
-
-		[TestFixture]
-		class Tests
-		{
-			[TestCase(false), TestCase(true)]
-			public void ReportMissingTargetTypeOnStyle(bool useCompiledXaml)
+			if (inflator == XamlInflator.XamlC)
+				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
+			if (inflator == XamlInflator.Runtime)
+				Assert.Throws<XamlParseException>(() => new Gh2064(inflator));
+			if (inflator == XamlInflator.SourceGen)
 			{
-				if (useCompiledXaml)
-					Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(Gh2064)));
-				else
-					Assert.Throws<XamlParseException>(() => new Gh2064(useCompiledXaml));
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Gh2064));
+				Assert.That(result.Diagnostics, Is.Not.Empty);
 			}
 		}
 	}

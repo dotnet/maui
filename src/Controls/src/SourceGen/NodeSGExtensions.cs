@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 using static LocationHelpers;
 static class NodeSGExtensions
 {
-    delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context);
+    public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context);
 
     public delegate string ProvideValueDelegate(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType);
 
@@ -62,6 +62,7 @@ static class NodeSGExtensions
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
     };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -370,6 +371,7 @@ static class NodeSGExtensions
 
     public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
     {
+        //FIXME: report diagnostic on missing TargetType
         static string? GetTargetTypeName(INode node)
 			=> (((ElementNode)node).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 

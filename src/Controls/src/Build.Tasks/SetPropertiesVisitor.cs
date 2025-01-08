@@ -86,8 +86,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			XmlName propertyName = XmlName.Empty;
 
 			//Simplify ListNodes with single elements
-			var pList = parentNode as ListNode;
-			if (pList != null && pList.CollectionItems.Count == 1)
+			if (parentNode is ListNode pList && pList.CollectionItems.Count == 1)
 			{
 				propertyName = pList.XmlName;
 				parentNode = parentNode.Parent;
