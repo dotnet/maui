@@ -11,6 +11,9 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
+- name: runAsPublic
+  type: boolean
+  default: false
 
 stages:
 - stage: Pack
@@ -54,7 +57,7 @@ stages:
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        - ${{ if eq(variables._RunAsPublic, 'true') }}:
+        - ${{ if eq(parameters.runAsPublic, 'true') }}:
           - script: $(_buildScript)
                     -restore -pack
                     -publish $(_PublishArgs)
@@ -64,7 +67,7 @@ stages:
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if eq(variables._RunAsInternal, 'true') }}:
+        - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)
