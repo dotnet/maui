@@ -59,7 +59,7 @@
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest10100Version>10.0.0-alpha.1.24563.1</MicrosoftNETWorkloadEmscriptenCurrentManifest10100Version>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest10100Version>10.0.0-alpha.1.24628.1</MicrosoftNETWorkloadEmscriptenCurrentManifest10100Version>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest10100Version)</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.6.240923002</MicrosoftWindowsAppSDKPackageVersion>
