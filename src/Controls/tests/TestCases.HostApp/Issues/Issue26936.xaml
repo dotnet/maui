@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue26936"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             Title="Issue26936">
+    <VerticalStackLayout>
+        <Button Text="Add new items"
+                AutomationId="Button"
+                Clicked="Button_Clicked"/>
+        <CollectionView x:Name="collectionView"
+                        HeightRequest="50">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal"/>
+                <CollectionView.ItemsLayout>
+                    <CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
