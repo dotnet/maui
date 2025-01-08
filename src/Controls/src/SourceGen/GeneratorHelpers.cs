@@ -9,6 +9,7 @@ using System.Threading;
 using System.Xml;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Maui.Controls.Xaml;
@@ -17,6 +18,14 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 static class GeneratorHelpers
 {
+	public static string EscapeIdentifier(string identifier)
+	{
+		var kind = SyntaxFacts.GetKeywordKind(identifier);
+		return kind == SyntaxKind.None
+			? identifier
+			: $"@{identifier}";
+	}
+
 	public static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
 	{
 		var (additionalText, optionsProvider) = tuple;

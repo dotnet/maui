@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
+using static GeneratorHelpers;
 
 class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false) : IXamlNodeVisitor
 {
@@ -36,7 +37,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     public bool StopOnDataTemplate => true;
     public bool VisitNodeOnDataTemplate => true;
     public bool SkipChildren(INode node, INode parentNode) => false;
-
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
     public void Visit(ValueNode node, INode parentNode)
@@ -78,16 +78,15 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         XmlName propertyName = XmlName.Empty;
 
-        //Simplify ListNodes with single elements
-        //TODO: this should be done with a transform
-        var pList = parentNode as ListNode;
-        if (pList != null && pList.CollectionItems.Count == 1)
-        {
-            propertyName = pList.XmlName;
-            parentNode = parentNode.Parent;
-        }
+		//Simplify ListNodes with single elements
+		//TODO: this should be done with a transform
+		if (parentNode is ListNode pList && pList.CollectionItems.Count == 1)
+		{
+			propertyName = pList.XmlName;
+			parentNode = parentNode.Parent;
+		}
 
-        if ((propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName)) 
+		if ((propertyName != XmlName.Empty || node.TryGetPropertyName(parentNode, out propertyName)) 
         && skips.Contains(propertyName) || parentNode is IElementNode epn && epn.SkipProperties.Contains(propertyName))
             return;
 
@@ -132,9 +131,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             string? contentProperty;
 
             if (CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context))
-            {
                 AddToResourceDictionary(Writer, parentVar, node, Context);
-            }
             else if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
             {
                 var name = new XmlName(node.NamespaceURI, contentProperty);
@@ -284,7 +281,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         
         return localVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!);
 	}
-
 
 	private static void SetDynamicResource(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context)
 	{
@@ -450,11 +446,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         {
             var valueString = valueNode.ConvertTo(property, context);
             using (PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath))
-                writer.WriteLine($"{parentVar.Name}.{localName} = {valueString};");
+                writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = {valueString};");
         }
         else if (node is ElementNode elementNode)
             using (PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.FilePath))
-                writer.WriteLine($"{parentVar.Name}.{localName} = ({property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)+ ")" : string.Empty)}{context.Variables[elementNode].Name};");
+                writer.WriteLine($"{parentVar.Name}.{EscapeIdentifier(localName)} = ({property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){(HasDoubleImplicitConversion(context.Variables[elementNode].Type, property.Type, context, out var conv) ? "(" + conv!.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)+ ")" : string.Empty)}{context.Variables[elementNode].Name};");
     }
 
     static bool CanSetBinding(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)

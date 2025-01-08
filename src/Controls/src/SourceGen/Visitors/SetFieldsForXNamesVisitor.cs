@@ -12,6 +12,8 @@ using System.Linq;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using static GeneratorHelpers;
+
 class SetFieldsForXNamesVisitor : IXamlNodeVisitor
 {
     public SetFieldsForXNamesVisitor(SourceGenContext context) => Context = context;
@@ -40,7 +42,7 @@ class SetFieldsForXNamesVisitor : IXamlNodeVisitor
             return;
 
 
-        Writer.WriteLine($"this.{CodeBehindCodeWriter.EscapeIdentifier((string)(node.Value))} = {Context.Variables[(IElementNode)parentNode].Name};");
+        Writer.WriteLine($"this.{EscapeIdentifier((string)(node.Value))} = {Context.Variables[(IElementNode)parentNode].Name};");
     }
 
     public void Visit(MarkupNode node, INode parentNode)
