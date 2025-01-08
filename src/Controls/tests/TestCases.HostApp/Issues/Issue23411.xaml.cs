@@ -18,7 +18,6 @@ namespace Maui.Controls.Sample.Issues
         protected override async void OnAppearing()
         {
             Application.Current.UserAppTheme = AppTheme.Dark;
-            await Task.Delay(500);
             base.OnAppearing();
         }
         private void OnModalPage(object sender, EventArgs e)
