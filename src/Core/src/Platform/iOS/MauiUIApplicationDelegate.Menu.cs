@@ -29,15 +29,13 @@ namespace Microsoft.Maui
 			MenuBuilder = builder;
 
 			UIWindow? window = null;
-
-			// WindowingBehaviors is only available on iOS 16+ and Mac Catalyst
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
 			{
 				// for iOS 14+ where active apperance is supported
 				var activeWindowScenes = new List<UIWindowScene>();
 				foreach (var scene in UIApplication.SharedApplication.ConnectedScenes)
 				{
-					if (scene is UIWindowScene windowScene && 
+					if (scene is UIWindowScene windowScene &&
 						windowScene.TraitCollection.ActiveAppearance == UIUserInterfaceActiveAppearance.Active)
 					{
 						activeWindowScenes.Add(windowScene);
@@ -62,9 +60,7 @@ namespace Microsoft.Maui
 						}
 					}
 					else
-					{
 						window = activeWindowScenes[0].KeyWindow;
-					}
 				}
 			}
 			else
@@ -73,7 +69,6 @@ namespace Microsoft.Maui
 				window = Window ?? this.GetWindow() ??
 					UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
 			}
-
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 
 			MenuBuilder = null;
