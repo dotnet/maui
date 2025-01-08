@@ -49,9 +49,7 @@ namespace Maui.Controls.Sample
 		private void MinTrackColorButton_Clicked(object sender, EventArgs e)
 		{
 			var button = (Button)sender;
-			if (button.Text == "Blue")
-				_viewModel.MinTrackColor = Colors.Blue;
-			else if (button.Text == "Green")
+			if (button.Text == "Green")
 				_viewModel.MinTrackColor = Colors.Green;
 			else if (button.Text == "Yellow")
 				_viewModel.MinTrackColor = Colors.Yellow;
@@ -64,16 +62,12 @@ namespace Maui.Controls.Sample
 				_viewModel.MaxTrackColor = Colors.Red;
 			else if (button.Text == "Orange")
 				_viewModel.MaxTrackColor = Colors.Orange;
-			else if (button.Text == "Purple")
-				_viewModel.MaxTrackColor = Colors.Purple;
 		}
 
 		private void BackgroundColorButton_Clicked(object sender, EventArgs e)
 		{
 			var button = (Button)sender;
-			if (button.Text == "White")
-				_viewModel.BackgroundColor = Colors.White;
-			else if (button.Text == "Gray")
+			if (button.Text == "Gray")
 				_viewModel.BackgroundColor = Colors.Gray;
 			else if (button.Text == "Light Blue")
 				_viewModel.BackgroundColor = Colors.LightBlue;
@@ -81,9 +75,7 @@ namespace Maui.Controls.Sample
 		private void ThumbColorButton_Clicked(object sender, EventArgs e)
 		{
 			var button = (Button)sender;
-			if (button.Text == "Blue")
-				_viewModel.ThumbColor = Colors.Blue;
-			else if (button.Text == "Red")
+			if (button.Text == "Red")
 				_viewModel.ThumbColor = Colors.Red;
 			else if (button.Text == "Green")
 				_viewModel.ThumbColor = Colors.Green;
@@ -91,7 +83,7 @@ namespace Maui.Controls.Sample
 
 		private void OnFlowDirectionChanged(object sender, EventArgs e)
 		{
-			_viewModel.FlowDirection = FlowDirectionLTR.IsChecked ? "LTR" : "RTL";
+			_viewModel.FlowDirection = FlowDirectionLTR.IsChecked ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 		}
 
 		private void OnIsEnabledCheckedChanged(object sender, CheckedChangedEventArgs e)

@@ -286,7 +286,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsEnabledFalseRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("SliderControl");
+			App.WaitForElementTillPageNavigationSettled("Options");
 			VerifyScreenshot();
 
 		}

@@ -8,18 +8,18 @@
     <ToolbarItem Text="Apply" Clicked="ApplyButton_Clicked" AutomationId="Apply"/>
   </ContentPage.ToolbarItems>
 
-  <Grid Padding="20" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto" ColumnSpacing="20">
+  <Grid Padding="10" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto" ColumnSpacing="15">
     <!-- Left Column -->
-    <StackLayout Grid.Column="0" Padding="10" Spacing="13">
+    <StackLayout Grid.Column="0" Padding="10" Spacing="8">
 
       <Label Text="{Binding Minimum, StringFormat='Minimum: {0}'}" FontSize="15" />
-      <Entry x:Name="MinimumEntry" AutomationId="MinimumEntry" TextChanged="OnMinimumChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="150" />
+      <Entry x:Name="MinimumEntry" AutomationId="MinimumEntry" TextChanged="OnMinimumChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" />
       <!-- Maximum Value -->
       <Label Text="{Binding Maximum, StringFormat='Maximum: {0}'}" FontSize="15" />
-      <Entry x:Name="MaximumEntry" AutomationId="MaximumEntry" TextChanged="OnMaximumChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="150" />
+      <Entry x:Name="MaximumEntry" AutomationId="MaximumEntry" TextChanged="OnMaximumChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" />
       <!-- Current Value -->
-      <Label Text="{Binding Value, StringFormat='Value: {0:F0}'}" FontSize="15" />
-      <Entry x:Name="ValueEntry" AutomationId="ValueEntry" TextChanged="OnValueChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="150" />
+      <Label Text="{Binding Value, StringFormat='Value: {0}'}" FontSize="15" />
+      <Entry x:Name="ValueEntry" AutomationId="ValueEntry" TextChanged="OnValueChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" />
       <!-- Flow Direction -->
       <Label Text="Flow Direction:" FontSize="15" />
       <StackLayout Orientation="Horizontal">
@@ -40,38 +40,34 @@
       </StackLayout>
     </StackLayout>
 
-    <StackLayout Grid.Column="1" Padding="10" Spacing="20">
+    <StackLayout Grid.Column="1" Padding="10" Spacing="12">
       <!-- Minimum Track Color -->
-      <Label Text="Minimum Track Color:" />
-      <StackLayout Orientation="Horizontal" Spacing="10">
-        <Button Text="Blue" BackgroundColor="Blue" TextColor="White" Clicked="MinTrackColorButton_Clicked" AutomationId="MinTrackColorBlueButton"/>
+      <Label Text="MinTrackColor:" />
+      <StackLayout Orientation="Horizontal" Spacing="5">
         <Button Text="Green" BackgroundColor="Green" TextColor="White" Clicked="MinTrackColorButton_Clicked" AutomationId="MinTrackColorGreenButton"/>
         <Button Text="Yellow" BackgroundColor="Yellow" TextColor="White" Clicked="MinTrackColorButton_Clicked" AutomationId="MinTrackColorYellowButton"/>
       </StackLayout>
       <!-- Thumb Color -->
       <Label Text="Thumb Color:" FontSize="15" />
-      <StackLayout Orientation="Horizontal" Spacing="10">
-        <Button Text="Blue" BackgroundColor="Blue" TextColor="White" Clicked="ThumbColorButton_Clicked" AutomationId="ThumbColorBlueButton"/>
+      <StackLayout Orientation="Horizontal" Spacing="5">
         <Button Text="Red" BackgroundColor="Red" TextColor="White" Clicked="ThumbColorButton_Clicked" AutomationId="ThumbColorRedButton"/>
         <Button Text="Green" BackgroundColor="Green" TextColor="White" Clicked="ThumbColorButton_Clicked" AutomationId="ThumbColorGreenButton"/>
       </StackLayout>
       <!-- Maximum Track Color -->
-      <Label Text="Maximum Track Color:" />
-      <StackLayout Orientation="Horizontal" Spacing="10">
+      <Label Text="MaxTrackColor:" />
+      <StackLayout Orientation="Horizontal" Spacing="5">
         <Button Text="Red" BackgroundColor="Red" TextColor="White" Clicked="MaxTrackColorButton_Clicked" AutomationId="MaxTrackColorRedButton"/>
         <Button Text="Orange" BackgroundColor="Orange" TextColor="White" Clicked="MaxTrackColorButton_Clicked" AutomationId="MaxTrackColorOrangeButton"/>
-        <Button Text="Purple" BackgroundColor="Purple" TextColor="White" Clicked="MaxTrackColorButton_Clicked" AutomationId="MaxTrackColorPurpleButton"/>
       </StackLayout>
       <!-- Background Color -->
       <Label Text="Background Color:" />
-      <StackLayout Orientation="Horizontal" Spacing="10">
-        <Button Text="White" BackgroundColor="White" TextColor="Black" Clicked="BackgroundColorButton_Clicked" AutomationId="BackgroundColorWhiteButton"/>
+      <StackLayout Orientation="Horizontal" Spacing="5">
         <Button Text="Gray" BackgroundColor="Gray" TextColor="White" Clicked="BackgroundColorButton_Clicked" AutomationId="BackgroundColorGrayButton"/>
         <Button Text="Light Blue" BackgroundColor="LightBlue" TextColor="White" Clicked="BackgroundColorButton_Clicked" AutomationId="BackgroundColorLightBlueButton"/>
       </StackLayout>
       <!-- Thumb Image Source -->
       <Label Text="Thumb Image:" />
-      <Button Text="Add Image" Clicked="ThumbImageSourceButton_Clicked" WidthRequest="150" HorizontalOptions="Start" AutomationId="ThumbImageSourceButton"/>
+      <Button Text="Add Image" Clicked="ThumbImageSourceButton_Clicked" WidthRequest="100" HorizontalOptions="Start" AutomationId="ThumbImageSourceButton"/>
     </StackLayout>
   </Grid>
 </ContentPage>
