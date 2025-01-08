@@ -19,7 +19,10 @@
       <CollectionView
             ItemsSource="{Binding Projects}"
             Margin="{StaticResource LayoutPadding}">
-        <CollectionView.ItemTemplate>
+      <CollectionView.ItemsLayout>
+        <LinearItemsLayout Orientation="Vertical" ItemSpacing="{StaticResource LayoutSpacing}" />
+      </CollectionView.ItemsLayout>
+      <CollectionView.ItemTemplate>
           <DataTemplate x:DataType="models:Project">
             <Border>
               <VerticalStackLayout Padding="10">
