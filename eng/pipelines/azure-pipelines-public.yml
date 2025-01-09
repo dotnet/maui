@@ -44,7 +44,13 @@ parameters:
     type: object
     default:
       name: NetCore-Public
-      image: 1es-windows-2022
+      image: windows.vs2022.amd64.open
+      os: windows
+  - name: VM_IMAGE_HOST_XL
+    type: object
+    default:
+      name: NetCore-Public-XL
+      image: windows.vs2022preview.amd64.open
       os: windows
 
 stages:
@@ -58,17 +64,14 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
       timeout: 120
       testOS: Windows
     - name: mac_unit_tests
       displayName: macOS Unit Tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: $(HostedMacImageArm64)
         os: macOS
       timeout: 120
       testOS: macOS
@@ -80,81 +83,61 @@ stages:
     publishTaskPrefix: ''
     jobMatrix:
     - name: win_sample_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
       timeout: 120
       testCategory: Samples
-
     - name: mac_sample_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: $(HostedMacImageArm64)
         os: macOS
       timeout: 120
       testCategory: Samples
 
     - name: win_wintemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
       timeout: 120
       testCategory: WindowsTemplates
-
     - name: mac_wintemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: $(HostedMacImageArm64)
         os: macOS
       timeout: 120
       testCategory: WindowsTemplates
 
     - name: win_buildtemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
       timeout: 120
       testCategory: Build
-
     - name: mac_buildtemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: $(HostedMacImageArm64)
         os: macOS
       timeout: 120
       testCategory: Build
 
     - name: win_blazortemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
       timeout: 120
       testCategory: Blazor
-
     - name: mac_blazortemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: $(HostedMacImageArm64)
         os: macOS
       timeout: 120
       testCategory: Blazor
 
     - name: win_multitemplate_tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
       timeout: 120
       testCategory: MultiProject
-
     - name: mac_multitemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: $(HostedMacImageArm64)
         os: macOS
       timeout: 120
       testCategory: MultiProject
