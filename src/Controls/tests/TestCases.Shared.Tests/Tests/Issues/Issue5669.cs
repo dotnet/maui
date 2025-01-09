@@ -25,6 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// This causes the image generated in CI to differ from local runs.
 			Assert.That(App.WaitForElement("Sear").GetText(), Is.EqualTo("Sear"));
 #else
+			App.Tap("HideKeyboardButton");
 			VerifyScreenshot();
 #endif
 		}
