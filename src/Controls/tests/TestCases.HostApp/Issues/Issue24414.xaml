@@ -5,7 +5,7 @@
              Title="Issue24414">
 
     <Grid RowDefinitions="Auto,*,*,*,*" ColumnDefinitions="*,*,*,*" RowSpacing="6" ColumnSpacing="6" Padding="16">
-      <Label x:Name="TheLabel" AutomationId="WaitForStubControl" Grid.ColumnSpan="4">
+      <Label x:Name="TheLabel" AutomationId="TheLabel" Grid.ColumnSpan="4">
         <Label.GestureRecognizers>
           <TapGestureRecognizer Tapped="OnTapGestureRecognizerTapped"/>
         </Label.GestureRecognizers>

@@ -6,8 +6,8 @@ namespace Maui.Controls.Sample.Issues;
 
 public partial class Issue24414 : ContentPage
 {
-	int fn = 0;
-	string[] labels = ["LLOHE WODRL", "OLLEH ORLWD", "LOHEL LODRW", "HELLO WORLD"];
+	int fn = 1;
+	string[] labels = ["HELLO WORLD", "LLOHE WODRL", "OLLEH ORLWD", "LOHEL LODRW"];
 
 	public Issue24414()
 	{
@@ -24,14 +24,14 @@ public partial class Issue24414 : ContentPage
 			{
 				switch (fn)
 				{
-					case 0:
+					case 1:
 						border.WidthRequest += 4;
 						border.HeightRequest += 4;
 						break;
-					case 1:
+					case 2:
 						border.StrokeShape = new RoundRectangle { CornerRadius = border.WidthRequest };
 						break;
-					case 2:
+					case 3:
 						border.Shadow.Radius -= 8;
 						break;
 				}
@@ -51,9 +51,9 @@ public partial class Issue24414 : ContentPage
 	{
 		TheLabel.Text = fn switch
 		{
-			0 => "Tap to resize the border",
-			1 => "Tap to change the border shape",
-			2 => "Tap to change the shadow radius",
+			1 => "Tap to resize the border",
+			2 => "Tap to change the border shape",
+			3 => "Tap to change the shadow radius",
 			_ => "Done"
 		};
 	}

@@ -16,8 +16,34 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Visual)]
 		public void Issue24414Test()
 		{
-			App.WaitForElement("WaitForStubControl");
-			VerifyScreenshot();
+			var label = App.WaitForElement("TheLabel");
+			var ex = TryVerifyScreenshot("Issue24414Test");
+
+			for (int i = 1; i <= 3; i++)
+			{
+				label.Tap();
+				var exception = TryVerifyScreenshot("Issue24414Test_" + i);
+				ex ??= exception;
+			}
+
+			if (ex != null)
+			{
+				throw ex;
+			}
+		}
+
+		private Exception? TryVerifyScreenshot(string fileName)
+		{
+			try
+			{
+				VerifyScreenshot(fileName);
+			}
+			catch(Exception ex)
+			{
+				return ex;
+			}
+
+			return null;
 		}
 	}
 }

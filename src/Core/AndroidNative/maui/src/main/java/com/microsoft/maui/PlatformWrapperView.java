@@ -182,9 +182,10 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private void drawShadowViaPlatformShadowDrawable(@NonNull Canvas canvas, @NonNull PlatformShadowDrawable drawable, int viewWidth, int viewHeight) {
-        int bitmapWidth = viewWidth + (int)(radius * 2.5);
-        int bitmapHeight = viewHeight + (int)(radius * 2.5);
-            
+        int radiusSafeSpace = getRadiusSafeSpace();
+        int bitmapWidth = viewWidth + radiusSafeSpace;
+        int bitmapHeight = viewHeight + radiusSafeSpace;
+
         // Apply shader if needed
         Shader shader = createShader(bitmapWidth, bitmapHeight);
         if (shader != null) {
@@ -200,14 +201,9 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private void drawShadowViaDispatchDraw(@NonNull Canvas canvas, int viewWidth, int viewHeight) {
-        int radius = (int)this.radius;
-        // Give it a minimum additional space to draw shadow
-        if (radius <= 0) {
-            radius = 1;
-        }
-
-        int bitmapWidth = viewWidth + radius * 2;
-        int bitmapHeight = viewHeight + radius * 2;
+        int radiusSafeSpace = getRadiusSafeSpace();
+        int bitmapWidth = viewWidth + radiusSafeSpace;
+        int bitmapHeight = viewHeight + radiusSafeSpace;
         int drawOriginX = (bitmapWidth - viewWidth) / 2;
         int drawOriginY = (bitmapHeight - viewHeight) / 2;
 
@@ -235,16 +231,16 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
 
             // Get the alpha bounds of bitmap
             Bitmap extractAlpha = shadowBitmap.extractAlpha();
-            
+
             // Clear the shadow canvas
             shadowCanvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
-            
+
             // Apply shader if needed
             Shader shader = createShader(bitmapWidth, bitmapHeight);
             if (shader != null) {
                 shadowPaint.setShader(shader);
             }
-            
+
             shadowCanvas.drawBitmap(extractAlpha, 0, 0, shadowPaint);
 
             extractAlpha.recycle();
@@ -252,6 +248,14 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     
         // Draw shadow rectangle
         canvas.drawBitmap(shadowBitmap, offsetX - drawOriginX, offsetY - drawOriginY, null);
+    }
+
+    private int getRadiusSafeSpace() {
+        if (radius <= 0) {
+            return 4;
+        }
+
+        return (int)(radius * 3);
     }
 
     private Shader createShader(int bitmapWidth, int bitmapHeight) {
