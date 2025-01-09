@@ -59,7 +59,10 @@ static class ServiceProviderExtensions
             var bpinfo = bpFieldSymbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType)) ?? String.Empty;
             var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
             writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
-            writer.WriteLine($"null,");
+            if (context.Scopes.TryGetValue(node, out var scope))
+                writer.WriteLine($"new [] {{ {scope.namescope.Name} }},");
+            else
+                writer.WriteLine($"null,");
             writer.WriteLine($"false);");
             writer.Indent--;
             writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IReferenceProvider), {simpleValueTargetProvider});");
