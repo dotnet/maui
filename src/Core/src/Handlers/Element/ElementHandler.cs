@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -40,24 +41,36 @@ namespace Microsoft.Maui.Handlers
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			if (VirtualView == view)
+			{
 				return;
+			}
 
 			var oldVirtualView = VirtualView;
 
 			bool setupPlatformView = oldVirtualView == null;
+			bool isNewPlatformView = false;
 
 			VirtualView = view;
-			PlatformView ??= CreatePlatformElement();
+
+			if (PlatformView is null)
+			{
+				PlatformView = CreatePlatformElement();
+				isNewPlatformView = true;
+			}
 
 			if (VirtualView.Handler != this)
+			{
 				VirtualView.Handler = this;
+			}
 
 			// We set the previous virtual view to null after setting it on the incoming virtual view.
 			// This makes it easier for the incoming virtual view to have influence
 			// on how the exchange of handlers happens.
 			// We will just set the handler to null ourselves as a last resort cleanup
 			if (oldVirtualView?.Handler != null)
+			{
 				oldVirtualView.Handler = null;
+			}
 
 			if (setupPlatformView)
 			{
@@ -76,7 +89,7 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			_mapper.UpdateProperties(this, VirtualView);
+			_mapper.UpdateProperties(this, VirtualView, initial: isNewPlatformView);
 		}
 
 		public virtual void UpdateValue(string property)
