@@ -32,6 +32,7 @@ internal class WindowViewController : UIViewController
 	/// Only dragging the top of the titlebar will move the window.
 	/// The top of the TitleBar will also drag the window inside of elements like buttons.
 	/// Gestures such as swiping and controls like swipeview will not work inside the TitleBar.
+	/// The TitleBar will not be accessible when a modal is being presented.
 	/// </remarks>
 	public WindowViewController(UIViewController contentViewController, IWindow window, IMauiContext mauiContext)
 	{
