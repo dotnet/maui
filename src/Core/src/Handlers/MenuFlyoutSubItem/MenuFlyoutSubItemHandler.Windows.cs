@@ -89,6 +89,10 @@ namespace Microsoft.Maui.Handlers
 				{
 					items = mfsi.Items;
 				}
+				else if (pvh.PlatformView is MenuBarItem menuBarItem)
+				{
+					items = menuBarItem.Items;
+				}
 
 				if (items is not null)
 				{

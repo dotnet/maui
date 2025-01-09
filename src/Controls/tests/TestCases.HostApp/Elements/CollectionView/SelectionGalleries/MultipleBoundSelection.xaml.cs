@@ -31,9 +31,9 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 
 		private void DirectUpdateClicked(object sender, EventArgs e)
 		{
-			CollectionView.SelectedItems.Clear();
-			CollectionView.SelectedItems.Add(_vm.Items![0]);
-			CollectionView.SelectedItems.Add(_vm.Items![3]);
+			TestCollectionView.SelectedItems.Clear();
+			TestCollectionView.SelectedItems.Add(_vm.Items![0]);
+			TestCollectionView.SelectedItems.Add(_vm.Items![3]);
 		}
 	}
 }

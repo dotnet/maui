@@ -514,6 +514,9 @@ configuration:
         - isActivitySender:
             user: jfversluis
             issueAuthor: False
+        - isActivitySender:
+            user: tj-devel709
+            issueAuthor: False
       then:
       - addLabel:
           label: s/triaged
