@@ -153,10 +153,10 @@ namespace Microsoft.Maui.Platform
 			if (textField?.LeftView is not UIImageView iconView || iconView.Image is null)
 				return;
 			
-			if (searchBar.SearchButtonColor is not null)
+			if (searchBar.SearchIconColor is not null)
 			{
 				iconView.Image = iconView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-				iconView.TintColor = searchBar.SearchButtonColor.ToPlatform();
+				iconView.TintColor = searchBar.SearchIconColor.ToPlatform();
 			}
 
 		}

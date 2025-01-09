@@ -16,19 +16,24 @@
             var searchBar = new SearchBar  
             {  
                 Placeholder = "Search...",  
-                SearchButtonColor = Colors.Magenta,  
+                SearchIconColor = Colors.Magenta,  
                 WidthRequest = 300,  
                 HorizontalOptions = LayoutOptions.Center,  
                 VerticalOptions = LayoutOptions.Start,  
                 AutomationId = "SearchBar"  
             };  
-
+            searchBar.SearchButtonPressed += OnSearchButtonPressed;
             // Add the SearchBar to the layout  
             var layout = new Grid();  
             layout.Children.Add(searchBar);  
 
             // Set the layout as the Content of the page  
             Content = layout;  
-        }  
+        } 
+        private async void OnSearchButtonPressed(object sender, EventArgs e)  
+        {  
+            // Display an alert when the search button is pressed  
+            await DisplayAlert("Search Triggered", "You pressed the search button.", "OK");  
+        }   
     }  
 }

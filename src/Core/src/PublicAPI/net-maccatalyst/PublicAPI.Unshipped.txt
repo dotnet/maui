@@ -86,4 +86,4 @@ override Microsoft.Maui.Platform.MauiCALayer.RemoveFromSuperLayer() -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
-Microsoft.Maui.ISearchBar.SearchButtonColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!

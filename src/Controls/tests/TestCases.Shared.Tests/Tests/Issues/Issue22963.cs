@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
         [Test]
         [Category(UITestCategories.SearchBar)]
-        public void SearchButtonColorInitializesCorrectly()
+        public void SearchIconColorInitializesCorrectly()
         {
             App.WaitForElement("SearchBar");
             VerifyScreenshot();

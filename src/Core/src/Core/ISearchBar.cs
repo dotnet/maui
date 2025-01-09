@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the color of the Search button.
 		/// </summary>
-		Color SearchButtonColor { get; }
+		Color SearchIconColor { get; }
 
 		/// <summary>
 		/// Notify when the user presses the Search button.

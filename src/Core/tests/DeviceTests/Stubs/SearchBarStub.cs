@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public Color CancelButtonColor { get; set; }
 
-		public Color SearchButtonColor { get; set; }
+		public Color SearchIconColor { get; set; }
 
 		public double CharacterSpacing { get; set; }
 

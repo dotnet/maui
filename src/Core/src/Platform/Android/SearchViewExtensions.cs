@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateSearchButtonColor(this SearchView searchView, ISearchBar searchBar)
+		internal static void UpdateSearchIconColor(this SearchView searchView, ISearchBar searchBar)
 		{
 			if (searchView.Resources is null)
 				return;
@@ -131,8 +131,8 @@ namespace Microsoft.Maui.Platform
 
 				if (image?.Drawable is not null)
 				{
-					if (searchBar.SearchButtonColor is not null)
-						image.Drawable.SetColorFilter(searchBar.SearchButtonColor, FilterMode.SrcIn);
+					if (searchBar.SearchIconColor is not null)
+						image.Drawable.SetColorFilter(searchBar.SearchIconColor, FilterMode.SrcIn);
 					else
 						image.Drawable.ClearColorFilter();
 				}
