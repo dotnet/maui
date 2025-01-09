@@ -1,32 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue25192">
     <Grid>
-        <!-- TEMPORARY FIX: Using CV2 directly due to output image differ from CV1 and CV2
-             - Getting random output images in CI for each run
-             - To eliminate flakiness, we're using CV2 directly until the CV1 issue is resolved
-             - Remove this local reference and revert to CV1 once the bug is fixed https://github.com/dotnet/maui/issues/26969 -->
-        <local:CarouselView2 Margin="2,9,2,20"
+        <CarouselView Margin="2,9,2,20"
                       HeightRequest="180"
                       Loop="False"
                       PeekAreaInsets="20"
                       VerticalOptions="End">
-            <local:CarouselView2.ItemsSource>
+            <CarouselView.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Item1</x:String>
                     <x:String>Item2</x:String>
                     <x:String>Item3</x:String>
                 </x:Array>
-            </local:CarouselView2.ItemsSource>
-            <local:CarouselView2.ItemsLayout>
+            </CarouselView.ItemsSource>
+            <CarouselView.ItemsLayout>
                 <LinearItemsLayout ItemSpacing="5"
                                    Orientation="Horizontal"
                                    SnapPointsAlignment="Center"
                                    SnapPointsType="MandatorySingle"/>
-            </local:CarouselView2.ItemsLayout>
-            <local:CarouselView2.ItemTemplate>
+            </CarouselView.ItemsLayout>
+            <CarouselView.ItemTemplate>
                 <DataTemplate
                     x:DataType="{x:Null}">
                     <Border BackgroundColor="Red"
@@ -104,7 +99,7 @@
                         </Grid>
                     </Border>
                 </DataTemplate>
-            </local:CarouselView2.ItemTemplate>
-        </local:CarouselView2>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
     </Grid>
 </ContentPage>
