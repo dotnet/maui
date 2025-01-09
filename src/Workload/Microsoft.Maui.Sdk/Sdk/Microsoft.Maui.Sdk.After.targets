@@ -18,6 +18,7 @@
     <ProjectCapability Include="Msix" />
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Include="LaunchProfiles" />
+    <ProjectCapability Include="SupportUniversalAuthentication" />
     <!-- If VS is older than Dev17 -->
     <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
     <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
