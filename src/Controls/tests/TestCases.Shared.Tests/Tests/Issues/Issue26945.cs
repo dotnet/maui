@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void Issue26945_SelectItemPositionStart()
+		public void Issue26945Test_SelectItemPositionStart()
 		{
 			App.WaitForElement("StartButton");
 			App.Tap("StartButton");

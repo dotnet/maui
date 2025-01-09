@@ -3,12 +3,12 @@
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 26945, "ListView ScrollTo position always remains at the start even when set to Center or End without animation", PlatformAffected.All)]
-	public class Issue26857 : ContentPage
+	public class Issue26945 : ContentPage
 	{
 		private ListView ListView;
 		private ObservableCollection<string> Items;
 
-		public Issue26857()
+		public Issue26945()
 		{
 			Items = new ObservableCollection<string>
 			{
