@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Window)]
-		public void TitleBarWithSmallHeight()
+		public void TitleBarWithSmallHeightShell()
 		{
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Window)]
-		public void TitleBarWithLargeHeight()
+		public void TitleBarWithLargeHeightShell()
 		{
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Window)]
-		public void NavBarResetsColorAfterSmallTitleBar()
+		public void NavBarResetsColorAfterSmallTitleBarShell()
 		{
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.Back();
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Window)]
-		public void NavBarResetsColorAfterLargeTitleBar()
+		public void NavBarResetsColorAfterLargeTitleBarShell()
 		{
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.Back();
