@@ -7,7 +7,6 @@
 		Label rtlLabel;
 		Label label;
 
-
 		protected override void Init()
 		{
 			VerticalStackLayout verticalStackLayout = new VerticalStackLayout() { Spacing = 25, VerticalOptions = LayoutOptions.Center };
