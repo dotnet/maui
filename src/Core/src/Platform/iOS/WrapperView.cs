@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Platform
 
 		partial void ShadowChanged()
 		{
-			SetShadow();
+			this.SetShadow(Shadow);
 		}
 
 		partial void BorderChanged() => SetBorder();
@@ -308,8 +308,6 @@ namespace Microsoft.Maui.Platform
 
 			if (shadowLayer == null && Shadow == null)
 				return;
-
-			this.SetShadow(Shadow);
 
 			shadowLayer ??= ShadowLayer = new StaticCAShapeLayer();
 
