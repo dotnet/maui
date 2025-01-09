@@ -58,6 +58,12 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
+  - template: /eng/pipelines/common/run-dotnet-preview.yml
+    parameters:
+      displayName: Build MSBuild Tasks
+      mauiSourcePath: ${{ parameters.mauiSourcePath }}
+      project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
+      arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/Microsoft.Maui.BuildTasks.binlog'
 
 - template: /eng/pipelines/common/run-dotnet-preview.yml
   parameters:
@@ -65,10 +71,3 @@ steps:
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
     command: tool
     arguments: restore
-
-- template: /eng/pipelines/common/run-dotnet-preview.yml
-  parameters:
-    displayName: Build MSBuild Tasks
-    mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
-    arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/Microsoft.Maui.BuildTasks.binlog'
