@@ -351,6 +351,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("MaxTrackColorRedButton");
 			App.Tap("MaxTrackColorRedButton");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
