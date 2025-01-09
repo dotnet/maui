@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Controls
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
 			return $"Content = {Content}, BindingContext = {BindingContext}";
 		}

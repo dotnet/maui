@@ -480,9 +480,9 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Text = {Text}, " + base.GetDebbugerDisplay();
+			return $"Text = {Text}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

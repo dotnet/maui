@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsToggledProperty, value, SetterSpecificity.FromHandler);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsToggled = {IsToggled}, " + base.GetDebbugerDisplay();
+			return $"IsToggled = {IsToggled}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

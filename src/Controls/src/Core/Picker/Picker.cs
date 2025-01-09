@@ -463,9 +463,9 @@ namespace Microsoft.Maui.Controls
 			return string.Empty;
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Items = {ItemsSource?.Count ?? 0}, SelectedItem = {SelectedItem}, " + base.GetDebbugerDisplay();
+			return $"Items = {ItemsSource?.Count ?? 0}, SelectedItem = {SelectedItem}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

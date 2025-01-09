@@ -226,9 +226,9 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(bo, BindingContext);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"ItemsSource = {ItemsSource}, " + base.GetDebbugerDisplay();
+			return $"ItemsSource = {ItemsSource}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

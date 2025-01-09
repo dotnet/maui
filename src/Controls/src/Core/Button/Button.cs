@@ -609,9 +609,9 @@ namespace Microsoft.Maui.Controls
 				=> throw new NotSupportedException();
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Text = {Text}, Command = {Command}, " + base.GetDebbugerDisplay();
+			return $"Text = {Text}, Command = {Command}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

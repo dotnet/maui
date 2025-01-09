@@ -150,9 +150,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Command = {Command}, IsRefreshing = {IsRefreshing}, " + base.GetDebbugerDisplay();
+			return $"Command = {Command}, IsRefreshing = {IsRefreshing}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

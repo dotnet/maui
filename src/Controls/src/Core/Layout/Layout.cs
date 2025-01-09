@@ -386,9 +386,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"ChildCount = {Count}, " + base.GetDebbugerDisplay();
+			return $"ChildCount = {Count}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

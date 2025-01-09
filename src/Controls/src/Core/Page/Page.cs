@@ -941,7 +941,7 @@ namespace Microsoft.Maui.Controls
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
 			return $"BindingContext = {BindingContext}, Title = {Title}";
 		}

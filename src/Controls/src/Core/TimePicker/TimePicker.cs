@@ -169,9 +169,9 @@ namespace Microsoft.Maui.Controls
 				timePicker.TimeSelected?.Invoke(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Time = {Time}, " + base.GetDebbugerDisplay();
+			return $"Time = {Time}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

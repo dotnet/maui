@@ -482,9 +482,9 @@ namespace Microsoft.Maui.Controls
 			base.InvalidateMeasureLegacy(trigger, depth, 1);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Content = {Content}, " + base.GetDebbugerDisplay();
+			return $"Content = {Content}, " + base.GetDebuggerDisplay();
 		}
 	}
 }
