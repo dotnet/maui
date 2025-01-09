@@ -18,19 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		public void Bugzilla44461Test()
 		{
-			var positions = TapButton(0);
-			Assert.That(positions.initialPosition.X, Is.EqualTo(positions.finalPosition.X));
-			Assert.That(positions.finalPosition.X, Is.LessThanOrEqualTo(1));
-		}
-
-		(System.Drawing.Rectangle initialPosition, System.Drawing.Rectangle finalPosition) TapButton(int position)
-		{
-			var buttonId = $"{position}";
-			App.WaitForElement(buttonId);
-			var initialPosition = App.WaitForElement(buttonId).GetRect();
-			App.Tap(buttonId);
-			var finalPosition = App.WaitForElement(buttonId).GetRect();
-			return (initialPosition, finalPosition);
+			App.Tap("Scroll to Button0");
+			VerifyScreenshot();
 		}
 	}
 }
