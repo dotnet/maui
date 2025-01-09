@@ -74,14 +74,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void UpdateHorizontalTextAlignment(UITextAlignment textAlignment)
-		{
-			if (_placeholderLabel is null)
-				return;
-
-			_placeholderLabel.TextAlignment = textAlignment;
-		}
-
 		public UIColor? PlaceholderTextColor
 		{
 			get => _placeholderLabel.TextColor;
@@ -167,6 +159,14 @@ namespace Microsoft.Maui.Platform
 			AddSubview(placeholderLabel);
 
 			return placeholderLabel;
+		}
+
+		void UpdateHorizontalTextAlignment(UITextAlignment textAlignment)
+		{
+			if (_placeholderLabel is null)
+				return;
+
+			_placeholderLabel.TextAlignment = textAlignment;
 		}
 
 		void UpdatePlaceholderLabelFrame()
