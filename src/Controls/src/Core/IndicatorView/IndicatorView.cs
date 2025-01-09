@@ -197,9 +197,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PositionProperty, value, SetterSpecificity.FromHandler);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Position = {Position}, Count = {Count}, " + base.GetDebbugerDisplay();
+			return $"Position = {Position}, Count = {Count}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

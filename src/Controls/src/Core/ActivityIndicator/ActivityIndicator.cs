@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsRunning = {IsRunning}, " + base.GetDebbugerDisplay();
+			return $"IsRunning = {IsRunning}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

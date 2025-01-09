@@ -386,9 +386,9 @@ namespace Microsoft.Maui.Controls
 			ProcessTerminated?.Invoke(this, webViewProcessTerminatedEventArgs);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Source = {Source}, " + base.GetDebbugerDisplay();
+			return $"Source = {Source}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

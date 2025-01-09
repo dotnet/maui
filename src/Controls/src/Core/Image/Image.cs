@@ -106,9 +106,9 @@ namespace Microsoft.Maui.Controls
 		void IImageSourcePart.UpdateIsLoading(bool isLoading) =>
 			IsLoading = isLoading;
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Source = {Source}, " + base.GetDebbugerDisplay();
+			return $"Source = {Source}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

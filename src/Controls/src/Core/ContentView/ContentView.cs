@@ -49,9 +49,9 @@ namespace Microsoft.Maui.Controls
 
 		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Content = {Content}, " + base.GetDebbugerDisplay();
+			return $"Content = {Content}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

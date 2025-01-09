@@ -242,9 +242,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FormatProperty, value, SetterSpecificity.FromHandler);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Date = {Date}, " + base.GetDebbugerDisplay();
+			return $"Date = {Date}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

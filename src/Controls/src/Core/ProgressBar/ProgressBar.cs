@@ -56,9 +56,9 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Progress = {Progress}, " + base.GetDebbugerDisplay();
+			return $"Progress = {Progress}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

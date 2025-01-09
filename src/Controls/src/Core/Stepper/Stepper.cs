@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Controls
 
 		double IStepper.Interval => Increment;
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Value = {Value}, " + base.GetDebbugerDisplay();
+			return $"Value = {Value}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

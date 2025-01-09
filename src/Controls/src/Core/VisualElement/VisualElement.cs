@@ -2403,7 +2403,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		private protected virtual string GetDebbugerDisplay()
+		private protected virtual string GetDebuggerDisplay()
 		{
 			return $"BindingContext = {BindingContext}, Bounds = {Bounds}";
 		}

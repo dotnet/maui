@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls
 			(this as ISearchBarController).OnSearchButtonPressed();
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
 			return $"SearchCommand = {SearchCommand}, " + base.GetDebbugerDisplay();
 		}

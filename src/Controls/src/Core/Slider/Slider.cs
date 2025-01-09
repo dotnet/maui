@@ -185,9 +185,9 @@ namespace Microsoft.Maui.Controls
 			(this as ISliderController).SendDragStarted();
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"Value = {Value}, Min-Max = {Minimum} - {Maximum}, " + base.GetDebbugerDisplay();
+			return $"Value = {Value}, Min-Max = {Minimum} - {Maximum}, " + base.GetDebuggerDisplay();
 		}
 	}
 }

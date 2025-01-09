@@ -672,9 +672,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
 		}
 
-		private protected override string GetDebbugerDisplay()
+		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsChecked = {IsChecked}, Value = {Value}, " + base.GetDebbugerDisplay();
+			return $"IsChecked = {IsChecked}, Value = {Value}, " + base.GetDebuggerDisplay();
 		}
 
 		private protected override Semantics UpdateSemantics()
