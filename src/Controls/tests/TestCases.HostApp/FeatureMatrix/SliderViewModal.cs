@@ -11,10 +11,22 @@ namespace Maui.Controls.Sample
 		private double _minimum = 0;
 		private double _maximum = 1;
 		private double _value = 0;
-		private Color _thumbColor = null;
-		private Color _minTrackColor = null;
-		private Color _maxTrackColor = null;
-		private Color _backgroundColor = null;
+	#if WINDOWS
+        private Color _thumbColor = null;
+        private Color _minTrackColor = null;
+        private Color _maxTrackColor = null;
+        private Color _backgroundColor = null;
+    #elif ANDROID
+        private Color _thumbColor = Color.FromRgba(1,122,255,255);
+        private Color _minTrackColor = Color.FromRgba(1,122,255,255) ;
+        private Color _maxTrackColor = Color.FromRgba(227,227,229,255);
+        private Color _backgroundColor = Colors.Transparent ;
+     #elif IOS || MACCATALYST
+        private Color _thumbColor = Color.FromRgba(255, 255, 255, 255);
+        private Color _minTrackColor = Color.FromRgba(1, 122, 255, 255);
+        private Color _maxTrackColor = Color.FromRgba(227, 227, 229, 255);
+        private Color _backgroundColor =Colors.Transparent;
+    #endif
 		private FlowDirection _flowDirection = FlowDirection.LeftToRight; 
 		private bool _isEnabled = true;
 		private bool _isVisible = true;
