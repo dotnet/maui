@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			base.FixtureSetup();
 			App.NavigateToGallery(SliderFeatureMatrix);
 		}
-		[Test]
+		[Test,Order(1)]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ValidateDefaultValues_VerifyLabels()
 		{
@@ -243,39 +243,38 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if !MACCATALYST
-
-		[Test]
-		[Category(UITestCategories.Slider)]
-		public void SliderDisplaysDragStartedStatusLabelOnHold()
-		{
-			App.WaitForElement("Options");
+        [Test, Order(2)]
+        [Category(UITestCategories.Slider)]
+        public void SliderDisplaysDragStartedStatusLabelOnHold()
+        {
+            App.WaitForElement("Options");
 #if WINDOWS
-			App.DragCoordinates(550,240,580,240);
+            App.DragCoordinates(480,180,580,180);
 #elif IOS
-			App.DragCoordinates(50, 65, 130, 200);
+            App.DragCoordinates(50, 120, 150, 120);
 #elif ANDROID
             App.TouchAndHold("SliderControl");     
 #endif
-			Task.Delay(TimeSpan.FromSeconds(15)).Wait();
-			Assert.That(App.FindElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
-		}
-
-		[Test]
-		[Category(UITestCategories.Slider)]
-		public void SliderDisplaysDragCompletedStatusLabelOnRelease()
-		{
-			App.WaitForElement("Options");
+            Task.Delay(TimeSpan.FromSeconds(15)).Wait();
+            Assert.That(App.FindElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
+        }
+ 
+        [Test,Order(3)]
+        [Category(UITestCategories.Slider)]
+        public void SliderDisplaysDragCompletedStatusLabelOnRelease()
+        {
+            App.WaitForElement("Options");
 #if WINDOWS
-			App.DragCoordinates(550, 240, 580, 240);
+            App.DragCoordinates(480, 180, 580, 180);
 #elif IOS
-			App.DragCoordinates(50, 65, 130, 200);
+            App.DragCoordinates(50, 120, 150, 120);
 #elif ANDROID
-        App.TouchAndHold("SliderControl");  
+            App.TouchAndHold("SliderControl");  
 #endif
-			Task.Delay(TimeSpan.FromSeconds(15)).Wait();
-			Assert.That(App.FindElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
-		}
-
+            Task.Delay(TimeSpan.FromSeconds(15)).Wait();
+            Assert.That(App.FindElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
+        }
+ 
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetEnabledStateToFalse_VerifyVisualState()
@@ -286,7 +285,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsEnabledFalseRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("Options");
+			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 
 		}
@@ -315,7 +314,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsVisibleFalseRadio");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("SliderControl");
+			App.WaitForElementTillPageNavigationSettled("Options");
 			VerifyScreenshot();
 		}
 		[Test]
