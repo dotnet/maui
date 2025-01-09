@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CancelButtonColorProperty, value); }
 		}
 		/// <summary>
-		/// Gets or sets the color of the search button icon in the <see cref="SearchBar"/>.
+		/// Gets or sets the color of the search icon in the <see cref="SearchBar"/>.
 		/// </summary>
 		public Color SearchIconColor
 		{
