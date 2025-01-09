@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS //App.EnterText not working with iOS password for more information : https://github.com/dotnet/maui/issues/18981
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18981")]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public async Task EntryIsPasswordObscureText()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -35,3 +35,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

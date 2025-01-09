@@ -151,6 +151,7 @@
 			StackLayout content = new StackLayout();
 			content.Children.Add(new ScrollView()
 			{
+				HeightRequest=600,
 				Content = layout
 			});
 

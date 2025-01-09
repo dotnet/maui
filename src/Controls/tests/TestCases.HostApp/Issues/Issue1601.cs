@@ -26,7 +26,7 @@
 			stack.Children.Add(button);
 			grid.Add(stack, 0, 1);
 
-			button.Clicked += (s, e) => Content = null;
+			button.Clicked += (s, e) => Content = new Label { Text="No crash", VerticalOptions=LayoutOptions.Center, HorizontalOptions=LayoutOptions.Center };
 
 			Content = grid;
 		}

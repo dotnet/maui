@@ -16,8 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void TestCursorPositionAndSelection()
 		{
 			App.WaitForElement("CursorTextEntry");
@@ -28,30 +26,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.EnterText("SelectionLength", "3");
 			App.DismissKeyboard();
 			App.Tap("Update");
-			App.Screenshot("Text selection from char 2 length 3.");
-
 			App.Tap("CursorTextEntry");
 			var result = App.WaitForElement("SelectionLength").GetText();
 			ClassicAssert.AreEqual("0", result);
 		}
-
+#if IOS
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void TestCursorColorOniOS()
 		{
 			App.WaitForElement("CursorTextEntry");
 			App.Tap("Red");
 			App.Tap("CursorTextEntry");
-			App.Screenshot("Cursor is red.");
+			VerifyScreenshot("CursorRedColor");
 
 			App.Tap("Blue");
 			App.Tap("CursorTextEntry");
-			App.Screenshot("Cursor is blue.");
+			VerifyScreenshot("CursorBlueColor.");
 
 			App.Tap("Default");
 			App.Tap("CursorTextEntry");
-			App.Screenshot("Cursor is default color.");
+			VerifyScreenshot("CursorDefaultColor");
 		}
+#endif
 	}
 }
