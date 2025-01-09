@@ -1,4 +1,5 @@
 parameters:
+  jdkFolder: '$(JAVA_HOME_17_X64)'
   jdkMajorVersion: 17
 
 steps:
@@ -17,9 +18,12 @@ steps:
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
 - pwsh: |
-    $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-${{ parameters.jdkMajorVersion }}.*\bin\java.exe) | Select-Object -First 1
-    if ($path -and (Test-Path $path)) {
-      $env:JAVA_HOME = $path.Directory.Parent.FullName
+    if ('${{ parameters.jdkFolder }}') {
+      $env:JAVA_HOME = '${{ parameters.jdkFolder }}'
+    } else {
+      $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-${{ parameters.jdkMajorVersion }}.*\bin\java.exe) | Select-Object -First 1
+      if ($path -and (Test-Path $path)) {
+        $env:JAVA_HOME = $path.Directory.Parent.FullName
     }
     
     if ($env:JAVA_HOME) {
