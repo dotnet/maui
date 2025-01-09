@@ -30,6 +30,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var result = App.WaitForElement("SelectionLength").GetText();
 			ClassicAssert.AreEqual("0", result);
 		}
+
+// Verify cursor color changes in the Entry field on iOS when buttons are tapped, as specified for DevicePlatform.iOS in the host app sample.
 #if IOS
 		[Test]
 		[Category(UITestCategories.Entry)]

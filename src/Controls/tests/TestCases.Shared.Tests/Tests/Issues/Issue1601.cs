@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("CrashButton");
 			App.Tap("CrashButton");
-			App.WaitForElement("No crash");
+			App.WaitForNoElement("CrashButton");
 		}
 	}
 }
