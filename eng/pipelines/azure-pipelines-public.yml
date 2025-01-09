@@ -64,7 +64,7 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 120
       testOS: Windows
     - name: mac_unit_tests
@@ -83,7 +83,7 @@ stages:
     publishTaskPrefix: ''
     jobMatrix:
     - name: win_sample_tests
-      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
@@ -95,7 +95,7 @@ stages:
       testCategory: Samples
 
     - name: win_wintemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 120
       testCategory: WindowsTemplates
     - name: mac_wintemplate_tests
@@ -107,7 +107,7 @@ stages:
       testCategory: WindowsTemplates
 
     - name: win_buildtemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
@@ -119,7 +119,7 @@ stages:
       testCategory: Build
 
     - name: win_blazortemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
@@ -131,7 +131,7 @@ stages:
       testCategory: Blazor
 
     - name: win_multitemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST_XL }}
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
