@@ -309,6 +309,8 @@ namespace Microsoft.Maui.Platform
 			if (shadowLayer == null && Shadow == null)
 				return;
 
+			this.SetShadow(Shadow);
+
 			shadowLayer ??= ShadowLayer = new StaticCAShapeLayer();
 
 			var frame = Frame;
