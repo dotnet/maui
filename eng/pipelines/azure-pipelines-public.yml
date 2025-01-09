@@ -44,13 +44,7 @@ parameters:
     type: object
     default:
       name: NetCore-Public
-      image: windows.vs2022.amd64.open
-      os: windows
-  - name: VM_IMAGE_HOST_XL
-    type: object
-    default:
-      name: NetCore-Public-XL
-      image: windows.vs2022preview.amd64.open
+      demands: ImageOverride -equals windows.vs2022.amd64.open
       os: windows
 
 stages:
@@ -71,7 +65,7 @@ stages:
       displayName: macOS Unit Tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImageArm64)
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 120
       testOS: macOS
@@ -89,7 +83,7 @@ stages:
     - name: mac_sample_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImageArm64)
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 120
       testCategory: Samples
@@ -101,7 +95,7 @@ stages:
     - name: mac_wintemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImageArm64)
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 120
       testCategory: WindowsTemplates
@@ -113,7 +107,7 @@ stages:
     - name: mac_buildtemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImageArm64)
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 120
       testCategory: Build
@@ -125,7 +119,7 @@ stages:
     - name: mac_blazortemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImageArm64)
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 120
       testCategory: Blazor
@@ -137,7 +131,7 @@ stages:
     - name: mac_multitemplate_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImageArm64)
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 120
       testCategory: MultiProject
