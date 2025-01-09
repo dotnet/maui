@@ -150,6 +150,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		readonly INameScope[] scopes;
 
 		[Obsolete("Use the other ctor")]
+		//used by XamlC
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope scope)
 			: this(objectAndParents, targetProperty, new INameScope[] { scope }, false)
 		{
@@ -157,10 +158,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope[] scopes, bool notused)
 		{
-			if (objectAndParents == null)
+			if (objectAndParents == null || objectAndParents.Length == 0)
 				throw new ArgumentNullException(nameof(objectAndParents));
-			if (objectAndParents.Length == 0)
-				throw new ArgumentException();
 
 			this.objectAndParents = objectAndParents;
 			this.targetProperty = targetProperty;
@@ -181,9 +180,9 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			for (var i = 0; i < objectAndParents.Length; i++)
 			{
-				if (!(objectAndParents[i] is BindableObject bo))
+				if (objectAndParents[i] is not BindableObject bo)
 					continue;
-				if (!(NameScope.GetNameScope(bo) is INameScope ns))
+				if (NameScope.GetNameScope(bo) is not INameScope ns)
 					continue;
 				if ((value = ns.FindByName(name)) != null)
 					return value;

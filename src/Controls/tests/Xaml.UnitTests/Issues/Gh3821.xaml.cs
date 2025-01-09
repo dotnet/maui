@@ -30,7 +30,6 @@ public partial class Gh3821 : ContentPage
 		public void NoConflictsInNamescopes([Values] XamlInflator inflator)
 		{
 			var layout = new Gh3821(inflator) { Text = "root" };
-			var view = (Gh3821View)((StackLayout)layout.Content).Children[0];
 			var label0 = (Label)((Gh3821View)((StackLayout)layout.Content).Children[0]).Content;
 			Assert.That(label0.Text, Is.EqualTo("root"));
 		}
