@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebbugerDisplay()
 		{
-			return $"SarchCommand = {SearchCommand}, " + base.GetDebbugerDisplay();
+			return $"SearchCommand = {SearchCommand}, " + base.GetDebbugerDisplay();
 		}
 	}
 }
