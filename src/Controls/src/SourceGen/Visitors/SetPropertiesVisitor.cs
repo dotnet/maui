@@ -302,7 +302,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         if (bpFieldSymbol == null)
             return false;
-        if (node is ValueNode vn) //TODO check if a conversion exists
+        if (node is ValueNode vn && vn.CanConvertTo(bpFieldSymbol, context))
             return true;
         if(node is not ElementNode en)
             return false;
@@ -382,7 +382,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return false;
         if (property.SetMethod is not IMethodSymbol propertySetter  || !propertySetter.IsPublic() || propertySetter.IsStatic)
             return false;
-        if (node is ValueNode vn) //TODO check if a conversion exists
+        if (node is ValueNode vn && vn.CanConvertTo(property, context))
             return true;
         if (node is not IElementNode elementNode)
             return false;

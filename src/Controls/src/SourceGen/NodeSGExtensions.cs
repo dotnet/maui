@@ -90,6 +90,79 @@ static class NodeSGExtensions
 	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
         => context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!);
 
+    public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
+    {
+        var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
+        if (typeandconverter == null)
+            return false;
+        return valueNode.CanConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context);
+    }
+
+    public static bool CanConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
+    {
+        List<AttributeData> attributes = [
+            .. property.GetAttributes().ToList(),
+            .. property.Type.GetAttributes()
+        ];
+        
+        var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
+        return valueNode.CanConvertTo(property.Type, typeConverter, context);
+    }
+
+    public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
+    {
+        var stringValue = (string)valueNode.Value;
+
+        //if there's a typeconverter, assume we can convert
+        if (converter is not null && stringValue is not null)
+            return true;
+        
+        if (toType.NullableAnnotation == NullableAnnotation.Annotated)
+            toType = ((INamedTypeSymbol)toType).TypeArguments[0];
+
+        if (toType.TypeKind == TypeKind.Enum)
+            return true;
+
+        //assignable from a string
+        if (toType.SpecialType == SpecialType.System_Char)
+            return true;
+        if (toType.SpecialType == SpecialType.System_SByte)
+            return true;
+        if (toType.SpecialType == SpecialType.System_Int16)
+            return true;            
+        if (toType.SpecialType == SpecialType.System_Int32)
+            return true;            
+        if (toType.SpecialType == SpecialType.System_Int64)
+            return true;            
+        if (toType.SpecialType == SpecialType.System_Byte)
+            return true;
+        if (toType.SpecialType == SpecialType.System_UInt16)
+            return true;
+        if (toType.SpecialType == SpecialType.System_UInt32)
+            return true;
+        if (toType.SpecialType == SpecialType.System_UInt64)
+            return true;
+        if (toType.SpecialType == SpecialType.System_Single)
+            return true;
+        if (toType.SpecialType == SpecialType.System_Double)
+            return true;
+        if (toType.SpecialType == SpecialType.System_Boolean)
+            return true;
+        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default))
+            return true;
+        if (toType.SpecialType == SpecialType.System_DateTime)
+            return true;
+        if (toType.SpecialType == SpecialType.System_Object)
+            return true;
+        if (toType.SpecialType == SpecialType.System_String)
+            return true;
+        if (toType.SpecialType == SpecialType.System_Decimal)
+            return true;
+        if (context.Compilation.HasImplicitConversion(context.Compilation.GetTypeByMetadataName("System.String")!, toType))
+            return true;
+        return false;
+    }
+
 	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
     {
         var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);

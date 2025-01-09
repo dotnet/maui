@@ -1418,7 +1418,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (node is ValueNode valueNode && valueNode.CanConvertValue(context, bpRef))
 				return true;
 
-			if (!(node is IElementNode elementNode))
+			if (node is not IElementNode elementNode)
 				return false;
 
 			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
@@ -1554,12 +1554,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (propertySetter == null || !propertySetter.IsPublic || propertySetter.IsStatic)
 				return false;
 
-			var valueNode = node as ValueNode;
-			if (valueNode != null && valueNode.CanConvertValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }))
+			if (node is ValueNode valueNode && valueNode.CanConvertValue(context, propertyType, [property, propertyType.ResolveCached(context.Cache)]))
 				return true;
 
-			var elementNode = node as IElementNode;
-			if (elementNode == null)
+			if (node is not IElementNode elementNode)
 				return false;
 
 			var vardef = context.Variables[elementNode];
@@ -1583,8 +1581,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			propertyType = null;
-			TypeReference declaringTypeReference;
-			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out declaringTypeReference);
+			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out TypeReference declaringTypeReference);
 			if (property == null)
 				return false;
 			var propertyGetter = property.GetMethod;
@@ -1602,8 +1599,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		static IEnumerable<Instruction> Set(VariableDefinition parent, string localName, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
-			TypeReference declaringTypeReference;
-			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out declaringTypeReference);
+			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out TypeReference declaringTypeReference);
 			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertyIsObsolete)
 				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
@@ -1621,8 +1617,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
 			propertySetterRef.ImportTypes(module);
 			var propertyType = module.ImportReference(property.PropertyType.ResolveGenericParameters(declaringTypeReference));
-			var valueNode = node as ValueNode;
-			var elementNode = node as IElementNode;
 
 			//if it's a value type, load the address so we can invoke methods on it
 			if (parent.VariableType.IsValueType)
@@ -1630,17 +1624,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			else
 				yield return Instruction.Create(OpCodes.Ldloc, parent);
 
-			if (valueNode != null)
+			if (node is ValueNode valueNode)
 			{
 				//FIXME which services are required here ?
-				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, new ICustomAttributeProvider[] { property, propertyType.ResolveCached(context.Cache) }, (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, propertyRef: property), false, true))
+				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, [property, propertyType.ResolveCached(context.Cache)], (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, propertyRef: property), false, true))
 					yield return instruction;
 				if (parent.VariableType.IsValueType)
 					yield return Instruction.Create(OpCodes.Call, propertySetterRef);
 				else
 					yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
 			}
-			else if (elementNode != null)
+			else if (node is IElementNode elementNode)
 			{
 				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, propertyType, module))
 					yield return instruction;
@@ -1668,10 +1662,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					Create(Call, propertyGetterRef),
 				};
 			else
-				return new[] {
+				return [
 					Create(Ldloc, parent),
 					Create(Callvirt, propertyGetterRef),
-				};
+				];
 		}
 
 		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)
@@ -1680,7 +1674,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var localName = propertyName.LocalName;
 			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out var attached, context, lineInfo);
 
-			if (!(valueNode is IElementNode elementNode))
+			if (valueNode is not IElementNode elementNode)
 				return false;
 
 			if (!CanGetValue(parent, bpRef, attached, null, context, out TypeReference propertyType)
@@ -1716,10 +1710,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				&& !collectionType.InheritsFromOrImplements(context.Cache, context.Module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary"))))
 				return false;
 
-			if (node.Properties.ContainsKey(XmlName.xKey))
+			if (node.Properties.TryGetValue(XmlName.xKey, out INode value))
 			{
-				var valueNode = node.Properties[XmlName.xKey] as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
-				var key = (valueNode).Value as string;
+				var valueNode = value as ValueNode ?? throw new BuildException(XKeyNotLiteral, lineInfo, null);
+				var key = valueNode.Value as string;
 				var names = context.Cache.GetResourceNamesInUse(parent);
 				if (names.Contains(key))
 					throw new BuildException(ResourceDictDuplicateKey, lineInfo, null, key);
@@ -1732,7 +1726,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (module.ImportMethodReference(context.Cache,
 											 module.GetTypeDefinition(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "ResourceDictionary")),
 											 methodName: "Add",
-											 parameterTypes: new[] { (nodeTypeRef) }) != null)
+											 parameterTypes: [nodeTypeRef]) != null)
 				return true;
 			throw new BuildException(ResourceDictMissingKey, lineInfo, null);
 		}
