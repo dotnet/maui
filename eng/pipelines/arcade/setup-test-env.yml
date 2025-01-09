@@ -11,6 +11,17 @@ steps:
 
 - template: /eng/pipelines/common/setup-jdk.yml
 
+- script: |
+    sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
+    xcrun xcode-select --print-path
+    xcodebuild -version
+    sudo xcodebuild -license accept
+    sudo xcodebuild -downloadAllPlatforms
+    sudo xcodebuild -runFirstLaunch
+  displayName: Select Xcode Version
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+  timeoutInMinutes: 30
+
 - task: UseDotNet@2
   displayName: 'Use .NET SDK $(DOTNET_VERSION)'
   inputs:
@@ -59,5 +70,5 @@ steps:
   parameters:
     displayName: Build MSBuild Tasks
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
-    command: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
+    project: ${{ parameters.mauiSourcePath }}/Microsoft.Maui.BuildTasks.slnf
     arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/Microsoft.Maui.BuildTasks.binlog'
