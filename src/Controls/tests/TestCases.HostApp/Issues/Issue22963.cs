@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    [Issue(IssueTracker.Github, 22963, "Implementation of Customizable Search Button Color for SearchBar Across Platforms", PlatformAffected.All)]
+    [Issue(IssueTracker.Github, 22963, "Implementation of Customizable Search Icon Color for SearchBar Across Platforms", PlatformAffected.All)]
 
     public partial class Issue22963 : ContentPage  
     {  

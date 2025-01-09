@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateSearchButton(searchBar);
+			handler.PlatformView?.UpdateSearchIcon(searchBar);
 		}
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
