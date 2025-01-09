@@ -55,9 +55,9 @@ static partial class ITypeSymbolExtensions
             return null;
             // throw new BuildException(BuildExceptionCode.BPName, iXmlLineInfo, null, bpName, bpRef.DeclaringType);
         
-        List<AttributeData> attributes = new();
+        List<AttributeData> attributes = [];
         if (property != null){
-            attributes.AddRange(property.GetAttributes().ToList());
+            attributes.AddRange([.. property.GetAttributes()]);
             attributes.AddRange(property.Type.GetAttributes());
         }
         attributes.AddRange(getter.GetAttributes());
