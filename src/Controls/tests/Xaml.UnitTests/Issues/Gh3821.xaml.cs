@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
