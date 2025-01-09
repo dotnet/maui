@@ -634,7 +634,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Wait function that will repeatedly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -652,7 +652,25 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Wait function that will repeatedly query the app until any matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Collection of target Elements.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static IUIElement WaitForAnyElement(this IApp app, string[] marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => FindAnyElement(app, marked);
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
+		/// <summary>
+		/// Wait function that will repeatedly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -670,7 +688,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Wait function that will repeatedly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -691,7 +709,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -707,7 +725,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -723,7 +741,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1218,7 +1236,7 @@ namespace UITest.Appium
 			}
 
 			var response = app.CommandExecutor.Execute("getClipboardText", new Dictionary<string, object>());
-			
+
 			if (response?.Value != null)
 			{
 				return (string)response.Value;
@@ -1709,8 +1727,8 @@ namespace UITest.Appium
 				{ "enableSystemAnimations", enableSystemAnimations },
 			});
 		}
-    
-    /// <summary>
+
+		/// <summary>
 		/// Switch the state of data service.
 		/// Functionality that's only available on Android.
 		/// This API does not work for Android API level 21+ because it requires system or carrier privileged permission, 
@@ -1757,6 +1775,34 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Maximize the active App window.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void EnterFullScreen(this IApp app)
+		{
+			if (app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"EnterFullScreen is only supported on AppiumCatalystApp");
+			}
+
+			app.CommandExecutor.Execute("enterFullScreen", new Dictionary<string, object>());
+		}
+
+		/// <summary>
+		/// Leave the App full screen mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ExitFullScreen(this IApp app)
+		{
+			if (app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"ExitFullScreen is only supported on AppiumCatalystApp");
+			}
+
+			app.CommandExecutor.Execute("exitFullScreen", new Dictionary<string, object>());
+		}
+
+		/// <summary>
 		/// Retrieve visibility and bounds information of the status and navigation bars
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1776,8 +1822,8 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the Android System Bars");
-	 }
-    
+		}
+
 		/// <summary>
 		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button or using a custom identifier.
 		/// </summary>
@@ -1801,7 +1847,7 @@ namespace UITest.Appium
 		{
 			app.Tap(query);
 		}
-        
+
 		/// <summary>
 		/// Gets the default query for the back arrow button based on the app type.
 		/// </summary>
@@ -1847,12 +1893,12 @@ namespace UITest.Appium
 		/// <param name="app">The IApp instance.</param>
 		/// <param name="elementId">The id of the element to wait for.</param>
 		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
-		public static void WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+		public static IUIElement WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
 
-			app.WaitForElement(elementId, timeout: timeout);
+			return app.WaitForElement(elementId, timeout: timeout);
 		}
 
 		/// <summary>
@@ -1864,7 +1910,7 @@ namespace UITest.Appium
 		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
 		public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 				app.WaitForElement(query, timeout: timeout);
 
 			app.WaitForElement(query, timeout: timeout);
@@ -1878,17 +1924,19 @@ namespace UITest.Appium
 		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
 		public static void WaitForFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
 		{
-			if(app is AppiumAndroidApp)
+			if (app is AppiumAndroidApp)
 			{
 				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
 			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
 			{
-				if(isShell){
+				if (isShell)
+				{
 					app.WaitForElement("OK");
 				}
-				if (!isShell){		
-					if(app is AppiumWindowsApp)
+				if (!isShell)
+				{
+					if (app is AppiumWindowsApp)
 					{
 						app.WaitForElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
 					}
@@ -1949,7 +1997,7 @@ namespace UITest.Appium
 				}
 				else
 				{
-					if(app is AppiumWindowsApp)
+					if (app is AppiumWindowsApp)
 					{
 						app.Tap(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
 					}
@@ -2038,6 +2086,46 @@ namespace UITest.Appium
 			}
 		}
 
+		/// <summary>
+		/// Taps a tab in the application.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="tabName">The name of the tab to tap.</param>
+		/// <param name="isTopTab">Indicates whether the tab is a top tab (default is false).</param>
+		/// <remarks>
+		/// This method handles platform-specific behaviors:
+		/// - For Android, it converts the tab name to uppercase.
+		/// - For Windows, if it's a top tab, it taps the navigation view item first.
+		/// The method waits for the tab element to be available before tapping it.
+		/// </remarks>
+		public static void TapTab(this IApp app, string tabName, bool isTopTab = false)
+		{
+			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
+
+			if (isTopTab && app is AppiumWindowsApp)
+			{
+				app.WaitForElement("navViewItem");
+				app.Tap("navViewItem");
+			}
+
+			app.WaitForElementTillPageNavigationSettled(tabName);
+			app.Tap(tabName);
+		}
+
+		/// <summary>
+		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="tabName">The name of the tab to wait for.</param>
+		/// <remarks>
+		/// For Android apps, the tab name is converted to uppercase before searching.
+		/// </remarks>
+		public static IUIElement WaitForTabElement(this IApp app, string tabName)
+		{
+			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
+			return app.WaitForElementTillPageNavigationSettled(tabName);
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
@@ -2093,6 +2181,17 @@ namespace UITest.Appium
 				result = app.FindElementByText(element);
 
 			return result;
+		}
+
+		static IUIElement FindAnyElement(IApp app, string[] elements)
+		{
+			foreach (var element in elements)
+			{
+				if (FindElement(app, element) is IUIElement result)
+					return result;
+			}
+
+			throw new InvalidOperationException($"Did not find any elements in the list: {string.Join(", ", elements)}");
 		}
 
 		static IReadOnlyCollection<IUIElement> FindElements(IApp app, string element)

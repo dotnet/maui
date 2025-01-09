@@ -7,13 +7,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 [Category(UITestCategories.TabbedPage)]
 public class TabbedPageTests : _IssuesUITest
 {
-#if ANDROID
-	const string Page1 = "PAGE 1";
-	const string Page2 = "PAGE 2";
-#else
 	const string Page1 = "Page 1";
 	const string Page2 = "Page 2";
-#endif
+
 	const string HomePage = "HomePage";
 	const string Pop = "Pop";
 	const string Pop2 = "Pop 2";
@@ -29,8 +25,8 @@ public class TabbedPageTests : _IssuesUITest
 	{
 		App.WaitForElement(HomePage);
 		App.Tap(HomePage);
-		App.WaitForElement(Page1);
-		App.WaitForElement(Page2);
+		App.WaitForTabElement(Page1);
+		App.WaitForTabElement(Page2);
 		App.WaitForElement(Pop);
 	}
 
@@ -49,8 +45,7 @@ public class TabbedPageTests : _IssuesUITest
 	{
 		App.WaitForElement(HomePage);
 		App.Tap(HomePage);
-		App.WaitForElement(Page2);
-		App.Tap(Page2);
+		App.TapTab(Page2);
 		App.WaitForElement(Pop2);
 
 		App.Tap(Pop2);

@@ -111,11 +111,7 @@ public class Bugzilla40704 : TestContentPage
 		{
 			var cell = (Layout)sender;
 			var vm = cell.BindingContext as PatientsGroupViewModel;
-
-			if (vm != null)
-			{
-				vm.Toggle();
-			}
+			vm?.Toggle();
 		}
 	}
 

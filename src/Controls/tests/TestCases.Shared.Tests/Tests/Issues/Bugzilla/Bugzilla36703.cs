@@ -19,18 +19,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void _36703Test()
 		{
 			App.WaitForElement(TestImage);
 			App.Tap(TestImage);
-			App.WaitForNoElement(Testing);
+			App.WaitForElement(Testing);
 			App.Tap(Toggle);
 			App.Tap(TestImage);
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 	}
 }
