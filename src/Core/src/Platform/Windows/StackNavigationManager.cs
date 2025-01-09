@@ -233,24 +233,7 @@ namespace Microsoft.Maui.Platform
 
 			_pendingNavigationFinished = () =>
 			{
-				//presenter.Unloaded += PresenterUnloaded;
 				_previousContent = presenter;
-
-				// We can navigate to pages that do not exist in the shell as sections, so we 
-				// end up keeping the previous page loaded and in the (MAUI) visual tree.
-				// This means we need to manually clear the WinUI content from the presenter so we don't
-				// get a crash when the page is navigated to again due to the content already being the
-				// child of another parent
-				//void PresenterUnloaded(object s, RoutedEventArgs e)
-				//{
-				//	if (s is ContentPresenter previousContent)
-				//	{
-				//		previousContent.Content = null;
-				//		previousContent.Unloaded -= PresenterUnloaded;
-				//
-				//		_previousContent = null;
-				//	}
-				//}
 
 				if (presenter?.Content is not FrameworkElement pc)
 				{
