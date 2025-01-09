@@ -591,7 +591,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				case ScrollToPosition.Center:
 				case ScrollToPosition.End:
 					{
-						double offset = viewer.ViewportHeight - GetContentDesiredHeight(viewer, item);
+						double offset = viewer.ViewportHeight - selectorItem.DesiredSize.Height;
 						if (toPosition == ScrollToPosition.Center)
 							viewer.ChangeView(position.Value.X, position.Value.Y - (offset / 2), null);
 						else
@@ -604,14 +604,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			return true;
-		}
-
-		double GetContentDesiredHeight(ScrollViewer viewer, object item)
-		{
-			var content = (FrameworkElement)List.ItemTemplate.LoadContent();
-			content.DataContext = item;
-			content.Measure(new global::Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
-			return content.DesiredSize.Height;
 		}
 
 #pragma warning disable 1998 // considered for removal
@@ -669,8 +661,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					case ScrollToPosition.End:
 					case ScrollToPosition.Center:
 						{
+							var content = (FrameworkElement)List.ItemTemplate.LoadContent();
+							content.DataContext = c;
+							content.Measure(new global::Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
 
-							double tHeight = GetContentDesiredHeight(viewer, item);
+							double tHeight = content.DesiredSize.Height;
 
 							if (toPosition == ScrollToPosition.Center)
 								semanticLocation.Bounds = new WRect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
