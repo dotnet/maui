@@ -41,7 +41,12 @@ public partial class Issue25671 : ContentPage
 	}
 }
 
+#if IOS
+// When CV2 is completed and can handle resize of items we can remove this pointer to CV1
+internal class Issue25671CollectionView : CollectionView1
+#else
 public class Issue25671CollectionView : CollectionView
+#endif
 {
 }
 

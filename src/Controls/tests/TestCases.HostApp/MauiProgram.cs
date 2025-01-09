@@ -31,8 +31,6 @@ namespace Maui.Controls.Sample
 #if IOS || MACCATALYST
 
 			appBuilder.ConfigureCollectionViewHandlers();
-			// When CV2 is completed and can handle resize of items, we can remove this pointer to CV1 and move Issue25671 to CollectionView category
-			handlers.AddHandler<Issue25671CollectionView, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
 
 #endif
 
