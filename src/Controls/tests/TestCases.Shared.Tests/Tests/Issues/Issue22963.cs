@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
     {
         public Issue22963(TestDevice device) : base(device) { }
 
-        public override string Issue => "Implementation of Customizable Search Button Color for SearchBar Across Platforms";
+        public override string Issue => "Implementation of Customizable Search Icon Color for SearchBar Across Platforms";
 
         [Test]
         [Category(UITestCategories.SearchBar)]

@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateSearchButton(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		internal static void UpdateSearchIcon(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 			
