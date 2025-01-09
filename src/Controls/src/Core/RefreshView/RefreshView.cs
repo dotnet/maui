@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;

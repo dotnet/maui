@@ -12,7 +12,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs/*" />
-	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>

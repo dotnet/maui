@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="Type[@FullName='Microsoft.Maui.Controls.InputView']/Docs/*" />
-	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class InputView : View, IPlaceholderElement, ITextElement, ITextInput, IFontElement
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentView']/Docs/*" />
 	[ContentProperty("Content")]
-	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ContentView : TemplatedView, IContentView
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>

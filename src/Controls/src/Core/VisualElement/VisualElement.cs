@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	/// The base class for most .NET MAUI on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
 	
-	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>

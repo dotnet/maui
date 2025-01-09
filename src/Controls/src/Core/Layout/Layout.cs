@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
 	[ContentProperty(nameof(Children))]
-	[DebuggerDisplay("{GetDebbugerDisplay(), nq}")]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
 	{
 		protected ILayoutManager _layoutManager;
