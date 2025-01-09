@@ -287,7 +287,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnShellSectionItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			HandleEventsOnItemsChange(e);
 			ReloadData();
+		}
+
+		void HandleEventsOnItemsChange(NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				foreach (ShellContent item in e.OldItems)
+				{
+					item.PropertyChanged -= OnShellContentPropertyChanged;
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (ShellContent item in e.NewItems)
+				{
+					item.PropertyChanged += OnShellContentPropertyChanged;
+				}
+			}
 		}
 
 		void OnShellContentPropertyChanged(object sender, PropertyChangedEventArgs e)
