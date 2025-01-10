@@ -186,8 +186,8 @@ namespace Microsoft.Maui.Controls
 			{
 				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 				_navigationView.SizeChanged += OnNavigationViewSizeChanged;
-			  }
-		}  
+			}
+		}
 
 		void UpdateValuesWaitingForNavigationView()
 		{
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateCurrentPageContent(WPage page)
 		{
-			if (MauiContext == null)   
+			if (MauiContext == null)
 				return;
 
 			WContentPresenter? presenter;
