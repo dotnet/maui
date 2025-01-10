@@ -54,11 +54,37 @@ namespace Microsoft.Maui
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
 			if (!viewHandler.CanInvokeMappers())
+			{
 				return;
+			}
 
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
 		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public virtual Func<IElement, bool> GetSkipCheck(string key)
+		{
+			if (_initSkipChecks.TryGetValue(key, out var skipCheck))
+			{
+				return skipCheck;
+			}
+			else if (Chained is not null)
+			{
+				foreach (var ch in Chained)
+				{
+					var returnValue = ch.GetSkipCheck(key);
+
+					if (returnValue != null)
+					{
+						return returnValue;
+					}
+				}
+			}
+
+			return _ => false;
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
@@ -104,7 +130,9 @@ namespace Microsoft.Maui
 			{
 				if (initial)
 				{
-					if (_initSkipChecks.TryGetValue(key, out Func<IElement, bool>? skipCheck) && skipCheck(virtualView))
+					Func<IElement, bool> skipCheck = GetSkipCheck(key);
+
+					if (skipCheck(virtualView))
 					{
 						continue;
 					}
@@ -158,6 +186,10 @@ namespace Microsoft.Maui
 
 	public interface IPropertyMapper
 	{
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		Func<IElement, bool> GetSkipCheck(string key);
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		Action<IElementHandler, IElement>? GetProperty(string key);
 
 		IEnumerable<string> GetKeys();

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -20,6 +22,47 @@ namespace Microsoft.Maui.Handlers
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected internal readonly static Dictionary<string, Func<IElement, bool>> initSkipChecks = new(StringComparer.Ordinal)
+		{
+			{ nameof(IView.AutomationId), SkipCheckAutomationId },
+			{ nameof(IView.Clip), SkipCheckClip },
+			
+			{ nameof(IPadding.Padding), SkipCheckPadding },
+
+			{ nameof(IView.Shadow), SkipCheckShadow },
+			{ nameof(IView.Visibility), SkipCheckVisibility },
+			{ nameof(IView.FlowDirection), SkipCheckFlowDirection },
+			{ nameof(IView.Width), SkipCheckDimension },
+			{ nameof(IView.Height), SkipCheckDimension },
+			
+			{ nameof(IView.MinimumWidth), SkipCheckDimension },
+			{ nameof(IView.MaximumWidth), SkipCheckDimension },
+
+			{ nameof(IView.MinimumHeight), SkipCheckDimension },
+			{ nameof(IView.MaximumHeight), SkipCheckDimension },
+
+			{ nameof(IView.Scale), SkipCheckScale },
+			{ nameof(IView.ScaleX), SkipCheckScaleX },
+			{ nameof(IView.ScaleY), SkipCheckScaleY },
+
+			{ nameof(IView.Rotation), SkipCheckRotation },
+			{ nameof(IView.RotationX), SkipCheckRotationX },
+			{ nameof(IView.RotationY), SkipCheckRotationY },
+
+			{ nameof(IView.Opacity), SkipCheckOpacity },
+
+			{ nameof(IView.TranslationX), SkipCheckTranslationX },
+			{ nameof(IView.TranslationY), SkipCheckTranslationY },
+			
+			{ nameof(IContextFlyoutElement.ContextFlyout), SkipCheckContextFlyout },
+
+			{ nameof(IView.InputTransparent), SkipCheckInputTransparent },
+			{ nameof(IToolbarElement.Toolbar), SkipCheckToolbar },
+			{ nameof(IToolTipElement.ToolTip), SkipCheckToolTip },
+		};
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>
 		/// A dictionary that maps the virtual view properties to their platform view counterparts.
 		/// </summary>
@@ -164,7 +207,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <summary>
-		/// Gets or sets the .NET MAUI repesentation of the view associated to this handler.
+		/// Gets or sets the .NET MAUI representation of the view associated to this handler.
 		/// </summary>
 		/// <remarks>This property holds the reference to the abstract (.NET MAUI) view.
 		/// The platform view is found in <see cref="PlatformView"/>.</remarks>
@@ -534,6 +577,105 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
+		}
+
+		internal static bool SkipCheckAutomationId(IElement view)
+		{
+			return string.IsNullOrEmpty(((IView)view).AutomationId);
+		}
+
+		internal static bool SkipCheckClip(IElement view)
+		{
+			return ((IView)view).Clip is null;
+		}
+
+		internal static bool SkipCheckPadding(IElement view)
+		{
+			return view is IPadding padding && (padding.Padding.IsEmpty || padding.Padding.IsNaN);
+		}
+
+		internal static bool SkipCheckShadow(IElement view)
+		{
+			return ((IView)view).Shadow is null;
+		}
+
+		internal static bool SkipCheckVisibility(IElement view)
+		{
+			return ((IView)view).Visibility == Visibility.Visible;
+		}
+
+		internal static bool SkipCheckFlowDirection(IElement view)
+		{
+			return ((IView)view).FlowDirection == FlowDirection.MatchParent;
+		}
+
+		internal static bool SkipCheckDimension(IElement view)
+		{
+			return double.IsNaN(((IView)view).MinimumHeight);
+		}
+
+		internal static bool SkipCheckScale(IElement view)
+		{
+			return ((IView)view).Scale == 1;
+		}
+
+		internal static bool SkipCheckScaleX(IElement view)
+		{
+			return ((IView)view).ScaleX == 1;
+		}
+
+		internal static bool SkipCheckScaleY(IElement view)
+		{
+			return ((IView)view).ScaleY == 1;
+		}
+
+		internal static bool SkipCheckRotation(IElement view)
+		{
+			return ((IView)view).Rotation % 360 == 0;
+		}
+
+		internal static bool SkipCheckRotationX(IElement view)
+		{
+			return ((IView)view).RotationX % 360 == 0;
+		}
+
+		internal static bool SkipCheckRotationY(IElement view)
+		{
+			return ((IView)view).RotationY % 360 == 0;
+		}
+
+		internal static bool SkipCheckOpacity(IElement label)
+		{
+			return ((ILabel)label).Opacity == 1;
+		}
+
+		internal static bool SkipCheckTranslationX(IElement view)
+		{
+			return ((IView)view).TranslationX == 0;
+		}
+
+		internal static bool SkipCheckTranslationY(IElement view)
+		{
+			return ((IView)view).TranslationY == 0;
+		}
+
+		internal static bool SkipCheckContextFlyout(IElement view)
+		{
+			return view is IContextFlyoutElement contextFlyoutElement && contextFlyoutElement.ContextFlyout is null;
+		}
+		internal static bool SkipCheckInputTransparent(IElement view)
+		{
+			return !((IView)view).InputTransparent;
+		}
+
+		internal static bool SkipCheckToolbar(IElement view)
+		{
+			return view is IToolbarElement toolbarElement && toolbarElement.Toolbar is null;
+		}
+
+		internal static bool SkipCheckToolTip(IElement view)
+		{
+			return view is IToolTipElement toolTipElement && toolTipElement.ToolTip is null;
 		}
 	}
 }

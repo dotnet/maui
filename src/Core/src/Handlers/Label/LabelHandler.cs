@@ -17,17 +17,13 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ILabelHandler
 	{
-		private static Dictionary<string, Func<IElement, bool>> initSkipChecks = new(StringComparer.Ordinal)
+		static LabelHandler()
 		{
-			{ nameof(ILabel.Height), SkipCheckHeight },
-			{ nameof(ILabel.Opacity), SkipCheckOpacity },
-
-			{ nameof(ILabel.CharacterSpacing), SkipCheckCharacterSpacing },
-			{ nameof(ILabel.HorizontalTextAlignment), SkipCheckHorizontalTextAlignment },
-			{ nameof(ILabel.VerticalTextAlignment), SkipCheckVerticalTextAlignment },
-			{ nameof(ILabel.Padding), SkipCheckPadding },
-			{ nameof(ILabel.TextDecorations), SkipCheckTextDecorations },
-		};
+			initSkipChecks.Add(nameof(ILabel.CharacterSpacing), SkipCheckCharacterSpacing);
+			initSkipChecks.Add(nameof(ILabel.HorizontalTextAlignment), SkipCheckHorizontalTextAlignment);
+			initSkipChecks.Add(nameof(ILabel.VerticalTextAlignment), SkipCheckVerticalTextAlignment);
+			initSkipChecks.Add(nameof(ILabel.TextDecorations), SkipCheckTextDecorations);
+		}
 
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(initSkipChecks, ViewHandler.ViewMapper)
 		{
@@ -77,17 +73,7 @@ namespace Microsoft.Maui.Handlers
 		ILabel ILabelHandler.VirtualView => VirtualView;
 
 		PlatformView ILabelHandler.PlatformView => PlatformView;
-
-		internal static bool SkipCheckHeight(IElement label)
-		{
-			return double.IsNaN(((ILabel)label).Height);
-		}
-		
-		internal static bool SkipCheckOpacity(IElement label)
-		{
-			return ((ILabel)label).Opacity == 1;
-		}
-		
+				
 		internal static bool SkipCheckTextDecorations(IElement label)
 		{
 			return ((ILabel)label).TextDecorations == TextDecorations.None;
@@ -97,12 +83,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			return ((ILabel)label).CharacterSpacing == 0;
 		}
-		
-		internal static bool SkipCheckPadding(IElement label)
-		{
-			return ((ILabel)label).Padding.IsEmpty;
-		}
-		
+
 		internal static bool SkipCheckHorizontalTextAlignment(IElement label)
 		{
 			return ((ILabel)label).HorizontalTextAlignment == TextAlignment.Start;
