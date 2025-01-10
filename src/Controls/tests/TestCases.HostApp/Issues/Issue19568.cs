@@ -6,7 +6,7 @@
 	{
 		public Issue19568()
 		{
-			Content = new GraphicsView()
+			var graphicsView = new GraphicsView()
 			{
 				HeightRequest = 300,
 				WidthRequest = 300,
@@ -14,6 +14,28 @@
 				BackgroundColor = Colors.Red,
 				Drawable = new MyDrawable()
 			};
+
+			Content =
+				new VerticalStackLayout()
+				{
+					new Grid
+					{
+						Children = {
+							new Label() { Text = "The GraphicsView should have a blue background color" },
+							graphicsView
+						}
+					},
+					new Button
+					{
+						Text = "Change BackgroundColor & opacity",
+						AutomationId = "ChangeBackgroundColorButton",
+						Command = new Command(() =>
+						{
+							graphicsView.BackgroundColor = Colors.Blue;
+							graphicsView.Opacity = 0.1;
+						})
+					}
+				};
 		}
 
 		class MyDrawable : IDrawable

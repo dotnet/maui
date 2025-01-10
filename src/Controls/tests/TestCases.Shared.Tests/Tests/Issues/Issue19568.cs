@@ -18,7 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.GraphicsView)]
 		public void GraphicsViewShouldHaveBackgroundColor()
 		{
-			App.WaitForElement("graphicsView");
+			App.WaitForElement("ChangeBackgroundColorButton");
+			App.Click("ChangeBackgroundColorButton");
 			VerifyScreenshot();
 		}
 	}
