@@ -6,6 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue7338 : _IssuesUITest
 	{
+		const string Success = "success";
+
 		public Issue7338(TestDevice testDevice) : base(testDevice)
 		{
 		}
@@ -17,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue7338Test()
 		{
 			// If the instructions are visible at all, then this has succeeded
-			App.WaitForElement("success");
+			App.WaitForElement(Success);
 		}
 	}
 }
