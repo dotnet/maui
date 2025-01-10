@@ -19,9 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
+
 		public void Issue1747Test()
 		{
 			App.WaitForElement(ToggleButtonAutomationId);
@@ -29,11 +27,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			var toggleSwitch = App.FindElement(ToggleSwitchAutomationId);
 			ClassicAssert.AreNotEqual(toggleSwitch, null);
-
+			Assert.That(toggleSwitch?.IsEnabled(), Is.False);
+			App.WaitForElement(ToggleButtonAutomationId);
 			App.Tap(ToggleButtonAutomationId);
 
 			toggleSwitch = App.FindElement(ToggleSwitchAutomationId);
 			ClassicAssert.AreNotEqual(toggleSwitch, null);
+			Assert.That(toggleSwitch?.IsEnabled(), Is.True);
 		}
 	}
 }

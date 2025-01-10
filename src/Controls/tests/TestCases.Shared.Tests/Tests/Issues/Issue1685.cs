@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,13 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void EntryOneWayBindingShouldUpdate()
 		{
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 	}
 }
-#endif
