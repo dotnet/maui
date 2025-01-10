@@ -222,7 +222,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, (IXmlLineInfo)valueNode);
         if (bpFieldSymbol != null && !context.Compilation.IsSymbolAccessibleWithin(bpFieldSymbol, context.RootType))
         {
-            //not a diagnostic, as it might have a visible symbol mathcing for CanSet()
+            //not a diagnostic, as it might have a visible symbol matching for CanSet()
             bpFieldSymbol = null;
         }
 
@@ -259,7 +259,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return;
         }
 
-        if (CanAdd(parentVar, propertyName, valueNode, context)) {
+        if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context)) {
             Add(writer, parentVar, propertyName, valueNode, context);
             return;
         }
@@ -283,22 +283,16 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	}
 
 	private static void SetDynamicResource(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context)
-	{
-        var localVariable = context.Variables[(IElementNode)valueNode];
-        writer.WriteLine($"{parentVar.Name}.SetDynamicResource({fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {localVariable.Name}.Key);");
-	}
+        => writer.WriteLine($"{parentVar.Name}.SetDynamicResource({fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {context.Variables[(IElementNode)valueNode].Name}.Key);");
 
 	static bool CanConnectEvent(LocalVariable parentVar, string localName, INode valueNode, bool attached, SourceGenContext context)
-	{
-		return !attached && valueNode is ValueNode && parentVar.Type.GetMembers().OfType<IEventSymbol>().Any(e => e.Name == localName);
-	}
+        //FIXME check event signature
+        => !attached && valueNode is ValueNode && parentVar.Type.GetAllEvents(localName, context).Any();
 
-    static void ConnectEvent(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode valueNode, SourceGenContext context)
-    {
-        writer.WriteLine($"{parentVar.Name}.{localName} += {((ValueNode)valueNode).Value};");
-    }
+	static void ConnectEvent(IndentedTextWriter writer, LocalVariable parentVar, string localName, INode valueNode, SourceGenContext context)
+        => writer.WriteLine($"{parentVar.Name}.{localName} += {((ValueNode)valueNode).Value};");
 
-    static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
+	static bool CanSetValue(IFieldSymbol? bpFieldSymbol, INode node, SourceGenContext context)
     {
         if (bpFieldSymbol == null)
             return false;
@@ -340,8 +334,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     static bool CanGet(LocalVariable parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType, out IPropertySymbol? propertySymbol)
     {
         propertyType = null;
-        propertySymbol = null;
-        if ((propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault()) == null)
+		if ((propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault()) == null)
             return false;
         if (propertySymbol!.GetMethod is not IMethodSymbol propertyGetter || !propertyGetter.IsPublic() || propertyGetter.IsStatic)
             return false;
@@ -480,15 +473,11 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         writer.WriteLine($"{parentVar.Name}.SetBinding({bpFieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, {localVariable.Name});");
     }
 
-    static bool CanAdd(LocalVariable parentVar, XmlName propertyName, INode valueNode, SourceGenContext context)
+    static bool CanAdd(LocalVariable parentVar, string localName, IFieldSymbol? bpFieldSymbol, bool attached, INode valueNode, SourceGenContext context)
     {
-        var localName = propertyName.LocalName;
-        var bpFieldSymbol = parentVar.Type.GetBindableProperty(propertyName.NamespaceURI, ref localName, out bool attached, context, valueNode as IXmlLineInfo);
-        
         if (valueNode is not ElementNode en)
             return false;
         
-
         if (!CanGetValue(parentVar, bpFieldSymbol, attached, context, out ITypeSymbol? propertyType)
             && !CanGet(parentVar, localName, context, out propertyType, out _))
 				return false;

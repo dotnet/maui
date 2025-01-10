@@ -67,18 +67,25 @@ static partial class ITypeSymbolExtensions
         }
     }
 
-    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IPropertySymbol>();
-    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IPropertySymbol>();
+    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, SourceGenContext? context)
+        => symbol.GetAllMembers(context).OfType<IPropertySymbol>();
+    public static IEnumerable<IPropertySymbol> GetAllProperties(this ITypeSymbol symbol, string name, SourceGenContext? context)
+        => symbol.GetAllMembers(name, context).OfType<IPropertySymbol>();
     
-    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IMethodSymbol>();
-    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IMethodSymbol>();
+    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, SourceGenContext? context)
+        => symbol.GetAllMembers(context).OfType<IMethodSymbol>();
+    public static IEnumerable<IMethodSymbol> GetAllMethods(this ITypeSymbol symbol, string name, SourceGenContext? context)
+        => symbol.GetAllMembers(name, context).OfType<IMethodSymbol>();
 
-    public static IEnumerable<IFieldSymbol> GetFields(this ITypeSymbol symbol) => symbol.GetFields();
-
-    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetAllMembers(context).OfType<IFieldSymbol>();
-    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name, SourceGenContext? context) => symbol.GetAllMembers(name, context).OfType<IFieldSymbol>();
+    public static IEnumerable<IFieldSymbol> GetFields(this ITypeSymbol symbol)
+        => symbol.GetFields();
+    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, SourceGenContext? context)
+        => symbol.GetAllMembers(context).OfType<IFieldSymbol>();
+    public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name, SourceGenContext? context)
+        => symbol.GetAllMembers(name, context).OfType<IFieldSymbol>();
     
-    public static IEnumerable<IMethodSymbol> GetConstructors(this ITypeSymbol symbol, SourceGenContext? context) => symbol.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic == false && m.MethodKind == MethodKind.Constructor);
+    public static IEnumerable<IMethodSymbol> GetConstructors(this ITypeSymbol symbol, SourceGenContext? context)
+        => symbol.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic == false && m.MethodKind == MethodKind.Constructor);
     public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, SourceGenContext? context)
     {
         foreach (var attribute in symbol.GetAttributes()) {
@@ -96,13 +103,15 @@ static partial class ITypeSymbolExtensions
             baseType = baseType.GetBaseType(context);
         }
     }
-
 	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name, SourceGenContext? context)
         => symbol.GetAllAttributes(context).Where(ad => ad.AttributeClass?.ToString() == name);
-
     public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol symbol, ITypeSymbol attributeType)
         => symbol.GetAttributes().Where(ad => SymbolEqualityComparer.Default.Equals(ad.AttributeClass, attributeType));
 
+    public static IEnumerable<IEventSymbol> GetAllEvents(this ITypeSymbol symbol, SourceGenContext? context)
+        => symbol.GetAllMembers(context).OfType<IEventSymbol>();
+    public static IEnumerable<IEventSymbol> GetAllEvents(this ITypeSymbol symbol, string name, SourceGenContext? context)
+        => symbol.GetAllMembers(name, context).OfType<IEventSymbol>();
 
     public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType)
     {
