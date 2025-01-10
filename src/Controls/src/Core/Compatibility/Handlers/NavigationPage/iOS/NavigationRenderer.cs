@@ -1720,7 +1720,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					NavigationRenderer navRenderer;
 					if (_navigation.TryGetTarget(out navRenderer))
 						await navRenderer.UpdateFormsInnerNavigation(Child);
-
 				}
 				base.DidMoveToParentViewController(parent);
 			}
