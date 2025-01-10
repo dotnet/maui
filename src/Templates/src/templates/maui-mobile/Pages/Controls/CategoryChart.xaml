@@ -13,10 +13,10 @@
     <shimmer:SfShimmer
         BackgroundColor="Transparent"
         VerticalOptions="FillAndExpand"
-        IsActive ="{Binding IsBusy}">
+        IsActive="{Binding IsBusy}">
         <shimmer:SfShimmer.CustomView>
             <Grid>
-                <BoxView 
+                <BoxView
                     CornerRadius="12"
                     VerticalOptions="FillAndExpand"
                     Style="{StaticResource ShimmerCustomViewStyle}"/>
@@ -27,24 +27,44 @@
                 <chart:SfCircularChart.Legend>
                     <controls:LegendExt Placement="Right">
                         <chart:ChartLegend.LabelStyle>
-                            <chart:ChartLegendLabelStyle 
+                            <chart:ChartLegendLabelStyle
                                 TextColor="{AppThemeBinding 
                                 Light={StaticResource DarkOnLightBackground},
-                                Dark={StaticResource LightOnDarkBackground}}" 
-                                Margin="5" 
-                                FontSize="18" />
+                                Dark={StaticResource LightOnDarkBackground}}"
+                                Margin="5,0,0,0"
+                                FontSize="14"/>
                         </chart:ChartLegend.LabelStyle>
                     </controls:LegendExt>
                 </chart:SfCircularChart.Legend>
-                <chart:RadialBarSeries 
+                <chart:RadialBarSeries
                     ItemsSource="{Binding TodoCategoryData}"
                     PaletteBrushes="{Binding TodoCategoryColors}"
                     XBindingPath="Title"
-                    YBindingPath="Count" 
+                    YBindingPath="Count"
                     ShowDataLabels="True"
-                    EnableTooltip="True" 
+                    EnableTooltip="True"
                     TrackFill="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
-                    CapStyle = "BothCurve"/>
+                    CapStyle="BothCurve">
+                    <chart:RadialBarSeries.TooltipTemplate>
+                        <DataTemplate x:DataType="chart:TooltipInfo">
+                            <HorizontalStackLayout>
+                                <Label Text="{Binding Item.Title}"
+                                       TextColor="{StaticResource LightBackground}"
+                                       FontSize="14"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+
+                                <Label Text="{Binding Item.Count, StringFormat='  :  \{0}'}"
+                                       TextColor="{StaticResource LightBackground}"
+                                       FontAttributes="Bold"
+                                       FontSize="14"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </chart:RadialBarSeries.TooltipTemplate>
+                </chart:RadialBarSeries>
             </chart:SfCircularChart>
         </shimmer:SfShimmer.Content>
     </shimmer:SfShimmer>
