@@ -3,7 +3,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 4714, "SingleTapGesture called once on DoubleTap", PlatformAffected.UWP)]
 public class Issue4714 : TestContentPage
 {
-	const string InitialText = "Click Me To Increment";
+	const string InitialText = "ClickMeToIncrement";
 
 	public Command TapCommand { get; set; }
 

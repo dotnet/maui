@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		public Type[] SupportedVisuals { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RenderWithAttribute.xml" path="//Member[@MemberName='Type']/Docs/*" />
-		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] 
+		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)]
 		public Type Type { get; }
 	}
 }

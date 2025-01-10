@@ -14,17 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Frame)]
-		[Category(UITestCategories.Gestures)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void TapGestureFiresOnFrame()
 		{
-			App.WaitForNoElement("No taps yet");
+			App.WaitForElement("No taps yet");
 			App.WaitForElement("TapHere");
 			App.Tap("TapHere");
-			App.WaitForNoElement("Frame was tapped");
+			App.WaitForElement("Frame was tapped");
 		}
 	}
 }

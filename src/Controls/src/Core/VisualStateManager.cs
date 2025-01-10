@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls
 
 			var vsgSpecificity = vsgSpecificityValue.Key;
 			groups.Specificity = vsgSpecificity;
-			
+
 			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 			foreach (VisualStateGroup group in groups)
@@ -324,14 +324,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<VisualElement> _visualElement;
-		internal VisualElement VisualElement {
-			get {
+		internal VisualElement VisualElement
+		{
+			get
+			{
 				if (_visualElement == null)
 					return null;
 				_visualElement.TryGetTarget(out var ve);
 				return ve;
-			} 
-			set {
+			}
+			set
+			{
 				_visualElement = new WeakReference<VisualElement>(value);
 			}
 		}
@@ -395,14 +398,17 @@ namespace Microsoft.Maui.Controls
 		public VisualState CurrentState { get; internal set; }
 
 		WeakReference<VisualElement> _visualElement;
-		internal VisualElement VisualElement {
-			get {
+		internal VisualElement VisualElement
+		{
+			get
+			{
 				if (_visualElement == null)
 					return null;
 				_visualElement.TryGetTarget(out var ve);
 				return ve;
-			} 
-			set {
+			}
+			set
+			{
 				_visualElement = new WeakReference<VisualElement>(value);
 			}
 		}

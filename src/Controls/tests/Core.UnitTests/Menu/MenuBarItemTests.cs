@@ -10,6 +10,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 	public class MenuBarItemTests :
 		MenuTestBase<MenuBarItem, IMenuElement, MenuFlyoutItem, MenuBarItemHandlerUpdate>
 	{
+		[Fact]
+		public void StartsEnabled()
+		{
+			MenuBarItem menuBarItem = new MenuBarItem();
+			Assert.True(menuBarItem.IsEnabled);
+		}
+
+		[Fact]
+		public void DisableWorks()
+		{
+			MenuBarItem menuBarItem = new MenuBarItem();
+			menuBarItem.IsEnabled = false;
+			Assert.False(menuBarItem.IsEnabled);
+		}
+
 		protected override int GetIndex(MenuBarItemHandlerUpdate handlerUpdate) =>
 			handlerUpdate.Index;
 
