@@ -6,7 +6,7 @@
 	{
 		public Issue8486()
 		{
-			var topLabel = new Label { Text = "LabelText", AutomationId="Label", FontSize = 30 };
+			var topLabel = new Label { Text = "LabelText", AutomationId = "Label", FontSize = 50 };
 			var graphic = new GraphicsView();
 			var graphicsDrawable = new GraphicsDrawable();
 			graphic.Drawable = graphicsDrawable;
@@ -32,7 +32,6 @@
 		{
 			public void Draw(ICanvas canvas, RectF dirtyRect)
 			{
-
 				PathF path = new PathF();
 				path.MoveTo(dirtyRect.Left, dirtyRect.Top + dirtyRect.Height / 2);
 				path.LineTo(dirtyRect.Left + dirtyRect.Width / 2, dirtyRect.Top + dirtyRect.Height / 2);
@@ -44,7 +43,9 @@
 				canvas.FontColor = Colors.Black;
 				canvas.FontSize = 10;
 				canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-				canvas.DrawString("GraphicsText", dirtyRect.Left + dirtyRect.Width / 2, dirtyRect.Top + dirtyRect.Height / 2, HorizontalAlignment.Left);
+				canvas.DrawString("GraphicsTextLeft", dirtyRect.Left + dirtyRect.Width / 2, dirtyRect.Top + dirtyRect.Height / 2, HorizontalAlignment.Left);
+				canvas.DrawString("GraphicsTextCenter", dirtyRect.Left + dirtyRect.Width / 2, dirtyRect.Bottom - +dirtyRect.Height / 4, HorizontalAlignment.Center);
+				canvas.DrawString("GraphicsTextRight", dirtyRect.Left + dirtyRect.Width / 2, dirtyRect.Top + dirtyRect.Height, HorizontalAlignment.Right);
 			}
 		}
 	}
