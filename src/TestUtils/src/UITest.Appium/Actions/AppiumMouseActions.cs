@@ -25,7 +25,7 @@ namespace UITest.Appium
 			ClickCoordinatesCommand,
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
-			LongPressCommand,
+			LongPressCommand
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
