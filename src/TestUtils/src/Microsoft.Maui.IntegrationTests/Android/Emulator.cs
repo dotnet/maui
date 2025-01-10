@@ -17,6 +17,15 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		public string Id => $"emulator-{Port}";
 		public string SystemImageId => $"system-images;android-{ApiLevel};{ImageType};{Abi}";
 
+		public bool AcceptLicenses(out string acceptLicenseOutput)
+		{
+			acceptLicenseOutput = ToolRunner.Run(SdkManagerTool, "--licenses", out int exitCode, timeoutInSeconds: 15);
+			if (exitCode != 0)
+				TestContext.WriteLine(acceptLicenseOutput);
+
+			return exitCode == 0;
+		}
+
 		public bool InstallAvd(out string installOutput)
 		{
 			installOutput = ToolRunner.Run(SdkManagerTool, $"\"{SystemImageId}\"", out int exitCode, timeoutInSeconds: 180);

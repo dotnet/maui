@@ -13,7 +13,7 @@ stages:
   jobs:
   - ${{ each job in parameters.jobMatrix }}:
     - job: ${{ job.name }}
-      displayName: IntegrationTests - ${{ job.testCategory }} ${{ job.pool.os }}
+      displayName: ${{ job.testCategory }} ${{ job.pool.os }}
       pool: ${{ job.pool }}
       timeoutInMinutes: ${{ job.timeout }}
       steps:
