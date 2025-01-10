@@ -15,8 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			App.NavigateToGallery(BorderGallery);
+			BaseFixtureSetup(BorderGallery);
 		}
 
 		// TODO: Enable this as a test once fully working

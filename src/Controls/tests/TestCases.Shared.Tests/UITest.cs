@@ -98,6 +98,33 @@ namespace Microsoft.Maui.TestCases.Tests
 			return config;
 		}
 
+		protected void BaseFixtureSetup(string galleryName)
+		{
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+					App.NavigateToGallery(galleryName);
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						App.Back();
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
+		}
+
 		public override void Reset()
 		{
 			App.ResetApp();

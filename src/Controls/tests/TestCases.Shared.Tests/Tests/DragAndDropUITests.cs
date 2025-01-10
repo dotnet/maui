@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			App.NavigateToGallery(DragAndDropGallery);
+			BaseFixtureSetup(DragAndDropGallery);
 		}
 
 		// https://github.com/dotnet/maui/issues/24914

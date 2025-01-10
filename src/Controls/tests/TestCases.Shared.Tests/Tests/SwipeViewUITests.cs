@@ -22,8 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			App.NavigateToGallery(ScrollViewGallery);
+			BaseFixtureSetup(ScrollViewGallery);
 		}
 
 		[Test]

@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			App.NavigateToGallery(LayoutGallery);
+			BaseFixtureSetup(LayoutGallery);
 		}
 
 #if ANDROID
