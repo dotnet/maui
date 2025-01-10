@@ -12,8 +12,8 @@ public class Issue26936(TestDevice testDevice) : _IssuesUITest(testDevice)
     [Category(UITestCategories.CollectionView)]
     public void ShouldCollectionViewEachItemsAppearWithoutDots()
     {
-        App.WaitForElement("Button");
-        for (int i = 0; i < 15; i++)
+        App.WaitForElement("Label");
+        for (int i = 0; i < 50; i++)
         {
             App.Tap("Button");
         }
