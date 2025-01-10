@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "[Frame, CollectionView, Android]The Label.Text is invisible on Android if DataTemplate have frame as layout";
-	
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]

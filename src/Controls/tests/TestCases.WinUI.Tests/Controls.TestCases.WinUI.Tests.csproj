@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
-    <DefineConstants>$(DefineConstants);WINDOWS;WINTEST</DefineConstants>
+    <DefineConstants>$(DefineConstants);WINDOWS;WINTEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_IOS</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

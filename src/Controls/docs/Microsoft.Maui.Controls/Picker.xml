@@ -77,9 +77,6 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacingProperty">
@@ -96,8 +93,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributes">
@@ -116,8 +111,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributesProperty">
@@ -136,7 +129,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.FontAttributes" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamily">
@@ -155,8 +147,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the font family for the picker text.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamilyProperty">
@@ -175,7 +165,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.FontFamily" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSize">
@@ -200,7 +189,6 @@
       <Docs>
         <summary>Gets or sets the size of the font for the text in the picker.</summary>
         <value>A <see langword="double" /> that indicates the size of the font.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSizeProperty">
@@ -219,7 +207,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.FontSize" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
@@ -236,9 +223,6 @@
         <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignmentProperty">
@@ -255,8 +239,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemDisplayBinding">
@@ -275,8 +257,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a binding that selects the property that will be displayed for each object in the list of items.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Items">
@@ -321,8 +301,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the source list of items to template and display.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsSourceProperty">
@@ -341,7 +319,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.ItemsSource" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -372,8 +349,6 @@
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Picker" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedIndex">
@@ -424,7 +399,6 @@
       </ReturnValue>
       <Docs>
         <summary>Raised when the value of the SelectIndex property has changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedIndexProperty">
@@ -469,8 +443,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the selected item.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedItemProperty">
@@ -489,7 +461,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.SelectedItem" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColor">
@@ -508,8 +479,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColorProperty">
@@ -528,7 +497,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.TextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransform">
@@ -545,9 +513,6 @@
         <ReturnType>Microsoft.Maui.Controls.TextTransform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransformProperty">
@@ -564,8 +529,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Title">
@@ -608,9 +571,6 @@
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleColorProperty">
@@ -628,7 +588,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.TitleColor" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleProperty">
@@ -677,9 +636,6 @@
       <Docs>
         <param name="source">To be added.</param>
         <param name="textTransform">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
@@ -696,9 +652,6 @@
         <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignmentProperty">
@@ -715,8 +668,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.FontSizeDefaultValueCreator">
@@ -739,8 +690,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontAttributesChanged">
@@ -768,7 +717,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontChanged">
@@ -796,7 +744,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontFamilyChanged">
@@ -824,7 +771,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontSizeChanged">
@@ -852,7 +798,6 @@
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

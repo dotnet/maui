@@ -112,7 +112,6 @@ MainPage = new ContentPage () {
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ContentView.Content" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -132,7 +131,6 @@ MainPage = new ContentPage () {
       <Parameters />
       <Docs>
         <summary>Method that is called when the binding context changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.SearchBar)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue3413Test()
 		{
 			App.WaitForElement("srb_vertical");

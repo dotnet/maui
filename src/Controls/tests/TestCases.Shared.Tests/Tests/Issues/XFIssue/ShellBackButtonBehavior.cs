@@ -15,124 +15,124 @@ public class ShellBackButtonBehavior : _IssuesUITest
 
 	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
 	//[Test]
-//	[FailsOnAndroid]
-//	public void CommandTest()
-//	{
-//		RunningApp.Tap(ToggleCommandId);
-//		RunningApp.EnterText(EntryCommandParameter, "parameter");
-//		ShowFlyout();
+	//	[FailsOnAndroid]
+	//	public void CommandTest()
+	//	{
+	//		App.Tap(ToggleCommandId);
+	//		App.EnterText(EntryCommandParameter, "parameter");
+	//		ShowFlyout();
 
-//		// API 19 workaround
-//		var commandResult = RunningApp.QueryUntilPresent(() =>
-//		{
-//			ShowFlyout();
-//			if (RunningApp.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
-//				return RunningApp.WaitForElement(CommandResultId);
+	//		// API 19 workaround
+	//		var commandResult = App.QueryUntilPresent(() =>
+	//		{
+	//			ShowFlyout();
+	//			if (App.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
+	//				return App.WaitForElement(CommandResultId);
 
-//			return null;
-//		})?.FirstOrDefault()?.ReadText();
+	//			return null;
+	//		})?.FirstOrDefault()?.ReadText();
 
-//		Assert.AreEqual("parameter", commandResult);
-//		RunningApp.EnterText(EntryCommandParameter, "canexecutetest");
-//		RunningApp.Tap(ToggleCommandCanExecuteId);
+	//		Assert.AreEqual("parameter", commandResult);
+	//		App.EnterText(EntryCommandParameter, "canexecutetest");
+	//		App.Tap(ToggleCommandCanExecuteId);
 
-//		commandResult = RunningApp.QueryUntilPresent(() =>
-//		{
-//			if (RunningApp.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
-//				return RunningApp.WaitForElement(CommandResultId);
+	//		commandResult = App.QueryUntilPresent(() =>
+	//		{
+	//			if (App.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
+	//				return App.WaitForElement(CommandResultId);
 
-//			return null;
-//		})?.FirstOrDefault()?.ReadText();
+	//			return null;
+	//		})?.FirstOrDefault()?.ReadText();
 
-//		Assert.AreEqual("parameter", commandResult);
-//	}
+	//		Assert.AreEqual("parameter", commandResult);
+	//	}
 
-//	[Test]
-//	public void CommandWorksWhenItsTheOnlyThingSet()
-//	{
-//		RunningApp.Tap(PushPageId);
-//		RunningApp.Tap(ToggleCommandId);
-//		RunningApp.EnterText(EntryCommandParameter, "parameter");
+	//	[Test]
+	//	public void CommandWorksWhenItsTheOnlyThingSet()
+	//	{
+	//		App.Tap(PushPageId);
+	//		App.Tap(ToggleCommandId);
+	//		App.EnterText(EntryCommandParameter, "parameter");
 
-//		// API 19 workaround
-//		var commandResult = RunningApp.QueryUntilPresent(() =>
-//		{
+	//		// API 19 workaround
+	//		var commandResult = App.QueryUntilPresent(() =>
+	//		{
 
-//#if __ANDROID__
-//			TapBackArrow();
-//#else
-//			RunningApp.Tap("Page 0");
-//#endif
+	//#if __ANDROID__
+	//			TapBackArrow();
+	//#else
+	//			App.Tap("Page 0");
+	//#endif
 
-//			if (RunningApp.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
-//				return RunningApp.WaitForElement(CommandResultId);
+	//			if (App.WaitForElement(CommandResultId)[0].ReadText() == "parameter")
+	//				return App.WaitForElement(CommandResultId);
 
-//			return null;
-//		})?.FirstOrDefault()?.ReadText();
+	//			return null;
+	//		})?.FirstOrDefault()?.ReadText();
 
-//		Assert.AreEqual(commandResult, "parameter");
-//	}
+	//		Assert.AreEqual(commandResult, "parameter");
+	//	}
 
-//	[Test]
-//	[FailsOnIOS]
-//	public void BackButtonSetToTextStillNavigatesBack()
-//	{
-//		RunningApp.Tap(PushPageId);
-//		RunningApp.Tap(ToggleTextId);
-//		RunningApp.Tap("T3xt");
-//		RunningApp.WaitForNoElement(FlyoutOpen);
-//		RunningApp.WaitForElement("Page 0");
-//	}
+	//	[Test]
+	//	[FailsOnIOSWhenRunningOnXamarinUITest]
+	//	public void BackButtonSetToTextStillNavigatesBack()
+	//	{
+	//		App.Tap(PushPageId);
+	//		App.Tap(ToggleTextId);
+	//		App.Tap("T3xt");
+	//		App.WaitForNoElement(FlyoutOpen);
+	//		App.WaitForElement("Page 0");
+	//	}
 
-//	[Test]
-//	[FailsOnIOS]
-//	public void BackButtonSetToTextStillOpensFlyout()
-//	{
-//		RunningApp.Tap(ToggleTextId);
+	//	[Test]
+	//	[FailsOnIOSWhenRunningOnXamarinUITest]
+	//	public void BackButtonSetToTextStillOpensFlyout()
+	//	{
+	//		App.Tap(ToggleTextId);
 
-//		RunningApp.Tap("T3xt");
-//		RunningApp.WaitForElement(FlyoutOpen);
-//	}
+	//		App.Tap("T3xt");
+	//		App.WaitForElement(FlyoutOpen);
+	//	}
 
-//#if __ANDROID__
-//	[Test]
-//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
-//	{
-//		RunningApp.WaitForElement("ToggleFlyoutBehavior");
-//		RunningApp.Tap("ToggleFlyoutBehavior");
-//		RunningApp.Tap("ToggleFlyoutBehavior");
-//		RunningApp.WaitForElement("Flyout Behavior: Disabled");
-//		RunningApp.Tap(ToggleTextId);
-//		RunningApp.Tap("T3xt");
-//		RunningApp.WaitForNoElement(FlyoutOpen);
-//	}
-//#else
-//	[Test]
-//	[FailsOnIOS]
-//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
-//	{
-//		RunningApp.WaitForElement("ToggleFlyoutBehavior");
-//		RunningApp.Tap(ToggleTextId);
-//		RunningApp.WaitForElement("T3xt");
-//		RunningApp.Tap("ToggleFlyoutBehavior");
-//		RunningApp.WaitForElement("T3xt");
-//		RunningApp.Tap("ToggleFlyoutBehavior");
-//		RunningApp.WaitForElement("Flyout Behavior: Disabled");
-//		RunningApp.Tap("T3xt");
-//		RunningApp.WaitForNoElement(FlyoutOpen);
-//	}
-//#endif
-//	[Test]
-//	public void AutomationIdOnIconOverride()
-//	{
-//		RunningApp.WaitForElement("ToggleFlyoutBehavior");
-//		RunningApp.Tap(ToggleIconId);
-//		RunningApp.WaitForElement("CoffeeAutomation");
-//		RunningApp.Tap("ToggleFlyoutBehavior");
-//		RunningApp.WaitForElement("CoffeeAutomation");
-//		RunningApp.Tap("ToggleFlyoutBehavior");
-//		RunningApp.WaitForElement("Flyout Behavior: Disabled");
-//		RunningApp.Tap("CoffeeAutomation");
-//		RunningApp.WaitForNoElement(FlyoutOpen);
-//	}
+	//#if __ANDROID__
+	//	[Test]
+	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
+	//	{
+	//		App.WaitForElement("ToggleFlyoutBehavior");
+	//		App.Tap("ToggleFlyoutBehavior");
+	//		App.Tap("ToggleFlyoutBehavior");
+	//		App.WaitForElement("Flyout Behavior: Disabled");
+	//		App.Tap(ToggleTextId);
+	//		App.Tap("T3xt");
+	//		App.WaitForNoElement(FlyoutOpen);
+	//	}
+	//#else
+	//	[Test]
+	//	[FailsOnIOSWhenRunningOnXamarinUITest]
+	//	public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
+	//	{
+	//		App.WaitForElement("ToggleFlyoutBehavior");
+	//		App.Tap(ToggleTextId);
+	//		App.WaitForElement("T3xt");
+	//		App.Tap("ToggleFlyoutBehavior");
+	//		App.WaitForElement("T3xt");
+	//		App.Tap("ToggleFlyoutBehavior");
+	//		App.WaitForElement("Flyout Behavior: Disabled");
+	//		App.Tap("T3xt");
+	//		App.WaitForNoElement(FlyoutOpen);
+	//	}
+	//#endif
+	//	[Test]
+	//	public void AutomationIdOnIconOverride()
+	//	{
+	//		App.WaitForElement("ToggleFlyoutBehavior");
+	//		App.Tap(ToggleIconId);
+	//		App.WaitForElement("CoffeeAutomation");
+	//		App.Tap("ToggleFlyoutBehavior");
+	//		App.WaitForElement("CoffeeAutomation");
+	//		App.Tap("ToggleFlyoutBehavior");
+	//		App.WaitForElement("Flyout Behavior: Disabled");
+	//		App.Tap("CoffeeAutomation");
+	//		App.WaitForNoElement(FlyoutOpen);
+	//	}
 }

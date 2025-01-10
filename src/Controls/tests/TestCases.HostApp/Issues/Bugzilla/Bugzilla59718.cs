@@ -8,71 +8,78 @@ namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Bugzilla, 59718, "Multiple issues with listview and navigation in UWP", PlatformAffected.UWP)]
-public class Bugzilla59718 : TestContentPage
+public class Bugzilla59718 : NavigationPage
 {
-	const string GoBackButtonId = "GoBackButtonId";
-	const string Target1 = "Label with TapGesture Cricket";
-	const string Target1b = "Label with TapGesture Cricket Tapped!";
-	const string Target2 = "Label with no TapGesture Cricket";
-	const string Target3 = "You came here from Cricket.";
-
-	Label _ItemTappedLabel;
-	Label _LabelTappedLabel;
-	ListView _list;
-
-	class Grouping<K, T> : ObservableCollection<T>
+	public Bugzilla59718()
 	{
-		public K Key { get; private set; }
-
-		public Grouping(K key, IEnumerable<T> items)
-		{
-			Key = key;
-			foreach (var item in items)
-				this.Items.Add(item);
-
-		}
+		PushAsync(new TestPage());
 	}
 
-	protected override void Init()
+	public class TestPage : TestContentPage
 	{
-		_LabelTappedLabel = new Label { TextColor = Colors.Red };
-		_ItemTappedLabel = new Label { TextColor = Colors.Purple };
+		const string GoBackButtonId = "GoBackButtonId";
+		const string Target1 = "Label with TapGesture Cricket";
+		const string Target1b = "Label with TapGesture Cricket Tapped!";
+		const string Target2 = "Label with no TapGesture Cricket";
+		const string Target3 = "You came here from Cricket.";
 
-		_list = new ListView
+		Label _ItemTappedLabel;
+		Label _LabelTappedLabel;
+		ListView _list;
+
+		class Grouping<K, T> : ObservableCollection<T>
 		{
-			IsGroupingEnabled = true,
-			GroupDisplayBinding = new Binding("Key"),
-			ItemTemplate = new DataTemplate(() =>
+			public K Key { get; private set; }
+
+			public Grouping(K key, IEnumerable<T> items)
 			{
-				var tapLabel = new Label();
-				tapLabel.SetBinding(Label.TextProperty, ".", stringFormat: "Label with TapGesture {0}");
+				Key = key;
+				foreach (var item in items)
+					this.Items.Add(item);
 
-				var tap = new TapGestureRecognizer();
-				tap.Tapped += (s, e) =>
+			}
+		}
+
+		protected override void Init()
+		{
+			_LabelTappedLabel = new Label { TextColor = Colors.Red };
+			_ItemTappedLabel = new Label { TextColor = Colors.Purple };
+
+			_list = new ListView
+			{
+				IsGroupingEnabled = true,
+				GroupDisplayBinding = new Binding("Key"),
+				ItemTemplate = new DataTemplate(() =>
 				{
-					_LabelTappedLabel.Text = $"{tapLabel.Text} Tapped!";
-				};
+					var tapLabel = new Label();
+					tapLabel.SetBinding(Label.TextProperty, ".", stringFormat: "Label with TapGesture {0}");
 
-				tapLabel.GestureRecognizers.Add(tap);
+					var tap = new TapGestureRecognizer();
+					tap.Tapped += (s, e) =>
+					{
+						_LabelTappedLabel.Text = $"{tapLabel.Text} Tapped!";
+					};
 
-				var noTap = new Label();
-				noTap.SetBinding(Label.TextProperty, ".", stringFormat: "Label with no TapGesture {0}");
+					tapLabel.GestureRecognizers.Add(tap);
 
-				var view = new ViewCell { View = new StackLayout { Children = { noTap, tapLabel } } };
-				return view;
-			})
-		};
+					var noTap = new Label();
+					noTap.SetBinding(Label.TextProperty, ".", stringFormat: "Label with no TapGesture {0}");
 
-		_list.On<WindowsOS>().SetSelectionMode(Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Inaccessible);
+					var view = new ViewCell { View = new StackLayout { Children = { noTap, tapLabel } } };
+					return view;
+				})
+			};
 
-		_list.ItemTapped += ListView_ItemTapped;
+			_list.On<WindowsOS>().SetSelectionMode(Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Inaccessible);
 
-		Content = new StackLayout { Children = { _LabelTappedLabel, _ItemTappedLabel, _list } };
-	}
+			_list.ItemTapped += ListView_ItemTapped;
 
-	protected override void OnAppearing()
-	{
-		_list.ItemsSource = new ObservableCollection<Grouping<string, string>>
+			Content = new StackLayout { Children = { _LabelTappedLabel, _ItemTappedLabel, _list } };
+		}
+
+		protected override void OnAppearing()
+		{
+			_list.ItemsSource = new ObservableCollection<Grouping<string, string>>
 		{
 			new Grouping<string, string>("Sports", new string[] {"Cricket", "Football" }),
 			new Grouping<string, string>("Mobile", new string[] {"Samsung", "Apple" }),
@@ -81,38 +88,39 @@ public class Bugzilla59718 : TestContentPage
 			new Grouping<string, string>("Test", new string[] {"test1", "test2" }),
 			new Grouping<string, string>("Variable", new string[] {"String", "Int" }),
 		};
-		;
+			;
 
-		base.OnAppearing();
-	}
-
-	async void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
-	{
-		_ItemTappedLabel.Text = $"{e.Item}";
-
-		await Navigation.PushAsync(new NextPage(_ItemTappedLabel.Text));
-
-		((ListView)sender).SelectedItem = null;
-	}
-
-	class NextPage : ContentPage
-	{
-		public NextPage(string source)
-		{
-			var button = new Button { Text = "Go back", AutomationId = GoBackButtonId };
-			button.Clicked += Button_Clicked;
-			Content = new StackLayout
-			{
-				Children = {
-					new Label { Text = $"You came here from {source}." },
-					button
-				}
-			};
+			base.OnAppearing();
 		}
 
-		async void Button_Clicked(object sender, System.EventArgs e)
+		async void ListView_ItemTapped(object sender, ItemTappedEventArgs e)
 		{
-			await Navigation.PopAsync();
+			_ItemTappedLabel.Text = $"{e.Item}";
+
+			await Navigation.PushAsync(new NextPage(_ItemTappedLabel.Text));
+
+			((ListView)sender).SelectedItem = null;
+		}
+
+		class NextPage : ContentPage
+		{
+			public NextPage(string source)
+			{
+				var button = new Button { Text = "Go back", AutomationId = GoBackButtonId };
+				button.Clicked += Button_Clicked;
+				Content = new StackLayout
+				{
+					Children = {
+						new Label { Text = $"You came here from {source}." },
+						button
+					}
+				};
+			}
+
+			async void Button_Clicked(object sender, System.EventArgs e)
+			{
+				await Navigation.PopAsync();
+			}
 		}
 	}
 }

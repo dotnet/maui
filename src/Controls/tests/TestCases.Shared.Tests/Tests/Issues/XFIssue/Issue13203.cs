@@ -10,13 +10,12 @@ public class Issue13203 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[Bug] [iOS] CollectionView does not bind to items if `IsVisible=False`";
+	public override string Issue => "[Bug] [iOS] CollectionView does not bind to items if IsVisible=False";
 
-	// [Test]
-	// [Category(UITestCategories.CollectionView)]
-	// [FailsOnIOS]
-	// public void CollectionShouldInvalidateOnVisibilityChange()
-	// {
-	// 	RunningApp.WaitForElement(Success);
-	// }
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void CollectionShouldInvalidateOnVisibilityChange()
+	{
+		App.WaitForElement("Success");
+	}
 }

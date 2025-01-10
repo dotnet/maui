@@ -5,8 +5,7 @@ namespace Maui.Controls.Sample.Issues;
 
 public class Issue3524 : TestContentPage
 {
-	const string kText = "Click Me To Increment";
-
+	const string kText = "ClickMeToIncrement";
 	public Command TapCommand { get; set; }
 	public String Text { get; set; } = kText;
 

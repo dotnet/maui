@@ -105,21 +105,30 @@ namespace Microsoft.Maui.LifecycleEvents
 		{
 			// Pre iOS 13 doesn't support scenes
 			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			{
 				return;
+			}
 
 			iOS = iOS
 				.WindowSceneDidUpdateCoordinateSpace((windowScene, _, _, _) =>
 				{
-					if (!OperatingSystem.IsIOSVersionAtLeast(13))
+					// Mac Catalyst version 16+ supports effectiveGeometry property on window scenes.
+					if (!OperatingSystem.IsIOSVersionAtLeast(13) || (OperatingSystem.IsMacCatalystVersionAtLeast(16)))
+					{
 						return;
+					}
 
 					if (windowScene.Delegate is not IUIWindowSceneDelegate wsd ||
 						wsd.GetWindow() is not UIWindow platformWindow)
+					{
 						return;
+					}
 
 					var window = platformWindow.GetWindow();
 					if (window is null)
+					{
 						return;
+					}
 
 					window.FrameChanged(platformWindow.Frame.ToRectangle());
 				});

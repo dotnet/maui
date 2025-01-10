@@ -44,13 +44,13 @@ public class Issue5766 : _IssuesUITest
 	//[Ignore("Fails sometimes - needs a better test")]
 	//public void FrameSizeGetsCorruptedWhenListViewIsScrolled()
 	//{
-	//	RunningApp.WaitForElement(StartText1);
+	//	App.WaitForElement(StartText1);
 	//	var start = GetLabels(RunningApp, StartText1);
 	//	var smalls = GetLabels(RunningApp, SmallText1);
 	//	var bigs = GetLabels(RunningApp, BigText1);
 
-	//	RunningApp.ScrollDownTo(EndText1, List1, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
-	//	RunningApp.ScrollUpTo(StartText1, List1, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
+	//	App.ScrollDownTo(EndText1, List1, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
+	//	App.ScrollUpTo(StartText1, List1, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
 
 	//	var startAfter = GetLabels(RunningApp, StartText1);
 	//	Assert.IsTrue(RectIsEquals(start, startAfter));
@@ -60,13 +60,13 @@ public class Issue5766 : _IssuesUITest
 	//	Assert.IsTrue(RectIsEquals(bigs, bigAfter));
 
 	//	// list2 with ListViewCachingStrategy.RecycleElement - issue 6297
-	//	RunningApp.WaitForElement(StartText2);
+	//	App.WaitForElement(StartText2);
 	//	start = GetLabels(RunningApp, StartText2);
 	//	smalls = GetLabels(RunningApp, SmallText2);
 	//	bigs = GetLabels(RunningApp, BigText2);
 
-	//	RunningApp.ScrollDownTo(EndText2, List2, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
-	//	RunningApp.ScrollUpTo(StartText2, List2, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
+	//	App.ScrollDownTo(EndText2, List2, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
+	//	App.ScrollUpTo(StartText2, List2, ScrollStrategy.Gesture, 0.9, 15000, timeout: TimeSpan.FromMinutes(1));
 
 	//	startAfter = GetLabels(RunningApp, StartText2);
 	//	Assert.IsTrue(RectIsEquals(start, startAfter));

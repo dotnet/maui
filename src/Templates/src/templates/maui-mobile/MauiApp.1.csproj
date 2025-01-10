@@ -19,6 +19,11 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+<!--#if (IncludeSampleContent) -->
+		<!-- https://github.com/CommunityToolkit/Maui/issues/2205 -->
+		<NoWarn>XC0103</NoWarn>
+		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+<!--#endif -->
 
 		<!-- Display name -->
 		<ApplicationTitle>XmlEncodedAppName</ApplicationTitle>
@@ -43,10 +48,20 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
+<!--#if (!IncludeSampleContent) -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+<!--#endif -->
+<!--#if (IncludeSampleContent) -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#17171a" />
+<!--#endif -->
 
 		<!-- Splash Screen -->
+<!--#if (!IncludeSampleContent) -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+<!--#endif -->
+<!--#if (IncludeSampleContent) -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#17171a" BaseSize="128,128" />
+<!--#endif -->
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -64,4 +79,14 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
 
+<!--#if (IncludeSampleContent) -->
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
+		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.8" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />
+		<PackageReference Include="Syncfusion.Maui.Toolkit" Version="1.0.3" />
+	</ItemGroup>
+	
+<!--#endif -->
 </Project>

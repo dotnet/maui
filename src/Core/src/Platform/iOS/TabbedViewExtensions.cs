@@ -17,8 +17,6 @@ namespace Microsoft.Maui.Platform
 			{
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 				tabBarController.Mode = UITabBarControllerMode.TabSidebar;
-				tabBarController.Sidebar.Hidden = true;
-				tabBarController.TabBarHidden = true;
 			}
 			else if (OperatingSystem.IsIOSVersionAtLeast(18, 0) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
 			{

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla44176Test()
 		{
 			App.WaitForElement("grid");

@@ -43,7 +43,6 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusChange;
 
@@ -54,7 +53,6 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
-			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusChange;
 
@@ -134,16 +132,6 @@ namespace Microsoft.Maui.Handlers
 			PlatformView?.UpdateBackground(VirtualView);
 		}
 
-		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
-		{
-			if (PlatformView.IsAlive() && PlatformView.Enabled)
-			{
-				// https://issuetracker.google.com/issues/37095917
-				PlatformView.Enabled = false;
-				PlatformView.Enabled = true;
-			}
-		}
-
 		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e)
 		{
 			// Let the mapping know that the update is coming from changes to the platform control
@@ -170,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (!e.HasFocus)
 			{
-			  VirtualView?.Completed();
+				VirtualView?.Completed();
 			}
 		}
 

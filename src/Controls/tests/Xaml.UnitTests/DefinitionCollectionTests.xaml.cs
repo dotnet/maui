@@ -49,7 +49,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[Test]
 			public void DefinitionCollectionsReplacedAtCompilation()
 			{
-				MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef);
+				MockCompiler.Compile(typeof(DefinitionCollectionTests), out var methodDef, out var hasLoggedErrors);
+				Assert.That(!hasLoggedErrors);
 				Assert.That(!methodDef.Body.Instructions.Any(instr => InstructionIsDefColConvCtor(methodDef, instr)), "This Xaml still generates [Row|Col]DefinitionCollectionTypeConverter ctor");
 			}
 

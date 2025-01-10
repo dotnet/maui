@@ -7,7 +7,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
+	public partial class CheckBoxRenderer : ViewRenderer<CheckBox, FormsCheckBox>
 	{
 		static WBrush _tintDefaultBrush = Colors.Blue.ToPlatform();
 		bool _disposed = false;

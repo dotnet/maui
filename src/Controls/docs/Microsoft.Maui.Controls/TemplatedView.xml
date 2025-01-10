@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>A view that displays content with a control template, and the base class for <see cref="T:Microsoft.Maui.Controls.ContentView" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -30,7 +29,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new empty templated view.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ControlTemplate">
@@ -49,8 +47,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the control template that is used to display content.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ControlTemplateProperty">
@@ -69,7 +65,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TemplatedView.ControlTemplate" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTemplateChild">
@@ -90,9 +85,6 @@
       </Parameters>
       <Docs>
         <param name="name">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChildren">
@@ -121,7 +113,6 @@
         <param name="width">The width of the bounding rectangle.</param>
         <param name="height">The height of the bounding rectangle.</param>
         <summary>Positions and sizes the children of the templated view within the rectangle defined by <paramref name="x" />, <paramref name="y" />, <paramref name="width" />, and <paramref name="height" />T.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnApplyTemplate">
@@ -139,8 +130,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildRemoved">
@@ -166,8 +155,6 @@
       </Parameters>
       <Docs>
         <param name="child">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildRemoved">
@@ -190,8 +177,6 @@
       <Docs>
         <param name="child">To be added.</param>
         <param name="oldLogicalIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
@@ -224,8 +209,6 @@
         <param name="widthConstraint">The width constraint that was passed with the request.</param>
         <param name="heightConstraint">The height constraint that was passed with the request.</param>
         <summary>Method that is called when the layout updates.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ResolveControlTemplate">
@@ -243,9 +226,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 
 			public HeaderFooterDemoModel()
 			{
-				CurrentTime = new DateTime(2023,1,1);
+				CurrentTime = new DateTime(2023, 1, 1);
 			}
 
 			void OnPropertyChanged([CallerMemberName] string property = "")
@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 
 			public ObservableCollection<CollectionViewGalleryTestItem> Items => _demoFilteredItemSource.Items;
 
-			public ICommand TapCommand => new Command(() => { CurrentTime = new DateTime(2024,1,1); });
+			public ICommand TapCommand => new Command(() => { CurrentTime = new DateTime(2024, 1, 1); });
 
 			public DateTime CurrentTime
 			{
