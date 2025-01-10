@@ -203,7 +203,6 @@ namespace Microsoft.Maui.Controls
 			if (_navigationView != null)
 			{
 				this.InvalidateMeasure();
-				this.Arrange(_navigationView);
 			}
 		}
 
@@ -223,8 +222,8 @@ namespace Microsoft.Maui.Controls
 			{
 				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 				_navigationView.SizeChanged += OnNavigationViewSizeChanged;
-			}
-		}
+			  }
+		}  
 
 		void UpdateValuesWaitingForNavigationView()
 		{
@@ -273,7 +272,7 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateCurrentPageContent(WPage page)
 		{
-			if (MauiContext == null)
+			if (MauiContext == null)   
 				return;
 
 			WContentPresenter? presenter;
