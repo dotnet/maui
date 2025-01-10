@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -30,28 +28,9 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task LoadsHtmlAndSendReceiveRawMessage()
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task LoadsHtmlAndSendReceiveRawMessage() =>
+			RunTest(async (hybridWebView) =>
 			{
-				return;
-			}
-#endif
-
-			SetupBuilder();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-				};
-
 				var lastRawMessage = "";
 
 				hybridWebView.RawMessageReceived += (s, e) =>
@@ -59,323 +38,131 @@ namespace Microsoft.Maui.DeviceTests
 					lastRawMessage = e.Message;
 				};
 
-				var handler = CreateHandler(hybridWebView);
+				const string TestRawMessage = "Hybrid\"\"'' {Test} with chars!";
+				hybridWebView.SendRawMessage(TestRawMessage);
 
-				var platformView = handler.PlatformView;
+				var passed = false;
 
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
+				for (var i = 0; i < 10; i++)
 				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					const string TestRawMessage = "Hybrid\"\"'' {Test} with chars!";
-					hybridWebView.SendRawMessage(TestRawMessage);
-
-					var passed = false;
-
-					for (var i = 0; i < 10; i++)
+					if (lastRawMessage == "You said: " + TestRawMessage)
 					{
-						if (lastRawMessage == "You said: " + TestRawMessage)
-						{
-							passed = true;
-							break;
-						}
-
-						await Task.Delay(1000);
+						passed = true;
+						break;
 					}
 
-					Assert.True(passed, $"Waited for raw message response but it never arrived or didn't match (last message: {lastRawMessage})");
-				});
+					await Task.Delay(1000);
+				}
+
+				Assert.True(passed, $"Waited for raw message response but it never arrived or didn't match (last message: {lastRawMessage})");
 			});
-		}
 
 		[Fact]
-		public async Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult()
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult() =>
+			RunTest(async (hybridWebView) =>
 			{
-				return;
-			}
-#endif
+				var x = 123.456m;
+				var y = 654.321m;
 
-			SetupBuilder();
+				var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
+					"AddNumbersWithNulls",
+					HybridWebViewTestContext.Default.ComputationResult,
+					[x, null, y, null],
+					[HybridWebViewTestContext.Default.Decimal, null, HybridWebViewTestContext.Default.Decimal, null]);
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-				};
-
-				var handler = CreateHandler(hybridWebView);
-
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					var x = 123.456m;
-					var y = 654.321m;
-
-					var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
-						"AddNumbersWithNulls",
-						HybridWebViewTestContext.Default.ComputationResult,
-						[x, null, y, null],
-						[HybridWebViewTestContext.Default.Decimal, null, HybridWebViewTestContext.Default.Decimal, null]);
-
-					Assert.NotNull(result);
-					Assert.Equal(777.777m, result.result);
-					Assert.Equal("AdditionWithNulls", result.operationName);
-				});
+				Assert.NotNull(result);
+				Assert.Equal(777.777m, result.result);
+				Assert.Equal("AdditionWithNulls", result.operationName);
 			});
-		}
 
 		[Fact]
-		public async Task InvokeJavaScriptMethodWithParametersAndResult()
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodWithParametersAndResult() =>
+			RunTest(async (hybridWebView) =>
 			{
-				return;
-			}
-#endif
+				var x = 123.456m;
+				var y = 654.321m;
 
-			SetupBuilder();
+				var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
+					"EvaluateMeWithParamsAndReturn",
+					HybridWebViewTestContext.Default.Decimal,
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-				};
-
-				var handler = CreateHandler(hybridWebView);
-
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					var x = 123.456m;
-					var y = 654.321m;
-
-					var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
-						"EvaluateMeWithParamsAndReturn",
-						HybridWebViewTestContext.Default.Decimal,
-						[x, y],
-						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
-
-					Assert.Equal(777.777m, result);
-				});
+				Assert.Equal(777.777m, result);
 			});
-		}
 
 		[Fact]
-		public async Task InvokeJavaScriptMethodWithParametersAndComplexResult()
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodWithParametersAndComplexResult() =>
+			RunTest(async (hybridWebView) =>
 			{
-				return;
-			}
-#endif
+				var x = 123.456m;
+				var y = 654.321m;
 
-			SetupBuilder();
+				var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
+					"AddNumbers",
+					HybridWebViewTestContext.Default.ComputationResult,
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-				};
-
-				var handler = CreateHandler(hybridWebView);
-
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					var x = 123.456m;
-					var y = 654.321m;
-
-					var result = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
-						"AddNumbers",
-						HybridWebViewTestContext.Default.ComputationResult,
-						[x, y],
-						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
-
-					Assert.NotNull(result);
-					Assert.Equal(777.777m, result.result);
-					Assert.Equal("Addition", result.operationName);
-				});
+				Assert.NotNull(result);
+				Assert.Equal(777.777m, result.result);
+				Assert.Equal("Addition", result.operationName);
 			});
-		}
 
 		[Fact]
-		public async Task InvokeAsyncJavaScriptMethodWithParametersAndComplexResult()
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeAsyncJavaScriptMethodWithParametersAndComplexResult() =>
+			RunTest(async (hybridWebView) =>
 			{
-				return;
-			}
-#endif
+				var s1 = "new_key";
+				var s2 = "new_value";
 
-			SetupBuilder();
+				var result = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
+					"EvaluateMeWithParamsAndAsyncReturn",
+					HybridWebViewTestContext.Default.DictionaryStringString,
+					[s1, s2],
+					[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-				};
-
-				var handler = CreateHandler(hybridWebView);
-
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					var s1 = "new_key";
-					var s2 = "new_value";
-
-					var result = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
-						"EvaluateMeWithParamsAndAsyncReturn",
-						HybridWebViewTestContext.Default.DictionaryStringString,
-						[s1, s2],
-						[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
-
-					Assert.NotNull(result);
-					Assert.Equal(3, result.Count);
-					Assert.Equal("value1", result["key1"]);
-					Assert.Equal("value2", result["key2"]);
-					Assert.Equal(s2, result[s1]);
-				});
+				Assert.NotNull(result);
+				Assert.Equal(3, result.Count);
+				Assert.Equal("value1", result["key1"]);
+				Assert.Equal("value2", result["key2"]);
+				Assert.Equal(s2, result[s1]);
 			});
-		}
 
 		[Fact]
-		public async Task EvaluateJavaScriptAndGetResult()
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task EvaluateJavaScriptAndGetResult() =>
+			RunTest(async (hybridWebView) =>
 			{
-				return;
-			}
-#endif
+				// Run some JavaScript to call a method and get result
+				var result1 = await hybridWebView.EvaluateJavaScriptAsync("EvaluateMeWithParamsAndReturn('abc', 'def')");
+				Assert.Equal("abcdef", result1);
 
-			SetupBuilder();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-				};
-
-				var handler = CreateHandler(hybridWebView);
-
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					// Run some JavaScript to call a method and get result
-					var result1 = await hybridWebView.EvaluateJavaScriptAsync("EvaluateMeWithParamsAndReturn('abc', 'def')");
-					Assert.Equal("abcdef", result1);
-
-					// Run some JavaScript to get an arbitrary result by running JavaScript
-					var result2 = await hybridWebView.EvaluateJavaScriptAsync("window.TestKey");
-					Assert.Equal("test_value", result2);
-				});
+				// Run some JavaScript to get an arbitrary result by running JavaScript
+				var result2 = await hybridWebView.EvaluateJavaScriptAsync("window.TestKey");
+				Assert.Equal("test_value", result2);
 			});
-		}
 
 		[Theory]
 		[ClassData(typeof(InvokeJavaScriptAsyncTestData))]
-		public async Task InvokeDotNet(string methodName, string expectedReturnValue)
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
-			{
-				return;
-			}
-#endif
-
-			SetupBuilder();
-
-			await InvokeOnMainThreadAsync(async () =>
+		public Task InvokeDotNet(string methodName, string expectedReturnValue) =>
+			RunTest("invokedotnettests.html", async (hybridWebView) =>
 			{
 				var invokeJavaScriptTarget = new TestDotNetMethods();
-
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-					DefaultFile = "invokedotnettests.html",
-				};
 				hybridWebView.SetInvokeJavaScriptTarget(invokeJavaScriptTarget);
 
-				var handler = CreateHandler(hybridWebView);
+				//await Task.Delay(15_000);
 
-				var platformView = handler.PlatformView;
+				// Tell JavaScript to invoke the method
+				hybridWebView.SendRawMessage(methodName);
 
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+				// Wait for method invocation to complete
+				await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
 
-					//await Task.Delay(15_000);
-
-					// Tell JavaScript to invoke the method
-					hybridWebView.SendRawMessage(methodName);
-
-					// Wait for method invocation to complete
-					await WebViewHelpers.WaitForHtmlStatusSet(hybridWebView);
-
-					// Run some JavaScript to see if it got the expected result
-					var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
-					Assert.Equal(expectedReturnValue, result);
-					Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
-				});
+				// Run some JavaScript to see if it got the expected result
+				var result = await hybridWebView.EvaluateJavaScriptAsync("GetLastScriptResult()");
+				Assert.Equal(expectedReturnValue, result);
+				Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
 			});
-		}
 
 		private class TestDotNetMethods
 		{
@@ -529,6 +316,46 @@ namespace Microsoft.Maui.DeviceTests
 					return !string.IsNullOrEmpty(controlValue);
 				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get status element to have a non-empty value.")));
 			}
+		}
+
+		Task RunTest(Func<HybridWebView, Task> test) =>
+			RunTest(null, test);
+
+		async Task RunTest(string defaultFile, Func<HybridWebView, Task> test)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var hybridWebView = new HybridWebView()
+				{
+					WidthRequest = 100,
+					HeightRequest = 100,
+
+					HybridRoot = "HybridTestRoot",
+					DefaultFile = defaultFile ?? "index.html",
+				};
+
+				var handler = CreateHandler(hybridWebView);
+
+				var platformView = handler.PlatformView;
+
+				// Set up the view to be displayed/parented and run our tests on it
+				await AttachAndRun(hybridWebView, async (handler) =>
+				{
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+
+					await test(hybridWebView);
+				});
+			});
 		}
 	}
 }
