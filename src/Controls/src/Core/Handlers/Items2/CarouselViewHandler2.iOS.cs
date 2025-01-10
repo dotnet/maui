@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 			NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-			nfloat itemSpacing = 0;
 			NSCollectionLayoutGroup group = null;
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
@@ -92,8 +91,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				// Create our section layout
 				var section = NSCollectionLayoutSection.Create(group: group);
-				section.InterGroupSpacing = itemSpacing;
 				section.OrthogonalScrollingBehavior = IsHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
+				if (VirtualView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+				{
+					section.InterGroupSpacing = (nfloat)linearItemsLayout.ItemSpacing;
+				}
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
 					//This will allow us to SetPosition when we are scrolling the items
