@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky test on Windows")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky test on Windows https://github.com/dotnet/maui/issues/27059")]
 		public void AppShouldNotCrashAfterLoadingGroupedCollectionView()
 		{
 			App.WaitForElement("button");
