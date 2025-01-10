@@ -1,7 +1,7 @@
 parameters:
   mauiSourcePath: $(Build.SourcesDirectory)
-  buildConfig: Debug
   repoLogPath: $(Build.Arcade.LogsPath)
+  androidSdkRoot: $(ANDROID_SDK_ROOT)
 
 steps:
 - template: /eng/pipelines/common/run-dotnet-preview.yml
@@ -11,12 +11,9 @@ steps:
     command: new
     arguments: android -o $(Agent.TempDirectory)/TempDroid
 
-- powershell:  'gci env: | format-table -autosize -wrap'
-  displayName:  dump environment
-
 - template: /eng/pipelines/common/run-dotnet-preview.yml
   parameters:
     displayName: Install android dependencies
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
     project: $(Agent.TempDirectory)/TempDroid/TempDroid.csproj
-    arguments: '-t:InstallAndroidDependencies -p:AcceptAndroidSdkLicenses=true -bl:${{ parameters.repoLogPath }}/install-android-dependencies.binlog'
+    arguments: '-t:InstallAndroidDependencies -p:AndroidSdkDirectory=${{ parameters.androidSdkRoot }} -p:AcceptAndroidSdkLicenses=true -v:n -bl:${{ parameters.repoLogPath }}/install-android-dependencies.binlog'

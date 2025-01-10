@@ -4,6 +4,7 @@ parameters:
   repoLogPath: $(Build.Arcade.LogsPath)
   installPackageArtifacts: true
   buildMSBuildTasks: false
+  androidSdkRoot: $(ANDROID_SDK_ROOT)
 
 steps:
 - checkout: self
@@ -29,7 +30,6 @@ steps:
     packageType: sdk
     version: $(DOTNET_VERSION)
     includePreviewVersions: true
-
 
 - ${{ if eq(parameters.installPackageArtifacts, true) }}:
   - task: DownloadPipelineArtifact@2
@@ -59,8 +59,11 @@ steps:
       projects: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet.binlog'
 
-
 - template: /eng/pipelines/common/setup-android-dependencies.yml
+  parameters:
+    mauiSourcePath: ${{ parameters.mauiSourcePath }}
+    repoLogPath: ${{ parameters.repoLogPath }}
+    androidSdkRoot: ${{ parameters.androidSdkRoot }}
 
 - ${{ if eq(parameters.buildMSBuildTasks, true) }}:
   - template: /eng/pipelines/common/run-dotnet-preview.yml
