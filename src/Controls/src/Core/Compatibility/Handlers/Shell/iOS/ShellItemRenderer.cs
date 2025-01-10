@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		private void UpdateCellsEnabled()
 		{
-			for (int i = 1; i < TabBar.Items.Length; i++)
+			for (int i = 0; i < TabBar.Items.Length; i++)
 			{
 				var tab = TabBar.Items[i];
 				var itemRenderer = RendererForViewController(ViewControllers[i]);
