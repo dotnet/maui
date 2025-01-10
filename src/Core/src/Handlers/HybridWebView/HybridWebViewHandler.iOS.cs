@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Handlers
 
 			private (byte[] ResponseBytes, string ContentType, int StatusCode) GetResponseBytes(string? url)
 			{
-				if (Handler is null)
+				if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 				{
 					return (Array.Empty<byte>(), ContentType: string.Empty, StatusCode: 404);
 				}

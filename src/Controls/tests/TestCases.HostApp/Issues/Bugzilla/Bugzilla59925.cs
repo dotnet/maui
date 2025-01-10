@@ -16,19 +16,20 @@
 		{
 			_entry = new Entry
 			{
-				Text = "Hello World!"
+				AutomationId = "TestEntry",
+				Text = "Hello World!",
 			};
 
 			var buttonBigger = new Button
 			{
-				AutomationId = "Bigger",
+				AutomationId = "BiggerButton",
 				Text = "Bigger",
 			};
 			buttonBigger.Clicked += (x, o) => ChangeFontSize(Delta);
 
 			var buttonSmaller = new Button
 			{
-				AutomationId = "Smaller",
+				AutomationId = "SmallerButton",
 				Text = "Smaller"
 			};
 			buttonSmaller.Clicked += (x, o) => ChangeFontSize(-Delta);
