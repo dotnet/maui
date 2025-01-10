@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class GestureRecognizerUITests : UITest
+	public class GestureRecognizerUITests : CoreGalleryBasePageTest
 	{
 		const string GestureRecognizerGallery = "Gesture Recognizer Gallery";
 		public GestureRecognizerUITests(TestDevice device)
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			BaseFixtureSetup(GestureRecognizerGallery);
+			App.NavigateToGallery(GestureRecognizerGallery);
 		}
 
 		[Test]

@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class DragAndDropUITests : UITest
+	public class DragAndDropUITests : CoreGalleryBasePageTest
 	{
 		const string DragAndDropGallery = "Drag and Drop Gallery";
 		public DragAndDropUITests(TestDevice device)
@@ -14,9 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			BaseFixtureSetup(DragAndDropGallery);
+			App.NavigateToGallery(DragAndDropGallery);
 		}
 
 		// https://github.com/dotnet/maui/issues/24914

@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class BorderUITests : UITest
+	public class BorderUITests : CoreGalleryBasePageTest
 	{
 		const string BorderGallery = "Border Gallery";
 
@@ -13,9 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			BaseFixtureSetup(BorderGallery);
+			App.NavigateToGallery(BorderGallery);
 		}
 
 		// TODO: Enable this as a test once fully working
