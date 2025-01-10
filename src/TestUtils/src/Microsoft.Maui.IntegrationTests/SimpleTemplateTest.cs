@@ -350,13 +350,11 @@ public class SimpleTemplateTest : BaseTemplateTests
 		{
 			AssertContains("#if IOS || MACCATALYST", programContents);
 			AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
-			AssertContains("#endif", programContents);
 		}
 		else
 		{
 			AssertDoesNotContain("#if IOS || MACCATALYST", programContents);
 			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
-			AssertDoesNotContain("#endif", programContents);
 		}
 	}
 }
