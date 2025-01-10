@@ -145,9 +145,11 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 					try {
 						parsed = ParseProperty(serviceProvider, ref remaining);
 					}
-					catch (XamlParseException )
+					catch (XamlParseException xpe )
 					{
-						//
+						if (contextProvider != null)
+							contextProvider.Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(contextProvider.Context.FilePath!, xmlLineInfo!, match), xpe.Message));
+						else throw;
 					}
 					XmlName childname;
 
