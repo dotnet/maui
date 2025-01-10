@@ -130,6 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (this.ActualWidth > 0 && _content is IView view)
 			{
+				base.ArrangeOverride(finalSize);
 				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 				return finalSize;
 			}
