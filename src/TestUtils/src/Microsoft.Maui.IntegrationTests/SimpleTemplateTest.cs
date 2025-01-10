@@ -312,9 +312,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Unable to create template {id}. Check test output for errors.");
 
 		EnableTizen(projectFile);
-	// This test is super temporary and is just for the interim
-	// while we productize the CollectionViewHandler2. Once we
-	// ship it as the default, this test will fail and can be deleted.
 		FileUtilities.ReplaceInFile(projectFile,
 			$"<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>",
 			$"<ApplicationDisplayVersion>{display}</ApplicationDisplayVersion>");
@@ -333,6 +330,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
+	// This test is super temporary and is just for the interim
+	// while we productize the CollectionViewHandler2. Once we
+	// ship it as the default, this test will fail and can be deleted.
 	[Test]
 	[TestCase("maui", DotNetCurrent, "", false)]
 	[TestCase("maui", DotNetCurrent, "--sample-content", true)]
