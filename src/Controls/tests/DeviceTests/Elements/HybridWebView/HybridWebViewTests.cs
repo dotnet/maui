@@ -90,6 +90,52 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task InvokeJavaScriptMethodWithParametersAndStringResult()
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var hybridWebView = new HybridWebView()
+				{
+					WidthRequest = 100,
+					HeightRequest = 100,
+
+					HybridRoot = "HybridTestRoot",
+				};
+
+				var handler = CreateHandler(hybridWebView);
+
+				var platformView = handler.PlatformView;
+
+				// Set up the view to be displayed/parented and run our tests on it
+				await AttachAndRun(hybridWebView, async (handler) =>
+				{
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+
+					var x = "abc";
+					var y = "def";
+
+					var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+						"EvaluateMeWithParamsAndStringReturn",
+						HybridWebViewTestContext.Default.String,
+						[x, y],
+						[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
+
+					Assert.Equal("abcdef", result);
+				});
+			});
+		}
+
+		[Fact]
 		public async Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult()
 		{
 #if ANDROID
