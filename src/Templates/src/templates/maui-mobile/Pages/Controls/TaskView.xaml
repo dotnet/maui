@@ -46,12 +46,13 @@
                         IsChecked="{Binding IsCompleted, Mode=OneTime}"
                         VerticalOptions="Center"
                         CheckedChanged="CheckBox_CheckedChanged"
-                        SemanticProperties.Description="{Binding Title, StringFormat='{0}'}"/>
+                        SemanticProperties.Description="{Binding Title}"/>
 
                     <Label Grid.Column="1"
                         Text="{Binding Title}"
                         VerticalOptions="Center"
-                        LineBreakMode="TailTruncation" />
+                        LineBreakMode="TailTruncation"
+                        AutomationProperties.IsInAccessibleTree="False" />
                 </Grid>
             </shimmer:SfShimmer.Content>
         </shimmer:SfShimmer>
