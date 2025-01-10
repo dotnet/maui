@@ -164,6 +164,46 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
 			});
 
+		Task RunTest(Func<HybridWebView, Task> test) =>
+			RunTest(null, test);
+
+		async Task RunTest(string defaultFile, Func<HybridWebView, Task> test)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var hybridWebView = new HybridWebView()
+				{
+					WidthRequest = 100,
+					HeightRequest = 100,
+
+					HybridRoot = "HybridTestRoot",
+					DefaultFile = defaultFile ?? "index.html",
+				};
+
+				var handler = CreateHandler(hybridWebView);
+
+				var platformView = handler.PlatformView;
+
+				// Set up the view to be displayed/parented and run our tests on it
+				await AttachAndRun(hybridWebView, async (handler) =>
+				{
+					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
+
+					await test(hybridWebView);
+				});
+			});
+		}
+
 		private class TestDotNetMethods
 		{
 			private static ComputationResult NewComplexResult =>
@@ -316,46 +356,6 @@ namespace Microsoft.Maui.DeviceTests
 					return !string.IsNullOrEmpty(controlValue);
 				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get status element to have a non-empty value.")));
 			}
-		}
-
-		Task RunTest(Func<HybridWebView, Task> test) =>
-			RunTest(null, test);
-
-		async Task RunTest(string defaultFile, Func<HybridWebView, Task> test)
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
-			{
-				return;
-			}
-#endif
-
-			SetupBuilder();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
-
-					HybridRoot = "HybridTestRoot",
-					DefaultFile = defaultFile ?? "index.html",
-				};
-
-				var handler = CreateHandler(hybridWebView);
-
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					await test(hybridWebView);
-				});
-			});
 		}
 	}
 }
