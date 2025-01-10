@@ -17,9 +17,15 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateScrollBarVisibility(this ScrollViewer scrollViewer, ScrollOrientation orientation,
-			ScrollBarVisibility horizontalScrollBarVisibility)
+			ScrollBarVisibility scrollBarVisibility)
 		{
-			if (horizontalScrollBarVisibility == ScrollBarVisibility.Default)
+			if (orientation == ScrollOrientation.Neither)
+			{
+				scrollViewer.HorizontalScrollBarVisibility = scrollViewer.VerticalScrollBarVisibility = WScrollBarVisibility.Disabled;
+				return;
+			}
+
+			if (scrollBarVisibility == ScrollBarVisibility.Default)
 			{
 				// If the user has not explicitly set a horizontal scroll bar visibility, then the orientation will
 				// determine what the horizontal scroll bar does
@@ -29,25 +35,20 @@ namespace Microsoft.Maui.Platform
 					ScrollOrientation.Horizontal or ScrollOrientation.Both => WScrollBarVisibility.Auto,
 					_ => WScrollBarVisibility.Disabled,
 				};
+			}
+			else
+			{
+				// If the user _has_ set a horizontal scroll bar visibility preference, then convert that preference to the native equivalent
+				// if the orientation allows for it
 
-				return;
+				scrollViewer.HorizontalScrollBarVisibility = orientation switch
+				{
+					ScrollOrientation.Horizontal or ScrollOrientation.Both => scrollBarVisibility.ToWindowsScrollBarVisibility(),
+					_ => WScrollBarVisibility.Disabled,
+				};
 			}
 
-			// If the user _has_ set a horizontal scroll bar visibility preference, then convert that preference to the native equivalent
-			// if the orientation allows for it
-
-			scrollViewer.HorizontalScrollBarVisibility = orientation switch
-			{
-				ScrollOrientation.Horizontal or ScrollOrientation.Both => horizontalScrollBarVisibility.ToWindowsScrollBarVisibility(),
-				_ => WScrollBarVisibility.Disabled,
-			};
-
-			// TODO ezhart 2021-07-08 RE: the note below - do we actually need to be accounting for Neither in the measurement code?
-			// Could we just disable the scroll bars entirely?
-			// Accounting for Neither in the xplat measurement code is a leftover from Forms, it may be easier to do that on the native side here.
-
-			// Note that the Orientation setting of "Neither" is covered by the measurement code (the size of the content is limited
-			// so that no scrolling is possible) and the xplat scrolling code (the ScrollTo methods are disabled when Orientation=Neither)
+			scrollViewer.VerticalScrollBarVisibility = scrollBarVisibility.ToWindowsScrollBarVisibility();
 		}
 
 		public static void UpdateContent(this ScrollViewer scrollViewer, IView? content, IMauiContext context)
