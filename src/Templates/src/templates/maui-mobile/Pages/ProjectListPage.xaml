@@ -16,29 +16,28 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
     <Grid>
-      <CollectionView
-            ItemsSource="{Binding Projects}"
-            Margin="{StaticResource LayoutPadding}">
-      <CollectionView.ItemsLayout>
-        <LinearItemsLayout Orientation="Vertical" ItemSpacing="{StaticResource LayoutSpacing}" />
-      </CollectionView.ItemsLayout>
-      <CollectionView.ItemTemplate>
-          <DataTemplate x:DataType="models:Project">
-            <Border>
-              <VerticalStackLayout Padding="10">
-                <Label Text="{Binding Name}" FontSize="24" />
-                <Label Text="{Binding Description}" />
-              </VerticalStackLayout>
-              <Border.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}" CommandParameter="{Binding .}" />
-              </Border.GestureRecognizers>
-            </Border>
-          </DataTemplate>
-        </CollectionView.ItemTemplate>
-      </CollectionView>
-      
-        <controls:AddButton
-            Command="{Binding AddProjectCommand}"
-            />
+      <ScrollView>
+        <VerticalStackLayout 
+            BindableLayout.ItemsSource="{Binding Projects}" 
+            Margin="{StaticResource LayoutPadding}" 
+            Spacing="{StaticResource LayoutSpacing}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="models:Project">
+                    <Border>
+                        <VerticalStackLayout Padding="10">
+                            <Label Text="{Binding Name}" FontSize="24" />
+                            <Label Text="{Binding Description}" />
+                        </VerticalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}" CommandParameter="{Binding .}"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+      </ScrollView>
+
+        <controls:AddButton 
+            Command="{Binding AddProjectCommand}" />
     </Grid>
 </ContentPage>
