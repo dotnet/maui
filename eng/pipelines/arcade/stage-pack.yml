@@ -47,6 +47,8 @@ stages:
         steps:
         - template: /eng/pipelines/common/setup-jdk.yml
 
+        - template: /eng/pipelines/common/setup-android-dependencies.yml
+
         - script: $(_buildScript)
                   -restore -build
                   -configuration $(_BuildConfig)

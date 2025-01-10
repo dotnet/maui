@@ -1,0 +1,19 @@
+parameters:
+  mauiSourcePath: $(Build.SourcesDirectory)
+  buildConfig: Debug
+  repoLogPath: $(Build.Arcade.LogsPath)
+
+steps:
+- template: /eng/pipelines/common/run-dotnet-preview.yml
+  parameters:
+    displayName: Create temporary android project
+    mauiSourcePath: ${{ parameters.mauiSourcePath }}
+    command: new
+    arguments: android -o $(Agent.TempDirectory)/TempDroid
+
+- template: /eng/pipelines/common/run-dotnet-preview.yml
+  parameters:
+    displayName: Build MSBuild Tasks
+    mauiSourcePath: ${{ parameters.mauiSourcePath }}
+    project: $(Agent.TempDirectory)/TempDroid/TempDroid.csproj
+    arguments: '-t:InstallAndroidDependencies -p:AndroidSdkDirectory=$(ANDROID_SDK_ROOT) -p:AcceptAndroidSdkLicenses=true -bl:${{ parameters.repoLogPath }}/install-android-dependencies.binlog'

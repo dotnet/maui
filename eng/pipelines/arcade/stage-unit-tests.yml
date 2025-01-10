@@ -22,6 +22,7 @@ stages:
           buildConfig: ${{ parameters.buildConfig }}
           repoLogPath: ${{ parameters.repoLogPath }}
           installPackageArtifacts: false
+          buildMSBuildTasks: true
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
