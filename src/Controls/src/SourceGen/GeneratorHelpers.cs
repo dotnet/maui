@@ -78,7 +78,7 @@ static class GeneratorHelpers
                     continue;
                 }
 
-				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
+				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
                 XamlParser.ParseXaml(rootnode, reader);
 
                 return rootnode;
@@ -141,6 +141,7 @@ static class GeneratorHelpers
 		var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 		return (root, nsmgr);
 	}
+
 	public static AssemblyCaches GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
 	{
 		// [assembly: XmlnsDefinition]
