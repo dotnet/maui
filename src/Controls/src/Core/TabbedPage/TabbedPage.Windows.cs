@@ -224,8 +224,8 @@ namespace Microsoft.Maui.Controls
 			{
 				_navigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 				_navigationView.SizeChanged += OnNavigationViewSizeChanged;
-			  }
-		}  
+			}
+		}
 
 		void UpdateValuesWaitingForNavigationView()
 		{
