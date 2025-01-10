@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -331,9 +331,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui", DotNetCurrent, "")]
-	[TestCase("maui", DotNetCurrent, "--sample-content")]
-	public void Build(string id, string framework, string additionalDotNetNewParams)
+	[TestCase("maui", DotNetCurrent, "", false)]
+	[TestCase("maui", DotNetCurrent, "--sample-content", true)]
+	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
 	{
 		var projectDir = TestDirectory;
 		var programFile = Path.Combine(projectDir, "MauiProgram.cs");
@@ -342,8 +342,18 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Unable to create template {id}. Check test output for errors.");
 
 		var programContents = File.ReadAllText(programFile);
-		AssertContains("#if IOS || MACCATALYST", programContents);
-		AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
-		AssertContains("#endif", programContents);
+
+		if (shouldHaveHandler2)
+		{
+			AssertContains("#if IOS || MACCATALYST", programContents);
+			AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+			AssertContains("#endif", programContents);
+		}
+		else
+		{
+			AssertDoesNotContain("#if IOS || MACCATALYST", programContents);
+			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+			AssertDoesNotContain("#endif", programContents);
+		}
 	}
 }
