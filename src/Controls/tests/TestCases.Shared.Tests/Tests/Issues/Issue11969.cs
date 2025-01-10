@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void SwipeDisableChildButtonTest()
 		{
 			App.WaitForElement(TestPassId);
-			SwipeViewElement();
+			App.WaitForElement("Item 1");
 			App.WaitForElement(SwipeViewCheckBoxId);
 			App.Tap(SwipeViewCheckBoxId);
 
@@ -41,14 +41,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Ok");
 			App.Tap("Ok");
 			App.WaitForElement(TestPassId);
-		}
-		 void SwipeViewElement() 
-		{
-#if WINDOWS
-			App.WaitForElement("Item 1");
-#else
-			App.WaitForElement(SwipeViewId);
-#endif
 		}
 	}
 }
