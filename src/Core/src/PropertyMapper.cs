@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -54,9 +53,7 @@ namespace Microsoft.Maui
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
 			if (!viewHandler.CanInvokeMappers())
-			{
 				return;
-			}
 
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
@@ -89,19 +86,14 @@ namespace Microsoft.Maui
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
-			{
 				return action;
-			}
 			else if (Chained is not null)
 			{
 				foreach (var ch in Chained)
 				{
 					var returnValue = ch.GetProperty(key);
-					
 					if (returnValue != null)
-					{
 						return returnValue;
-					}
 				}
 			}
 
@@ -111,20 +103,20 @@ namespace Microsoft.Maui
 		public void UpdateProperty(IElementHandler viewHandler, IElement? virtualView, string property)
 		{
 			if (virtualView == null)
-			{
 				return;
-			}
 
 			UpdatePropertyCore(property, viewHandler, virtualView);
 		}
 
+		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView)
+			=> UpdateProperties(viewHandler, virtualView, false);
+
 #pragma warning disable RS0016 // Add public types and members to the declared API
-		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView, bool initial = false)
+		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView, bool initial)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			if (virtualView == null)
-			{
 				return;
-			}
 
 			foreach (var key in UpdateKeys)
 			{
@@ -141,7 +133,6 @@ namespace Microsoft.Maui
 				UpdatePropertyCore(key, viewHandler, virtualView);
 			}
 		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public IPropertyMapper[]? Chained
 		{
@@ -193,8 +184,11 @@ namespace Microsoft.Maui
 		Action<IElementHandler, IElement>? GetProperty(string key);
 
 		IEnumerable<string> GetKeys();
+		void UpdateProperties(IElementHandler elementHandler, IElement virtualView);
 
-		void UpdateProperties(IElementHandler elementHandler, IElement virtualView, bool initial = false);
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		void UpdateProperties(IElementHandler elementHandler, IElement virtualView, bool initial);
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		void UpdateProperty(IElementHandler elementHandler, IElement virtualView, string property);
 	}
@@ -240,9 +234,7 @@ namespace Microsoft.Maui
 			SetPropertyCore(key, (h, v) =>
 			{
 				if (v is TVirtualView vv)
-				{
 					action?.Invoke((TViewHandler)h, vv);
-				}
 				else if (Chained != null)
 				{
 					foreach (var chain in Chained)

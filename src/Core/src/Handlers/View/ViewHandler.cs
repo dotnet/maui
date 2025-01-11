@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <summary>
-		/// Gets or sets the .NET MAUI representation of the view associated to this handler.
+		/// Gets or sets the .NET MAUI repesentation of the view associated to this handler.
 		/// </summary>
 		/// <remarks>This property holds the reference to the abstract (.NET MAUI) view.
 		/// The platform view is found in <see cref="PlatformView"/>.</remarks>

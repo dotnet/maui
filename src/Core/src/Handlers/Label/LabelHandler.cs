@@ -19,10 +19,10 @@ namespace Microsoft.Maui.Handlers
 	{
 		static LabelHandler()
 		{
-			initSkipChecks.Add(nameof(ILabel.CharacterSpacing), SkipCheckCharacterSpacing);
-			initSkipChecks.Add(nameof(ILabel.HorizontalTextAlignment), SkipCheckHorizontalTextAlignment);
-			initSkipChecks.Add(nameof(ILabel.VerticalTextAlignment), SkipCheckVerticalTextAlignment);
-			initSkipChecks.Add(nameof(ILabel.TextDecorations), SkipCheckTextDecorations);
+			initSkipChecks[nameof(ILabel.CharacterSpacing)] = SkipCheckCharacterSpacing;
+			initSkipChecks[nameof(ILabel.HorizontalTextAlignment)] = SkipCheckHorizontalTextAlignment;
+			initSkipChecks[nameof(ILabel.VerticalTextAlignment)] = SkipCheckVerticalTextAlignment;
+			initSkipChecks[nameof(ILabel.TextDecorations)] = SkipCheckTextDecorations;
 		}
 
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(initSkipChecks, ViewHandler.ViewMapper)

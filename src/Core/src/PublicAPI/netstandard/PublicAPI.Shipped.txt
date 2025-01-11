@@ -1043,6 +1043,7 @@ Microsoft.Maui.IProgress.ProgressColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.IPropertyMapper
 Microsoft.Maui.IPropertyMapper.GetKeys() -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.Maui.IPropertyMapper.GetProperty(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?
+Microsoft.Maui.IPropertyMapper.UpdateProperties(Microsoft.Maui.IElementHandler! elementHandler, Microsoft.Maui.IElement! virtualView) -> void
 Microsoft.Maui.IPropertyMapper.UpdateProperty(Microsoft.Maui.IElementHandler! elementHandler, Microsoft.Maui.IElement! virtualView, string! property) -> void
 Microsoft.Maui.IPropertyMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.IPropertyMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
@@ -1536,6 +1537,7 @@ Microsoft.Maui.PropertyMapper.Chained.get -> Microsoft.Maui.IPropertyMapper![]?
 Microsoft.Maui.PropertyMapper.Chained.set -> void
 Microsoft.Maui.PropertyMapper.PropertyMapper() -> void
 Microsoft.Maui.PropertyMapper.PropertyMapper(params Microsoft.Maui.IPropertyMapper![]? chained) -> void
+Microsoft.Maui.PropertyMapper.UpdateProperties(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView) -> void
 Microsoft.Maui.PropertyMapper.UpdateProperty(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property) -> void
 Microsoft.Maui.PropertyMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.PropertyMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
