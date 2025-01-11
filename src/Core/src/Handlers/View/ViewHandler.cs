@@ -22,46 +22,44 @@ namespace Microsoft.Maui.Handlers
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		protected internal readonly static Dictionary<string, Func<IElement, bool>> initSkipChecks = new(StringComparer.Ordinal)
+		internal static readonly IPlatformPropertyDefaults<IView> ViewPropertyDefaults = new PlatformPropertyDefaults<IView>
 		{
-			{ nameof(IView.AutomationId), SkipCheckAutomationId },
-			{ nameof(IView.Clip), SkipCheckClip },
+			[nameof(IView.AutomationId)] = HasDefaultAutomationId,
+			[nameof(IView.Clip)] = HasDefaultClip,
 			
-			{ nameof(IPadding.Padding), SkipCheckPadding },
+			[nameof(IPadding.Padding)] = HasDefaultPadding,
 
-			{ nameof(IView.Shadow), SkipCheckShadow },
-			{ nameof(IView.Visibility), SkipCheckVisibility },
-			{ nameof(IView.FlowDirection), SkipCheckFlowDirection },
-			{ nameof(IView.Width), SkipCheckDimension },
-			{ nameof(IView.Height), SkipCheckDimension },
+			[nameof(IView.Shadow)] = HasDefaultShadow,
+			[nameof(IView.Visibility)] = HasDefaultVisibility,
+			[nameof(IView.FlowDirection)] = HasDefaultFlowDirection,
+			[nameof(IView.Width)] = HasDefaultDimension,
+			[nameof(IView.Height)] = HasDefaultDimension,
 			
-			{ nameof(IView.MinimumWidth), SkipCheckDimension },
-			{ nameof(IView.MaximumWidth), SkipCheckDimension },
+			[nameof(IView.MinimumWidth)] = HasDefaultDimension,
+			[nameof(IView.MaximumWidth)] = HasDefaultDimension,
 
-			{ nameof(IView.MinimumHeight), SkipCheckDimension },
-			{ nameof(IView.MaximumHeight), SkipCheckDimension },
+			[nameof(IView.MinimumHeight)] = HasDefaultDimension,
+			[nameof(IView.MaximumHeight)] = HasDefaultDimension,
 
-			{ nameof(IView.Scale), SkipCheckScale },
-			{ nameof(IView.ScaleX), SkipCheckScaleX },
-			{ nameof(IView.ScaleY), SkipCheckScaleY },
+			[nameof(IView.Scale)] = HasDefaultScale,
+			[nameof(IView.ScaleX)] = HasDefaultScaleX,
+			[nameof(IView.ScaleY)] = HasDefaultScaleY,
 
-			{ nameof(IView.Rotation), SkipCheckRotation },
-			{ nameof(IView.RotationX), SkipCheckRotationX },
-			{ nameof(IView.RotationY), SkipCheckRotationY },
+			[nameof(IView.Rotation)] = HasDefaultRotation,
+			[nameof(IView.RotationX)] = HasDefaultRotationX,
+			[nameof(IView.RotationY)] = HasDefaultRotationY,
 
-			{ nameof(IView.Opacity), SkipCheckOpacity },
+			[nameof(IView.Opacity)] = HasDefaultOpacity,
 
-			{ nameof(IView.TranslationX), SkipCheckTranslationX },
-			{ nameof(IView.TranslationY), SkipCheckTranslationY },
+			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
+			[nameof(IView.TranslationY)] = HasDefaultTranslationY,
 			
-			{ nameof(IContextFlyoutElement.ContextFlyout), SkipCheckContextFlyout },
+			[nameof(IContextFlyoutElement.ContextFlyout)] = HasDefaultContextFlyout,
 
-			{ nameof(IView.InputTransparent), SkipCheckInputTransparent },
-			{ nameof(IToolbarElement.Toolbar), SkipCheckToolbar },
-			{ nameof(IToolTipElement.ToolTip), SkipCheckToolTip },
+			[nameof(IView.InputTransparent)] = HasDefaultInputTransparent,
+			[nameof(IToolbarElement.Toolbar)] = HasDefaultToolbar,
+			[nameof(IToolTipElement.ToolTip)] = HasDefaultToolTip,
 		};
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>
 		/// A dictionary that maps the virtual view properties to their platform view counterparts.
@@ -143,6 +141,7 @@ namespace Microsoft.Maui.Handlers
 		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{
+			PlatformPropertyDefaults = ViewPropertyDefaults;
 		}
 
 		/// <summary>
@@ -579,103 +578,103 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
-		internal static bool SkipCheckAutomationId(IElement view)
+		internal static bool HasDefaultAutomationId(IView view)
 		{
-			return string.IsNullOrEmpty(((IView)view).AutomationId);
+			return string.IsNullOrEmpty(view.AutomationId);
 		}
 
-		internal static bool SkipCheckClip(IElement view)
+		internal static bool HasDefaultClip(IView view)
 		{
-			return ((IView)view).Clip is null;
+			return view.Clip is null;
 		}
 
-		internal static bool SkipCheckPadding(IElement view)
+		internal static bool HasDefaultPadding(IView view)
 		{
 			return view is IPadding padding && (padding.Padding.IsEmpty || padding.Padding.IsNaN);
 		}
 
-		internal static bool SkipCheckShadow(IElement view)
+		internal static bool HasDefaultShadow(IView view)
 		{
-			return ((IView)view).Shadow is null;
+			return view.Shadow is null;
 		}
 
-		internal static bool SkipCheckVisibility(IElement view)
+		internal static bool HasDefaultVisibility(IView view)
 		{
-			return ((IView)view).Visibility == Visibility.Visible;
+			return view.Visibility == Visibility.Visible;
 		}
 
-		internal static bool SkipCheckFlowDirection(IElement view)
+		internal static bool HasDefaultFlowDirection(IView view)
 		{
-			return ((IView)view).FlowDirection == FlowDirection.MatchParent;
+			return view.FlowDirection == FlowDirection.MatchParent;
 		}
 
-		internal static bool SkipCheckDimension(IElement view)
+		internal static bool HasDefaultDimension(IView view)
 		{
-			return double.IsNaN(((IView)view).MinimumHeight);
+			return double.IsNaN(view.MinimumHeight);
 		}
 
-		internal static bool SkipCheckScale(IElement view)
+		internal static bool HasDefaultScale(IView view)
 		{
-			return ((IView)view).Scale == 1;
+			return view.Scale == 1;
 		}
 
-		internal static bool SkipCheckScaleX(IElement view)
+		internal static bool HasDefaultScaleX(IView view)
 		{
-			return ((IView)view).ScaleX == 1;
+			return view.ScaleX == 1;
 		}
 
-		internal static bool SkipCheckScaleY(IElement view)
+		internal static bool HasDefaultScaleY(IView view)
 		{
-			return ((IView)view).ScaleY == 1;
+			return view.ScaleY == 1;
 		}
 
-		internal static bool SkipCheckRotation(IElement view)
+		internal static bool HasDefaultRotation(IView view)
 		{
-			return ((IView)view).Rotation % 360 == 0;
+			return view.Rotation % 360 == 0;
 		}
 
-		internal static bool SkipCheckRotationX(IElement view)
+		internal static bool HasDefaultRotationX(IView view)
 		{
-			return ((IView)view).RotationX % 360 == 0;
+			return view.RotationX % 360 == 0;
 		}
 
-		internal static bool SkipCheckRotationY(IElement view)
+		internal static bool HasDefaultRotationY(IView view)
 		{
-			return ((IView)view).RotationY % 360 == 0;
+			return view.RotationY % 360 == 0;
 		}
 
-		internal static bool SkipCheckOpacity(IElement label)
+		internal static bool HasDefaultOpacity(IView view)
 		{
-			return ((ILabel)label).Opacity == 1;
+			return view.Opacity == 1;
 		}
 
-		internal static bool SkipCheckTranslationX(IElement view)
+		internal static bool HasDefaultTranslationX(IView view)
 		{
-			return ((IView)view).TranslationX == 0;
+			return view.TranslationX == 0;
 		}
 
-		internal static bool SkipCheckTranslationY(IElement view)
+		internal static bool HasDefaultTranslationY(IView view)
 		{
 			return ((IView)view).TranslationY == 0;
 		}
 
-		internal static bool SkipCheckContextFlyout(IElement view)
+		internal static bool HasDefaultContextFlyout(IView view)
 		{
-			return view is IContextFlyoutElement contextFlyoutElement && contextFlyoutElement.ContextFlyout is null;
+			return view is IContextFlyoutElement { ContextFlyout: null };
 		}
-		internal static bool SkipCheckInputTransparent(IElement view)
+		internal static bool HasDefaultInputTransparent(IView view)
 		{
-			return !((IView)view).InputTransparent;
-		}
-
-		internal static bool SkipCheckToolbar(IElement view)
-		{
-			return view is IToolbarElement toolbarElement && toolbarElement.Toolbar is null;
+			return !view.InputTransparent;
 		}
 
-		internal static bool SkipCheckToolTip(IElement view)
+		internal static bool HasDefaultToolbar(IView view)
 		{
-			return view is IToolTipElement toolTipElement && toolTipElement.ToolTip is null;
+			return view is IToolbarElement { Toolbar: null };
+		}
+
+		internal static bool HasDefaultToolTip(IView view)
+		{
+			return view is IToolTipElement { ToolTip: null };
 		}
 	}
 }

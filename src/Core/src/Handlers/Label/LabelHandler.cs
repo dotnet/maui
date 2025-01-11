@@ -17,15 +17,15 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ILabelHandler
 	{
-		static LabelHandler()
+		internal static readonly IPlatformPropertyDefaults<ILabel> LabelPropertyDefaults = new PlatformPropertyDefaults<ILabel>(ViewHandler.ViewPropertyDefaults)
 		{
-			initSkipChecks[nameof(ILabel.CharacterSpacing)] = SkipCheckCharacterSpacing;
-			initSkipChecks[nameof(ILabel.HorizontalTextAlignment)] = SkipCheckHorizontalTextAlignment;
-			initSkipChecks[nameof(ILabel.VerticalTextAlignment)] = SkipCheckVerticalTextAlignment;
-			initSkipChecks[nameof(ILabel.TextDecorations)] = SkipCheckTextDecorations;
-		}
+			[nameof(ILabel.CharacterSpacing)] = HasDefaultCharacterSpacing,
+			[nameof(ILabel.HorizontalTextAlignment)] = HasDefaultHorizontalTextAlignment,
+			[nameof(ILabel.VerticalTextAlignment)] = HasDefaultVerticalTextAlignment,
+			[nameof(ILabel.TextDecorations)] = HasDefaultTextDecorations,
+		};
 
-		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(initSkipChecks, ViewHandler.ViewMapper)
+		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
 #if IOS || TIZEN
 			[nameof(ILabel.Background)] = MapBackground,
@@ -58,40 +58,43 @@ namespace Microsoft.Maui.Handlers
 
 		public LabelHandler() : base(Mapper, CommandMapper)
 		{
+			PlatformPropertyDefaults = LabelPropertyDefaults;
 		}
 
 		public LabelHandler(IPropertyMapper? mapper)
 			: base(mapper ?? Mapper, CommandMapper)
 		{
+			PlatformPropertyDefaults = LabelPropertyDefaults;
 		}
 
 		public LabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
+			PlatformPropertyDefaults = LabelPropertyDefaults;
 		}
 
 		ILabel ILabelHandler.VirtualView => VirtualView;
 
 		PlatformView ILabelHandler.PlatformView => PlatformView;
 				
-		internal static bool SkipCheckTextDecorations(IElement label)
+		internal static bool HasDefaultTextDecorations(ILabel label)
 		{
-			return ((ILabel)label).TextDecorations == TextDecorations.None;
+			return label.TextDecorations == TextDecorations.None;
 		}
 
-		internal static bool SkipCheckCharacterSpacing(IElement label)
+		internal static bool HasDefaultCharacterSpacing(ILabel label)
 		{
-			return ((ILabel)label).CharacterSpacing == 0;
+			return label.CharacterSpacing == 0;
 		}
 
-		internal static bool SkipCheckHorizontalTextAlignment(IElement label)
+		internal static bool HasDefaultHorizontalTextAlignment(ILabel label)
 		{
-			return ((ILabel)label).HorizontalTextAlignment == TextAlignment.Start;
+			return label.HorizontalTextAlignment == TextAlignment.Start;
 		}
 
-		internal static bool SkipCheckVerticalTextAlignment(IElement label)
+		internal static bool HasDefaultVerticalTextAlignment(ILabel label)
 		{
-			return ((ILabel)label).VerticalTextAlignment == TextAlignment.Start;
+			return label.VerticalTextAlignment == TextAlignment.Start;
 		}
 	}
 }

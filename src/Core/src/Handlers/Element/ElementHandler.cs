@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ElementHandler : IElementHandler
+	public abstract partial class ElementHandler : IElementHandler, IPlatformPropertyDefaultsProvider
 	{
 		public static IPropertyMapper<IElement, IElementHandler> ElementMapper = new PropertyMapper<IElement, IElementHandler>()
 		{
@@ -15,6 +15,10 @@ namespace Microsoft.Maui.Handlers
 		internal readonly IPropertyMapper _defaultMapper;
 		internal readonly CommandMapper? _commandMapper;
 		internal IPropertyMapper _mapper;
+
+		
+		private protected IPlatformPropertyDefaults? PlatformPropertyDefaults { get; init; }
+		IPlatformPropertyDefaults? IPlatformPropertyDefaultsProvider.PlatformPropertyDefaults => PlatformPropertyDefaults;
 
 		protected ElementHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 		{
@@ -56,14 +60,18 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			if (VirtualView.Handler != this)
+			{
 				VirtualView.Handler = this;
+			}
 
 			// We set the previous virtual view to null after setting it on the incoming virtual view.
 			// This makes it easier for the incoming virtual view to have influence
 			// on how the exchange of handlers happens.
 			// We will just set the handler to null ourselves as a last resort cleanup
 			if (oldVirtualView?.Handler != null)
+			{
 				oldVirtualView.Handler = null;
+			}
 
 			if (setupPlatformView)
 			{
@@ -77,12 +85,18 @@ namespace Microsoft.Maui.Handlers
 				var map = imv.GetPropertyMapperOverrides();
 				if (map is not null)
 				{
-					map.Chained = new[] { _defaultMapper };
+					map.Chained = [_defaultMapper];
 					_mapper = map;
 				}
 			}
 
-			_mapper.UpdateProperties(this, VirtualView, initial: isNewPlatformView);
+			if (isNewPlatformView && _mapper is IPropertyInitializerMapper initializerMapper)
+			{
+				initializerMapper.InitializeProperties(this, VirtualView);
+				return;
+			}
+
+			_mapper.UpdateProperties(this, VirtualView);
 		}
 
 		public virtual void UpdateValue(string property)

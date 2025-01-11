@@ -13,13 +13,9 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui
 {
-	public abstract class PropertyMapper : IPropertyMapper
+	public abstract class PropertyMapper : IPropertyMapper, IPropertyInitializerMapper
 	{
 		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		protected internal readonly Dictionary<string, Func<IElement, bool>> _initSkipChecks = new(StringComparer.Ordinal);
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		IPropertyMapper[]? _chained;
 
@@ -36,14 +32,6 @@ namespace Microsoft.Maui
 			Chained = chained;
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public PropertyMapper(Dictionary<string, Func<IElement, bool>> initSkipChecks, params IPropertyMapper[]? chained)
-		{
-			_initSkipChecks = initSkipChecks;
-			Chained = chained;
-		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
-
 		protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
 			_mapper[key] = action;
@@ -58,30 +46,6 @@ namespace Microsoft.Maui
 			var action = GetProperty(key);
 			action?.Invoke(viewHandler, virtualView);
 		}
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public virtual Func<IElement, bool> GetSkipCheck(string key)
-		{
-			if (_initSkipChecks.TryGetValue(key, out var skipCheck))
-			{
-				return skipCheck;
-			}
-			else if (Chained is not null)
-			{
-				foreach (var ch in Chained)
-				{
-					var returnValue = ch.GetSkipCheck(key);
-
-					if (returnValue != null)
-					{
-						return returnValue;
-					}
-				}
-			}
-
-			return _ => false;
-		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
@@ -109,25 +73,37 @@ namespace Microsoft.Maui
 		}
 
 		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView)
-			=> UpdateProperties(viewHandler, virtualView, false);
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView, bool initial)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
-			if (virtualView == null)
+			if (virtualView is null)
+			{
 				return;
+			}
 
 			foreach (var key in UpdateKeys)
 			{
-				if (initial)
-				{
-					Func<IElement, bool> skipCheck = GetSkipCheck(key);
+				UpdatePropertyCore(key, viewHandler, virtualView);
+			}
+		}
 
-					if (skipCheck(virtualView))
-					{
-						continue;
-					}
+		void IPropertyInitializerMapper.InitializeProperties(IElementHandler viewHandler, IElement virtualView)
+		{
+			if (viewHandler is not IPlatformPropertyDefaultsProvider { PlatformPropertyDefaults: { } platformPropertyDefaults })
+			{
+				UpdateProperties(viewHandler, virtualView);
+				return;
+			}
+
+			if (virtualView is null)
+			{
+				return;
+			}
+
+			foreach (var key in UpdateKeys)
+			{
+				// If the property has a default value, we don't need to map it to platform view
+				if (platformPropertyDefaults.GetProperty(key) is { } hasDefaultValue && hasDefaultValue(virtualView))
+				{
+					continue;
 				}
 
 				UpdatePropertyCore(key, viewHandler, virtualView);
@@ -177,18 +153,10 @@ namespace Microsoft.Maui
 
 	public interface IPropertyMapper
 	{
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		Func<IElement, bool> GetSkipCheck(string key);
-#pragma warning restore RS0016 // Add public types and members to the declared API
-
 		Action<IElementHandler, IElement>? GetProperty(string key);
 
 		IEnumerable<string> GetKeys();
 		void UpdateProperties(IElementHandler elementHandler, IElement virtualView);
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		void UpdateProperties(IElementHandler elementHandler, IElement virtualView, bool initial);
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		void UpdateProperty(IElementHandler elementHandler, IElement virtualView, string property);
 	}
@@ -212,13 +180,6 @@ namespace Microsoft.Maui
 			: base(chained)
 		{
 		}
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public PropertyMapper(Dictionary<string, Func<IElement, bool>> initSkipChecks, params IPropertyMapper[] chained)
-			: base(initSkipChecks: initSkipChecks, chained: chained)
-		{
-		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public Action<TViewHandler, TVirtualView> this[string key]
 		{
