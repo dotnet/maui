@@ -49,6 +49,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.RotationX)] = HasDefaultRotationX,
 			[nameof(IView.RotationY)] = HasDefaultRotationY,
 
+			[nameof(IView.AnchorX)] = HasDefaultAnchorX,
+			[nameof(IView.AnchorY)] = HasDefaultAnchorY,
+
 			[nameof(IView.Opacity)] = HasDefaultOpacity,
 
 			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
@@ -579,102 +582,67 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		internal static bool HasDefaultAutomationId(IView view)
-		{
-			return string.IsNullOrEmpty(view.AutomationId);
-		}
+			=> string.IsNullOrEmpty(view.AutomationId);
 
 		internal static bool HasDefaultClip(IView view)
-		{
-			return view.Clip is null;
-		}
+			=> view.Clip is null;
 
 		internal static bool HasDefaultPadding(IView view)
-		{
-			return view is IPadding padding && (padding.Padding.IsEmpty || padding.Padding.IsNaN);
-		}
+			=> view is IPadding padding && (padding.Padding.IsEmpty || padding.Padding.IsNaN);
 
 		internal static bool HasDefaultShadow(IView view)
-		{
-			return view.Shadow is null;
-		}
+			=> view.Shadow is null;
 
 		internal static bool HasDefaultVisibility(IView view)
-		{
-			return view.Visibility == Visibility.Visible;
-		}
-
+			=> view.Visibility == Visibility.Visible;
 		internal static bool HasDefaultFlowDirection(IView view)
-		{
-			return view.FlowDirection == FlowDirection.MatchParent;
-		}
+			=> view.FlowDirection == FlowDirection.MatchParent;
 
 		internal static bool HasDefaultDimension(IView view)
-		{
-			return double.IsNaN(view.MinimumHeight);
-		}
+			=> double.IsNaN(view.MinimumHeight);
 
 		internal static bool HasDefaultScale(IView view)
-		{
-			return view.Scale == 1;
-		}
+			=> view.Scale == 1;
 
 		internal static bool HasDefaultScaleX(IView view)
-		{
-			return view.ScaleX == 1;
-		}
+			=> view.Scale == 1 && view.ScaleX == 1;
 
 		internal static bool HasDefaultScaleY(IView view)
-		{
-			return view.ScaleY == 1;
-		}
+			=> view.Scale == 1 && view.ScaleY == 1;
 
 		internal static bool HasDefaultRotation(IView view)
-		{
-			return view.Rotation % 360 == 0;
-		}
+			=> view.Rotation % 360 == 0;
 
 		internal static bool HasDefaultRotationX(IView view)
-		{
-			return view.RotationX % 360 == 0;
-		}
+			=> view.RotationX % 360 == 0;
 
 		internal static bool HasDefaultRotationY(IView view)
-		{
-			return view.RotationY % 360 == 0;
-		}
+			=> view.RotationY % 360 == 0;
+
+		internal static bool HasDefaultAnchorX(IView view)
+			=> view.AnchorX == 0.5;
+
+		internal static bool HasDefaultAnchorY(IView view)
+			=> view.AnchorY == 0.5;
 
 		internal static bool HasDefaultOpacity(IView view)
-		{
-			return view.Opacity == 1;
-		}
+			=> view.Opacity == 1;
 
 		internal static bool HasDefaultTranslationX(IView view)
-		{
-			return view.TranslationX == 0;
-		}
+			=> view.TranslationX == 0;
 
 		internal static bool HasDefaultTranslationY(IView view)
-		{
-			return ((IView)view).TranslationY == 0;
-		}
+			=> view.TranslationY == 0;
 
 		internal static bool HasDefaultContextFlyout(IView view)
-		{
-			return view is IContextFlyoutElement { ContextFlyout: null };
-		}
+			=> view is IContextFlyoutElement { ContextFlyout: null };
 		internal static bool HasDefaultInputTransparent(IView view)
-		{
-			return !view.InputTransparent;
-		}
+			=> !view.InputTransparent;
 
 		internal static bool HasDefaultToolbar(IView view)
-		{
-			return view is IToolbarElement { Toolbar: null };
-		}
+			=> view is IToolbarElement { Toolbar: null };
 
 		internal static bool HasDefaultToolTip(IView view)
-		{
-			return view is IToolTipElement { ToolTip: null };
-		}
+			=> view is IToolTipElement { ToolTip: null };
 	}
 }

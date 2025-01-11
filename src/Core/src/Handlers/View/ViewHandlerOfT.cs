@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
 #elif MONOANDROID

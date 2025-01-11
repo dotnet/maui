@@ -22,7 +22,9 @@ internal class PlatformPropertyDefaults : IPlatformPropertyDefaults
 	public Func<IElement, bool>? GetProperty(string key)
 	{
 		if (_mapper.TryGetValue(key, out var action))
+		{
 			return action;
+		}
 
 		if (_chained.Length <= 0)
 		{

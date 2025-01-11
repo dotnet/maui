@@ -156,6 +156,7 @@ namespace Microsoft.Maui
 		Action<IElementHandler, IElement>? GetProperty(string key);
 
 		IEnumerable<string> GetKeys();
+
 		void UpdateProperties(IElementHandler elementHandler, IElement virtualView);
 
 		void UpdateProperty(IElementHandler elementHandler, IElement virtualView, string property);

@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using PlatformView = Microsoft.Maui.Platform.MauiLabel;
 #elif MONOANDROID
@@ -78,23 +76,15 @@ namespace Microsoft.Maui.Handlers
 		PlatformView ILabelHandler.PlatformView => PlatformView;
 				
 		internal static bool HasDefaultTextDecorations(ILabel label)
-		{
-			return label.TextDecorations == TextDecorations.None;
-		}
+			=> label.TextDecorations == TextDecorations.None;
 
 		internal static bool HasDefaultCharacterSpacing(ILabel label)
-		{
-			return label.CharacterSpacing == 0;
-		}
+			=> label.CharacterSpacing == 0;
 
 		internal static bool HasDefaultHorizontalTextAlignment(ILabel label)
-		{
-			return label.HorizontalTextAlignment == TextAlignment.Start;
-		}
+			=> label.HorizontalTextAlignment == TextAlignment.Start;
 
 		internal static bool HasDefaultVerticalTextAlignment(ILabel label)
-		{
-			return label.VerticalTextAlignment == TextAlignment.Start;
-		}
+			=> label.VerticalTextAlignment == TextAlignment.Start;
 	}
 }
