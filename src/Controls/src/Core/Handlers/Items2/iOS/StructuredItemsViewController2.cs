@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public const int HeaderTag = 111;
 		public const int FooterTag = 222;
 
+		View _headerView;
+		View _footerView;
+		EventHandler _footerMeasureInvalidated;
+		EventHandler _headerMeasureInvalidated;
+
 		bool _disposed;
 
 		public StructuredItemsViewController2(TItemsView structuredItemsView, UICollectionViewLayout layout)
@@ -40,7 +45,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (disposing)
 			{
+				if (_headerView != null)
+					_headerView.MeasureInvalidated -= _headerMeasureInvalidated;
 
+				if (_footerView != null)
+					_footerView.MeasureInvalidated -= _footerMeasureInvalidated;
 			}
 
 			base.Dispose(disposing);
@@ -115,26 +124,54 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (isHeader)
 			{
+				if (_headerView != null)
+					_headerView.MeasureInvalidated -= _headerMeasureInvalidated;
+
 				if (ItemsView.Header is View headerView)
 				{
+					_headerView = headerView;
 					cell.Bind(headerView, ItemsView);
 				}
 				else if (ItemsView.HeaderTemplate is not null)
 				{
+					_headerView = (View)ItemsView.HeaderTemplate.CreateContent();
 					cell.Bind(ItemsView.HeaderTemplate, ItemsView.Header, ItemsView);
 				}
+
+				_headerMeasureInvalidated = (s, e) =>
+				{
+					var indexPath = CollectionView.GetIndexPathForSupplementaryView(cell);
+					if (indexPath != null)
+						CollectionView.ReloadItems([indexPath]);
+				};
+
+				_headerView.MeasureInvalidated += _headerMeasureInvalidated;
 				cell.Tag = HeaderTag;
 			}
 			else
 			{
+				if (_footerView != null)
+					_footerView.MeasureInvalidated -= _footerMeasureInvalidated;
+
 				if (ItemsView.Footer is View footerView)
 				{
+					_footerView = footerView;
 					cell.Bind(footerView, ItemsView);
 				}
 				else if (ItemsView.FooterTemplate is not null)
 				{
+					_footerView = (View)ItemsView.FooterTemplate.CreateContent();
 					cell.Bind(ItemsView.FooterTemplate, ItemsView.Footer, ItemsView);
 				}
+
+				_footerMeasureInvalidated = (s, e) =>
+				{
+					var indexPath = CollectionView.GetIndexPathForSupplementaryView(cell);
+					if (indexPath != null)
+						CollectionView.ReloadItems([indexPath]);
+				};
+
+				_footerView.MeasureInvalidated += _footerMeasureInvalidated;
 				cell.Tag = FooterTag;
 			}
 		}
