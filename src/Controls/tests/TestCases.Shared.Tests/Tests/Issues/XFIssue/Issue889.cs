@@ -6,7 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue889 : _IssuesUITest
 {
-	const string Tab2Title = "Tab 2 Title";
+	string _tab2Title = "Tab 2 Title";
+
 	public Issue889(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -26,10 +27,14 @@ public class Issue889 : _IssuesUITest
 		App.WaitForElement(initialPageQuery);
 		App.Tap(initialPageQuery);
 #else
-		App.TapBackArrow();
+		App.Back();
 #endif
-		App.WaitForElement(Tab2Title);
-		App.TapTab(Tab2Title);
+
+#if ANDROID
+		_tab2Title = _tab2Title.ToUpperInvariant();
+#endif
+		App.WaitForElement(_tab2Title);
+		App.TapTab(_tab2Title);
 		App.WaitForElement("SecondTabPageButton");
 	}
 }
