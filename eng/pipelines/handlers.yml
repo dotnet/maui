@@ -147,14 +147,6 @@ parameters:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals arm64
 
-  - name: TestTargetFrameworks
-    type: object
-    default:
-      - name: default
-        tfm: default
-      - name: net10
-        tfm: net10.0
-
 resources:
   repositories:
     - repository: yaml-templates
