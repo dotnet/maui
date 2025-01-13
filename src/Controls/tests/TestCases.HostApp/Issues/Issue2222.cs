@@ -12,7 +12,7 @@
 		{
 			public MainPage()
 			{
-				var tbItem = new ToolbarItem { Text = "hello" };
+				var tbItem = new ToolbarItem { Text = "hello", IconImageSource = "wrongName" };
 				ToolbarItems.Add(tbItem);
 
 				Navigation.PushAsync(new Issue22221());
