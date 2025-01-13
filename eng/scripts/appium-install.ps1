@@ -199,12 +199,13 @@ Write-Output "List of installed drivers after cleaup $drivers"
 Write-Output  "Check everything is installed correctly with appium doctor"
 
 if ($IsWindows) {
-    appium driver doctor windows || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+    appium driver doctor windows
 }
 if ($IsMacOS) {
-    # appium driver doctor xcuitest || & { "ignore failure"; $global:LASTEXITCODE = 0 }
-    # appium driver doctor mac2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+    appium driver doctor xcuitest
+    appium driver doctor mac2
 }
-appium driver doctor uiautomator2 || & { "ignore failure"; $global:LASTEXITCODE = 0 }
+
+appium driver doctor uiautomator2
 
 Write-Output  "Done, thanks!"
