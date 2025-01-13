@@ -152,8 +152,8 @@ parameters:
     default:
       - name: default
         tfm: default
-      - name: net9
-        tfm: net9.0
+      - name: net10
+        tfm: net10.0
 
 resources:
   repositories:
