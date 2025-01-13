@@ -133,7 +133,7 @@ namespace UITest.Appium
 
 					return CommandResponse.SuccessEmptyResponse;
 				}
-		}
+			}
 			catch
 			{
 				return CommandResponse.FailedEmptyResponse;
