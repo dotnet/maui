@@ -21,7 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			App.Tap("PageWithoutCookies");
 			App.WaitForElement("PageWithoutCookies");
-			
 		}
 
 		[Test]
@@ -29,15 +28,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ChangeDuringNavigating()
-		{
-			 
+		{ 
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
-			 
 		}
 
 		[Test]
@@ -45,15 +42,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddAdditionalCookieToWebView()
-		{
-			 
+		{	 
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
 			App.Tap("AdditionalCookie");
-			ValidateSuccess();
-		 
+			ValidateSuccess(); 
 		}
 
 		[Test]
@@ -61,12 +56,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetToOneCookie()
-		{
-			 
+		{	 
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			App.Tap("OneCookie");
 			ValidateSuccess();
-		 
 		}
 
 		[Test]
@@ -74,15 +67,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetCookieContainerToNullDisablesCookieManagement()
-		{
-			 
+		{		 
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a cookie to verify said cookie remains
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
 			App.Tap("NullAllCookies");
-			ValidateSuccess();
-			 
+			ValidateSuccess();	 
 		}
 
 		[Test]
@@ -109,6 +100,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				App.Tap("DisplayAllCookies");
 				throw;
+			}
+		}
+
+		public override void TestSetup()
+		{
+			base.TestSetup();
+			if(App.WaitForElement("No Internet Connection").GetText() == "No Internet Connection")
+			{
+				App.Tap("OK");
 			}
 		}
 	}
