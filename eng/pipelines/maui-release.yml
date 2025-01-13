@@ -18,7 +18,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 schedules:
