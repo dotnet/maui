@@ -7,7 +7,7 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 	[Category(UITestCategories.Stepper)]
-	public class StepperUITests : UITest
+	public class StepperUITests : CoreGalleryBasePageTest
 	{
 		public const string StepperGallery = "Stepper Gallery";
 
@@ -16,9 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(StepperGallery);
 		}
 
