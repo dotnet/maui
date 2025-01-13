@@ -19,10 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			var label = App.WaitForElement("Label");
 			var location = label.GetRect();
-			var height = location.Height / 2;
-			var endOfFirstLine = location.X + location.Width - 150;
-			App.Click(endOfFirstLine, location.Y + height);
+			var middleHeight = location.Height / 2;
+			const int marginRight = 150;
+			var endOfFirstLine = location.X + location.Width - marginRight;
 			var testlabel = App.WaitForElement("TestLabel");
+			App.Click(endOfFirstLine, location.Y + middleHeight);	
 			Assert.That(testlabel.GetText(), Is.EqualTo("Label span tapped"));
 		}
 	}

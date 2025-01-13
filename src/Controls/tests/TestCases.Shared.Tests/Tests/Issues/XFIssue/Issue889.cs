@@ -22,11 +22,13 @@ public class Issue889 : _IssuesUITest
 		App.WaitForElement("PushedPageLabel");
 		
 #if IOS || MACCATALYST
-		App.Tap(AppiumQuery.ByName("Initial Page"));
+		var initialPageQuery = AppiumQuery.ByName("Initial Page");
+		App.WaitForElement(initialPageQuery);
+		App.Tap(initialPageQuery);
 #else
 		App.TapBackArrow();
 #endif
-
+		App.WaitForElement(Tab2Title);
 		App.TapTab(Tab2Title);
 		App.WaitForElement("SecondTabPageButton");
 	}
