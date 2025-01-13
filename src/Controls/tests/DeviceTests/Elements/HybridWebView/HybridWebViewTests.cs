@@ -58,6 +58,22 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndStringResult() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = "abc";
+				var y = "def";
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+					"EvaluateMeWithParamsAndStringReturn",
+					HybridWebViewTestContext.Default.String,
+					[x, y],
+					[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
+
+				Assert.Equal("abcdef", result);
+			});
+
+		[Fact]
 		public Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult() =>
 			RunTest(async (hybridWebView) =>
 			{
@@ -73,22 +89,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(result);
 				Assert.Equal(777.777m, result.result);
 				Assert.Equal("AdditionWithNulls", result.operationName);
-			});
-
-		[Fact]
-		public Task InvokeJavaScriptMethodWithParametersAndStringResult() =>
-			RunTest(async (hybridWebView) =>
-			{
-				var x = "abc";
-				var y = "def";
-
-				var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-					"EvaluateMeWithParamsAndStringReturn",
-					HybridWebViewTestContext.Default.String,
-					[x, y],
-					[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
-
-				Assert.Equal("abcdef", result);
 			});
 
 		[Fact]
