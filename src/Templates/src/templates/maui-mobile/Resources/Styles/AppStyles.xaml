@@ -110,8 +110,6 @@
                 Value="Transparent" />
         <Setter Property="FontSize"
                 Value="17" />
-        <Setter Property="LineHeight"
-                Value="1.29" />
         <!-- 22 -->
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>

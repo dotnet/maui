@@ -5,6 +5,7 @@
         xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls" 
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
+        xmlns:model="clr-namespace:TestSyncTemplate.Models"
         x:Class="MauiApp._1.Pages.Controls.CategoryChart"
         HeightRequest="{OnIdiom 300, Phone=200}"
         Margin="0, 12"
@@ -47,20 +48,19 @@
                     CapStyle="BothCurve">
                     <chart:RadialBarSeries.TooltipTemplate>
                         <DataTemplate x:DataType="chart:TooltipInfo">
-                            <HorizontalStackLayout>
-                                <Label Text="{Binding Item.Title}"
+                            <HorizontalStackLayout BindingContext="{Binding Item}" >
+                                <Label Text="{Binding Title, x:DataType=model:CategoryChartData}"
                                        TextColor="{StaticResource LightBackground}"
                                        FontSize="14"
                                        HorizontalOptions="Center"
                                        VerticalOptions="Center"/>
 
-                                <Label Text="{Binding Item.Count, StringFormat='  :  \{0}'}"
+                                <Label Text="{Binding Count,x:DataType=model:CategoryChartData, StringFormat='  :  \{0}'}"
                                        TextColor="{StaticResource LightBackground}"
                                        FontAttributes="Bold"
                                        FontSize="14"
                                        HorizontalOptions="Center"
                                        VerticalOptions="Center"/>
-
                             </HorizontalStackLayout>
                         </DataTemplate>
                     </chart:RadialBarSeries.TooltipTemplate>
