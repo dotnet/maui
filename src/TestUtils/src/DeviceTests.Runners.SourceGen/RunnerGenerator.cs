@@ -97,12 +97,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 
 			return @"
 #if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_APPLICATION_GENERATION
+using System;
+
 namespace " + RootNamespace + @"
 {
 	[global::Android.App.Application]
 	partial class " + appName + @" : global::Microsoft.Maui.MauiApplication
 	{
-		public " + appName + @"(global::System.IntPtr handle, global::Android.Runtime.JniHandleOwnership ownership)
+		public " + appName + @"(IntPtr handle, Android.Runtime.JniHandleOwnership ownership)
 			: base(handle, ownership)
 		{
 		}
