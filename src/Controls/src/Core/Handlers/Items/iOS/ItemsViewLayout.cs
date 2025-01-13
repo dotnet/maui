@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ClearCellSizeCache();
 
 			EstimatedItemSize = CGSize.Empty;
+
 			_currentSize = size;
 
 			var newSize = new CGSize(Math.Floor(size.Width), Math.Floor(size.Height));
@@ -590,16 +591,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		//Fix Added for ItemsUpdatingScrollMode.KeepItemsInView
-		void ForceScrollToFirstItem(UICollectionView collectionView, ItemsLayout itemsLayout)
-		{
-			if (collectionView.NumberOfItemsInSection(0) > 0)
-			{
-				var indexPath = NSIndexPath.FromItemSection(0, 0);
-				collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Top, true);
-
-			}
-		}
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
 		{
 			if (newBounds.Size.IsCloseTo(_currentSize))
