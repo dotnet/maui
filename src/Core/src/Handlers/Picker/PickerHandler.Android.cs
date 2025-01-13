@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		AppCompatAlertDialog? _dialog;
 
 		protected override MauiPicker CreatePlatformView() =>
-			new MauiPicker(Context){ KeyListener = null };
+			new MauiPicker(Context);
 
 		protected override void ConnectHandler(MauiPicker platformView)
 		{
