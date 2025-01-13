@@ -572,6 +572,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		//Fix Added for ItemsUpdatingScrollMode.KeepItemsInView
 		void ForceScrollToFirstItem(UICollectionView collectionView, ItemsLayout itemsLayout)
 		{
+			var sections = (int)collectionView.NumberOfSections();
+
+			if (sections == 0)
+			{
+				return;
+			}
+
 			if (collectionView.NumberOfItemsInSection(0) > 0)
 			{
 				var indexPath = NSIndexPath.FromItemSection(0, 0);
