@@ -101,7 +101,7 @@ parameters:
   - name: targetFrameworkVersions
     type: object
     default:
-      - tfm: net9.0
+      - tfm: net10.0
 
 resources:
   repositories:
