@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...",isInternetRequired: true)]
+	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...", isInternetRequired: true)]
 	public class Issue3262 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		string _currentCookieValue;
