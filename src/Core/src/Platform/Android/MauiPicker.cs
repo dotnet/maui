@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Platform
 		public MauiPicker(Context context) : base(context)
 		{
 			PickerManager.Init(this);
+			// To prevent user from entering text when focus is received
+			KeyListener = null;
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)
