@@ -26,15 +26,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IView.AutomationId)] = HasDefaultAutomationId,
 			[nameof(IView.Clip)] = HasDefaultClip,
-			
+
 			[nameof(IPadding.Padding)] = HasDefaultPadding,
 
 			[nameof(IView.Shadow)] = HasDefaultShadow,
 			[nameof(IView.Visibility)] = HasDefaultVisibility,
 			[nameof(IView.FlowDirection)] = HasDefaultFlowDirection,
-			[nameof(IView.Width)] = HasDefaultDimension,
-			[nameof(IView.Height)] = HasDefaultDimension,
-			
+
+			// TODO: Enabling these properties leads to failing of "Add a ScaleXTo and ScaleYTo animation extension method" test (Issue 8004) 
+			// and very likely many others. Not sure why, but it's worth investigating.
+			//[nameof(IView.Width)] = HasDefaultDimension,
+			//[nameof(IView.Height)] = HasDefaultDimension,
+
 			[nameof(IView.MinimumWidth)] = HasDefaultDimension,
 			[nameof(IView.MaximumWidth)] = HasDefaultDimension,
 
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 
 			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
 			[nameof(IView.TranslationY)] = HasDefaultTranslationY,
-			
+
 			[nameof(IContextFlyoutElement.ContextFlyout)] = HasDefaultContextFlyout,
 
 			[nameof(IView.InputTransparent)] = HasDefaultInputTransparent,

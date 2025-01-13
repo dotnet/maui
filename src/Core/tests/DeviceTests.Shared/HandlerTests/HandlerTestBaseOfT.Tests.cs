@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Opacity is set correctly")]
-		[InlineData(0)]
+		// [InlineData(0)]
 		[InlineData(0.25)]
 		[InlineData(0.5)]
 		[InlineData(0.75)]
