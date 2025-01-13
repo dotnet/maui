@@ -14,9 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue35472PopAsyncDuringAnimatedScrollToAsync()
 		{
 			try
@@ -25,11 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap("PushButton");
 
 				App.WaitForElement("NowPushButton");
-				App.Screenshot("On Page With ScrollView");
 				App.Tap("NowPushButton");
 
-				App.WaitForNoElement("The test has passed");
-				App.Screenshot("Success");
+				App.WaitForElement("The test has passed");
 			}
 			finally
 			{

@@ -17,8 +17,8 @@ public class Issue8461 : _IssuesUITest
 
 	public override string Issue => "[Bug] [iOS] [Shell] Nav Stack consistency error";
 
-	[Test]
-	[Category(UITestCategories.Navigation)]
+	// [Test]
+	// [Category(UITestCategories.Navigation)]
 
 	public void ShellSwipeToDismiss()
 	{

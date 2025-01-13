@@ -17,7 +17,8 @@
                         HeightRequest="44" 
                         StrokeThickness="0"
                         Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}" 
-                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}">
+                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
+                        SemanticProperties.Description="{Binding Title}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
                         </Border.GestureRecognizers>
@@ -34,7 +35,8 @@
                         HeightRequest="44" 
                         StrokeThickness="0"
                         Background="{Binding DisplayColor}" 
-                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}">
+                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
+                        SemanticProperties.Description="{Binding Title}">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
                 </Border.GestureRecognizers>
@@ -46,7 +48,7 @@
             </Border>
         </DataTemplate>
 
-        <pages:ChipDataTemplateSelector 
+        <controls:ChipDataTemplateSelector 
             x:Key="ChipDataTemplateSelector"
             NormalTagTemplate="{StaticResource NormalTagTemplate}"
             SelectedTagTemplate="{StaticResource SelectedTagTemplate}"/>

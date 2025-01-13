@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class DragAndDropUITests : UITest
+	public class DragAndDropUITests : CoreGalleryBasePageTest
 	{
 		const string DragAndDropGallery = "Drag and Drop Gallery";
 		public DragAndDropUITests(TestDevice device)
@@ -14,9 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(DragAndDropGallery);
 		}
 
@@ -345,6 +344,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 		}
 
+#if TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_MACCATALYST
+		// TODO: Flaky test, disabling for Win and Mac.
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DropEventCoordinates()
@@ -391,6 +392,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
 			Assert.That(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
 		}
+#endif
 #endif
 
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'

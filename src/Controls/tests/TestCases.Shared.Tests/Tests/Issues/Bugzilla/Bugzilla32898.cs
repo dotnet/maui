@@ -17,14 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issu32898Test()
 		{
 			var timeout = Timeout; // Give this a little slop to set the result text
-			App.WaitForNoElement(Success, timeout: TimeSpan.FromMilliseconds(timeout));
+			App.WaitForElement(Success, timeout: TimeSpan.FromMilliseconds(timeout));
 		}
 	}
 }

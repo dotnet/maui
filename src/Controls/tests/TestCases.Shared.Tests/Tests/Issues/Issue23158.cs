@@ -23,6 +23,7 @@ public class Issue23158 : _IssuesUITest
 		App.Click("AddEntry");
 
 		// Click the new entry to see if there is the clear button or not. No such button should be present.
+		App.WaitForElement("Entry3");
 		App.Tap("Entry3");
 
 		VerifyScreenshot();

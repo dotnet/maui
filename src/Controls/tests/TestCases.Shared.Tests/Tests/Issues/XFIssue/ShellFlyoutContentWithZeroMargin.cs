@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_ANDROID //The flyout content with zero margin is offset by ignoring the safe area, and this behavior is specific to iOS. This test is expected to fail on Windows, Catalyst, and Android platforms.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,63 +14,13 @@ public class ShellFlyoutContentWithZeroMargin : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Content With Zero Margin offsets correctly";
 
-	//[Test]
-	//public void FlyoutHeaderBehaviorFixed()
-	//{
-	//	App.Tap(nameof(FlyoutHeaderBehavior.Fixed));
-	//	this.ShowFlyout();
-	//	float startingHeight = GetFlyoutHeight();
-	//	App.ScrollDown("Item 4", ScrollStrategy.Gesture);
-	//	float endHeight = GetFlyoutHeight();
-
-	//	Assert.AreEqual(startingHeight, endHeight);
-	//}
-
-	//[FailsOnAndroid]
-	//[FailsOnIOSWhenRunningOnXamarinUITest]
-	//[Test]
-	//public void FlyoutHeaderBehaviorCollapseOnScroll()
-	//{
-	//	App.Tap(nameof(FlyoutHeaderBehavior.CollapseOnScroll));
-	//	this.ShowFlyout();
-	//	float startingHeight = GetFlyoutHeight();
-	//	App.ScrollDown("Item 4", ScrollStrategy.Gesture);
-	//	float endHeight = GetFlyoutHeight();
-
-	//	Assert.Greater(startingHeight, endHeight);
-	//}
-
-	//[Test]
-	//[FailsOnIOSWhenRunningOnXamarinUITest]
-	//public void FlyoutHeaderBehaviorScroll()
-	//{
-	//	App.Tap(nameof(FlyoutHeaderBehavior.Scroll));
-	//	this.ShowFlyout();
-
-	//	var startingY = GetFlyoutY();
-	//	App.ScrollDown("Item 5", ScrollStrategy.Gesture);
-	//	var nextY = GetFlyoutY();
-
-	//	while (nextY != null)
-	//	{
-	//		Assert.Greater(startingY.Value, nextY.Value);
-	//		startingY = nextY;
-	//		App.ScrollDown("Item 5", ScrollStrategy.Gesture);
-	//		nextY = GetFlyoutY();
-	//	}
-	//}
-
-	//float GetFlyoutHeight() =>
-	//	App.WaitForElement("FlyoutHeaderId")[0].Rect.Height;
-
-	//float? GetFlyoutY()
-	//{
-	//	var flyoutHeader =
-	//		App.Query("FlyoutHeaderId");
-
-	//	if (flyoutHeader.Length == 0)
-	//		return null;
-
-	//	return flyoutHeader[0].Rect.Y;
-	//}
+	[Test]
+	public void FlyoutContentIgnoresSafeAreaWithZeroMargin()
+	{
+		App.WaitForElement("PageLoaded");
+		App.ShowFlyout();
+		var flyoutLocation = App.WaitForElement("FlyoutLabel").GetRect().Y;
+		Assert.That(flyoutLocation, Is.EqualTo(0));
+	}
 }
+#endif

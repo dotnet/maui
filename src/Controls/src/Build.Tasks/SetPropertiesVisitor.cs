@@ -459,6 +459,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					break;
 				}
+				if (DoesNotInheritDataType(n))
+				{
+					break;
+				}
 
 				if (n.XmlType.Name == nameof(Microsoft.Maui.Controls.DataTemplate)
 					&& n.XmlType.NamespaceUri == XamlParser.MauiUri)
@@ -584,6 +588,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					&& node.TryGetPropertyName(parentNode, out var propertyName)
 					&& propertyName.NamespaceURI == ""
 					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
+			}
+
+			bool DoesNotInheritDataType(IElementNode node)
+			{
+				return GetParent(node) is IElementNode parentNode
+					&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
+					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, out TypeReference parentTypeRef)
+					&& parentTypeRef.ResolveCached(context.Cache) is TypeDefinition parentType
+					&& parentType.GetProperty(context.Cache, pd => pd.Name == propertyName.LocalName, out var propertyDeclaringTypeRef) is PropertyDefinition propertyDef
+					&& propertyDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
 			}
 		}
 

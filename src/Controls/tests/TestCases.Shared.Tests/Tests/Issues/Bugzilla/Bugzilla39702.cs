@@ -1,5 +1,4 @@
-﻿
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,14 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Focus)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		public async Task ControlCanBeFocusedByUnfocusedEvent()
+		public void ControlCanBeFocusedByUnfocusedEvent()
 		{
-			App.WaitForElement(TheEntry);
-			await Task.Delay(4000);
-			App.EnterText(TheEntry, Success); // Should be typing into the Entry at this point
-			App.WaitForNoElement(Success);
+			App.WaitForElementTillPageNavigationSettled(TheEntry);
+			Thread.Sleep(3000); // In sample uses Delay to focus the entry.
+			App.EnterText(TheEntry, Success);
+			App.WaitForElementTillPageNavigationSettled(Success);
 		}
 	}
 }
