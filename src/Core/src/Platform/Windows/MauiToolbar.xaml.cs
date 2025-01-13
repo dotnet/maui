@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Platform
 
 			// Set CommandBarBackgroundOpen to the same color as the background.
 			// This is necessary because CommandBarBackgroundOpen defines the background color of the CommandBar when it is open.
-			commandBar.Resources["CommandBarBackgroundOpen"] = this.Background;
+			commandBar.Resources["CommandBarBackgroundOpen"] = brush;
 		}
 
 		internal CommandBar CommandBar => commandBar;

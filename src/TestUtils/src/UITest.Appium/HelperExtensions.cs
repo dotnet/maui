@@ -1908,20 +1908,6 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
 		}
 
-		/// <summary>
-		/// Toggles the visibility of secondary toolbar items.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		public static void ToggleSecondaryToolbarItems(this IApp app)
-		{
-			if (app is not AppiumAndroidApp && app is not AppiumWindowsApp)
-			{
-				throw new InvalidOperationException($"ToggleSecondaryToolbarItems is not supported");
-			}
-
-			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
-		}
-
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
