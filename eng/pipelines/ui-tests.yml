@@ -142,12 +142,12 @@ stages:
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '18.0' ]
+        iosVersions: [ '18.2' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
       ${{ else }}:
         androidApiLevels: [ 30 ]
-        iosVersions: [ '18.0' ]
+        iosVersions: [ '18.2' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       ${{ if parameters.CompatibilityTests }}:

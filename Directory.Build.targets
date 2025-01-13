@@ -27,6 +27,12 @@
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
     <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
+    <!--
+      Temporarily disable warning about Roslyn interceptors
+      * https://github.com/dotnet/roslyn/pull/76312
+      * https://github.com/dotnet/roslyn/issues/72133
+    -->
+    <NoWarn>$(NoWarn);CS9270</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->

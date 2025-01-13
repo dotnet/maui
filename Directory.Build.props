@@ -135,15 +135,15 @@
   <!-- version number information -->
   <PropertyGroup>
     <!-- Default versions from the SDKs (update when there is a new TFM version) -->
-    <IosTargetFrameworkVersionSdkDefault>18.0</IosTargetFrameworkVersionSdkDefault>
-    <TvosTargetFrameworkVersionSdkDefault>18.0</TvosTargetFrameworkVersionSdkDefault>
-    <MacCatalystTargetFrameworkVersionSdkDefault>18.0</MacCatalystTargetFrameworkVersionSdkDefault>
+    <IosTargetFrameworkVersionSdkDefault>18.2</IosTargetFrameworkVersionSdkDefault>
+    <TvosTargetFrameworkVersionSdkDefault>18.2</TvosTargetFrameworkVersionSdkDefault>
+    <MacCatalystTargetFrameworkVersionSdkDefault>18.2</MacCatalystTargetFrameworkVersionSdkDefault>
     <MacosTargetFrameworkVersionSdkDefault>15.0</MacosTargetFrameworkVersionSdkDefault>
     <AndroidTargetFrameworkVersionSdkDefault>35.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
-    <IosTargetFrameworkVersion>18.0</IosTargetFrameworkVersion>
-    <TvosTargetFrameworkVersion>18.0</TvosTargetFrameworkVersion>
-    <MacCatalystTargetFrameworkVersion>18.0</MacCatalystTargetFrameworkVersion>
+    <IosTargetFrameworkVersion>18.2</IosTargetFrameworkVersion>
+    <TvosTargetFrameworkVersion>18.2</TvosTargetFrameworkVersion>
+    <MacCatalystTargetFrameworkVersion>18.2</MacCatalystTargetFrameworkVersion>
     <MacosTargetFrameworkVersion>15.0</MacosTargetFrameworkVersion>
     <AndroidTargetFrameworkVersion>35.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
