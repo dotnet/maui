@@ -52,6 +52,17 @@ steps:
       project: ${{ parameters.mauiSourcePath }}/src/DotNet/DotNet.csproj
       arguments: '-t:Install -c ${{ parameters.buildConfig }} -bl:${{ parameters.repoLogPath }}/install-dotnet-workload.binlog'
 
+  - pwsh: |
+      Get-ChildItem artifacts -Filter 'Microsoft.Maui.Controls.*.nupkg' |  Where-Object { $_.Name -match '^Microsoft\.Maui\.Controls\.([\d\.]+.*)\.nupkg$' }
+      $version = $Matches.1
+      if (!$version) {
+          Write-Error "Failed to extract the version from the nupkgs"
+          exit 1
+      }
+      Write-Host "Found .NET MAUI version (MAUI_PACKAGE_VERSION): $version"
+      Write-Host "##vso[task.setvariable variable=MAUI_PACKAGE_VERSION]$version"
+    displayName: Read the .NET MAUI version from the nugets
+
 - ${{ else }}:
   - task: DotNetCoreCLI@2
     displayName: Install dotnet preview

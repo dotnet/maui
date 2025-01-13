@@ -1,4 +1,5 @@
-﻿
+﻿using System.Diagnostics;
+
 namespace Microsoft.Maui.IntegrationTests.Android
 {
 	public class Emulator
@@ -19,7 +20,14 @@ namespace Microsoft.Maui.IntegrationTests.Android
 
 		public bool AcceptLicenses(out string acceptLicenseOutput)
 		{
-			acceptLicenseOutput = ToolRunner.Run(SdkManagerTool, "--licenses", out int exitCode, timeoutInSeconds: 15);
+			acceptLicenseOutput = ToolRunner.Run(new ProcessStartInfo(SdkManagerTool,  "--licenses"), out int exitCode, timeoutInSeconds: 30, inputAction: (p) =>
+			{
+				for (int i = 0; i < 10; i++)
+				{
+					p.StandardInput.WriteLine('y');
+				}
+			});
+
 			if (exitCode != 0)
 				TestContext.WriteLine(acceptLicenseOutput);
 
