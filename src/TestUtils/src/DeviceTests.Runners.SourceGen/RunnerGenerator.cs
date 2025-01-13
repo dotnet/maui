@@ -98,7 +98,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.SourceGen
 			return @"
 #if !SKIP_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_ENTRYPOINT_GENERATION && !SKIP_VISUAL_RUNNER_APPLICATION_GENERATION
 using System;
-using JniHandleOwnership = Android.Runtime.JniHandleOwnership
+using JniHandleOwnership = Android.Runtime.JniHandleOwnership;
 
 namespace " + RootNamespace + @"
 {
