@@ -165,7 +165,7 @@ stages:
         displayName: Publish Logs
         inputs:
           targetPath: ${{ parameters.repoLogPath }}
-          artifact: Run Unit Tests - ${{ job.testOS }} Logs
+          artifact: Run Unit Tests Logs - ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml

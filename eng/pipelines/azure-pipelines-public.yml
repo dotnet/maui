@@ -141,9 +141,9 @@ stages:
     - name: mac_runandroid_tests
       pool:
         name: Azure Pipelines
-        vmImage: $(HostedMacImage)
+        vmImage: macos-14
         os: macOS
-      timeout: 120
+      timeout: 180
       testCategory: RunOnAndroid
 
     - name: mac_runios_tests
@@ -151,5 +151,5 @@ stages:
         name: Azure Pipelines
         vmImage: $(HostedMacImage)
         os: macOS
-      timeout: 120
+      timeout: 180
       testCategory: RunOniOS
