@@ -123,11 +123,11 @@ namespace Microsoft.Maui.Platform
 			if (searchView.Resources is null)
 				return;
 
-			var searchButtonIdentifier = Resource.Id.search_mag_icon;
+			var searchIconIdentifier = Resource.Id.search_mag_icon;
 
-			if (searchButtonIdentifier > 0)
+			if (searchIconIdentifier > 0)
 			{
-				var image = searchView.FindViewById<ImageView>(searchButtonIdentifier);
+				var image = searchView.FindViewById<ImageView>(searchIconIdentifier);
 
 				if (image?.Drawable is not null)
 				{
