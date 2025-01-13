@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
+using Microsoft.CodeAnalysis;
+using Microsoft.Maui.Controls.Xaml;
 using static LocationHelpers;
 
 static class KnownTypeConverters
@@ -844,9 +846,7 @@ static class KnownTypeConverters
             value = value.Trim();
             
             if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var size))
-            {
                 return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({size})";
-            }
         }
 
         context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConstraintConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
@@ -854,7 +854,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-	internal static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+	public static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
 	{
         var parts = value.Split('.');
 
@@ -875,4 +875,9 @@ static class KnownTypeConverters
         }
         return "null";
 	}
+
+    public static string ConvertRDSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    {
+        return $"new Uri({value})";
+    }
 }

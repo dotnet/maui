@@ -149,7 +149,8 @@ class ExpandMarkupsVisitor : IXamlNodeVisitor
 					{
 						if (contextProvider != null)
 							contextProvider.Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationHelpers.LocationCreate(contextProvider.Context.FilePath!, xmlLineInfo!, match), xpe.Message));
-						else throw;
+						else
+							throw;
 					}
 					XmlName childname;
 
