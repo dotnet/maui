@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,20 +20,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[Ignore("Fails occasionally on iOS 12 https://github.com/xamarin/Xamarin.Forms/issues/6472")]
 		public void ListViewDoesNotThrowExceptionWithObservableCollection()
 		{
 			App.WaitForElement(ListViewAutomationId);
-			App.Screenshot("We got here without an exception while loading the data and data is visible");
-
 			App.Tap(ClearButtonAutomationId);
 			App.Tap(UiThreadButtonAutomationId);
+			App.WaitForElement("Just three");
 			App.Tap(OtherThreadButtonAutomationId);
-
+			App.WaitForElement("THE answer");
 			App.Tap(ClearButtonAutomationId);
+			App.WaitForNoElement("Just three");
+			App.WaitForNoElement("THE answer");
 			App.Tap(OtherThreadButtonAutomationId);
+			App.WaitForElement("THE answer");
 			App.Tap(UiThreadButtonAutomationId);
+			App.WaitForElement("Just three");
+
 		}
 	}
 }
-#endif

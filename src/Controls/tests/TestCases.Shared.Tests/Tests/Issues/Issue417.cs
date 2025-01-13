@@ -17,30 +17,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue417TestsNavigateAndPopToRoot()
 		{
 			App.WaitForElement("FirstPage");
 			App.WaitForElement("NextPage");
-			App.Screenshot("All elements present");
-
 			App.Tap("NextPage");
 
 			App.WaitForElement("SecondPage");
 			App.WaitForElement("NextPage2");
-			App.Screenshot("At second page");
 			App.Tap("NextPage2");
 
 			App.WaitForElement("ThirdPage");
 			App.WaitForElement("PopToRoot");
-			App.Screenshot("At third page");
 			App.Tap("PopToRoot");
 
 			App.WaitForElement("FirstPage");
 			App.WaitForElement("NextPage");
-			App.Screenshot("All elements present");
-
-			App.Screenshot("Popped to root");
 		}
 	}
 }
