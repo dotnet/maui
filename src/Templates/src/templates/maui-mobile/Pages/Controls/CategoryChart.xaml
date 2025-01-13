@@ -2,7 +2,7 @@
 <Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
         xmlns:chart="clr-namespace:Syncfusion.Maui.Toolkit.Charts;assembly=Syncfusion.Maui.Toolkit"
-        xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls" 
+        xmlns:controls="clr-namespace:MauiApp._1.Pages.Controls"
         xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
         xmlns:pageModels="clr-namespace:MauiApp._1.PageModels"
         xmlns:model="clr-namespace:TestSyncTemplate.Models"
@@ -48,14 +48,14 @@
                     CapStyle="BothCurve">
                     <chart:RadialBarSeries.TooltipTemplate>
                         <DataTemplate x:DataType="chart:TooltipInfo">
-                            <HorizontalStackLayout BindingContext="{Binding Item}" >
+                            <HorizontalStackLayout BindingContext="{Binding Item}">
                                 <Label Text="{Binding Title, x:DataType=model:CategoryChartData}"
                                        TextColor="{StaticResource LightBackground}"
                                        FontSize="14"
                                        HorizontalOptions="Center"
                                        VerticalOptions="Center"/>
 
-                                <Label Text="{Binding Count,x:DataType=model:CategoryChartData, StringFormat='  :  \{0}'}"
+                                <Label Text="{Binding Count, x:DataType=model:CategoryChartData, StringFormat='  :  \{0}'}"
                                        TextColor="{StaticResource LightBackground}"
                                        FontAttributes="Bold"
                                        FontSize="14"
