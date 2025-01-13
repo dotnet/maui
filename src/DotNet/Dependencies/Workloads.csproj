@@ -11,6 +11,7 @@
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net6.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net7.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net8.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenPackageVersion)]" /> 
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net9.Manifest-$(DotNetEmscriptenManifestVersionBand)" Version="[$(MicrosoftNETWorkloadEmscriptenPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetAndroidManifestVersionBand)"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetMaciOSManifestVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-$(DotNetMaciOSManifestVersionBand)"         Version="[$(MicrosoftiOSSdkPackageVersion)]" />
