@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
             InitializeComponent();
         }
  
-        protected override async void OnAppearing()
+        protected override void OnAppearing()
         {
             Application.Current.UserAppTheme = AppTheme.Dark;
             base.OnAppearing();
