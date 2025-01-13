@@ -32,8 +32,9 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 				textField.SecureTextEntry = entry.IsPassword;
-
+#if MACCATALYST
 			textField.TextContentType = UITextContentType.OneTimeCode;
+#endif
 		}
 
 		public static void UpdateHorizontalTextAlignment(this UITextField textField, ITextAlignment textAlignment)
