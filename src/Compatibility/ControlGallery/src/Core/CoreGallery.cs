@@ -574,6 +574,26 @@ namespace Microsoft.Maui.Controls.ControlGallery
 							{
 								if (item.Name == searchBar.Text)
 								{
+									if (item.IsInternetRequired)
+									{
+										NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+
+										if (accessType == NetworkAccess.Internet)
+										{
+											CoreRootView.SelectedItem = item;
+										}
+										else
+										{
+											await Navigation.PushModalAsync(new ContentPage()
+											{
+												Content = new Label()
+												{
+													Text = "No Internet Connection"
+												}
+											});
+										}
+										break;
+									}
 									CoreRootView.SelectedItem = item;
 									break;
 								}

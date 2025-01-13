@@ -7,26 +7,13 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...")]
+	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...",isInternetRequired: true)]
 	public class Issue3262 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		string _currentCookieValue;
 
 		protected override void Init()
 		{
-			Label internetHeader = new Label
-            {
-                  Text="No Internet Connection",
-                  HorizontalOptions = LayoutOptions.Center
- 
-            };
-            NetworkAccess accessType = Connectivity.Current.NetworkAccess;
- 
-            if (accessType == NetworkAccess.Internet)
-            {
-                internetHeader.Text= "Internet Connection Available";
-            }
-
 			Label header = new Label
 			{
 				Text = "Cookies...",
@@ -95,7 +82,6 @@ namespace Maui.Controls.Sample.Issues
 					Padding = new Thickness(20),
 					Children =
 					{
-						internetHeader,
 						header,
 						webView,
 						new Label()
