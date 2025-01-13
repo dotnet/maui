@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return source is INotifyCollectionChanged && source is IList;
 		}
 
-		void ReloadData(bool HasUnevenRowsChanged = false)
+		void ReloadData(bool hasUnevenRowsChanged = false)
 		{
 			var isStillTheSameUnderlyingItemsSource = _collection != null && object.ReferenceEquals(_collection, Element?.ItemsSource);
 
