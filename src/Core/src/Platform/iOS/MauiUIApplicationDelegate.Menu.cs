@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 
 			UIWindow? window = null;
 
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(14) || OperatingSystem.IsIOSVersionAtLeast(14))
 			{
 				// for iOS 14+ where active apperance is supported
 				var activeWindowScenes = new List<UIWindowScene>();
@@ -60,9 +60,17 @@ namespace Microsoft.Maui
 							}
 						}
 					}
-					else
+					else if (OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsIOSVersionAtLeast(15))
 					{
 						window = activeWindowScenes[0].KeyWindow;
+					}
+					else if (activeWindowScenes[0].Windows.Length > 0)
+					{
+						window = activeWindowScenes[0].Windows[0];
+					}
+					else
+					{
+						window = Window ?? this.GetWindow() ?? UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
 					}
 				}
 			}
