@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Entry clears when upadting text from native with one-way binding";
+		public override string Issue => "Entry clears when updating text from native with one-way binding";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
-			App.WaitForElement(Success);
+			Assert.That(App.FindElement("TestEntry").GetText(), Is.EqualTo(Success));
 		}
 	}
 }
