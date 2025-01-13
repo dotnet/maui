@@ -18,9 +18,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
+			if (IsInternetConnectionAvailable())
+            {
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			App.Tap("PageWithoutCookies");
 			App.WaitForElement("PageWithoutCookies");
+			}
 		}
 
 		[Test]
@@ -29,12 +32,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ChangeDuringNavigating()
 		{
+			if (IsInternetConnectionAvailable())
+            {
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
+			}
 		}
 
 		[Test]
@@ -43,12 +49,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddAdditionalCookieToWebView()
 		{
+			if (IsInternetConnectionAvailable())
+            {
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
+			}
 		}
 
 		[Test]
@@ -57,9 +66,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetToOneCookie()
 		{
+			if (IsInternetConnectionAvailable())
+            {
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			App.Tap("OneCookie");
 			ValidateSuccess();
+			}
 		}
 
 		[Test]
@@ -68,12 +80,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
+			if (IsInternetConnectionAvailable())
+            {
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a cookie to verify said cookie remains
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
 			App.Tap("NullAllCookies");
 			ValidateSuccess();
+			}
 		}
 
 		[Test]
@@ -82,12 +97,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void RemoveAllTheCookiesIAdded()
 		{
+			if (IsInternetConnectionAvailable())
+            {
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a cookie so you can remove a cookie
 			App.Tap("AdditionalCookie");
 			ValidateSuccess();
 			App.Tap("EmptyAllCookies");
 			ValidateSuccess();
+			}
 		}
 
 		void ValidateSuccess()
@@ -102,5 +120,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				throw;
 			}
 		}
+		 private bool IsInternetConnectionAvailable()
+        {
+            var internetConnectionLabel = App.FindElements("Internet Connection Available");
+            return internetConnectionLabel.Count > 0;
+        }
 	}
 }

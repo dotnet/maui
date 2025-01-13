@@ -14,6 +14,19 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
+			Label internetHeader = new Label
+            {
+                  Text="No Internet Connection",
+                  HorizontalOptions = LayoutOptions.Center
+ 
+            };
+            NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+ 
+            if (accessType == NetworkAccess.Internet)
+            {
+                internetHeader.Text= "Internet Connection Available";
+            }
+
 			Label header = new Label
 			{
 				Text = "Cookies...",
@@ -82,6 +95,7 @@ namespace Maui.Controls.Sample.Issues
 					Padding = new Thickness(20),
 					Children =
 					{
+						internetHeader,
 						header,
 						webView,
 						new Label()
