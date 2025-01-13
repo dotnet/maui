@@ -477,8 +477,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
 				// Horizontal & vertical spacing should only exist between items. 
 				var horizontalPadding = -spacingDecoration.HorizontalOffset;
-				var verticalPadding = -spacingDecoration.VerticalOffset;
-				SetPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+				SetPadding(horizontalPadding, 0, horizontalPadding, 0);
 			}
 		}
 
@@ -513,6 +512,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
 				{
 					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
+					UpdateItemSpacing();
 				}
 			}
 			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
