@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			if (HasUnevenRowsChanged)
+			if (hasUnevenRowsChanged)
 			{
 				// We need to reset the ItemsSource when HasUnevenRowsChanged this causes the ListView to update the view
 				isStillTheSameUnderlyingItemsSource = false;
