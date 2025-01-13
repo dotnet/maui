@@ -16,9 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void VerifyTemplateViewMarginOnInitialDisplay()
 		{
-			App.WaitForElement("MainPage");
+			App.WaitForElement("MainPageLabel");
 			App.TapShellFlyoutIcon();
-			App.WaitForElement("LabelWithMargin");
 			VerifyScreenshot();
 		}
 	}

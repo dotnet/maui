@@ -34,7 +34,7 @@
 		public Issue18423Page()
 		{
 			BackgroundColor = Colors.HotPink;
-			this.AutomationId = "MainPage";
+			this.Content = new Label() { AutomationId = "MainPageLabel", Text = "Content" };
 		}
 	}
 }
